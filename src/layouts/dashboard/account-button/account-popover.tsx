@@ -39,26 +39,10 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
                               onClose?.();
 
                               switch (auth.issuer) {
-                                        case Issuer.Amplify: {
-                                                  await auth.signOut();
-                                                  break;
-                                        }
-
-                                        case Issuer.Auth0: {
-                                                  await auth.logout();
-                                                  break;
-                                        }
-
                                         case Issuer.Firebase: {
                                                   await auth.signOut();
                                                   break;
                                         }
-
-                                        case Issuer.JWT: {
-                                                  await auth.signOut();
-                                                  break;
-                                        }
-
                                         default: {
                                                   console.warn('Using an unknown Auth Issuer, did not log out');
                                         }
@@ -90,7 +74,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
                                                   color="text.secondary"
                                                   variant="body2"
                                         >
-                                                  demo@devias.io
+                                                  {user.email}
                                         </Typography>
                               </Box>
                               <Divider />

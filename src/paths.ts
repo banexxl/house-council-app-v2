@@ -1,5 +1,5 @@
 export const paths = {
-          index: '/',
+          index: '/dashboard',
           checkout: '/checkout',
           contact: '/contact',
           pricing: '/pricing',

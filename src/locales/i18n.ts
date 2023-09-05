@@ -5,16 +5,18 @@ import { initReactI18next } from 'react-i18next';
 import { en } from './translations/en';
 import { de } from './translations/de';
 import { es } from './translations/es';
+import { sr } from './translations/sr'
 
 i18n.use(initReactI18next).init({
-  resources: {
-    en: { translation: en },
-    de: { translation: de },
-    es: { translation: es },
-  },
-  lng: 'en',
-  fallbackLng: 'en',
-  interpolation: {
-    escapeValue: false,
-  },
+          resources: {
+                    en: { translation: en },
+                    de: { translation: de },
+                    es: { translation: es },
+                    sr: { translation: sr },
+          },
+          lng: 'en',
+          fallbackLng: 'en',
+          interpolation: {
+                    escapeValue: false,
+          },
 });
