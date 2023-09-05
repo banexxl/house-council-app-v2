@@ -470,87 +470,87 @@ export const useSections = () => {
                                                   },
                                         ],
                               },
-                              {
-                                        subheader: 'Misc',
-                                        items: [
-                                                  {
-                                                            title: 'Level 0',
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <AlignLeft02Icon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                            items: [
-                                                                      {
-                                                                                title: 'Level 1a',
-                                                                                items: [
-                                                                                          {
-                                                                                                    title: 'Level 2a',
-                                                                                                    items: [
-                                                                                                              {
-                                                                                                                        title: 'Level 3a',
-                                                                                                              },
-                                                                                                              {
-                                                                                                                        title: 'Level 3b',
-                                                                                                                        disabled: true,
-                                                                                                              },
-                                                                                                    ],
-                                                                                          },
-                                                                                          {
-                                                                                                    title: 'Level 2b',
-                                                                                          },
-                                                                                ],
-                                                                      },
-                                                                      {
-                                                                                title: 'Level 1b',
-                                                                      },
-                                                            ],
-                                                  },
-                                                  {
-                                                            title: 'Disabled',
-                                                            disabled: true,
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <XSquareIcon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                  },
-                                                  {
-                                                            title: 'Label',
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <File01Icon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                            label: (
-                                                                      <Chip
-                                                                                color="primary"
-                                                                                label="New"
-                                                                                size="small"
-                                                                      />
-                                                            ),
-                                                  },
-                                                  {
-                                                            title: 'Blank',
-                                                            path: paths.dashboard.blank,
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <File01Icon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                  },
-                                                  {
-                                                            title: 'External Link',
-                                                            path: 'https://google.com',
-                                                            external: true,
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <File01Icon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                  },
-                                        ],
-                              },
+                              // {
+                              //           subheader: 'Misc',
+                              //           items: [
+                              //                     {
+                              //                               title: 'Level 0',
+                              //                               icon: (
+                              //                                         <SvgIcon fontSize="small">
+                              //                                                   <AlignLeft02Icon />
+                              //                                         </SvgIcon>
+                              //                               ),
+                              //                               items: [
+                              //                                         {
+                              //                                                   title: 'Level 1a',
+                              //                                                   items: [
+                              //                                                             {
+                              //                                                                       title: 'Level 2a',
+                              //                                                                       items: [
+                              //                                                                                 {
+                              //                                                                                           title: 'Level 3a',
+                              //                                                                                 },
+                              //                                                                                 {
+                              //                                                                                           title: 'Level 3b',
+                              //                                                                                           disabled: true,
+                              //                                                                                 },
+                              //                                                                       ],
+                              //                                                             },
+                              //                                                             {
+                              //                                                                       title: 'Level 2b',
+                              //                                                             },
+                              //                                                   ],
+                              //                                         },
+                              //                                         {
+                              //                                                   title: 'Level 1b',
+                              //                                         },
+                              //                               ],
+                              //                     },
+                              //                     {
+                              //                               title: 'Disabled',
+                              //                               disabled: true,
+                              //                               icon: (
+                              //                                         <SvgIcon fontSize="small">
+                              //                                                   <XSquareIcon />
+                              //                                         </SvgIcon>
+                              //                               ),
+                              //                     },
+                              //                     {
+                              //                               title: 'Label',
+                              //                               icon: (
+                              //                                         <SvgIcon fontSize="small">
+                              //                                                   <File01Icon />
+                              //                                         </SvgIcon>
+                              //                               ),
+                              //                               label: (
+                              //                                         <Chip
+                              //                                                   color="primary"
+                              //                                                   label="New"
+                              //                                                   size="small"
+                              //                                         />
+                              //                               ),
+                              //                     },
+                              //                     {
+                              //                               title: 'Blank',
+                              //                               path: paths.dashboard.blank,
+                              //                               icon: (
+                              //                                         <SvgIcon fontSize="small">
+                              //                                                   <File01Icon />
+                              //                                         </SvgIcon>
+                              //                               ),
+                              //                     },
+                              //                     {
+                              //                               title: 'External Link',
+                              //                               path: 'https://google.com',
+                              //                               external: true,
+                              //                               icon: (
+                              //                                         <SvgIcon fontSize="small">
+                              //                                                   <File01Icon />
+                              //                                         </SvgIcon>
+                              //                               ),
+                              //                     },
+                              //           ],
+                              // },
                     ];
           }, [t]);
 };
