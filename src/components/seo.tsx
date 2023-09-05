@@ -3,21 +3,21 @@ import Head from 'next/head';
 import PropTypes from 'prop-types';
 
 interface SeoProps {
-  title?: string;
+          title?: string;
 }
 
 export const Seo: FC<SeoProps> = (props) => {
-  const { title } = props;
+          const { title } = props;
 
-  const fullTitle = title ? title + ' | Devias Kit PRO' : 'Devias Kit PRO';
+          const fullTitle = title ? title + ' | HouseCouncil' : 'HouseCouncil';
 
-  return (
-    <Head>
-      <title>{fullTitle}</title>
-    </Head>
-  );
+          return (
+                    <Head>
+                              <title>{fullTitle}</title>
+                    </Head>
+          );
 };
 
 Seo.propTypes = {
-  title: PropTypes.string,
+          title: PropTypes.string,
 };

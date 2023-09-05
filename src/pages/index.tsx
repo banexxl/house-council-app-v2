@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 
 import { Seo } from 'src/components/seo';
 import { usePageView } from 'src/hooks/use-page-view';
-import { Layout as MarketingLayout } from 'src/layouts/marketing';
+import { Layout } from 'src/layouts/dashboard';
 import { HomeCta } from 'src/sections/home/home-cta';
 import { HomeFaqs } from 'src/sections/home/home-faqs';
 import { HomeFeatures } from 'src/sections/home/home-features';
@@ -10,22 +10,23 @@ import { HomeHero } from 'src/sections/home/home-hero';
 import { HomeReviews } from 'src/sections/home/home-reviews';
 
 const Page: NextPage = () => {
-  usePageView();
 
-  return (
-    <>
-      <Seo />
-      <main>
-        <HomeHero />
-        <HomeFeatures />
-        <HomeReviews />
-        <HomeCta />
-        <HomeFaqs />
-      </main>
-    </>
-  );
+          usePageView();
+
+          return (
+                    <>
+                              <Seo />
+                              <main>
+                                        <HomeHero />
+                                        <HomeFeatures />
+                                        <HomeReviews />
+                                        <HomeCta />
+                                        <HomeFaqs />
+                              </main>
+                    </>
+          );
 };
 
-Page.getLayout = (page) => <MarketingLayout>{page}</MarketingLayout>;
+Page.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default Page;

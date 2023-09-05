@@ -10,36 +10,36 @@ import { TopNav } from './top-nav';
 import { useMobileNav } from './use-mobile-nav';
 
 const LayoutRoot = styled('div')(({ theme }) => ({
-  backgroundColor: theme.palette.background.default,
-  height: '100%',
+          backgroundColor: theme.palette.background.default,
+          height: '100%',
 }));
 
 interface LayoutProps {
-  children?: ReactNode;
+          children?: ReactNode;
 }
 
 export const Layout: FC<LayoutProps> = (props) => {
-  const { children } = props;
-  const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
-  const mobileNav = useMobileNav();
+          const { children } = props;
+          const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
+          const mobileNav = useMobileNav();
 
-  return (
-    <>
-      <TopNav onMobileNavOpen={mobileNav.handleOpen} />
-      {!lgUp && (
-        <SideNav
-          onClose={mobileNav.handleClose}
-          open={mobileNav.open}
-        />
-      )}
-      <LayoutRoot>
-        {children}
-        <Footer />
-      </LayoutRoot>
-    </>
-  );
+          return (
+                    <>
+                              <TopNav onMobileNavOpen={mobileNav.handleOpen} />
+                              {!lgUp && (
+                                        <SideNav
+                                                  onClose={mobileNav.handleClose}
+                                                  open={mobileNav.open}
+                                        />
+                              )}
+                              <LayoutRoot>
+                                        {children}
+                                        <Footer />
+                              </LayoutRoot>
+                    </>
+          );
 };
 
 Layout.propTypes = {
-  children: PropTypes.node,
+          children: PropTypes.node,
 };
