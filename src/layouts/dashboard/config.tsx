@@ -81,22 +81,22 @@ export const useSections = () => {
                                                                       </SvgIcon>
                                                             ),
                                                   },
-                                                  {
-                                                            title: t(tokens.nav.crypto),
-                                                            path: paths.dashboard.crypto,
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <CurrencyBitcoinCircleIcon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                            label: (
-                                                                      <Chip
-                                                                                color="primary"
-                                                                                label="New"
-                                                                                size="small"
-                                                                      />
-                                                            ),
-                                                  },
+                                                  // {
+                                                  //           title: t(tokens.nav.crypto),
+                                                  //           path: paths.dashboard.crypto,
+                                                  //           icon: (
+                                                  //                     <SvgIcon fontSize="small">
+                                                  //                               <CurrencyBitcoinCircleIcon />
+                                                  //                     </SvgIcon>
+                                                  //           ),
+                                                  //           label: (
+                                                  //                     <Chip
+                                                  //                               color="primary"
+                                                  //                               label="New"
+                                                  //                               size="small"
+                                                  //                     />
+                                                  //           ),
+                                                  // },
                                                   {
                                                             title: t(tokens.nav.account),
                                                             path: paths.dashboard.account,
