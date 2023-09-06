@@ -8,44 +8,45 @@ import { usePopover } from 'src/hooks/use-popover';
 
 import { LanguagePopover } from './language-popover';
 
-type Language = 'en' | 'de' | 'es';
+type Language = 'en' | 'de' | 'es' | 'sr';
 
 const languages: Record<Language, string> = {
-  en: '/assets/flags/flag-uk.svg',
-  de: '/assets/flags/flag-de.svg',
-  es: '/assets/flags/flag-es.svg',
+          en: '/assets/flags/flag-uk.svg',
+          de: '/assets/flags/flag-de.svg',
+          es: '/assets/flags/flag-es.svg',
+          sr: '/assets/flags/flag-sr.svg',
 };
 
 export const LanguageSwitch: FC = () => {
-  const { i18n } = useTranslation();
-  const popover = usePopover<HTMLButtonElement>();
+          const { i18n } = useTranslation();
+          const popover = usePopover<HTMLButtonElement>();
 
-  const flag = languages[i18n.language as Language];
+          const flag = languages[i18n.language as Language];
 
-  return (
-    <>
-      <Tooltip title="Language">
-        <IconButton
-          onClick={popover.handleOpen}
-          ref={popover.anchorRef}
-        >
-          <Box
-            sx={{
-              width: 28,
-              '& img': {
-                width: '100%',
-              },
-            }}
-          >
-            <img src={flag} />
-          </Box>
-        </IconButton>
-      </Tooltip>
-      <LanguagePopover
-        anchorEl={popover.anchorRef.current}
-        onClose={popover.handleClose}
-        open={popover.open}
-      />
-    </>
-  );
+          return (
+                    <>
+                              <Tooltip title="Language">
+                                        <IconButton
+                                                  onClick={popover.handleOpen}
+                                                  ref={popover.anchorRef}
+                                        >
+                                                  <Box
+                                                            sx={{
+                                                                      width: 30,
+                                                                      '& img': {
+                                                                                width: '100%',
+                                                                      },
+                                                            }}
+                                                  >
+                                                            <img src={flag} />
+                                                  </Box>
+                                        </IconButton>
+                              </Tooltip>
+                              <LanguagePopover
+                                        anchorEl={popover.anchorRef.current}
+                                        onClose={popover.handleClose}
+                                        open={popover.open}
+                              />
+                    </>
+          );
 };
