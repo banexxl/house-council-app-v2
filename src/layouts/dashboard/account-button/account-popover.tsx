@@ -40,7 +40,10 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
 
                               switch (auth.issuer) {
                                         case Issuer.Firebase: {
-                                                  await auth.signOut();
+                                                  await auth.signOut().then(() => {
+
+                                                            router.refresh();
+                                                  })
                                                   break;
                                         }
                                         default: {
