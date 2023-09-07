@@ -47,11 +47,11 @@ const useCustomer = (): Customer | null => {
 
           const handleCustomerGet = useCallback(async () => {
                     try {
-                              const response = await CustomersApi().getCustomer();
+                              // const response = await CustomersApi().getCustomer();
 
-                              if (isMounted()) {
-                                        setCustomer(response);
-                              }
+                              // if (isMounted()) {
+                              //           setCustomer(response);
+                              // }
                     } catch (err) {
                               console.error(err);
                     }

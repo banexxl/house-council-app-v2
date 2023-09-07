@@ -1,4 +1,3 @@
-'use server'
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NextPage } from 'next';
@@ -12,8 +11,6 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
-
-// import { CustomersApi } from 'src/api/customers';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
 import { usePageView } from 'src/hooks/use-page-view';
@@ -22,6 +19,8 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { CustomerListSearch } from 'src/sections/dashboard/customer/customer-list-search';
 import { CustomerListTable } from 'src/sections/dashboard/customer/customer-list-table';
 import type { Customer } from 'src/types/customer';
+import clientPromise from '../../../libs/mongodb'
+import { GetServerSideProps } from 'next/types';
 
 interface Filters {
           query?: string;
@@ -38,111 +37,114 @@ interface CustomersSearchState {
           sortDir: 'asc' | 'desc';
 }
 
-const useCustomersSearch = () => {
-          const [state, setState] = useState<CustomersSearchState>({
-                    filters: {
-                              query: undefined,
-                              hasAcceptedMarketing: undefined,
-                              isProspect: undefined,
-                              isReturning: undefined,
-                    },
-                    page: 0,
-                    rowsPerPage: 5,
-                    sortBy: 'updatedAt',
-                    sortDir: 'desc',
-          });
-
-          const handleFiltersChange = useCallback((filters: Filters): void => {
-                    setState((prevState) => ({
-                              ...prevState,
-                              filters,
-                    }));
-          }, []);
-
-          const handleSortChange = useCallback(
-                    (sort: { sortBy: string; sortDir: 'asc' | 'desc' }): void => {
-                              setState((prevState) => ({
-                                        ...prevState,
-                                        sortBy: sort.sortBy,
-                                        sortDir: sort.sortDir,
-                              }));
-                    },
-                    []
-          );
-
-          const handlePageChange = useCallback(
-                    (event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
-                              setState((prevState) => ({
-                                        ...prevState,
-                                        page,
-                              }));
-                    },
-                    []
-          );
-
-          const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-                    setState((prevState) => ({
-                              ...prevState,
-                              rowsPerPage: parseInt(event.target.value, 10),
-                    }));
-          }, []);
-
-          return {
-                    handleFiltersChange,
-                    handleSortChange,
-                    handlePageChange,
-                    handleRowsPerPageChange,
-                    state,
-          };
-};
-
 interface CustomersStoreState {
           customers: Customer[];
           customersCount: number;
 }
 
-const useCustomersStore = (searchState: CustomersSearchState) => {
-          const isMounted = useMounted();
-          const [state, setState] = useState<CustomersStoreState>({
-                    customers: [],
-                    customersCount: 0,
-          });
 
-          const handleCustomersGet = useCallback(async () => {
-                    try {
-                              // const response = await CustomersApi().getCustomers(searchState);
-                              const response: any = {}
-                              if (isMounted()) {
-                                        setState({
-                                                  customers: response.data,
-                                                  customersCount: response.count,
-                                        });
-                              }
-                    } catch (err) {
-                              console.error(err);
-                    }
-          }, [searchState, isMounted]);
+const Page: NextPage = (props: any) => {
 
-          useEffect(
-                    () => {
-                              handleCustomersGet();
-                    },
-                    // eslint-disable-next-line react-hooks/exhaustive-deps
-                    [searchState]
-          );
+          console.log(props.props);
 
-          return {
-                    ...state,
+
+          const useCustomersSearch = () => {
+                    const [state, setState] = useState<CustomersSearchState>({
+                              filters: {
+                                        query: undefined,
+                                        hasAcceptedMarketing: undefined,
+                                        isProspect: undefined,
+                                        isReturning: undefined,
+                              },
+                              page: 0,
+                              rowsPerPage: 5,
+                              sortBy: 'updatedAt',
+                              sortDir: 'desc',
+                    });
+
+                    const handleFiltersChange = useCallback((filters: Filters): void => {
+                              setState((prevState) => ({
+                                        ...prevState,
+                                        filters,
+                              }));
+                    }, []);
+
+                    const handleSortChange = useCallback(
+                              (sort: { sortBy: string; sortDir: 'asc' | 'desc' }): void => {
+                                        setState((prevState) => ({
+                                                  ...prevState,
+                                                  sortBy: sort.sortBy,
+                                                  sortDir: sort.sortDir,
+                                        }));
+                              },
+                              []
+                    );
+
+                    const handlePageChange = useCallback(
+                              (event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
+                                        setState((prevState) => ({
+                                                  ...prevState,
+                                                  page,
+                                        }));
+                              },
+                              []
+                    );
+
+                    const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
+                              setState((prevState) => ({
+                                        ...prevState,
+                                        rowsPerPage: parseInt(event.target.value, 10),
+                              }));
+                    }, []);
+
+                    return {
+                              handleFiltersChange,
+                              handleSortChange,
+                              handlePageChange,
+                              handleRowsPerPageChange,
+                              state,
+                    };
           };
-};
 
-const useCustomersIds = (customers: Customer[] = []) => {
-          return useMemo(() => {
-                    return customers.map((customer) => customer._id);
-          }, [customers]);
-};
+          const useCustomersStore = (searchState: CustomersSearchState) => {
+                    const isMounted = useMounted();
+                    const [state, setState] = useState<CustomersStoreState>({
+                              customers: [],
+                              customersCount: 0,
+                    });
 
-const Page: NextPage = () => {
+                    const handleCustomersGet = useCallback(async () => {
+                              try {
+                                        if (isMounted()) {
+                                                  setState({
+                                                            customers: props.allTenants,
+                                                            customersCount: props.allTenants.length,
+                                                  });
+                                        }
+                              } catch (err) {
+                                        console.error(err);
+                              }
+                    }, [searchState, isMounted]);
+
+                    useEffect(
+                              () => {
+                                        handleCustomersGet();
+                              },
+                              // eslint-disable-next-line react-hooks/exhaustive-deps
+                              [searchState]
+                    );
+
+                    return {
+                              ...state,
+                    };
+          };
+
+          const useCustomersIds = (customers: Customer[] = []) => {
+                    return useMemo(() => {
+                              return props.allTenants.map((tenant: any) => tenant._id);
+                    }, [customers]);
+          };
+
           const customersSearch = useCustomersSearch();
           const customersStore = useCustomersStore(customersSearch.state);
           const customersIds = useCustomersIds(customersStore.customers);
@@ -242,6 +244,41 @@ const Page: NextPage = () => {
                     </>
           );
 };
+
+type ConnectionStatus = {
+          isConnected: boolean
+}
+
+export const getServerSideProps: GetServerSideProps<ConnectionStatus> = async () => {
+
+          try {
+                    const mongoClient = await clientPromise
+                    const mongoDB = mongoClient.db("HouseCouncilAppDB")
+                    const allTenants = await mongoDB.collection("Tenants").find({}).toArray()
+                    console.log(allTenants);
+
+                    // `await clientPromise` will use the default database passed in the MONGODB_URI
+                    // However you can use another database (e.g. myDatabase) by replacing the `await clientPromise` with the following code:
+                    //
+                    // `const client = await clientPromise`
+                    // `const db = client.db("myDatabase")`
+                    //
+                    // Then you can execute queries against your database like so:
+                    // db.find({}) or any of the MongoDB Node Driver commands
+
+                    return {
+                              props: {
+                                        isConnected: true,
+                                        allTenants: JSON.parse(JSON.stringify(allTenants))
+                              },
+                    }
+          } catch (e) {
+                    console.error(e)
+                    return {
+                              props: { isConnected: false },
+                    }
+          }
+}
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 
