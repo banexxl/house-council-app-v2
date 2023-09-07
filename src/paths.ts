@@ -67,6 +67,7 @@ export const paths = {
                               index: '/dashboard/customers',
                               details: '/dashboard/customers/:customerId',
                               edit: '/dashboard/customers/:customerId/edit',
+                              create: '/dashboard/customers/create'
                     },
                     ecommerce: '/dashboard/ecommerce',
                     fileManager: '/dashboard/file-manager',

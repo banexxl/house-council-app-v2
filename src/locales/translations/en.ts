@@ -21,6 +21,7 @@ export const en = {
           [tokens.nav.details]: 'Details',
           [tokens.nav.ecommerce]: 'E-Commerce',
           [tokens.nav.edit]: 'Edit',
+          [tokens.nav.remove]: 'Remove',
           [tokens.nav.error]: 'Error',
           [tokens.nav.feed]: 'Feed',
           [tokens.nav.fileManager]: 'File Manager',

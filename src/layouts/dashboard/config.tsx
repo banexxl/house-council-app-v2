@@ -132,6 +132,10 @@ export const useSections = () => {
                                                                                 title: t(tokens.nav.edit),
                                                                                 path: paths.dashboard.customers.edit,
                                                                       },
+                                                                      {
+                                                                                title: t(tokens.nav.create),
+                                                                                path: paths.dashboard.customers.create,
+                                                                      },
                                                             ],
                                                   },
                                                   {

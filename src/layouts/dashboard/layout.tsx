@@ -9,32 +9,32 @@ import { HorizontalLayout } from './horizontal-layout';
 import { VerticalLayout } from './vertical-layout';
 
 interface LayoutProps {
-  children?: ReactNode;
+          children?: ReactNode;
 }
 
 export const Layout: FC<LayoutProps> = withAuthGuard((props) => {
-  const settings = useSettings();
-  const sections = useSections();
+          const settings = useSettings();
+          const sections = useSections();
 
-  if (settings.layout === 'horizontal') {
-    return (
-      <HorizontalLayout
-        sections={sections}
-        navColor={settings.navColor}
-        {...props}
-      />
-    );
-  }
+          if (settings.layout === 'horizontal') {
+                    return (
+                              <HorizontalLayout
+                                        sections={sections}
+                                        navColor={settings.navColor}
+                                        {...props}
+                              />
+                    );
+          }
 
-  return (
-    <VerticalLayout
-      sections={sections}
-      navColor={settings.navColor}
-      {...props}
-    />
-  );
+          return (
+                    <VerticalLayout
+                              sections={sections}
+                              navColor={settings.navColor}
+                              {...props}
+                    />
+          );
 });
 
 Layout.propTypes = {
-  children: PropTypes.node,
+          children: PropTypes.node,
 };

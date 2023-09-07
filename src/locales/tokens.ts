@@ -3,6 +3,7 @@ export const tokens = {
                     languageChanged: 'common.languageChanged',
           },
           nav: {
+                    remove: 'nav.remove',
                     academy: 'nav.academy',
                     account: 'nav.account',
                     analytics: 'nav.analytics',

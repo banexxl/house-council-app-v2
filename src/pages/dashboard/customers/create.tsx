@@ -30,7 +30,7 @@ const Page: NextPage = () => {
                                         <Container maxWidth="xl">
                                                   <Stack spacing={3}>
                                                             <Stack spacing={1}>
-                                                                      <Typography variant="h4">Create a new product</Typography>
+                                                                      <Typography variant="h4">Add customer</Typography>
                                                                       <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                                                                 <Link
                                                                                           color="text.primary"
