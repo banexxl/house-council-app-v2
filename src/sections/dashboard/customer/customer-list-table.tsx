@@ -165,7 +165,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                                   width: 42,
                                                                                                                         }}
                                                                                                               >
-                                                                                                                        {getInitials(customer.name)}
+                                                                                                                        {getInitials(customer.firstName)}
                                                                                                               </Avatar>
                                                                                                               <div>
                                                                                                                         <Link
@@ -174,7 +174,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                                   href={paths.dashboard.customers.details}
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
-                                                                                                                                  {customer.name}
+                                                                                                                                  {customer.firstName}
                                                                                                                         </Link>
                                                                                                                         <Typography
                                                                                                                                   color="text.secondary"

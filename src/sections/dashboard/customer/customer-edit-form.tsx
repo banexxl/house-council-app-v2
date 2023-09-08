@@ -31,7 +31,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               address2: customer.address2 || '',
                               country: customer.country || '',
                               email: customer.email || '',
-                              name: customer.name || '',
+                              name: customer.firstName || '',
                               phone: customer.phone || '',
                               state: customer.state || '',
                               submit: null,

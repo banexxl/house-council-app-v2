@@ -18,7 +18,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-import { CustomersApi } from 'src/api/customers';
+import { customersApi } from 'src/api/customers';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
@@ -32,7 +32,7 @@ import { CustomerInvoices } from 'src/sections/dashboard/customer/customer-invoi
 import { CustomerPayment } from 'src/sections/dashboard/customer/customer-payment';
 import { CustomerLogs } from 'src/sections/dashboard/customer/customer-logs';
 import type { Customer } from 'src/types/customer';
-import { CustomerInvoice, CustomerLog } from 'src/types/customer';
+import { CustomerLog } from 'src/types/customer';
 import { getInitials } from 'src/utils/get-initials';
 
 const tabs = [
@@ -189,7 +189,7 @@ const Page: NextPage = () => {
                                                                                                               width: 64,
                                                                                                     }}
                                                                                           >
-                                                                                                    {getInitials(customer.name)}
+                                                                                                    {getInitials(customer.firstName)}
                                                                                           </Avatar>
                                                                                           <Stack spacing={1}>
                                                                                                     <Typography variant="h4">{customer.email}</Typography>
@@ -270,7 +270,7 @@ const Page: NextPage = () => {
                                                                                                               address1={customer.address1}
                                                                                                               address2={customer.address2}
                                                                                                               country={customer.country}
-                                                                                                              email={customer.email}
+                                                                                                              email={customer.email ? customer.email : ''}
                                                                                                               isVerified={true}
                                                                                                               phone={customer.phone}
                                                                                                               state={customer.state}
