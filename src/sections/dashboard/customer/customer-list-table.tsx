@@ -120,16 +120,17 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                           }}
                                                                                 />
                                                                       </TableCell>
-                                                                      <TableCell>Name</TableCell>
+                                                                      <TableCell>First Name</TableCell>
                                                                       <TableCell>Second Name</TableCell>
                                                                       <TableCell>Street</TableCell>
                                                                       <TableCell>Appartment</TableCell>
                                                                       <TableCell>City</TableCell>
+                                                                      <TableCell>Edit/Details</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
                                                             {items.map((customer) => {
-                                                                      const isSelected = selected.includes(customer._id);
+                                                                      const isSelected = selected.includes(customer._id ? customer._id : '');
                                                                       const location = `${customer.city}, ${customer.state}, ${customer.country}`;
                                                                       // const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
 
@@ -144,9 +145,9 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               checked={isSelected}
                                                                                                               onChange={(event: ChangeEvent<HTMLInputElement>): void => {
                                                                                                                         if (event.target.checked) {
-                                                                                                                                  onSelectOne?.(customer._id);
+                                                                                                                                  onSelectOne?.(customer._id ? customer._id : '');
                                                                                                                         } else {
-                                                                                                                                  onDeselectOne?.(customer._id);
+                                                                                                                                  onDeselectOne?.(customer._id ? customer._id : '');
                                                                                                                         }
                                                                                                               }}
                                                                                                               value={isSelected}
@@ -158,7 +159,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               direction="row"
                                                                                                               spacing={1}
                                                                                                     >
-                                                                                                              <Avatar
+                                                                                                              {/* <Avatar
                                                                                                                         src={customer.avatar}
                                                                                                                         sx={{
                                                                                                                                   height: 42,
@@ -166,7 +167,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         }}
                                                                                                               >
                                                                                                                         {getInitials(customer.firstName)}
-                                                                                                              </Avatar>
+                                                                                                              </Avatar> */}
                                                                                                               <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
@@ -176,17 +177,148 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         >
                                                                                                                                   {customer.firstName}
                                                                                                                         </Link>
-                                                                                                                        <Typography
+                                                                                                                        {/* <Typography
                                                                                                                                   color="text.secondary"
                                                                                                                                   variant="body2"
                                                                                                                         >
                                                                                                                                   {customer.email}
-                                                                                                                        </Typography>
+                                                                                                                        </Typography> */}
                                                                                                               </div>
                                                                                                     </Stack>
                                                                                           </TableCell>
-                                                                                          <TableCell>{location}</TableCell>
-                                                                                          <TableCell align="right">
+                                                                                          <TableCell>
+                                                                                                    <Stack
+                                                                                                              alignItems="center"
+                                                                                                              direction="row"
+                                                                                                              spacing={1}
+                                                                                                    >
+                                                                                                              {/* <Avatar
+                                                                                                                        src={customer.avatar}
+                                                                                                                        sx={{
+                                                                                                                                  height: 42,
+                                                                                                                                  width: 42,
+                                                                                                                        }}
+                                                                                                              >
+                                                                                                                        {getInitials(customer.firstName)}
+                                                                                                              </Avatar> */}
+                                                                                                              <div>
+                                                                                                                        <Link
+                                                                                                                                  color="inherit"
+                                                                                                                                  component={RouterLink}
+                                                                                                                                  href={paths.dashboard.customers.details}
+                                                                                                                                  variant="subtitle2"
+                                                                                                                        >
+                                                                                                                                  {customer.lastName}
+                                                                                                                        </Link>
+                                                                                                                        {/* <Typography
+                                                                                                                                  color="text.secondary"
+                                                                                                                                  variant="body2"
+                                                                                                                        >
+                                                                                                                                  {customer.email}
+                                                                                                                        </Typography> */}
+                                                                                                              </div>
+                                                                                                    </Stack>
+                                                                                          </TableCell>
+                                                                                          <TableCell>
+                                                                                                    <Stack
+                                                                                                              alignItems="center"
+                                                                                                              direction="row"
+                                                                                                              spacing={1}
+                                                                                                    >
+                                                                                                              {/* <Avatar
+                                                                                                                        src={customer.avatar}
+                                                                                                                        sx={{
+                                                                                                                                  height: 42,
+                                                                                                                                  width: 42,
+                                                                                                                        }}
+                                                                                                              >
+                                                                                                                        {getInitials(customer.firstName)}
+                                                                                                              </Avatar> */}
+                                                                                                              <div>
+                                                                                                                        <Link
+                                                                                                                                  color="inherit"
+                                                                                                                                  component={RouterLink}
+                                                                                                                                  href={paths.dashboard.customers.details}
+                                                                                                                                  variant="subtitle2"
+                                                                                                                        >
+                                                                                                                                  {customer.address1}
+                                                                                                                        </Link>
+                                                                                                                        {/* <Typography
+                                                                                                                                  color="text.secondary"
+                                                                                                                                  variant="body2"
+                                                                                                                        >
+                                                                                                                                  {customer.email}
+                                                                                                                        </Typography> */}
+                                                                                                              </div>
+                                                                                                    </Stack>
+                                                                                          </TableCell>
+                                                                                          <TableCell>
+                                                                                                    <Stack
+                                                                                                              alignItems="center"
+                                                                                                              direction="row"
+                                                                                                              spacing={1}
+                                                                                                    >
+                                                                                                              {/* <Avatar
+                                                                                                                        src={customer.avatar}
+                                                                                                                        sx={{
+                                                                                                                                  height: 42,
+                                                                                                                                  width: 42,
+                                                                                                                        }}
+                                                                                                              >
+                                                                                                                        {getInitials(customer.firstName)}
+                                                                                                              </Avatar> */}
+                                                                                                              <div>
+                                                                                                                        <Link
+                                                                                                                                  color="inherit"
+                                                                                                                                  component={RouterLink}
+                                                                                                                                  href={paths.dashboard.customers.details}
+                                                                                                                                  variant="subtitle2"
+                                                                                                                        >
+                                                                                                                                  {customer.appartmentNumber}
+                                                                                                                        </Link>
+                                                                                                                        {/* <Typography
+                                                                                                                                  color="text.secondary"
+                                                                                                                                  variant="body2"
+                                                                                                                        >
+                                                                                                                                  {customer.email}
+                                                                                                                        </Typography> */}
+                                                                                                              </div>
+                                                                                                    </Stack>
+                                                                                          </TableCell>
+                                                                                          <TableCell>
+                                                                                                    <Stack
+                                                                                                              alignItems="center"
+                                                                                                              direction="row"
+                                                                                                              spacing={1}
+                                                                                                    >
+                                                                                                              {/* <Avatar
+                                                                                                                        src={customer.avatar}
+                                                                                                                        sx={{
+                                                                                                                                  height: 42,
+                                                                                                                                  width: 42,
+                                                                                                                        }}
+                                                                                                              >
+                                                                                                                        {getInitials(customer.firstName)}
+                                                                                                              </Avatar> */}
+                                                                                                              <div>
+                                                                                                                        <Link
+                                                                                                                                  color="inherit"
+                                                                                                                                  component={RouterLink}
+                                                                                                                                  href={paths.dashboard.customers.details}
+                                                                                                                                  variant="subtitle2"
+                                                                                                                        >
+                                                                                                                                  {customer.city}
+                                                                                                                        </Link>
+                                                                                                                        {/* <Typography
+                                                                                                                                  color="text.secondary"
+                                                                                                                                  variant="body2"
+                                                                                                                        >
+                                                                                                                                  {customer.email}
+                                                                                                                        </Typography> */}
+                                                                                                              </div>
+                                                                                                    </Stack>
+                                                                                          </TableCell>
+                                                                                          <TableCell>
                                                                                                     <IconButton
                                                                                                               component={RouterLink}
                                                                                                               href={paths.dashboard.customers.edit}

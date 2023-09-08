@@ -1,26 +1,6 @@
 import * as Yup from 'yup';
 
-export interface Customer {
-          _id?: string;
-          address1: string;
-          address2?: string;
-          appartmentNumber?: number;
-          avatar?: string;
-          city: string;
-          country: string;
-          email?: string;
-          firstName: string;
-          lastName: string;
-          phone: string;
-          dateOfBirth?: string;
-          state?: string;
-          updatedAt?: number;
-          isOwner?: boolean;
-          zipCode?: number;
-}
-
-
-export const customerSchema = Yup.object({
+const tenantSchema = Yup.object().shape({
           firstName: Yup.string()
                     .min(2, 'First name must be at least 2 characters')
                     .max(50, 'First name cannot exceed 50 characters')
@@ -33,6 +13,10 @@ export const customerSchema = Yup.object({
 
           dateOfBirth: Yup.date(),
 
+          gender: Yup.string()
+                    .oneOf(['Male', 'Female'], 'Invalid gender')
+                    .required('Gender is required'),
+
           email: Yup.string().email('Invalid email address'),
 
           phoneNumber: Yup.string()
@@ -44,14 +28,4 @@ export const customerSchema = Yup.object({
           isOwner: Yup.boolean()
 });
 
-export default customerSchema;
-
-export interface CustomerLog {
-          id: string;
-          createdAt: number;
-          description: string;
-          ip: string;
-          method: string;
-          route: string;
-          status: number;
-}
+export default tenantSchema;

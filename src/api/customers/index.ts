@@ -18,6 +18,28 @@ export const customersApi = async (request: NextApiRequest, response: NextApiRes
                     } catch (error) {
                               return response.status(500).json({ error: 'Internal server error!' });
                     }
+          } else if (request.method === 'POST') {
+
+                    const mongoClient = await clientPromise
+
+                    try {
+                              const db = mongoClient.db('HouseCouncilAppDB');
+                              const customerExists = await db.collection('Tenants').findOne({ _id: request.body.customer._id });
+
+                              if (customerExists === null) {
+                                        return await db.collection('Tenants').insertOne(request.body.customer);
+                              } else {
+                                        const error = new Error('Customer already exists!');
+                                        // Attach custom properties to the error object
+                                        (error as any).cause = { status: 409 };
+                                        throw error;
+                              }
+                    } catch (error: any) {
+                              return { message: error.message }
+                    }
+                    finally {
+                              await mongoClient.close();
+                    }
           } else {
                     return response.status(405).json({ error: 'Method not allowed!' });
           }

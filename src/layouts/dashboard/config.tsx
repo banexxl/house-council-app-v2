@@ -125,14 +125,6 @@ export const useSections = () => {
                                                                                 path: paths.dashboard.customers.index,
                                                                       },
                                                                       {
-                                                                                title: t(tokens.nav.details),
-                                                                                path: paths.dashboard.customers.details,
-                                                                      },
-                                                                      {
-                                                                                title: t(tokens.nav.edit),
-                                                                                path: paths.dashboard.customers.edit,
-                                                                      },
-                                                                      {
                                                                                 title: t(tokens.nav.create),
                                                                                 path: paths.dashboard.customers.create,
                                                                       },

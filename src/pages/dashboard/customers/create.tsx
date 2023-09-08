@@ -13,13 +13,14 @@ import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
 import { ProductCreateForm } from 'src/sections/dashboard/product/product-create-form';
+import { CustomerCreateForm } from '@/sections/dashboard/customer/customer-create-form';
 
 const Page: NextPage = () => {
           usePageView();
 
           return (
                     <>
-                              <Seo title="Dashboard: Product Create" />
+                              <Seo title="Dashboard: Add Customer" />
                               <Box
                                         component="main"
                                         sx={{
@@ -43,20 +44,20 @@ const Page: NextPage = () => {
                                                                                 <Link
                                                                                           color="text.primary"
                                                                                           component={RouterLink}
-                                                                                          href={paths.dashboard.products.index}
+                                                                                          href={paths.dashboard.customers.index}
                                                                                           variant="subtitle2"
                                                                                 >
-                                                                                          Products
+                                                                                          Customers
                                                                                 </Link>
                                                                                 <Typography
                                                                                           color="text.secondary"
                                                                                           variant="subtitle2"
                                                                                 >
-                                                                                          Create
+                                                                                          Add
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <ProductCreateForm />
+                                                            <CustomerCreateForm />
                                                   </Stack>
                                         </Container>
                               </Box>

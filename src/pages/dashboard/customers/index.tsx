@@ -21,6 +21,9 @@ import { CustomerListTable } from 'src/sections/dashboard/customer/customer-list
 import type { Customer } from 'src/types/customer';
 import clientPromise from '../../../libs/mongodb'
 import { GetServerSideProps } from 'next/types';
+import Link from 'next/link';
+import { paths } from '@/paths';
+import { RouterLink } from '@/components/router-link';
 
 interface Filters {
           query?: string;
@@ -206,6 +209,8 @@ const Page: NextPage = (props: any) => {
                                                                                 spacing={3}
                                                                       >
                                                                                 <Button
+                                                                                          component={RouterLink}
+                                                                                          href={paths.dashboard.customers.create}
                                                                                           startIcon={
                                                                                                     <SvgIcon>
                                                                                                               <PlusIcon />
