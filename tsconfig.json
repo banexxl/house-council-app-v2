@@ -38,7 +38,6 @@
                     "**/*.tsx",
                     "next.d.ts",
                     "next-env.d.ts",
-                    "./src/api/customers/index.ts"
           ],
           "exclude": [
                     "node_modules"

@@ -19,11 +19,11 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { CustomerListSearch } from 'src/sections/dashboard/customer/customer-list-search';
 import { CustomerListTable } from 'src/sections/dashboard/customer/customer-list-table';
 import type { Customer } from 'src/types/customer';
-import clientPromise from '../../../libs/mongodb'
 import { GetServerSideProps } from 'next/types';
 import Link from 'next/link';
 import { paths } from '@/paths';
 import { RouterLink } from '@/components/router-link';
+import { MongoClient } from 'mongodb';
 
 interface Filters {
           query?: string;
@@ -47,9 +47,6 @@ interface CustomersStoreState {
 
 
 const Page: NextPage = (props: any) => {
-
-          console.log(props.props);
-
 
           const useCustomersSearch = () => {
                     const [state, setState] = useState<CustomersSearchState>({
@@ -257,19 +254,9 @@ type ConnectionStatus = {
 export const getServerSideProps: GetServerSideProps<ConnectionStatus> = async () => {
 
           try {
-                    const mongoClient = await clientPromise
+                    const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
                     const mongoDB = mongoClient.db("HouseCouncilAppDB")
                     const allTenants = await mongoDB.collection("Tenants").find({}).toArray()
-                    console.log(allTenants);
-
-                    // `await clientPromise` will use the default database passed in the MONGODB_URI
-                    // However you can use another database (e.g. myDatabase) by replacing the `await clientPromise` with the following code:
-                    //
-                    // `const client = await clientPromise`
-                    // `const db = client.db("myDatabase")`
-                    //
-                    // Then you can execute queries against your database like so:
-                    // db.find({}) or any of the MongoDB Node Driver commands
 
                     return {
                               props: {

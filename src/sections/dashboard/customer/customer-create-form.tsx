@@ -15,13 +15,11 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { customerSchema as validationSchema, Customer } from '@/types/customer';
 import { RouterLink } from '@/components/router-link';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import 'moment/locale/sr';
-import moment from 'moment';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { Checkbox } from '@mui/material';
 
 const initialValues: Customer = {
-          _id: '',
           address1: '',
           address2: '',
           appartmentNumber: 0,
@@ -31,7 +29,7 @@ const initialValues: Customer = {
           email: '',
           firstName: '',
           lastName: '',
-          phone: '',
+          phoneNumber: '',
           state: '',
           updatedAt: 0,
           dateOfBirth: '',
@@ -47,14 +45,15 @@ export const CustomerCreateForm: FC = (props) => {
                     initialValues,
                     validationSchema,
                     onSubmit: async (values, helpers): Promise<void> => {
-                              console.log('usao u onsubmit');
 
                               try {
                                         //API CALL
-                                        const response = await fetch('/api/customers/index', {
+                                        const response = await fetch('/api/customers/customers-api', {
                                                   method: 'POST',
                                                   headers: {
-                                                            'Content-Type': 'application/json', // Set the content type to JSON
+                                                            'Content-Type': 'application/json',
+                                                            'Access-Control-Allow-Origin': '*',
+                                                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                                   },
                                                   body: JSON.stringify(values), // Convert your data to JSON
                                         });
@@ -198,16 +197,16 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     value={formik.values.country}
                                                                                           />
                                                                                           <TextField
-                                                                                                    error={!!(formik.touched.phone && formik.errors.phone)}
+                                                                                                    error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}
                                                                                                     fullWidth
-                                                                                                    helperText={formik.touched.phone && formik.errors.phone}
+                                                                                                    helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
                                                                                                     label="Phone number"
-                                                                                                    name="phone"
+                                                                                                    name="phoneNumber"
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
-                                                                                                    value={formik.values.phone}
+                                                                                                    value={formik.values.phoneNumber}
                                                                                           />
-                                                                                          <LocalizationProvider dateAdapter={AdapterMoment}>
+                                                                                          {/* <LocalizationProvider dateAdapter={AdapterMoment}>
                                                                                                     <DatePicker
                                                                                                               label="Date of birth"
                                                                                                               value={moment(formik.values.dateOfBirth)}
@@ -221,7 +220,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                                         },
                                                                                                               }}
                                                                                                     />
-                                                                                          </LocalizationProvider>
+                                                                                          </LocalizationProvider> */}
                                                                                           {/* <KeyboardDatePicker
                                                                                                     id="date-picker-dialog"
                                                                                                     label="Date picker dialog"
@@ -244,6 +243,11 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     value={formik.values.email}
                                                                                           />
                                                                                 </Stack>
+                                                                                <FormControlLabel
+                                                                                          control={<Checkbox />}
+                                                                                          label={'Is owner'}
+                                                                                          value={formik.values.isOwner}
+                                                                                />
                                                                       </Grid>
                                                             </Grid>
                                                   </CardContent>
@@ -300,7 +304,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                             Cancel
                                                   </Button>
                                                   <Button
-                                                            disabled={formik.isSubmitting}
+                                                            disabled={!formik.dirty}
                                                             type="submit"
                                                             variant="contained"
                                                   >

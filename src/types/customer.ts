@@ -11,7 +11,7 @@ export interface Customer {
           email?: string;
           firstName: string;
           lastName: string;
-          phone: string;
+          phoneNumber: string;
           dateOfBirth?: string;
           state?: string;
           updatedAt?: number;
@@ -31,7 +31,7 @@ export const customerSchema = Yup.object({
                     .max(50, 'Last name cannot exceed 50 characters')
                     .required('Last name is required'),
 
-          dateOfBirth: Yup.date(),
+          // dateOfBirth: Yup.date(),
 
           email: Yup.string().email('Invalid email address'),
 

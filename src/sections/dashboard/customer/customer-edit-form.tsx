@@ -31,8 +31,9 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               address2: customer.address2 || '',
                               country: customer.country || '',
                               email: customer.email || '',
-                              name: customer.firstName || '',
-                              phone: customer.phone || '',
+                              firstName: customer.firstName || '',
+                              lastName: customer.lastName || '',
+                              phoneNumber: customer.phoneNumber || '',
                               state: customer.state || '',
                               submit: null,
                     },
@@ -44,7 +45,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               hasDiscount: Yup.bool(),
                               isVerified: Yup.bool(),
                               name: Yup.string().max(255).required('Name is required'),
-                              phone: Yup.string().max(15),
+                              phoneNumber: Yup.string().max(15),
                               state: Yup.string().max(255),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
@@ -81,15 +82,15 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <TextField
-                                                                                error={!!(formik.touched.name && formik.errors.name)}
+                                                                                error={!!(formik.touched.firstName && formik.errors.firstName)}
                                                                                 fullWidth
-                                                                                helperText={formik.touched.name && formik.errors.name}
+                                                                                helperText={formik.touched.firstName && formik.errors.firstName}
                                                                                 label="Full name"
                                                                                 name="name"
                                                                                 onBlur={formik.handleBlur}
                                                                                 onChange={formik.handleChange}
                                                                                 required
-                                                                                value={formik.values.name}
+                                                                                value={formik.values.firstName}
                                                                       />
                                                             </Grid>
                                                             <Grid
@@ -173,14 +174,14 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <TextField
-                                                                                error={!!(formik.touched.phone && formik.errors.phone)}
+                                                                                error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}
                                                                                 fullWidth
-                                                                                helperText={formik.touched.phone && formik.errors.phone}
+                                                                                helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
                                                                                 label="Phone number"
-                                                                                name="phone"
+                                                                                name="phoneNumber"
                                                                                 onBlur={formik.handleBlur}
                                                                                 onChange={formik.handleChange}
-                                                                                value={formik.values.phone}
+                                                                                value={formik.values.phoneNumber}
                                                                       />
                                                             </Grid>
                                                   </Grid>

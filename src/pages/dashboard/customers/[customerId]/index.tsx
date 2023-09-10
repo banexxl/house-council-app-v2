@@ -272,7 +272,7 @@ const Page: NextPage = () => {
                                                                                                               country={customer.country}
                                                                                                               email={customer.email ? customer.email : ''}
                                                                                                               isVerified={true}
-                                                                                                              phone={customer.phone}
+                                                                                                              phone={customer.phoneNumber}
                                                                                                               state={customer.state}
                                                                                                     />
                                                                                           </Grid>

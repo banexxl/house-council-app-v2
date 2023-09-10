@@ -19,6 +19,7 @@ export const customersApi = async (request: NextApiRequest, response: NextApiRes
                               return response.status(500).json({ error: 'Internal server error!' });
                     }
           } else if (request.method === 'POST') {
+                    console.log('usao u post metodu');
 
                     const mongoClient = await clientPromise
 
