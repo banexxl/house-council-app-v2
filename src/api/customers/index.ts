@@ -1,15 +1,15 @@
 
-import clientPromise from '@/libs/mongodb';
+import { MongoClient } from 'mongodb';
 import type { NextApiRequest, NextApiResponse } from 'next/types'
 
 export const customersApi = async (request: NextApiRequest, response: NextApiResponse) => {
 
+          const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
+          const mongoDB = mongoClient.db("HouseCouncilAppDB")
+          const allTenants = await mongoDB.collection("Tenants").find({}).toArray()
+
           if (request.method === 'GET') {
                     try {
-                              const mongoClient = await clientPromise
-                              const mongoDB = mongoClient.db("HouseCouncilAppDB")
-                              const allTenants = await mongoDB.collection("Tenants").find({}).toArray()
-
                               if (allTenants.length > 0) {
                                         return response.status(200).json({ message: 'Customers found!', data: allTenants })
                               } else {
@@ -19,10 +19,6 @@ export const customersApi = async (request: NextApiRequest, response: NextApiRes
                               return response.status(500).json({ error: 'Internal server error!' });
                     }
           } else if (request.method === 'POST') {
-                    console.log('usao u post metodu');
-
-                    const mongoClient = await clientPromise
-
                     try {
                               const db = mongoClient.db('HouseCouncilAppDB');
                               const customerExists = await db.collection('Tenants').findOne({ _id: request.body.customer._id });

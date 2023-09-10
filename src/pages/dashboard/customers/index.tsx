@@ -124,7 +124,7 @@ const Page: NextPage = (props: any) => {
                               } catch (err) {
                                         console.error(err);
                               }
-                    }, [searchState, isMounted]);
+                    }, [isMounted]);
 
                     useEffect(
                               () => {
@@ -142,7 +142,7 @@ const Page: NextPage = (props: any) => {
           const useCustomersIds = (customers: Customer[] = []) => {
                     return useMemo(() => {
                               return props.allTenants.map((tenant: any) => tenant._id);
-                    }, [customers]);
+                    }, []);
           };
 
           const customersSearch = useCustomersSearch();

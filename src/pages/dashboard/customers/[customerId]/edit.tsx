@@ -35,7 +35,7 @@ const useCustomer = (): Customer | null => {
                     } catch (err) {
                               console.error(err);
                     }
-          }, [isMounted]);
+          }, []);
 
           useEffect(
                     () => {
