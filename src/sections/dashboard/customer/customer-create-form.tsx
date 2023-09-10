@@ -57,17 +57,21 @@ export const CustomerCreateForm: FC = (props) => {
                                                   },
                                                   body: JSON.stringify(values), // Convert your data to JSON
                                         });
-                                        console.log(response);
 
                                         if (response.ok) {
                                                   toast.success('Customer added');
                                                   router.push(paths.dashboard.customers.index);
+                                        } else if (response.status === 409) {
+                                                  const errorData = await response.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('User with this email already exists!');
+                                                  helpers.setStatus({ success: false });
+                                                  // helpers.setErrors({ submit: errorData.message }); // You can set specific error messages if needed
                                         } else {
                                                   const errorData = await response.json(); // Parse the error response
                                                   console.error(errorData);
                                                   toast.error('Something went wrong!');
                                                   helpers.setStatus({ success: false });
-                                                  // helpers.setErrors({ submit: errorData.message }); // You can set specific error messages if needed
                                         }
 
                               } catch (err) {
