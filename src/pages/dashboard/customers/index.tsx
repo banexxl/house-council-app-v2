@@ -27,9 +27,8 @@ import { MongoClient } from 'mongodb';
 
 interface Filters {
           query?: string;
-          hasAcceptedMarketing?: boolean;
-          isProspect?: boolean;
-          isReturning?: boolean;
+          isOwner?: boolean;
+          isSubtenant?: boolean;
 }
 
 interface CustomersSearchState {
@@ -52,9 +51,8 @@ const Page: NextPage = (props: any) => {
                     const [state, setState] = useState<CustomersSearchState>({
                               filters: {
                                         query: undefined,
-                                        hasAcceptedMarketing: undefined,
-                                        isProspect: undefined,
-                                        isReturning: undefined,
+                                        isOwner: undefined,
+                                        isSubtenant: undefined,
                               },
                               page: 0,
                               rowsPerPage: 5,
@@ -171,7 +169,7 @@ const Page: NextPage = (props: any) => {
                                                             >
                                                                       <Stack spacing={1}>
                                                                                 <Typography variant="h4">Customers</Typography>
-                                                                                <Stack
+                                                                                {/* <Stack
                                                                                           alignItems="center"
                                                                                           direction="row"
                                                                                           spacing={1}
@@ -198,7 +196,7 @@ const Page: NextPage = (props: any) => {
                                                                                           >
                                                                                                     Export
                                                                                           </Button>
-                                                                                </Stack>
+                                                                                </Stack> */}
                                                                       </Stack>
                                                                       <Stack
                                                                                 alignItems="center"
@@ -247,11 +245,9 @@ const Page: NextPage = (props: any) => {
           );
 };
 
-type ConnectionStatus = {
-          isConnected: boolean
-}
 
-export const getServerSideProps: GetServerSideProps<ConnectionStatus> = async () => {
+
+export const getServerSideProps: GetServerSideProps = async () => {
 
           try {
                     const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
@@ -260,7 +256,6 @@ export const getServerSideProps: GetServerSideProps<ConnectionStatus> = async ()
 
                     return {
                               props: {
-                                        isConnected: true,
                                         allTenants: JSON.parse(JSON.stringify(allTenants))
                               },
                     }

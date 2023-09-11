@@ -16,12 +16,11 @@ import { useUpdateEffect } from 'src/hooks/use-update-effect';
 
 interface Filters {
           query?: string;
-          hasAcceptedMarketing?: boolean;
-          isProspect?: boolean;
-          isReturning?: boolean;
+          isOwner?: boolean;
+          isSubtenant?: boolean;
 }
 
-type TabValue = 'all' | 'hasAcceptedMarketing' | 'isProspect' | 'isReturning';
+type TabValue = 'Customers' | 'isOwner' | 'isSubtenant'
 
 interface TabOption {
           label: string;
@@ -31,19 +30,15 @@ interface TabOption {
 const tabs: TabOption[] = [
           {
                     label: 'All',
-                    value: 'all',
+                    value: 'Customers',
           },
           {
-                    label: 'Accepts Marketing',
-                    value: 'hasAcceptedMarketing',
+                    label: 'Owners',
+                    value: 'isOwner',
           },
           {
-                    label: 'Prospect',
-                    value: 'isProspect',
-          },
-          {
-                    label: 'Returning',
-                    value: 'isReturning',
+                    label: 'Subtenants',
+                    value: 'isSubtenant',
           },
 ];
 
@@ -83,9 +78,10 @@ interface CustomerListSearchProps {
 }
 
 export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
+
           const { onFiltersChange, onSortChange, sortBy, sortDir } = props;
           const queryRef = useRef<HTMLInputElement | null>(null);
-          const [currentTab, setCurrentTab] = useState<TabValue>('all');
+          const [currentTab, setCurrentTab] = useState<TabValue>('Customers');
           const [filters, setFilters] = useState<Filters>({});
 
           const handleFiltersUpdate = useCallback(() => {
@@ -101,12 +97,11 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
                     setFilters((prevState) => {
                               const updatedFilters: Filters = {
                                         ...prevState,
-                                        hasAcceptedMarketing: undefined,
-                                        isProspect: undefined,
-                                        isReturning: undefined,
+                                        isOwner: undefined,
+                                        isSubtenant: undefined,
                               };
 
-                              if (value !== 'all') {
+                              if (value !== 'Customers') {
                                         updatedFilters[value] = true;
                               }
 
@@ -122,15 +117,14 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
                     }));
           }, []);
 
-          const handleSortChange = useCallback(
-                    (event: ChangeEvent<HTMLInputElement>): void => {
-                              const [sortBy, sortDir] = event.target.value.split('|') as [string, SortDir];
+          const handleSortChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
+                    const [sortBy, sortDir] = event.target.value.split('|') as [string, SortDir];
 
-                              onSortChange?.({
-                                        sortBy,
-                                        sortDir,
-                              });
-                    },
+                    onSortChange?.({
+                              sortBy,
+                              sortDir,
+                    });
+          },
                     [onSortChange]
           );
 

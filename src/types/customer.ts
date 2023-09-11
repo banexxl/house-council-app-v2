@@ -16,7 +16,9 @@ export interface Customer {
           state?: string;
           updatedAt?: number;
           isOwner?: boolean;
+          isSubtenant?: boolean;
           zipCode?: number;
+          permissionLevel?: number;
 }
 
 

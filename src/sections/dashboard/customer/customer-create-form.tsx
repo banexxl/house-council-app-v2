@@ -165,7 +165,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     fullWidth
                                                                                                     helperText={formik.touched.address1 && formik.errors.address1}
                                                                                                     label="Address"
-                                                                                                    name="address"
+                                                                                                    name="address1"
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.address1}
