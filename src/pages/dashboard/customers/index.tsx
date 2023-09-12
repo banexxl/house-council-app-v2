@@ -247,16 +247,39 @@ const Page: NextPage = (props: any) => {
 
 
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async ({ query, req }) => {
 
           try {
-                    const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
-                    const mongoDB = mongoClient.db("HouseCouncilAppDB")
-                    const allTenants = await mongoDB.collection("Tenants").find({}).toArray()
+                    const origin = 'http://' + req.headers.host?.toString();
+                    const apiUrl = '/api/customers/customers-api';
+                    const queryParams: Record<string, string> = {
+                              page: '0',          // Page number (start from 0 for the first page)
+                              rowsPerPage: '10',  // Number of rows per page
+                              sortBy: 'name',     // Sort by the 'name' field (adjust as needed)
+                              sortDir: 'asc'      // Sorting direction: 'asc' or 'desc'
+                    }
+
+                    // Construct the full URL with query parameters for your internal API
+                    const url = new URL(apiUrl, origin); // Use the correct origin here
+
+                    // Set query parameters in the URL
+                    Object.keys(queryParams).forEach((key) => {
+                              url.searchParams.set(key, queryParams[key]);
+                    });
+
+                    // Fetch data from your internal API
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                              throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
 
                     return {
                               props: {
-                                        allTenants: JSON.parse(JSON.stringify(allTenants))
+                                        allTenants: JSON.parse(JSON.stringify(data.data))
                               },
                     }
           } catch (e) {

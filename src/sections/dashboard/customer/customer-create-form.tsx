@@ -15,7 +15,6 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { customerSchema as validationSchema, Customer } from '@/types/customer';
 import { RouterLink } from '@/components/router-link';
-import 'moment/locale/sr';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Checkbox } from '@mui/material';
 
