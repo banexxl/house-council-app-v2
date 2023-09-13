@@ -20,10 +20,8 @@ import { CustomerListSearch } from 'src/sections/dashboard/customer/customer-lis
 import { CustomerListTable } from 'src/sections/dashboard/customer/customer-list-table';
 import type { Customer } from 'src/types/customer';
 import { GetServerSideProps } from 'next/types';
-import Link from 'next/link';
 import { paths } from '@/paths';
 import { RouterLink } from '@/components/router-link';
-import { MongoClient } from 'mongodb';
 
 interface Filters {
           query?: string;
@@ -56,7 +54,7 @@ const Page: NextPage = (props: any) => {
                               },
                               page: 0,
                               rowsPerPage: 5,
-                              sortBy: 'updatedAt',
+                              sortBy: 'firstName',
                               sortDir: 'desc',
                     });
 
@@ -89,10 +87,13 @@ const Page: NextPage = (props: any) => {
                     );
 
                     const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
+                              console.log('event from handleRowsPerPageChange', event);
                               setState((prevState) => ({
                                         ...prevState,
                                         rowsPerPage: parseInt(event.target.value, 10),
                               }));
+                              console.log(state);
+
                     }, []);
 
                     return {
@@ -111,11 +112,11 @@ const Page: NextPage = (props: any) => {
                               customersCount: 0,
                     });
 
-                    const handleCustomersGet = useCallback(async () => {
+                    const handleCustomersGet = useCallback(async (from: number, until: number) => {
                               try {
                                         if (isMounted()) {
                                                   setState({
-                                                            customers: props.allTenants,
+                                                            customers: props.allTenants.slice(from, until),
                                                             customersCount: props.allTenants.length,
                                                   });
                                         }
@@ -126,7 +127,7 @@ const Page: NextPage = (props: any) => {
 
                     useEffect(
                               () => {
-                                        handleCustomersGet();
+                                        handleCustomersGet(0, 5);
                               },
                               // eslint-disable-next-line react-hooks/exhaustive-deps
                               [searchState]
@@ -236,6 +237,12 @@ const Page: NextPage = (props: any) => {
                                                                                 page={customersSearch.state.page}
                                                                                 rowsPerPage={customersSearch.state.rowsPerPage}
                                                                                 selected={customersSelection.selected}
+                                                                      // queryParams={{
+                                                                      //           page: customersSearch.state.page,
+                                                                      //           rowsPerPage: customersSearch.state.rowsPerPage,
+                                                                      //           sortBy: customersSearch.state.sortBy,
+                                                                      //           sortDir: customersSearch.state.sortDir,
+                                                                      // }}
                                                                       />
                                                             </Card>
                                                   </Stack>

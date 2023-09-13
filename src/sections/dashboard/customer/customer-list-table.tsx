@@ -25,6 +25,14 @@ import { paths } from 'src/paths';
 import type { Customer } from 'src/types/customer';
 import { getInitials } from 'src/utils/get-initials';
 
+
+interface CustomerQueryParams {
+          page: number,
+          rowsPerPage: number,
+          sortBy: string,
+          sortDir: string,
+}
+
 interface CustomerListTableProps {
           count?: number;
           items?: Customer[];
@@ -37,6 +45,7 @@ interface CustomerListTableProps {
           page?: number;
           rowsPerPage?: number;
           selected?: string[];
+          queryParams?: CustomerQueryParams;
 }
 
 export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
@@ -53,6 +62,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                     rowsPerPage = 0,
                     selected = [],
           } = props;
+          console.log('props from table', props);
 
           const selectedSome = selected.length > 0 && selected.length < items.length;
           const selectedAll = items.length > 0 && selected.length === items.length;
@@ -131,7 +141,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                   <TableBody>
                                                             {items.map((customer) => {
                                                                       const isSelected = selected.includes(customer._id ? customer._id : '');
-                                                                      const location = `${customer.city}, ${customer.state}, ${customer.country}`;
+                                                                      //const location = `${customer.city}, ${customer.state}, ${customer.country}`;
                                                                       // const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
 
                                                                       return (
