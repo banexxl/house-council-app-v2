@@ -45,7 +45,10 @@ interface CustomersStoreState {
 
 const Page: NextPage = (props: any) => {
 
+          console.log('------------------------------------------------------------------------------');
+
           const useCustomersSearch = () => {
+
                     const [state, setState] = useState<CustomersSearchState>({
                               filters: {
                                         query: undefined,
@@ -55,7 +58,7 @@ const Page: NextPage = (props: any) => {
                               page: 0,
                               rowsPerPage: 5,
                               sortBy: 'firstName',
-                              sortDir: 'desc',
+                              sortDir: 'asc',
                     });
 
                     const handleFiltersChange = useCallback((filters: Filters): void => {
@@ -65,14 +68,13 @@ const Page: NextPage = (props: any) => {
                               }));
                     }, []);
 
-                    const handleSortChange = useCallback(
-                              (sort: { sortBy: string; sortDir: 'asc' | 'desc' }): void => {
-                                        setState((prevState) => ({
-                                                  ...prevState,
-                                                  sortBy: sort.sortBy,
-                                                  sortDir: sort.sortDir,
-                                        }));
-                              },
+                    const handleSortChange = useCallback((sort: { sortBy: string; sortDir: 'asc' | 'desc' }): void => {
+                              setState((prevState) => ({
+                                        ...prevState,
+                                        sortBy: sort.sortBy,
+                                        sortDir: sort.sortDir,
+                              }));
+                    },
                               []
                     );
 
@@ -86,15 +88,53 @@ const Page: NextPage = (props: any) => {
                               []
                     );
 
-                    const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-                              console.log('event from handleRowsPerPageChange', event);
-                              setState((prevState) => ({
-                                        ...prevState,
-                                        rowsPerPage: parseInt(event.target.value, 10),
-                              }));
-                              console.log(state);
+                    const handleRowsPerPageChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+                              try {
+                                        const env = process.env.NODE_ENV
+                                        let origin: string = ''
+                                        env === 'development' ?
+                                                  origin = 'http://localhost:3000/' : origin = 'https://kucnisavet.in.rs'
+
+                                        const apiUrl = 'api/customers/customers-api';
+                                        const queryParams: Record<string, string> = {
+                                                  page: '0',          // Page number (start from 0 for the first page)
+                                                  rowsPerPage: event.target.value,  // Number of rows per page
+                                                  sortBy: 'firstName',     // Sort by the 'name' field (adjust as needed)
+                                                  sortDir: 'asc'      // Sorting direction: 'asc' or 'desc'
+                                        }
+
+                                        // Construct the full URL with query parameters for your internal API
+                                        const url = new URL(apiUrl, origin); // Use the correct origin here
+
+                                        // Set query parameters in the URL
+                                        Object.keys(queryParams).forEach((key) => {
+                                                  url.searchParams.set(key, queryParams[key]);
+                                        });
+
+                                        // Fetch data from your internal API
+                                        const response = await fetch(url);
+
+                                        if (!response.ok) {
+                                                  throw new Error(`HTTP error! Status: ${response.status}`);
+                                        }
+
+                                        const data = await response.json();
+
+                                        setState((prevState) => ({
+                                                  ...prevState,
+                                                  rowsPerPage: parseInt(event.target.value, 10),
+
+                                        }));
+
+
+
+                              } catch (e) {
+                                        console.log(e);
+                              }
+
 
                     }, []);
+                    console.log('search state ', state);
 
                     return {
                               handleFiltersChange,
@@ -116,7 +156,7 @@ const Page: NextPage = (props: any) => {
                               try {
                                         if (isMounted()) {
                                                   setState({
-                                                            customers: props.allTenants.slice(from, until),
+                                                            customers: props.allTenants,
                                                             customersCount: props.allTenants.length,
                                                   });
                                         }
@@ -144,10 +184,16 @@ const Page: NextPage = (props: any) => {
                     }, []);
           };
 
+
           const customersSearch = useCustomersSearch();
           const customersStore = useCustomersStore(customersSearch.state);
           const customersIds = useCustomersIds(customersStore.customers);
           const customersSelection = useSelection<string>(customersIds);
+
+          console.log('customersSelection', customersSelection);
+          console.log('customersIds', customersIds);
+          console.log('customersSearch', customersSearch);
+          console.log('customersStore', customersStore);
 
           usePageView();
 
@@ -237,12 +283,7 @@ const Page: NextPage = (props: any) => {
                                                                                 page={customersSearch.state.page}
                                                                                 rowsPerPage={customersSearch.state.rowsPerPage}
                                                                                 selected={customersSelection.selected}
-                                                                      // queryParams={{
-                                                                      //           page: customersSearch.state.page,
-                                                                      //           rowsPerPage: customersSearch.state.rowsPerPage,
-                                                                      //           sortBy: customersSearch.state.sortBy,
-                                                                      //           sortDir: customersSearch.state.sortDir,
-                                                                      // }}
+
                                                                       />
                                                             </Card>
                                                   </Stack>
@@ -259,11 +300,11 @@ export const getServerSideProps: GetServerSideProps = async ({ query, req }) => 
           try {
                     const origin = 'http://' + req.headers.host?.toString();
                     const apiUrl = '/api/customers/customers-api';
-                    const queryParams: Record<string, string> = {
-                              page: '0',          // Page number (start from 0 for the first page)
-                              rowsPerPage: '10',  // Number of rows per page
-                              sortBy: 'name',     // Sort by the 'name' field (adjust as needed)
-                              sortDir: 'asc'      // Sorting direction: 'asc' or 'desc'
+                    const queryParams: any = {
+                              page: parseInt(query.page as string),          // Page number (start from 0 for the first page)
+                              rowsPerPage: parseInt(query.rowsPerPage as string),  // Number of rows per page
+                              sortBy: query.sortBy,     // Sort by the 'name' field (adjust as needed)
+                              sortDir: query.sortDir      // Sorting direction: 'asc' or 'desc'
                     }
 
                     // Construct the full URL with query parameters for your internal API

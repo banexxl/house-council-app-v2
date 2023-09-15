@@ -139,8 +139,8 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
-                                                            {items.map((customer) => {
-                                                                      const isSelected = selected.includes(customer._id ? customer._id : '');
+                                                            {items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((customer) => {
+                                                                      const isSelected = selected.includes(customer._id ? customer._id : '')
                                                                       //const location = `${customer.city}, ${customer.state}, ${customer.country}`;
                                                                       // const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
 
