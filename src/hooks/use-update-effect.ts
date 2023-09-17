@@ -6,17 +6,17 @@ import { useEffect, useRef } from 'react';
  * @param {Array<any>} dependencies
  */
 export const useUpdateEffect = (effect: () => void, dependencies: any[] = []) => {
-  const isInitialMount = useRef(true);
+          const isInitialMount = useRef(true);
 
-  useEffect(
-    () => {
-      if (isInitialMount.current) {
-        isInitialMount.current = false;
-      } else {
-        return effect();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    dependencies
-  );
+          useEffect(
+                    () => {
+                              if (isInitialMount.current) {
+                                        isInitialMount.current = false;
+                              } else {
+                                        return effect();
+                              }
+                    },
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                    dependencies
+          );
 };

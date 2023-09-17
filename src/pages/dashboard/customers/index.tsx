@@ -89,52 +89,12 @@ const Page: NextPage = (props: any) => {
                     );
 
                     const handleRowsPerPageChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-                              try {
-                                        const env = process.env.NODE_ENV
-                                        let origin: string = ''
-                                        env === 'development' ?
-                                                  origin = 'http://localhost:3000/' : origin = 'https://kucnisavet.in.rs'
+                              setState((prevState) => ({
+                                        ...prevState,
+                                        rowsPerPage: parseInt(event.target.value, 10),
 
-                                        const apiUrl = 'api/customers/customers-api';
-                                        const queryParams: Record<string, string> = {
-                                                  page: '0',          // Page number (start from 0 for the first page)
-                                                  rowsPerPage: event.target.value,  // Number of rows per page
-                                                  sortBy: 'firstName',     // Sort by the 'name' field (adjust as needed)
-                                                  sortDir: 'asc'      // Sorting direction: 'asc' or 'desc'
-                                        }
-
-                                        // Construct the full URL with query parameters for your internal API
-                                        const url = new URL(apiUrl, origin); // Use the correct origin here
-
-                                        // Set query parameters in the URL
-                                        Object.keys(queryParams).forEach((key) => {
-                                                  url.searchParams.set(key, queryParams[key]);
-                                        });
-
-                                        // Fetch data from your internal API
-                                        const response = await fetch(url);
-
-                                        if (!response.ok) {
-                                                  throw new Error(`HTTP error! Status: ${response.status}`);
-                                        }
-
-                                        const data = await response.json();
-
-                                        setState((prevState) => ({
-                                                  ...prevState,
-                                                  rowsPerPage: parseInt(event.target.value, 10),
-
-                                        }));
-
-
-
-                              } catch (e) {
-                                        console.log(e);
-                              }
-
-
+                              }));
                     }, []);
-                    console.log('search state ', state);
 
                     return {
                               handleFiltersChange,
@@ -152,7 +112,7 @@ const Page: NextPage = (props: any) => {
                               customersCount: 0,
                     });
 
-                    const handleCustomersGet = useCallback(async (from: number, until: number) => {
+                    const handleCustomersGet = useCallback(() => {
                               try {
                                         if (isMounted()) {
                                                   setState({
@@ -167,7 +127,7 @@ const Page: NextPage = (props: any) => {
 
                     useEffect(
                               () => {
-                                        handleCustomersGet(0, 5);
+                                        handleCustomersGet();
                               },
                               // eslint-disable-next-line react-hooks/exhaustive-deps
                               [searchState]
@@ -190,10 +150,10 @@ const Page: NextPage = (props: any) => {
           const customersIds = useCustomersIds(customersStore.customers);
           const customersSelection = useSelection<string>(customersIds);
 
-          console.log('customersSelection', customersSelection);
-          console.log('customersIds', customersIds);
-          console.log('customersSearch', customersSearch);
-          console.log('customersStore', customersStore);
+          // console.log('customersSelection', customersSelection);
+          // console.log('customersIds', customersIds);
+          // console.log('customersSearch', customersSearch);
+          // console.log('customersStore', customersStore);
 
           usePageView();
 

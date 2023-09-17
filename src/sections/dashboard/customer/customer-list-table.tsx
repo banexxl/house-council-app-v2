@@ -62,7 +62,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                     rowsPerPage = 0,
                     selected = [],
           } = props;
-          console.log('props from table', props);
 
           const selectedSome = selected.length > 0 && selected.length < items.length;
           const selectedAll = items.length > 0 && selected.length === items.length;

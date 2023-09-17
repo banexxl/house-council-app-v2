@@ -20,7 +20,7 @@ interface Filters {
           isSubtenant?: boolean;
 }
 
-type TabValue = 'Customers' | 'isOwner' | 'isSubtenant'
+type TabValue = 'customers' | 'isOwner' | 'isSubtenant'
 
 interface TabOption {
           label: string;
@@ -30,7 +30,7 @@ interface TabOption {
 const tabs: TabOption[] = [
           {
                     label: 'All',
-                    value: 'Customers',
+                    value: 'customers',
           },
           {
                     label: 'Owners',
@@ -42,7 +42,7 @@ const tabs: TabOption[] = [
           },
 ];
 
-type SortValue = 'updatedAt|desc' | 'updatedAt|asc' | 'totalOrders|desc' | 'totalOrders|asc';
+type SortValue = 'firstName|desc' | 'firstName|asc'
 
 interface SortOption {
           label: string;
@@ -51,20 +51,12 @@ interface SortOption {
 
 const sortOptions: SortOption[] = [
           {
-                    label: 'Last update (newest)',
-                    value: 'updatedAt|desc',
+                    label: 'First Name (desc)',
+                    value: 'firstName|desc',
           },
           {
-                    label: 'Last update (oldest)',
-                    value: 'updatedAt|asc',
-          },
-          {
-                    label: 'Total orders (highest)',
-                    value: 'totalOrders|desc',
-          },
-          {
-                    label: 'Total orders (lowest)',
-                    value: 'totalOrders|asc',
+                    label: 'First Name (asc)',
+                    value: 'firstName|asc',
           },
 ];
 
@@ -81,7 +73,7 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
 
           const { onFiltersChange, onSortChange, sortBy, sortDir } = props;
           const queryRef = useRef<HTMLInputElement | null>(null);
-          const [currentTab, setCurrentTab] = useState<TabValue>('Customers');
+          const [currentTab, setCurrentTab] = useState<TabValue>('customers');
           const [filters, setFilters] = useState<Filters>({});
 
           const handleFiltersUpdate = useCallback(() => {
@@ -93,6 +85,7 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
           }, [filters, handleFiltersUpdate]);
 
           const handleTabsChange = useCallback((event: ChangeEvent<any>, value: TabValue): void => {
+
                     setCurrentTab(value);
                     setFilters((prevState) => {
                               const updatedFilters: Filters = {
@@ -101,7 +94,7 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
                                         isSubtenant: undefined,
                               };
 
-                              if (value !== 'Customers') {
+                              if (value !== 'customers') {
                                         updatedFilters[value] = true;
                               }
 
