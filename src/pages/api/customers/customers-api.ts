@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import type { NextApiRequest, NextApiResponse } from 'next/types'
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
@@ -40,6 +40,36 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         (error as any).cause = { status: 409 };
                                         return response.status(409).json({ error: error });
                               }
+                    } else if (request.method === 'PUT') {
+                              console.log('u apiu body', request.body);
+
+                              try {
+                                        await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
+                                                  {
+                                                            $set: {
+                                                                      address1: request.body.address1 || '',
+                                                                      address2: request.body.address2 || '',
+                                                                      city: request.body.city || '',
+                                                                      country: request.body.country || '',
+                                                                      email: request.body.email || '',
+                                                                      firstName: request.body.firstName || '',
+                                                                      lastName: request.body.lastName || '',
+                                                                      phoneNumber: request.body.phoneNumber || '',
+                                                                      state: request.body.state || '',
+                                                                      appartmentNumber: request.body.appartmentNumber || '',
+                                                                      avatar: request.body.avatar || '',
+                                                                      updatedAt: request.body.updatedAt || '',
+                                                                      dateOfBirth: request.body.dateOfBirth || '',
+                                                                      isOwner: request.body.isOwner || '',
+                                                                      zipCode: request.body.zipCode || ''
+                                                            }
+                                                  })
+                                        return response.status(200).json({ message: 'Customer successfully updated!' });
+                              } catch (error) {
+                                        console.log(error);
+
+                              }
+
                     } else {
                               return response.status(405).json({ error: 'Method not allowed!' });
                     }

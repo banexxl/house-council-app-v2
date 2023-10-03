@@ -66,6 +66,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
           const selectedSome = selected.length > 0 && selected.length < items.length;
           const selectedAll = items.length > 0 && selected.length === items.length;
           const enableBulkActions = selected.length > 0;
+          const enableEditAction = selected.length == 1
 
           return (
                     <Box sx={{ position: 'relative' }}>
@@ -98,17 +99,25 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                       }
                                                             }}
                                                   />
+
+                                                  {
+                                                            enableEditAction ?
+                                                                      <Button
+                                                                                color="inherit"
+                                                                                size="small"
+                                                                                component={RouterLink}
+                                                                                href={`/dashboard/customers/edit/${selected[0]}`}
+                                                                      >
+                                                                                Edit
+                                                                      </Button>
+                                                                      : null
+                                                  }
                                                   <Button
                                                             color="inherit"
                                                             size="small"
+
                                                   >
                                                             Delete
-                                                  </Button>
-                                                  <Button
-                                                            color="inherit"
-                                                            size="small"
-                                                  >
-                                                            Edit
                                                   </Button>
                                         </Stack>
                               )}
@@ -180,8 +189,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
-                                                                                                                                  component={RouterLink}
-                                                                                                                                  href={paths.dashboard.customers.details}
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.firstName}
@@ -213,8 +220,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
-                                                                                                                                  component={RouterLink}
-                                                                                                                                  href={paths.dashboard.customers.details}
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.lastName}
@@ -246,8 +251,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
-                                                                                                                                  component={RouterLink}
-                                                                                                                                  href={paths.dashboard.customers.details}
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.address1}
@@ -279,8 +282,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
-                                                                                                                                  component={RouterLink}
-                                                                                                                                  href={paths.dashboard.customers.details}
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.appartmentNumber}
@@ -312,8 +313,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                               <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
-                                                                                                                                  component={RouterLink}
-                                                                                                                                  href={paths.dashboard.customers.details}
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.city}
@@ -329,16 +328,12 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                           </TableCell>
                                                                                           <TableCell>
                                                                                                     <IconButton
-                                                                                                              component={RouterLink}
-                                                                                                              href={paths.dashboard.customers.edit}
                                                                                                     >
                                                                                                               <SvgIcon>
                                                                                                                         <Edit02Icon />
                                                                                                               </SvgIcon>
                                                                                                     </IconButton>
                                                                                                     <IconButton
-                                                                                                              component={RouterLink}
-                                                                                                              href={paths.dashboard.customers.details}
                                                                                                     >
                                                                                                               <SvgIcon>
                                                                                                                         <ArrowRightIcon />

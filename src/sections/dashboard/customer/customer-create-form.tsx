@@ -37,6 +37,7 @@ const initialValues: Customer = {
 };
 
 export const CustomerCreateForm: FC = (props) => {
+
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
 

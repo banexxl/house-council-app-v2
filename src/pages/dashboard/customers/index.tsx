@@ -45,8 +45,6 @@ interface CustomersStoreState {
 
 const Page: NextPage = (props: any) => {
 
-          console.log('------------------------------------------------------------------------------');
-
           const useCustomersSearch = () => {
 
                     const [state, setState] = useState<CustomersSearchState>({

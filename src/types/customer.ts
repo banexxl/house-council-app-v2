@@ -14,7 +14,7 @@ export interface Customer {
           phoneNumber: string;
           dateOfBirth?: string;
           state?: string;
-          updatedAt?: number;
+          updatedAt?: string;
           isOwner?: boolean;
           isSubtenant?: boolean;
           zipCode?: number;

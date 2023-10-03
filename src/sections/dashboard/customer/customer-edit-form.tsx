@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { type FC, ChangeEvent, useState } from 'react';
 import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import * as Yup from 'yup';
@@ -13,20 +13,36 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import type { Customer } from 'src/types/customer';
-import { wait } from 'src/utils/wait';
+import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import sr from 'dayjs/locale/sr';
+import 'dayjs/locale/en';
+import 'dayjs/locale/en-gb';
+import { FormControlLabel } from '@mui/material';
+import moment from 'moment'
+
 
 interface CustomerEditFormProps {
           customer: Customer;
 }
 
 export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
+
           const { customer, ...other } = props;
+
+
+          const locales = ['en', 'en-gb', 'sr'];
+
+          type LocaleKey = (typeof locales)[number];
+
+          const [locale, setLocale] = useState<LocaleKey>('sr');
+
           const formik = useFormik({
                     initialValues: {
+                              _id: customer._id,
                               address1: customer.address1 || '',
                               address2: customer.address2 || '',
                               country: customer.country || '',
@@ -35,31 +51,54 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               lastName: customer.lastName || '',
                               phoneNumber: customer.phoneNumber || '',
                               state: customer.state || '',
-                              submit: null,
+                              appartmentNumber: customer.appartmentNumber || '',
+                              avatar: customer.avatar || '',
+                              city: customer.city || '',
+                              updatedAt: customer.updatedAt || '',
+                              dateOfBirth: customer.dateOfBirth || '',
+                              isOwner: customer.isOwner || false,
+                              zipCode: customer.zipCode || ''
                     },
                     validationSchema: Yup.object({
+                              _id: Yup.string().max(36),
                               address1: Yup.string().max(255),
                               address2: Yup.string().max(255),
                               country: Yup.string().max(255),
                               email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-                              hasDiscount: Yup.bool(),
-                              isVerified: Yup.bool(),
-                              name: Yup.string().max(255).required('Name is required'),
+                              // isVerified: Yup.bool(),
+                              firstName: Yup.string().max(32),
+                              lastName: Yup.string().max(32),
                               phoneNumber: Yup.string().max(15),
                               state: Yup.string().max(255),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
+                              console.log('usao u onSubmit edit forme', values);
+
                               try {
-                                        // NOTE: Make API request
-                                        await wait(500);
-                                        helpers.setStatus({ success: true });
-                                        helpers.setSubmitting(false);
-                                        toast.success('Customer updated');
+                                        const response = await fetch('/api/customers/customers-api', {
+                                                  method: 'PUT',
+                                                  headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Access-Control-Allow-Origin': '*',
+                                                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                  },
+                                                  body: JSON.stringify(values),
+                                        })
+
+                                        if (response.statusText == 'OK') {
+                                                  helpers.setStatus({ success: true })
+                                                  helpers.setSubmitting(false)
+                                                  toast.success('Customer updated')
+                                        } else {
+                                                  helpers.setStatus({ success: false })
+                                                  helpers.setSubmitting(false)
+                                                  toast.error('Something went wrong!')
+                                        }
+
                               } catch (err) {
                                         console.error(err);
                                         toast.error('Something went wrong!');
                                         helpers.setStatus({ success: false });
-                                        helpers.setErrors({ submit: err.message });
                                         helpers.setSubmitting(false);
                               }
                     },
@@ -77,6 +116,24 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             container
                                                             spacing={3}
                                                   >
+                                                            <Typography>
+                                                                      {`${JSON.stringify(formik.errors)}`}
+                                                            </Typography>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
+                                                                                error={!!(formik.touched._id && formik.errors._id)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched._id && formik.errors._id}
+                                                                                label="ID"
+                                                                                name="_id"
+                                                                                required
+                                                                                disabled
+                                                                                value={formik.values._id}
+                                                                      />
+                                                            </Grid>
                                                             <Grid
                                                                       xs={12}
                                                                       md={6}
@@ -85,12 +142,28 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 error={!!(formik.touched.firstName && formik.errors.firstName)}
                                                                                 fullWidth
                                                                                 helperText={formik.touched.firstName && formik.errors.firstName}
-                                                                                label="Full name"
-                                                                                name="name"
+                                                                                label="First name"
+                                                                                name="firstName"
                                                                                 onBlur={formik.handleBlur}
                                                                                 onChange={formik.handleChange}
                                                                                 required
                                                                                 value={formik.values.firstName}
+                                                                      />
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
+                                                                                error={!!(formik.touched.lastName && formik.errors.lastName)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched.lastName && formik.errors.lastName}
+                                                                                label="Last name"
+                                                                                name="lastName"
+                                                                                onBlur={formik.handleBlur}
+                                                                                onChange={formik.handleChange}
+                                                                                required
+                                                                                value={formik.values.lastName}
                                                                       />
                                                             </Grid>
                                                             <Grid
@@ -174,6 +247,21 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <TextField
+                                                                                error={!!(formik.touched.zipCode && formik.errors.zipCode)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched.zipCode && formik.errors.zipCode}
+                                                                                label="Zip code"
+                                                                                name="zipCode"
+                                                                                onBlur={formik.handleBlur}
+                                                                                onChange={formik.handleChange}
+                                                                                value={formik.values.zipCode}
+                                                                      />
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
                                                                                 error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}
                                                                                 fullWidth
                                                                                 helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
@@ -182,6 +270,68 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 onBlur={formik.handleBlur}
                                                                                 onChange={formik.handleChange}
                                                                                 value={formik.values.phoneNumber}
+                                                                      />
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <LocalizationProvider dateAdapter={AdapterDayjs}
+                                                                                adapterLocale={'sr'}>
+                                                                                <MobileDatePicker
+                                                                                          views={['year', 'month', 'day']}
+                                                                                          label='Date of birth'
+                                                                                          disableFuture
+                                                                                          onAccept={(date: ChangeEvent<HTMLInputElement> | null) => {
+                                                                                                    console.log(date);
+
+                                                                                                    formik.setFieldValue('dateOfBirth', date)
+                                                                                          }}
+                                                                                          format='DD/MM/YYYY'
+                                                                                          slotProps={{
+                                                                                                    layout: {
+                                                                                                              sx: {
+                                                                                                                        backgroundColor: 'primary',
+                                                                                                              }
+                                                                                                    }
+                                                                                          }}
+                                                                                />
+                                                                      </LocalizationProvider>
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <FormControlLabel
+                                                                                control={
+                                                                                          <Switch
+                                                                                                    checked={formik.values.isOwner}
+                                                                                                    color="primary"
+                                                                                                    edge="start"
+                                                                                                    name="isOwner"
+                                                                                                    aria-label='Is owner'
+                                                                                                    onChange={formik.handleChange}
+                                                                                                    value={formik.values.isOwner}
+                                                                                                    sx={{ marginLeft: '5px' }}
+                                                                                          />
+                                                                                }
+                                                                                label='Is owner'
+                                                                      />
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
+                                                                                error={!!(formik.touched.updatedAt && formik.errors.updatedAt)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched.updatedAt && formik.errors.updatedAt}
+                                                                                label="Updated at"
+                                                                                name="updatedAt"
+                                                                                disabled
+                                                                                onBlur={formik.handleBlur}
+                                                                                onChange={formik.handleChange}
+                                                                                value={formik.values.updatedAt}
                                                                       />
                                                             </Grid>
                                                   </Grid>
@@ -210,14 +360,6 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                           Means that anyone viewing your profile will be able to see your contacts details
                                                                                 </Typography>
                                                                       </Stack>
-                                                                      {/* <Switch
-                                                                                checked={formik.values.isVerified}
-                                                                                color="primary"
-                                                                                edge="start"
-                                                                                name="isVerified"
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.isVerified}
-                                                                      /> */}
                                                             </Stack>
                                                             <Stack
                                                                       alignItems="center"
@@ -264,6 +406,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             disabled={formik.isSubmitting}
                                                             type="submit"
                                                             variant="contained"
+                                                            onClick={() => formik.values.updatedAt = moment().format('DD.MM.YYYY hh:mm:ss').toString()}
                                                   >
                                                             Update
                                                   </Button>
@@ -271,13 +414,13 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             color="inherit"
                                                             component={RouterLink}
                                                             disabled={formik.isSubmitting}
-                                                            href={paths.dashboard.customers.details}
+                                                            href={paths.dashboard.customers.index}
                                                   >
                                                             Cancel
                                                   </Button>
                                         </Stack>
                               </Card>
-                    </form>
+                    </form >
           );
 };
 
