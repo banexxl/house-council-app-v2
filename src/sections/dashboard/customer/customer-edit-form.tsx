@@ -18,11 +18,13 @@ import { paths } from 'src/paths';
 import type { Customer } from 'src/types/customer';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import sr from 'dayjs/locale/sr';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+import { enUS } from '@mui/x-date-pickers/locales'
 import 'dayjs/locale/en';
 import 'dayjs/locale/en-gb';
 import { FormControlLabel } from '@mui/material';
-import moment from 'moment'
+import moment, { Moment } from 'moment'
+import { useRouter } from 'next/router';
 
 
 interface CustomerEditFormProps {
@@ -32,13 +34,7 @@ interface CustomerEditFormProps {
 export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
 
           const { customer, ...other } = props;
-
-
-          const locales = ['en', 'en-gb', 'sr'];
-
-          type LocaleKey = (typeof locales)[number];
-
-          const [locale, setLocale] = useState<LocaleKey>('sr');
+          const router = useRouter()
 
           const formik = useFormik({
                     initialValues: {
@@ -72,7 +68,6 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               state: Yup.string().max(255),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
-                              console.log('usao u onSubmit edit forme', values);
 
                               try {
                                         const response = await fetch('/api/customers/customers-api', {
@@ -89,6 +84,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                   helpers.setStatus({ success: true })
                                                   helpers.setSubmitting(false)
                                                   toast.success('Customer updated')
+                                                  router.push(paths.dashboard.customers.index)
                                         } else {
                                                   helpers.setStatus({ success: false })
                                                   helpers.setSubmitting(false)
@@ -116,9 +112,9 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             container
                                                             spacing={3}
                                                   >
-                                                            <Typography>
+                                                            {/* <Typography>
                                                                       {`${JSON.stringify(formik.errors)}`}
-                                                            </Typography>
+                                                            </Typography> */}
                                                             <Grid
                                                                       xs={12}
                                                                       md={6}
@@ -217,6 +213,21 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <TextField
+                                                                                error={!!(formik.touched.city && formik.errors.city)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched.city && formik.errors.city}
+                                                                                label="City"
+                                                                                name="city"
+                                                                                onBlur={formik.handleBlur}
+                                                                                onChange={formik.handleChange}
+                                                                                value={formik.values.city}
+                                                                      />
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
                                                                                 error={!!(formik.touched.address1 && formik.errors.address1)}
                                                                                 fullWidth
                                                                                 helperText={formik.touched.address1 && formik.errors.address1}
@@ -276,18 +287,16 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       xs={12}
                                                                       md={6}
                                                             >
-                                                                      <LocalizationProvider dateAdapter={AdapterDayjs}
-                                                                                adapterLocale={'sr'}>
+                                                                      <LocalizationProvider dateAdapter={AdapterMoment}>
                                                                                 <MobileDatePicker
                                                                                           views={['year', 'month', 'day']}
                                                                                           label='Date of birth'
                                                                                           disableFuture
-                                                                                          onAccept={(date: ChangeEvent<HTMLInputElement> | null) => {
-                                                                                                    console.log(date);
-
+                                                                                          value={moment(formik.values.dateOfBirth)}
+                                                                                          onAccept={(date: Moment | null) => {
                                                                                                     formik.setFieldValue('dateOfBirth', date)
                                                                                           }}
-                                                                                          format='DD/MM/YYYY'
+                                                                                          format='DD.MM.YYYY'
                                                                                           slotProps={{
                                                                                                     layout: {
                                                                                                               sx: {

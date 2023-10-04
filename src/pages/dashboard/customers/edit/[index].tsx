@@ -113,9 +113,6 @@ export async function getServerSideProps(context: any) {
           const urlSplit = resolvedUrl.split('/');
           const customerID = urlSplit[4];
 
-          console.log('getserversideprops id', urlSplit);
-
-
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
           const dbTenants = mongoClient.db('HouseCouncilAppDB').collection('Tenants')
 

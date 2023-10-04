@@ -41,7 +41,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
-                              console.log('u apiu body', request.body);
 
                               try {
                                         await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },

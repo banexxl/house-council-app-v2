@@ -66,7 +66,7 @@ export const paths = {
                     customers: {
                               index: '/dashboard/customers',
                               details: '/dashboard/customers/:customerId',
-                              edit: '/dashboard/customers/:customerId/edit',
+                              edit: '/dashboard/customers/edit/:customerId',
                               create: '/dashboard/customers/create'
                     },
                     ecommerce: '/dashboard/ecommerce',
