@@ -1,7 +1,7 @@
 import type { Post } from 'src/types/blog';
 import { deepCopy } from 'src/utils/deep-copy';
 
-import { customersApi } from '@/api/customers'
+// import { customersApi } from '@/api/customers'
 import { post, posts } from './data';
 
 type GetPostsRequest = object;

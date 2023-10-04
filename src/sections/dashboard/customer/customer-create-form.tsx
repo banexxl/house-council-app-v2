@@ -30,7 +30,7 @@ const initialValues: Customer = {
           lastName: '',
           phoneNumber: '',
           state: '',
-          updatedAt: 0,
+          updatedAt: '',
           dateOfBirth: '',
           isOwner: false,
           zipCode: 0,
