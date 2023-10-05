@@ -74,6 +74,8 @@ interface BuildingListTableProps {
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
+          console.log('building table list props', props);
+
           const {
                     count = 0,
                     items = [],
@@ -114,27 +116,28 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                   <TableHead>
                                                             <TableRow>
                                                                       <TableCell />
-                                                                      <TableCell width="25%">Name</TableCell>
-                                                                      <TableCell width="25%">Stock</TableCell>
-                                                                      <TableCell>Price</TableCell>
-                                                                      <TableCell>sku</TableCell>
-                                                                      <TableCell>Status</TableCell>
-                                                                      <TableCell align="right">Actions</TableCell>
+                                                                      <TableCell width="15%">City</TableCell>
+                                                                      <TableCell width="15%">Street</TableCell>
+                                                                      <TableCell>Street number</TableCell>
+                                                                      <TableCell>Appartment Count</TableCell>
+                                                                      <TableCell>Unresolved issue count</TableCell>
+                                                                      <TableCell>Parking Count</TableCell>
+                                                                      <TableCell>Appartment Count</TableCell>
+                                                                      <TableCell align="right">Stories high</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
                                                             {items.map((building) => {
                                                                       const isCurrent = building._id === currentBuilding;
-                                                                      const price = numeral(building.price).format(`${building.currency}0,0.00`);
-                                                                      const quantityColor = building.quantity >= 10 ? 'success' : 'error';
-                                                                      const statusColor = building.status === 'published' ? 'success' : 'info';
-                                                                      const hasManyVariants = building.variants > 1;
+                                                                      const issueCountColor = building.issueCount >= 10 ? 'success' : 'error';
+                                                                      const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'info';
+                                                                      // const hasManyVariants = building.variants > 1;
 
                                                                       return (
-                                                                                <Fragment key={building.id}>
+                                                                                <Fragment key={building._id}>
                                                                                           <TableRow
                                                                                                     hover
-                                                                                                    key={building.id}
+                                                                                                    key={building._id}
                                                                                           >
                                                                                                     <TableCell
                                                                                                               padding="checkbox"
@@ -154,7 +157,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                               }}
                                                                                                               width="25%"
                                                                                                     >
-                                                                                                              <IconButton onClick={() => handleBuildingToggle(building.id)}>
+                                                                                                              <IconButton onClick={() => handleBuildingToggle(building._id)}>
                                                                                                                         <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                               </IconButton>
                                                                                                     </TableCell>
@@ -204,7 +207,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                             ml: 2,
                                                                                                                                   }}
                                                                                                                         >
-                                                                                                                                  <Typography variant="subtitle2">{building.name}</Typography>
+                                                                                                                                  <Typography variant="subtitle2">{building.city}</Typography>
                                                                                                                                   <Typography
                                                                                                                                             color="text.secondary"
                                                                                                                                             variant="body2"
@@ -216,9 +219,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                     </TableCell>
                                                                                                     <TableCell width="25%">
                                                                                                               <LinearProgress
-                                                                                                                        value={building.quantity}
+                                                                                                                        value={building.unresolvedIssues.length}
                                                                                                                         variant="determinate"
-                                                                                                                        color={quantityColor}
+                                                                                                                        color={issueCountColor}
                                                                                                                         sx={{
                                                                                                                                   height: 8,
                                                                                                                                   width: 36,
@@ -228,14 +231,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                         color="text.secondary"
                                                                                                                         variant="body2"
                                                                                                               >
-                                                                                                                        {building.quantity} in stock
-                                                                                                                        {hasManyVariants && ` in ${building.variants} variants`}
+                                                                                                                        {building.unresolvedIssues.length} unresolved issues <br />
+                                                                                                                        out of {building.allReportedIssues.length}
                                                                                                               </Typography>
                                                                                                     </TableCell>
                                                                                                     <TableCell>{price}</TableCell>
                                                                                                     <TableCell>{building.sku}</TableCell>
                                                                                                     <TableCell>
-                                                                                                              <SeverityPill color={statusColor}>{building.status}</SeverityPill>
+                                                                                                              <SeverityPill color={hasElevatorColor}>{building.hasOwnElevator}</SeverityPill>
                                                                                                     </TableCell>
                                                                                                     <TableCell align="right">
                                                                                                               <IconButton>
@@ -331,7 +334,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.id}
+                                                                                                                                                                                    defaultValue={building._id}
                                                                                                                                                                                     disabled
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="Barcode"

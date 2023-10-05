@@ -94,7 +94,7 @@ export const paths = {
                     },
                     buildings: {
                               index: '/dashboard/buildings',
-                              create: '/dashboard/buildingss/create',
+                              create: '/dashboard/buildings/create',
                     },
                     social: {
                               index: '/dashboard/social',

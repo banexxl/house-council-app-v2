@@ -1,7 +1,7 @@
 import type { Building } from '@/types/building';
 import { applyPagination } from 'src/utils/apply-pagination';
 import { deepCopy } from 'src/utils/deep-copy';
-import { buildingsAPI } from './data';
+import { buildingsAPIData } from './data';
 import { BuildingFilters } from '@/sections/dashboard/building/building-options';
 
 type GetBuildingsRequest = {
@@ -22,7 +22,7 @@ class BuildingsApi {
           getBuildings(request: GetBuildingsRequest): GetBuildingsResponse {
                     const { filters, page, rowsPerPage } = request;
 
-                    let data = deepCopy(buildings) as Building[];
+                    let data = deepCopy(buildingsAPIData().getAllBuildings()) as Building[];
                     let count = data.length;
 
                     if (typeof filters !== 'undefined') {

@@ -1,9 +1,8 @@
 import type { Building, buildingAPIResponse } from '@/types/building';
-import { subDays, subHours } from 'date-fns';
 
-export const buildingsAPI = () => {
+export const buildingsAPIData = () => {
 
-          const getAllBuildings = async (searchState: any): Promise<Building[]> => {
+          const getAllBuildings = async (): Promise<Building[]> => {
                     try {
                               const response = await fetch('/api/buildings/buildings-api', {
                                         method: 'GET',

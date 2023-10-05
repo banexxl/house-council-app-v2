@@ -22,7 +22,7 @@ import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/building/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/building/building-list-table';
 import type { Building } from '@/types/building';
-import { buildingsAPI } from '@/api/buildings/data';
+import { buildingsAPIData } from '@/api/buildings/data';
 import { BuildingFilters } from '@/sections/dashboard/building/building-options';
 
 interface BuildingSearchState {
@@ -88,7 +88,7 @@ const useBuildingsStore = (searchState: BuildingSearchState) => {
 
           const handleBuildingsGet = useCallback(async () => {
                     try {
-                              const response = await buildingsAPI().getAllBuildings(searchState).then((buildings: Building[]) => {
+                              const response = await buildingsAPIData().getAllBuildings().then((buildings: Building[]) => {
                                         if (isMounted()) {
                                                   setState({
                                                             buildings: buildings,

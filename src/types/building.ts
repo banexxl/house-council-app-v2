@@ -1,6 +1,7 @@
 export interface Building {
           _id?: string;
           street: string;
+          streetNumber: number
           city: string;
           region: string;
           country: string;
@@ -10,7 +11,10 @@ export interface Building {
           dateTimeUpdated: Date;
           appartmentCount: number;
           issueCount: number;
-          issues: string[];
+          allReportedIssues: string[];
+          unresolvedIssues: string[];
+          inProgressIssues: string[];
+          doneIssues: string[];
           hasOwnParkingLot: boolean;
           parkingLotCount: number;
           hasGasHeating: boolean;
@@ -24,6 +28,8 @@ export interface Building {
           isToThreeStoriesHigh: boolean;
           tenantMeetings: string[],
           tenantCount: number;
+          image: Uint8Array;
+          buildingStatus: boolean;
 }
 
 export interface buildingAPIResponse {
