@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
-import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -21,75 +20,9 @@ import { FileDropzone } from 'src/components/file-dropzone';
 import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
+import { categoryOptions, initialValues, validationSchema } from './building-options';
 
-interface CategoryOption {
-          label: string;
-          value: string;
-}
-
-const categoryOptions: CategoryOption[] = [
-          {
-                    label: 'Healthcare',
-                    value: 'healthcare',
-          },
-          {
-                    label: 'Makeup',
-                    value: 'makeup',
-          },
-          {
-                    label: 'Dress',
-                    value: 'dress',
-          },
-          {
-                    label: 'Skincare',
-                    value: 'skincare',
-          },
-          {
-                    label: 'Jewelry',
-                    value: 'jewelry',
-          },
-          {
-                    label: 'Blouse',
-                    value: 'blouse',
-          },
-];
-
-interface Values {
-          barcode: string;
-          category: string;
-          description: string;
-          images: string[];
-          name: string;
-          newPrice: number;
-          oldPrice: number;
-          sku: string;
-          submit: null;
-}
-
-const initialValues: Values = {
-          barcode: '925487986526',
-          category: '',
-          description: '',
-          images: [],
-          name: '',
-          newPrice: 0,
-          oldPrice: 0,
-          sku: 'IYV-8745',
-          submit: null,
-};
-
-const validationSchema = Yup.object({
-          barcode: Yup.string().max(255),
-          category: Yup.string().max(255),
-          description: Yup.string().max(5000),
-          images: Yup.array(),
-          name: Yup.string().max(255).required(),
-          newPrice: Yup.number().min(0).required(),
-          oldPrice: Yup.number().min(0),
-          sku: Yup.string().max(255),
-});
-
-export const ProductCreateForm: FC = (props) => {
+export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
           const formik = useFormik({
@@ -98,8 +31,8 @@ export const ProductCreateForm: FC = (props) => {
                     onSubmit: async (values, helpers): Promise<void> => {
                               try {
                                         // NOTE: Make API request
-                                        toast.success('Product created');
-                                        router.push(paths.dashboard.products.index);
+                                        toast.success('Building created');
+                                        router.push(paths.dashboard.buildings.index);
                               } catch (err) {
                                         console.error(err);
                                         toast.error('Something went wrong!');
@@ -153,7 +86,7 @@ export const ProductCreateForm: FC = (props) => {
                                                                                                     error={!!(formik.touched.name && formik.errors.name)}
                                                                                                     fullWidth
                                                                                                     helperText={formik.touched.name && formik.errors.name}
-                                                                                                    label="Product Name"
+                                                                                                    label="Building Name"
                                                                                                     name="name"
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
@@ -297,7 +230,7 @@ export const ProductCreateForm: FC = (props) => {
                                                                                                     select
                                                                                                     value={formik.values.category}
                                                                                           >
-                                                                                                    {categoryOptions.map((option) => (
+                                                                                                    {categoryOptions.map((option: any) => (
                                                                                                               <MenuItem
                                                                                                                         key={option.value}
                                                                                                                         value={option.value}

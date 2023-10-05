@@ -92,9 +92,9 @@ export const paths = {
                               index: '/dashboard/orders',
                               details: '/dashboard/orders/:orderId',
                     },
-                    products: {
-                              index: '/dashboard/products',
-                              create: '/dashboard/products/create',
+                    buildings: {
+                              index: '/dashboard/buildings',
+                              create: '/dashboard/buildingss/create',
                     },
                     social: {
                               index: '/dashboard/social',

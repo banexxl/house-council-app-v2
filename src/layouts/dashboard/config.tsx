@@ -131,8 +131,8 @@ export const useSections = () => {
                                                             ],
                                                   },
                                                   {
-                                                            title: t(tokens.nav.productList),
-                                                            path: paths.dashboard.products.index,
+                                                            title: t(tokens.nav.buildingsList),
+                                                            path: paths.dashboard.buildings.index,
                                                             icon: (
                                                                       <SvgIcon fontSize="small">
                                                                                 <ShoppingBag03Icon />
@@ -141,11 +141,11 @@ export const useSections = () => {
                                                             items: [
                                                                       {
                                                                                 title: t(tokens.nav.list),
-                                                                                path: paths.dashboard.products.index,
+                                                                                path: paths.dashboard.buildings.index,
                                                                       },
                                                                       {
                                                                                 title: t(tokens.nav.create),
-                                                                                path: paths.dashboard.products.create,
+                                                                                path: paths.dashboard.buildings.create,
                                                                       },
                                                             ],
                                                   },

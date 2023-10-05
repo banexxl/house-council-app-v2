@@ -12,7 +12,6 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { productsApi } from 'src/api/products';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
@@ -20,36 +19,33 @@ import { useMounted } from 'src/hooks/use-mounted';
 import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
-import { ProductListSearch } from 'src/sections/dashboard/product/product-list-search';
-import { ProductListTable } from 'src/sections/dashboard/product/product-list-table';
-import type { Product } from 'src/types/product';
+import { } from 'src/sections/dashboard/building/building-list-search';
+import { BuildingListTable } from 'src/sections/dashboard/building/building-list-table';
+import type { Building } from '@/types/building';
 
-interface Filters {
-          name?: string;
-          category: string[];
-          status: string[];
-          inStock?: boolean;
+interface BuildingFilters {
+          buildingCategory: string[];
+          buildingDetails: string[];
 }
 
-interface ProductsSearchState {
-          filters: Filters;
+interface BuildingSearchState {
+          filters: BuildingFilters;
           page: number;
           rowsPerPage: number;
 }
 
-const useProductsSearch = () => {
-          const [state, setState] = useState<ProductsSearchState>({
+const useBuildingsSearch = () => {
+
+          const [state, setState] = useState<BuildingSearchState>({
                     filters: {
-                              name: undefined,
-                              category: [],
-                              status: [],
-                              inStock: undefined,
+                              buildingCategory: [],
+                              buildingDetails: []
                     },
                     page: 0,
                     rowsPerPage: 5,
           });
 
-          const handleFiltersChange = useCallback((filters: Filters): void => {
+          const handleFiltersChange = useCallback((filters: BuildingFilters): void => {
                     setState((prevState) => ({
                               ...prevState,
                               filters,
@@ -81,26 +77,27 @@ const useProductsSearch = () => {
           };
 };
 
-interface ProductsStoreState {
-          products: Product[];
-          productsCount: number;
+interface BuildingStoreState {
+          buildings: Building[];
+          buildingsCount: number;
 }
 
-const useProductsStore = (searchState: ProductsSearchState) => {
+const useBuildingsStore = (searchState: BuildingSearchState) => {
           const isMounted = useMounted();
-          const [state, setState] = useState<ProductsStoreState>({
-                    products: [],
-                    productsCount: 0,
+          const [state, setState] = useState<BuildingStoreState>({
+                    buildings: [],
+                    buildingsCount: 0,
           });
 
-          const handleProductsGet = useCallback(async () => {
+          const handleBuildingsGet = useCallback(async () => {
                     try {
-                              const response = await productsApi.getProducts(searchState);
+
+                              const response = await buildingsApi.getBuildings(searchState);
 
                               if (isMounted()) {
                                         setState({
-                                                  products: response.data,
-                                                  productsCount: response.count,
+                                                  buildings: response.data,
+                                                  buildingsCount: response.count,
                                         });
                               }
                     } catch (err) {
@@ -110,7 +107,7 @@ const useProductsStore = (searchState: ProductsSearchState) => {
 
           useEffect(
                     () => {
-                              handleProductsGet();
+                              handleBuildingsGet();
                     },
                     // eslint-disable-next-line react-hooks/exhaustive-deps
                     [searchState]
@@ -122,14 +119,14 @@ const useProductsStore = (searchState: ProductsSearchState) => {
 };
 
 const Page: NextPage = () => {
-          const productsSearch = useProductsSearch();
-          const productsStore = useProductsStore(productsSearch.state);
+          const buildingsSearch = useBuildingsSearch();
+          const buildingsStore = useBuildingsStore(buildingsSearch.state);
 
           usePageView();
 
           return (
                     <>
-                              <Seo title="Dashboard: Product List" />
+                              <Seo title="Dashboard: Building List" />
                               <Box
                                         component="main"
                                         sx={{
@@ -145,7 +142,7 @@ const Page: NextPage = () => {
                                                                       spacing={4}
                                                             >
                                                                       <Stack spacing={1}>
-                                                                                <Typography variant="h4">Products</Typography>
+                                                                                <Typography variant="h4">Buildings</Typography>
                                                                                 <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                                                                           <Link
                                                                                                     color="text.primary"
@@ -158,10 +155,10 @@ const Page: NextPage = () => {
                                                                                           <Link
                                                                                                     color="text.primary"
                                                                                                     component={RouterLink}
-                                                                                                    href={paths.dashboard.products.index}
+                                                                                                    href={paths.dashboard.buildings.index}
                                                                                                     variant="subtitle2"
                                                                                           >
-                                                                                                    Products
+                                                                                                    Buildings
                                                                                           </Link>
                                                                                           <Typography
                                                                                                     color="text.secondary"
@@ -178,7 +175,7 @@ const Page: NextPage = () => {
                                                                       >
                                                                                 <Button
                                                                                           component={RouterLink}
-                                                                                          href={paths.dashboard.products.create}
+                                                                                          href={paths.dashboard.buildings.create}
                                                                                           startIcon={
                                                                                                     <SvgIcon>
                                                                                                               <PlusIcon />
@@ -191,14 +188,14 @@ const Page: NextPage = () => {
                                                                       </Stack>
                                                             </Stack>
                                                             <Card>
-                                                                      <ProductListSearch onFiltersChange={productsSearch.handleFiltersChange} />
-                                                                      <ProductListTable
-                                                                                onPageChange={productsSearch.handlePageChange}
-                                                                                onRowsPerPageChange={productsSearch.handleRowsPerPageChange}
-                                                                                page={productsSearch.state.page}
-                                                                                items={productsStore.products}
-                                                                                count={productsStore.productsCount}
-                                                                                rowsPerPage={productsSearch.state.rowsPerPage}
+                                                                      <BuildingListSearch onFiltersChange={buildingsSearch.handleFiltersChange} />
+                                                                      <BuildingListTable
+                                                                                onPageChange={buildingsSearch.handlePageChange}
+                                                                                onRowsPerPageChange={buildingsSearch.handleRowsPerPageChange}
+                                                                                page={buildingsSearch.state.page}
+                                                                                items={buildingsStore.buildings}
+                                                                                count={buildingsStore.buildingsCount}
+                                                                                rowsPerPage={buildingsSearch.state.rowsPerPage}
                                                                       />
                                                             </Card>
                                                   </Stack>
@@ -207,6 +204,14 @@ const Page: NextPage = () => {
                     </>
           );
 };
+
+export const getStaticProps = (async (context: any) => {
+
+          const res = await fetch('https://api.github.com/repos/vercel/next.js')
+          const repo = await res.json()
+          return { props: { repo } }
+
+})
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 
