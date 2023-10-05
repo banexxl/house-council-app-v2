@@ -5,7 +5,7 @@ export interface Building {
           region: string;
           country: string;
           fullAddress: string;
-          recentlyBuilt: boolean;
+          isRecentlyBuilt: boolean;
           dateTimeRegistered: Date;
           dateTimeUpdated: Date;
           appartmentCount: number;
@@ -13,13 +13,21 @@ export interface Building {
           issues: string[];
           hasOwnParkingLot: boolean;
           parkingLotCount: number;
-          gasHeating: boolean;
-          centralHeating: boolean;
-          electricHeating: boolean;
-          solarPower: boolean;
+          hasGasHeating: boolean;
+          hasCentralHeating: boolean;
+          hasElectricHeating: boolean;
+          hasSolarPower: boolean;
           hasOwnBicycleRoom: boolean;
           hasOwnWaterPump: boolean;
           hasOwnElevator: boolean;
+          storiesHigh: number;
+          isToThreeStoriesHigh: boolean;
           tenantMeetings: string[],
           tenantCount: number;
+}
+
+export interface buildingAPIResponse {
+          message: string,
+          data: Building[],
+          totalCount: number
 }

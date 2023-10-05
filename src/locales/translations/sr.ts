@@ -42,7 +42,7 @@ export const sr = {
           [tokens.nav.postDetails]: 'Detalji komentara',
           [tokens.nav.postList]: 'Lista komentara',
           [tokens.nav.pricing]: 'Cene',
-          [tokens.nav.productList]: 'Proizvodi',
+          [tokens.nav.buildingList]: 'Zgrade',
           [tokens.nav.profile]: 'Profil',
           [tokens.nav.register]: 'Registracija',
           [tokens.nav.resetPassword]: 'Izmeni šifru',

@@ -19,14 +19,11 @@ import { useMounted } from 'src/hooks/use-mounted';
 import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
-import { } from 'src/sections/dashboard/building/building-list-search';
+import { BuildingListSearch } from 'src/sections/dashboard/building/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/building/building-list-table';
 import type { Building } from '@/types/building';
-
-interface BuildingFilters {
-          buildingCategory: string[];
-          buildingDetails: string[];
-}
+import { buildingsAPI } from '@/api/buildings/data';
+import { BuildingFilters } from '@/sections/dashboard/building/building-options';
 
 interface BuildingSearchState {
           filters: BuildingFilters;
@@ -38,8 +35,8 @@ const useBuildingsSearch = () => {
 
           const [state, setState] = useState<BuildingSearchState>({
                     filters: {
-                              buildingCategory: [],
-                              buildingDetails: []
+                              fullAddress: '',
+                              category: []
                     },
                     page: 0,
                     rowsPerPage: 5,
@@ -91,15 +88,14 @@ const useBuildingsStore = (searchState: BuildingSearchState) => {
 
           const handleBuildingsGet = useCallback(async () => {
                     try {
-
-                              const response = await buildingsApi.getBuildings(searchState);
-
-                              if (isMounted()) {
-                                        setState({
-                                                  buildings: response.data,
-                                                  buildingsCount: response.count,
-                                        });
-                              }
+                              const response = await buildingsAPI().getAllBuildings(searchState).then((buildings: Building[]) => {
+                                        if (isMounted()) {
+                                                  setState({
+                                                            buildings: buildings,
+                                                            buildingsCount: buildings.length
+                                                  });
+                                        }
+                              })
                     } catch (err) {
                               console.error(err);
                     }

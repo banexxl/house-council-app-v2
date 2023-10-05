@@ -12,7 +12,7 @@ import { Seo } from 'src/components/seo';
 import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
-import { ProductCreateForm } from '@/sections/dashboard/building/building-create-form';
+import { BuildingCreateForm } from '@/sections/dashboard/building/building-create-form';
 
 const Page: NextPage = () => {
           usePageView();
@@ -43,10 +43,10 @@ const Page: NextPage = () => {
                                                                                 <Link
                                                                                           color="text.primary"
                                                                                           component={RouterLink}
-                                                                                          href={paths.dashboard.products.index}
+                                                                                          href={paths.dashboard.buildings.index}
                                                                                           variant="subtitle2"
                                                                                 >
-                                                                                          Products
+                                                                                          buildings
                                                                                 </Link>
                                                                                 <Typography
                                                                                           color="text.secondary"
@@ -56,7 +56,7 @@ const Page: NextPage = () => {
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <ProductCreateForm />
+                                                            <BuildingCreateForm />
                                                   </Stack>
                                         </Container>
                               </Box>

@@ -6,10 +6,10 @@ export interface BuildingOptions {
           value: string;
 }
 
-export const categoryOptions: BuildingOptions[] = [
+export const buildingCategoryOptions: BuildingOptions[] = [
           {
                     label: 'Recently built',
-                    value: 'recentlyBuilt',
+                    value: 'isRecentlyBuilt',
           },
           {
                     label: 'Has own parking',
@@ -17,17 +17,26 @@ export const categoryOptions: BuildingOptions[] = [
           },
           {
                     label: 'Central heating',
-                    value: 'centralHeating',
+                    value: 'hasCentralHeating',
           },
           {
                     label: 'Gas heating',
-                    value: 'gasHeating',
+                    value: 'hasGasHeating',
           },
           {
                     label: 'Electric heating',
-                    value: 'electricHeating',
+                    value: 'hasElectricHeating',
+          },
+          {
+                    label: 'Solar power',
+                    value: 'hasSolarPower',
           },
 ];
+
+export interface BuildingFilters {
+          fullAddress?: string;
+          category: boolean[]
+}
 
 export interface Values {
           barcode: string;

@@ -131,7 +131,7 @@ export const useSections = () => {
                                                             ],
                                                   },
                                                   {
-                                                            title: t(tokens.nav.buildingsList),
+                                                            title: t(tokens.nav.buildingList),
                                                             path: paths.dashboard.buildings.index,
                                                             icon: (
                                                                       <SvgIcon fontSize="small">

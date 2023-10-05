@@ -20,7 +20,7 @@ import { FileDropzone } from 'src/components/file-dropzone';
 import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
-import { categoryOptions, initialValues, validationSchema } from './building-options';
+import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
@@ -230,7 +230,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                     select
                                                                                                     value={formik.values.category}
                                                                                           >
-                                                                                                    {categoryOptions.map((option: any) => (
+                                                                                                    {buildingCategoryOptions.map((option: any) => (
                                                                                                               <MenuItem
                                                                                                                         key={option.value}
                                                                                                                         value={option.value}

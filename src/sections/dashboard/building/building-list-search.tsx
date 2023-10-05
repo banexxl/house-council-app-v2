@@ -12,11 +12,11 @@ import Typography from '@mui/material/Typography';
 
 import { MultiSelect } from 'src/components/multi-select';
 import { useUpdateEffect } from 'src/hooks/use-update-effect';
-import { BuildingOptions } from './building-options';
+import { BuildingFilters, buildingCategoryOptions } from './building-options';
 
 interface SearchChip {
           label: string;
-          field: 'fullAddress' | 'status' | 'recentlyBuilt' | 'parkingLotCount';
+          field: 'fullAddress' | 'category'
           value: unknown;
           displayValue?: unknown;
 }
@@ -31,29 +31,20 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           const [chips, setChips] = useState<SearchChip[]>([]);
 
           const handleChipsUpdate = useCallback(() => {
-                    const filters: Filters = {
-                              name: undefined,
-                              category: [],
-                              status: [],
-                              inStock: undefined,
+                    const filters: BuildingFilters = {
+                              fullAddress: '',
+                              category: []
                     };
 
                     chips.forEach((chip) => {
                               switch (chip.field) {
-                                        case 'name':
+                                        case 'fullAddress':
                                                   // There will (or should) be only one chips with field "name"
                                                   // so we can set up it directly
-                                                  filters.name = chip.value as string;
+                                                  filters.fullAddress = chip.value as string;
                                                   break;
                                         case 'category':
-                                                  filters.category.push(chip.value as string);
-                                                  break;
-                                        case 'status':
-                                                  filters.status.push(chip.value as string);
-                                                  break;
-                                        case 'inStock':
-                                                  // The value can be "available" or "outOfStock" and we transform it to a boolean
-                                                  filters.inStock = chip.value === 'available';
+                                                  filters.category.push(chip.value as boolean)
                                                   break;
                                         default:
                                                   break;
@@ -84,11 +75,11 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                     const value = queryRef.current?.value || '';
 
                     setChips((prevChips) => {
-                              const found = prevChips.find((chip) => chip.field === 'name');
+                              const found = prevChips.find((chip) => chip.field === 'fullAddress');
 
                               if (found && value) {
                                         return prevChips.map((chip) => {
-                                                  if (chip.field === 'name') {
+                                                  if (chip.field === 'fullAddress') {
                                                             return {
                                                                       ...chip,
                                                                       value: queryRef.current?.value || '',
@@ -100,13 +91,13 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                               }
 
                               if (found && !value) {
-                                        return prevChips.filter((chip) => chip.field !== 'name');
+                                        return prevChips.filter((chip) => chip.field !== 'fullAddress');
                               }
 
                               if (!found && value) {
                                         const chip: SearchChip = {
-                                                  label: 'Name',
-                                                  field: 'name',
+                                                  label: 'Full Address',
+                                                  field: 'fullAddress',
                                                   value,
                                         };
 
@@ -147,7 +138,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
                               values.forEach((value) => {
                                         if (!valuesFound.includes(value)) {
-                                                  const option = categoryOptions.find((option) => option.value === value);
+                                                  const option = buildingCategoryOptions.find((option) => option.value === value);
 
                                                   newChips.push({
                                                             label: 'Category',
@@ -162,106 +153,107 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                     });
           }, []);
 
-          const handleStatusChange = useCallback((values: string[]): void => {
-                    setChips((prevChips) => {
-                              const valuesFound: string[] = [];
+          // const handleStatusChange = useCallback((values: string[]): void => {
+          //           setChips((prevChips) => {
+          //                     const valuesFound: string[] = [];
 
-                              // First cleanup the previous chips
-                              const newChips = prevChips.filter((chip) => {
-                                        if (chip.field !== 'status') {
-                                                  return true;
-                                        }
+          //                     // First cleanup the previous chips
+          //                     const newChips = prevChips.filter((chip) => {
+          //                               if (chip.field !== 'status') {
+          //                                         return true;
+          //                               }
 
-                                        const found = values.includes(chip.value as string);
+          //                               const found = values.includes(chip.value as string);
 
-                                        if (found) {
-                                                  valuesFound.push(chip.value as string);
-                                        }
+          //                               if (found) {
+          //                                         valuesFound.push(chip.value as string);
+          //                               }
 
-                                        return found;
-                              });
+          //                               return found;
+          //                     });
 
-                              // Nothing changed
-                              if (values.length === valuesFound.length) {
-                                        return newChips;
-                              }
+          //                     // Nothing changed
+          //                     if (values.length === valuesFound.length) {
+          //                               return newChips;
+          //                     }
 
-                              values.forEach((value) => {
-                                        if (!valuesFound.includes(value)) {
-                                                  const option = statusOptions.find((option) => option.value === value);
+          //                     values.forEach((value) => {
+          //                               if (!valuesFound.includes(value)) {
+          //                                         const option = statusOptions.find((option) => option.value === value);
 
-                                                  newChips.push({
-                                                            label: 'Status',
-                                                            field: 'status',
-                                                            value,
-                                                            displayValue: option!.label,
-                                                  });
-                                        }
-                              });
+          //                                         newChips.push({
+          //                                                   label: 'Status',
+          //                                                   field: 'status',
+          //                                                   value,
+          //                                                   displayValue: option!.label,
+          //                                         });
+          //                               }
+          //                     });
 
-                              return newChips;
-                    });
-          }, []);
+          //                     return newChips;
+          //           });
+          // }, []);
 
-          const handleStockChange = useCallback((values: string[]): void => {
-                    // Stock can only have one value, even if displayed as multi-select, so we select the first one.
-                    // This example allows you to select one value or "All", which is not included in the
-                    // rest of multi-selects.
+          // const handleStockChange = useCallback((values: string[]): void => {
+          //           // Stock can only have one value, even if displayed as multi-select, so we select the first one.
+          //           // This example allows you to select one value or "All", which is not included in the
+          //           // rest of multi-selects.
 
-                    setChips((prevChips) => {
-                              // First cleanup the previous chips
-                              const newChips = prevChips.filter((chip) => chip.field !== 'inStock');
-                              const latestValue = values[values.length - 1];
+          //           setChips((prevChips) => {
+          //                     // First cleanup the previous chips
+          //                     const newChips = prevChips.filter((chip) => chip.field !== 'inStock');
+          //                     const latestValue = values[values.length - 1];
 
-                              switch (latestValue) {
-                                        case 'available':
-                                                  newChips.push({
-                                                            label: 'Stock',
-                                                            field: 'inStock',
-                                                            value: 'available',
-                                                            displayValue: 'Available',
-                                                  });
-                                                  break;
-                                        case 'outOfStock':
-                                                  newChips.push({
-                                                            label: 'Stock',
-                                                            field: 'inStock',
-                                                            value: 'outOfStock',
-                                                            displayValue: 'Out of Stock',
-                                                  });
-                                                  break;
-                                        default:
-                                                  // Should be "all", so we do not add this filter
-                                                  break;
-                              }
+          //                     switch (latestValue) {
+          //                               case 'available':
+          //                                         newChips.push({
+          //                                                   label: 'Stock',
+          //                                                   field: 'inStock',
+          //                                                   value: 'available',
+          //                                                   displayValue: 'Available',
+          //                                         });
+          //                                         break;
+          //                               case 'outOfStock':
+          //                                         newChips.push({
+          //                                                   label: 'Stock',
+          //                                                   field: 'inStock',
+          //                                                   value: 'outOfStock',
+          //                                                   displayValue: 'Out of Stock',
+          //                                         });
+          //                                         break;
+          //                               default:
+          //                                         // Should be "all", so we do not add this filter
+          //                                         break;
+          //                     }
 
-                              return newChips;
-                    });
-          }, []);
+          //                     return newChips;
+          //           });
+          // }, []);
 
           // We memoize this part to prevent re-render issues
+
           const categoryValues = useMemo(
                     () => chips.filter((chip) => chip.field === 'category').map((chip) => chip.value) as string[],
                     [chips]
           );
 
-          const statusValues = useMemo(
-                    () => chips.filter((chip) => chip.field === 'status').map((chip) => chip.value) as string[],
-                    [chips]
-          );
+          // const statusValues = useMemo(
+          //           () => chips.filter((chip) => chip.field === 'status').map((chip) => chip.value) as string[],
+          //           [chips]
+          // );
 
-          const stockValues = useMemo(() => {
-                    const values = chips
-                              .filter((chip) => chip.field === 'inStock')
-                              .map((chip) => chip.value) as string[];
+          // const stockValues = useMemo(() => {
+          //           const values = chips
+          //                     .filter((chip) => chip.field === 'inStock')
+          //                     .map((chip) => chip.value) as string[];
 
-                    // Since we do not display the "all" as chip, we add it to the multi-select as a selected value
-                    if (values.length === 0) {
-                              values.unshift('all');
-                    }
+          //           // Since we do not display the "all" as chip, we add it to the multi-select as a selected value
+          //           if (values.length === 0) {
+          //                     values.unshift('all');
+          //           }
 
-                    return values;
-          }, [chips]);
+          //           return values;
+          // }, [chips]);
 
           const showChips = chips.length > 0;
 
@@ -340,10 +332,10 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                                         <MultiSelect
                                                   label="Category"
                                                   onChange={handleCategoryChange}
-                                                  options={categoryOptions}
+                                                  options={buildingCategoryOptions}
                                                   value={categoryValues}
                                         />
-                                        <MultiSelect
+                                        {/* <MultiSelect
                                                   label="Status"
                                                   onChange={handleStatusChange}
                                                   options={statusOptions}
@@ -354,7 +346,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                                                   onChange={handleStockChange}
                                                   options={stockOptions}
                                                   value={stockValues}
-                                        />
+                                        /> */}
                               </Stack>
                     </div>
           );
