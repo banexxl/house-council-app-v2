@@ -5,7 +5,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
+          console.log(mongoClient);
+
           const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('Buildings')
+          console.log('usao u pages api sa request', request);
 
           try {
                     if (request.method === 'GET') {

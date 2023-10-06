@@ -1,5 +1,5 @@
 import type { ChangeEvent, MouseEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NextPage } from 'next';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
@@ -21,9 +21,10 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/building/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/building/building-list-table';
-import type { Building } from '@/types/building';
-import { buildingsAPIData } from '@/api/buildings/data';
+import type { Building, buildingAPIResponse } from '@/types/building';
 import { BuildingFilters } from '@/sections/dashboard/building/building-options';
+import { applyPagination } from '@/utils/apply-pagination';
+import { useSelection } from '@/hooks/use-selection';
 
 interface BuildingSearchState {
           filters: BuildingFilters;
@@ -79,44 +80,35 @@ interface BuildingStoreState {
           buildingsCount: number;
 }
 
-const useBuildingsStore = (searchState: BuildingSearchState) => {
-          const isMounted = useMounted();
-          const [state, setState] = useState<BuildingStoreState>({
-                    buildings: [],
-                    buildingsCount: 0,
-          });
-
-          const handleBuildingsGet = useCallback(async () => {
-                    try {
-                              const response = await buildingsAPIData().getAllBuildings().then((buildings: Building[]) => {
-                                        if (isMounted()) {
-                                                  setState({
-                                                            buildings: buildings,
-                                                            buildingsCount: buildings.length
-                                                  });
-                                        }
-                              })
-                    } catch (err) {
-                              console.error(err);
-                    }
-          }, [searchState, isMounted]);
-
-          useEffect(
+const useBuildings = (data: any, page: any, rowsPerPage: any) => {
+          return useMemo(
                     () => {
-                              handleBuildingsGet();
+                              return applyPagination(data, page, rowsPerPage);
                     },
-                    // eslint-disable-next-line react-hooks/exhaustive-deps
-                    [searchState]
+                    [data, page, rowsPerPage]
           );
-
-          return {
-                    ...state,
-          };
 };
 
-const Page: NextPage = () => {
-          const buildingsSearch = useBuildingsSearch();
-          const buildingsStore = useBuildingsStore(buildingsSearch.state);
+const useBuildingIds = (buildings: any) => {
+          return useMemo(
+                    () => {
+                              return buildings.map((building: any) => building._id);
+                    },
+                    [buildings]
+          );
+};
+
+const Page: NextPage = (props: any) => {
+
+          console.log('page props', props);
+
+          const [page, setPage] = useState(0);
+          const [open, setOpen] = useState(false)
+          const [openEdit, setOpenEdit] = useState(false)
+          const [rowsPerPage, setRowsPerPage] = useState(5);
+          const buildings = useBuildings(props.buildings, page, rowsPerPage);
+          const productsIds = useBuildingIds(props.buildings);
+          const productsSelection = useSelection(productsIds);
 
           usePageView();
 
@@ -184,14 +176,14 @@ const Page: NextPage = () => {
                                                                       </Stack>
                                                             </Stack>
                                                             <Card>
-                                                                      <BuildingListSearch onFiltersChange={buildingsSearch.handleFiltersChange} />
+                                                                      <BuildingListSearch onFiltersChange={useBuildingsSearch().handleFiltersChange} />
                                                                       <BuildingListTable
-                                                                                onPageChange={buildingsSearch.handlePageChange}
-                                                                                onRowsPerPageChange={buildingsSearch.handleRowsPerPageChange}
-                                                                                page={buildingsSearch.state.page}
-                                                                                items={buildingsStore.buildings}
-                                                                                count={buildingsStore.buildingsCount}
-                                                                                rowsPerPage={buildingsSearch.state.rowsPerPage}
+                                                                                onPageChange={useBuildingsSearch().handlePageChange}
+                                                                                onRowsPerPageChange={useBuildingsSearch().handleRowsPerPageChange}
+                                                                                page={props.page}
+                                                                                items={props.data}
+                                                                                count={props.data.length}
+                                                                                rowsPerPage={useBuildingsSearch().state.rowsPerPage}
                                                                       />
                                                             </Card>
                                                   </Stack>
@@ -203,9 +195,34 @@ const Page: NextPage = () => {
 
 export const getStaticProps = (async (context: any) => {
 
-          const res = await fetch('https://api.github.com/repos/vercel/next.js')
-          const repo = await res.json()
-          return { props: { repo } }
+          const buildings = await fetch('http://localhost:3000/api/buildings/buildings-api', {
+                    method: 'GET',
+                    headers: {
+                              'Content-Type': 'application/json',
+                              'Access-Control-Allow-Origin': '*',
+                              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                    },
+          }).then((response) => {
+                    if (!response.ok) {
+                              throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+          }).then((data: buildingAPIResponse) => {
+                    console.log('Data of specific type:', data);
+                    return data;
+          }).catch(error => {
+                    console.error('Error:', error.message);
+                    throw error;  // Re-throw the error for further handling if needed
+          })
+
+
+          return {
+                    props: {
+                              buildings: JSON.parse(JSON.stringify(buildings))
+                    }
+
+          }
+
 
 })
 

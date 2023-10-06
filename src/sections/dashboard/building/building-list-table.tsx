@@ -116,14 +116,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                   <TableHead>
                                                             <TableRow>
                                                                       <TableCell />
-                                                                      <TableCell width="15%">City</TableCell>
-                                                                      <TableCell width="15%">Street</TableCell>
+                                                                      <TableCell>City</TableCell>
+                                                                      <TableCell>Street</TableCell>
                                                                       <TableCell>Street number</TableCell>
                                                                       <TableCell>Appartment Count</TableCell>
                                                                       <TableCell>Unresolved issue count</TableCell>
-                                                                      <TableCell>Parking Count</TableCell>
+                                                                      <TableCell>Elevator</TableCell>
                                                                       <TableCell>Appartment Count</TableCell>
-                                                                      <TableCell align="right">Stories high</TableCell>
+                                                                      <TableCell>Stories high</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -157,10 +157,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                               }}
                                                                                                               width="25%"
                                                                                                     >
-                                                                                                              <IconButton onClick={() => handleBuildingToggle(building._id)}>
+                                                                                                              <IconButton onClick={() => handleBuildingToggle(building._id!)}>
                                                                                                                         <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                               </IconButton>
                                                                                                     </TableCell>
+                                                                                                    <TableCell>{building.street}</TableCell>
+                                                                                                    <TableCell>{building.streetNumber}</TableCell>
+                                                                                                    {/* image */}
                                                                                                     <TableCell width="25%">
                                                                                                               <Box
                                                                                                                         sx={{
@@ -212,11 +215,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                             color="text.secondary"
                                                                                                                                             variant="body2"
                                                                                                                                   >
-                                                                                                                                            in {building.category}
+                                                                                                                                            in {building.country}
                                                                                                                                   </Typography>
                                                                                                                         </Box>
                                                                                                               </Box>
                                                                                                     </TableCell>
+                                                                                                    <TableCell>{building.appartmentCount}</TableCell>
+
                                                                                                     <TableCell width="25%">
                                                                                                               <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
@@ -235,8 +240,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                         out of {building.allReportedIssues.length}
                                                                                                               </Typography>
                                                                                                     </TableCell>
-                                                                                                    <TableCell>{price}</TableCell>
-                                                                                                    <TableCell>{building.sku}</TableCell>
                                                                                                     <TableCell>
                                                                                                               <SeverityPill color={hasElevatorColor}>{building.hasOwnElevator}</SeverityPill>
                                                                                                     </TableCell>
@@ -288,7 +291,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.name}
+                                                                                                                                                                                    defaultValue={building.fullAddress}
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="Building name"
                                                                                                                                                                                     name="name"
@@ -300,7 +303,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.sku}
+                                                                                                                                                                                    defaultValue={building.street}
                                                                                                                                                                                     disabled
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="SKU"
@@ -313,7 +316,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.category}
+                                                                                                                                                                                    defaultValue={building.streetNumber}
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="Category"
                                                                                                                                                                                     select
@@ -360,14 +363,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.price}
+                                                                                                                                                                                    defaultValue={building.tenantCount}
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="Old price"
                                                                                                                                                                                     name="old-price"
                                                                                                                                                                                     InputProps={{
                                                                                                                                                                                               startAdornment: (
                                                                                                                                                                                                         <InputAdornment position="start">
-                                                                                                                                                                                                                  {building.currency}
+                                                                                                                                                                                                                  {building.tenantCount}
                                                                                                                                                                                                         </InputAdornment>
                                                                                                                                                                                               ),
                                                                                                                                                                                     }}
@@ -380,7 +383,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.price}
+                                                                                                                                                                                    defaultValue={building.tenantMeetings}
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="New price"
                                                                                                                                                                                     name="new-price"
