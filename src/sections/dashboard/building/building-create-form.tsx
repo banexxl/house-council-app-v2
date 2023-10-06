@@ -21,6 +21,7 @@ import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
+import BuildingMap from './building-map-component';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
@@ -108,11 +109,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               sx={{ height: 400 }}
                                                                                                               value={formik.values.description}
                                                                                                     />
-                                                                                                    {!!(formik.touched.description && formik.errors.description) && (
-                                                                                                              <Box sx={{ mt: 2 }}>
-                                                                                                                        <FormHelperText error>{formik.errors.description}</FormHelperText>
-                                                                                                              </Box>
-                                                                                                    )}
+                                                                                                    <BuildingMap />
                                                                                           </div>
                                                                                 </Stack>
                                                                       </Grid>

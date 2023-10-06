@@ -25,6 +25,7 @@ import type { Building, buildingAPIResponse } from '@/types/building';
 import { BuildingFilters } from '@/sections/dashboard/building/building-options';
 import { applyPagination } from '@/utils/apply-pagination';
 import { useSelection } from '@/hooks/use-selection';
+import { buildingServices } from '@/utils/building-services';
 
 interface BuildingSearchState {
           filters: BuildingFilters;
@@ -181,8 +182,8 @@ const Page: NextPage = (props: any) => {
                                                                                 onPageChange={useBuildingsSearch().handlePageChange}
                                                                                 onRowsPerPageChange={useBuildingsSearch().handleRowsPerPageChange}
                                                                                 page={props.page}
-                                                                                items={props.data}
-                                                                                count={props.data.length}
+                                                                                items={props.buildings}
+                                                                                count={props.buildings.length}
                                                                                 rowsPerPage={useBuildingsSearch().state.rowsPerPage}
                                                                       />
                                                             </Card>
@@ -193,38 +194,21 @@ const Page: NextPage = (props: any) => {
           );
 };
 
-export const getStaticProps = (async (context: any) => {
+export const getStaticProps = async (context: any) => {
 
-          const buildings = await fetch('http://localhost:3000/api/buildings/buildings-api', {
-                    method: 'GET',
-                    headers: {
-                              'Content-Type': 'application/json',
-                              'Access-Control-Allow-Origin': '*',
-                              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
-                    },
-          }).then((response) => {
-                    if (!response.ok) {
-                              throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-          }).then((data: buildingAPIResponse) => {
-                    console.log('Data of specific type:', data);
-                    return data;
-          }).catch(error => {
-                    console.error('Error:', error.message);
-                    throw error;  // Re-throw the error for further handling if needed
-          })
+          const allBuildings = await buildingServices().getAllBuildings()
 
+          redirect: {
+                    destination: "/404"
+          }
 
           return {
                     props: {
-                              buildings: JSON.parse(JSON.stringify(buildings))
-                    }
-
+                              buildings: JSON.parse(JSON.stringify(allBuildings)),
+                    },
           }
 
-
-})
+}
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 

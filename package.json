@@ -46,6 +46,7 @@
                     "draft-js": "0.11.7",
                     "firebase": "9.23.0",
                     "formik": "2.4.2",
+                    "google-map-react": "^2.2.1",
                     "gray-matter": "4.0.3",
                     "i18next": "23.2.7",
                     "lodash.debounce": "4.0.8",
@@ -63,6 +64,7 @@
                     "react": "18.2.0",
                     "react-apexcharts": "1.4.0",
                     "react-beautiful-dnd": "13.1.1",
+                    "react-controllables": "^0.6.0",
                     "react-dom": "18.2.0",
                     "react-draft-wysiwyg": "1.15.0",
                     "react-dropzone": "14.2.3",
@@ -85,6 +87,7 @@
           },
           "devDependencies": {
                     "@svgr/webpack": "8.0.1",
+                    "@types/google-map-react": "^2.1.8",
                     "@types/lodash.debounce": "4.0.7",
                     "@types/lodash.isequal": "4.5.6",
                     "@types/lodash.throttle": "4.1.7",

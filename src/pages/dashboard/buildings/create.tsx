@@ -19,7 +19,7 @@ const Page: NextPage = () => {
 
           return (
                     <>
-                              <Seo title="Dashboard: Product Create" />
+                              <Seo title="Dashboard: Building Create" />
                               <Box
                                         component="main"
                                         sx={{
@@ -30,7 +30,7 @@ const Page: NextPage = () => {
                                         <Container maxWidth="xl">
                                                   <Stack spacing={3}>
                                                             <Stack spacing={1}>
-                                                                      <Typography variant="h4">Create a new product</Typography>
+                                                                      <Typography variant="h4">Add a new building</Typography>
                                                                       <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                                                                 <Link
                                                                                           color="text.primary"
