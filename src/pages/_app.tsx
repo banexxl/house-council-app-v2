@@ -35,6 +35,7 @@ import { useNprogress } from 'src/hooks/use-nprogress';
 import { store } from 'src/store';
 import { createTheme } from 'src/theme';
 import { createEmotionCache } from 'src/utils/create-emotion-cache';
+import Script from 'next/script';
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -51,14 +52,19 @@ const CustomApp = (props: CustomAppProps) => {
 
           const getLayout = Component.getLayout ?? ((page) => page);
 
+
+
           return (
                     <CacheProvider value={emotionCache}>
+                              <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=Function.prototype`}
+                                        async />
                               <Head>
                                         <title>HouseCouncil</title>
                                         <meta
                                                   name="viewport"
                                                   content="initial-scale=1, width=device-width"
                                         />
+
                               </Head>
                               <ReduxProvider store={store}>
                                         <LocalizationProvider dateAdapter={AdapterDateFns}>

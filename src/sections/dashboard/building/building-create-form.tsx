@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useFormik } from 'formik';
 import Box from '@mui/material/Box';
@@ -21,7 +21,9 @@ import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
-import BuildingMap from './building-map-component';
+import { GoogleMaps } from './map-component';
+import Head from 'next/head';
+import Script from 'next/script';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
@@ -38,7 +40,7 @@ export const BuildingCreateForm: FC = (props) => {
                                         console.error(err);
                                         toast.error('Something went wrong!');
                                         helpers.setStatus({ success: false });
-                                        helpers.setErrors({ submit: err.message });
+                                        //helpers.setErrors({ submit: err.message });
                                         helpers.setSubmitting(false);
                               }
                     },
@@ -60,222 +62,232 @@ export const BuildingCreateForm: FC = (props) => {
                     setFiles([]);
           }, []);
 
+
+
+
           return (
-                    <form
-                              onSubmit={formik.handleSubmit}
-                              {...props}
-                    >
-                              <Stack spacing={4}>
-                                        <Card>
-                                                  <CardContent>
-                                                            <Grid
-                                                                      container
-                                                                      spacing={3}
-                                                            >
+                    <div>
+                              <form
+                                        onSubmit={formik.handleSubmit}
+                                        {...props}
+                              >
+
+
+                                        <Stack spacing={4}>
+                                                  <Card>
+                                                            <CardContent>
                                                                       <Grid
-                                                                                xs={12}
-                                                                                md={4}
+                                                                                container
+                                                                                spacing={3}
                                                                       >
-                                                                                <Typography variant="h6">Basic details</Typography>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={4}
+                                                                                >
+                                                                                          <Typography variant="h6">Please add building address</Typography>
+                                                                                </Grid>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={8}
+                                                                                >
+                                                                                          <Stack spacing={3}>
+                                                                                                    <GoogleMaps />
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
+                                                                                                              fullWidth
+                                                                                                              helperText={formik.touched.fullAddress && formik.errors.fullAddress}
+                                                                                                              label="Building Address"
+                                                                                                              name="fullAddress"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              value={formik.values.fullAddress}
+                                                                                                    />
+
+                                                                                                    <div>
+                                                                                                              <Typography
+                                                                                                                        color="text.secondary"
+                                                                                                                        sx={{ mb: 2 }}
+                                                                                                                        variant="subtitle2"
+                                                                                                              >
+                                                                                                                        Description
+                                                                                                              </Typography>
+                                                                                                              <QuillEditor
+                                                                                                                        onChange={(value: string): void => {
+                                                                                                                                  formik.setFieldValue('description', value);
+                                                                                                                        }}
+                                                                                                                        placeholder="Write something"
+                                                                                                                        sx={{ height: 400 }}
+                                                                                                                        value={formik.values.country}
+                                                                                                              />
+
+                                                                                                    </div>
+                                                                                          </Stack>
+                                                                                </Grid>
                                                                       </Grid>
+                                                            </CardContent>
+                                                  </Card>
+                                                  <Card>
+                                                            <CardContent>
                                                                       <Grid
-                                                                                xs={12}
-                                                                                md={8}
+                                                                                container
+                                                                                spacing={3}
                                                                       >
-                                                                                <Stack spacing={3}>
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.name && formik.errors.name)}
-                                                                                                    fullWidth
-                                                                                                    helperText={formik.touched.name && formik.errors.name}
-                                                                                                    label="Building Name"
-                                                                                                    name="name"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.name}
-                                                                                          />
-                                                                                          <div>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={4}
+                                                                                >
+                                                                                          <Stack spacing={1}>
+                                                                                                    <Typography variant="h6">Images</Typography>
                                                                                                     <Typography
                                                                                                               color="text.secondary"
-                                                                                                              sx={{ mb: 2 }}
-                                                                                                              variant="subtitle2"
+                                                                                                              variant="body2"
                                                                                                     >
-                                                                                                              Description
+                                                                                                              Images will appear in the store front of your website.
                                                                                                     </Typography>
-                                                                                                    <QuillEditor
-                                                                                                              onChange={(value: string): void => {
-                                                                                                                        formik.setFieldValue('description', value);
-                                                                                                              }}
-                                                                                                              placeholder="Write something"
-                                                                                                              sx={{ height: 400 }}
-                                                                                                              value={formik.values.description}
+                                                                                          </Stack>
+                                                                                </Grid>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={8}
+                                                                                >
+                                                                                          <FileDropzone
+                                                                                                    accept={{ 'image/*': [] }}
+                                                                                                    caption="(SVG, JPG, PNG, or gif maximum 900x400)"
+                                                                                                    files={files}
+                                                                                                    onDrop={handleFilesDrop}
+                                                                                                    onRemove={handleFileRemove}
+                                                                                                    onRemoveAll={handleFilesRemoveAll}
+                                                                                          />
+                                                                                </Grid>
+                                                                      </Grid>
+                                                            </CardContent>
+                                                  </Card>
+                                                  <Card>
+                                                            <CardContent>
+                                                                      <Grid
+                                                                                container
+                                                                                spacing={3}
+                                                                      >
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={4}
+                                                                                >
+                                                                                          <Typography variant="h6">Pricing</Typography>
+                                                                                </Grid>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={8}
+                                                                                >
+                                                                                          <Stack spacing={3}>
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
+                                                                                                              fullWidth
+                                                                                                              label="Old price"
+                                                                                                              name="oldPrice"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="number"
+                                                                                                              value={formik.values.country}
                                                                                                     />
-                                                                                                    <BuildingMap />
-                                                                                          </div>
-                                                                                </Stack>
-                                                                      </Grid>
-                                                            </Grid>
-                                                  </CardContent>
-                                        </Card>
-                                        <Card>
-                                                  <CardContent>
-                                                            <Grid
-                                                                      container
-                                                                      spacing={3}
-                                                            >
-                                                                      <Grid
-                                                                                xs={12}
-                                                                                md={4}
-                                                                      >
-                                                                                <Stack spacing={1}>
-                                                                                          <Typography variant="h6">Images</Typography>
-                                                                                          <Typography
-                                                                                                    color="text.secondary"
-                                                                                                    variant="body2"
-                                                                                          >
-                                                                                                    Images will appear in the store front of your website.
-                                                                                          </Typography>
-                                                                                </Stack>
-                                                                      </Grid>
-                                                                      <Grid
-                                                                                xs={12}
-                                                                                md={8}
-                                                                      >
-                                                                                <FileDropzone
-                                                                                          accept={{ 'image/*': [] }}
-                                                                                          caption="(SVG, JPG, PNG, or gif maximum 900x400)"
-                                                                                          files={files}
-                                                                                          onDrop={handleFilesDrop}
-                                                                                          onRemove={handleFileRemove}
-                                                                                          onRemoveAll={handleFilesRemoveAll}
-                                                                                />
-                                                                      </Grid>
-                                                            </Grid>
-                                                  </CardContent>
-                                        </Card>
-                                        <Card>
-                                                  <CardContent>
-                                                            <Grid
-                                                                      container
-                                                                      spacing={3}
-                                                            >
-                                                                      <Grid
-                                                                                xs={12}
-                                                                                md={4}
-                                                                      >
-                                                                                <Typography variant="h6">Pricing</Typography>
-                                                                      </Grid>
-                                                                      <Grid
-                                                                                xs={12}
-                                                                                md={8}
-                                                                      >
-                                                                                <Stack spacing={3}>
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.oldPrice && formik.errors.oldPrice)}
-                                                                                                    fullWidth
-                                                                                                    label="Old price"
-                                                                                                    name="oldPrice"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    type="number"
-                                                                                                    value={formik.values.oldPrice}
-                                                                                          />
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.newPrice && formik.errors.newPrice)}
-                                                                                                    fullWidth
-                                                                                                    label="New Price"
-                                                                                                    name="newPrice"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    type="number"
-                                                                                                    value={formik.values.newPrice}
-                                                                                          />
-                                                                                          <div>
-                                                                                                    <FormControlLabel
-                                                                                                              control={<Switch defaultChecked />}
-                                                                                                              label="Keep selling when stock is empty"
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
+                                                                                                              fullWidth
+                                                                                                              label="New Price"
+                                                                                                              name="newPrice"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="number"
+                                                                                                              value={formik.values.country}
                                                                                                     />
-                                                                                          </div>
-                                                                                </Stack>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Keep selling when stock is empty"
+                                                                                                              />
+                                                                                                    </div>
+                                                                                          </Stack>
+                                                                                </Grid>
                                                                       </Grid>
-                                                            </Grid>
-                                                  </CardContent>
-                                        </Card>
-                                        <Card>
-                                                  <CardContent>
-                                                            <Grid
-                                                                      container
-                                                                      spacing={3}
-                                                            >
+                                                            </CardContent>
+                                                  </Card>
+                                                  <Card>
+                                                            <CardContent>
                                                                       <Grid
-                                                                                xs={12}
-                                                                                md={4}
+                                                                                container
+                                                                                spacing={3}
                                                                       >
-                                                                                <Typography variant="h6">Category</Typography>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={4}
+                                                                                >
+                                                                                          <Typography variant="h6">Category</Typography>
+                                                                                </Grid>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={8}
+                                                                                >
+                                                                                          <Stack spacing={3}>
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
+                                                                                                              fullWidth
+                                                                                                              label="Category"
+                                                                                                              name="category"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              select
+                                                                                                              value={formik.values.country}
+                                                                                                    >
+                                                                                                              {buildingCategoryOptions.map((option: any) => (
+                                                                                                                        <MenuItem
+                                                                                                                                  key={option.value}
+                                                                                                                                  value={option.value}
+                                                                                                                        >
+                                                                                                                                  {option.label}
+                                                                                                                        </MenuItem>
+                                                                                                              ))}
+                                                                                                    </TextField>
+                                                                                                    <TextField
+                                                                                                              disabled
+                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
+                                                                                                              fullWidth
+                                                                                                              label="Barcode"
+                                                                                                              name="barcode"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              value={formik.values.country}
+                                                                                                    />
+                                                                                                    <TextField
+                                                                                                              disabled
+                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
+                                                                                                              fullWidth
+                                                                                                              label="SKU"
+                                                                                                              name="sku"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              value={formik.values.country}
+                                                                                                    />
+                                                                                          </Stack>
+                                                                                </Grid>
                                                                       </Grid>
-                                                                      <Grid
-                                                                                xs={12}
-                                                                                md={8}
-                                                                      >
-                                                                                <Stack spacing={3}>
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.category && formik.errors.category)}
-                                                                                                    fullWidth
-                                                                                                    label="Category"
-                                                                                                    name="category"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    select
-                                                                                                    value={formik.values.category}
-                                                                                          >
-                                                                                                    {buildingCategoryOptions.map((option: any) => (
-                                                                                                              <MenuItem
-                                                                                                                        key={option.value}
-                                                                                                                        value={option.value}
-                                                                                                              >
-                                                                                                                        {option.label}
-                                                                                                              </MenuItem>
-                                                                                                    ))}
-                                                                                          </TextField>
-                                                                                          <TextField
-                                                                                                    disabled
-                                                                                                    error={!!(formik.touched.barcode && formik.errors.barcode)}
-                                                                                                    fullWidth
-                                                                                                    label="Barcode"
-                                                                                                    name="barcode"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.barcode}
-                                                                                          />
-                                                                                          <TextField
-                                                                                                    disabled
-                                                                                                    error={!!(formik.touched.sku && formik.errors.sku)}
-                                                                                                    fullWidth
-                                                                                                    label="SKU"
-                                                                                                    name="sku"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.sku}
-                                                                                          />
-                                                                                </Stack>
-                                                                      </Grid>
-                                                            </Grid>
-                                                  </CardContent>
-                                        </Card>
-                                        <Stack
-                                                  alignItems="center"
-                                                  direction="row"
-                                                  justifyContent="flex-end"
-                                                  spacing={1}
-                                        >
-                                                  <Button color="inherit">Cancel</Button>
-                                                  <Button
-                                                            type="submit"
-                                                            variant="contained"
+                                                            </CardContent>
+                                                  </Card>
+                                                  <Stack
+                                                            alignItems="center"
+                                                            direction="row"
+                                                            justifyContent="flex-end"
+                                                            spacing={1}
                                                   >
-                                                            Create
-                                                  </Button>
+                                                            <Button color="inherit">Cancel</Button>
+                                                            <Button
+                                                                      type="submit"
+                                                                      variant="contained"
+                                                            >
+                                                                      Create
+                                                            </Button>
+                                                  </Stack>
                                         </Stack>
-                              </Stack>
-                    </form>
+                              </form>
+                    </div>
+
           );
 };

@@ -171,7 +171,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                   display: 'flex',
                                                                                                                         }}
                                                                                                               >
-                                                                                                                        {building.image ? (
+                                                                                                                        {/* {building.image ? (
                                                                                                                                   <Box
                                                                                                                                             sx={{
                                                                                                                                                       alignItems: 'center',
@@ -203,7 +203,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                       <Image01Icon />
                                                                                                                                             </SvgIcon>
                                                                                                                                   </Box>
-                                                                                                                        )}
+                                                                                                                        )} */}
                                                                                                                         <Box
                                                                                                                                   sx={{
                                                                                                                                             cursor: 'pointer',

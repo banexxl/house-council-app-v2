@@ -1,4 +1,5 @@
 
+import { Building } from '@/types/building';
 import * as Yup from 'yup';
 
 export interface BuildingOptions {
@@ -38,52 +39,70 @@ export interface BuildingFilters {
           category: boolean[]
 }
 
-export interface Values {
-          barcode: string;
-          category: string;
-          description: string;
-          images: string[];
-          name: string;
-          newPrice: number;
-          oldPrice: number;
-          sku: string;
-          submit: null;
-}
-
-export const initialValues: Values = {
-          barcode: '925487986526',
-          category: '',
-          description: '',
-          images: [],
-          name: '',
-          newPrice: 0,
-          oldPrice: 0,
-          sku: 'IYV-8745',
-          submit: null,
+export const initialValues: Building = {
+          _id: '',
+          street: '',
+          streetNumber: 0,
+          city: '',
+          region: '',
+          country: '',
+          fullAddress: '',
+          isRecentlyBuilt: false,
+          dateTimeRegistered: new Date,
+          dateTimeUpdated: new Date,
+          appartmentCount: 0,
+          issueCount: 0,
+          allReportedIssues: [],
+          unresolvedIssues: [],
+          inProgressIssues: [],
+          doneIssues: [],
+          hasOwnParkingLot: false,
+          parkingLotCount: 0,
+          hasGasHeating: false,
+          hasCentralHeating: false,
+          hasElectricHeating: false,
+          hasSolarPower: false,
+          hasOwnBicycleRoom: false,
+          hasOwnWaterPump: false,
+          hasOwnElevator: false,
+          storiesHigh: 0,
+          isToThreeStoriesHigh: false,
+          tenantMeetings: [],
+          tenantCount: 0,
+          // image: new Uint8Array,
+          buildingStatus: false,
 };
 
 export const validationSchema = Yup.object({
           _id: Yup.string().max(30),
           street: Yup.string().max(30),
+          streetNumber: Yup.number(),
           city: Yup.string().max(30),
           region: Yup.string().max(30),
           country: Yup.string().max(30),
           fullAddress: Yup.string().max(30),
-          recentlyBuilt: Yup.boolean(),
+          isRecentlyBuilt: Yup.boolean(),
           dateTimeRegistered: Yup.date(),
           dateTimeUpdated: Yup.date(),
-          appartmentCount: Yup.number().max(150),
+          appartmentCount: Yup.number(),
           issueCount: Yup.number(),
-          issues: Yup.array(),
+          allReportedIssues: Yup.array(),
+          unresolvedIssues: Yup.array(),
+          inProgressIssues: Yup.array(),
+          doneIssues: Yup.array(),
           hasOwnParkingLot: Yup.boolean(),
           parkingLotCount: Yup.number(),
-          gasHeating: Yup.boolean(),
-          centralHeating: Yup.boolean(),
-          electricHeating: Yup.boolean(),
-          solarPower: Yup.boolean(),
+          hasGasHeating: Yup.boolean(),
+          hasCentralHeating: Yup.boolean(),
+          hasElectricHeating: Yup.boolean(),
+          hasSolarPower: Yup.boolean(),
           hasOwnBicycleRoom: Yup.boolean(),
           hasOwnWaterPump: Yup.boolean(),
           hasOwnElevator: Yup.boolean(),
+          storiesHigh: Yup.number(),
+          isToThreeStoriesHigh: Yup.boolean(),
           tenantMeetings: Yup.array(),
           tenantCount: Yup.number(),
+          //image: Yup.array(),
+          buildingStatus: Yup.boolean(),
 });

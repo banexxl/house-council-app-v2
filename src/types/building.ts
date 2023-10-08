@@ -28,7 +28,7 @@ export interface Building {
           isToThreeStoriesHigh: boolean;
           tenantMeetings: string[],
           tenantCount: number;
-          image: Uint8Array;
+          // image: Uint8Array;
           buildingStatus: boolean;
 }
 
