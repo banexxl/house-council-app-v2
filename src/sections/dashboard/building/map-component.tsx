@@ -13,13 +13,15 @@ const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSele
                                                   <input {...getInputProps({ placeholder: 'Search Places...' })} />
                                                   <div>
                                                             {loading && <div>Loading...</div>}
-                                                            {suggestions.map((suggestion) => {
+                                                            {suggestions.map((suggestion, index) => {
+
                                                                       const style = {
-                                                                                backgroundColor: suggestion.active ? '#41b6e6' : '#fff',
+
                                                                       };
                                                                       return (
-                                                                                <div key={suggestion.placeId}
-                                                                                //{...getSuggestionItemProps(suggestion, { style })}
+                                                                                <div
+                                                                                          {...getSuggestionItemProps(suggestion, { style })}
+                                                                                          key={`${suggestion.placeId}-${index}`}
                                                                                 >
                                                                                           {suggestion.description}
                                                                                 </div>
@@ -52,24 +54,27 @@ export const GoogleMaps = () => {
                     // Initialize the map when the component mounts
                     const mapOptions = {
                               center: mapCenter,
-                              zoom: 8,
+                              zoom: 17,
                     };
 
                     const mapInstance = new window.google.maps.Map(document.getElementById('map') as HTMLElement, mapOptions)
                     setMap(mapInstance);
           }, [mapCenter]);
 
+
           return (
-                    <div style={{ height: '500px', width: '100%' }}>
-                              <Box height={300}
-                                        width={400}
+                    <Box>
+                              <Box
+                                        sx={{ borderRadius: '15px' }}
+                                        height={'500px'}
+                                        width={'100%'}
                                         id="map" />
-                              {selectedAddress && map && <Marker position={mapCenter} />}
+                              {selectedAddress && <Marker position={mapCenter} />}
                               <AutocompleteComponent
                                         selectedAddress={selectedAddress}
                                         setSelectedAddress={setSelectedAddress}
                                         handleSelect={handleSelect}
                               />
-                    </div>
+                    </Box>
           );
 };

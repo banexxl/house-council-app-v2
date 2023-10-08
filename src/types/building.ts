@@ -29,6 +29,8 @@ export interface Building {
           tenantMeetings: string[],
           tenantCount: number;
           // image: Uint8Array;
+          long: number;
+          lat: number;
           buildingStatus: boolean;
 }
 
