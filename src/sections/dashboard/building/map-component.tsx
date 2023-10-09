@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { Box } from '@mui/system';
+import { TextField, Typography } from '@mui/material';
 
 const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSelect }: any) => {
           return (
@@ -10,19 +11,24 @@ const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSele
                               onSelect={handleSelect}>
                               {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
                                         <div>
-                                                  <input {...getInputProps({ placeholder: 'Search Places...' })} />
+                                                  <TextField
+                                                            fullWidth
+                                                            {...getInputProps({ placeholder: 'Search Places...' })}
+                                                            variant="outlined"
+                                                            margin="dense"
+                                                            label="Search Places"
+                                                  />
                                                   <div>
-                                                            {loading && <div>Loading...</div>}
+                                                            {loading && (
+                                                                      <Box>
+                                                                                <Typography>Loading...</Typography>
+                                                                      </Box>
+                                                            )}
                                                             {suggestions.map((suggestion, index) => {
-
-                                                                      const style = {
-
-                                                                      };
+                                                                      const style = {};
                                                                       return (
-                                                                                <div
-                                                                                          {...getSuggestionItemProps(suggestion, { style })}
-                                                                                          key={`${suggestion.placeId}-${index}`}
-                                                                                >
+                                                                                <div {...getSuggestionItemProps(suggestion, { style })}
+                                                                                          key={`${suggestion.placeId}-${index}`}>
                                                                                           {suggestion.description}
                                                                                 </div>
                                                                       );
@@ -70,6 +76,7 @@ export const GoogleMaps = () => {
                                         width={'100%'}
                                         id="map" />
                               {selectedAddress && <Marker position={mapCenter} />}
+
                               <AutocompleteComponent
                                         selectedAddress={selectedAddress}
                                         setSelectedAddress={setSelectedAddress}
