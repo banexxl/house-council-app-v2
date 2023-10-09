@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { Box } from '@mui/system';
 import { TextField, Typography } from '@mui/material';
+import customMarker from 'public/assets/icons/google-maps.svg'
 
 const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSelect }: any) => {
+
           return (
                     <PlacesAutocomplete value={selectedAddress}
                               onChange={setSelectedAddress}
@@ -44,6 +46,7 @@ export const GoogleMaps = () => {
           const [map, setMap] = useState<google.maps.Map>();
           const [mapCenter, setMapCenter] = useState({ lat: 45.2396, lng: 19.8227 });
           const [selectedAddress, setSelectedAddress] = useState('');
+          const [markers, setMarkers] = useState([])
 
           const handleSelect = async (address: any) => {
                     try {
@@ -67,16 +70,42 @@ export const GoogleMaps = () => {
                     setMap(mapInstance);
           }, [mapCenter]);
 
+          const mapContainerStyle = {
+                    borderRadius: '10px',
+                    height: '400px',
+                    width: '500px'
+          }
+
+          const icon = {
+                    url: "/assets/icons/icons8-google-home.svg", // url
+                    scaledSize: new google.maps.Size(30, 30), // scaled size
+                    origin: new google.maps.Point(0, 0), // origin
+                    anchor: new google.maps.Point(0, 0) // anchor
+          };
+
+          new google.maps.Marker({
+                    position: mapCenter,
+                    map,
+                    title: "Hello World!",
+                    icon: icon
+          });
+
 
           return (
                     <Box>
-                              <Box
-                                        sx={{ borderRadius: '15px' }}
-                                        height={'500px'}
-                                        width={'100%'}
-                                        id="map" />
-                              {selectedAddress && <Marker position={mapCenter} />}
-
+                              <GoogleMap
+                                        center={mapCenter}
+                                        mapContainerStyle={mapContainerStyle}
+                                        id="map"
+                              >
+                                        {selectedAddress &&
+                                                  <Marker position={mapCenter}
+                                                            key={'map'}
+                                                            title='Marker'
+                                                            icon={customMarker}
+                                                  />
+                                        }
+                              </GoogleMap>
                               <AutocompleteComponent
                                         selectedAddress={selectedAddress}
                                         setSelectedAddress={setSelectedAddress}
@@ -85,3 +114,5 @@ export const GoogleMaps = () => {
                     </Box>
           );
 };
+
+
