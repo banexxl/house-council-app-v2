@@ -3,7 +3,6 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { Box } from '@mui/system';
 import { TextField, Typography } from '@mui/material';
-import customMarker from 'public/assets/icons/google-maps.svg'
 
 const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSelect }: any) => {
 
@@ -42,11 +41,10 @@ const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSele
           );
 };
 
-export const GoogleMaps = () => {
+export const GoogleMaps = ({ onMapAddressChange }: any) => {
           const [map, setMap] = useState<google.maps.Map>();
           const [mapCenter, setMapCenter] = useState({ lat: 45.2396, lng: 19.8227 });
           const [selectedAddress, setSelectedAddress] = useState('');
-          const [markers, setMarkers] = useState([])
 
           const handleSelect = async (address: any) => {
                     try {
@@ -54,6 +52,7 @@ export const GoogleMaps = () => {
                               const latLng = await getLatLng(results[0]);
                               setSelectedAddress(address);
                               setMapCenter(latLng);
+                              onMapAddressChange({ address, latLng })
                     } catch (error) {
                               console.error('Error selecting address:', error);
                     }
@@ -98,13 +97,13 @@ export const GoogleMaps = () => {
                                         mapContainerStyle={mapContainerStyle}
                                         id="map"
                               >
-                                        {selectedAddress &&
+                                        {/* {selectedAddress &&
                                                   <Marker position={mapCenter}
                                                             key={'map'}
                                                             title='Marker'
                                                             icon={customMarker}
                                                   />
-                                        }
+                                        } */}
                               </GoogleMap>
                               <AutocompleteComponent
                                         selectedAddress={selectedAddress}

@@ -22,12 +22,12 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
 import { GoogleMaps } from './map-component';
-import Head from 'next/head';
-import Script from 'next/script';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
+          const [locationAddress, setLocationAddress] = useState()
+
           const formik = useFormik({
                     initialValues,
                     validationSchema,
@@ -62,7 +62,10 @@ export const BuildingCreateForm: FC = (props) => {
                     setFiles([]);
           }, []);
 
-
+          const onMapAddressChange = (mapAddressProps: any) => {
+                    setLocationAddress(mapAddressProps);
+                    formik.setFieldValue('fullAddress', mapAddressProps.address)
+          }
 
 
           return (
@@ -91,7 +94,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           md={8}
                                                                                 >
                                                                                           <Stack spacing={3}>
-                                                                                                    <GoogleMaps />
+                                                                                                    <GoogleMaps onMapAddressChange={onMapAddressChange} />
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
                                                                                                               fullWidth
@@ -101,6 +104,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               onBlur={formik.handleBlur}
                                                                                                               onChange={formik.handleChange}
                                                                                                               value={formik.values.fullAddress}
+                                                                                                              disabled
                                                                                                     />
 
                                                                                                     <div>

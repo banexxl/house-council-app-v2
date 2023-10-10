@@ -6,6 +6,7 @@ export interface Building {
           region: string;
           country: string;
           fullAddress: string;
+          description: string;
           isRecentlyBuilt: boolean;
           dateTimeRegistered: Date;
           dateTimeUpdated: Date;
