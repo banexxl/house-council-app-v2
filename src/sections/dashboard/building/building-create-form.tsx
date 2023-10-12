@@ -20,13 +20,38 @@ import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
-import { GoogleMaps } from './map-component';
-import DraggableDialog from './building-kanban/building-issue-card';
+import { GoogleMaps } from './map-component'
+import axios from 'axios';
+import { Board } from './building-kanban/building-kanban';
+import { Divider, Paper } from '@mui/material';
+import { BoardsList } from './building-kanban/building-issue-list';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
           const [locationAddress, setLocationAddress] = useState()
+          const [tasks, setTasks] = useState([])
+
+          const url = '/db.json'
+
+          useEffect(() => {
+                    const loading = async () => {
+                              try {
+                                        const res = await fetch(url)
+
+
+                                        let response = await res.json()
+
+                                        setTasks(response.tasksList)
+                                        console.log('aaaaaaaaaaaaa', tasks);
+                              } catch (error) {
+                                        console.log('Error', error)
+                              }
+                    }
+                    loading()
+          }, [])
+
+
 
           const formik = useFormik({
                     initialValues,
@@ -376,7 +401,40 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           md={8}
                                                                                 >
                                                                                           <Stack spacing={3}>
-                                                                                                    <DraggableDialog />
+                                                                                                    <Grid container
+                                                                                                    // className={classes.root} spacing={3}
+                                                                                                    >
+                                                                                                              <Grid container
+                                                                                                              // className={classes.boardsWrap}
+                                                                                                              >
+                                                                                                                        <Grid
+                                                                                                                        // className={classes.boardsContent}
+                                                                                                                        >
+                                                                                                                                  {
+                                                                                                                                            tasks !== null && tasks !== undefined && tasks.length != 0 ?
+                                                                                                                                                      tasks.map((task: any) => {
+                                                                                                                                                                return (
+                                                                                                                                                                          <Paper key={task.id}
+                                                                                                                                                                                    elevation={3}
+                                                                                                                                                                          // className={classes.boardCard}
+                                                                                                                                                                          >
+                                                                                                                                                                                    {/* <BoardHeader title={task.title} /> */}
+                                                                                                                                                                                    <Divider />
+                                                                                                                                                                                    <BoardsList boards={task.boards} />
+                                                                                                                                                                                    <Divider
+                                                                                                                                                                                    // className={classes.divider}
+                                                                                                                                                                                    />
+                                                                                                                                                                                    {/* <BoardFooter /> */}
+                                                                                                                                                                          </Paper>
+                                                                                                                                                                )
+
+                                                                                                                                                      })
+                                                                                                                                                      :
+                                                                                                                                                      null
+                                                                                                                                  }
+                                                                                                                        </Grid>
+                                                                                                              </Grid>
+                                                                                                    </Grid>
                                                                                           </Stack>
                                                                                 </Grid>
                                                                       </Grid>
