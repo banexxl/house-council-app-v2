@@ -12,7 +12,7 @@ import { Seo } from 'src/components/seo';
 import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
-import { BuildingCreateForm } from '@/sections/dashboard/building/building-create-form';
+import { BuildingCreateForm } from '@/sections/dashboard/buildings/building-create-form';
 
 const Page: NextPage = () => {
           usePageView();
