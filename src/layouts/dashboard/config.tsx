@@ -25,6 +25,7 @@ import ReceiptCheckIcon from 'src/icons/untitled-ui/duocolor/receipt-check';
 import Share07Icon from 'src/icons/untitled-ui/duocolor/share-07';
 import ShoppingBag03Icon from 'src/icons/untitled-ui/duocolor/shopping-bag-03';
 import ShoppingCart01Icon from 'src/icons/untitled-ui/duocolor/shopping-cart-01';
+import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 import Truck01Icon from 'src/icons/untitled-ui/duocolor/truck-01';
 import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
 import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
@@ -135,7 +136,7 @@ export const useSections = () => {
                                                             path: paths.dashboard.buildings.index,
                                                             icon: (
                                                                       <SvgIcon fontSize="small">
-                                                                                <ShoppingBag03Icon />
+                                                                                <CorporateFareIcon />
                                                                       </SvgIcon>
                                                             ),
                                                             items: [
