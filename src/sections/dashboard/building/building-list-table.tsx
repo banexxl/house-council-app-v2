@@ -222,7 +222,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                     </TableCell>
                                                                                                     <TableCell>{building.appartmentCount}</TableCell>
 
-                                                                                                    <TableCell width="25%">
+                                                                                                    {/* <TableCell width="25%">
                                                                                                               <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
                                                                                                                         variant="determinate"
@@ -239,7 +239,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                         {building.unresolvedIssues.length} unresolved issues <br />
                                                                                                                         out of {building.allReportedIssues.length}
                                                                                                               </Typography>
-                                                                                                    </TableCell>
+                                                                                                    </TableCell> */}
                                                                                                     <TableCell>
                                                                                                               <SeverityPill color={hasElevatorColor}>{building.hasOwnElevator}</SeverityPill>
                                                                                                     </TableCell>
