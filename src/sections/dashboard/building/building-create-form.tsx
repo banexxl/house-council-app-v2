@@ -32,27 +32,6 @@ export const BuildingCreateForm: FC = (props) => {
           const [locationAddress, setLocationAddress] = useState()
           const [tasks, setTasks] = useState([])
 
-          const url = '/db.json'
-
-          useEffect(() => {
-                    const loading = async () => {
-                              try {
-                                        const res = await fetch(url)
-
-
-                                        let response = await res.json()
-
-                                        setTasks(response.tasksList)
-                                        console.log('aaaaaaaaaaaaa', tasks);
-                              } catch (error) {
-                                        console.log('Error', error)
-                              }
-                    }
-                    loading()
-          }, [])
-
-
-
           const formik = useFormik({
                     initialValues,
                     validationSchema,
@@ -90,26 +69,6 @@ export const BuildingCreateForm: FC = (props) => {
           const onMapAddressChange = (mapAddressProps: any) => {
                     setLocationAddress(mapAddressProps);
                     formik.setFieldValue('fullAddress', mapAddressProps.address)
-          }
-
-          const data = {
-                    lanes: [
-                              {
-                                        id: 'lane1',
-                                        title: 'Planned Tasks',
-                                        label: '2/2',
-                                        cards: [
-                                                  { id: 'Card1', title: 'Write Blog', description: 'Can AI make memes', label: '30 mins', draggable: false },
-                                                  { id: 'Card2', title: 'Pay Rent', description: 'Transfer via NEFT', label: '5 mins', metadata: { sha: 'be312a1' } }
-                                        ]
-                              },
-                              {
-                                        id: 'lane2',
-                                        title: 'Completed',
-                                        label: '0/0',
-                                        cards: []
-                              }
-                    ]
           }
 
           return (
@@ -378,63 +337,6 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         name='hasOwnWaterPump'
                                                                                                               />
                                                                                                     </div>
-                                                                                          </Stack>
-                                                                                </Grid>
-                                                                      </Grid>
-                                                            </CardContent>
-                                                  </Card>
-                                                  {/*-------------------Issues-------------------*/}
-                                                  <Card>
-                                                            <CardContent>
-                                                                      <Grid
-                                                                                container
-                                                                                spacing={3}
-                                                                      >
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={4}
-                                                                                >
-                                                                                          <Typography variant="h6">Issues</Typography>
-                                                                                </Grid>
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={8}
-                                                                                >
-                                                                                          <Stack spacing={3}>
-                                                                                                    <Grid container
-                                                                                                    // className={classes.root} spacing={3}
-                                                                                                    >
-                                                                                                              <Grid container
-                                                                                                              // className={classes.boardsWrap}
-                                                                                                              >
-                                                                                                                        <Grid
-                                                                                                                        // className={classes.boardsContent}
-                                                                                                                        >
-                                                                                                                                  {
-                                                                                                                                            tasks !== null && tasks !== undefined && tasks.length != 0 ?
-                                                                                                                                                      tasks.map((task: any) => {
-                                                                                                                                                                return (
-                                                                                                                                                                          <Paper key={task.id}
-                                                                                                                                                                                    elevation={3}
-                                                                                                                                                                          // className={classes.boardCard}
-                                                                                                                                                                          >
-                                                                                                                                                                                    {/* <BoardHeader title={task.title} /> */}
-                                                                                                                                                                                    <Divider />
-                                                                                                                                                                                    <BoardsList boards={task.boards} />
-                                                                                                                                                                                    <Divider
-                                                                                                                                                                                    // className={classes.divider}
-                                                                                                                                                                                    />
-                                                                                                                                                                                    {/* <BoardFooter /> */}
-                                                                                                                                                                          </Paper>
-                                                                                                                                                                )
-
-                                                                                                                                                      })
-                                                                                                                                                      :
-                                                                                                                                                      null
-                                                                                                                                  }
-                                                                                                                        </Grid>
-                                                                                                              </Grid>
-                                                                                                    </Grid>
                                                                                           </Stack>
                                                                                 </Grid>
                                                                       </Grid>
