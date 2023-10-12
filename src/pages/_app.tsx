@@ -56,7 +56,7 @@ const CustomApp = (props: CustomAppProps) => {
 
           return (
                     <CacheProvider value={emotionCache}>
-                              <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=Function.prototype`}
+                              <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
                                         async />
                               <Head>
                                         <title>HouseCouncil</title>

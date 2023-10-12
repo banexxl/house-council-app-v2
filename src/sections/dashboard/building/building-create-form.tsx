@@ -14,7 +14,6 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-
 import type { File } from 'src/components/file-dropzone';
 import { FileDropzone } from 'src/components/file-dropzone';
 import { QuillEditor } from 'src/components/quill-editor';
@@ -22,6 +21,7 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
 import { GoogleMaps } from './map-component';
+import DraggableDialog from './building-kanban/building-issue-card';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
@@ -67,6 +67,25 @@ export const BuildingCreateForm: FC = (props) => {
                     formik.setFieldValue('fullAddress', mapAddressProps.address)
           }
 
+          const data = {
+                    lanes: [
+                              {
+                                        id: 'lane1',
+                                        title: 'Planned Tasks',
+                                        label: '2/2',
+                                        cards: [
+                                                  { id: 'Card1', title: 'Write Blog', description: 'Can AI make memes', label: '30 mins', draggable: false },
+                                                  { id: 'Card2', title: 'Pay Rent', description: 'Transfer via NEFT', label: '5 mins', metadata: { sha: 'be312a1' } }
+                                        ]
+                              },
+                              {
+                                        id: 'lane2',
+                                        title: 'Completed',
+                                        label: '0/0',
+                                        cards: []
+                              }
+                    ]
+          }
 
           return (
                     <div>
@@ -77,6 +96,7 @@ export const BuildingCreateForm: FC = (props) => {
 
 
                                         <Stack spacing={4}>
+                                                  {/*-------------------Basic info-------------------*/}
                                                   <Card>
                                                             <CardContent>
                                                                       <Grid
@@ -87,7 +107,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           xs={12}
                                                                                           md={4}
                                                                                 >
-                                                                                          <Typography variant="h6">Please add building address</Typography>
+                                                                                          <Typography variant="h6">Basic information</Typography>
                                                                                 </Grid>
                                                                                 <Grid
                                                                                           xs={12}
@@ -106,7 +126,16 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               value={formik.values.fullAddress}
                                                                                                               disabled
                                                                                                     />
-
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.region && formik.errors.region)}
+                                                                                                              fullWidth
+                                                                                                              label="Region"
+                                                                                                              name="region"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="string"
+                                                                                                              value={formik.values.region}
+                                                                                                    />
                                                                                                     <div>
                                                                                                               <Typography
                                                                                                                         color="text.secondary"
@@ -130,6 +159,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                       </Grid>
                                                             </CardContent>
                                                   </Card>
+                                                  {/*-------------------Image-------------------*/}
                                                   <Card>
                                                             <CardContent>
                                                                       <Grid
@@ -166,6 +196,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                       </Grid>
                                                             </CardContent>
                                                   </Card>
+                                                  {/*-------------------Detailed information-------------------*/}
                                                   <Card>
                                                             <CardContent>
                                                                       <Grid
@@ -176,37 +207,150 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           xs={12}
                                                                                           md={4}
                                                                                 >
-                                                                                          <Typography variant="h6">Pricing</Typography>
+                                                                                          <Typography variant="h6">Detailed information</Typography>
                                                                                 </Grid>
                                                                                 <Grid
                                                                                           xs={12}
                                                                                           md={8}
+                                                                                          flexDirection={'row'}
+                                                                                          container
                                                                                 >
-                                                                                          <Stack spacing={3}>
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
-                                                                                                              fullWidth
-                                                                                                              label="Old price"
-                                                                                                              name="oldPrice"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="number"
-                                                                                                              value={formik.values.country}
-                                                                                                    />
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
-                                                                                                              fullWidth
-                                                                                                              label="New Price"
-                                                                                                              name="newPrice"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="number"
-                                                                                                              value={formik.values.country}
-                                                                                                    />
+                                                                                          <Stack spacing={5}>
                                                                                                     <div>
                                                                                                               <FormControlLabel
                                                                                                                         control={<Switch defaultChecked />}
-                                                                                                                        label="Keep selling when stock is empty"
+                                                                                                                        label="Is receintly built"
+                                                                                                                        value={formik.values.isRecentlyBuilt}
+                                                                                                                        name='isReceintlyBuilt'
+                                                                                                              />
+                                                                                                    </div><div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has own parking lot"
+                                                                                                                        value={formik.values.hasOwnParkingLot}
+                                                                                                                        name='hasOwnParkingLot'
+                                                                                                              />
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has own elevator"
+                                                                                                                        value={formik.values.hasOwnElevator}
+                                                                                                                        name='hasOwnElevator'
+                                                                                                              />
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has own bicycle room"
+                                                                                                                        value={formik.values.hasOwnBicycleRoom}
+                                                                                                                        name='hasOwnBicycleRoom'
+                                                                                                              />
+                                                                                                    </div>
+                                                                                          </Stack>
+                                                                                          <Stack spacing={2}>
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.storiesHigh && formik.errors.storiesHigh)}
+                                                                                                              fullWidth
+                                                                                                              label="Stories high"
+                                                                                                              name="storiesHigh"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="number"
+                                                                                                              value={formik.values.storiesHigh}
+                                                                                                    />
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.parkingLotCount && formik.errors.parkingLotCount)}
+                                                                                                              fullWidth
+                                                                                                              label="Parking lot count"
+                                                                                                              name="parkingLotCount"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="number"
+                                                                                                              value={formik.values.parkingLotCount}
+                                                                                                    />
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.appartmentCount && formik.errors.appartmentCount)}
+                                                                                                              fullWidth
+                                                                                                              label="Appartment count"
+                                                                                                              name="appartmentCount"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="number"
+                                                                                                              value={formik.values.appartmentCount}
+                                                                                                    />
+                                                                                                    <TextField
+                                                                                                              error={!!(formik.touched.tenantCount && formik.errors.tenantCount)}
+                                                                                                              fullWidth
+                                                                                                              label="Tenant count"
+                                                                                                              name="tenantCount"
+                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onChange={formik.handleChange}
+                                                                                                              type="number"
+                                                                                                              value={formik.values.tenantCount}
+                                                                                                    />
+                                                                                          </Stack>
+                                                                                </Grid>
+                                                                      </Grid>
+                                                            </CardContent>
+                                                  </Card>
+                                                  {/*-------------------Advanced information info-------------------*/}
+                                                  <Card>
+                                                            <CardContent>
+                                                                      <Grid
+                                                                                container
+                                                                                spacing={3}
+                                                                      >
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={4}
+                                                                                >
+                                                                                          <Typography variant="h6">Advanced information</Typography>
+                                                                                </Grid>
+                                                                                <Grid
+                                                                                          xs={12}
+                                                                                          md={8}
+                                                                                          flexDirection={'row'}
+                                                                                          container
+                                                                                >
+                                                                                          <Stack spacing={2}>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has gas heating"
+                                                                                                                        value={formik.values.hasGasHeating}
+                                                                                                                        name='hasGasHeating'
+                                                                                                              />
+                                                                                                    </div><div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has central heating"
+                                                                                                                        value={formik.values.hasCentralHeating}
+                                                                                                                        name='hasCentralHeating'
+                                                                                                              />
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has electrical heating"
+                                                                                                                        value={formik.values.hasElectricHeating}
+                                                                                                                        name='hasElectricHeating'
+                                                                                                              />
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has solar power"
+                                                                                                                        value={formik.values.hasSolarPower}
+                                                                                                                        name='hasSolarPower'
+                                                                                                              />
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                              <FormControlLabel
+                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        label="Has own water pump"
+                                                                                                                        value={formik.values.hasOwnWaterPump}
+                                                                                                                        name='hasOwnWaterPump'
                                                                                                               />
                                                                                                     </div>
                                                                                           </Stack>
@@ -214,6 +358,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                       </Grid>
                                                             </CardContent>
                                                   </Card>
+                                                  {/*-------------------Issues-------------------*/}
                                                   <Card>
                                                             <CardContent>
                                                                       <Grid
@@ -224,52 +369,14 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           xs={12}
                                                                                           md={4}
                                                                                 >
-                                                                                          <Typography variant="h6">Category</Typography>
+                                                                                          <Typography variant="h6">Issues</Typography>
                                                                                 </Grid>
                                                                                 <Grid
                                                                                           xs={12}
                                                                                           md={8}
                                                                                 >
                                                                                           <Stack spacing={3}>
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
-                                                                                                              fullWidth
-                                                                                                              label="Category"
-                                                                                                              name="category"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              select
-                                                                                                              value={formik.values.country}
-                                                                                                    >
-                                                                                                              {buildingCategoryOptions.map((option: any) => (
-                                                                                                                        <MenuItem
-                                                                                                                                  key={option.value}
-                                                                                                                                  value={option.value}
-                                                                                                                        >
-                                                                                                                                  {option.label}
-                                                                                                                        </MenuItem>
-                                                                                                              ))}
-                                                                                                    </TextField>
-                                                                                                    <TextField
-                                                                                                              disabled
-                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
-                                                                                                              fullWidth
-                                                                                                              label="Barcode"
-                                                                                                              name="barcode"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              value={formik.values.country}
-                                                                                                    />
-                                                                                                    <TextField
-                                                                                                              disabled
-                                                                                                              error={!!(formik.touched.country && formik.errors.country)}
-                                                                                                              fullWidth
-                                                                                                              label="SKU"
-                                                                                                              name="sku"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              value={formik.values.country}
-                                                                                                    />
+                                                                                                    <DraggableDialog />
                                                                                           </Stack>
                                                                                 </Grid>
                                                                       </Grid>

@@ -7,32 +7,36 @@ export interface Building {
           country: string;
           fullAddress: string;
           description: string;
+          /////////////////////////////////////////
           isRecentlyBuilt: boolean;
-          dateTimeRegistered: Date;
-          dateTimeUpdated: Date;
+          storiesHigh: number;
+          hasOwnParkingLot: boolean;
+          parkingLotCount: number;
           appartmentCount: number;
+          tenantCount: number;
+          hasOwnElevator: boolean;
+          hasOwnBicycleRoom: boolean;
+          /////////////////////////////////////////
           issueCount: number;
           allReportedIssues: string[];
           unresolvedIssues: string[];
           inProgressIssues: string[];
           doneIssues: string[];
-          hasOwnParkingLot: boolean;
-          parkingLotCount: number;
+          tenantMeetings: string[],
+          /////////////////////////////////////////
           hasGasHeating: boolean;
           hasCentralHeating: boolean;
           hasElectricHeating: boolean;
           hasSolarPower: boolean;
-          hasOwnBicycleRoom: boolean;
           hasOwnWaterPump: boolean;
-          hasOwnElevator: boolean;
-          storiesHigh: number;
-          isToThreeStoriesHigh: boolean;
-          tenantMeetings: string[],
-          tenantCount: number;
+          /////////////////////////////////////////
           // image: Uint8Array;
           long: number;
           lat: number;
           buildingStatus: boolean;
+          /////////////////////////////////////////
+          dateTimeAdded: Date;
+          dateTimeUpdated: Date;
 }
 
 export interface buildingAPIResponse {
