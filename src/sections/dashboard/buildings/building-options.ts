@@ -40,7 +40,6 @@ export interface BuildingFilters {
 }
 
 export const initialValues: Building = {
-          _id: '',
           street: '',
           streetNumber: 0,
           city: '',
@@ -74,7 +73,6 @@ export const initialValues: Building = {
 };
 
 export const validationSchema = Yup.object({
-          _id: Yup.string().max(30),
           street: Yup.string().max(30),
           streetNumber: Yup.number(),
           city: Yup.string().max(30),

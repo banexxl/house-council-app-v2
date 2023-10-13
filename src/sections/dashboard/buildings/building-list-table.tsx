@@ -32,6 +32,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from '@/types/building';
+import { FormControlLabel } from '@mui/material';
 
 interface BuildingListTableProps {
           count?: number;
@@ -191,7 +192,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                       md={6}
                                                                                                                                                       xs={12}
                                                                                                                                             >
-                                                                                                                                                      <Typography variant="h6">Basic details</Typography>
+                                                                                                                                                      <Typography variant="h6">Basic information</Typography>
                                                                                                                                                       <Divider sx={{ my: 2 }} />
                                                                                                                                                       <Grid
                                                                                                                                                                 container
@@ -203,10 +204,11 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <TextField
-                                                                                                                                                                                    defaultValue={building.fullAddress}
+                                                                                                                                                                                    defaultValue={building._id}
                                                                                                                                                                                     fullWidth
-                                                                                                                                                                                    label="Building name"
-                                                                                                                                                                                    name="name"
+                                                                                                                                                                                    label="Building ID"
+                                                                                                                                                                                    name="_id"
+                                                                                                                                                                                    disabled
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -214,35 +216,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           md={6}
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.street}
-                                                                                                                                                                                    disabled
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="SKU"
-                                                                                                                                                                                    name="sku"
+                                                                                                                                                                          <FormControlLabel
+                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    label="Is receintly built"
+                                                                                                                                                                                    //value={formik.values.isRecentlyBuilt}
+                                                                                                                                                                                    name='isReceintlyBuilt'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
-                                                                                                                                                                {/* <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.streetNumber}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Category"
-                                                                                                                                                                                    select
-                                                                                                                                                                          >
-                                                                                                                                                                                    {categoryOptions.map((option) => (
-                                                                                                                                                                                              <MenuItem
-                                                                                                                                                                                                        key={option.value}
-                                                                                                                                                                                                        value={option.value}
-                                                                                                                                                                                              >
-                                                                                                                                                                                                        {option.label}
-                                                                                                                                                                                              </MenuItem>
-                                                                                                                                                                                    ))}
-                                                                                                                                                                          </TextField>
-                                                                                                                                                                </Grid> */}
                                                                                                                                                                 <Grid
                                                                                                                                                                           item
                                                                                                                                                                           md={6}

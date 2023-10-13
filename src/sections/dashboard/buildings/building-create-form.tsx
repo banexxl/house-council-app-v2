@@ -26,16 +26,38 @@ export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
           const [locationAddress, setLocationAddress] = useState()
-          const [tasks, setTasks] = useState([])
 
           const formik = useFormik({
                     initialValues,
                     validationSchema,
                     onSubmit: async (values, helpers): Promise<void> => {
                               try {
-                                        // NOTE: Make API request
-                                        toast.success('Building created');
-                                        router.push(paths.dashboard.buildings.index);
+                                        const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
+                                                  method: 'POST',
+                                                  headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Access-Control-Allow-Origin': '*',
+                                                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                  },
+                                                  body: JSON.stringify(values), // Convert your data to JSON
+                                        })
+
+                                        if (buildingCreateResponse.ok) {
+                                                  toast.success('Customer added');
+                                                  router.push(paths.dashboard.buildings.index);
+                                        } else if (buildingCreateResponse.status === 409) {
+                                                  const errorData = await buildingCreateResponse.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('Building on that address already exists!');
+                                                  helpers.setStatus({ success: false });
+                                                  // helpers.setErrors({ submit: errorData.message }); // You can set specific error messages if needed
+                                        } else {
+                                                  const errorData = await buildingCreateResponse.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('Something went wrong!');
+                                                  helpers.setStatus({ success: false });
+                                        }
+
                               } catch (err) {
                                         console.error(err);
                                         toast.error('Something went wrong!');

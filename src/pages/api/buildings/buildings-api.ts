@@ -30,14 +30,15 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
                     } else if (request.method === 'POST') {
+                              console.log(request.body);
 
-                              const customerExists = await dbBuildings.findOne({ email: request.body.email })
+                              const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
-                              if (customerExists === null) {
+                              if (buildingExists === null) {
                                         await dbBuildings.insertOne(request.body)
-                                        return response.status(200).json({ message: 'Customer successfully added!' });
+                                        return response.status(200).json({ message: 'Building successfully added!' });
                               } else {
-                                        const error = new Error('Customer already exists!');
+                                        const error = new Error('Building already exists!');
                                         (error as any).cause = { status: 409 };
                                         return response.status(409).json({ error: error });
                               }
