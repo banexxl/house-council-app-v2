@@ -17,8 +17,6 @@ export interface Building {
           hasOwnElevator: boolean;
           hasOwnBicycleRoom: boolean;
           /////////////////////////////////////////
-          issueCount: number;
-          allReportedIssues: string[];
           unresolvedIssues: string[];
           inProgressIssues: string[];
           doneIssues: string[];

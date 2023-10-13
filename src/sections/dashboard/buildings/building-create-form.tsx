@@ -21,10 +21,6 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
 import { GoogleMaps } from './map-component'
-import axios from 'axios';
-import { Board } from './building-kanban/building-kanban';
-import { Divider, Paper } from '@mui/material';
-import { BoardsList } from './building-kanban/building-issue-list';
 
 export const BuildingCreateForm: FC = (props) => {
           const router = useRouter();

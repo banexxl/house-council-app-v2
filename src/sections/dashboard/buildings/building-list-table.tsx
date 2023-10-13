@@ -27,42 +27,11 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from '@/types/building';
-
-interface CategoryOption {
-          label: string;
-          value: string;
-}
-
-const categoryOptions: CategoryOption[] = [
-          {
-                    label: 'Healthcare',
-                    value: 'healthcare',
-          },
-          {
-                    label: 'Makeup',
-                    value: 'makeup',
-          },
-          {
-                    label: 'Dress',
-                    value: 'dress',
-          },
-          {
-                    label: 'Skincare',
-                    value: 'skincare',
-          },
-          {
-                    label: 'Jewelry',
-                    value: 'jewelry',
-          },
-          {
-                    label: 'Blouse',
-                    value: 'blouse',
-          },
-];
 
 interface BuildingListTableProps {
           count?: number;
@@ -129,7 +98,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                   <TableBody>
                                                             {items.map((building) => {
                                                                       const isCurrent = building._id === currentBuilding;
-                                                                      const issueCountColor = building.issueCount >= 10 ? 'success' : 'error';
+                                                                      const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
                                                                       const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'info';
                                                                       // const hasManyVariants = building.variants > 1;
 
@@ -161,68 +130,11 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                         <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                               </IconButton>
                                                                                                     </TableCell>
+                                                                                                    <TableCell>{building.city}</TableCell>
                                                                                                     <TableCell>{building.street}</TableCell>
                                                                                                     <TableCell>{building.streetNumber}</TableCell>
-                                                                                                    {/* image */}
-                                                                                                    <TableCell width="25%">
-                                                                                                              <Box
-                                                                                                                        sx={{
-                                                                                                                                  alignItems: 'center',
-                                                                                                                                  display: 'flex',
-                                                                                                                        }}
-                                                                                                              >
-                                                                                                                        {/* {building.image ? (
-                                                                                                                                  <Box
-                                                                                                                                            sx={{
-                                                                                                                                                      alignItems: 'center',
-                                                                                                                                                      backgroundColor: 'neutral.50',
-                                                                                                                                                      backgroundImage: `url(${building.image})`,
-                                                                                                                                                      backgroundPosition: 'center',
-                                                                                                                                                      backgroundSize: 'cover',
-                                                                                                                                                      borderRadius: 1,
-                                                                                                                                                      display: 'flex',
-                                                                                                                                                      height: 80,
-                                                                                                                                                      justifyContent: 'center',
-                                                                                                                                                      overflow: 'hidden',
-                                                                                                                                                      width: 80,
-                                                                                                                                            }}
-                                                                                                                                  />
-                                                                                                                        ) : (
-                                                                                                                                  <Box
-                                                                                                                                            sx={{
-                                                                                                                                                      alignItems: 'center',
-                                                                                                                                                      backgroundColor: 'neutral.50',
-                                                                                                                                                      borderRadius: 1,
-                                                                                                                                                      display: 'flex',
-                                                                                                                                                      height: 80,
-                                                                                                                                                      justifyContent: 'center',
-                                                                                                                                                      width: 80,
-                                                                                                                                            }}
-                                                                                                                                  >
-                                                                                                                                            <SvgIcon>
-                                                                                                                                                      <Image01Icon />
-                                                                                                                                            </SvgIcon>
-                                                                                                                                  </Box>
-                                                                                                                        )} */}
-                                                                                                                        <Box
-                                                                                                                                  sx={{
-                                                                                                                                            cursor: 'pointer',
-                                                                                                                                            ml: 2,
-                                                                                                                                  }}
-                                                                                                                        >
-                                                                                                                                  <Typography variant="subtitle2">{building.city}</Typography>
-                                                                                                                                  <Typography
-                                                                                                                                            color="text.secondary"
-                                                                                                                                            variant="body2"
-                                                                                                                                  >
-                                                                                                                                            in {building.country}
-                                                                                                                                  </Typography>
-                                                                                                                        </Box>
-                                                                                                              </Box>
-                                                                                                    </TableCell>
                                                                                                     <TableCell>{building.appartmentCount}</TableCell>
-
-                                                                                                    {/* <TableCell width="25%">
+                                                                                                    <TableCell>
                                                                                                               <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
                                                                                                                         variant="determinate"
@@ -237,19 +149,19 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                         variant="body2"
                                                                                                               >
                                                                                                                         {building.unresolvedIssues.length} unresolved issues <br />
-                                                                                                                        out of {building.allReportedIssues.length}
+                                                                                                                        out of {building.unresolvedIssues.length}
                                                                                                               </Typography>
-                                                                                                    </TableCell> */}
+                                                                                                    </TableCell>
                                                                                                     <TableCell>
-                                                                                                              <SeverityPill color={hasElevatorColor}>{building.hasOwnElevator}</SeverityPill>
+                                                                                                              {
+                                                                                                                        building.hasOwnElevator ?
+                                                                                                                                  <CheckCircleOutlineIcon color={hasElevatorColor} />
+                                                                                                                                  :
+                                                                                                                                  <CancelIcon color={hasElevatorColor} />
+                                                                                                              }
                                                                                                     </TableCell>
-                                                                                                    <TableCell align="right">
-                                                                                                              <IconButton>
-                                                                                                                        <SvgIcon>
-                                                                                                                                  <DotsHorizontalIcon />
-                                                                                                                        </SvgIcon>
-                                                                                                              </IconButton>
-                                                                                                    </TableCell>
+                                                                                                    <TableCell>{building.appartmentCount}</TableCell>
+                                                                                                    <TableCell>{building.storiesHigh}</TableCell>
                                                                                           </TableRow>
                                                                                           {isCurrent && (
                                                                                                     <TableRow>
@@ -310,7 +222,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     name="sku"
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
-                                                                                                                                                                <Grid
+                                                                                                                                                                {/* <Grid
                                                                                                                                                                           item
                                                                                                                                                                           md={6}
                                                                                                                                                                           xs={12}
@@ -330,7 +242,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               </MenuItem>
                                                                                                                                                                                     ))}
                                                                                                                                                                           </TextField>
-                                                                                                                                                                </Grid>
+                                                                                                                                                                </Grid> */}
                                                                                                                                                                 <Grid
                                                                                                                                                                           item
                                                                                                                                                                           md={6}
@@ -409,6 +321,62 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     Keep selling when stock is empty
                                                                                                                                                                           </Typography>
                                                                                                                                                                 </Grid>
+                                                                                                                                                                {/* image */}
+
+                                                                                                                                                                <Box
+                                                                                                                                                                          sx={{
+                                                                                                                                                                                    alignItems: 'center',
+                                                                                                                                                                                    display: 'flex',
+                                                                                                                                                                          }}
+                                                                                                                                                                >
+                                                                                                                                                                          {/* {building.image ? (
+                                                                                                                                  <Box
+                                                                                                                                            sx={{
+                                                                                                                                                      alignItems: 'center',
+                                                                                                                                                      backgroundColor: 'neutral.50',
+                                                                                                                                                      backgroundImage: `url(${building.image})`,
+                                                                                                                                                      backgroundPosition: 'center',
+                                                                                                                                                      backgroundSize: 'cover',
+                                                                                                                                                      borderRadius: 1,
+                                                                                                                                                      display: 'flex',
+                                                                                                                                                      height: 80,
+                                                                                                                                                      justifyContent: 'center',
+                                                                                                                                                      overflow: 'hidden',
+                                                                                                                                                      width: 80,
+                                                                                                                                            }}
+                                                                                                                                  />
+                                                                                                                        ) : (
+                                                                                                                                  <Box
+                                                                                                                                            sx={{
+                                                                                                                                                      alignItems: 'center',
+                                                                                                                                                      backgroundColor: 'neutral.50',
+                                                                                                                                                      borderRadius: 1,
+                                                                                                                                                      display: 'flex',
+                                                                                                                                                      height: 80,
+                                                                                                                                                      justifyContent: 'center',
+                                                                                                                                                      width: 80,
+                                                                                                                                            }}
+                                                                                                                                  >
+                                                                                                                                            <SvgIcon>
+                                                                                                                                                      <Image01Icon />
+                                                                                                                                            </SvgIcon>
+                                                                                                                                  </Box>
+                                                                                                                        )} */}
+                                                                                                                                                                          <Box
+                                                                                                                                                                                    sx={{
+                                                                                                                                                                                              cursor: 'pointer',
+                                                                                                                                                                                              ml: 2,
+                                                                                                                                                                                    }}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <Typography variant="subtitle2">{building.city}</Typography>
+                                                                                                                                                                                    <Typography
+                                                                                                                                                                                              color="text.secondary"
+                                                                                                                                                                                              variant="body2"
+                                                                                                                                                                                    >
+                                                                                                                                                                                              in {building.country}
+                                                                                                                                                                                    </Typography>
+                                                                                                                                                                          </Box>
+                                                                                                                                                                </Box>
                                                                                                                                                       </Grid>
                                                                                                                                             </Grid>
                                                                                                                                   </Grid>
