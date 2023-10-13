@@ -52,8 +52,6 @@ export const initialValues: Building = {
           dateTimeAdded: new Date,
           dateTimeUpdated: new Date,
           appartmentCount: 0,
-          issueCount: 0,
-          allReportedIssues: [],
           unresolvedIssues: [],
           inProgressIssues: [],
           doneIssues: [],
