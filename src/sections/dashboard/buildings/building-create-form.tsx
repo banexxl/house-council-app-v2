@@ -85,8 +85,18 @@ export const BuildingCreateForm: FC = (props) => {
           }, []);
 
           const onMapAddressChange = (mapAddressProps: any) => {
+                    console.log(mapAddressProps);
+                    formik.setFieldValue('lng', mapAddressProps.latLng.lng)
+                    formik.setFieldValue('lat', mapAddressProps.latLng.lat)
                     setLocationAddress(mapAddressProps);
                     formik.setFieldValue('fullAddress', mapAddressProps.address)
+                    const fullAddressString = mapAddressProps.address as String
+                    const fullAddressArray = fullAddressString.split(',')
+                    formik.setFieldValue('country', fullAddressArray[2])
+                    formik.setFieldValue('city', fullAddressArray[1])
+                    const [street, streetNumber] = fullAddressArray[0].split(/\s+(?=\d)/)
+                    formik.setFieldValue('street', street)
+                    formik.setFieldValue('streetNumber', streetNumber)
           }
 
           return (
@@ -152,7 +162,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }}
                                                                                                                         placeholder="Write something"
                                                                                                                         sx={{ height: 400 }}
-                                                                                                                        value={formik.values.country}
+                                                                                                                        value={formik.values.description}
                                                                                                               />
 
                                                                                                     </div>

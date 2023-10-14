@@ -101,8 +101,6 @@ const useBuildingIds = (buildings: any) => {
 
 const Page: NextPage = (props: any) => {
 
-          console.log('page props', props);
-
           const [page, setPage] = useState(0);
           const [open, setOpen] = useState(false)
           const [openEdit, setOpenEdit] = useState(false)

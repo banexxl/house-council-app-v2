@@ -28,8 +28,8 @@ export interface Building {
           hasSolarPower: boolean;
           hasOwnWaterPump: boolean;
           /////////////////////////////////////////
-          // image: Uint8Array;
-          long: number;
+          image: Uint8Array;
+          lng: number;
           lat: number;
           buildingStatus: boolean;
           /////////////////////////////////////////

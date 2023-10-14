@@ -23,14 +23,12 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         // .sort({ sortBy: sortOrder })
                                         // .skip(skip)
                                         .toArray();
-                              console.log('aaaaaa', allBuildings);
 
                               const totalCount = allBuildings.length
 
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
                     } else if (request.method === 'POST') {
-                              console.log(request.body);
 
                               const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
@@ -79,8 +77,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                     console.log(response.statusCode)
                     await mongoClient.close();
           }
-
-
 }
 
 

@@ -68,7 +68,7 @@ export const initialValues: Building = {
           tenantCount: 0,
           // image: new Uint8Array,
           buildingStatus: false,
-          long: 19.8227,
+          lng: 19.8227,
           lat: 45.2396
 };
 
