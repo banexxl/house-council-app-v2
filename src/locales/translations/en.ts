@@ -30,7 +30,7 @@ export const en = {
           [tokens.nav.forgotPassword]: 'Forgot Password',
           [tokens.nav.invoiceList]: 'Invoices',
           [tokens.nav.jobList]: 'Job Listings',
-          [tokens.nav.kanban]: 'Kanban',
+          [tokens.nav.board]: 'Board',
           [tokens.nav.list]: 'List',
           [tokens.nav.login]: 'Login',
           [tokens.nav.logistics]: 'Logistics',

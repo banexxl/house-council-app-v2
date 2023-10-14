@@ -82,7 +82,7 @@ export const paths = {
                                         details: '/dashboard/jobs/companies/:companyId',
                               },
                     },
-                    kanban: '/dashboard/kanban',
+                    board: '/dashboard/board',
                     logistics: {
                               index: '/dashboard/logistics',
                               fleet: '/dashboard/logistics/fleet',

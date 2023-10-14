@@ -66,7 +66,7 @@ export const initialValues: Building = {
           storiesHigh: 0,
           tenantMeetings: [],
           tenantCount: 0,
-          // image: new Uint8Array,
+          image: new Uint8Array,
           buildingStatus: false,
           lng: 19.8227,
           lat: 45.2396

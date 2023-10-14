@@ -301,8 +301,8 @@ export const useSections = () => {
                                                             ),
                                                   },
                                                   {
-                                                            title: t(tokens.nav.kanban),
-                                                            path: paths.dashboard.kanban,
+                                                            title: t(tokens.nav.board),
+                                                            path: paths.dashboard.board,
                                                             icon: (
                                                                       <SvgIcon fontSize="small">
                                                                                 <CheckDone01Icon />

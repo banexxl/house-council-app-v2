@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import type { CheckItem, Checklist } from 'src/types/kanban';
+import type { CheckItem, Checklist } from 'src/types/board';
 
 import { TaskCheckItem } from './task-check-item';
 import { TaskCheckItemAdd } from './task-check-item-add';

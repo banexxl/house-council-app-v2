@@ -29,7 +29,7 @@ export const sr = {
           [tokens.nav.forgotPassword]: 'Zaboravljena lozinka',
           [tokens.nav.invoiceList]: 'Računi',
           [tokens.nav.jobList]: 'Poslovi',
-          [tokens.nav.kanban]: 'Kanban',
+          [tokens.nav.board]: 'Tabla',
           [tokens.nav.list]: 'Lista',
           [tokens.nav.login]: 'Prijava',
           [tokens.nav.logistics]: 'Garaža',

@@ -16,11 +16,11 @@ import Typography from '@mui/material/Typography';
 
 import type { RootState } from 'src/store';
 import { useSelector } from 'src/store';
-import type { Member, Task } from 'src/types/kanban';
+import type { Member, Task } from 'src/types/board';
 
 const useTask = (taskId: string): Task | undefined => {
           return useSelector((state: RootState) => {
-                    const { tasks } = state.kanban;
+                    const { tasks } = state.board;
 
                     return tasks.byId[taskId];
           });
@@ -28,7 +28,7 @@ const useTask = (taskId: string): Task | undefined => {
 
 const useAssignees = (assigneesIds?: string[]): Member[] => {
           return useSelector((state: RootState) => {
-                    const { members } = state.kanban;
+                    const { members } = state.board;
 
                     if (!assigneesIds) {
                               return [];

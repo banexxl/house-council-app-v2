@@ -29,7 +29,7 @@ export const es = {
           [tokens.nav.forgotPassword]: 'Recuperar Contraseña',
           [tokens.nav.invoiceList]: 'Facturas',
           [tokens.nav.jobList]: 'Listado de Trabajos',
-          [tokens.nav.kanban]: 'Kanban',
+          [tokens.nav.board]: 'Board',
           [tokens.nav.list]: 'Lista',
           [tokens.nav.login]: 'Acceso',
           [tokens.nav.logistics]: 'Logística',
