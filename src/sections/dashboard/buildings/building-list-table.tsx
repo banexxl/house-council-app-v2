@@ -99,7 +99,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                   <TableBody>
                                                             {items.map((building) => {
                                                                       const isCurrent = building._id === currentBuilding;
-                                                                      const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
+                                                                      // const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
                                                                       const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'warning';
                                                                       // const hasManyVariants = building.variants > 1;
 
@@ -136,7 +136,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                     <TableCell>{building.streetNumber}</TableCell>
                                                                                                     <TableCell>{building.appartmentCount}</TableCell>
                                                                                                     <TableCell>
-                                                                                                              <LinearProgress
+                                                                                                              {/* <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
                                                                                                                         variant="determinate"
                                                                                                                         color={issueCountColor}
@@ -144,14 +144,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                   height: 8,
                                                                                                                                   width: 36,
                                                                                                                         }}
-                                                                                                              />
-                                                                                                              <Typography
+                                                                                                              /> */}
+                                                                                                              {/* <Typography
                                                                                                                         color="text.secondary"
                                                                                                                         variant="body2"
                                                                                                               >
                                                                                                                         {building.unresolvedIssues.length} unresolved issues <br />
                                                                                                                         out of {building.unresolvedIssues.length}
-                                                                                                              </Typography>
+                                                                                                              </Typography> */}
                                                                                                     </TableCell>
                                                                                                     <TableCell>
                                                                                                               {
