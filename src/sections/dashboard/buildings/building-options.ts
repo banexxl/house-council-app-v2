@@ -51,11 +51,7 @@ export const initialValues: Building = {
           dateTimeAdded: new Date,
           dateTimeUpdated: new Date,
           appartmentCount: 0,
-          unresolvedIssues: [],
-          inProgressIssues: [],
-          doneIssues: [],
           hasOwnParkingLot: false,
-          parkingLotCount: 0,
           hasGasHeating: false,
           hasCentralHeating: false,
           hasElectricHeating: false,
@@ -65,11 +61,14 @@ export const initialValues: Building = {
           hasOwnElevator: false,
           storiesHigh: 0,
           tenantMeetings: [],
-          tenantCount: 0,
-          image: new Uint8Array,
+          image: ['new Uint8Array'],
           buildingStatus: false,
           lng: 19.8227,
-          lat: 45.2396
+          lat: 45.2396,
+          tenants: [],
+          invoices: [],
+          parkingLots: [],
+          board: ''
 };
 
 export const validationSchema = Yup.object({

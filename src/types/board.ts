@@ -54,7 +54,7 @@ export interface Member {
 
 export interface Board {
           _id: string;
-          members: Member[];
+          // members: Member[];
           columns: Column[];
           tasks: Task[];
 }

@@ -21,7 +21,6 @@ import { MongoClient, ObjectId } from 'mongodb';
 
 const Page: NextPage = (props: any) => {
           usePageView();
-          console.log('customer edit props', props);
 
           if (!props.customer) {
                     return null;

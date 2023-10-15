@@ -93,7 +93,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                       <TableCell>Unresolved issue count</TableCell>
                                                                       <TableCell>Elevator</TableCell>
                                                                       <TableCell>Appartment Count</TableCell>
-                                                                      <TableCell>Stories high</TableCell>
+                                                                      <TableCell>Board</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -162,7 +162,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                               }
                                                                                                     </TableCell>
                                                                                                     <TableCell>{building.appartmentCount}</TableCell>
-                                                                                                    <TableCell>{building.storiesHigh}</TableCell>
+                                                                                                    <TableCell>{building.board}</TableCell>
                                                                                           </TableRow>
                                                                                           {isCurrent && (
                                                                                                     <TableRow>
@@ -281,30 +281,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     fullWidth
                                                                                                                                                                                     label="Building stories high"
                                                                                                                                                                                     name="storiesHigh"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.parkingLotCount}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building parking count"
-                                                                                                                                                                                    name="parkingLotCount"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.tenantCount}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building tenant count"
-                                                                                                                                                                                    name="tenantCount"
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid

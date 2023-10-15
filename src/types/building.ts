@@ -11,16 +11,9 @@ export interface Building {
           isRecentlyBuilt: boolean;
           storiesHigh: number;
           hasOwnParkingLot: boolean;
-          parkingLotCount: number;
           appartmentCount: number;
-          tenantCount: number;
           hasOwnElevator: boolean;
           hasOwnBicycleRoom: boolean;
-          /////////////////////////////////////////
-          unresolvedIssues: string[];
-          inProgressIssues: string[];
-          doneIssues: string[];
-          tenantMeetings: string[],
           /////////////////////////////////////////
           hasGasHeating: boolean;
           hasCentralHeating: boolean;
@@ -28,13 +21,19 @@ export interface Building {
           hasSolarPower: boolean;
           hasOwnWaterPump: boolean;
           /////////////////////////////////////////
-          image: Uint8Array;
+          image: string[];
           lng: number;
           lat: number;
           buildingStatus: boolean;
           /////////////////////////////////////////
-          dateTimeAdded: Date;
+          dateTimeAdded?: Date;
           dateTimeUpdated: Date;
+          /////////////////////////////////////////
+          tenants: string[];
+          tenantMeetings: string[],
+          invoices: string[],
+          parkingLots: string[],
+          board: string
 }
 
 export interface buildingAPIResponse {

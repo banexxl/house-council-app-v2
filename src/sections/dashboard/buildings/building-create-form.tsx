@@ -85,7 +85,6 @@ export const BuildingCreateForm: FC = (props) => {
           }, []);
 
           const onMapAddressChange = (mapAddressProps: any) => {
-                    console.log(mapAddressProps);
                     formik.setFieldValue('lng', mapAddressProps.latLng.lng)
                     formik.setFieldValue('lat', mapAddressProps.latLng.lat)
                     setLocationAddress(mapAddressProps);
@@ -272,16 +271,6 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               value={formik.values.storiesHigh}
                                                                                                     />
                                                                                                     <TextField
-                                                                                                              error={!!(formik.touched.parkingLotCount && formik.errors.parkingLotCount)}
-                                                                                                              fullWidth
-                                                                                                              label="Parking lot count"
-                                                                                                              name="parkingLotCount"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="number"
-                                                                                                              value={formik.values.parkingLotCount}
-                                                                                                    />
-                                                                                                    <TextField
                                                                                                               error={!!(formik.touched.appartmentCount && formik.errors.appartmentCount)}
                                                                                                               fullWidth
                                                                                                               label="Appartment count"
@@ -290,16 +279,6 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               onChange={formik.handleChange}
                                                                                                               type="number"
                                                                                                               value={formik.values.appartmentCount}
-                                                                                                    />
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.tenantCount && formik.errors.tenantCount)}
-                                                                                                              fullWidth
-                                                                                                              label="Tenant count"
-                                                                                                              name="tenantCount"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="number"
-                                                                                                              value={formik.values.tenantCount}
                                                                                                     />
                                                                                           </Stack>
                                                                                 </Grid>

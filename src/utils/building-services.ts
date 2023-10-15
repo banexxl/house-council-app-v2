@@ -8,12 +8,7 @@ export const buildingServices = () => {
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
                     const db = client.db('HouseCouncilAppDB')
                     try {
-
-                              console.log('db', db.collection('Buildings'));
-
                               let data = await db.collection('Buildings').find({}).toArray()
-                              console.log(data);
-
                               return data
                     } catch (error) {
                               return { message: error.message }
