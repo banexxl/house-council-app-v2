@@ -26,7 +26,7 @@ import { SeverityPill } from 'src/components/severity-pill';
 type OrderStatus = 'complete' | 'pending' | 'rejected';
 
 interface Order {
-          id: string;
+          _id: string;
           createdAt: number;
           customer: {
                     email: string;
@@ -43,7 +43,7 @@ const now = new Date();
 
 const orders: Order[] = [
           {
-                    id: '5eff2548979e396cb4b000ba',
+                    _id: '5eff2548979e396cb4b000ba',
                     createdAt: subMinutes(subSeconds(now, 10), 7).getTime(),
                     customer: {
                               email: 'ekaterina@devias.io',
@@ -56,7 +56,7 @@ const orders: Order[] = [
                     totalAmount: 524.0,
           },
           {
-                    id: '5eff254e46b753a166e7d7af',
+                    _id: '5eff254e46b753a166e7d7af',
                     createdAt: subHours(subMinutes(subSeconds(now, 50), 12), 2).getTime(),
                     customer: {
                               email: 'carson.darrin@devias.io',
@@ -69,7 +69,7 @@ const orders: Order[] = [
                     totalAmount: 693.0,
           },
           {
-                    id: '5eff2553e1c551e2e28a9205',
+                    _id: '5eff2553e1c551e2e28a9205',
                     createdAt: subHours(subMinutes(subSeconds(now, 12), 39), 5).getTime(),
                     customer: {
                               email: 'fran.perez@devias.io',
@@ -82,7 +82,7 @@ const orders: Order[] = [
                     totalAmount: 215.0,
           },
           {
-                    id: '5eff25590f3e28f013c39a0e',
+                    _id: '5eff25590f3e28f013c39a0e',
                     createdAt: subHours(subMinutes(subSeconds(now, 21), 46), 5).getTime(),
                     customer: {
                               email: 'anje.keiser@devias.io',
@@ -95,7 +95,7 @@ const orders: Order[] = [
                     totalAmount: 25.0,
           },
           {
-                    id: '5eff255f57499089243805d8',
+                    _id: '5eff255f57499089243805d8',
                     createdAt: subHours(subMinutes(subSeconds(now, 54), 19), 8).getTime(),
                     customer: {
                               name: 'Clarke Gillebert',
@@ -108,7 +108,7 @@ const orders: Order[] = [
                     totalAmount: 535.0,
           },
           {
-                    id: '5eff25658d416fc5adb96a3a',
+                    _id: '5eff25658d416fc5adb96a3a',
                     createdAt: subDays(subMinutes(subSeconds(now, 12), 45), 1).getTime(),
                     customer: {
                               email: 'nasimiyu.danai@devias.io',
@@ -180,7 +180,7 @@ export const Table1: FC = () => (
                                                                       return (
                                                                                 <TableRow
                                                                                           hover
-                                                                                          key={order.id}
+                                                                                          key={order._id}
                                                                                 >
                                                                                           <TableCell>
                                                                                                     <Typography variant="subtitle2">{order.number}</Typography>

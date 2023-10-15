@@ -4,7 +4,7 @@ import type { Connection, Post, Profile } from 'src/types/social';
 const now = new Date();
 
 export const profile: Profile = {
-          id: '5e86809283e28b96d2d38537',
+          _id: '5e86809283e28b96d2d38537',
           avatar: '/assets/avatars/avatar-anika-visser.png',
           bio: 'Product Designer',
           connectedStatus: 'not_connected',
@@ -23,28 +23,28 @@ export const profile: Profile = {
 
 export const connections: Connection[] = [
           {
-                    id: '5e887ac47eed253091be10cb',
+                    _id: '5e887ac47eed253091be10cb',
                     avatar: '/assets/avatars/avatar-carson-darrin.png',
                     commonConnections: 10,
                     name: 'Carson Darrin',
                     status: 'rejected',
           },
           {
-                    id: '5e887b209c28ac3dd97f6db5',
+                    _id: '5e887b209c28ac3dd97f6db5',
                     avatar: '/assets/avatars/avatar-fran-perez.png',
                     commonConnections: 8,
                     name: 'Fran Perez',
                     status: 'pending',
           },
           {
-                    id: '5e86805e2bafd54f66cc95c3',
+                    _id: '5e86805e2bafd54f66cc95c3',
                     avatar: '/assets/avatars/avatar-miron-vitold.png',
                     commonConnections: 5,
                     name: 'Miron Vitold',
                     status: 'not_connected',
           },
           {
-                    id: '5e887a1fbefd7938eea9c981',
+                    _id: '5e887a1fbefd7938eea9c981',
                     avatar: '/assets/avatars/avatar-penjani-inyene.png',
                     commonConnections: 1,
                     name: 'Penjani Inyene',
@@ -54,17 +54,17 @@ export const connections: Connection[] = [
 
 export const posts: Post[] = [
           {
-                    id: '5e887faca2b7a1ddce01221a',
+                    _id: '5e887faca2b7a1ddce01221a',
                     author: {
-                              id: '5e86809283e28b96d2d38537',
+                              _id: '5e86809283e28b96d2d38537',
                               avatar: '/assets/avatars/avatar-anika-visser.png',
                               name: 'Anika Visser',
                     },
                     comments: [
                               {
-                                        id: '5e887fc17162ba254da30771',
+                                        _id: '5e887fc17162ba254da30771',
                                         author: {
-                                                  id: '5e887b7602bdbc4dbb234b27',
+                                                  _id: '5e887b7602bdbc4dbb234b27',
                                                   avatar: '/assets/avatars/avatar-jie-yan-song.png',
                                                   name: 'Jie Yan Song',
                                         },
@@ -72,9 +72,9 @@ export const posts: Post[] = [
                                         message: 'Could use some more statistics, but that’s me haha',
                               },
                               {
-                                        id: '5e887fc759bebe8d5d54a2e5',
+                                        _id: '5e887fc759bebe8d5d54a2e5',
                                         author: {
-                                                  id: '5e887a1fbefd7938eea9c981',
+                                                  _id: '5e887a1fbefd7938eea9c981',
                                                   avatar: '/assets/avatars/avatar-penjani-inyene.png',
                                                   name: 'Penjani Inyene',
                                         },
@@ -89,17 +89,17 @@ export const posts: Post[] = [
                     message: 'Just made this overview screen for a project, what-cha thinkin?',
           },
           {
-                    id: '5e887faf03e78a5359765636',
+                    _id: '5e887faf03e78a5359765636',
                     author: {
-                              id: '5e86809283e28b96d2d38537',
+                              _id: '5e86809283e28b96d2d38537',
                               avatar: '/assets/avatars/avatar-anika-visser.png',
                               name: 'Anika Visser',
                     },
                     comments: [
                               {
-                                        id: '5e887fde4992eca63b9e9ef5',
+                                        _id: '5e887fde4992eca63b9e9ef5',
                                         author: {
-                                                  id: '5e8877da9a65442b11551975',
+                                                  _id: '5e8877da9a65442b11551975',
                                                   avatar: '/assets/avatars/avatar-iulia-albu.png',
                                                   name: 'Iulia Albu',
                                         },
@@ -108,9 +108,9 @@ export const posts: Post[] = [
                                                   'That’s actually deep. Thanks for the design, would you consider making an interaction?',
                               },
                               {
-                                        id: '5e887feb11b7add1ebfcca78',
+                                        _id: '5e887feb11b7add1ebfcca78',
                                         author: {
-                                                  id: '5e887b209c28ac3dd97f6db5',
+                                                  _id: '5e887b209c28ac3dd97f6db5',
                                                   avatar: '/assets/avatars/avatar-fran-perez.png',
                                                   name: 'Fran Perez',
                                         },
@@ -128,17 +128,17 @@ export const posts: Post[] = [
 
 export const feed: Post[] = [
           {
-                    id: '5e887fa38598b6fe61667757',
+                    _id: '5e887fa38598b6fe61667757',
                     author: {
-                              id: '5e88792be2d4cfb4bf0971d9',
+                              _id: '5e88792be2d4cfb4bf0971d9',
                               avatar: '/assets/avatars/avatar-siegbert-gottfried.png',
                               name: 'Siegbert Gottfried',
                     },
                     comments: [
                               {
-                                        id: '5e887fb6c648772b52f860a8',
+                                        _id: '5e887fb6c648772b52f860a8',
                                         author: {
-                                                  id: '5e8680e60cba5019c5ca6fda',
+                                                  _id: '5e8680e60cba5019c5ca6fda',
                                                   avatar: '/assets/avatars/avatar-nasimiyu-danai.png',
                                                   name: 'Nasimiyu Danai',
                                         },
@@ -152,17 +152,17 @@ export const feed: Post[] = [
                     message: "Hey guys! What's your favorite framework?",
           },
           {
-                    id: '5e887faca2b7a1ddce01221a',
+                    _id: '5e887faca2b7a1ddce01221a',
                     author: {
-                              id: '5e86809283e28b96d2d38537',
+                              _id: '5e86809283e28b96d2d38537',
                               avatar: '/assets/avatars/avatar-anika-visser.png',
                               name: 'Anika Visser',
                     },
                     comments: [
                               {
-                                        id: '5e887fc17162ba254da30771',
+                                        _id: '5e887fc17162ba254da30771',
                                         author: {
-                                                  id: '5e887b7602bdbc4dbb234b27',
+                                                  _id: '5e887b7602bdbc4dbb234b27',
                                                   avatar: '/assets/avatars/avatar-jie-yan-song.png',
                                                   name: 'Jie Yan Song',
                                         },
@@ -170,9 +170,9 @@ export const feed: Post[] = [
                                         message: 'Could use some more statistics, but that’s me haha',
                               },
                               {
-                                        id: '5e887fc759bebe8d5d54a2e5',
+                                        _id: '5e887fc759bebe8d5d54a2e5',
                                         author: {
-                                                  id: '5e887a1fbefd7938eea9c981',
+                                                  _id: '5e887a1fbefd7938eea9c981',
                                                   avatar: '/assets/avatars/avatar-penjani-inyene.png',
                                                   name: 'Penjani Inyene',
                                         },
@@ -187,17 +187,17 @@ export const feed: Post[] = [
                     message: 'Just made this overview screen for a project, what-cha thinkin?',
           },
           {
-                    id: '5e887faf03e78a5359765636',
+                    _id: '5e887faf03e78a5359765636',
                     author: {
-                              id: '5e86809283e28b96d2d38537',
+                              _id: '5e86809283e28b96d2d38537',
                               avatar: '/assets/avatars/avatar-anika-visser.png',
                               name: 'Anika Visser',
                     },
                     comments: [
                               {
-                                        id: '5e887fde4992eca63b9e9ef5',
+                                        _id: '5e887fde4992eca63b9e9ef5',
                                         author: {
-                                                  id: '5e8877da9a65442b11551975',
+                                                  _id: '5e8877da9a65442b11551975',
                                                   avatar: '/assets/avatars/avatar-iulia-albu.png',
                                                   name: 'Iulia Albu',
                                         },
@@ -206,9 +206,9 @@ export const feed: Post[] = [
                                                   'That’s actually deep. Thanks for the design, would you consider making an interaction?',
                               },
                               {
-                                        id: '5e887feb11b7add1ebfcca78',
+                                        _id: '5e887feb11b7add1ebfcca78',
                                         author: {
-                                                  id: '5e887b209c28ac3dd97f6db5',
+                                                  _id: '5e887b209c28ac3dd97f6db5',
                                                   avatar: '/assets/avatars/avatar-fran-perez.png',
                                                   name: 'Fran Perez',
                                         },

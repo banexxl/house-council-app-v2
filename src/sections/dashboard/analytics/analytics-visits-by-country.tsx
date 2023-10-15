@@ -35,7 +35,7 @@ const flagMap: Record<string, string> = {
 };
 
 interface Visit {
-          id: string;
+          _id: string;
           name: string;
           seoPercentage: number;
           value: number;
@@ -94,11 +94,11 @@ export const AnalyticsVisitsByCountry: FC<AnalyticsVisitsByCountryProps> = (prop
                                         <TableBody>
                                                   {sortedVisits.map((visit) => {
                                                             const visits = numeral(visit.value).format('0,0');
-                                                            const flag = flagMap[visit.id];
+                                                            const flag = flagMap[visit._id];
 
                                                             return (
                                                                       <TableRow
-                                                                                key={visit.id}
+                                                                                key={visit._id}
                                                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                                       >
                                                                                 <TableCell>

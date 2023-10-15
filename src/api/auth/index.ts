@@ -80,7 +80,7 @@ class AuthApi {
                                         }
 
                                         // Create the access token
-                                        const accessToken = sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+                                        const accessToken = sign({ userId: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
                                         resolve({ accessToken });
                               } catch (err) {
@@ -109,7 +109,7 @@ class AuthApi {
                                         }
 
                                         user = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   avatar: undefined,
                                                   email,
                                                   name,
@@ -119,7 +119,7 @@ class AuthApi {
 
                                         persistUser(user);
 
-                                        const accessToken = sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+                                        const accessToken = sign({ userId: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
                                         resolve({ accessToken });
                               } catch (err) {
@@ -142,7 +142,7 @@ class AuthApi {
 
                                         // Find the user
                                         const { userId } = decodedToken;
-                                        const user = mergedUsers.find((user) => user.id === userId);
+                                        const user = mergedUsers.find((user) => user._id === userId);
 
                                         if (!user) {
                                                   reject(new Error('Invalid authorization token'));
@@ -150,7 +150,7 @@ class AuthApi {
                                         }
 
                                         resolve({
-                                                  id: user.id,
+                                                  _id: user._id,
                                                   avatar: user.avatar,
                                                   email: user.email,
                                                   name: user.name,

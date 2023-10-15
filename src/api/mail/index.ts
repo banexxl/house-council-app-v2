@@ -36,7 +36,7 @@ class MailApi {
                                         // Get all user custom labels
                                         const customLabels = labels.reduce((acc: string[], label) => {
                                                   if (label.type === 'custom') {
-                                                            acc.push(label.id);
+                                                            acc.push(label._id);
                                                   }
 
                                                   return acc;
@@ -84,7 +84,7 @@ class MailApi {
                                         const clonedEmails = deepCopy(emails) as Email[];
 
                                         // Find the mail
-                                        const email = clonedEmails.find((email) => email.id === emailId);
+                                        const email = clonedEmails.find((email) => email._id === emailId);
 
                                         if (!email) {
                                                   reject(new Error('Email not found'));

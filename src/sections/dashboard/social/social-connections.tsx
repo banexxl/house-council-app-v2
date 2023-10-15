@@ -15,63 +15,63 @@ import type { Connection } from 'src/types/social';
 import { SocialConnection } from './social-connection';
 
 interface SocialConnectionsProps {
-  connections?: Connection[];
-  query?: string;
-  onQueryChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+          connections?: Connection[];
+          query?: string;
+          onQueryChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const SocialConnections: FC<SocialConnectionsProps> = (props) => {
-  const { connections = [], query = '', onQueryChange, ...other } = props;
+          const { connections = [], query = '', onQueryChange, ...other } = props;
 
-  return (
-    <Card {...other}>
-      <CardHeader title="Connections" />
-      <Divider />
-      <Stack
-        alignItems="center"
-        direction="row"
-        spacing={2}
-        sx={{
-          px: 3,
-          py: 2,
-        }}
-      >
-        <SvgIcon>
-          <SearchMdIcon />
-        </SvgIcon>
-        <Box sx={{ flexGrow: 1 }}>
-          <Input
-            disableUnderline
-            fullWidth
-            onChange={onQueryChange}
-            placeholder="Search connections"
-            value={query}
-          />
-        </Box>
-      </Stack>
-      <Divider />
-      <Box sx={{ p: 3 }}>
-        <Grid
-          container
-          spacing={3}
-        >
-          {connections.map((connection) => (
-            <Grid
-              key={connection.id}
-              xs={12}
-              md={6}
-            >
-              <SocialConnection connection={connection} />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    </Card>
-  );
+          return (
+                    <Card {...other}>
+                              <CardHeader title="Connections" />
+                              <Divider />
+                              <Stack
+                                        alignItems="center"
+                                        direction="row"
+                                        spacing={2}
+                                        sx={{
+                                                  px: 3,
+                                                  py: 2,
+                                        }}
+                              >
+                                        <SvgIcon>
+                                                  <SearchMdIcon />
+                                        </SvgIcon>
+                                        <Box sx={{ flexGrow: 1 }}>
+                                                  <Input
+                                                            disableUnderline
+                                                            fullWidth
+                                                            onChange={onQueryChange}
+                                                            placeholder="Search connections"
+                                                            value={query}
+                                                  />
+                                        </Box>
+                              </Stack>
+                              <Divider />
+                              <Box sx={{ p: 3 }}>
+                                        <Grid
+                                                  container
+                                                  spacing={3}
+                                        >
+                                                  {connections.map((connection) => (
+                                                            <Grid
+                                                                      key={connection._id}
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <SocialConnection connection={connection} />
+                                                            </Grid>
+                                                  ))}
+                                        </Grid>
+                              </Box>
+                    </Card>
+          );
 };
 
 SocialConnections.propTypes = {
-  connections: PropTypes.array,
-  query: PropTypes.string,
-  onQueryChange: PropTypes.func,
+          connections: PropTypes.array,
+          query: PropTypes.string,
+          onQueryChange: PropTypes.func,
 };

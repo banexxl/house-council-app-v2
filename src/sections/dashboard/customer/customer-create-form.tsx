@@ -226,7 +226,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     />
                                                                                           </LocalizationProvider> */}
                                                                                           {/* <KeyboardDatePicker
-                                                                                                    id="date-picker-dialog"
+                                                                                                    _id="date-picker-dialog"
                                                                                                     label="Date picker dialog"
                                                                                                     inputVariant="outlined"
                                                                                                     format="MM/dd/yyyy"

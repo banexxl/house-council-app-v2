@@ -15,93 +15,93 @@ import Typography from '@mui/material/Typography';
 import type { Asset } from 'src/types/job';
 
 interface CompanyAssetsProps {
-  assets?: Asset[];
+          assets?: Asset[];
 }
 
 export const CompanyAssets: FC<CompanyAssetsProps> = (props) => {
-  const { assets = [], ...other } = props;
-
-  return (
-    <Stack
-      spacing={3}
-      {...other}
-    >
-      <div>
-        <Typography variant="h6">Assets ({assets.length})</Typography>
-      </div>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 3,
-          gridTemplateColumns: 'repeat(2, minmax(0, 180px))',
-        }}
-      >
-        {assets.map((asset) => {
-          const isPdf = asset.extension === 'pdf';
-          const isImage = ['jpg', 'jpeg', 'png', ''].includes(asset.extension);
+          const { assets = [], ...other } = props;
 
           return (
-            <Card
-              key={asset.id}
-              variant="outlined"
-            >
-              {isPdf && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    backgroundColor: (theme) =>
-                      theme.palette.mode === 'dark' ? 'neutral.900' : 'neutral.100',
-                    height: 100,
-                    justifyContent: 'center',
-                    py: 3,
-                  }}
-                >
-                  <Badge
-                    anchorOrigin={{
-                      horizontal: 'right',
-                      vertical: 'bottom',
-                    }}
-                    badgeContent="PDF"
-                    color="primary"
-                  >
-                    <SvgIcon sx={{ fontSize: 48 }}>
-                      <File04Icon />
-                    </SvgIcon>
-                  </Badge>
-                </Box>
-              )}
-              {isImage && (
-                <CardMedia
-                  image={asset.url}
-                  sx={{ height: 100 }}
-                />
-              )}
-              <Box sx={{ p: 2 }}>
-                <Typography variant="subtitle2">{asset.fileName}</Typography>
-                <Typography
-                  color="text.secondary"
-                  variant="caption"
-                >
-                  {asset.size}
-                </Typography>
-              </Box>
-              <Divider />
-              <CardActions sx={{ justifyContent: 'center' }}>
-                <Button
-                  color="inherit"
-                  size="small"
-                >
-                  Download
-                </Button>
-              </CardActions>
-            </Card>
+                    <Stack
+                              spacing={3}
+                              {...other}
+                    >
+                              <div>
+                                        <Typography variant="h6">Assets ({assets.length})</Typography>
+                              </div>
+                              <Box
+                                        sx={{
+                                                  display: 'grid',
+                                                  gap: 3,
+                                                  gridTemplateColumns: 'repeat(2, minmax(0, 180px))',
+                                        }}
+                              >
+                                        {assets.map((asset) => {
+                                                  const isPdf = asset.extension === 'pdf';
+                                                  const isImage = ['jpg', 'jpeg', 'png', ''].includes(asset.extension);
+
+                                                  return (
+                                                            <Card
+                                                                      key={asset._id}
+                                                                      variant="outlined"
+                                                            >
+                                                                      {isPdf && (
+                                                                                <Box
+                                                                                          sx={{
+                                                                                                    display: 'flex',
+                                                                                                    backgroundColor: (theme) =>
+                                                                                                              theme.palette.mode === 'dark' ? 'neutral.900' : 'neutral.100',
+                                                                                                    height: 100,
+                                                                                                    justifyContent: 'center',
+                                                                                                    py: 3,
+                                                                                          }}
+                                                                                >
+                                                                                          <Badge
+                                                                                                    anchorOrigin={{
+                                                                                                              horizontal: 'right',
+                                                                                                              vertical: 'bottom',
+                                                                                                    }}
+                                                                                                    badgeContent="PDF"
+                                                                                                    color="primary"
+                                                                                          >
+                                                                                                    <SvgIcon sx={{ fontSize: 48 }}>
+                                                                                                              <File04Icon />
+                                                                                                    </SvgIcon>
+                                                                                          </Badge>
+                                                                                </Box>
+                                                                      )}
+                                                                      {isImage && (
+                                                                                <CardMedia
+                                                                                          image={asset.url}
+                                                                                          sx={{ height: 100 }}
+                                                                                />
+                                                                      )}
+                                                                      <Box sx={{ p: 2 }}>
+                                                                                <Typography variant="subtitle2">{asset.fileName}</Typography>
+                                                                                <Typography
+                                                                                          color="text.secondary"
+                                                                                          variant="caption"
+                                                                                >
+                                                                                          {asset.size}
+                                                                                </Typography>
+                                                                      </Box>
+                                                                      <Divider />
+                                                                      <CardActions sx={{ justifyContent: 'center' }}>
+                                                                                <Button
+                                                                                          color="inherit"
+                                                                                          size="small"
+                                                                                >
+                                                                                          Download
+                                                                                </Button>
+                                                                      </CardActions>
+                                                            </Card>
+                                                  );
+                                        })}
+                              </Box>
+                    </Stack>
           );
-        })}
-      </Box>
-    </Stack>
-  );
 };
 
 CompanyAssets.propTypes = {
-  assets: PropTypes.array,
+          assets: PropTypes.array,
 };

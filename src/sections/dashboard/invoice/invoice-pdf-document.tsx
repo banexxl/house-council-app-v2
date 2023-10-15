@@ -215,7 +215,7 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
 
                                                             return (
                                                                       <View
-                                                                                key={item.id}
+                                                                                key={item._id}
                                                                                 style={styles.itemRow}
                                                                       >
                                                                                 <View style={styles.itemNumber}>

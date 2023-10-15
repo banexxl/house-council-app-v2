@@ -126,7 +126,7 @@ export const CalendarEventDialog: FC<CalendarEventDialogProps> = (props) => {
                                         if (action === 'update') {
                                                   await dispatch(
                                                             thunks.updateEvent({
-                                                                      eventId: event!.id,
+                                                                      eventId: event!._id,
                                                                       update: data,
                                                             })
                                                   );
@@ -183,7 +183,7 @@ export const CalendarEventDialog: FC<CalendarEventDialogProps> = (props) => {
                     try {
                               await dispatch(
                                         thunks.deleteEvent({
-                                                  eventId: event.id!,
+                                                  eventId: event._id!,
                                         })
                               );
                               onDeleteComplete?.();

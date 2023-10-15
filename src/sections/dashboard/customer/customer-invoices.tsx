@@ -52,8 +52,8 @@ export const CustomerInvoices: FC/*<CustomerInvoicesProps>*/ = (props) => {
                     //                                                   const statusColor = invoice.status === 'paid' ? 'success' : 'error';
 
                     //                                                   return (
-                    //                                                             <TableRow key={invoice.id}>
-                    //                                                                       <TableCell>#{invoice.id}</TableCell>
+                    //                                                             <TableRow key={invoice._id}>
+                    //                                                                       <TableCell>#{invoice._id}</TableCell>
                     //                                                                       <TableCell>{issueDate}</TableCell>
                     //                                                                       <TableCell>{invoice.amount}</TableCell>
                     //                                                                       <TableCell>

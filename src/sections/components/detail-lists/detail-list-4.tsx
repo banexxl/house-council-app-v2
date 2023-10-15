@@ -19,90 +19,90 @@ import Typography from '@mui/material/Typography';
 const now = new Date();
 
 interface Email {
-  id: string;
-  createdAt: number;
-  description: string;
+          _id: string;
+          createdAt: number;
+          description: string;
 }
 
 const emails: Email[] = [
-  {
-    id: '5ece2ce3613486d95ffaea58',
-    createdAt: subDays(subHours(subMinutes(now, 34), 5), 3).getTime(),
-    description: 'Order confirmation',
-  },
-  {
-    id: '5ece2ce8cebf7ad1d100c0cd',
-    createdAt: subDays(subHours(subMinutes(now, 49), 11), 4).getTime(),
-    description: 'Order confirmation',
-  },
+          {
+                    _id: '5ece2ce3613486d95ffaea58',
+                    createdAt: subDays(subHours(subMinutes(now, 34), 5), 3).getTime(),
+                    description: 'Order confirmation',
+          },
+          {
+                    _id: '5ece2ce8cebf7ad1d100c0cd',
+                    createdAt: subDays(subHours(subMinutes(now, 49), 11), 4).getTime(),
+                    description: 'Order confirmation',
+          },
 ];
 
 const emailOptions = ['Resend last invoice', 'Send password reset', 'Send verification'];
 
 export const DetailList4: FC = () => {
-  const [emailOption, setEmailOption] = useState<string>(emailOptions[0]);
+          const [emailOption, setEmailOption] = useState<string>(emailOptions[0]);
 
-  return (
-    <Box
-      sx={{
-        backgroundColor: (theme) => (theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.100'),
-        p: 3,
-      }}
-    >
-      <Card>
-        <CardHeader title="Emails" />
-        <Divider />
-        <CardContent>
-          <TextField
-            fullWidth
-            name="option"
-            onChange={(event): void => setEmailOption(event.target.value)}
-            select
-            SelectProps={{ native: true }}
-            value={emailOption}
-            variant="outlined"
-          >
-            {emailOptions.map((option) => (
-              <option
-                key={option}
-                value={option}
-              >
-                {option}
-              </option>
-            ))}
-          </TextField>
-          <Box sx={{ mt: 2 }}>
-            <Button
-              startIcon={
-                <SvgIcon>
-                  <Mail01Icon />
-                </SvgIcon>
-              }
-              variant="contained"
-            >
-              Send email
-            </Button>
-          </Box>
-          <Box sx={{ mt: 2 }}>
-            <Table>
-              <TableBody>
-                {emails.map((email) => {
-                  const createdAt = format(email.createdAt, 'dd/MM/yyyy | HH:mm');
+          return (
+                    <Box
+                              sx={{
+                                        backgroundColor: (theme) => (theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.100'),
+                                        p: 3,
+                              }}
+                    >
+                              <Card>
+                                        <CardHeader title="Emails" />
+                                        <Divider />
+                                        <CardContent>
+                                                  <TextField
+                                                            fullWidth
+                                                            name="option"
+                                                            onChange={(event): void => setEmailOption(event.target.value)}
+                                                            select
+                                                            SelectProps={{ native: true }}
+                                                            value={emailOption}
+                                                            variant="outlined"
+                                                  >
+                                                            {emailOptions.map((option) => (
+                                                                      <option
+                                                                                key={option}
+                                                                                value={option}
+                                                                      >
+                                                                                {option}
+                                                                      </option>
+                                                            ))}
+                                                  </TextField>
+                                                  <Box sx={{ mt: 2 }}>
+                                                            <Button
+                                                                      startIcon={
+                                                                                <SvgIcon>
+                                                                                          <Mail01Icon />
+                                                                                </SvgIcon>
+                                                                      }
+                                                                      variant="contained"
+                                                            >
+                                                                      Send email
+                                                            </Button>
+                                                  </Box>
+                                                  <Box sx={{ mt: 2 }}>
+                                                            <Table>
+                                                                      <TableBody>
+                                                                                {emails.map((email) => {
+                                                                                          const createdAt = format(email.createdAt, 'dd/MM/yyyy | HH:mm');
 
-                  return (
-                    <TableRow key={email.id}>
-                      <TableCell>
-                        <Typography variant="subtitle2">{email.description}</Typography>
-                      </TableCell>
-                      <TableCell>{createdAt}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
-  );
+                                                                                          return (
+                                                                                                    <TableRow key={email._id}>
+                                                                                                              <TableCell>
+                                                                                                                        <Typography variant="subtitle2">{email.description}</Typography>
+                                                                                                              </TableCell>
+                                                                                                              <TableCell>{createdAt}</TableCell>
+                                                                                                    </TableRow>
+                                                                                          );
+                                                                                })}
+                                                                      </TableBody>
+                                                            </Table>
+                                                  </Box>
+                                        </CardContent>
+                              </Card>
+                    </Box>
+          );
 };

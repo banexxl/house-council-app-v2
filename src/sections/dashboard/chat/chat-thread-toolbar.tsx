@@ -25,161 +25,161 @@ import { usePopover } from 'src/hooks/use-popover';
 import type { Participant } from 'src/types/chat';
 
 const getRecipients = (participants: Participant[], userId: string): Participant[] => {
-  return participants.filter((participant) => participant.id !== userId);
+          return participants.filter((participant) => participant._id !== userId);
 };
 
 const getDisplayName = (recipients: Participant[]): string => {
-  return recipients.map((participant) => participant.name).join(', ');
+          return recipients.map((participant) => participant.name).join(', ');
 };
 
 const getLastActive = (recipients: Participant[]): string | null => {
-  const hasLastActive = recipients.length === 1 && recipients[0].lastActivity;
+          const hasLastActive = recipients.length === 1 && recipients[0].lastActivity;
 
-  if (hasLastActive) {
-    return formatDistanceToNowStrict(recipients[0].lastActivity!, { addSuffix: true });
-  }
+          if (hasLastActive) {
+                    return formatDistanceToNowStrict(recipients[0].lastActivity!, { addSuffix: true });
+          }
 
-  return null;
+          return null;
 };
 
 interface ChatThreadToolbarProps {
-  participants?: Participant[];
+          participants?: Participant[];
 }
 
 export const ChatThreadToolbar: FC<ChatThreadToolbarProps> = (props) => {
-  const { participants = [], ...other } = props;
-  const user = useMockedUser();
-  const popover = usePopover<HTMLButtonElement>();
+          const { participants = [], ...other } = props;
+          const user = useMockedUser();
+          const popover = usePopover<HTMLButtonElement>();
 
-  // Maybe use memo for these values
+          // Maybe use memo for these values
 
-  const recipients = getRecipients(participants, user.id);
-  const displayName = getDisplayName(recipients);
-  const lastActive = getLastActive(recipients);
+          const recipients = getRecipients(participants, user._id);
+          const displayName = getDisplayName(recipients);
+          const lastActive = getLastActive(recipients);
 
-  return (
-    <>
-      <Stack
-        alignItems="center"
-        direction="row"
-        justifyContent="space-between"
-        spacing={2}
-        sx={{
-          flexShrink: 0,
-          minHeight: 64,
-          px: 2,
-          py: 1,
-        }}
-        {...other}
-      >
-        <Stack
-          alignItems="center"
-          direction="row"
-          spacing={2}
-        >
-          <AvatarGroup
-            max={2}
-            sx={{
-              ...(recipients.length > 1 && {
-                '& .MuiAvatar-root': {
-                  height: 30,
-                  width: 30,
-                  '&:nth-of-type(2)': {
-                    mt: '10px',
-                  },
-                },
-              }),
-            }}
-          >
-            {recipients.map((recipient) => (
-              <Avatar
-                key={recipient.id}
-                src={recipient.avatar || undefined}
-              />
-            ))}
-          </AvatarGroup>
-          <div>
-            <Typography variant="subtitle2">{displayName}</Typography>
-            {lastActive && (
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
-                Last active {lastActive}
-              </Typography>
-            )}
-          </div>
-        </Stack>
-        <Stack
-          alignItems="center"
-          direction="row"
-          spacing={1}
-        >
-          <IconButton>
-            <SvgIcon>
-              <PhoneIcon />
-            </SvgIcon>
-          </IconButton>
-          <IconButton>
-            <SvgIcon>
-              <Camera01Icon />
-            </SvgIcon>
-          </IconButton>
-          <Tooltip title="More options">
-            <IconButton
-              onClick={popover.handleOpen}
-              ref={popover.anchorRef}
-            >
-              <SvgIcon>
-                <DotsHorizontalIcon />
-              </SvgIcon>
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Stack>
-      <Menu
-        anchorEl={popover.anchorRef.current}
-        keepMounted
-        onClose={popover.handleClose}
-        open={popover.open}
-      >
-        <MenuItem>
-          <ListItemIcon>
-            <SvgIcon>
-              <SlashCircle01Icon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary="Block" />
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <SvgIcon>
-              <Trash02Icon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary="Delete" />
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <SvgIcon>
-              <ArchiveIcon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary="Archive" />
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <SvgIcon>
-              <Bell01Icon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary="Mute" />
-        </MenuItem>
-      </Menu>
-    </>
-  );
+          return (
+                    <>
+                              <Stack
+                                        alignItems="center"
+                                        direction="row"
+                                        justifyContent="space-between"
+                                        spacing={2}
+                                        sx={{
+                                                  flexShrink: 0,
+                                                  minHeight: 64,
+                                                  px: 2,
+                                                  py: 1,
+                                        }}
+                                        {...other}
+                              >
+                                        <Stack
+                                                  alignItems="center"
+                                                  direction="row"
+                                                  spacing={2}
+                                        >
+                                                  <AvatarGroup
+                                                            max={2}
+                                                            sx={{
+                                                                      ...(recipients.length > 1 && {
+                                                                                '& .MuiAvatar-root': {
+                                                                                          height: 30,
+                                                                                          width: 30,
+                                                                                          '&:nth-of-type(2)': {
+                                                                                                    mt: '10px',
+                                                                                          },
+                                                                                },
+                                                                      }),
+                                                            }}
+                                                  >
+                                                            {recipients.map((recipient) => (
+                                                                      <Avatar
+                                                                                key={recipient._id}
+                                                                                src={recipient.avatar || undefined}
+                                                                      />
+                                                            ))}
+                                                  </AvatarGroup>
+                                                  <div>
+                                                            <Typography variant="subtitle2">{displayName}</Typography>
+                                                            {lastActive && (
+                                                                      <Typography
+                                                                                color="text.secondary"
+                                                                                variant="caption"
+                                                                      >
+                                                                                Last active {lastActive}
+                                                                      </Typography>
+                                                            )}
+                                                  </div>
+                                        </Stack>
+                                        <Stack
+                                                  alignItems="center"
+                                                  direction="row"
+                                                  spacing={1}
+                                        >
+                                                  <IconButton>
+                                                            <SvgIcon>
+                                                                      <PhoneIcon />
+                                                            </SvgIcon>
+                                                  </IconButton>
+                                                  <IconButton>
+                                                            <SvgIcon>
+                                                                      <Camera01Icon />
+                                                            </SvgIcon>
+                                                  </IconButton>
+                                                  <Tooltip title="More options">
+                                                            <IconButton
+                                                                      onClick={popover.handleOpen}
+                                                                      ref={popover.anchorRef}
+                                                            >
+                                                                      <SvgIcon>
+                                                                                <DotsHorizontalIcon />
+                                                                      </SvgIcon>
+                                                            </IconButton>
+                                                  </Tooltip>
+                                        </Stack>
+                              </Stack>
+                              <Menu
+                                        anchorEl={popover.anchorRef.current}
+                                        keepMounted
+                                        onClose={popover.handleClose}
+                                        open={popover.open}
+                              >
+                                        <MenuItem>
+                                                  <ListItemIcon>
+                                                            <SvgIcon>
+                                                                      <SlashCircle01Icon />
+                                                            </SvgIcon>
+                                                  </ListItemIcon>
+                                                  <ListItemText primary="Block" />
+                                        </MenuItem>
+                                        <MenuItem>
+                                                  <ListItemIcon>
+                                                            <SvgIcon>
+                                                                      <Trash02Icon />
+                                                            </SvgIcon>
+                                                  </ListItemIcon>
+                                                  <ListItemText primary="Delete" />
+                                        </MenuItem>
+                                        <MenuItem>
+                                                  <ListItemIcon>
+                                                            <SvgIcon>
+                                                                      <ArchiveIcon />
+                                                            </SvgIcon>
+                                                  </ListItemIcon>
+                                                  <ListItemText primary="Archive" />
+                                        </MenuItem>
+                                        <MenuItem>
+                                                  <ListItemIcon>
+                                                            <SvgIcon>
+                                                                      <Bell01Icon />
+                                                            </SvgIcon>
+                                                  </ListItemIcon>
+                                                  <ListItemText primary="Mute" />
+                                        </MenuItem>
+                              </Menu>
+                    </>
+          );
 };
 
 ChatThreadToolbar.propTypes = {
-  participants: PropTypes.array,
+          participants: PropTypes.array,
 };

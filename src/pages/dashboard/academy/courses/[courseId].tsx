@@ -19,7 +19,7 @@ import type { Course } from 'src/types/academy';
 
 const useCourse = (): Course => {
           return {
-                    id: 'c3a2b7331eef8329e2a87c79',
+                    _id: 'c3a2b7331eef8329e2a87c79',
                     chapters: [
                               {
                                         title: 'Introduction',

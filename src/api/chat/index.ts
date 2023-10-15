@@ -6,13 +6,13 @@ import { contacts, threads } from './data';
 
 // On server get current identity (user) from the request
 const user = {
-          id: '5e86809283e28b96d2d38537',
+          _id: '5e86809283e28b96d2d38537',
           avatar: '/assets/avatars/avatar-anika-visser.png',
           name: 'Anika Visser',
 };
 
 const findThreadById = (threadId: string): Thread | undefined => {
-          return threads.find((thread) => thread.id === threadId);
+          return threads.find((thread) => thread._id === threadId);
 };
 
 const findThreadByParticipantIds = (participantIds: string[]): Thread | undefined => {
@@ -100,9 +100,9 @@ class ChatApi {
                               const participants: Participant[] = [user];
 
                               contacts.forEach((contact) => {
-                                        if (thread.participantIds.includes(contact.id)) {
+                                        if (thread.participantIds.includes(contact._id)) {
                                                   participants.push({
-                                                            id: contact.id,
+                                                            _id: contact._id,
                                                             avatar: contact.avatar,
                                                             lastActivity: contact.lastActivity,
                                                             name: contact.name,
@@ -132,10 +132,10 @@ class ChatApi {
                                         let thread: Thread | undefined;
 
                                         // Thread key might be a contact ID
-                                        const contact = contacts.find((contact) => contact.id === threadKey);
+                                        const contact = contacts.find((contact) => contact._id === threadKey);
 
                                         if (contact) {
-                                                  thread = findThreadByParticipantIds([user.id, contact.id]);
+                                                  thread = findThreadByParticipantIds([user._id, contact._id]);
                                         }
 
                                         // Thread key might be a thread ID
@@ -153,9 +153,9 @@ class ChatApi {
                                         const participants: Participant[] = [user];
 
                                         contacts.forEach((contact) => {
-                                                  if (thread!.participantIds.includes(contact.id)) {
+                                                  if (thread!.participantIds.includes(contact._id)) {
                                                             participants.push({
-                                                                      id: contact.id,
+                                                                      _id: contact._id,
                                                                       avatar: contact.avatar,
                                                                       lastActivity: contact.lastActivity,
                                                                       name: contact.name,
@@ -181,7 +181,7 @@ class ChatApi {
 
                     return new Promise((resolve, reject) => {
                               try {
-                                        const thread = threads.find((thread) => thread.id === threadId);
+                                        const thread = threads.find((thread) => thread._id === threadId);
 
                                         if (thread) {
                                                   thread.unreadCount = 0;
@@ -207,9 +207,9 @@ class ChatApi {
 
                                         if (thread) {
                                                   contacts.forEach((contact) => {
-                                                            if (thread!.participantIds.includes(contact.id)) {
+                                                            if (thread!.participantIds.includes(contact._id)) {
                                                                       participants.push({
-                                                                                id: contact.id,
+                                                                                _id: contact._id,
                                                                                 avatar: contact.avatar,
                                                                                 lastActivity: contact.lastActivity,
                                                                                 name: contact.name,
@@ -217,7 +217,7 @@ class ChatApi {
                                                             }
                                                   });
                                         } else {
-                                                  const contact = contacts.find((contact) => contact.id === threadKey);
+                                                  const contact = contacts.find((contact) => contact._id === threadKey);
 
                                                   // If no contact found, the user is trying a shady route
                                                   if (!contact) {
@@ -226,7 +226,7 @@ class ChatApi {
                                                   }
 
                                                   participants.push({
-                                                            id: contact.id,
+                                                            _id: contact._id,
                                                             avatar: contact.avatar,
                                                             lastActivity: contact.lastActivity,
                                                             name: contact.name,
@@ -260,11 +260,11 @@ class ChatApi {
                                                   // If thread ID provided the thread has to exist.
 
                                                   if (!thread) {
-                                                            reject(new Error('Invalid thread id'));
+                                                            reject(new Error('Invalid thread _id'));
                                                             return;
                                                   }
                                         } else {
-                                                  const participantIds = [user.id, ...(recipientIds || [])];
+                                                  const participantIds = [user._id, ...(recipientIds || [])];
                                                   thread = findThreadByParticipantIds(participantIds);
                                         }
 
@@ -272,10 +272,10 @@ class ChatApi {
                                         // For recipient Ids it may or may not exist. If it doesn't, create a new one.
 
                                         if (!thread) {
-                                                  const participantIds = [user.id, ...(recipientIds || [])];
+                                                  const participantIds = [user._id, ...(recipientIds || [])];
 
                                                   thread = {
-                                                            id: createResourceId(),
+                                                            _id: createResourceId(),
                                                             messages: [],
                                                             participantIds,
                                                             type: participantIds.length === 2 ? 'ONE_TO_ONE' : 'GROUP',
@@ -287,18 +287,18 @@ class ChatApi {
                                         }
 
                                         const message: Message = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   attachments: [],
                                                   body,
                                                   contentType: 'text',
                                                   createdAt: new Date().getTime(),
-                                                  authorId: user.id,
+                                                  authorId: user._id,
                                         };
 
                                         thread.messages.push(message);
 
                                         resolve({
-                                                  threadId: thread.id!,
+                                                  threadId: thread._id!,
                                                   message,
                                         });
                               } catch (err) {

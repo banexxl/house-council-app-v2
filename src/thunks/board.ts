@@ -2,25 +2,27 @@ import { boardApi } from 'src/api/board';
 import { slice } from 'src/slices/board';
 import type { AppThunk } from 'src/store';
 
-const getBoard =
-          (): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const data = await boardApi.getBoard();
+const getBoard = (): AppThunk =>
+          async (dispatch): Promise<void> => {
 
-                              dispatch(slice.actions.getBoard(data));
-                    };
+                    const data = await boardApi.getBoard();
+
+                    dispatch(slice.actions.getBoard(data));
+
+          };
 
 type CreateColumnParams = {
           name: string;
 };
 
-const createColumn =
-          (params: CreateColumnParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.createColumn(params);
+const createColumn = (params: CreateColumnParams): AppThunk =>
+          async (dispatch): Promise<void> => {
 
-                              dispatch(slice.actions.createColumn(response));
-                    };
+                    const response = await boardApi.createColumn(params);
+
+                    dispatch(slice.actions.createColumn(response));
+
+          };
 
 type UpdateColumnParams = {
           columnId: string;
@@ -29,50 +31,46 @@ type UpdateColumnParams = {
           };
 };
 
-const updateColumn =
-          (params: UpdateColumnParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.updateColumn(params);
+const updateColumn = (params: UpdateColumnParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.updateColumn(params);
 
-                              dispatch(slice.actions.updateColumn(response));
-                    };
+                    dispatch(slice.actions.updateColumn(response));
+          };
 
 type ClearColumnParams = {
           columnId: string;
 };
 
-const clearColumn =
-          (params: ClearColumnParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              await boardApi.clearColumn(params);
+const clearColumn = (params: ClearColumnParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    await boardApi.clearColumn(params);
 
-                              dispatch(slice.actions.clearColumn(params.columnId));
-                    };
+                    dispatch(slice.actions.clearColumn(params.columnId));
+          };
 
 type DeleteColumnParams = {
           columnId: string;
 };
 
-const deleteColumn =
-          (params: DeleteColumnParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              await boardApi.deleteColumn(params);
+const deleteColumn = (params: DeleteColumnParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    await boardApi.deleteColumn(params);
 
-                              dispatch(slice.actions.deleteColumn(params.columnId));
-                    };
+                    dispatch(slice.actions.deleteColumn(params.columnId));
+          };
 
 type CreateTaskParams = {
           columnId: string;
           name: string;
 };
 
-const createTask =
-          (params: CreateTaskParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.createTask(params);
+const createTask = (params: CreateTaskParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.createTask(params);
 
-                              dispatch(slice.actions.createTask(response));
-                    };
+                    dispatch(slice.actions.createTask(response));
+          };
 
 type UpdateTaskParams = {
           taskId: string;
@@ -84,13 +82,12 @@ type UpdateTaskParams = {
           };
 };
 
-const updateTask =
-          (params: UpdateTaskParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.updateTask(params);
+const updateTask = (params: UpdateTaskParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.updateTask(params);
 
-                              dispatch(slice.actions.updateTask(response));
-                    };
+                    dispatch(slice.actions.updateTask(response));
+          };
 
 type MoveTaskParams = {
           taskId: string;
@@ -98,61 +95,57 @@ type MoveTaskParams = {
           columnId?: string;
 };
 
-const moveTask =
-          (params: MoveTaskParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              await boardApi.moveTask(params);
+const moveTask = (params: MoveTaskParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    await boardApi.moveTask(params);
 
-                              dispatch(slice.actions.moveTask(params));
-                    };
+                    dispatch(slice.actions.moveTask(params));
+          };
 
 type DeleteTaskParams = {
           taskId: string;
 };
 
-const deleteTask =
-          (params: DeleteTaskParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              await boardApi.deleteTask(params);
+const deleteTask = (params: DeleteTaskParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    await boardApi.deleteTask(params);
 
-                              dispatch(slice.actions.deleteTask(params.taskId));
-                    };
+                    dispatch(slice.actions.deleteTask(params.taskId));
+          };
 
 type AddCommentParams = {
           taskId: string;
           message: string;
 };
 
-const addComment =
-          (params: AddCommentParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.addComment(params);
+const addComment = (params: AddCommentParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.addComment(params);
 
-                              dispatch(
-                                        slice.actions.addComment({
-                                                  taskId: params.taskId,
-                                                  comment: response,
-                                        })
-                              );
-                    };
+                    dispatch(
+                              slice.actions.addComment({
+                                        taskId: params.taskId,
+                                        comment: response,
+                              })
+                    );
+          };
 
 type AddCheckListParams = {
           taskId: string;
           name: string;
 };
 
-const addChecklist =
-          (params: AddCheckListParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.addChecklist(params);
+const addChecklist = (params: AddCheckListParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.addChecklist(params);
 
-                              dispatch(
-                                        slice.actions.addChecklist({
-                                                  taskId: params.taskId,
-                                                  checklist: response,
-                                        })
-                              );
-                    };
+                    dispatch(
+                              slice.actions.addChecklist({
+                                        taskId: params.taskId,
+                                        checklist: response,
+                              })
+                    );
+          };
 
 type UpdateChecklistParams = {
           taskId: string;
@@ -160,31 +153,29 @@ type UpdateChecklistParams = {
           update: { name: string };
 };
 
-const updateChecklist =
-          (params: UpdateChecklistParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.updateChecklist(params);
+const updateChecklist = (params: UpdateChecklistParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.updateChecklist(params);
 
-                              dispatch(
-                                        slice.actions.updateChecklist({
-                                                  taskId: params.taskId,
-                                                  checklist: response,
-                                        })
-                              );
-                    };
+                    dispatch(
+                              slice.actions.updateChecklist({
+                                        taskId: params.taskId,
+                                        checklist: response,
+                              })
+                    );
+          };
 
 type DeleteChecklistParams = {
           taskId: string;
           checklistId: string;
 };
 
-const deleteChecklist =
-          (params: DeleteChecklistParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              await boardApi.deleteChecklist(params);
+const deleteChecklist = (params: DeleteChecklistParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    await boardApi.deleteChecklist(params);
 
-                              dispatch(slice.actions.deleteChecklist(params));
-                    };
+                    dispatch(slice.actions.deleteChecklist(params));
+          };
 
 type AddCheckItemParams = {
           taskId: string;
@@ -192,19 +183,18 @@ type AddCheckItemParams = {
           name: string;
 };
 
-const addCheckItem =
-          (params: AddCheckItemParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.addCheckItem(params);
+const addCheckItem = (params: AddCheckItemParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.addCheckItem(params);
 
-                              dispatch(
-                                        slice.actions.addCheckItem({
-                                                  taskId: params.taskId,
-                                                  checklistId: params.checklistId,
-                                                  checkItem: response,
-                                        })
-                              );
-                    };
+                    dispatch(
+                              slice.actions.addCheckItem({
+                                        taskId: params.taskId,
+                                        checklistId: params.checklistId,
+                                        checkItem: response,
+                              })
+                    );
+          };
 
 type UpdateCheckItemParams = {
           taskId: string;
@@ -216,19 +206,18 @@ type UpdateCheckItemParams = {
           };
 };
 
-const updateCheckItem =
-          (params: UpdateCheckItemParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              const response = await boardApi.updateCheckItem(params);
+const updateCheckItem = (params: UpdateCheckItemParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    const response = await boardApi.updateCheckItem(params);
 
-                              dispatch(
-                                        slice.actions.updateCheckItem({
-                                                  taskId: params.taskId,
-                                                  checklistId: params.checklistId,
-                                                  checkItem: response,
-                                        })
-                              );
-                    };
+                    dispatch(
+                              slice.actions.updateCheckItem({
+                                        taskId: params.taskId,
+                                        checklistId: params.checklistId,
+                                        checkItem: response,
+                              })
+                    );
+          };
 
 type DeleteCheckItemParams = {
           taskId: string;
@@ -236,13 +225,12 @@ type DeleteCheckItemParams = {
           checkItemId: string;
 };
 
-const deleteCheckItem =
-          (params: DeleteCheckItemParams): AppThunk =>
-                    async (dispatch): Promise<void> => {
-                              await boardApi.deleteCheckItem(params);
+const deleteCheckItem = (params: DeleteCheckItemParams): AppThunk =>
+          async (dispatch): Promise<void> => {
+                    await boardApi.deleteCheckItem(params);
 
-                              dispatch(slice.actions.deleteCheckItem(params));
-                    };
+                    dispatch(slice.actions.deleteCheckItem(params));
+          };
 
 export const thunks = {
           addCheckItem,

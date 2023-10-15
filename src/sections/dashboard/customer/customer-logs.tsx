@@ -47,7 +47,7 @@ export const CustomerLogs: FC<CustomerLogsProps> = (props) => {
                                                                       const createdAt = format(log.createdAt, 'yyyy/MM/dd HH:mm:ss');
 
                                                                       return (
-                                                                                <TableRow key={log.id}>
+                                                                                <TableRow key={log._id}>
                                                                                           <TableCell width="100">
                                                                                                     <Typography
                                                                                                               color="text.secondary"

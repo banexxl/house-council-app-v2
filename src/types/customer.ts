@@ -19,6 +19,7 @@ export interface Customer {
           isSubtenant?: boolean;
           zipCode?: number;
           permissionLevel?: number;
+          buildingID?: string;
 }
 
 
@@ -49,7 +50,7 @@ export const customerSchema = Yup.object({
 export default customerSchema;
 
 export interface CustomerLog {
-          id: string;
+          _id: string;
           createdAt: number;
           description: string;
           ip: string;

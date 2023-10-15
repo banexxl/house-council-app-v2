@@ -188,7 +188,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
                                                             const totalAmount = numeral(item.totalAmount).format(`${item.currency}0,0.00`);
 
                                                             return (
-                                                                      <TableRow key={item.id}>
+                                                                      <TableRow key={item._id}>
                                                                                 <TableCell>{index + 1}</TableCell>
                                                                                 <TableCell>{item.description}</TableCell>
                                                                                 <TableCell>{item.quantity}</TableCell>

@@ -103,7 +103,7 @@ export const CustomerEmailsSummary: FC = (props) => {
 
                                                             return (
                                                                       <TableRow
-                                                                                key={email.id}
+                                                                                key={email._id}
                                                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                                       >
                                                                                 <TableCell>

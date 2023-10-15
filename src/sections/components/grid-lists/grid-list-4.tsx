@@ -12,7 +12,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 interface Applicant {
-          id: string;
+          _id: string;
           avatar: string;
           commonContacts: number;
           cover: string;
@@ -22,7 +22,7 @@ interface Applicant {
 
 const applicants: Applicant[] = [
           {
-                    id: '5e887a62195cc5aef7e8ca5d',
+                    _id: '5e887a62195cc5aef7e8ca5d',
                     avatar: '/assets/avatars/avatar-marcus-finn.png',
                     commonContacts: 12,
                     cover: '/assets/covers/minimal-1-4x4-small.png',
@@ -30,7 +30,7 @@ const applicants: Applicant[] = [
                     skills: ['UX', 'Frontend development', 'HTML5', 'VueJS', 'ReactJS'],
           },
           {
-                    id: '5e86809283e28b96d2d38537',
+                    _id: '5e86809283e28b96d2d38537',
                     avatar: '/assets/avatars/avatar-anika-visser.png',
                     commonContacts: 17,
                     cover: '/assets/covers/abstract-1-4x4-small.png',
@@ -38,7 +38,7 @@ const applicants: Applicant[] = [
                     skills: ['Backend development', 'Firebase', 'MongoDB', 'ExpressJS'],
           },
           {
-                    id: '5e887ac47eed253091be10cb',
+                    _id: '5e887ac47eed253091be10cb',
                     avatar: '/assets/avatars/avatar-carson-darrin.png',
                     commonContacts: 5,
                     cover: '/assets/covers/minimal-2-4x4-small.png',
@@ -60,7 +60,7 @@ export const GridList4: FC = () => (
                     >
                               {applicants.map((applicant) => (
                                         <Grid
-                                                  key={applicant.id}
+                                                  key={applicant._id}
                                                   md={4}
                                                   xs={12}
                                         >

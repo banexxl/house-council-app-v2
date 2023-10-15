@@ -18,102 +18,102 @@ import Typography from '@mui/material/Typography';
 import type { Label } from 'src/types/mail';
 
 const systemLabelIcons: Record<string, JSX.Element> = {
-  all: <Mail01Icon />,
-  inbox: <Inbox01Icon />,
-  sent: <Send01Icon />,
-  trash: <Trash02Icon />,
-  drafts: <Mail04Icon />,
-  spam: <AlertCircleIcon />,
-  starred: <Star01Icon />,
-  important: <BookmarkIcon />,
+          all: <Mail01Icon />,
+          inbox: <Inbox01Icon />,
+          sent: <Send01Icon />,
+          trash: <Trash02Icon />,
+          drafts: <Mail04Icon />,
+          spam: <AlertCircleIcon />,
+          starred: <Star01Icon />,
+          important: <BookmarkIcon />,
 };
 
 const getIcon = (label: Label): JSX.Element => {
-  if (label.type === 'system') {
-    return systemLabelIcons[label.id];
-  }
+          if (label.type === 'system') {
+                    return systemLabelIcons[label._id];
+          }
 
-  return <Tag01Icon />;
+          return <Tag01Icon />;
 };
 
 const getColor = (label: Label): string => {
-  if (label.type === 'custom') {
-    return label.color || 'inherit';
-  }
+          if (label.type === 'custom') {
+                    return label.color || 'inherit';
+          }
 
-  return 'inherit';
+          return 'inherit';
 };
 
 interface MailLabelProps {
-  active?: boolean;
-  label: Label;
-  onClick?: () => void;
+          active?: boolean;
+          label: Label;
+          onClick?: () => void;
 }
 
 export const MailLabel: FC<MailLabelProps> = (props) => {
-  const { active, label, ...other } = props;
+          const { active, label, ...other } = props;
 
-  const icon = getIcon(label);
-  const color = getColor(label);
-  const showUnreadCount = !!(label.unreadCount && label.unreadCount > 0);
+          const icon = getIcon(label);
+          const color = getColor(label);
+          const showUnreadCount = !!(label.unreadCount && label.unreadCount > 0);
 
-  return (
-    <ListItem
-      disableGutters
-      disablePadding
-      sx={{
-        '& + &': {
-          mt: 1,
-        },
-      }}
-      {...other}
-    >
-      <ButtonBase
-        sx={{
-          borderRadius: 1,
-          color: 'text.secondary',
-          flexGrow: 1,
-          fontSize: (theme) => theme.typography.button.fontSize,
-          fontWeight: (theme) => theme.typography.button.fontWeight,
-          justifyContent: 'flex-start',
-          lineHeight: (theme) => theme.typography.button.lineHeight,
-          py: 1,
-          px: 2,
-          textAlign: 'left',
-          '&:hover': {
-            backgroundColor: 'action.hover',
-          },
-          ...(active && {
-            backgroundColor: 'action.selected',
-            color: 'text.primary',
-          }),
-        }}
-      >
-        <SvgIcon
-          sx={{
-            color,
-            mr: 1,
-          }}
-        >
-          {icon}
-        </SvgIcon>
-        <Box sx={{ flexGrow: 1 }}>{label.name}</Box>
-        {showUnreadCount && (
-          <Typography
-            color="inherit"
-            variant="subtitle2"
-          >
-            {label.unreadCount}
-          </Typography>
-        )}
-      </ButtonBase>
-    </ListItem>
-  );
+          return (
+                    <ListItem
+                              disableGutters
+                              disablePadding
+                              sx={{
+                                        '& + &': {
+                                                  mt: 1,
+                                        },
+                              }}
+                              {...other}
+                    >
+                              <ButtonBase
+                                        sx={{
+                                                  borderRadius: 1,
+                                                  color: 'text.secondary',
+                                                  flexGrow: 1,
+                                                  fontSize: (theme) => theme.typography.button.fontSize,
+                                                  fontWeight: (theme) => theme.typography.button.fontWeight,
+                                                  justifyContent: 'flex-start',
+                                                  lineHeight: (theme) => theme.typography.button.lineHeight,
+                                                  py: 1,
+                                                  px: 2,
+                                                  textAlign: 'left',
+                                                  '&:hover': {
+                                                            backgroundColor: 'action.hover',
+                                                  },
+                                                  ...(active && {
+                                                            backgroundColor: 'action.selected',
+                                                            color: 'text.primary',
+                                                  }),
+                                        }}
+                              >
+                                        <SvgIcon
+                                                  sx={{
+                                                            color,
+                                                            mr: 1,
+                                                  }}
+                                        >
+                                                  {icon}
+                                        </SvgIcon>
+                                        <Box sx={{ flexGrow: 1 }}>{label.name}</Box>
+                                        {showUnreadCount && (
+                                                  <Typography
+                                                            color="inherit"
+                                                            variant="subtitle2"
+                                                  >
+                                                            {label.unreadCount}
+                                                  </Typography>
+                                        )}
+                              </ButtonBase>
+                    </ListItem>
+          );
 };
 
 MailLabel.propTypes = {
-  active: PropTypes.bool,
-  // @ts-ignore
-  label: PropTypes.object.isRequired,
-  onClick: PropTypes.func,
+          active: PropTypes.bool,
+          // @ts-ignore
+          label: PropTypes.object.isRequired,
+          onClick: PropTypes.func,
 };

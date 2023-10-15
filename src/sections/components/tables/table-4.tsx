@@ -28,7 +28,7 @@ const now = new Date();
 type OrderStatus = 'canceled' | 'complete' | 'pending' | 'rejected';
 
 interface Order {
-          id: string;
+          _id: string;
           createdAt: number;
           currency: string;
           customer: {
@@ -43,7 +43,7 @@ interface Order {
 
 const orders: Order[] = [
           {
-                    id: '5ecb8a6d9f53bfae09e16115',
+                    _id: '5ecb8a6d9f53bfae09e16115',
                     createdAt: subMinutes(subSeconds(now, 23), 32).getTime(),
                     currency: '$',
                     customer: {
@@ -56,7 +56,7 @@ const orders: Order[] = [
                     totalAmount: 500.0,
           },
           {
-                    id: '5ecb8a738aa6f3e577c2b3ec',
+                    _id: '5ecb8a738aa6f3e577c2b3ec',
                     createdAt: subMinutes(subSeconds(now, 51), 36).getTime(),
                     currency: '$',
                     customer: {
@@ -69,7 +69,7 @@ const orders: Order[] = [
                     totalAmount: 500.0,
           },
           {
-                    id: '5ecb8a795e53f134013eba3b',
+                    _id: '5ecb8a795e53f134013eba3b',
                     createdAt: subMinutes(subSeconds(now, 55), 38).getTime(),
                     currency: '$',
                     customer: {
@@ -82,7 +82,7 @@ const orders: Order[] = [
                     totalAmount: 500.0,
           },
           {
-                    id: '5ecb8a7f738cc572a9ce0277',
+                    _id: '5ecb8a7f738cc572a9ce0277',
                     createdAt: subMinutes(subSeconds(now, 3), 40).getTime(),
                     currency: '$',
                     customer: {
@@ -95,7 +95,7 @@ const orders: Order[] = [
                     totalAmount: 500.0,
           },
           {
-                    id: '5e86805e2bafd54f66cc95c3',
+                    _id: '5e86805e2bafd54f66cc95c3',
                     createdAt: subMinutes(subSeconds(now, 32), 45).getTime(),
                     currency: '$',
                     customer: {
@@ -177,7 +177,7 @@ export const Table4: FC = () => (
                                                                       return (
                                                                                 <TableRow
                                                                                           hover
-                                                                                          key={order.id}
+                                                                                          key={order._id}
                                                                                 >
                                                                                           <TableCell padding="checkbox">
                                                                                                     <Checkbox />

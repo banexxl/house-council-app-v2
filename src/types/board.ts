@@ -1,30 +1,30 @@
 export interface Attachment {
-          id: string;
+          _id: string;
           type: 'image' | 'file';
           url: string;
 }
 
 export interface CheckItem {
-          id: string;
+          _id: string;
           name: string;
           state: 'incomplete' | 'complete';
 }
 
 export interface Checklist {
-          id: string;
+          _id: string;
           checkItems: CheckItem[];
           name: string;
 }
 
 export interface Comment {
-          id: string;
+          _id: string;
           authorId: string;
           createdAt: number;
           message: string;
 }
 
 export interface Task {
-          id: string;
+          _id: string;
           assigneesIds: string[];
           attachments: Attachment[];
           authorId: string;
@@ -39,18 +39,21 @@ export interface Task {
 }
 
 export interface Column {
-          id: string;
+          _id: string;
           taskIds: string[];
           name: string;
 }
 
 export interface Member {
-          id: string;
+          _id: string;
           avatar: string | null;
-          name: string;
+          firstName: string;
+          secondName: string;
+          email: string;
 }
 
 export interface Board {
+          _id: string;
           members: Member[];
           columns: Column[];
           tasks: Task[];

@@ -20,7 +20,7 @@ const now = new Date();
 type NotificationType = 'item_shipped' | 'new_message' | 'order_placed';
 
 interface Notification {
-          id: string;
+          _id: string;
           createdAt: number;
           description: string;
           title: string;
@@ -29,28 +29,28 @@ interface Notification {
 
 const notifications: Notification[] = [
           {
-                    id: '5e8883f1b51cc1956a5a1ec0',
+                    _id: '5e8883f1b51cc1956a5a1ec0',
                     createdAt: subHours(now, 2).getTime(),
                     description: 'Dummy text',
                     title: 'Your order is placed',
                     type: 'order_placed',
           },
           {
-                    id: '5e8883f7ed1486d665d8be1e',
+                    _id: '5e8883f7ed1486d665d8be1e',
                     createdAt: subDays(now, 1).getTime(),
                     description: 'You have 32 unread messages',
                     title: 'New message received',
                     type: 'new_message',
           },
           {
-                    id: '5e8883fca0e8612044248ecf',
+                    _id: '5e8883fca0e8612044248ecf',
                     createdAt: subDays(now, 3).getTime(),
                     description: 'Dummy text',
                     title: 'Your item is shipped',
                     type: 'item_shipped',
           },
           {
-                    id: '5e88840187f6b09b431bae68',
+                    _id: '5e88840187f6b09b431bae68',
                     createdAt: subDays(now, 7).getTime(),
                     description: 'You have 32 unread messages',
                     title: 'New message received',
@@ -88,7 +88,7 @@ export const Modal5: FC = () => (
                                                   return (
                                                             <ListItem
                                                                       divider
-                                                                      key={notification.id}
+                                                                      key={notification._id}
                                                             >
                                                                       <ListItemAvatar>
                                                                                 <Avatar

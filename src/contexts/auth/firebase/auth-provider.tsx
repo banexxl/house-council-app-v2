@@ -68,7 +68,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
                                                   payload: {
                                                             isAuthenticated: true,
                                                             user: {
-                                                                      id: user.uid,
+                                                                      _id: user.uid,
                                                                       avatar: user.photoURL || undefined,
                                                                       email: user.email || 'anika.visser@devias.io',
                                                                       name: 'Anika Visser',

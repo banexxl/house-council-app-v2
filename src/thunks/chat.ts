@@ -3,78 +3,78 @@ import { slice } from 'src/slices/chat';
 import type { AppThunk } from 'src/store';
 
 const getContacts =
-  (): AppThunk =>
-  async (dispatch): Promise<void> => {
-    const response = await chatApi.getContacts({});
+          (): AppThunk =>
+                    async (dispatch): Promise<void> => {
+                              const response = await chatApi.getContacts({});
 
-    dispatch(slice.actions.getContacts(response));
-  };
+                              dispatch(slice.actions.getContacts(response));
+                    };
 
 const getThreads =
-  (): AppThunk =>
-  async (dispatch): Promise<void> => {
-    const response = await chatApi.getThreads();
+          (): AppThunk =>
+                    async (dispatch): Promise<void> => {
+                              const response = await chatApi.getThreads();
 
-    dispatch(slice.actions.getThreads(response));
-  };
+                              dispatch(slice.actions.getThreads(response));
+                    };
 
 type GetThreadParams = {
-  threadKey: string;
+          threadKey: string;
 };
 
 const getThread =
-  (params: GetThreadParams): AppThunk =>
-  async (dispatch): Promise<string | undefined> => {
-    const response = await chatApi.getThread(params);
+          (params: GetThreadParams): AppThunk =>
+                    async (dispatch): Promise<string | undefined> => {
+                              const response = await chatApi.getThread(params);
 
-    dispatch(slice.actions.getThread(response));
+                              dispatch(slice.actions.getThread(response));
 
-    return response?.id;
-  };
+                              return response?._id;
+                    };
 
 type MarkThreadAsSeenParams = {
-  threadId: string;
+          threadId: string;
 };
 
 const markThreadAsSeen =
-  (params: MarkThreadAsSeenParams): AppThunk =>
-  async (dispatch): Promise<void> => {
-    await chatApi.markThreadAsSeen(params);
+          (params: MarkThreadAsSeenParams): AppThunk =>
+                    async (dispatch): Promise<void> => {
+                              await chatApi.markThreadAsSeen(params);
 
-    dispatch(slice.actions.markThreadAsSeen(params.threadId));
-  };
+                              dispatch(slice.actions.markThreadAsSeen(params.threadId));
+                    };
 
 type SetCurrentThreadParams = {
-  threadId?: string;
+          threadId?: string;
 };
 
 const setCurrentThread =
-  (params: SetCurrentThreadParams): AppThunk =>
-  (dispatch): void => {
-    dispatch(slice.actions.setCurrentThread(params.threadId));
-  };
+          (params: SetCurrentThreadParams): AppThunk =>
+                    (dispatch): void => {
+                              dispatch(slice.actions.setCurrentThread(params.threadId));
+                    };
 
 type AddMessageParams = {
-  threadId?: string;
-  recipientIds?: string[];
-  body: string;
+          threadId?: string;
+          recipientIds?: string[];
+          body: string;
 };
 
 const addMessage =
-  (params: AddMessageParams): AppThunk =>
-  async (dispatch): Promise<string> => {
-    const response = await chatApi.addMessage(params);
+          (params: AddMessageParams): AppThunk =>
+                    async (dispatch): Promise<string> => {
+                              const response = await chatApi.addMessage(params);
 
-    dispatch(slice.actions.addMessage(response));
+                              dispatch(slice.actions.addMessage(response));
 
-    return response.threadId;
-  };
+                              return response.threadId;
+                    };
 
 export const thunks = {
-  addMessage,
-  getContacts,
-  getThread,
-  getThreads,
-  markThreadAsSeen,
-  setCurrentThread,
+          addMessage,
+          getContacts,
+          getThread,
+          getThreads,
+          markThreadAsSeen,
+          setCurrentThread,
 };

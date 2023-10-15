@@ -52,7 +52,7 @@ class CalendarApi {
 
                                         // Create the new event
                                         const event: CalendarEvent = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   allDay,
                                                   description,
                                                   end,
@@ -83,7 +83,7 @@ class CalendarApi {
                                         const clonedEvents = deepCopy(data.events) as CalendarEvent[];
 
                                         // Find the event that will be updated
-                                        const event = clonedEvents.find((event) => event.id === eventId);
+                                        const event = clonedEvents.find((event) => event._id === eventId);
 
                                         if (!event) {
                                                   reject(new Error('Event not found'));
@@ -113,14 +113,14 @@ class CalendarApi {
                                         let clonedEvents = deepCopy(data.events) as CalendarEvent[];
 
                                         // Find the event that will be removed
-                                        const event = clonedEvents.find((event) => event.id === eventId);
+                                        const event = clonedEvents.find((event) => event._id === eventId);
 
                                         if (!event) {
                                                   reject(new Error('Event not found'));
                                                   return;
                                         }
 
-                                        clonedEvents = clonedEvents.filter((event) => event.id !== eventId);
+                                        clonedEvents = clonedEvents.filter((event) => event._id !== eventId);
 
                                         // Save changes
                                         data.events = clonedEvents;

@@ -23,137 +23,137 @@ import { JobListSearch } from 'src/sections/dashboard/jobs/job-list-search';
 import type { Company } from 'src/types/job';
 
 const useCompanies = (): Company[] => {
-  const isMounted = useMounted();
-  const [companies, setCompanies] = useState<Company[]>([]);
+          const isMounted = useMounted();
+          const [companies, setCompanies] = useState<Company[]>([]);
 
-  const handleCompaniesGet = useCallback(async (): Promise<void> => {
-    try {
-      const response = await jobsApi.getCompanies();
+          const handleCompaniesGet = useCallback(async (): Promise<void> => {
+                    try {
+                              const response = await jobsApi.getCompanies();
 
-      if (isMounted()) {
-        setCompanies(response);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [isMounted]);
+                              if (isMounted()) {
+                                        setCompanies(response);
+                              }
+                    } catch (err) {
+                              console.error(err);
+                    }
+          }, [isMounted]);
 
-  useEffect(
-    () => {
-      handleCompaniesGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+          useEffect(
+                    () => {
+                              handleCompaniesGet();
+                    },
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                    []
+          );
 
-  return companies;
+          return companies;
 };
 
 const Page: NextPage = () => {
-  const companies = useCompanies();
+          const companies = useCompanies();
 
-  usePageView();
+          usePageView();
 
-  return (
-    <>
-      <Seo title="Dashboard: Job Browse" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Grid
-            alignItems="center"
-            container
-            sx={{
-              backgroundColor: 'neutral.900',
-              borderRadius: 1,
-              color: 'common.white',
-              px: 4,
-              py: 8,
-            }}
-          >
-            <Grid
-              xs={12}
-              sm={7}
-            >
-              <Typography
-                color="inherit"
-                variant="h3"
-              >
-                Reach 50k+ potential candidates.
-              </Typography>
-              <Typography
-                color="neutral.500"
-                sx={{ mt: 2 }}
-                variant="body1"
-              >
-                Post your job today for free. Promotions start at $99.
-              </Typography>
-              <Button
-                color="primary"
-                component={RouterLink}
-                href={paths.dashboard.jobs.create}
-                size="large"
-                sx={{ mt: 3 }}
-                variant="contained"
-              >
-                Post a job
-              </Button>
-            </Grid>
-            <Grid
-              sm={5}
-              sx={{
-                display: {
-                  xs: 'none',
-                  sm: 'flex',
-                },
-                justifyContent: 'center',
-              }}
-            >
-              <img src="/assets/iconly/iconly-glass-shield.svg" />
-            </Grid>
-          </Grid>
-          <Stack
-            spacing={4}
-            sx={{ mt: 4 }}
-          >
-            <JobListSearch />
-            {companies.map((company) => (
-              <CompanyCard
-                key={company.id}
-                company={company}
-              />
-            ))}
-            <Stack
-              alignItems="center"
-              direction="row"
-              justifyContent="flex-end"
-              spacing={2}
-              sx={{
-                px: 3,
-                py: 2,
-              }}
-            >
-              <IconButton disabled>
-                <SvgIcon fontSize="small">
-                  <ChevronLeftIcon />
-                </SvgIcon>
-              </IconButton>
-              <IconButton>
-                <SvgIcon fontSize="small">
-                  <ChevronRightIcon />
-                </SvgIcon>
-              </IconButton>
-            </Stack>
-          </Stack>
-        </Container>
-      </Box>
-    </>
-  );
+          return (
+                    <>
+                              <Seo title="Dashboard: Job Browse" />
+                              <Box
+                                        component="main"
+                                        sx={{
+                                                  flexGrow: 1,
+                                                  py: 8,
+                                        }}
+                              >
+                                        <Container maxWidth="lg">
+                                                  <Grid
+                                                            alignItems="center"
+                                                            container
+                                                            sx={{
+                                                                      backgroundColor: 'neutral.900',
+                                                                      borderRadius: 1,
+                                                                      color: 'common.white',
+                                                                      px: 4,
+                                                                      py: 8,
+                                                            }}
+                                                  >
+                                                            <Grid
+                                                                      xs={12}
+                                                                      sm={7}
+                                                            >
+                                                                      <Typography
+                                                                                color="inherit"
+                                                                                variant="h3"
+                                                                      >
+                                                                                Reach 50k+ potential candidates.
+                                                                      </Typography>
+                                                                      <Typography
+                                                                                color="neutral.500"
+                                                                                sx={{ mt: 2 }}
+                                                                                variant="body1"
+                                                                      >
+                                                                                Post your job today for free. Promotions start at $99.
+                                                                      </Typography>
+                                                                      <Button
+                                                                                color="primary"
+                                                                                component={RouterLink}
+                                                                                href={paths.dashboard.jobs.create}
+                                                                                size="large"
+                                                                                sx={{ mt: 3 }}
+                                                                                variant="contained"
+                                                                      >
+                                                                                Post a job
+                                                                      </Button>
+                                                            </Grid>
+                                                            <Grid
+                                                                      sm={5}
+                                                                      sx={{
+                                                                                display: {
+                                                                                          xs: 'none',
+                                                                                          sm: 'flex',
+                                                                                },
+                                                                                justifyContent: 'center',
+                                                                      }}
+                                                            >
+                                                                      <img src="/assets/iconly/iconly-glass-shield.svg" />
+                                                            </Grid>
+                                                  </Grid>
+                                                  <Stack
+                                                            spacing={4}
+                                                            sx={{ mt: 4 }}
+                                                  >
+                                                            <JobListSearch />
+                                                            {companies.map((company) => (
+                                                                      <CompanyCard
+                                                                                key={company._id}
+                                                                                company={company}
+                                                                      />
+                                                            ))}
+                                                            <Stack
+                                                                      alignItems="center"
+                                                                      direction="row"
+                                                                      justifyContent="flex-end"
+                                                                      spacing={2}
+                                                                      sx={{
+                                                                                px: 3,
+                                                                                py: 2,
+                                                                      }}
+                                                            >
+                                                                      <IconButton disabled>
+                                                                                <SvgIcon fontSize="small">
+                                                                                          <ChevronLeftIcon />
+                                                                                </SvgIcon>
+                                                                      </IconButton>
+                                                                      <IconButton>
+                                                                                <SvgIcon fontSize="small">
+                                                                                          <ChevronRightIcon />
+                                                                                </SvgIcon>
+                                                                      </IconButton>
+                                                            </Stack>
+                                                  </Stack>
+                                        </Container>
+                              </Box>
+                    </>
+          );
 };
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;

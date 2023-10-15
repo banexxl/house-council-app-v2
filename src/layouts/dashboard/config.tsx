@@ -151,6 +151,15 @@ export const useSections = () => {
                                                             ],
                                                   },
                                                   {
+                                                            title: t(tokens.nav.board),
+                                                            path: paths.dashboard.board,
+                                                            icon: (
+                                                                      <SvgIcon fontSize="small">
+                                                                                <CheckDone01Icon />
+                                                                      </SvgIcon>
+                                                            ),
+                                                  },
+                                                  {
                                                             title: t(tokens.nav.orderList),
                                                             icon: (
                                                                       <SvgIcon fontSize="small">
@@ -297,15 +306,6 @@ export const useSections = () => {
                                                             icon: (
                                                                       <SvgIcon fontSize="small">
                                                                                 <Upload04Icon />
-                                                                      </SvgIcon>
-                                                            ),
-                                                  },
-                                                  {
-                                                            title: t(tokens.nav.board),
-                                                            path: paths.dashboard.board,
-                                                            icon: (
-                                                                      <SvgIcon fontSize="small">
-                                                                                <CheckDone01Icon />
                                                                       </SvgIcon>
                                                             ),
                                                   },

@@ -40,7 +40,7 @@ export const TaskComment: FC<TaskCommentProps> = (props) => {
                                         spacing={1}
                                         sx={{ flexGrow: 1 }}
                               >
-                                        <Typography variant="subtitle2">{author?.name}</Typography>
+                                        <Typography variant="subtitle2">{author?.firstName}</Typography>
                                         <Paper
                                                   sx={{
                                                             backgroundColor: (theme) =>

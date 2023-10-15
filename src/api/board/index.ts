@@ -6,7 +6,7 @@ import { data } from './data';
 
 // On server get current identity (user) from the request
 const user = {
-          id: '5e86809283e28b96d2d38537',
+          _id: '5e86809283e28b96d2d38537',
           avatar: '/assets/avatars/avatar-anika-visser.png',
           name: 'Anika Visser',
 };
@@ -139,6 +139,7 @@ type DeleteCheckItemRequest = {
 type DeleteCheckItemResponse = Promise<true>;
 
 class BoardApi {
+
           getBoard(request: GetBoardRequest = {}): GetBoardResponse {
                     return Promise.resolve(deepCopy(data.board));
           }
@@ -153,7 +154,7 @@ class BoardApi {
 
                                         // Create the new column
                                         const column: Column = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   name,
                                                   taskIds: [],
                                         };
@@ -180,7 +181,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the column to clear
-                                        const column = clonedBoard.columns.find((column) => column.id === columnId);
+                                        const column = clonedBoard.columns.find((column) => column._id === columnId);
 
                                         if (!column) {
                                                   reject(new Error('Column not found'));
@@ -210,7 +211,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the column to clear
-                                        const column = clonedBoard.columns.find((column) => column.id === columnId);
+                                        const column = clonedBoard.columns.find((column) => column._id === columnId);
 
                                         if (!column) {
                                                   reject(new Error('Column not found'));
@@ -243,7 +244,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the column to remove
-                                        const column = clonedBoard.columns.find((column) => column.id === columnId);
+                                        const column = clonedBoard.columns.find((column) => column._id === columnId);
 
                                         if (!column) {
                                                   reject(new Error('Column not found'));
@@ -254,7 +255,7 @@ class BoardApi {
                                         clonedBoard.tasks = clonedBoard.tasks.filter((task) => task.columnId !== columnId);
 
                                         // Remove the column from the board
-                                        clonedBoard.columns = clonedBoard.columns.filter((column) => column.id !== columnId);
+                                        clonedBoard.columns = clonedBoard.columns.filter((column) => column._id !== columnId);
 
                                         // Save changes
                                         data.board = clonedBoard;
@@ -276,7 +277,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the column where the new task will be added
-                                        const column = clonedBoard.columns.find((column) => column.id === columnId);
+                                        const column = clonedBoard.columns.find((column) => column._id === columnId);
 
                                         if (!column) {
                                                   reject(new Error('Column not found'));
@@ -285,10 +286,10 @@ class BoardApi {
 
                                         // Create the new task
                                         const task: Task = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   assigneesIds: [],
                                                   attachments: [],
-                                                  authorId: user.id,
+                                                  authorId: user._id,
                                                   checklists: [],
                                                   columnId,
                                                   comments: [],
@@ -303,7 +304,7 @@ class BoardApi {
                                         clonedBoard.tasks.push(task);
 
                                         // Add the taskId reference to the column
-                                        column.taskIds.push(task.id);
+                                        column.taskIds.push(task._id);
 
                                         // Save changes
                                         data.board = clonedBoard;
@@ -325,7 +326,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task that will be updated
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -355,7 +356,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task that will be moved
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -363,7 +364,7 @@ class BoardApi {
                                         }
 
                                         // Find the source column of the task
-                                        const sourceColumn = clonedBoard.columns.find((column) => column.id === task.columnId);
+                                        const sourceColumn = clonedBoard.columns.find((column) => column._id === task.columnId);
 
                                         if (!sourceColumn) {
                                                   reject(new Error('Column not found'));
@@ -371,14 +372,14 @@ class BoardApi {
                                         }
 
                                         // Remove the taskId reference from the source list
-                                        sourceColumn.taskIds = sourceColumn.taskIds.filter((id) => taskId !== id);
+                                        sourceColumn.taskIds = sourceColumn.taskIds.filter((_id) => taskId !== _id);
 
                                         if (!columnId) {
                                                   // If columnId is not provided, it means that we move the task in the same list
-                                                  sourceColumn.taskIds.splice(position, 0, task.id);
+                                                  sourceColumn.taskIds.splice(position, 0, task._id);
                                         } else {
                                                   // Find the destination column for the task
-                                                  const destinationColumn = clonedBoard.columns.find((column) => column.id === columnId);
+                                                  const destinationColumn = clonedBoard.columns.find((column) => column._id === columnId);
 
                                                   if (!destinationColumn) {
                                                             reject(new Error('Column not found'));
@@ -386,10 +387,10 @@ class BoardApi {
                                                   }
 
                                                   // Add the taskId reference to the destination list
-                                                  destinationColumn.taskIds.splice(position, 0, task.id);
+                                                  destinationColumn.taskIds.splice(position, 0, task._id);
 
                                                   // Store the new columnId reference
-                                                  task.columnId = destinationColumn.id;
+                                                  task.columnId = destinationColumn._id;
                                         }
 
                                         // Save changes
@@ -412,7 +413,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task that will be removed
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -420,10 +421,10 @@ class BoardApi {
                                         }
 
                                         // Remove the task from board
-                                        clonedBoard.tasks = clonedBoard.tasks.filter((task) => task.id !== taskId);
+                                        clonedBoard.tasks = clonedBoard.tasks.filter((task) => task._id !== taskId);
 
                                         // Find the column using the columnId reference
-                                        const column = clonedBoard.columns.find((column) => column.id === task.columnId);
+                                        const column = clonedBoard.columns.find((column) => column._id === task.columnId);
 
                                         // If for some reason it does not exist, there's no problem. Maybe something broke before.
                                         if (column) {
@@ -450,7 +451,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task where the comment will be added
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -459,8 +460,8 @@ class BoardApi {
 
                                         // Create the new comment
                                         const comment = {
-                                                  id: createResourceId(),
-                                                  authorId: user.id,
+                                                  _id: createResourceId(),
+                                                  authorId: user._id,
                                                   createdAt: new Date().getTime(),
                                                   message,
                                         };
@@ -488,7 +489,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task where the checklist will be added
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -497,7 +498,7 @@ class BoardApi {
 
                                         // Create the new checklist
                                         const checklist: Checklist = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   name,
                                                   checkItems: [],
                                         };
@@ -525,7 +526,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task that contains the checklist that will be updated
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -533,7 +534,7 @@ class BoardApi {
                                         }
 
                                         // Find the checklist that will be updated
-                                        const checklist = task.checklists.find((checklist) => checklist.id === checklistId);
+                                        const checklist = task.checklists.find((checklist) => checklist._id === checklistId);
 
                                         if (!checklist) {
                                                   reject(new Error('Checklist not found'));
@@ -563,7 +564,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task that contains the checklist that will be removed
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -571,7 +572,7 @@ class BoardApi {
                                         }
 
                                         // Remove the checklist from the task
-                                        task.checklists = task.checklists.filter((checklists) => checklists.id !== checklistId);
+                                        task.checklists = task.checklists.filter((checklists) => checklists._id !== checklistId);
 
                                         // Save changes
                                         data.board = clonedBoard;
@@ -593,7 +594,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task where the checklist will be added
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -601,7 +602,7 @@ class BoardApi {
                                         }
 
                                         // Find the checklist where the check item will be added
-                                        const checklist = task.checklists.find((checklist) => checklist.id === checklistId);
+                                        const checklist = task.checklists.find((checklist) => checklist._id === checklistId);
 
                                         if (!checklist) {
                                                   reject(new Error('Checklist not found'));
@@ -610,7 +611,7 @@ class BoardApi {
 
                                         // Create the new check item
                                         const checkItem: CheckItem = {
-                                                  id: createResourceId(),
+                                                  _id: createResourceId(),
                                                   name,
                                                   state: 'incomplete',
                                         };
@@ -638,7 +639,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task where the checklist will be added
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -646,7 +647,7 @@ class BoardApi {
                                         }
 
                                         // Find the checklist where the check item will be updated
-                                        const checklist = task.checklists.find((checklist) => checklist.id === checklistId);
+                                        const checklist = task.checklists.find((checklist) => checklist._id === checklistId);
 
                                         if (!checklist) {
                                                   reject(new Error('Checklist not found'));
@@ -654,7 +655,7 @@ class BoardApi {
                                         }
 
                                         // Find the checklist where the check item will be updated
-                                        const checkItem = checklist.checkItems.find((checkItem) => checkItem.id === checkItemId);
+                                        const checkItem = checklist.checkItems.find((checkItem) => checkItem._id === checkItemId);
 
                                         if (!checkItem) {
                                                   reject(new Error('Check item not found'));
@@ -684,7 +685,7 @@ class BoardApi {
                                         const clonedBoard: Board = deepCopy(data.board);
 
                                         // Find the task that contains the checklist that contains the check item that will be removed
-                                        const task = clonedBoard.tasks.find((task) => task.id === taskId);
+                                        const task = clonedBoard.tasks.find((task) => task._id === taskId);
 
                                         if (!task) {
                                                   reject(new Error('Task not found'));
@@ -692,7 +693,7 @@ class BoardApi {
                                         }
 
                                         // Find the checklist where the check item will be updated
-                                        const checklist = task.checklists.find((checklist) => checklist.id === checklistId);
+                                        const checklist = task.checklists.find((checklist) => checklist._id === checklistId);
 
                                         if (!checklist) {
                                                   reject(new Error('Checklist not found'));
@@ -701,7 +702,7 @@ class BoardApi {
 
                                         // Remove the check item from the checklist
                                         checklist.checkItems = checklist.checkItems.filter(
-                                                  (checkItem) => checkItem.id !== checkItemId
+                                                  (checkItem) => checkItem._id !== checkItemId
                                         );
 
                                         // Save changes

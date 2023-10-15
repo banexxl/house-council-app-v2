@@ -24,7 +24,7 @@ const flagMap: Record<string, string> = {
 };
 
 interface Sale {
-          id: string;
+          _id: string;
           amount: number;
           country: string;
 }
@@ -102,13 +102,13 @@ export const EcommerceSalesByCountry: FC<EcommerceSalesByCountryProps> = (props)
                                                             }}
                                                   >
                                                             {sales.map((sale) => {
-                                                                      const flag = flagMap[sale.id];
+                                                                      const flag = flagMap[sale._id];
 
                                                                       return (
                                                                                 <Stack
                                                                                           alignItems="center"
                                                                                           direction="row"
-                                                                                          key={sale.id}
+                                                                                          key={sale._id}
                                                                                           spacing={1}
                                                                                 >
                                                                                           <Box

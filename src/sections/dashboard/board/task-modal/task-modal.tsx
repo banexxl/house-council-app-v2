@@ -152,7 +152,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.moveTask({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             position: 0,
                                                             columnId,
                                                   })
@@ -170,7 +170,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                     try {
                               await dispatch(
                                         thunks.deleteTask({
-                                                  taskId: task!.id,
+                                                  taskId: task!._id,
                                         })
                               );
                               onClose?.();
@@ -185,7 +185,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.updateTask({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             update: {
                                                                       name,
                                                             },
@@ -233,7 +233,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                                         try {
                                                   await dispatch(
                                                             thunks.updateTask({
-                                                                      taskId: task!.id,
+                                                                      taskId: task!._id,
                                                                       update: {
                                                                                 description,
                                                                       },
@@ -258,7 +258,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                     try {
                               await dispatch(
                                         thunks.updateTask({
-                                                  taskId: task!.id,
+                                                  taskId: task!._id,
                                                   update: { isSubscribed: true },
                                         })
                               );
@@ -272,7 +272,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                     try {
                               await dispatch(
                                         thunks.updateTask({
-                                                  taskId: task!.id,
+                                                  taskId: task!._id,
                                                   update: { isSubscribed: false },
                                         })
                               );
@@ -287,7 +287,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.updateTask({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             update: {
                                                                       labels,
                                                             },
@@ -305,7 +305,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                     try {
                               await dispatch(
                                         thunks.addChecklist({
-                                                  taskId: task!.id,
+                                                  taskId: task!._id,
                                                   name: 'Untitled Checklist',
                                         })
                               );
@@ -320,7 +320,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.updateChecklist({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                             update: { name },
                                                   })
@@ -338,7 +338,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.deleteChecklist({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                   })
                                         );
@@ -355,7 +355,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.addCheckItem({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                             name,
                                                   })
@@ -373,7 +373,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.deleteCheckItem({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                             checkItemId,
                                                   })
@@ -391,7 +391,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.updateCheckItem({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                             checkItemId,
                                                             update: {
@@ -412,7 +412,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.updateCheckItem({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                             checkItemId,
                                                             update: {
@@ -433,7 +433,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.updateCheckItem({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             checklistId,
                                                             checkItemId,
                                                             update: {
@@ -454,7 +454,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                               try {
                                         await dispatch(
                                                   thunks.addComment({
-                                                            taskId: task!.id,
+                                                            taskId: task!._id,
                                                             message,
                                                   })
                                         );
@@ -470,7 +470,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                     return columns.map((column) => {
                               return {
                                         label: column.name,
-                                        value: column.id,
+                                        value: column._id,
                               };
                     });
           }, [columns]);
@@ -496,7 +496,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                                                             <TaskStatus
                                                                       onChange={(columnId) => handleMove(columnId)}
                                                                       options={statusOptions}
-                                                                      value={column.id}
+                                                                      value={column._id}
                                                             />
                                                   </div>
                                                   <Stack
@@ -624,7 +624,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                                                                                           <AvatarGroup max={5}>
                                                                                                     {assignees.map((assignee) => (
                                                                                                               <Avatar
-                                                                                                                        key={assignee.id}
+                                                                                                                        key={assignee._id}
                                                                                                                         src={assignee.avatar || undefined}
                                                                                                               />
                                                                                                     ))}
@@ -659,7 +659,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                                                                                 >
                                                                                           {task.attachments.map((attachment) => (
                                                                                                     <Avatar
-                                                                                                              key={attachment.id}
+                                                                                                              key={attachment._id}
                                                                                                               src={attachment.url || undefined}
                                                                                                               sx={{
                                                                                                                         height: 64,
@@ -755,23 +755,23 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                                                             <Stack spacing={2}>
                                                                       {task.checklists.map((checklist) => (
                                                                                 <TaskChecklist
-                                                                                          key={checklist.id}
+                                                                                          key={checklist._id}
                                                                                           checklist={checklist}
-                                                                                          onCheckItemAdd={(name) => handleCheckItemAdd(checklist.id, name)}
+                                                                                          onCheckItemAdd={(name) => handleCheckItemAdd(checklist._id, name)}
                                                                                           onCheckItemDelete={(checkItemId) =>
-                                                                                                    handleCheckItemDelete(checklist.id, checkItemId)
+                                                                                                    handleCheckItemDelete(checklist._id, checkItemId)
                                                                                           }
                                                                                           onCheckItemCheck={(checkItemId) =>
-                                                                                                    handleCheckItemCheck(checklist.id, checkItemId)
+                                                                                                    handleCheckItemCheck(checklist._id, checkItemId)
                                                                                           }
                                                                                           onCheckItemUncheck={(checkItemId) =>
-                                                                                                    handleCheckItemUncheck(checklist.id, checkItemId)
+                                                                                                    handleCheckItemUncheck(checklist._id, checkItemId)
                                                                                           }
                                                                                           onCheckItemRename={(checkItemId, name) =>
-                                                                                                    handleCheckItemRename(checklist.id, checkItemId, name)
+                                                                                                    handleCheckItemRename(checklist._id, checkItemId, name)
                                                                                           }
-                                                                                          onDelete={() => handleChecklistDelete(checklist.id)}
-                                                                                          onRename={(name) => handleChecklistRename(checklist.id, name)}
+                                                                                          onDelete={() => handleChecklistDelete(checklist._id)}
+                                                                                          onRename={(name) => handleChecklistRename(checklist._id, name)}
                                                                                 />
                                                                       ))}
                                                                       <Button
@@ -791,7 +791,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                                                             <Stack spacing={2}>
                                                                       {task.comments.map((comment) => (
                                                                                 <TaskComment
-                                                                                          key={comment.id}
+                                                                                          key={comment._id}
                                                                                           comment={comment}
                                                                                 />
                                                                       ))}

@@ -1,7 +1,7 @@
 export type ItemType = 'file' | 'folder';
 
 export interface Item {
-          id: string;
+          _id: string;
           author?: {
                     avatar?: string;
                     name?: string;

@@ -32,7 +32,7 @@ export const LogisticsFleetMap: FC<LogisticsFleetMapProps> = (props) => {
                     if (!currentVehicleId) {
                               return VIEW_STATE;
                     } else {
-                              const vehicle = vehicles.find((vehicle) => vehicle.id === currentVehicleId);
+                              const vehicle = vehicles.find((vehicle) => vehicle._id === currentVehicleId);
 
                               if (!vehicle) {
                                         return VIEW_STATE;
@@ -55,7 +55,7 @@ export const LogisticsFleetMap: FC<LogisticsFleetMapProps> = (props) => {
 
                     let flyOptions: FlyToOptions;
 
-                    const vehicle = vehicles.find((vehicle) => vehicle.id === currentVehicleId);
+                    const vehicle = vehicles.find((vehicle) => vehicle._id === currentVehicleId);
 
                     if (!vehicle) {
                               flyOptions = {
@@ -133,16 +133,16 @@ export const LogisticsFleetMap: FC<LogisticsFleetMapProps> = (props) => {
                     >
                               {vehicles.map((vehicle) => (
                                         <Marker
-                                                  key={vehicle.id}
+                                                  key={vehicle._id}
                                                   latitude={vehicle.latitude}
                                                   longitude={vehicle.longitude}
-                                                  onClick={() => onVehicleSelect?.(vehicle.id)}
+                                                  onClick={() => onVehicleSelect?.(vehicle._id)}
                                         >
                                                   <Box
                                                             sx={{
                                                                       height: 50,
                                                                       width: 50,
-                                                                      ...(vehicle.id === currentVehicleId && {
+                                                                      ...(vehicle._id === currentVehicleId && {
                                                                                 filter: (theme) => `drop-shadow(0px 0px 8px ${theme.palette.primary.main})`,
                                                                       }),
                                                                       '& img': {

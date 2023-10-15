@@ -1,5 +1,5 @@
 export interface Post {
-          id: string;
+          _id: string;
           author: {
                     avatar: string;
                     name: string;

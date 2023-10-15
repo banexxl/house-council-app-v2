@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 const now = new Date();
 
 interface Transaction {
-          id: string;
+          _id: string;
           amount: number;
           currency: string;
           createdAt: number;
@@ -24,7 +24,7 @@ interface Transaction {
 
 const transactions: Transaction[] = [
           {
-                    id: 'd46800328cd510a668253b45',
+                    _id: 'd46800328cd510a668253b45',
                     amount: 25000,
                     currency: 'usd',
                     createdAt: now.getTime(),
@@ -32,7 +32,7 @@ const transactions: Transaction[] = [
                     type: 'receive',
           },
           {
-                    id: 'b4b19b21656e44b487441c50',
+                    _id: 'b4b19b21656e44b487441c50',
                     amount: 6843,
                     currency: 'usd',
                     createdAt: subDays(now, 1).getTime(),
@@ -40,7 +40,7 @@ const transactions: Transaction[] = [
                     type: 'send',
           },
           {
-                    id: '56c09ad91f6d44cb313397db',
+                    _id: '56c09ad91f6d44cb313397db',
                     amount: 91823,
                     currency: 'usd',
                     createdAt: subDays(now, 1).getTime(),
@@ -48,7 +48,7 @@ const transactions: Transaction[] = [
                     type: 'send',
           },
           {
-                    id: 'aaeb96c5a131a55d9623f44d',
+                    _id: 'aaeb96c5a131a55d9623f44d',
                     amount: 49550,
                     currency: 'usd',
                     createdAt: subDays(now, 3).getTime(),
@@ -81,7 +81,7 @@ export const GroupedList6: FC = () => (
 
                                                             return (
                                                                       <TableRow
-                                                                                key={transaction.id}
+                                                                                key={transaction._id}
                                                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                                       >
                                                                                 <TableCell width={100}>

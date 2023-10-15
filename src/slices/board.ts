@@ -95,13 +95,13 @@ const reducers = {
           createColumn(state: BoardState, action: CreateColumnAction): void {
                     const column = action.payload;
 
-                    state.columns.byId[column.id] = column;
-                    state.columns.allIds.push(column.id);
+                    state.columns.byId[column._id] = column;
+                    state.columns.allIds.push(column._id);
           },
           updateColumn(state: BoardState, action: UpdateColumnAction): void {
                     const column = action.payload;
 
-                    state.columns.byId[column.id] = column;
+                    state.columns.byId[column._id] = column;
           },
           clearColumn(state: BoardState, action: ClearColumnAction): void {
                     const columnId = action.payload;
@@ -128,16 +128,16 @@ const reducers = {
           createTask(state: BoardState, action: CreateTaskAction): void {
                     const task = action.payload;
 
-                    state.tasks.byId[task.id] = task;
-                    state.tasks.allIds.push(task.id);
+                    state.tasks.byId[task._id] = task;
+                    state.tasks.allIds.push(task._id);
 
                     // Add the taskId reference to the column
-                    state.columns.byId[task.columnId].taskIds.push(task.id);
+                    state.columns.byId[task.columnId].taskIds.push(task._id);
           },
           updateTask(state: BoardState, action: UpdateTaskAction): void {
                     const task = action.payload;
 
-                    Object.assign(state.tasks.byId[task.id], task);
+                    Object.assign(state.tasks.byId[task._id], task);
           },
           moveTask(state: BoardState, action: MoveTaskAction): void {
                     const { taskId, position, columnId } = action.payload;
@@ -186,7 +186,7 @@ const reducers = {
                     const task = state.tasks.byId[taskId];
 
                     task.checklists = task.checklists.map((_checklist) => {
-                              if (_checklist.id === checklist.id) {
+                              if (_checklist._id === checklist._id) {
                                         return checklist;
                               }
 
@@ -197,12 +197,12 @@ const reducers = {
                     const { taskId, checklistId } = action.payload;
                     const task = state.tasks.byId[taskId];
 
-                    task.checklists = task.checklists.filter((checklist) => checklist.id !== checklistId);
+                    task.checklists = task.checklists.filter((checklist) => checklist._id !== checklistId);
           },
           addCheckItem(state: BoardState, action: AddCheckItemAction): void {
                     const { taskId, checklistId, checkItem } = action.payload;
                     const task = state.tasks.byId[taskId];
-                    const checklist = task.checklists.find((checklist) => checklist.id === checklistId);
+                    const checklist = task.checklists.find((checklist) => checklist._id === checklistId);
 
                     if (!checklist) {
                               return;
@@ -213,14 +213,14 @@ const reducers = {
           updateCheckItem(state: BoardState, action: UpdateCheckItemAction): void {
                     const { taskId, checklistId, checkItem } = action.payload;
                     const task = state.tasks.byId[taskId];
-                    const checklist = task.checklists.find((checklist) => checklist.id === checklistId);
+                    const checklist = task.checklists.find((checklist) => checklist._id === checklistId);
 
                     if (!checklist) {
                               return;
                     }
 
                     checklist.checkItems = checklist.checkItems.map((_checkItem) => {
-                              if (_checkItem.id === checkItem.id) {
+                              if (_checkItem._id === checkItem._id) {
                                         return checkItem;
                               }
 
@@ -230,13 +230,13 @@ const reducers = {
           deleteCheckItem(state: BoardState, action: DeleteCheckItemAction): void {
                     const { taskId, checklistId, checkItemId } = action.payload;
                     const task = state.tasks.byId[taskId];
-                    const checklist = task.checklists.find((_checklist) => _checklist.id === checklistId);
+                    const checklist = task.checklists.find((_checklist) => _checklist._id === checklistId);
 
                     if (!checklist) {
                               return;
                     }
 
-                    checklist.checkItems = checklist.checkItems.filter((checkItem) => checkItem.id !== checkItemId);
+                    checklist.checkItems = checklist.checkItems.filter((checkItem) => checkItem._id !== checkItemId);
           },
 };
 

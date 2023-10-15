@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'src/store';
 import { thunks } from 'src/thunks/board';
 
 const useColumnsIds = (): string[] => {
+
           const { columns } = useSelector((state) => state.board);
 
           return columns.allIds;

@@ -27,275 +27,275 @@ import { thunks } from 'src/thunks/calendar';
 import type { CalendarEvent, CalendarView } from 'src/types/calendar';
 
 interface CreateDialogData {
-  range?: {
-    start: number;
-    end: number;
-  };
+          range?: {
+                    start: number;
+                    end: number;
+          };
 }
 
 interface UpdateDialogData {
-  eventId?: string;
+          eventId?: string;
 }
 
 const useEvents = (): CalendarEvent[] => {
-  const dispatch = useDispatch();
-  const events = useSelector((state) => state.calendar.events);
+          const dispatch = useDispatch();
+          const events = useSelector((state) => state.calendar.events);
 
-  const handleEventsGet = useCallback((): void => {
-    dispatch(thunks.getEvents());
-  }, [dispatch]);
+          const handleEventsGet = useCallback((): void => {
+                    dispatch(thunks.getEvents());
+          }, [dispatch]);
 
-  useEffect(
-    () => {
-      handleEventsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+          useEffect(
+                    () => {
+                              handleEventsGet();
+                    },
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                    []
+          );
 
-  return events;
+          return events;
 };
 
 const useCurrentEvent = (
-  events: CalendarEvent[],
-  dialogData?: UpdateDialogData
+          events: CalendarEvent[],
+          dialogData?: UpdateDialogData
 ): CalendarEvent | undefined => {
-  return useMemo((): CalendarEvent | undefined => {
-    if (!dialogData) {
-      return undefined;
-    }
+          return useMemo((): CalendarEvent | undefined => {
+                    if (!dialogData) {
+                              return undefined;
+                    }
 
-    return events.find((event) => event.id === dialogData!.eventId);
-  }, [dialogData, events]);
+                    return events.find((event) => event._id === dialogData!.eventId);
+          }, [dialogData, events]);
 };
 
 const Page: NextPage = () => {
-  const dispatch = useDispatch();
-  const calendarRef = useRef<Calendar | null>(null);
-  const events = useEvents();
-  const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
-  const [date, setDate] = useState<Date>(new Date());
-  const [view, setView] = useState<CalendarView>(mdUp ? 'timeGridDay' : 'dayGridMonth');
-  const createDialog = useDialog<CreateDialogData>();
-  const updateDialog = useDialog<UpdateDialogData>();
-  const updatingEvent = useCurrentEvent(events, updateDialog.data);
+          const dispatch = useDispatch();
+          const calendarRef = useRef<Calendar | null>(null);
+          const events = useEvents();
+          const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
+          const [date, setDate] = useState<Date>(new Date());
+          const [view, setView] = useState<CalendarView>(mdUp ? 'timeGridDay' : 'dayGridMonth');
+          const createDialog = useDialog<CreateDialogData>();
+          const updateDialog = useDialog<UpdateDialogData>();
+          const updatingEvent = useCurrentEvent(events, updateDialog.data);
 
-  usePageView();
+          usePageView();
 
-  const handleScreenResize = useCallback((): void => {
-    const calendarEl = calendarRef.current;
+          const handleScreenResize = useCallback((): void => {
+                    const calendarEl = calendarRef.current;
 
-    if (calendarEl) {
-      const calendarApi = calendarEl.getApi();
-      const newView = mdUp ? 'dayGridMonth' : 'timeGridDay';
+                    if (calendarEl) {
+                              const calendarApi = calendarEl.getApi();
+                              const newView = mdUp ? 'dayGridMonth' : 'timeGridDay';
 
-      calendarApi.changeView(newView);
-      setView(newView);
-    }
-  }, [calendarRef, mdUp]);
+                              calendarApi.changeView(newView);
+                              setView(newView);
+                    }
+          }, [calendarRef, mdUp]);
 
-  useEffect(
-    () => {
-      handleScreenResize();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mdUp]
-  );
+          useEffect(
+                    () => {
+                              handleScreenResize();
+                    },
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                    [mdUp]
+          );
 
-  const handleViewChange = useCallback((view: CalendarView): void => {
-    const calendarEl = calendarRef.current;
+          const handleViewChange = useCallback((view: CalendarView): void => {
+                    const calendarEl = calendarRef.current;
 
-    if (calendarEl) {
-      const calendarApi = calendarEl.getApi();
+                    if (calendarEl) {
+                              const calendarApi = calendarEl.getApi();
 
-      calendarApi.changeView(view);
-      setView(view);
-    }
-  }, []);
+                              calendarApi.changeView(view);
+                              setView(view);
+                    }
+          }, []);
 
-  const handleDateToday = useCallback((): void => {
-    const calendarEl = calendarRef.current;
+          const handleDateToday = useCallback((): void => {
+                    const calendarEl = calendarRef.current;
 
-    if (calendarEl) {
-      const calendarApi = calendarEl.getApi();
+                    if (calendarEl) {
+                              const calendarApi = calendarEl.getApi();
 
-      calendarApi.today();
-      setDate(calendarApi.getDate());
-    }
-  }, []);
+                              calendarApi.today();
+                              setDate(calendarApi.getDate());
+                    }
+          }, []);
 
-  const handleDatePrev = useCallback((): void => {
-    const calendarEl = calendarRef.current;
+          const handleDatePrev = useCallback((): void => {
+                    const calendarEl = calendarRef.current;
 
-    if (calendarEl) {
-      const calendarApi = calendarEl.getApi();
+                    if (calendarEl) {
+                              const calendarApi = calendarEl.getApi();
 
-      calendarApi.prev();
-      setDate(calendarApi.getDate());
-    }
-  }, []);
+                              calendarApi.prev();
+                              setDate(calendarApi.getDate());
+                    }
+          }, []);
 
-  const handleDateNext = useCallback((): void => {
-    const calendarEl = calendarRef.current;
+          const handleDateNext = useCallback((): void => {
+                    const calendarEl = calendarRef.current;
 
-    if (calendarEl) {
-      const calendarApi = calendarEl.getApi();
+                    if (calendarEl) {
+                              const calendarApi = calendarEl.getApi();
 
-      calendarApi.next();
-      setDate(calendarApi.getDate());
-    }
-  }, []);
+                              calendarApi.next();
+                              setDate(calendarApi.getDate());
+                    }
+          }, []);
 
-  const handleAddClick = useCallback((): void => {
-    createDialog.handleOpen();
-  }, [createDialog]);
+          const handleAddClick = useCallback((): void => {
+                    createDialog.handleOpen();
+          }, [createDialog]);
 
-  const handleRangeSelect = useCallback(
-    (arg: DateSelectArg): void => {
-      const calendarEl = calendarRef.current;
+          const handleRangeSelect = useCallback(
+                    (arg: DateSelectArg): void => {
+                              const calendarEl = calendarRef.current;
 
-      if (calendarEl) {
-        const calendarApi = calendarEl.getApi();
+                              if (calendarEl) {
+                                        const calendarApi = calendarEl.getApi();
 
-        calendarApi.unselect();
-      }
+                                        calendarApi.unselect();
+                              }
 
-      createDialog.handleOpen({
-        range: {
-          start: arg.start.getTime(),
-          end: arg.end.getTime(),
-        },
-      });
-    },
-    [createDialog]
-  );
+                              createDialog.handleOpen({
+                                        range: {
+                                                  start: arg.start.getTime(),
+                                                  end: arg.end.getTime(),
+                                        },
+                              });
+                    },
+                    [createDialog]
+          );
 
-  const handleEventSelect = useCallback(
-    (arg: EventClickArg): void => {
-      updateDialog.handleOpen({
-        eventId: arg.event.id,
-      });
-    },
-    [updateDialog]
-  );
+          const handleEventSelect = useCallback(
+                    (arg: EventClickArg): void => {
+                              updateDialog.handleOpen({
+                                        eventId: arg.event.id,
+                              });
+                    },
+                    [updateDialog]
+          );
 
-  const handleEventResize = useCallback(
-    async (arg: EventResizeDoneArg): Promise<void> => {
-      const { event } = arg;
+          const handleEventResize = useCallback(
+                    async (arg: EventResizeDoneArg): Promise<void> => {
+                              const { event } = arg;
 
-      try {
-        await dispatch(
-          thunks.updateEvent({
-            eventId: event.id,
-            update: {
-              allDay: event.allDay,
-              start: event.start?.getTime(),
-              end: event.end?.getTime(),
-            },
-          })
-        );
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [dispatch]
-  );
+                              try {
+                                        await dispatch(
+                                                  thunks.updateEvent({
+                                                            eventId: event.id,
+                                                            update: {
+                                                                      allDay: event.allDay,
+                                                                      start: event.start?.getTime(),
+                                                                      end: event.end?.getTime(),
+                                                            },
+                                                  })
+                                        );
+                              } catch (err) {
+                                        console.error(err);
+                              }
+                    },
+                    [dispatch]
+          );
 
-  const handleEventDrop = useCallback(
-    async (arg: EventDropArg): Promise<void> => {
-      const { event } = arg;
+          const handleEventDrop = useCallback(
+                    async (arg: EventDropArg): Promise<void> => {
+                              const { event } = arg;
 
-      try {
-        await dispatch(
-          thunks.updateEvent({
-            eventId: event.id,
-            update: {
-              allDay: event.allDay,
-              start: event.start?.getTime(),
-              end: event.end?.getTime(),
-            },
-          })
-        );
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [dispatch]
-  );
+                              try {
+                                        await dispatch(
+                                                  thunks.updateEvent({
+                                                            eventId: event.id,
+                                                            update: {
+                                                                      allDay: event.allDay,
+                                                                      start: event.start?.getTime(),
+                                                                      end: event.end?.getTime(),
+                                                            },
+                                                  })
+                                        );
+                              } catch (err) {
+                                        console.error(err);
+                              }
+                    },
+                    [dispatch]
+          );
 
-  return (
-    <>
-      <Seo title="Dashboard: Calendar" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Stack spacing={3}>
-            <CalendarToolbar
-              date={date}
-              onAddClick={handleAddClick}
-              onDateNext={handleDateNext}
-              onDatePrev={handleDatePrev}
-              onDateToday={handleDateToday}
-              onViewChange={handleViewChange}
-              view={view}
-            />
-            <Card>
-              <CalendarContainer>
-                <Calendar
-                  allDayMaintainDuration
-                  dayMaxEventRows={3}
-                  droppable
-                  editable
-                  eventClick={handleEventSelect}
-                  eventDisplay="block"
-                  eventDrop={handleEventDrop}
-                  eventResizableFromStart
-                  eventResize={handleEventResize}
-                  events={events}
-                  headerToolbar={false}
-                  height={800}
-                  initialDate={date}
-                  initialView={view}
-                  plugins={[
-                    dayGridPlugin,
-                    interactionPlugin,
-                    listPlugin,
-                    timeGridPlugin,
-                    timelinePlugin,
-                  ]}
-                  ref={calendarRef}
-                  rerenderDelay={10}
-                  select={handleRangeSelect}
-                  selectable
-                  weekends
-                />
-              </CalendarContainer>
-            </Card>
-          </Stack>
-        </Container>
-      </Box>
-      <CalendarEventDialog
-        action="create"
-        onAddComplete={createDialog.handleClose}
-        onClose={createDialog.handleClose}
-        open={createDialog.open}
-        range={createDialog.data?.range}
-      />
-      <CalendarEventDialog
-        action="update"
-        event={updatingEvent}
-        onClose={updateDialog.handleClose}
-        onDeleteComplete={updateDialog.handleClose}
-        onEditComplete={updateDialog.handleClose}
-        open={updateDialog.open}
-      />
-    </>
-  );
+          return (
+                    <>
+                              <Seo title="Dashboard: Calendar" />
+                              <Box
+                                        component="main"
+                                        sx={{
+                                                  flexGrow: 1,
+                                                  py: 8,
+                                        }}
+                              >
+                                        <Container maxWidth="xl">
+                                                  <Stack spacing={3}>
+                                                            <CalendarToolbar
+                                                                      date={date}
+                                                                      onAddClick={handleAddClick}
+                                                                      onDateNext={handleDateNext}
+                                                                      onDatePrev={handleDatePrev}
+                                                                      onDateToday={handleDateToday}
+                                                                      onViewChange={handleViewChange}
+                                                                      view={view}
+                                                            />
+                                                            <Card>
+                                                                      <CalendarContainer>
+                                                                                <Calendar
+                                                                                          allDayMaintainDuration
+                                                                                          dayMaxEventRows={3}
+                                                                                          droppable
+                                                                                          editable
+                                                                                          eventClick={handleEventSelect}
+                                                                                          eventDisplay="block"
+                                                                                          eventDrop={handleEventDrop}
+                                                                                          eventResizableFromStart
+                                                                                          eventResize={handleEventResize}
+                                                                                          events={events}
+                                                                                          headerToolbar={false}
+                                                                                          height={800}
+                                                                                          initialDate={date}
+                                                                                          initialView={view}
+                                                                                          plugins={[
+                                                                                                    dayGridPlugin,
+                                                                                                    interactionPlugin,
+                                                                                                    listPlugin,
+                                                                                                    timeGridPlugin,
+                                                                                                    timelinePlugin,
+                                                                                          ]}
+                                                                                          ref={calendarRef}
+                                                                                          rerenderDelay={10}
+                                                                                          select={handleRangeSelect}
+                                                                                          selectable
+                                                                                          weekends
+                                                                                />
+                                                                      </CalendarContainer>
+                                                            </Card>
+                                                  </Stack>
+                                        </Container>
+                              </Box>
+                              <CalendarEventDialog
+                                        action="create"
+                                        onAddComplete={createDialog.handleClose}
+                                        onClose={createDialog.handleClose}
+                                        open={createDialog.open}
+                                        range={createDialog.data?.range}
+                              />
+                              <CalendarEventDialog
+                                        action="update"
+                                        event={updatingEvent}
+                                        onClose={updateDialog.handleClose}
+                                        onDeleteComplete={updateDialog.handleClose}
+                                        onEditComplete={updateDialog.handleClose}
+                                        open={updateDialog.open}
+                              />
+                    </>
+          );
 };
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;

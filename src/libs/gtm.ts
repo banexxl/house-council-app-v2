@@ -53,11 +53,11 @@ class GTM {
       (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        'https://www.googletagmanager.com/gtm.js?_id='+i+dl;f.parentNode.insertBefore(j,f);
       })(window,document,'script','dataLayer','${this.CONTAINER_ID}');
     `;
                     noscript.innerHTML = `
-      <iframe src="https://www.googletagmanager.com/ns.html?id=${this.CONTAINER_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+      <iframe src="https://www.googletagmanager.com/ns.html?_id=${this.CONTAINER_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>
     `;
 
                     document.head.insertBefore(script, document.head.childNodes[0]);

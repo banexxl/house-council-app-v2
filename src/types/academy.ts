@@ -5,7 +5,7 @@ export interface CourseChapter {
 }
 
 export interface Course {
-          id: string;
+          _id: string;
           chapters?: CourseChapter[];
           description: string;
           duration: string;

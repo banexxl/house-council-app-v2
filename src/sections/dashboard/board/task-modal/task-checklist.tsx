@@ -209,18 +209,18 @@ export const TaskChecklist: FC<TaskChecklistProps> = (props) => {
                                                             spacing={1}
                                                   >
                                                             {checklist.checkItems.map((checkItem) => {
-                                                                      const isRenaming = checkItemId === checkItem.id;
+                                                                      const isRenaming = checkItemId === checkItem._id;
 
                                                                       return (
                                                                                 <TaskCheckItem
-                                                                                          key={checkItem.id}
+                                                                                          key={checkItem._id}
                                                                                           checkItem={checkItem}
-                                                                                          onCheck={() => onCheckItemCheck?.(checkItem.id)}
-                                                                                          onDelete={() => onCheckItemDelete?.(checkItem.id)}
+                                                                                          onCheck={() => onCheckItemCheck?.(checkItem._id)}
+                                                                                          onDelete={() => onCheckItemDelete?.(checkItem._id)}
                                                                                           onRenameCancel={handleCheckItemRenameCancel}
-                                                                                          onRenameComplete={(name) => handleCheckItemRenameComplete(checkItem.id, name)}
-                                                                                          onRenameInit={() => handleCheckItemRenameInit(checkItem.id)}
-                                                                                          onUncheck={() => onCheckItemUncheck?.(checkItem.id)}
+                                                                                          onRenameComplete={(name) => handleCheckItemRenameComplete(checkItem._id, name)}
+                                                                                          onRenameInit={() => handleCheckItemRenameInit(checkItem._id)}
+                                                                                          onUncheck={() => onCheckItemUncheck?.(checkItem._id)}
                                                                                           isRenaming={isRenaming}
                                                                                 />
                                                                       );

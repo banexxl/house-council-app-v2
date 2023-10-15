@@ -153,7 +153,7 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
                                                   <AvatarGroup max={3}>
                                                             {assignees.map((assignee) => (
                                                                       <Avatar
-                                                                                key={assignee.id}
+                                                                                key={assignee._id}
                                                                                 src={assignee.avatar || undefined}
                                                                       />
                                                             ))}

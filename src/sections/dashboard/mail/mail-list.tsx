@@ -26,255 +26,255 @@ import type { Email } from 'src/types/mail';
 import { MailItem } from './mail-item';
 
 const useEmails = (currentLabelId?: string): { byId: Record<string, Email>; allIds: string[] } => {
-  const dispatch = useDispatch();
-  const { emails } = useSelector((state) => state.mail);
+          const dispatch = useDispatch();
+          const { emails } = useSelector((state) => state.mail);
 
-  useEffect(
-    () => {
-      dispatch(thunks.getEmails({ label: currentLabelId }));
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentLabelId]
-  );
+          useEffect(
+                    () => {
+                              dispatch(thunks.getEmails({ label: currentLabelId }));
+                    },
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                    [currentLabelId]
+          );
 
-  return emails;
+          return emails;
 };
 
 interface SelectionModel {
-  handleDeselectAll: () => void;
-  handleDeselectOne: (emailId: string) => void;
-  handleSelectAll: () => void;
-  handleSelectOne: (emailId: string) => void;
-  selected: string[];
+          handleDeselectAll: () => void;
+          handleDeselectOne: (emailId: string) => void;
+          handleSelectAll: () => void;
+          handleSelectOne: (emailId: string) => void;
+          selected: string[];
 }
 
 const useSelectionModel = (emailIds: string[]): SelectionModel => {
-  const [selected, setSelected] = useState<string[]>([]);
+          const [selected, setSelected] = useState<string[]>([]);
 
-  useEffect(() => {
-    setSelected([]);
-  }, [emailIds]);
+          useEffect(() => {
+                    setSelected([]);
+          }, [emailIds]);
 
-  const handleSelectAll = useCallback((): void => {
-    setSelected([...emailIds]);
-  }, [emailIds]);
+          const handleSelectAll = useCallback((): void => {
+                    setSelected([...emailIds]);
+          }, [emailIds]);
 
-  const handleSelectOne = useCallback((emailId: string): void => {
-    setSelected((prevState) => {
-      if (!prevState.includes(emailId)) {
-        return [...prevState, emailId];
-      }
+          const handleSelectOne = useCallback((emailId: string): void => {
+                    setSelected((prevState) => {
+                              if (!prevState.includes(emailId)) {
+                                        return [...prevState, emailId];
+                              }
 
-      return prevState;
-    });
-  }, []);
+                              return prevState;
+                    });
+          }, []);
 
-  const handleDeselectAll = useCallback((): void => {
-    setSelected([]);
-  }, []);
+          const handleDeselectAll = useCallback((): void => {
+                    setSelected([]);
+          }, []);
 
-  const handleDeselectOne = useCallback((emailId: string): void => {
-    setSelected((prevState) => {
-      return prevState.filter((id) => id !== emailId);
-    });
-  }, []);
+          const handleDeselectOne = useCallback((emailId: string): void => {
+                    setSelected((prevState) => {
+                              return prevState.filter((_id) => _id !== emailId);
+                    });
+          }, []);
 
-  return {
-    handleDeselectAll,
-    handleDeselectOne,
-    handleSelectAll,
-    handleSelectOne,
-    selected,
-  };
+          return {
+                    handleDeselectAll,
+                    handleDeselectOne,
+                    handleSelectAll,
+                    handleSelectOne,
+                    selected,
+          };
 };
 
 interface MailListProps {
-  currentLabelId?: string;
-  onSidebarToggle?: () => void;
+          currentLabelId?: string;
+          onSidebarToggle?: () => void;
 }
 
 export const MailList: FC<MailListProps> = (props) => {
-  const { currentLabelId, onSidebarToggle, ...other } = props;
-  const emails = useEmails(currentLabelId);
-  const { handleDeselectAll, handleDeselectOne, handleSelectAll, handleSelectOne, selected } =
-    useSelectionModel(emails.allIds);
+          const { currentLabelId, onSidebarToggle, ...other } = props;
+          const emails = useEmails(currentLabelId);
+          const { handleDeselectAll, handleDeselectOne, handleSelectAll, handleSelectOne, selected } =
+                    useSelectionModel(emails.allIds);
 
-  const handleToggleAll = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      if (event.target.checked) {
-        handleSelectAll();
-      } else {
-        handleDeselectAll();
-      }
-    },
-    [handleSelectAll, handleDeselectAll]
-  );
+          const handleToggleAll = useCallback(
+                    (event: ChangeEvent<HTMLInputElement>): void => {
+                              if (event.target.checked) {
+                                        handleSelectAll();
+                              } else {
+                                        handleDeselectAll();
+                              }
+                    },
+                    [handleSelectAll, handleDeselectAll]
+          );
 
-  const selectedAll = selected.length === emails.allIds.length;
-  const selectedSome = selected.length > 0 && selected.length < emails.allIds.length;
-  const hasEmails = emails.allIds.length > 0;
+          const selectedAll = selected.length === emails.allIds.length;
+          const selectedSome = selected.length > 0 && selected.length < emails.allIds.length;
+          const hasEmails = emails.allIds.length > 0;
 
-  return (
-    <Stack
-      sx={{
-        height: '100%',
-        overflow: 'hidden',
-      }}
-      {...other}
-    >
-      <Stack
-        alignItems="center"
-        direction="row"
-        justifyContent="space-between"
-        spacing={2}
-        sx={{ p: 2 }}
-      >
-        <div>
-          <IconButton onClick={onSidebarToggle}>
-            <SvgIcon>
-              <Menu01Icon />
-            </SvgIcon>
-          </IconButton>
-        </div>
-        <Stack
-          alignItems="center"
-          direction="row"
-          spacing={1}
-        >
-          <OutlinedInput
-            fullWidth
-            placeholder="Search email"
-            size="small"
-            startAdornment={
-              <InputAdornment position="start">
-                <SvgIcon>
-                  <SearchMdIcon />
-                </SvgIcon>
-              </InputAdornment>
-            }
-            sx={{ width: 200 }}
-          />
-          <Typography
-            color="text.secondary"
-            sx={{
-              display: {
-                xs: 'none',
-                md: 'block',
-              },
-              mx: 2,
-              whiteSpace: 'nowrap',
-            }}
-            variant="body2"
-          >
-            1 - {emails.allIds.length} of {emails.allIds.length}
-          </Typography>
-          <Tooltip title="Next page">
-            <IconButton>
-              <SvgIcon>
-                <ChevronLeftIcon />
-              </SvgIcon>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Previous page">
-            <IconButton>
-              <SvgIcon>
-                <ChevronRightIcon />
-              </SvgIcon>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Refresh">
-            <IconButton>
-              <SvgIcon>
-                <RefreshCcw02Icon />
-              </SvgIcon>
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Stack>
-      <Divider />
-      {hasEmails ? (
-        <>
-          <Box
-            sx={{
-              alignItems: 'center',
-              borderBottomColor: 'divider',
-              borderBottomStyle: 'solid',
-              borderBottomWidth: 1,
-              display: {
-                xs: 'none',
-                md: 'flex',
-              },
-              p: 2,
-            }}
-          >
-            <Checkbox
-              checked={selectedAll}
-              indeterminate={selectedSome}
-              onChange={handleToggleAll}
-            />
-            <Typography variant="subtitle2">Select all</Typography>
-            <Box sx={{ flexGrow: 1 }} />
-            <Tooltip title="More options">
-              <IconButton>
-                <SvgIcon>
-                  <DotsHorizontalIcon />
-                </SvgIcon>
-              </IconButton>
-            </Tooltip>
-          </Box>
-          <div>
-            {emails.allIds.map((emailId: string) => {
-              const isSelected = selected.includes(emailId);
+          return (
+                    <Stack
+                              sx={{
+                                        height: '100%',
+                                        overflow: 'hidden',
+                              }}
+                              {...other}
+                    >
+                              <Stack
+                                        alignItems="center"
+                                        direction="row"
+                                        justifyContent="space-between"
+                                        spacing={2}
+                                        sx={{ p: 2 }}
+                              >
+                                        <div>
+                                                  <IconButton onClick={onSidebarToggle}>
+                                                            <SvgIcon>
+                                                                      <Menu01Icon />
+                                                            </SvgIcon>
+                                                  </IconButton>
+                                        </div>
+                                        <Stack
+                                                  alignItems="center"
+                                                  direction="row"
+                                                  spacing={1}
+                                        >
+                                                  <OutlinedInput
+                                                            fullWidth
+                                                            placeholder="Search email"
+                                                            size="small"
+                                                            startAdornment={
+                                                                      <InputAdornment position="start">
+                                                                                <SvgIcon>
+                                                                                          <SearchMdIcon />
+                                                                                </SvgIcon>
+                                                                      </InputAdornment>
+                                                            }
+                                                            sx={{ width: 200 }}
+                                                  />
+                                                  <Typography
+                                                            color="text.secondary"
+                                                            sx={{
+                                                                      display: {
+                                                                                xs: 'none',
+                                                                                md: 'block',
+                                                                      },
+                                                                      mx: 2,
+                                                                      whiteSpace: 'nowrap',
+                                                            }}
+                                                            variant="body2"
+                                                  >
+                                                            1 - {emails.allIds.length} of {emails.allIds.length}
+                                                  </Typography>
+                                                  <Tooltip title="Next page">
+                                                            <IconButton>
+                                                                      <SvgIcon>
+                                                                                <ChevronLeftIcon />
+                                                                      </SvgIcon>
+                                                            </IconButton>
+                                                  </Tooltip>
+                                                  <Tooltip title="Previous page">
+                                                            <IconButton>
+                                                                      <SvgIcon>
+                                                                                <ChevronRightIcon />
+                                                                      </SvgIcon>
+                                                            </IconButton>
+                                                  </Tooltip>
+                                                  <Tooltip title="Refresh">
+                                                            <IconButton>
+                                                                      <SvgIcon>
+                                                                                <RefreshCcw02Icon />
+                                                                      </SvgIcon>
+                                                            </IconButton>
+                                                  </Tooltip>
+                                        </Stack>
+                              </Stack>
+                              <Divider />
+                              {hasEmails ? (
+                                        <>
+                                                  <Box
+                                                            sx={{
+                                                                      alignItems: 'center',
+                                                                      borderBottomColor: 'divider',
+                                                                      borderBottomStyle: 'solid',
+                                                                      borderBottomWidth: 1,
+                                                                      display: {
+                                                                                xs: 'none',
+                                                                                md: 'flex',
+                                                                      },
+                                                                      p: 2,
+                                                            }}
+                                                  >
+                                                            <Checkbox
+                                                                      checked={selectedAll}
+                                                                      indeterminate={selectedSome}
+                                                                      onChange={handleToggleAll}
+                                                            />
+                                                            <Typography variant="subtitle2">Select all</Typography>
+                                                            <Box sx={{ flexGrow: 1 }} />
+                                                            <Tooltip title="More options">
+                                                                      <IconButton>
+                                                                                <SvgIcon>
+                                                                                          <DotsHorizontalIcon />
+                                                                                </SvgIcon>
+                                                                      </IconButton>
+                                                            </Tooltip>
+                                                  </Box>
+                                                  <div>
+                                                            {emails.allIds.map((emailId: string) => {
+                                                                      const isSelected = selected.includes(emailId);
 
-              const href =
-                currentLabelId && currentLabelId !== 'inbox'
-                  ? paths.dashboard.mail + `?emailId=${emailId}&label=${currentLabelId}`
-                  : paths.dashboard.mail + `?emailId=${emailId}`;
+                                                                      const href =
+                                                                                currentLabelId && currentLabelId !== 'inbox'
+                                                                                          ? paths.dashboard.mail + `?emailId=${emailId}&label=${currentLabelId}`
+                                                                                          : paths.dashboard.mail + `?emailId=${emailId}`;
 
-              return (
-                <MailItem
-                  email={emails.byId[emailId]}
-                  href={href}
-                  key={emailId}
-                  onDeselect={(): void => handleDeselectOne(emailId)}
-                  onSelect={(): void => handleSelectOne(emailId)}
-                  selected={isSelected}
-                />
-              );
-            })}
-          </div>
-        </>
-      ) : (
-        <Stack
-          alignItems="center"
-          justifyContent="center"
-          spacing={2}
-          sx={{
-            flexGrow: 1,
-            p: 2,
-          }}
-        >
-          <Box
-            component="img"
-            src="/assets/errors/error-404.png"
-            sx={{
-              height: 'auto',
-              maxWidth: 120,
-            }}
-          />
-          <Typography
-            color="text.secondary"
-            variant="h5"
-          >
-            There are no emails
-          </Typography>
-        </Stack>
-      )}
-    </Stack>
-  );
+                                                                      return (
+                                                                                <MailItem
+                                                                                          email={emails.byId[emailId]}
+                                                                                          href={href}
+                                                                                          key={emailId}
+                                                                                          onDeselect={(): void => handleDeselectOne(emailId)}
+                                                                                          onSelect={(): void => handleSelectOne(emailId)}
+                                                                                          selected={isSelected}
+                                                                                />
+                                                                      );
+                                                            })}
+                                                  </div>
+                                        </>
+                              ) : (
+                                        <Stack
+                                                  alignItems="center"
+                                                  justifyContent="center"
+                                                  spacing={2}
+                                                  sx={{
+                                                            flexGrow: 1,
+                                                            p: 2,
+                                                  }}
+                                        >
+                                                  <Box
+                                                            component="img"
+                                                            src="/assets/errors/error-404.png"
+                                                            sx={{
+                                                                      height: 'auto',
+                                                                      maxWidth: 120,
+                                                            }}
+                                                  />
+                                                  <Typography
+                                                            color="text.secondary"
+                                                            variant="h5"
+                                                  >
+                                                            There are no emails
+                                                  </Typography>
+                                        </Stack>
+                              )}
+                    </Stack>
+          );
 };
 
 MailList.propTypes = {
-  currentLabelId: PropTypes.string,
-  onSidebarToggle: PropTypes.func,
+          currentLabelId: PropTypes.string,
+          onSidebarToggle: PropTypes.func,
 };
