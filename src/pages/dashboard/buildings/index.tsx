@@ -192,7 +192,7 @@ const Page: NextPage = (props: any) => {
           );
 };
 
-export const getStaticProps = async (context: any) => {
+export const getServerSideProps = async (context: any) => {
 
           const allBuildings = await buildingServices().getAllBuildings()
 

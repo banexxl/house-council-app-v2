@@ -43,7 +43,7 @@ export const BuildingCreateForm: FC = (props) => {
                                         })
 
                                         if (buildingCreateResponse.ok) {
-                                                  toast.success('Customer added');
+                                                  toast.success('Building added');
                                                   router.push(paths.dashboard.buildings.index);
                                         } else if (buildingCreateResponse.status === 409) {
                                                   const errorData = await buildingCreateResponse.json(); // Parse the error response
@@ -229,33 +229,49 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           <Stack spacing={5}>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
-                                                                                                                        label="Is receintly built"
-                                                                                                                        value={formik.values.isRecentlyBuilt}
-                                                                                                                        name='isReceintlyBuilt'
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.isRecentlyBuilt}
+                                                                                                                                            name='isRecentlyBuilt'
+                                                                                                                                            onChange={() => formik.setFieldValue('isRecentlyBuilt', !formik.values.isRecentlyBuilt)}
+                                                                                                                                  />
+                                                                                                                        }
+                                                                                                                        label="Is recently built"
                                                                                                               />
                                                                                                     </div><div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasOwnParkingLot}
+                                                                                                                                            name='hasOwnParkingLot'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnParkingLot', !formik.values.hasOwnParkingLot)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has own parking lot"
-                                                                                                                        value={formik.values.hasOwnParkingLot}
-                                                                                                                        name='hasOwnParkingLot'
                                                                                                               />
                                                                                                     </div>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasOwnElevator}
+                                                                                                                                            name='hasOwnElevator'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnElevator', !formik.values.hasOwnElevator)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has own elevator"
-                                                                                                                        value={formik.values.hasOwnElevator}
-                                                                                                                        name='hasOwnElevator'
                                                                                                               />
                                                                                                     </div>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasOwnBicycleRoom}
+                                                                                                                                            name='hasOwnBicycleRoom'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnBicycleRoom', !formik.values.hasOwnBicycleRoom)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has own bicycle room"
-                                                                                                                        value={formik.values.hasOwnBicycleRoom}
-                                                                                                                        name='hasOwnBicycleRoom'
                                                                                                               />
                                                                                                     </div>
                                                                                           </Stack>
@@ -307,41 +323,63 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           <Stack spacing={2}>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasGasHeating}
+                                                                                                                                            name='hasGasHeating'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasGasHeating', !formik.values.hasGasHeating)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has gas heating"
                                                                                                                         value={formik.values.hasGasHeating}
                                                                                                                         name='hasGasHeating'
                                                                                                               />
                                                                                                     </div><div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasCentralHeating}
+                                                                                                                                            name='hasCentralHeating'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasCentralHeating', !formik.values.hasCentralHeating)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has central heating"
-                                                                                                                        value={formik.values.hasCentralHeating}
-                                                                                                                        name='hasCentralHeating'
                                                                                                               />
                                                                                                     </div>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasElectricHeating}
+                                                                                                                                            name='hasElectricHeating'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasElectricHeating', !formik.values.hasElectricHeating)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has electrical heating"
-                                                                                                                        value={formik.values.hasElectricHeating}
-                                                                                                                        name='hasElectricHeating'
                                                                                                               />
                                                                                                     </div>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasSolarPower}
+                                                                                                                                            name='hasSolarPower'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasSolarPower', !formik.values.hasSolarPower)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has solar power"
-                                                                                                                        value={formik.values.hasSolarPower}
-                                                                                                                        name='hasSolarPower'
                                                                                                               />
                                                                                                     </div>
                                                                                                     <div>
                                                                                                               <FormControlLabel
-                                                                                                                        control={<Switch defaultChecked />}
+                                                                                                                        control={
+                                                                                                                                  <Switch
+                                                                                                                                            value={formik.values.hasOwnWaterPump}
+                                                                                                                                            name='hasOwnWaterPump'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnWaterPump', !formik.values.hasOwnWaterPump)}
+                                                                                                                                  />
+                                                                                                                        }
                                                                                                                         label="Has own water pump"
-                                                                                                                        value={formik.values.hasOwnWaterPump}
-                                                                                                                        name='hasOwnWaterPump'
                                                                                                               />
                                                                                                     </div>
                                                                                           </Stack>

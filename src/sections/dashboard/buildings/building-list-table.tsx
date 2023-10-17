@@ -45,6 +45,7 @@ interface BuildingListTableProps {
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
+          console.log('BuildingListTableProps', props);
 
           const {
                     count = 0,
@@ -89,11 +90,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                       <TableCell>City</TableCell>
                                                                       <TableCell>Street</TableCell>
                                                                       <TableCell>Street number</TableCell>
-                                                                      <TableCell>Appartment Count</TableCell>
                                                                       <TableCell>Unresolved issue count</TableCell>
                                                                       <TableCell>Elevator</TableCell>
                                                                       <TableCell>Appartment Count</TableCell>
-                                                                      <TableCell>Board</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -134,7 +133,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                     <TableCell>{building.city}</TableCell>
                                                                                                     <TableCell>{building.street}</TableCell>
                                                                                                     <TableCell>{building.streetNumber}</TableCell>
-                                                                                                    <TableCell>{building.appartmentCount}</TableCell>
                                                                                                     <TableCell>
                                                                                                               {/* <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
@@ -162,8 +160,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                               }
                                                                                                     </TableCell>
                                                                                                     <TableCell>{building.appartmentCount}</TableCell>
-                                                                                                    <TableCell>{building.board}</TableCell>
                                                                                           </TableRow>
+
+
                                                                                           {isCurrent && (
                                                                                                     <TableRow>
                                                                                                               <TableCell
@@ -301,10 +300,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.isRecentlyBuilt}
+                                                                                                                                                                                                        name='isRecentlyBuilt'
+                                                                                                                                                                                                        onChange={() => building.isRecentlyBuilt = !building.isRecentlyBuilt}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
                                                                                                                                                                                     label="Is recently built"
-                                                                                                                                                                                    value={building.isRecentlyBuilt}
-                                                                                                                                                                                    name='isRecentlyBuilt'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -313,10 +316,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.buildingStatus}
+                                                                                                                                                                                                        name='buildingStatus'
+                                                                                                                                                                                                        onChange={() => building.buildingStatus = !building.buildingStatus}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
                                                                                                                                                                                     label="Active"
-                                                                                                                                                                                    value={building.buildingStatus}
-                                                                                                                                                                                    name='isActive'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -361,10 +368,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
-                                                                                                                                                                                    label="Has central heating"
-                                                                                                                                                                                    value={building.hasCentralHeating}
-                                                                                                                                                                                    name='hasCentralHeating'
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasCentralHeating}
+                                                                                                                                                                                                        name='hasCentralHeating'
+                                                                                                                                                                                                        onChange={() => building.hasCentralHeating = !building.hasCentralHeating}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
+                                                                                                                                                                                    label="Has Central Heating"
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -373,10 +384,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
-                                                                                                                                                                                    label="Has electrical heating"
-                                                                                                                                                                                    value={building.hasElectricHeating}
-                                                                                                                                                                                    name='hasElectricHeating'
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasElectricHeating}
+                                                                                                                                                                                                        name='hasElectricHeating'
+                                                                                                                                                                                                        onChange={() => building.hasElectricHeating = !building.hasElectricHeating}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
+                                                                                                                                                                                    label="Has Electrical Heating"
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -385,10 +400,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
-                                                                                                                                                                                    label="Has gas heating"
-                                                                                                                                                                                    value={building.hasGasHeating}
-                                                                                                                                                                                    name='hasGasHeating'
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasGasHeating}
+                                                                                                                                                                                                        name='hasGasHeating'
+                                                                                                                                                                                                        onChange={() => building.hasGasHeating = !building.hasGasHeating}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
+                                                                                                                                                                                    label="Has Gas Heating"
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -397,10 +416,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasOwnBicycleRoom}
+                                                                                                                                                                                                        name='hasOwnBicycleRoom'
+                                                                                                                                                                                                        onChange={() => building.hasOwnBicycleRoom = !building.hasOwnBicycleRoom}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
                                                                                                                                                                                     label="Has own bicycle room"
-                                                                                                                                                                                    value={building.hasOwnBicycleRoom}
-                                                                                                                                                                                    name='hasOwnBicycleRoom'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -409,10 +432,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasOwnElevator}
+                                                                                                                                                                                                        name='hasOwnElevator'
+                                                                                                                                                                                                        onChange={() => building.hasOwnElevator = !building.hasOwnElevator}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
                                                                                                                                                                                     label="Has own elevator"
-                                                                                                                                                                                    value={building.hasOwnElevator}
-                                                                                                                                                                                    name='hasOwnElevator'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -421,10 +448,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasOwnParkingLot}
+                                                                                                                                                                                                        name='hasOwnParkingLot'
+                                                                                                                                                                                                        onChange={() => building.hasOwnParkingLot = !building.hasOwnParkingLot}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
                                                                                                                                                                                     label="Has own parking lot"
-                                                                                                                                                                                    value={building.hasOwnParkingLot}
-                                                                                                                                                                                    name='hasOwnParkingLot'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -433,10 +464,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasOwnWaterPump}
+                                                                                                                                                                                                        name='hasOwnWaterPump'
+                                                                                                                                                                                                        onChange={() => building.hasOwnWaterPump = !building.hasOwnWaterPump}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
                                                                                                                                                                                     label="Has own water pump"
-                                                                                                                                                                                    value={building.hasOwnWaterPump}
-                                                                                                                                                                                    name='hasOwnWaterPump'
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid
@@ -445,10 +480,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           xs={12}
                                                                                                                                                                 >
                                                                                                                                                                           <FormControlLabel
-                                                                                                                                                                                    control={<Switch defaultChecked />}
-                                                                                                                                                                                    label="Has solar power"
-                                                                                                                                                                                    value={building.hasSolarPower}
-                                                                                                                                                                                    name='hasSolarPower'
+                                                                                                                                                                                    control={
+                                                                                                                                                                                              <Switch
+                                                                                                                                                                                                        value={building.hasSolarPower}
+                                                                                                                                                                                                        name='hasSolarPower'
+                                                                                                                                                                                                        onChange={() => building.hasSolarPower = !building.hasSolarPower}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    }
+                                                                                                                                                                                    label="Has own solar power"
                                                                                                                                                                           />
                                                                                                                                                                 </Grid>
                                                                                                                                                                 <Grid

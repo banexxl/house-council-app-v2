@@ -15,8 +15,11 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Board found!', data: board });
 
                     } else if (request.method === 'POST') {
-                              const createBoardResponse = await collectionBoards.insertOne(request.body).then(async (boardResponse: any) => {
-                                        if (boardResponse.acknowledged) {
+                              console.log('request za update boarda', request.body);
+
+                              const createBoardResponse = await collectionBoards.insertOne(request.body).then(async (createBoardResponse: any) => {
+
+                                        if (createBoardResponse.acknowledged) {
 
                                                   const modifyBuildingResponse = await fetch('http://localhost:3000/api/buildings/buildings-api', {
                                                             method: 'PUT',
@@ -26,7 +29,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                                             },
                                                             body: JSON.stringify({
-                                                                      board: boardResponse.insertedId,
+                                                                      board: createBoardResponse.insertedId,
                                                                       _id: request.body.buildingId
                                                             })
                                                   })

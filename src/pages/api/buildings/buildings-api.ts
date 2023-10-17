@@ -30,6 +30,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
                     } else if (request.method === 'POST') {
+                              console.log('body iz post building api', request.body);
 
                               const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
@@ -65,8 +66,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
+                              console.log('put od building api-a', request.body);
 
-                              var objectForUpdate: Building = {
+                              const areAllValuesFalsy = (obj: Object) => {
+                                        return Object.values(obj).every(value => !value || [] || new Date());
+                              }
+
+                              var objectForUpdate: any = {
                                         street: '',
                                         streetNumber: 0,
                                         city: '',
@@ -97,6 +103,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         parkingLots: [],
                                         board: ''
                               }
+
+                              console.log('areAllValuesFalsy', areAllValuesFalsy(objectForUpdate));
 
                               if (request.body.street) objectForUpdate.street = request.body.street;
                               if (request.body.streetNumber) objectForUpdate.streetNumber = request.body.streetNumber;
@@ -129,41 +137,49 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               if (request.body.board) objectForUpdate.board = request.body.board;
 
                               try {
-                                        await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
-                                                  {
-                                                            $set:
-                                                                      objectForUpdate
-                                                            // street: request.body.street,
-                                                            // streetNumber: request.body.streetNumber,
-                                                            // city: request.body.city,
-                                                            // region: request.body.region,
-                                                            // country: request.body.country,
-                                                            // fullAddress: request.body.fullAddress,
-                                                            // description: request.body.description,
-                                                            // isRecentlyBuilt: request.body.isRecentlyBuilt,
-                                                            // storiesHigh: request.body.storiesHigh,
-                                                            // hasOwnParkingLot: request.body.hasOwnParkingLot,
-                                                            // appartmentCount: request.body.appartmentCount,
-                                                            // hasOwnElevator: request.body.hasOwnElevator,
-                                                            // hasOwnBicycleRoom: request.body.hasOwnBicycleRoom,
-                                                            // hasGasHeating: request.body.hasGasHeating,
-                                                            // hasCentralHeating: request.body.hasCentralHeating,
-                                                            // hasElectricHeating: request.body.hasElectricHeating,
-                                                            // hasSolarPower: request.body.hasSolarPower,
-                                                            // hasOwnWaterPump: request.body.hasOwnWaterPump,
-                                                            // image: request.body.image,
-                                                            // lng: request.body.lng,
-                                                            // lat: request.body.lat,
-                                                            // buildingStatus: request.body.buildingStatus,
-                                                            // dateTimeAdded: request.body.stdateTimeAddedreet,
-                                                            // dateTimeUpdated: request.body.dateTimeUpdated,
-                                                            // tenants: request.body.tenants,
-                                                            // tenantMeetings: request.body.tenantMeetings,
-                                                            // invoices: request.body.invoices,
-                                                            // parkingLots: request.body.parkingLots,
-                                                            // board: request.body.board,
+                                        areAllValuesFalsy(objectForUpdate) ?
+                                                  await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
+                                                            {
+                                                                      $set:
+                                                                                { board: request.body.board }
+                                                            })
+                                                  :
+                                                  await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
+                                                            {
+                                                                      $set:
+                                                                      {
+                                                                                street: request.body.street,
+                                                                                streetNumber: request.body.streetNumber,
+                                                                                city: request.body.city,
+                                                                                region: request.body.region,
+                                                                                country: request.body.country,
+                                                                                fullAddress: request.body.fullAddress,
+                                                                                description: request.body.description,
+                                                                                isRecentlyBuilt: request.body.isRecentlyBuilt,
+                                                                                storiesHigh: request.body.storiesHigh,
+                                                                                hasOwnParkingLot: request.body.hasOwnParkingLot,
+                                                                                appartmentCount: request.body.appartmentCount,
+                                                                                hasOwnElevator: request.body.hasOwnElevator,
+                                                                                hasOwnBicycleRoom: request.body.hasOwnBicycleRoom,
+                                                                                hasGasHeating: request.body.hasGasHeating,
+                                                                                hasCentralHeating: request.body.hasCentralHeating,
+                                                                                hasElectricHeating: request.body.hasElectricHeating,
+                                                                                hasSolarPower: request.body.hasSolarPower,
+                                                                                hasOwnWaterPump: request.body.hasOwnWaterPump,
+                                                                                image: request.body.image,
+                                                                                lng: request.body.lng,
+                                                                                lat: request.body.lat,
+                                                                                buildingStatus: request.body.buildingStatus,
+                                                                                dateTimeAdded: request.body.stdateTimeAddedreet,
+                                                                                dateTimeUpdated: request.body.dateTimeUpdated,
+                                                                                tenants: request.body.tenants,
+                                                                                tenantMeetings: request.body.tenantMeetings,
+                                                                                invoices: request.body.invoices,
+                                                                                parkingLots: request.body.parkingLots,
+                                                                                board: request.body.board
+                                                                      }
+                                                            })
 
-                                                  })
                                         return response.status(200).json({ message: 'Customer successfully updated!' });
                               } catch (error) {
                                         console.log(error);
