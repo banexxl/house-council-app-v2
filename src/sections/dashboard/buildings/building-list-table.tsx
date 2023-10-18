@@ -34,6 +34,10 @@ import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from '@/types/building';
 import { FormControlLabel } from '@mui/material';
 import { QuillEditor } from '@/components/quill-editor';
+import { useFormik } from 'formik';
+import { initialValues, validationSchema } from './building-options';
+import { paths } from '@/paths';
+import { useRouter } from 'next/router';
 
 interface BuildingListTableProps {
           count?: number;
@@ -45,7 +49,8 @@ interface BuildingListTableProps {
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
-          console.log('BuildingListTableProps', props);
+
+          const router = useRouter();
 
           const {
                     count = 0,
@@ -79,6 +84,48 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
           const handleBuildingDelete = useCallback((): void => {
                     toast.error('Building cannot be deleted');
           }, []);
+
+          const formik = useFormik({
+                    initialValues,
+                    validationSchema,
+                    onSubmit: async (values, helpers): Promise<void> => {
+                              try {
+                                        const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
+                                                  method: 'POST',
+                                                  headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Access-Control-Allow-Origin': '*',
+                                                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                  },
+                                                  body: JSON.stringify(values), // Convert your data to JSON
+                                        })
+
+                                        if (buildingCreateResponse.ok) {
+                                                  toast.success('Building added');
+                                                  router.push(paths.dashboard.buildings.index);
+                                        } else if (buildingCreateResponse.status === 409) {
+                                                  const errorData = await buildingCreateResponse.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('Building on that address already exists!');
+                                                  helpers.setStatus({ success: false });
+                                                  // helpers.setErrors({ submit: errorData.message }); // You can set specific error messages if needed
+                                        } else {
+                                                  const errorData = await buildingCreateResponse.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('Something went wrong!');
+                                                  helpers.setStatus({ success: false });
+                                        }
+
+                              } catch (err) {
+                                        console.error(err);
+                                        toast.error('Something went wrong!');
+                                        helpers.setStatus({ success: false });
+                                        //helpers.setErrors({ submit: err.message });
+                                        helpers.setSubmitting(false);
+                              }
+                    },
+          });
+
 
           return (
                     <div>
@@ -162,9 +209,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                     <TableCell>{building.appartmentCount}</TableCell>
                                                                                           </TableRow>
 
-
                                                                                           {isCurrent && (
                                                                                                     <TableRow>
+
                                                                                                               <TableCell
                                                                                                                         colSpan={7}
                                                                                                                         sx={{
@@ -181,426 +228,445 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                   },
                                                                                                                         }}
                                                                                                               >
-                                                                                                                        <CardContent>
-                                                                                                                                  <Grid
-                                                                                                                                            container
-                                                                                                                                            spacing={3}
-                                                                                                                                  >
+                                                                                                                        <form
+                                                                                                                                  onSubmit={formik.handleSubmit}
+                                                                                                                                  {...props}
+                                                                                                                        >
+                                                                                                                                  <CardContent>
                                                                                                                                             <Grid
-                                                                                                                                                      item
-                                                                                                                                                      md={6}
-                                                                                                                                                      xs={12}
+                                                                                                                                                      container
+                                                                                                                                                      spacing={3}
                                                                                                                                             >
-                                                                                                                                                      <Typography variant="h6">Basic Info</Typography>
-                                                                                                                                                      <Divider sx={{ my: 2 }} />
                                                                                                                                                       <Grid
-                                                                                                                                                                container
-                                                                                                                                                                spacing={3}
+                                                                                                                                                                item
+                                                                                                                                                                md={6}
+                                                                                                                                                                xs={12}
                                                                                                                                                       >
+                                                                                                                                                                <Typography variant="h6">Basic Info</Typography>
+                                                                                                                                                                <Divider sx={{ my: 2 }} />
                                                                                                                                                                 <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
+                                                                                                                                                                          container
+                                                                                                                                                                          spacing={3}
                                                                                                                                                                 >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building._id}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building ID"
-                                                                                                                                                                                    name="_id"
-                                                                                                                                                                                    disabled
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.street}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building street"
-                                                                                                                                                                                    name="street"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.streetNumber}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building street number"
-                                                                                                                                                                                    name="streetNumber"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.city}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building city"
-                                                                                                                                                                                    name="city"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.country}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building country"
-                                                                                                                                                                                    name="country"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.region}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building region"
-                                                                                                                                                                                    name="region"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.storiesHigh}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building stories high"
-                                                                                                                                                                                    name="storiesHigh"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <TextField
-                                                                                                                                                                                    defaultValue={building.appartmentCount}
-                                                                                                                                                                                    fullWidth
-                                                                                                                                                                                    label="Building appartment count"
-                                                                                                                                                                                    name="appartmentCount"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.isRecentlyBuilt}
-                                                                                                                                                                                                        name='isRecentlyBuilt'
-                                                                                                                                                                                                        onChange={() => building.isRecentlyBuilt = !building.isRecentlyBuilt}
-                                                                                                                                                                                                        checked={building.isRecentlyBuilt}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Is recently built"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.buildingStatus}
-                                                                                                                                                                                                        name='buildingStatus'
-                                                                                                                                                                                                        onChange={() => building.buildingStatus = !building.buildingStatus}
-                                                                                                                                                                                                        checked={building.buildingStatus}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Active"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={12}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <Typography
-                                                                                                                                                                                    color="text.secondary"
-                                                                                                                                                                                    sx={{ mb: 2 }}
-                                                                                                                                                                                    variant="subtitle2"
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
                                                                                                                                                                           >
-                                                                                                                                                                                    Description
-                                                                                                                                                                          </Typography>
-                                                                                                                                                                          <QuillEditor
-                                                                                                                                                                                    // onChange={(value: string): void => {
-                                                                                                                                                                                    //           formik.setFieldValue('description', value);
-                                                                                                                                                                                    // }}
-                                                                                                                                                                                    placeholder="Write something"
-                                                                                                                                                                                    sx={{ height: 400 }}
-                                                                                                                                                                                    defaultValue={building.description}
-                                                                                                                                                                          />
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building._id}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building ID"
+                                                                                                                                                                                              name="_id"
+                                                                                                                                                                                              disabled
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.street}
+                                                                                                                                                                                              value={formik.values.street}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building street"
+                                                                                                                                                                                              name="street"
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('street', formik.values.street)}
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.streetNumber}
+                                                                                                                                                                                              value={formik.values.streetNumber}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building street number"
+                                                                                                                                                                                              name="streetNumber"
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('streetNumber', formik.values.streetNumber)}
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.city}
+                                                                                                                                                                                              value={formik.values.city}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building city"
+                                                                                                                                                                                              name="city"
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('city', formik.values.city)}
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.country}
+                                                                                                                                                                                              value={formik.values.country}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building country"
+                                                                                                                                                                                              name="country"
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('country', formik.values.country)}
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.region}
+                                                                                                                                                                                              value={formik.values.region}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building region"
+                                                                                                                                                                                              name="region"
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('region', formik.values.region)}
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.storiesHigh}
+                                                                                                                                                                                              value={formik.values.storiesHigh}
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('storiesHigh', formik.values.storiesHigh)}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building stories high"
+                                                                                                                                                                                              name="storiesHigh"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <TextField
+                                                                                                                                                                                              defaultValue={building.appartmentCount}
+                                                                                                                                                                                              value={formik.values.appartmentCount}
+                                                                                                                                                                                              onChange={() => formik.setFieldValue('appartmentCount', formik.values.appartmentCount)}
+                                                                                                                                                                                              fullWidth
+                                                                                                                                                                                              label="Building appartment count"
+                                                                                                                                                                                              name="appartmentCount"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.isRecentlyBuilt}
+                                                                                                                                                                                                                  value={formik.values.isRecentlyBuilt}
+                                                                                                                                                                                                                  name='isRecentlyBuilt'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('isRecentlyBuilt', formik.values.isRecentlyBuilt)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Is recently built"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.buildingStatus}
+                                                                                                                                                                                                                  value={formik.values.buildingStatus}
+                                                                                                                                                                                                                  name='buildingStatus'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('buildingStatus', formik.values.buildingStatus)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Active"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={12}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <Typography
+                                                                                                                                                                                              color="text.secondary"
+                                                                                                                                                                                              sx={{ mb: 2 }}
+                                                                                                                                                                                              variant="subtitle2"
+                                                                                                                                                                                    >
+                                                                                                                                                                                              Description
+                                                                                                                                                                                    </Typography>
+                                                                                                                                                                                    <QuillEditor
+                                                                                                                                                                                              // onChange={(value: string): void => {
+                                                                                                                                                                                              //           formik.setFieldValue('description', value);
+                                                                                                                                                                                              // }}
+                                                                                                                                                                                              placeholder="Write something"
+                                                                                                                                                                                              sx={{ height: 400 }}
+                                                                                                                                                                                              defaultValue={building.description}
+                                                                                                                                                                                    />
+
+                                                                                                                                                                          </Grid>
 
                                                                                                                                                                 </Grid>
-
                                                                                                                                                       </Grid>
-                                                                                                                                            </Grid>
-                                                                                                                                            <Grid
-                                                                                                                                                      item
-                                                                                                                                                      md={6}
-                                                                                                                                                      xs={12}
-                                                                                                                                            >
-                                                                                                                                                      <Typography variant="h6">Detailed Info</Typography>
-                                                                                                                                                      <Divider sx={{ my: 2 }} />
                                                                                                                                                       <Grid
-                                                                                                                                                                container
-                                                                                                                                                                spacing={4.5}
+                                                                                                                                                                item
+                                                                                                                                                                md={6}
+                                                                                                                                                                xs={12}
                                                                                                                                                       >
+                                                                                                                                                                <Typography variant="h6">Detailed Info</Typography>
+                                                                                                                                                                <Divider sx={{ my: 2 }} />
                                                                                                                                                                 <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
+                                                                                                                                                                          container
+                                                                                                                                                                          spacing={4.5}
                                                                                                                                                                 >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasCentralHeating}
-                                                                                                                                                                                                        name='hasCentralHeating'
-                                                                                                                                                                                                        onChange={() => building.hasCentralHeating = !building.hasCentralHeating}
-                                                                                                                                                                                                        checked={building.hasCentralHeating}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has Central Heating"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasElectricHeating}
-                                                                                                                                                                                                        name='hasElectricHeating'
-                                                                                                                                                                                                        onChange={() => building.hasElectricHeating = !building.hasElectricHeating}
-                                                                                                                                                                                                        checked={building.hasElectricHeating}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has Electrical Heating"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasGasHeating}
-                                                                                                                                                                                                        name='hasGasHeating'
-                                                                                                                                                                                                        onChange={() => building.hasGasHeating = !building.hasGasHeating}
-                                                                                                                                                                                                        checked={building.hasGasHeating}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has Gas Heating"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasOwnBicycleRoom}
-                                                                                                                                                                                                        name='hasOwnBicycleRoom'
-                                                                                                                                                                                                        onChange={() => building.hasOwnBicycleRoom = !building.hasOwnBicycleRoom}
-                                                                                                                                                                                                        checked={building.hasOwnBicycleRoom}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has own bicycle room"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasOwnElevator}
-                                                                                                                                                                                                        name='hasOwnElevator'
-                                                                                                                                                                                                        onChange={() => building.hasOwnElevator = !building.hasOwnElevator}
-                                                                                                                                                                                                        checked={building.hasOwnElevator}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has own elevator"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasOwnParkingLot}
-                                                                                                                                                                                                        name='hasOwnParkingLot'
-                                                                                                                                                                                                        onChange={() => building.hasOwnParkingLot = !building.hasOwnParkingLot}
-                                                                                                                                                                                                        checked={building.hasOwnParkingLot}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has own parking lot"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasOwnWaterPump}
-                                                                                                                                                                                                        name='hasOwnWaterPump'
-                                                                                                                                                                                                        onChange={() => building.hasOwnWaterPump = !building.hasOwnWaterPump}
-                                                                                                                                                                                                        checked={building.hasOwnWaterPump}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has own water pump"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <FormControlLabel
-                                                                                                                                                                                    control={
-                                                                                                                                                                                              <Switch
-                                                                                                                                                                                                        value={building.hasSolarPower}
-                                                                                                                                                                                                        name='hasSolarPower'
-                                                                                                                                                                                                        onChange={() => building.hasSolarPower = !building.hasSolarPower}
-                                                                                                                                                                                                        checked={building.hasSolarPower}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    }
-                                                                                                                                                                                    label="Has own solar power"
-                                                                                                                                                                          />
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={12}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <Box
-                                                                                                                                                                                    sx={{
-                                                                                                                                                                                              alignItems: 'center',
-                                                                                                                                                                                              display: 'flex',
-                                                                                                                                                                                              flexDirection: 'column',
-                                                                                                                                                                                    }}
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
                                                                                                                                                                           >
-                                                                                                                                                                                    {building.image ? (
-                                                                                                                                                                                              <Box
-                                                                                                                                                                                                        sx={{
-                                                                                                                                                                                                                  alignItems: 'center',
-                                                                                                                                                                                                                  backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                  backgroundImage: `url(${building.image})`,
-                                                                                                                                                                                                                  backgroundPosition: 'center',
-                                                                                                                                                                                                                  backgroundSize: 'cover',
-                                                                                                                                                                                                                  borderRadius: 1,
-                                                                                                                                                                                                                  display: 'flex',
-                                                                                                                                                                                                                  height: 80,
-                                                                                                                                                                                                                  justifyContent: 'center',
-                                                                                                                                                                                                                  overflow: 'hidden',
-                                                                                                                                                                                                                  width: 80,
-                                                                                                                                                                                                        }}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    ) : (
-                                                                                                                                                                                              <Box
-                                                                                                                                                                                                        sx={{
-                                                                                                                                                                                                                  alignItems: 'center',
-                                                                                                                                                                                                                  backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                  borderRadius: 1,
-                                                                                                                                                                                                                  display: 'flex',
-
-                                                                                                                                                                                                                  height: 300,
-                                                                                                                                                                                                                  justifyContent: 'center',
-                                                                                                                                                                                                                  width: 400,
-                                                                                                                                                                                                        }}
-                                                                                                                                                                                              >
-                                                                                                                                                                                                        <SvgIcon>
-                                                                                                                                                                                                                  <Image01Icon />
-                                                                                                                                                                                                        </SvgIcon>
-                                                                                                                                                                                              </Box>
-                                                                                                                                                                                    )}
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasCentralHeating}
+                                                                                                                                                                                                                  value={formik.values.hasCentralHeating}
+                                                                                                                                                                                                                  name='hasCentralHeating'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasCentralHeating', formik.values.hasCentralHeating)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has Central Heating"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasElectricHeating}
+                                                                                                                                                                                                                  value={formik.values.hasElectricHeating}
+                                                                                                                                                                                                                  name='hasElectricHeating'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasElectricHeating', formik.values.hasElectricHeating)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has Electrical Heating"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasGasHeating}
+                                                                                                                                                                                                                  value={formik.values.hasGasHeating}
+                                                                                                                                                                                                                  name='hasGasHeating'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasGasHeating', formik.values.hasGasHeating)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has Gas Heating"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasOwnBicycleRoom}
+                                                                                                                                                                                                                  value={formik.values.hasOwnBicycleRoom}
+                                                                                                                                                                                                                  name='hasOwnBicycleRoom'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnBicycleRoom', formik.values.hasOwnBicycleRoom)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has own bicycle room"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasOwnElevator}
+                                                                                                                                                                                                                  value={formik.values.hasOwnElevator}
+                                                                                                                                                                                                                  name='hasOwnElevator'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnElevator', formik.values.hasOwnElevator)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has own elevator"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasOwnParkingLot}
+                                                                                                                                                                                                                  value={formik.values.hasOwnParkingLot}
+                                                                                                                                                                                                                  name='hasOwnParkingLot'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnParkingLot', formik.values.hasOwnParkingLot)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has own parking lot"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasOwnWaterPump}
+                                                                                                                                                                                                                  value={formik.values.hasOwnWaterPump}
+                                                                                                                                                                                                                  name='hasOwnWaterPump'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnWaterPump', formik.values.hasOwnWaterPump)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has own water pump"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
+                                                                                                                                                                                    <FormControlLabel
+                                                                                                                                                                                              control={
+                                                                                                                                                                                                        <Switch
+                                                                                                                                                                                                                  defaultChecked={building.hasSolarPower}
+                                                                                                                                                                                                                  value={formik.values.hasSolarPower}
+                                                                                                                                                                                                                  name='hasSolarPower'
+                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasSolarPower', formik.values.hasSolarPower)}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              }
+                                                                                                                                                                                              label="Has own solar power"
+                                                                                                                                                                                    />
+                                                                                                                                                                          </Grid>
+                                                                                                                                                                          <Grid
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={12}
+                                                                                                                                                                                    xs={12}
+                                                                                                                                                                          >
                                                                                                                                                                                     <Box
                                                                                                                                                                                               sx={{
-                                                                                                                                                                                                        cursor: 'pointer',
-                                                                                                                                                                                                        ml: 2,
+                                                                                                                                                                                                        alignItems: 'center',
+                                                                                                                                                                                                        display: 'flex',
+                                                                                                                                                                                                        flexDirection: 'column',
                                                                                                                                                                                               }}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <Typography variant="subtitle2">{building.street + " " + building.streetNumber}</Typography>
-                                                                                                                                                                                              <Typography
-                                                                                                                                                                                                        color="text.secondary"
-                                                                                                                                                                                                        variant="body2"
+                                                                                                                                                                                              {building.image ? (
+                                                                                                                                                                                                        <Box
+                                                                                                                                                                                                                  sx={{
+                                                                                                                                                                                                                            alignItems: 'center',
+                                                                                                                                                                                                                            backgroundColor: 'neutral.50',
+                                                                                                                                                                                                                            backgroundImage: `url(${building.image})`,
+                                                                                                                                                                                                                            backgroundPosition: 'center',
+                                                                                                                                                                                                                            backgroundSize: 'cover',
+                                                                                                                                                                                                                            borderRadius: 1,
+                                                                                                                                                                                                                            display: 'flex',
+                                                                                                                                                                                                                            height: 80,
+                                                                                                                                                                                                                            justifyContent: 'center',
+                                                                                                                                                                                                                            overflow: 'hidden',
+                                                                                                                                                                                                                            width: 80,
+                                                                                                                                                                                                                  }}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              ) : (
+                                                                                                                                                                                                        <Box
+                                                                                                                                                                                                                  sx={{
+                                                                                                                                                                                                                            alignItems: 'center',
+                                                                                                                                                                                                                            backgroundColor: 'neutral.50',
+                                                                                                                                                                                                                            borderRadius: 1,
+                                                                                                                                                                                                                            display: 'flex',
+
+                                                                                                                                                                                                                            height: 300,
+                                                                                                                                                                                                                            justifyContent: 'center',
+                                                                                                                                                                                                                            width: 400,
+                                                                                                                                                                                                                  }}
+                                                                                                                                                                                                        >
+                                                                                                                                                                                                                  <SvgIcon>
+                                                                                                                                                                                                                            <Image01Icon />
+                                                                                                                                                                                                                  </SvgIcon>
+                                                                                                                                                                                                        </Box>
+                                                                                                                                                                                              )}
+                                                                                                                                                                                              <Box
+                                                                                                                                                                                                        sx={{
+                                                                                                                                                                                                                  cursor: 'pointer',
+                                                                                                                                                                                                                  ml: 2,
+                                                                                                                                                                                                        }}
                                                                                                                                                                                               >
-                                                                                                                                                                                                        in {building.city}
-                                                                                                                                                                                              </Typography>
+                                                                                                                                                                                                        <Typography variant="subtitle2">{building.street + " " + building.streetNumber}</Typography>
+                                                                                                                                                                                                        <Typography
+                                                                                                                                                                                                                  color="text.secondary"
+                                                                                                                                                                                                                  variant="body2"
+                                                                                                                                                                                                        >
+                                                                                                                                                                                                                  in {building.city}
+                                                                                                                                                                                                        </Typography>
+                                                                                                                                                                                              </Box>
                                                                                                                                                                                     </Box>
-                                                                                                                                                                          </Box>
+                                                                                                                                                                          </Grid>
                                                                                                                                                                 </Grid>
                                                                                                                                                       </Grid>
                                                                                                                                             </Grid>
-                                                                                                                                  </Grid>
-                                                                                                                        </CardContent>
-                                                                                                                        <Divider />
-                                                                                                                        <Stack
-                                                                                                                                  alignItems="center"
-                                                                                                                                  direction="row"
-                                                                                                                                  justifyContent="space-between"
-                                                                                                                                  sx={{ p: 2 }}
-                                                                                                                        >
+                                                                                                                                  </CardContent>
+                                                                                                                                  <Divider />
                                                                                                                                   <Stack
                                                                                                                                             alignItems="center"
                                                                                                                                             direction="row"
-                                                                                                                                            spacing={2}
+                                                                                                                                            justifyContent="space-between"
+                                                                                                                                            sx={{ p: 2 }}
                                                                                                                                   >
-                                                                                                                                            <Button
-                                                                                                                                                      onClick={handleBuildingUpdate}
-                                                                                                                                                      type="submit"
-                                                                                                                                                      variant="contained"
+                                                                                                                                            <Stack
+                                                                                                                                                      alignItems="center"
+                                                                                                                                                      direction="row"
+                                                                                                                                                      spacing={2}
                                                                                                                                             >
-                                                                                                                                                      Update
-                                                                                                                                            </Button>
-                                                                                                                                            <Button
-                                                                                                                                                      color="inherit"
-                                                                                                                                                      onClick={handleBuildingClose}
-                                                                                                                                            >
-                                                                                                                                                      Cancel
-                                                                                                                                            </Button>
+                                                                                                                                                      <Button
+                                                                                                                                                                onClick={handleBuildingUpdate}
+                                                                                                                                                                type="submit"
+                                                                                                                                                                variant="contained"
+                                                                                                                                                      >
+                                                                                                                                                                Update
+                                                                                                                                                      </Button>
+                                                                                                                                                      <Button
+                                                                                                                                                                color="inherit"
+                                                                                                                                                                onClick={handleBuildingClose}
+                                                                                                                                                      >
+                                                                                                                                                                Cancel
+                                                                                                                                                      </Button>
+                                                                                                                                            </Stack>
+                                                                                                                                            <div>
+                                                                                                                                                      <Button
+                                                                                                                                                                onClick={handleBuildingDelete}
+                                                                                                                                                                color="error"
+                                                                                                                                                      >
+                                                                                                                                                                Delete building
+                                                                                                                                                      </Button>
+                                                                                                                                            </div>
                                                                                                                                   </Stack>
-                                                                                                                                  <div>
-                                                                                                                                            <Button
-                                                                                                                                                      onClick={handleBuildingDelete}
-                                                                                                                                                      color="error"
-                                                                                                                                            >
-                                                                                                                                                      Delete building
-                                                                                                                                            </Button>
-                                                                                                                                  </div>
-                                                                                                                        </Stack>
+                                                                                                                        </form>
                                                                                                               </TableCell>
                                                                                                     </TableRow>
                                                                                           )}
@@ -619,7 +685,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                         rowsPerPage={rowsPerPage}
                                         rowsPerPageOptions={[5, 10, 25]}
                               />
-                    </div>
+                    </div >
           );
 };
 

@@ -23,6 +23,7 @@ import { buildingCategoryOptions, initialValues, validationSchema } from './buil
 import { GoogleMaps } from './map-component'
 
 export const BuildingCreateForm: FC = (props) => {
+
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
           const [locationAddress, setLocationAddress] = useState()
