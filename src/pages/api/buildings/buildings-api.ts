@@ -30,7 +30,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
                     } else if (request.method === 'POST') {
-                              console.log('body iz post building api', request.body);
 
                               const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
@@ -66,7 +65,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
-                              console.log('put od building api-a', request.body);
 
                               const areAllValuesFalsy = (obj: Object) => {
                                         return Object.values(obj).every(value => !value || [] || new Date());

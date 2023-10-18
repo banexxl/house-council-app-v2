@@ -99,7 +99,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                             {items.map((building) => {
                                                                       const isCurrent = building._id === currentBuilding;
                                                                       // const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
-                                                                      const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'warning';
+                                                                      const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'error';
                                                                       // const hasManyVariants = building.variants > 1;
 
                                                                       return (
@@ -305,6 +305,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.isRecentlyBuilt}
                                                                                                                                                                                                         name='isRecentlyBuilt'
                                                                                                                                                                                                         onChange={() => building.isRecentlyBuilt = !building.isRecentlyBuilt}
+                                                                                                                                                                                                        checked={building.isRecentlyBuilt}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Is recently built"
@@ -321,6 +322,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.buildingStatus}
                                                                                                                                                                                                         name='buildingStatus'
                                                                                                                                                                                                         onChange={() => building.buildingStatus = !building.buildingStatus}
+                                                                                                                                                                                                        checked={building.buildingStatus}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Active"
@@ -373,6 +375,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasCentralHeating}
                                                                                                                                                                                                         name='hasCentralHeating'
                                                                                                                                                                                                         onChange={() => building.hasCentralHeating = !building.hasCentralHeating}
+                                                                                                                                                                                                        checked={building.hasCentralHeating}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has Central Heating"
@@ -389,6 +392,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasElectricHeating}
                                                                                                                                                                                                         name='hasElectricHeating'
                                                                                                                                                                                                         onChange={() => building.hasElectricHeating = !building.hasElectricHeating}
+                                                                                                                                                                                                        checked={building.hasElectricHeating}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has Electrical Heating"
@@ -405,6 +409,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasGasHeating}
                                                                                                                                                                                                         name='hasGasHeating'
                                                                                                                                                                                                         onChange={() => building.hasGasHeating = !building.hasGasHeating}
+                                                                                                                                                                                                        checked={building.hasGasHeating}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has Gas Heating"
@@ -421,6 +426,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasOwnBicycleRoom}
                                                                                                                                                                                                         name='hasOwnBicycleRoom'
                                                                                                                                                                                                         onChange={() => building.hasOwnBicycleRoom = !building.hasOwnBicycleRoom}
+                                                                                                                                                                                                        checked={building.hasOwnBicycleRoom}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has own bicycle room"
@@ -437,6 +443,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasOwnElevator}
                                                                                                                                                                                                         name='hasOwnElevator'
                                                                                                                                                                                                         onChange={() => building.hasOwnElevator = !building.hasOwnElevator}
+                                                                                                                                                                                                        checked={building.hasOwnElevator}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has own elevator"
@@ -453,6 +460,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasOwnParkingLot}
                                                                                                                                                                                                         name='hasOwnParkingLot'
                                                                                                                                                                                                         onChange={() => building.hasOwnParkingLot = !building.hasOwnParkingLot}
+                                                                                                                                                                                                        checked={building.hasOwnParkingLot}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has own parking lot"
@@ -469,6 +477,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasOwnWaterPump}
                                                                                                                                                                                                         name='hasOwnWaterPump'
                                                                                                                                                                                                         onChange={() => building.hasOwnWaterPump = !building.hasOwnWaterPump}
+                                                                                                                                                                                                        checked={building.hasOwnWaterPump}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has own water pump"
@@ -485,6 +494,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         value={building.hasSolarPower}
                                                                                                                                                                                                         name='hasSolarPower'
                                                                                                                                                                                                         onChange={() => building.hasSolarPower = !building.hasSolarPower}
+                                                                                                                                                                                                        checked={building.hasSolarPower}
                                                                                                                                                                                               />
                                                                                                                                                                                     }
                                                                                                                                                                                     label="Has own solar power"

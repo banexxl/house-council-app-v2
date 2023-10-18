@@ -15,7 +15,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Board found!', data: board });
 
                     } else if (request.method === 'POST') {
-                              console.log('request za update boarda', request.body);
 
                               const createBoardResponse = await collectionBoards.insertOne(request.body).then(async (createBoardResponse: any) => {
 
