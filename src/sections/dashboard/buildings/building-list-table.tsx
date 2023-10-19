@@ -34,7 +34,6 @@ import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from '@/types/building';
 import { FormControlLabel } from '@mui/material';
 import { QuillEditor } from '@/components/quill-editor';
-import { useFormik } from 'formik';
 import { initialValues, validationSchema } from './building-options';
 import { paths } from '@/paths';
 import { useRouter } from 'next/router';
@@ -49,7 +48,8 @@ interface BuildingListTableProps {
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
-
+          console.log('building table props', props);
+          const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
           const router = useRouter();
 
           const {
@@ -60,14 +60,25 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     page = 0,
                     rowsPerPage = 0,
           } = props;
+
           const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
+
+          const getObjectById = (_id: any, arrayToSearch: any) => {
+                    for (const obj of arrayToSearch) {
+                              if (obj._id === _id) {
+                                        return obj;  // Found the object with the desired ID
+                              }
+                    }
+                    return null;  // Object with the desired ID not found
+          }
 
           const handleBuildingToggle = useCallback((buildingId: string): void => {
                     setCurrentBuilding((prevBuildingId) => {
                               if (prevBuildingId === buildingId) {
+                                        setCurrentBuildingObject(null)
                                         return null;
                               }
-
+                              setCurrentBuildingObject(getObjectById(buildingId, items))
                               return buildingId;
                     });
           }, []);
@@ -85,47 +96,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     toast.error('Building cannot be deleted');
           }, []);
 
-          const formik = useFormik({
-                    initialValues,
-                    validationSchema,
-                    onSubmit: async (values, helpers): Promise<void> => {
-                              try {
-                                        const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
-                                                  method: 'POST',
-                                                  headers: {
-                                                            'Content-Type': 'application/json',
-                                                            'Access-Control-Allow-Origin': '*',
-                                                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
-                                                  },
-                                                  body: JSON.stringify(values), // Convert your data to JSON
-                                        })
-
-                                        if (buildingCreateResponse.ok) {
-                                                  toast.success('Building added');
-                                                  router.push(paths.dashboard.buildings.index);
-                                        } else if (buildingCreateResponse.status === 409) {
-                                                  const errorData = await buildingCreateResponse.json(); // Parse the error response
-                                                  console.error(errorData);
-                                                  toast.error('Building on that address already exists!');
-                                                  helpers.setStatus({ success: false });
-                                                  // helpers.setErrors({ submit: errorData.message }); // You can set specific error messages if needed
-                                        } else {
-                                                  const errorData = await buildingCreateResponse.json(); // Parse the error response
-                                                  console.error(errorData);
-                                                  toast.error('Something went wrong!');
-                                                  helpers.setStatus({ success: false });
-                                        }
-
-                              } catch (err) {
-                                        console.error(err);
-                                        toast.error('Something went wrong!');
-                                        helpers.setStatus({ success: false });
-                                        //helpers.setErrors({ submit: err.message });
-                                        helpers.setSubmitting(false);
-                              }
-                    },
-          });
-
+          console.log(currentBuildingObject);
 
           return (
                     <div>
@@ -143,45 +114,46 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
-                                                            {items.map((building) => {
-                                                                      const isCurrent = building._id === currentBuilding;
-                                                                      // const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
-                                                                      const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'error';
-                                                                      // const hasManyVariants = building.variants > 1;
+                                                            {
+                                                                      items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((building: any) => {
+                                                                                const isCurrent = building._id === currentBuilding;
+                                                                                // const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
+                                                                                const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'error';
+                                                                                // const hasManyVariants = building.variants > 1;
 
-                                                                      return (
-                                                                                <Fragment key={building._id}>
-                                                                                          <TableRow
-                                                                                                    hover
-                                                                                                    key={building._id}
-                                                                                          >
-                                                                                                    <TableCell
-                                                                                                              padding="checkbox"
-                                                                                                              sx={{
-                                                                                                                        ...(isCurrent && {
-                                                                                                                                  position: 'relative',
-                                                                                                                                  '&:after': {
-                                                                                                                                            position: 'absolute',
-                                                                                                                                            content: '" "',
-                                                                                                                                            top: 0,
-                                                                                                                                            left: 0,
-                                                                                                                                            backgroundColor: 'primary.main',
-                                                                                                                                            width: 3,
-                                                                                                                                            height: 'calc(100% + 1px)',
-                                                                                                                                  },
-                                                                                                                        }),
-                                                                                                              }}
-                                                                                                              width="25%"
+                                                                                return (
+                                                                                          <Fragment key={building._id}>
+                                                                                                    <TableRow
+                                                                                                              hover
+                                                                                                              key={building._id}
                                                                                                     >
-                                                                                                              <IconButton onClick={() => handleBuildingToggle(building._id!)}>
-                                                                                                                        <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
-                                                                                                              </IconButton>
-                                                                                                    </TableCell>
-                                                                                                    <TableCell>{building.city}</TableCell>
-                                                                                                    <TableCell>{building.street}</TableCell>
-                                                                                                    <TableCell>{building.streetNumber}</TableCell>
-                                                                                                    <TableCell>
-                                                                                                              {/* <LinearProgress
+                                                                                                              <TableCell
+                                                                                                                        padding="checkbox"
+                                                                                                                        sx={{
+                                                                                                                                  ...(isCurrent && {
+                                                                                                                                            position: 'relative',
+                                                                                                                                            '&:after': {
+                                                                                                                                                      position: 'absolute',
+                                                                                                                                                      content: '" "',
+                                                                                                                                                      top: 0,
+                                                                                                                                                      left: 0,
+                                                                                                                                                      backgroundColor: 'primary.main',
+                                                                                                                                                      width: 3,
+                                                                                                                                                      height: 'calc(100% + 1px)',
+                                                                                                                                            },
+                                                                                                                                  }),
+                                                                                                                        }}
+                                                                                                                        width="25%"
+                                                                                                              >
+                                                                                                                        <IconButton onClick={() => handleBuildingToggle(building._id)}>
+                                                                                                                                  <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
+                                                                                                                        </IconButton>
+                                                                                                              </TableCell>
+                                                                                                              <TableCell>{building.city}</TableCell>
+                                                                                                              <TableCell>{building.street}</TableCell>
+                                                                                                              <TableCell>{building.streetNumber}</TableCell>
+                                                                                                              <TableCell>
+                                                                                                                        {/* <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
                                                                                                                         variant="determinate"
                                                                                                                         color={issueCountColor}
@@ -190,47 +162,43 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                   width: 36,
                                                                                                                         }}
                                                                                                               /> */}
-                                                                                                              {/* <Typography
+                                                                                                                        {/* <Typography
                                                                                                                         color="text.secondary"
                                                                                                                         variant="body2"
                                                                                                               >
                                                                                                                         {building.unresolvedIssues.length} unresolved issues <br />
                                                                                                                         out of {building.unresolvedIssues.length}
                                                                                                               </Typography> */}
-                                                                                                    </TableCell>
-                                                                                                    <TableCell>
-                                                                                                              {
-                                                                                                                        building.hasOwnElevator ?
-                                                                                                                                  <CheckCircleOutlineIcon color={hasElevatorColor} />
-                                                                                                                                  :
-                                                                                                                                  <CancelIcon color={hasElevatorColor} />
-                                                                                                              }
-                                                                                                    </TableCell>
-                                                                                                    <TableCell>{building.appartmentCount}</TableCell>
-                                                                                          </TableRow>
+                                                                                                              </TableCell>
+                                                                                                              <TableCell>
+                                                                                                                        {
+                                                                                                                                  building.hasOwnElevator ?
+                                                                                                                                            <CheckCircleOutlineIcon color={hasElevatorColor} />
+                                                                                                                                            :
+                                                                                                                                            <CancelIcon color={hasElevatorColor} />
+                                                                                                                        }
+                                                                                                              </TableCell>
+                                                                                                              <TableCell>{building.appartmentCount}</TableCell>
+                                                                                                    </TableRow>
 
-                                                                                          {isCurrent && (
-                                                                                                    <TableRow>
+                                                                                                    {isCurrent && (
+                                                                                                              <TableRow>
 
-                                                                                                              <TableCell
-                                                                                                                        colSpan={7}
-                                                                                                                        sx={{
-                                                                                                                                  p: 0,
-                                                                                                                                  position: 'relative',
-                                                                                                                                  '&:after': {
-                                                                                                                                            position: 'absolute',
-                                                                                                                                            content: '" "',
-                                                                                                                                            top: 0,
-                                                                                                                                            left: 0,
-                                                                                                                                            backgroundColor: 'primary.main',
-                                                                                                                                            width: 3,
-                                                                                                                                            height: 'calc(100% + 1px)',
-                                                                                                                                  },
-                                                                                                                        }}
-                                                                                                              >
-                                                                                                                        <form
-                                                                                                                                  onSubmit={formik.handleSubmit}
-                                                                                                                                  {...props}
+                                                                                                                        <TableCell
+                                                                                                                                  colSpan={7}
+                                                                                                                                  sx={{
+                                                                                                                                            p: 0,
+                                                                                                                                            position: 'relative',
+                                                                                                                                            '&:after': {
+                                                                                                                                                      position: 'absolute',
+                                                                                                                                                      content: '" "',
+                                                                                                                                                      top: 0,
+                                                                                                                                                      left: 0,
+                                                                                                                                                      backgroundColor: 'primary.main',
+                                                                                                                                                      width: 3,
+                                                                                                                                                      height: 'calc(100% + 1px)',
+                                                                                                                                            },
+                                                                                                                                  }}
                                                                                                                         >
                                                                                                                                   <CardContent>
                                                                                                                                             <Grid
@@ -268,11 +236,16 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.street}
-                                                                                                                                                                                              value={formik.values.street}
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building street"
                                                                                                                                                                                               name="street"
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('street', formik.values.street)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  street: e.target.value
+
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -282,11 +255,16 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.streetNumber}
-                                                                                                                                                                                              value={formik.values.streetNumber}
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building street number"
                                                                                                                                                                                               name="streetNumber"
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('streetNumber', formik.values.streetNumber)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  streetNumber: e.target.value
+
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -296,11 +274,16 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.city}
-                                                                                                                                                                                              value={formik.values.city}
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building city"
                                                                                                                                                                                               name="city"
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('city', formik.values.city)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  city: e.target.value
+
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -310,11 +293,16 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.country}
-                                                                                                                                                                                              value={formik.values.country}
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building country"
                                                                                                                                                                                               name="country"
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('country', formik.values.country)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  country: e.target.value
+
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -324,11 +312,15 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.region}
-                                                                                                                                                                                              value={formik.values.region}
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building region"
                                                                                                                                                                                               name="region"
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('region', formik.values.region)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  region: e.target.value
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -338,8 +330,12 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.storiesHigh}
-                                                                                                                                                                                              value={formik.values.storiesHigh}
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('storiesHigh', formik.values.storiesHigh)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  storiesHigh: e.target.value
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building stories high"
                                                                                                                                                                                               name="storiesHigh"
@@ -352,8 +348,12 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           >
                                                                                                                                                                                     <TextField
                                                                                                                                                                                               defaultValue={building.appartmentCount}
-                                                                                                                                                                                              value={formik.values.appartmentCount}
-                                                                                                                                                                                              onChange={() => formik.setFieldValue('appartmentCount', formik.values.appartmentCount)}
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  appartmentCount: e.target.value
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building appartment count"
                                                                                                                                                                                               name="appartmentCount"
@@ -368,9 +368,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.isRecentlyBuilt}
-                                                                                                                                                                                                                  value={formik.values.isRecentlyBuilt}
                                                                                                                                                                                                                   name='isRecentlyBuilt'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('isRecentlyBuilt', formik.values.isRecentlyBuilt)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      isRecentlyBuilt: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Is recently built"
@@ -385,9 +389,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.buildingStatus}
-                                                                                                                                                                                                                  value={formik.values.buildingStatus}
                                                                                                                                                                                                                   name='buildingStatus'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('buildingStatus', formik.values.buildingStatus)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      buildingStatus: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Active"
@@ -406,16 +414,17 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               Description
                                                                                                                                                                                     </Typography>
                                                                                                                                                                                     <QuillEditor
-                                                                                                                                                                                              // onChange={(value: string): void => {
-                                                                                                                                                                                              //           formik.setFieldValue('description', value);
-                                                                                                                                                                                              // }}
-                                                                                                                                                                                              placeholder="Write something"
+                                                                                                                                                                                              onBlur={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  description: e.target.value
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
+                                                                                                                                                                                              placeholder="Short description"
                                                                                                                                                                                               sx={{ height: 400 }}
-                                                                                                                                                                                              defaultValue={building.description}
+                                                                                                                                                                                              value={building.description}
                                                                                                                                                                                     />
-
                                                                                                                                                                           </Grid>
-
                                                                                                                                                                 </Grid>
                                                                                                                                                       </Grid>
                                                                                                                                                       <Grid
@@ -438,9 +447,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasCentralHeating}
-                                                                                                                                                                                                                  value={formik.values.hasCentralHeating}
                                                                                                                                                                                                                   name='hasCentralHeating'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasCentralHeating', formik.values.hasCentralHeating)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasCentralHeating: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has Central Heating"
@@ -455,9 +468,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasElectricHeating}
-                                                                                                                                                                                                                  value={formik.values.hasElectricHeating}
                                                                                                                                                                                                                   name='hasElectricHeating'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasElectricHeating', formik.values.hasElectricHeating)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasElectricHeating: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has Electrical Heating"
@@ -472,9 +489,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasGasHeating}
-                                                                                                                                                                                                                  value={formik.values.hasGasHeating}
                                                                                                                                                                                                                   name='hasGasHeating'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasGasHeating', formik.values.hasGasHeating)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasGasHeating: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has Gas Heating"
@@ -489,9 +510,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasOwnBicycleRoom}
-                                                                                                                                                                                                                  value={formik.values.hasOwnBicycleRoom}
                                                                                                                                                                                                                   name='hasOwnBicycleRoom'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnBicycleRoom', formik.values.hasOwnBicycleRoom)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasOwnBicycleRoom: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has own bicycle room"
@@ -506,9 +531,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasOwnElevator}
-                                                                                                                                                                                                                  value={formik.values.hasOwnElevator}
                                                                                                                                                                                                                   name='hasOwnElevator'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnElevator', formik.values.hasOwnElevator)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasOwnElevator: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has own elevator"
@@ -523,9 +552,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasOwnParkingLot}
-                                                                                                                                                                                                                  value={formik.values.hasOwnParkingLot}
                                                                                                                                                                                                                   name='hasOwnParkingLot'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnParkingLot', formik.values.hasOwnParkingLot)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasOwnParkingLot: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has own parking lot"
@@ -540,9 +573,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasOwnWaterPump}
-                                                                                                                                                                                                                  value={formik.values.hasOwnWaterPump}
                                                                                                                                                                                                                   name='hasOwnWaterPump'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnWaterPump', formik.values.hasOwnWaterPump)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasOwnWaterPump: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has own water pump"
@@ -557,9 +594,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
                                                                                                                                                                                                                   defaultChecked={building.hasSolarPower}
-                                                                                                                                                                                                                  value={formik.values.hasSolarPower}
                                                                                                                                                                                                                   name='hasSolarPower'
-                                                                                                                                                                                                                  onChange={() => formik.setFieldValue('hasSolarPower', formik.values.hasSolarPower)}
+                                                                                                                                                                                                                  onBlur={(e: any) =>
+                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      ...previousObject,
+                                                                                                                                                                                                                                      hasSolarPower: e.target.value
+                                                                                                                                                                                                                            }))
+                                                                                                                                                                                                                  }
                                                                                                                                                                                                         />
                                                                                                                                                                                               }
                                                                                                                                                                                               label="Has own solar power"
@@ -666,13 +707,12 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                       </Button>
                                                                                                                                             </div>
                                                                                                                                   </Stack>
-                                                                                                                        </form>
-                                                                                                              </TableCell>
-                                                                                                    </TableRow>
-                                                                                          )}
-                                                                                </Fragment>
-                                                                      );
-                                                            })}
+                                                                                                                        </TableCell>
+                                                                                                              </TableRow>
+                                                                                                    )}
+                                                                                          </Fragment>
+                                                                                );
+                                                                      })}
                                                   </TableBody>
                                         </Table>
                               </Scrollbar>

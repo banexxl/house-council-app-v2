@@ -106,8 +106,9 @@ const Page: NextPage = (props: any) => {
           const [openEdit, setOpenEdit] = useState(false)
           const [rowsPerPage, setRowsPerPage] = useState(5);
           const buildings = useBuildings(props.buildings, page, rowsPerPage);
-          const productsIds = useBuildingIds(props.buildings);
-          const productsSelection = useSelection(productsIds);
+          const buildingsIds = useBuildingIds(props.buildings);
+          const buildingSelection = useSelection(buildingsIds);
+          console.log(buildingSelection);
 
           usePageView();
 
@@ -177,11 +178,11 @@ const Page: NextPage = (props: any) => {
                                                             <Card>
                                                                       <BuildingListSearch onFiltersChange={useBuildingsSearch().handleFiltersChange} />
                                                                       <BuildingListTable
+                                                                                count={props.buildings.length}
+                                                                                items={props.buildings}
                                                                                 onPageChange={useBuildingsSearch().handlePageChange}
                                                                                 onRowsPerPageChange={useBuildingsSearch().handleRowsPerPageChange}
                                                                                 page={props.page}
-                                                                                items={props.buildings}
-                                                                                count={props.buildings.length}
                                                                                 rowsPerPage={useBuildingsSearch().state.rowsPerPage}
                                                                       />
                                                             </Card>
