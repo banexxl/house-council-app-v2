@@ -26,8 +26,8 @@ export interface Building {
           lat: number;
           buildingStatus: boolean;
           /////////////////////////////////////////
-          dateTimeAdded?: Date;
-          dateTimeUpdated: Date;
+          dateTimeAdded?: string;
+          dateTimeUpdated: string;
           /////////////////////////////////////////
           tenants: string[];
           tenantMeetings: string[],

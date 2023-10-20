@@ -66,6 +66,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               }
                     } else if (request.method === 'PUT') {
 
+                              console.log('usao u PUT', request.body);
+
                               const areAllValuesFalsy = (obj: Object) => {
                                         return Object.values(obj).every(value => !value || [] || new Date());
                               }
@@ -93,8 +95,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         lng: 0,
                                         lat: 0,
                                         buildingStatus: false,
-                                        dateTimeAdded: undefined,
-                                        dateTimeUpdated: new Date(),
+                                        dateTimeAdded: '',
+                                        dateTimeUpdated: '',
                                         tenants: [],
                                         tenantMeetings: [],
                                         invoices: [],
@@ -102,7 +104,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         board: ''
                               }
 
-                              console.log('areAllValuesFalsy', areAllValuesFalsy(objectForUpdate));
+                              console.log('areAllValuesFalsy', areAllValuesFalsy(request.body));
 
                               if (request.body.street) objectForUpdate.street = request.body.street;
                               if (request.body.streetNumber) objectForUpdate.streetNumber = request.body.streetNumber;

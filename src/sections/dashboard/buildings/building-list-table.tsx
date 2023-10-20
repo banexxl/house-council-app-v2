@@ -87,16 +87,42 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     setCurrentBuilding(null);
           }, []);
 
-          const handleBuildingUpdate = useCallback((): void => {
-                    setCurrentBuilding(null);
-                    toast.success('Building updated');
+          const handleBuildingUpdate = useCallback(async () => {
+                    try {
+                              const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
+                                        method: 'PUT',
+                                        headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'Access-Control-Allow-Origin': '*',
+                                                  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                        },
+                                        body: JSON.stringify(currentBuildingObject), // Convert your data to JSON
+                              })
+
+                              if (buildingCreateResponse.ok) {
+                                        toast.success('Building updated');
+                                        setCurrentBuilding(null);
+                                        router.push(paths.dashboard.buildings.index);
+                              } else {
+                                        const errorData = await buildingCreateResponse.json(); // Parse the error response
+                                        console.error(errorData);
+                                        toast.error('Something went wrong!');
+                              }
+
+                    } catch (err) {
+                              console.error(err);
+                              toast.error('Something went wrong!');
+                              // helpers.setStatus({ success: false });
+                              // //helpers.setErrors({ submit: err.message });
+                              // helpers.setSubmitting(false);
+                    }
           }, []);
 
           const handleBuildingDelete = useCallback((): void => {
                     toast.error('Building cannot be deleted');
           }, []);
 
-          console.log(currentBuildingObject);
+          console.log('currentBuildingObject', currentBuildingObject);
 
           return (
                     <div>
@@ -261,10 +287,11 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               onBlur={(e: any) =>
                                                                                                                                                                                                         setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                   ...previousObject,
-                                                                                                                                                                                                                  streetNumber: e.target.value
+                                                                                                                                                                                                                  streetNumber: parseInt(e.target.value)
 
                                                                                                                                                                                                         }))
                                                                                                                                                                                               }
+                                                                                                                                                                                              type='number'
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -333,12 +360,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               onBlur={(e: any) =>
                                                                                                                                                                                                         setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                   ...previousObject,
-                                                                                                                                                                                                                  storiesHigh: e.target.value
+                                                                                                                                                                                                                  storiesHigh: parseInt(e.target.value)
                                                                                                                                                                                                         }))
                                                                                                                                                                                               }
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building stories high"
                                                                                                                                                                                               name="storiesHigh"
+                                                                                                                                                                                              type='number'
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -351,12 +379,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               onBlur={(e: any) =>
                                                                                                                                                                                                         setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                   ...previousObject,
-                                                                                                                                                                                                                  appartmentCount: e.target.value
+                                                                                                                                                                                                                  appartmentCount: parseInt(e.target.value)
                                                                                                                                                                                                         }))
                                                                                                                                                                                               }
                                                                                                                                                                                               fullWidth
                                                                                                                                                                                               label="Building appartment count"
                                                                                                                                                                                               name="appartmentCount"
+                                                                                                                                                                                              type='number'
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                           <Grid
@@ -414,15 +443,15 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               Description
                                                                                                                                                                                     </Typography>
                                                                                                                                                                                     <QuillEditor
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  description: e.target.value
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
                                                                                                                                                                                               placeholder="Short description"
                                                                                                                                                                                               sx={{ height: 400 }}
                                                                                                                                                                                               value={building.description}
+                                                                                                                                                                                              onChange={(e: any) =>
+                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  ...previousObject,
+                                                                                                                                                                                                                  description: e
+                                                                                                                                                                                                        }))
+                                                                                                                                                                                              }
                                                                                                                                                                                     />
                                                                                                                                                                           </Grid>
                                                                                                                                                                 </Grid>
