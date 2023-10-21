@@ -89,7 +89,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
 
           const handleBuildingUpdate = useCallback(async () => {
                     try {
-                              const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
+                              const buildingCreateResponse = await fetch('/api/buildings/update-building-api', {
                                         method: 'PUT',
                                         headers: {
                                                   'Content-Type': 'application/json',
