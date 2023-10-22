@@ -43,12 +43,15 @@ interface BuildingListTableProps {
           items?: Building[];
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
           onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+          onDeselectOne?: (item: unknown) => void;
+          onSelectOne?: (item: unknown) => void;
+          selected?: Building;
           page?: number;
           rowsPerPage?: number;
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
-          console.log('building table props', props);
+
           const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
           const router = useRouter();
 
@@ -59,6 +62,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     onRowsPerPageChange,
                     page = 0,
                     rowsPerPage = 0,
+                    selected = []
           } = props;
 
           const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
@@ -122,7 +126,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     toast.error('Building cannot be deleted');
           }, []);
 
-          console.log('currentBuildingObject', currentBuildingObject);
 
           return (
                     <div>
@@ -396,7 +399,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.isRecentlyBuilt}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.isRecentlyBuilt}
                                                                                                                                                                                                                   name='isRecentlyBuilt'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -417,7 +420,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.buildingStatus}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.buildingStatus}
                                                                                                                                                                                                                   name='buildingStatus'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -445,7 +448,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <QuillEditor
                                                                                                                                                                                               placeholder="Short description"
                                                                                                                                                                                               sx={{ height: 400 }}
-                                                                                                                                                                                              value={building.description}
+                                                                                                                                                                                              value={currentBuildingObject?.description}
                                                                                                                                                                                               onChange={(e: any) =>
                                                                                                                                                                                                         setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                   ...previousObject,
@@ -475,7 +478,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasCentralHeating}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasCentralHeating}
                                                                                                                                                                                                                   name='hasCentralHeating'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -496,7 +499,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasElectricHeating}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasElectricHeating}
                                                                                                                                                                                                                   name='hasElectricHeating'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -517,7 +520,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasGasHeating}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasGasHeating}
                                                                                                                                                                                                                   name='hasGasHeating'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -538,7 +541,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasOwnBicycleRoom}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnBicycleRoom}
                                                                                                                                                                                                                   name='hasOwnBicycleRoom'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -559,7 +562,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasOwnElevator}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnElevator}
                                                                                                                                                                                                                   name='hasOwnElevator'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -580,7 +583,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasOwnParkingLot}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnParkingLot}
                                                                                                                                                                                                                   name='hasOwnParkingLot'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -601,7 +604,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasOwnWaterPump}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnWaterPump}
                                                                                                                                                                                                                   name='hasOwnWaterPump'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -622,7 +625,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     <FormControlLabel
                                                                                                                                                                                               control={
                                                                                                                                                                                                         <Switch
-                                                                                                                                                                                                                  defaultChecked={building.hasSolarPower}
+                                                                                                                                                                                                                  checked={currentBuildingObject?.hasSolarPower}
                                                                                                                                                                                                                   name='hasSolarPower'
                                                                                                                                                                                                                   onBlur={(e: any) =>
                                                                                                                                                                                                                             setCurrentBuildingObject((previousObject: any) => ({
@@ -758,11 +761,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
           );
 };
 
-BuildingListTable.propTypes = {
-          count: PropTypes.number,
-          items: PropTypes.array,
-          onPageChange: PropTypes.func,
-          onRowsPerPageChange: PropTypes.func,
-          page: PropTypes.number,
-          rowsPerPage: PropTypes.number,
-};
+// BuildingListTable.propTypes = {
+//           count: PropTypes.number,
+//           items: PropTypes.array,
+//           onPageChange: PropTypes.func,
+//           onRowsPerPageChange: PropTypes.func,
+//           page: PropTypes.number,
+//           rowsPerPage: PropTypes.number,
+//           onDeselectOne: PropTypes.func,
+//           onSelectOne: PropTypes.func,
+//           selected: PropTypes.object
+// };

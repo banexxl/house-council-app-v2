@@ -9,62 +9,65 @@ export default async function handler(request: NextApiRequest, response: NextApi
           const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('Buildings')
 
           try {
-                    if (request.method === 'GET') {
+                    // if (request.method === 'GET') {
 
-                              // const page = parseInt(request.query.page as string) // Explicit casting to string
-                              // const rowsPerPage = parseInt(request.query.rowsPerPage as string)
-                              // const sortBy = request.query.sortBy as string | undefined; // Explicit casting to string or undefined
-                              // const sortDir = request.query.sortDir as string | undefined; // Explicit casting to string or undefined
-                              // const skip = page * rowsPerPage
-                              // const sortOrder = sortDir === 'desc' ? -1 : 1; // Descending (-1) or Ascending (1)
+                    //           // const page = parseInt(request.query.page as string) // Explicit casting to string
+                    //           // const rowsPerPage = parseInt(request.query.rowsPerPage as string)
+                    //           // const sortBy = request.query.sortBy as string | undefined; // Explicit casting to string or undefined
+                    //           // const sortDir = request.query.sortDir as string | undefined; // Explicit casting to string or undefined
+                    //           // const skip = page * rowsPerPage
+                    //           // const sortOrder = sortDir === 'desc' ? -1 : 1; // Descending (-1) or Ascending (1)
 
-                              const allBuildings = await dbBuildings
-                                        .find({})
-                                        // .limit(rowsPerPage)
-                                        // .sort({ sortBy: sortOrder })
-                                        // .skip(skip)
-                                        .toArray();
+                    //           const allBuildings = await dbBuildings
+                    //                     .find({})
+                    //                     // .limit(rowsPerPage)
+                    //                     // .sort({ sortBy: sortOrder })
+                    //                     // .skip(skip)
+                    //                     .toArray();
 
-                              const totalCount = allBuildings.length
+                    //           const totalCount = allBuildings.length
 
-                              return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
+                    //           return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
-                    } else if (request.method === 'POST') {
+                    // } else if (request.method === 'POST') {
 
-                              const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
+                    //           const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
-                              if (buildingExists === null) {
-                                        await dbBuildings.insertOne(request.body).then(async (dbResponse: any) => {
-                                                  try {
-                                                            if (dbResponse.acknowledged) {
+                    //           if (buildingExists === null) {
+                    //                     await dbBuildings.insertOne(request.body).then(async (dbResponse: any) => {
+                    //                               try {
+                    //                                         if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch('http://localhost:3000/api/boards/board-api', {
-                                                                                method: 'POST',
-                                                                                headers: {
-                                                                                          'Content-Type': 'application/json',
-                                                                                          'Access-Control-Allow-Origin': '*',
-                                                                                          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
-                                                                                },
-                                                                                body: JSON.stringify({
-                                                                                          buildingId: dbResponse.insertedId,
-                                                                                          columns: [],
-                                                                                          tasks: []
-                                                                                })
-                                                                      })
-                                                            }
-                                                  } catch (error) {
-                                                            console.log(error);
+                    //                                                   const boardResponse = await fetch('http://localhost:3000/api/boards/board-api', {
+                    //                                                             method: 'POST',
+                    //                                                             headers: {
+                    //                                                                       'Content-Type': 'application/json',
+                    //                                                                       'Access-Control-Allow-Origin': '*',
+                    //                                                                       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                    //                                                             },
+                    //                                                             body: JSON.stringify({
+                    //                                                                       buildingId: dbResponse.insertedId,
+                    //                                                                       columns: [],
+                    //                                                                       tasks: []
+                    //                                                             })
+                    //                                                   })
+                    //                                         }
+                    //                               } catch (error) {
+                    //                                         console.log(error);
 
-                                                  }
+                    //                               }
 
-                                        })
-                                        return response.status(200).json({ message: 'Building successfully added!' });
-                              } else {
-                                        const error = new Error('Building already exists!');
-                                        (error as any).cause = { status: 409 };
-                                        return response.status(409).json({ error: error });
-                              }
-                    } else if (request.method === 'PUT') {
+                    //                     })
+                    //                     return response.status(200).json({ message: 'Building successfully added!' });
+                    //           } else {
+                    //                     const error = new Error('Building already exists!');
+                    //                     (error as any).cause = { status: 409 };
+                    //                     return response.status(409).json({ error: error });
+                    //           }
+                    // } else
+                    if (request.method === 'PUT') {
+
+                              console.log('updatre building api request', request.body);
 
                               try {
                                         await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
