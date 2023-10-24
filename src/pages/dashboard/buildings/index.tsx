@@ -99,7 +99,6 @@ const useBuildingIds = (buildings: any) => {
 };
 
 const Page: NextPage = (props: any) => {
-          console.log('page props', props);
 
           const [page, setPage] = useState(0);
           const [open, setOpen] = useState(false)
@@ -108,8 +107,6 @@ const Page: NextPage = (props: any) => {
           const buildings = useBuildings(props.buildings, page, rowsPerPage);
           const buildingsIds = useBuildingIds(props.buildings);
           const buildingSelection = useSelection(buildingsIds);
-
-          console.log('sa stranice buildingSelection', buildingSelection);
 
           usePageView();
 
@@ -188,7 +185,7 @@ const Page: NextPage = (props: any) => {
                                                                                 // onSelectAll={buildingSelection.handleSelectAll}
                                                                                 page={page}
                                                                                 rowsPerPage={rowsPerPage}
-                                                                      // selected={buildingSelection.selected}
+                                                                                selected={buildingSelection.selected as Building[]}
                                                                       />
                                                             </Card>
                                                   </Stack>

@@ -1,5 +1,5 @@
 import type { ChangeEvent, FC, MouseEvent } from 'react';
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment, useState } from 'react';
 import numeral from 'numeral';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
@@ -37,6 +37,7 @@ import { QuillEditor } from '@/components/quill-editor';
 import { initialValues, validationSchema } from './building-options';
 import { paths } from '@/paths';
 import { useRouter } from 'next/router';
+import Swal from 'sweetalert2';
 
 interface BuildingListTableProps {
           count?: number;
@@ -45,7 +46,7 @@ interface BuildingListTableProps {
           onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
           onDeselectOne?: (item: unknown) => void;
           onSelectOne?: (item: unknown) => void;
-          selected?: Building;
+          selected?: Building[];
           page?: number;
           rowsPerPage?: number;
 }
@@ -53,6 +54,8 @@ interface BuildingListTableProps {
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
 
           const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
+          console.log('currentBuildignObject', currentBuildingObject);
+
           const router = useRouter();
 
           const {
@@ -76,22 +79,41 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     return null;  // Object with the desired ID not found
           }
 
-          const handleBuildingToggle = useCallback((buildingId: string): void => {
+          const handleBuildingToggle = (buildingId: string): void => {
                     setCurrentBuilding((prevBuildingId) => {
                               if (prevBuildingId === buildingId) {
                                         setCurrentBuildingObject(null)
                                         return null;
                               }
-                              setCurrentBuildingObject(getObjectById(buildingId, items))
+                              const map = new Map(items.map((obj: Building) => [obj._id, obj]));
+                              const result = map.get(buildingId);
+
+                              setCurrentBuildingObject(result)
                               return buildingId;
                     });
-          }, []);
+          }
 
-          const handleBuildingClose = useCallback((): void => {
+          const handleBuildingClose = (): void => {
                     setCurrentBuilding(null);
-          }, []);
+          }
 
-          const handleBuildingUpdate = useCallback(async () => {
+          const handleProductUpdateClick = () => {
+                    Swal.fire({
+                              title: 'Are you sure?',
+                              text: "You can edit this product at any time!",
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#3085d6',
+                              cancelButtonColor: '#d33',
+                              confirmButtonText: 'Yes, update it!'
+                    }).then((result: any) => {
+                              if (result.isConfirmed) {
+                                        handleBuildingUpdate(currentBuildingObject)
+                              }
+                    })
+          }
+
+          const handleBuildingUpdate = async (currentBuildingObject: any) => {
                     try {
                               const buildingCreateResponse = await fetch('/api/buildings/update-building-api', {
                                         method: 'PUT',
@@ -101,30 +123,32 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                         },
                                         body: JSON.stringify(currentBuildingObject), // Convert your data to JSON
+                              }).then(async (response) => {
+
+                                        if (response.ok) {
+                                                  toast.success('Building updated');
+                                                  router.push(paths.dashboard.buildings.index);
+
+                                        } else {
+                                                  const errorData = await response.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('Something went wrong!');
+                                        }
                               })
-
-                              if (buildingCreateResponse.ok) {
-                                        toast.success('Building updated');
-                                        setCurrentBuilding(null);
-                                        router.push(paths.dashboard.buildings.index);
-                              } else {
-                                        const errorData = await buildingCreateResponse.json(); // Parse the error response
-                                        console.error(errorData);
-                                        toast.error('Something went wrong!');
-                              }
-
                     } catch (err) {
                               console.error(err);
                               toast.error('Something went wrong!');
                               // helpers.setStatus({ success: false });
                               // //helpers.setErrors({ submit: err.message });
                               // helpers.setSubmitting(false);
+                    } finally {
+                              setCurrentBuildingObject(null)
                     }
-          }, []);
+          }
 
-          const handleBuildingDelete = useCallback((): void => {
+          const handleBuildingDelete = (): void => {
                     toast.error('Building cannot be deleted');
-          }, []);
+          }
 
 
           return (
@@ -210,538 +234,542 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                               <TableCell>{building.appartmentCount}</TableCell>
                                                                                                     </TableRow>
 
-                                                                                                    {isCurrent && (
-                                                                                                              <TableRow>
+                                                                                                    {
+                                                                                                              isCurrent && (
+                                                                                                                        <TableRow>
 
-                                                                                                                        <TableCell
-                                                                                                                                  colSpan={7}
-                                                                                                                                  sx={{
-                                                                                                                                            p: 0,
-                                                                                                                                            position: 'relative',
-                                                                                                                                            '&:after': {
-                                                                                                                                                      position: 'absolute',
-                                                                                                                                                      content: '" "',
-                                                                                                                                                      top: 0,
-                                                                                                                                                      left: 0,
-                                                                                                                                                      backgroundColor: 'primary.main',
-                                                                                                                                                      width: 3,
-                                                                                                                                                      height: 'calc(100% + 1px)',
-                                                                                                                                            },
-                                                                                                                                  }}
-                                                                                                                        >
-                                                                                                                                  <CardContent>
-                                                                                                                                            <Grid
-                                                                                                                                                      container
-                                                                                                                                                      spacing={3}
-                                                                                                                                            >
+                                                                                                                                  <TableCell
+                                                                                                                                            colSpan={7}
+                                                                                                                                            sx={{
+                                                                                                                                                      p: 0,
+                                                                                                                                                      position: 'relative',
+                                                                                                                                                      '&:after': {
+                                                                                                                                                                position: 'absolute',
+                                                                                                                                                                content: '" "',
+                                                                                                                                                                top: 0,
+                                                                                                                                                                left: 0,
+                                                                                                                                                                backgroundColor: 'primary.main',
+                                                                                                                                                                width: 3,
+                                                                                                                                                                height: 'calc(100% + 1px)',
+                                                                                                                                                      },
+                                                                                                                                            }}
+                                                                                                                                  >
+                                                                                                                                            <CardContent>
                                                                                                                                                       <Grid
-                                                                                                                                                                item
-                                                                                                                                                                md={6}
-                                                                                                                                                                xs={12}
+                                                                                                                                                                container
+                                                                                                                                                                spacing={3}
                                                                                                                                                       >
-                                                                                                                                                                <Typography variant="h6">Basic Info</Typography>
-                                                                                                                                                                <Divider sx={{ my: 2 }} />
                                                                                                                                                                 <Grid
-                                                                                                                                                                          container
-                                                                                                                                                                          spacing={3}
+                                                                                                                                                                          item
+                                                                                                                                                                          md={6}
+                                                                                                                                                                          xs={12}
                                                                                                                                                                 >
+                                                                                                                                                                          <Typography variant="h6">Basic Info</Typography>
+                                                                                                                                                                          <Divider sx={{ my: 2 }} />
                                                                                                                                                                           <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
+                                                                                                                                                                                    container
+                                                                                                                                                                                    spacing={3}
                                                                                                                                                                           >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building._id}
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building ID"
-                                                                                                                                                                                              name="_id"
-                                                                                                                                                                                              disabled
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.street}
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building street"
-                                                                                                                                                                                              name="street"
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  street: e.target.value
-
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.streetNumber}
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building street number"
-                                                                                                                                                                                              name="streetNumber"
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  streetNumber: parseInt(e.target.value)
-
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                              type='number'
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.city}
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building city"
-                                                                                                                                                                                              name="city"
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  city: e.target.value
-
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.country}
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building country"
-                                                                                                                                                                                              name="country"
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  country: e.target.value
-
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.region}
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building region"
-                                                                                                                                                                                              name="region"
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  region: e.target.value
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.storiesHigh}
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  storiesHigh: parseInt(e.target.value)
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building stories high"
-                                                                                                                                                                                              name="storiesHigh"
-                                                                                                                                                                                              type='number'
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <TextField
-                                                                                                                                                                                              defaultValue={building.appartmentCount}
-                                                                                                                                                                                              onBlur={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  appartmentCount: parseInt(e.target.value)
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                              fullWidth
-                                                                                                                                                                                              label="Building appartment count"
-                                                                                                                                                                                              name="appartmentCount"
-                                                                                                                                                                                              type='number'
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.isRecentlyBuilt}
-                                                                                                                                                                                                                  name='isRecentlyBuilt'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      isRecentlyBuilt: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Is recently built"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.buildingStatus}
-                                                                                                                                                                                                                  name='buildingStatus'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      buildingStatus: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Active"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={12}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <Typography
-                                                                                                                                                                                              color="text.secondary"
-                                                                                                                                                                                              sx={{ mb: 2 }}
-                                                                                                                                                                                              variant="subtitle2"
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              Description
-                                                                                                                                                                                    </Typography>
-                                                                                                                                                                                    <QuillEditor
-                                                                                                                                                                                              placeholder="Short description"
-                                                                                                                                                                                              sx={{ height: 400 }}
-                                                                                                                                                                                              value={currentBuildingObject?.description}
-                                                                                                                                                                                              onChange={(e: any) =>
-                                                                                                                                                                                                        setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                  ...previousObject,
-                                                                                                                                                                                                                  description: e
-                                                                                                                                                                                                        }))
-                                                                                                                                                                                              }
-                                                                                                                                                                                    />
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building._id}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building ID"
+                                                                                                                                                                                                        name="_id"
+                                                                                                                                                                                                        disabled
+                                                                                                                                                                                                        onLoad={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            street: e.target.value
+                                                                                                                                                                                                                  }))}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.street}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building street"
+                                                                                                                                                                                                        name="street"
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            street: e.target.value
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.streetNumber}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building street number"
+                                                                                                                                                                                                        name="streetNumber"
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            streetNumber: parseInt(e.target.value)
+
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        type='number'
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.city}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building city"
+                                                                                                                                                                                                        name="city"
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            city: e.target.value
+
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.country}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building country"
+                                                                                                                                                                                                        name="country"
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            country: e.target.value
+
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.region}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building region"
+                                                                                                                                                                                                        name="region"
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            region: e.target.value
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.storiesHigh}
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            storiesHigh: parseInt(e.target.value)
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building stories high"
+                                                                                                                                                                                                        name="storiesHigh"
+                                                                                                                                                                                                        type='number'
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.appartmentCount}
+                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            appartmentCount: parseInt(e.target.value)
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building appartment count"
+                                                                                                                                                                                                        name="appartmentCount"
+                                                                                                                                                                                                        type='number'
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.isRecentlyBuilt}
+                                                                                                                                                                                                                            name='isRecentlyBuilt'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                isRecentlyBuilt: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Is recently built"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.buildingStatus}
+                                                                                                                                                                                                                            name='buildingStatus'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                buildingStatus: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Active"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={12}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <Typography
+                                                                                                                                                                                                        color="text.secondary"
+                                                                                                                                                                                                        sx={{ mb: 2 }}
+                                                                                                                                                                                                        variant="subtitle2"
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        Description
+                                                                                                                                                                                              </Typography>
+                                                                                                                                                                                              <QuillEditor
+                                                                                                                                                                                                        placeholder="Short description"
+                                                                                                                                                                                                        sx={{ height: 400 }}
+                                                                                                                                                                                                        onChange={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            description: e
+                                                                                                                                                                                                                  }))
+                                                                                                                                                                                                        }
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
                                                                                                                                                                           </Grid>
                                                                                                                                                                 </Grid>
-                                                                                                                                                      </Grid>
-                                                                                                                                                      <Grid
-                                                                                                                                                                item
-                                                                                                                                                                md={6}
-                                                                                                                                                                xs={12}
-                                                                                                                                                      >
-                                                                                                                                                                <Typography variant="h6">Detailed Info</Typography>
-                                                                                                                                                                <Divider sx={{ my: 2 }} />
                                                                                                                                                                 <Grid
-                                                                                                                                                                          container
-                                                                                                                                                                          spacing={4.5}
+                                                                                                                                                                          item
+                                                                                                                                                                          md={6}
+                                                                                                                                                                          xs={12}
                                                                                                                                                                 >
+                                                                                                                                                                          <Typography variant="h6">Detailed Info</Typography>
+                                                                                                                                                                          <Divider sx={{ my: 2 }} />
                                                                                                                                                                           <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
+                                                                                                                                                                                    container
+                                                                                                                                                                                    spacing={4.5}
                                                                                                                                                                           >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasCentralHeating}
-                                                                                                                                                                                                                  name='hasCentralHeating'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasCentralHeating: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has Central Heating"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasElectricHeating}
-                                                                                                                                                                                                                  name='hasElectricHeating'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasElectricHeating: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has Electrical Heating"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasGasHeating}
-                                                                                                                                                                                                                  name='hasGasHeating'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasGasHeating: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has Gas Heating"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnBicycleRoom}
-                                                                                                                                                                                                                  name='hasOwnBicycleRoom'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasOwnBicycleRoom: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has own bicycle room"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnElevator}
-                                                                                                                                                                                                                  name='hasOwnElevator'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasOwnElevator: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has own elevator"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnParkingLot}
-                                                                                                                                                                                                                  name='hasOwnParkingLot'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasOwnParkingLot: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has own parking lot"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasOwnWaterPump}
-                                                                                                                                                                                                                  name='hasOwnWaterPump'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasOwnWaterPump: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has own water pump"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={6}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <FormControlLabel
-                                                                                                                                                                                              control={
-                                                                                                                                                                                                        <Switch
-                                                                                                                                                                                                                  checked={currentBuildingObject?.hasSolarPower}
-                                                                                                                                                                                                                  name='hasSolarPower'
-                                                                                                                                                                                                                  onBlur={(e: any) =>
-                                                                                                                                                                                                                            setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                      ...previousObject,
-                                                                                                                                                                                                                                      hasSolarPower: e.target.value
-                                                                                                                                                                                                                            }))
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              }
-                                                                                                                                                                                              label="Has own solar power"
-                                                                                                                                                                                    />
-                                                                                                                                                                          </Grid>
-                                                                                                                                                                          <Grid
-                                                                                                                                                                                    item
-                                                                                                                                                                                    md={12}
-                                                                                                                                                                                    xs={12}
-                                                                                                                                                                          >
-                                                                                                                                                                                    <Box
-                                                                                                                                                                                              sx={{
-                                                                                                                                                                                                        alignItems: 'center',
-                                                                                                                                                                                                        display: 'flex',
-                                                                                                                                                                                                        flexDirection: 'column',
-                                                                                                                                                                                              }}
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              {building.image ? (
-                                                                                                                                                                                                        <Box
-                                                                                                                                                                                                                  sx={{
-                                                                                                                                                                                                                            alignItems: 'center',
-                                                                                                                                                                                                                            backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                            backgroundImage: `url(${building.image})`,
-                                                                                                                                                                                                                            backgroundPosition: 'center',
-                                                                                                                                                                                                                            backgroundSize: 'cover',
-                                                                                                                                                                                                                            borderRadius: 1,
-                                                                                                                                                                                                                            display: 'flex',
-                                                                                                                                                                                                                            height: 80,
-                                                                                                                                                                                                                            justifyContent: 'center',
-                                                                                                                                                                                                                            overflow: 'hidden',
-                                                                                                                                                                                                                            width: 80,
-                                                                                                                                                                                                                  }}
-                                                                                                                                                                                                        />
-                                                                                                                                                                                              ) : (
-                                                                                                                                                                                                        <Box
-                                                                                                                                                                                                                  sx={{
-                                                                                                                                                                                                                            alignItems: 'center',
-                                                                                                                                                                                                                            backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                            borderRadius: 1,
-                                                                                                                                                                                                                            display: 'flex',
-
-                                                                                                                                                                                                                            height: 300,
-                                                                                                                                                                                                                            justifyContent: 'center',
-                                                                                                                                                                                                                            width: 400,
-                                                                                                                                                                                                                  }}
-                                                                                                                                                                                                        >
-                                                                                                                                                                                                                  <SvgIcon>
-                                                                                                                                                                                                                            <Image01Icon />
-                                                                                                                                                                                                                  </SvgIcon>
-                                                                                                                                                                                                        </Box>
-                                                                                                                                                                                              )}
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasCentralHeating}
+                                                                                                                                                                                                                            name='hasCentralHeating'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasCentralHeating: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has Central Heating"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasElectricHeating}
+                                                                                                                                                                                                                            name='hasElectricHeating'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasElectricHeating: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has Electrical Heating"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasGasHeating}
+                                                                                                                                                                                                                            name='hasGasHeating'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasGasHeating: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has Gas Heating"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasOwnBicycleRoom}
+                                                                                                                                                                                                                            name='hasOwnBicycleRoom'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasOwnBicycleRoom: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has own bicycle room"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasOwnElevator}
+                                                                                                                                                                                                                            name='hasOwnElevator'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasOwnElevator: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has own elevator"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasOwnParkingLot}
+                                                                                                                                                                                                                            name='hasOwnParkingLot'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasOwnParkingLot: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has own parking lot"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasOwnWaterPump}
+                                                                                                                                                                                                                            name='hasOwnWaterPump'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasOwnWaterPump: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has own water pump"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <FormControlLabel
+                                                                                                                                                                                                        control={
+                                                                                                                                                                                                                  <Switch
+                                                                                                                                                                                                                            defaultChecked={building.hasSolarPower}
+                                                                                                                                                                                                                            name='hasSolarPower'
+                                                                                                                                                                                                                            onChange={(e: any) =>
+                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                                ...previousObject,
+                                                                                                                                                                                                                                                hasSolarPower: e.target.value
+                                                                                                                                                                                                                                      }))
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Has own solar power"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={12}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
                                                                                                                                                                                               <Box
                                                                                                                                                                                                         sx={{
-                                                                                                                                                                                                                  cursor: 'pointer',
-                                                                                                                                                                                                                  ml: 2,
+                                                                                                                                                                                                                  alignItems: 'center',
+                                                                                                                                                                                                                  display: 'flex',
+                                                                                                                                                                                                                  flexDirection: 'column',
                                                                                                                                                                                                         }}
                                                                                                                                                                                               >
-                                                                                                                                                                                                        <Typography variant="subtitle2">{building.street + " " + building.streetNumber}</Typography>
-                                                                                                                                                                                                        <Typography
-                                                                                                                                                                                                                  color="text.secondary"
-                                                                                                                                                                                                                  variant="body2"
+                                                                                                                                                                                                        {building.image ? (
+                                                                                                                                                                                                                  <Box
+                                                                                                                                                                                                                            sx={{
+                                                                                                                                                                                                                                      alignItems: 'center',
+                                                                                                                                                                                                                                      backgroundColor: 'neutral.50',
+                                                                                                                                                                                                                                      backgroundImage: `url(${building.image})`,
+                                                                                                                                                                                                                                      backgroundPosition: 'center',
+                                                                                                                                                                                                                                      backgroundSize: 'cover',
+                                                                                                                                                                                                                                      borderRadius: 1,
+                                                                                                                                                                                                                                      display: 'flex',
+                                                                                                                                                                                                                                      height: 80,
+                                                                                                                                                                                                                                      justifyContent: 'center',
+                                                                                                                                                                                                                                      overflow: 'hidden',
+                                                                                                                                                                                                                                      width: 80,
+                                                                                                                                                                                                                            }}
+                                                                                                                                                                                                                  />
+                                                                                                                                                                                                        ) : (
+                                                                                                                                                                                                                  <Box
+                                                                                                                                                                                                                            sx={{
+                                                                                                                                                                                                                                      alignItems: 'center',
+                                                                                                                                                                                                                                      backgroundColor: 'neutral.50',
+                                                                                                                                                                                                                                      borderRadius: 1,
+                                                                                                                                                                                                                                      display: 'flex',
+
+                                                                                                                                                                                                                                      height: 300,
+                                                                                                                                                                                                                                      justifyContent: 'center',
+                                                                                                                                                                                                                                      width: 400,
+                                                                                                                                                                                                                            }}
+                                                                                                                                                                                                                  >
+                                                                                                                                                                                                                            <SvgIcon>
+                                                                                                                                                                                                                                      <Image01Icon />
+                                                                                                                                                                                                                            </SvgIcon>
+                                                                                                                                                                                                                  </Box>
+                                                                                                                                                                                                        )}
+                                                                                                                                                                                                        <Box
+                                                                                                                                                                                                                  sx={{
+                                                                                                                                                                                                                            cursor: 'pointer',
+                                                                                                                                                                                                                            ml: 2,
+                                                                                                                                                                                                                  }}
                                                                                                                                                                                                         >
-                                                                                                                                                                                                                  in {building.city}
-                                                                                                                                                                                                        </Typography>
+                                                                                                                                                                                                                  <Typography variant="subtitle2">{building.street + " " + building.streetNumber}</Typography>
+                                                                                                                                                                                                                  <Typography
+                                                                                                                                                                                                                            color="text.secondary"
+                                                                                                                                                                                                                            variant="body2"
+                                                                                                                                                                                                                  >
+                                                                                                                                                                                                                            in {building.city}
+                                                                                                                                                                                                                  </Typography>
+                                                                                                                                                                                                        </Box>
                                                                                                                                                                                               </Box>
-                                                                                                                                                                                    </Box>
+                                                                                                                                                                                    </Grid>
                                                                                                                                                                           </Grid>
                                                                                                                                                                 </Grid>
                                                                                                                                                       </Grid>
-                                                                                                                                            </Grid>
-                                                                                                                                  </CardContent>
-                                                                                                                                  <Divider />
-                                                                                                                                  <Stack
-                                                                                                                                            alignItems="center"
-                                                                                                                                            direction="row"
-                                                                                                                                            justifyContent="space-between"
-                                                                                                                                            sx={{ p: 2 }}
-                                                                                                                                  >
+                                                                                                                                            </CardContent>
+                                                                                                                                            <Divider />
                                                                                                                                             <Stack
                                                                                                                                                       alignItems="center"
                                                                                                                                                       direction="row"
-                                                                                                                                                      spacing={2}
+                                                                                                                                                      justifyContent="space-between"
+                                                                                                                                                      sx={{ p: 2 }}
                                                                                                                                             >
-                                                                                                                                                      <Button
-                                                                                                                                                                onClick={handleBuildingUpdate}
-                                                                                                                                                                type="submit"
-                                                                                                                                                                variant="contained"
+                                                                                                                                                      <Stack
+                                                                                                                                                                alignItems="center"
+                                                                                                                                                                direction="row"
+                                                                                                                                                                spacing={2}
                                                                                                                                                       >
-                                                                                                                                                                Update
-                                                                                                                                                      </Button>
-                                                                                                                                                      <Button
-                                                                                                                                                                color="inherit"
-                                                                                                                                                                onClick={handleBuildingClose}
-                                                                                                                                                      >
-                                                                                                                                                                Cancel
-                                                                                                                                                      </Button>
+                                                                                                                                                                <Button
+                                                                                                                                                                          onClick={handleProductUpdateClick}
+                                                                                                                                                                          type="submit"
+                                                                                                                                                                          variant="contained"
+                                                                                                                                                                >
+                                                                                                                                                                          Update
+                                                                                                                                                                </Button>
+                                                                                                                                                                <Button
+                                                                                                                                                                          color="inherit"
+                                                                                                                                                                          onClick={handleBuildingClose}
+                                                                                                                                                                >
+                                                                                                                                                                          Cancel
+                                                                                                                                                                </Button>
+                                                                                                                                                      </Stack>
+                                                                                                                                                      <div>
+                                                                                                                                                                <Button
+                                                                                                                                                                          onClick={handleBuildingDelete}
+                                                                                                                                                                          color="error"
+                                                                                                                                                                >
+                                                                                                                                                                          Delete building
+                                                                                                                                                                </Button>
+                                                                                                                                                      </div>
                                                                                                                                             </Stack>
-                                                                                                                                            <div>
-                                                                                                                                                      <Button
-                                                                                                                                                                onClick={handleBuildingDelete}
-                                                                                                                                                                color="error"
-                                                                                                                                                      >
-                                                                                                                                                                Delete building
-                                                                                                                                                      </Button>
-                                                                                                                                            </div>
-                                                                                                                                  </Stack>
-                                                                                                                        </TableCell>
-                                                                                                              </TableRow>
-                                                                                                    )}
+                                                                                                                                  </TableCell>
+                                                                                                                        </TableRow>
+                                                                                                              )}
                                                                                           </Fragment>
                                                                                 );
                                                                       })}
@@ -761,14 +789,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
           );
 };
 
-// BuildingListTable.propTypes = {
-//           count: PropTypes.number,
-//           items: PropTypes.array,
-//           onPageChange: PropTypes.func,
-//           onRowsPerPageChange: PropTypes.func,
-//           page: PropTypes.number,
-//           rowsPerPage: PropTypes.number,
-//           onDeselectOne: PropTypes.func,
-//           onSelectOne: PropTypes.func,
-//           selected: PropTypes.object
-// };
+BuildingListTable.propTypes = {
+          count: PropTypes.number,
+          items: PropTypes.array,
+          onPageChange: PropTypes.func,
+          onRowsPerPageChange: PropTypes.func,
+          page: PropTypes.number,
+          rowsPerPage: PropTypes.number,
+          onDeselectOne: PropTypes.func,
+          onSelectOne: PropTypes.func,
+          selected: PropTypes.array
+};
