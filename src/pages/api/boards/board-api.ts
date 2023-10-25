@@ -44,6 +44,38 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               //           (error as any).cause = { status: 409 };
                               //           return response.status(409).json({ error: error });
                               // }
+                    } else if (request.method === 'DELETE') {
+                              const deleteBoardResponse = await collectionBoards.deleteOne({ _id: new ObjectId(request.body) })
+
+                              // ovde pozvati brisanje poveznice za board, verovatno columns
+                              // .then(async (createBoardResponse: any) => {
+
+                              // if (createBoardResponse.acknowledged) {
+
+                              //           const modifyBuildingResponse = await fetch('http://localhost:3000/api/buildings/buildings-api', {
+                              //                     method: 'DELETE',
+                              //                     headers: {
+                              //                               'Content-Type': 'application/json',
+                              //                               'Access-Control-Allow-Origin': '*',
+                              //                               'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                              //                     },
+                              //                     body: JSON.stringify({
+                              //                               board: createBoardResponse.insertedId,
+                              //                               _id: request.body.buildingId
+                              //                     })
+                              //           })
+                              // }
+
+                              // })
+                              return response.status(200).json({ message: 'Board deleted successfully' })
+                              // if (buildingExists === null) {
+                              //           await collectionBoards.insertOne(request.body)
+                              //           return response.status(200).json({ message: 'Building successfully added!' });
+                              // } else {
+                              //           const error = new Error('Building already exists!');
+                              //           (error as any).cause = { status: 409 };
+                              //           return response.status(409).json({ error: error });
+                              // }
                     }
           } catch (error) {
                     return response.status(500).json({ error: 'Internal server error!' });

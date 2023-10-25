@@ -1,5 +1,6 @@
 export interface Building {
           _id?: string;
+          isActive: boolean;
           street: string;
           streetNumber: number
           city: string;
@@ -26,7 +27,7 @@ export interface Building {
           lat: number;
           buildingStatus: boolean;
           /////////////////////////////////////////
-          dateTimeAdded?: string;
+          dateTimeAdded: string;
           dateTimeUpdated: string;
           /////////////////////////////////////////
           tenants: string[];

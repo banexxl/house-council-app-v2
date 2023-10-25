@@ -54,7 +54,6 @@ interface BuildingListTableProps {
 export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
 
           const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
-          console.log('currentBuildignObject', currentBuildingObject);
 
           const router = useRouter();
 
@@ -97,10 +96,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     setCurrentBuilding(null);
           }
 
-          const handleProductUpdateClick = () => {
+          const handleBuildingUpdateClick = () => {
                     Swal.fire({
                               title: 'Are you sure?',
-                              text: "You can edit this product at any time!",
+                              text: "You can edit this Building at any time!",
                               icon: 'warning',
                               showCancelButton: true,
                               confirmButtonColor: '#3085d6',
@@ -144,8 +143,52 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                     }
           }
 
-          const handleBuildingDelete = (): void => {
-                    toast.error('Building cannot be deleted');
+          const handleBuildingDeleteClick = () => {
+                    Swal.fire({
+                              title: 'Are you sure?',
+                              text: "Deleting a building cannot be undone!",
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#3085d6',
+                              cancelButtonColor: '#d33',
+                              confirmButtonText: 'Yes, delete it!'
+                    }).then((result: any) => {
+                              if (result.isConfirmed) {
+                                        handleBuildingDelete(currentBuildingObject)
+                              }
+                    })
+          }
+
+          const handleBuildingDelete = async (currentBuildingObject: any) => {
+                    try {
+                              const deleteBuildingResponse = await fetch('/api/buildings/buildings-api', {
+                                        method: 'DELETE',
+                                        headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'Access-Control-Allow-Origin': '*',
+                                                  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                        },
+                                        body: JSON.stringify(currentBuildingObject), // Convert your data to JSON
+                              }).then(async (response) => {
+                                        if (response.ok) {
+                                                  toast.success('Building deleted!');
+                                                  router.push(paths.dashboard.buildings.index);
+                                                  setCurrentBuilding(null)
+                                        } else {
+                                                  const errorData = await response.json(); // Parse the error response
+                                                  console.error(errorData);
+                                                  toast.error('Something went wrong!');
+                                        }
+                              })
+                              console.log(deleteBuildingResponse);
+
+                    } catch (err) {
+                              console.error(err);
+                              toast.error('Something went wrong!');
+                              // helpers.setStatus({ success: false });
+                              // //helpers.setErrors({ submit: err.message });
+                              // helpers.setSubmitting(false);
+                    }
           }
 
 
@@ -296,7 +339,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building street"
                                                                                                                                                                                                         name="street"
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             street: e.target.value
@@ -314,7 +357,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building street number"
                                                                                                                                                                                                         name="streetNumber"
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             streetNumber: parseInt(e.target.value)
@@ -334,7 +377,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building city"
                                                                                                                                                                                                         name="city"
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             city: e.target.value
@@ -353,7 +396,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building country"
                                                                                                                                                                                                         name="country"
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             country: e.target.value
@@ -372,7 +415,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building region"
                                                                                                                                                                                                         name="region"
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             region: e.target.value
@@ -387,7 +430,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
                                                                                                                                                                                                         defaultValue={building.storiesHigh}
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             storiesHigh: parseInt(e.target.value)
@@ -406,7 +449,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
                                                                                                                                                                                                         defaultValue={building.appartmentCount}
-                                                                                                                                                                                                        onBlur={(e: any) =>
+                                                                                                                                                                                                        onChange={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             appartmentCount: parseInt(e.target.value)
@@ -477,6 +520,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         Description
                                                                                                                                                                                               </Typography>
                                                                                                                                                                                               <QuillEditor
+                                                                                                                                                                                                        defaultValue={building.description}
                                                                                                                                                                                                         placeholder="Short description"
                                                                                                                                                                                                         sx={{ height: 400 }}
                                                                                                                                                                                                         onChange={(e: any) =>
@@ -485,6 +529,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                                             description: e
                                                                                                                                                                                                                   }))
                                                                                                                                                                                                         }
+                                                                                                                                                                                                        style={{
+                                                                                                                                                                                                                  height: '200px'
+                                                                                                                                                                                                        }}
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                           </Grid>
@@ -763,7 +810,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                 spacing={2}
                                                                                                                                                       >
                                                                                                                                                                 <Button
-                                                                                                                                                                          onClick={handleProductUpdateClick}
+                                                                                                                                                                          onClick={handleBuildingUpdateClick}
                                                                                                                                                                           type="submit"
                                                                                                                                                                           variant="contained"
                                                                                                                                                                 >
@@ -778,7 +825,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                       </Stack>
                                                                                                                                                       <div>
                                                                                                                                                                 <Button
-                                                                                                                                                                          onClick={handleBuildingDelete}
+                                                                                                                                                                          onClick={handleBuildingDeleteClick}
                                                                                                                                                                           color="error"
                                                                                                                                                                 >
                                                                                                                                                                           Delete building

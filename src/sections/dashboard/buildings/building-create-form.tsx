@@ -394,7 +394,11 @@ export const BuildingCreateForm: FC = (props) => {
                                                             justifyContent="flex-end"
                                                             spacing={1}
                                                   >
-                                                            <Button color="inherit">Cancel</Button>
+                                                            <Button color="inherit"
+                                                                      onClick={() => router.push(paths.dashboard.buildings.index)}
+                                                            >
+                                                                      Cancel
+                                                            </Button>
                                                             <Button
                                                                       type="submit"
                                                                       variant="contained"

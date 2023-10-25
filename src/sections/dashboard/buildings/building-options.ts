@@ -1,6 +1,11 @@
 
 import { Building } from '@/types/building';
+import moment from 'moment';
 import * as Yup from 'yup';
+
+var date = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+var stillUtc = moment.utc(date).toDate();
+var localDateTime = moment(stillUtc).local().format('DD.MM.YYYY HH:mm:ss');
 
 export interface BuildingOptions {
           label: string;
@@ -48,7 +53,7 @@ export const initialValues: Building = {
           fullAddress: '',
           isRecentlyBuilt: false,
           description: '',
-          dateTimeAdded: '',
+          dateTimeAdded: `${localDateTime}`,
           dateTimeUpdated: '',
           appartmentCount: 0,
           hasOwnParkingLot: false,
@@ -68,7 +73,8 @@ export const initialValues: Building = {
           tenants: [],
           invoices: [],
           parkingLots: [],
-          board: ''
+          board: '',
+          isActive: true
 };
 
 export const validationSchema = Yup.object({

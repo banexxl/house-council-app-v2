@@ -78,6 +78,37 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         console.log(error);
                               }
 
+                    } else if (request.method === 'DELETE') {
+                              const buildingExists = await dbBuildings.findOne({ _id: request.body._id })
+
+                              if (buildingExists === null) {
+                                        await dbBuildings.deleteOne({ _id: new ObjectId(request.body._id) }).then(async (dbResponse: any) => {
+                                                  try {
+                                                            if (dbResponse.acknowledged) {
+
+                                                                      const boardResponse = await fetch('http://localhost:3000/api/boards/board-api', {
+                                                                                method: 'DELETE',
+                                                                                headers: {
+                                                                                          'Content-Type': 'application/json',
+                                                                                          'Access-Control-Allow-Origin': '*',
+                                                                                          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                                                },
+                                                                                body: JSON.stringify(request.body.board)
+                                                                      })
+                                                                      console.log(boardResponse.statusText);
+
+                                                            }
+
+                                                  } catch (error) {
+                                                            console.log(error);
+                                                  }
+                                        })
+                                        return response.status(200).json({ message: 'Building successfully deleted!' });
+                              } else {
+                                        const error = new Error('Building does not exist!');
+                                        (error as any).cause = { status: 409 };
+                                        return response.status(409).json({ error: error });
+                              }
                     } else {
                               return response.status(405).json({ error: 'Method not allowed!' });
                     }
