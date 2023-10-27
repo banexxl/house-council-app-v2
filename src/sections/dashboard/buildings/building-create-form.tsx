@@ -26,6 +26,7 @@ import { GoogleMaps } from './map-component'
 import { ImageListItem, Input } from '@mui/material';
 import Image from 'next/image';
 import { borderRadius } from '@mui/system';
+import { fileToBase64 } from '@/utils/file-to-base64';
 
 export const BuildingCreateForm: FC = (props) => {
 
@@ -37,7 +38,6 @@ export const BuildingCreateForm: FC = (props) => {
                     const file = event.target.files[0]; // Get the first selected file
                     if (file) {
                               const reader = new FileReader();
-
                               reader.onload = (e: any) => {
                                         setSelectedImage(e.target.result);
                                         formik.setFieldValue('image', e.target.result)

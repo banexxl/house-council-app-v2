@@ -38,7 +38,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch('http://localhost:3000/api/boards/board-api', {
+                                                                      const boardResponse = await fetch('https://house-council-app-v2.vercel.app/api/boards/board-api', {
                                                                                 method: 'POST',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch('http://localhost:3000/api/boards/board-api', {
+                                                                      const boardResponse = await fetch('https://house-council-app-v2.vercel.app//api/boards/board-api', {
                                                                                 method: 'DELETE',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
