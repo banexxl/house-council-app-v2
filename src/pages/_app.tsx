@@ -52,6 +52,7 @@ const CustomApp = (props: CustomAppProps) => {
 
           const getLayout = Component.getLayout ?? ((page) => page);
 
+          console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
 
 
           return (
