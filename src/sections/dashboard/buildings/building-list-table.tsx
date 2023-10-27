@@ -193,7 +193,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
 
 
           return (
-                    <div>
+                    <Box>
                               <Scrollbar>
                                         <Table sx={{ minWidth: 1200 }}>
                                                   <TableHead>
@@ -753,10 +753,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                                                       backgroundSize: 'cover',
                                                                                                                                                                                                                                       borderRadius: 1,
                                                                                                                                                                                                                                       display: 'flex',
-                                                                                                                                                                                                                                      height: 80,
+                                                                                                                                                                                                                                      height: 300,
                                                                                                                                                                                                                                       justifyContent: 'center',
                                                                                                                                                                                                                                       overflow: 'hidden',
-                                                                                                                                                                                                                                      width: 80,
+                                                                                                                                                                                                                                      width: 300,
                                                                                                                                                                                                                             }}
                                                                                                                                                                                                                   />
                                                                                                                                                                                                         ) : (
@@ -823,14 +823,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           Cancel
                                                                                                                                                                 </Button>
                                                                                                                                                       </Stack>
-                                                                                                                                                      <div>
-                                                                                                                                                                <Button
-                                                                                                                                                                          onClick={handleBuildingDeleteClick}
-                                                                                                                                                                          color="error"
-                                                                                                                                                                >
-                                                                                                                                                                          Delete building
-                                                                                                                                                                </Button>
-                                                                                                                                                      </div>
+
+                                                                                                                                                      <Button
+                                                                                                                                                                onClick={handleBuildingDeleteClick}
+                                                                                                                                                                color="error"
+                                                                                                                                                      >
+                                                                                                                                                                Delete building
+                                                                                                                                                      </Button>
+
                                                                                                                                             </Stack>
                                                                                                                                   </TableCell>
                                                                                                                         </TableRow>
@@ -850,7 +850,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                         rowsPerPage={rowsPerPage}
                                         rowsPerPageOptions={[5, 10, 25]}
                               />
-                    </div >
+                    </Box >
           );
 };
 

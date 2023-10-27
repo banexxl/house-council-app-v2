@@ -19,20 +19,41 @@ import { FileDropzone } from 'src/components/file-dropzone';
 import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
 import { GoogleMaps } from './map-component'
+import { ImageListItem, Input } from '@mui/material';
+import Image from 'next/image';
+import { borderRadius } from '@mui/system';
+import { fileToBase64 } from '@/utils/file-to-base64';
 
 export const BuildingCreateForm: FC = (props) => {
 
           const router = useRouter();
-          const [files, setFiles] = useState<File[]>([]);
           const [locationAddress, setLocationAddress] = useState()
+          const [selectedImage, setSelectedImage] = useState(null);
+
+          const handleImageChange = (event: any) => {
+                    const file = event.target.files[0]; // Get the first selected file
+                    if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (e: any) => {
+                                        setSelectedImage(e.target.result);
+                                        formik.setFieldValue('image', e.target.result)
+                              };
+
+                              reader.readAsDataURL(file);
+                    }
+          };
 
           const formik = useFormik({
                     initialValues,
                     validationSchema,
                     onSubmit: async (values, helpers): Promise<void> => {
                               try {
+                                        console.log(values);
+
                                         const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
                                                   method: 'POST',
                                                   headers: {
@@ -69,21 +90,13 @@ export const BuildingCreateForm: FC = (props) => {
                     },
           });
 
-          const handleFilesDrop = useCallback((newFiles: File[]): void => {
-                    setFiles((prevFiles) => {
-                              return [...prevFiles, ...newFiles];
-                    });
-          }, []);
+          // const handleFilesDrop = useCallback((newFile: File[]): void => {
+          //           setSelectedImage(newFile)
+          // }, []);
 
-          const handleFileRemove = useCallback((file: File): void => {
-                    setFiles((prevFiles) => {
-                              return prevFiles.filter((_file) => _file.path !== file.path);
-                    });
-          }, []);
-
-          const handleFilesRemoveAll = useCallback((): void => {
-                    setFiles([]);
-          }, []);
+          const handleFileRemove = (): void => {
+                    setSelectedImage(null);
+          }
 
           const onMapAddressChange = (mapAddressProps: any) => {
                     formik.setFieldValue('lng', mapAddressProps.latLng.lng)
@@ -100,12 +113,11 @@ export const BuildingCreateForm: FC = (props) => {
           }
 
           return (
-                    <div>
+                    <Box>
                               <form
                                         onSubmit={formik.handleSubmit}
                                         {...props}
                               >
-
 
                                         <Stack spacing={4}>
                                                   {/*-------------------Basic info-------------------*/}
@@ -148,7 +160,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               type="string"
                                                                                                               value={formik.values.region}
                                                                                                     />
-                                                                                                    <div>
+                                                                                                    <Box>
                                                                                                               <Typography
                                                                                                                         color="text.secondary"
                                                                                                                         sx={{ mb: 2 }}
@@ -165,7 +177,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         value={formik.values.description}
                                                                                                               />
 
-                                                                                                    </div>
+                                                                                                    </Box>
                                                                                           </Stack>
                                                                                 </Grid>
                                                                       </Grid>
@@ -192,19 +204,69 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                     </Typography>
                                                                                           </Stack>
                                                                                 </Grid>
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={8}
+                                                                                <Box
+                                                                                          sx={{
+                                                                                                    display: 'flex',
+                                                                                                    flexDirection: 'column',
+                                                                                                    alignItems: 'center',
+                                                                                                    gap: '10px'
+                                                                                          }}
                                                                                 >
-                                                                                          <FileDropzone
+
+                                                                                          {
+                                                                                                    selectedImage ?
+                                                                                                              <Image src={selectedImage}
+                                                                                                                        alt='sds'
+                                                                                                                        width={300}
+                                                                                                                        height={300}
+                                                                                                                        style={{
+                                                                                                                                  borderRadius: '10px',
+                                                                                                                                  cursor: 'pointer'
+                                                                                                                        }}
+                                                                                                                        onClick={() => handleFileRemove()}
+                                                                                                              />
+                                                                                                              :
+                                                                                                              <InsertPhotoIcon
+                                                                                                                        color='primary'
+                                                                                                                        sx={{ width: '300px', height: '300px' }}
+                                                                                                              />
+                                                                                          }
+
+                                                                                          <Button component="label"
+                                                                                                    variant="contained"
+                                                                                                    startIcon={<CloudUploadIcon />}
+                                                                                                    sx={{
+                                                                                                              maxWidth: '150px'
+                                                                                                    }}
+
+                                                                                          >
+                                                                                                    Upload file
+                                                                                                    <Input
+                                                                                                              type="file"
+                                                                                                              inputProps={{ accept: 'image/*' }}
+                                                                                                              sx={{
+                                                                                                                        clip: 'rect(0 0 0 0)',
+                                                                                                                        clipPath: 'inset(50%)',
+                                                                                                                        height: 1,
+                                                                                                                        overflow: 'hidden',
+                                                                                                                        position: 'absolute',
+                                                                                                                        bottom: 0,
+                                                                                                                        left: 0,
+                                                                                                                        whiteSpace: 'nowrap',
+                                                                                                                        width: 1,
+                                                                                                              }}
+                                                                                                              onInput={(e: any) => handleImageChange(e)}
+                                                                                                    />
+                                                                                          </Button>
+                                                                                          {/* <FileDropzone
+                                                                                                    multiple={false}
                                                                                                     accept={{ 'image/*': [] }}
                                                                                                     caption="(SVG, JPG, PNG, or gif maximum 900x400)"
                                                                                                     files={files}
                                                                                                     onDrop={handleFilesDrop}
                                                                                                     onRemove={handleFileRemove}
-                                                                                                    onRemoveAll={handleFilesRemoveAll}
-                                                                                          />
-                                                                                </Grid>
+                                                                                          /> */}
+                                                                                </Box>
                                                                       </Grid>
                                                             </CardContent>
                                                   </Card>
@@ -228,7 +290,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           container
                                                                                 >
                                                                                           <Stack spacing={5}>
-                                                                                                    <div>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -239,7 +301,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Is recently built"
                                                                                                               />
-                                                                                                    </div><div>
+                                                                                                    </Box><Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -250,8 +312,8 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has own parking lot"
                                                                                                               />
-                                                                                                    </div>
-                                                                                                    <div>
+                                                                                                    </Box>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -262,8 +324,8 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has own elevator"
                                                                                                               />
-                                                                                                    </div>
-                                                                                                    <div>
+                                                                                                    </Box>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -274,7 +336,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has own bicycle room"
                                                                                                               />
-                                                                                                    </div>
+                                                                                                    </Box>
                                                                                           </Stack>
                                                                                           <Stack spacing={2}>
                                                                                                     <TextField
@@ -322,7 +384,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           container
                                                                                 >
                                                                                           <Stack spacing={2}>
-                                                                                                    <div>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -335,7 +397,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         value={formik.values.hasGasHeating}
                                                                                                                         name='hasGasHeating'
                                                                                                               />
-                                                                                                    </div><div>
+                                                                                                    </Box><Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -346,8 +408,8 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has central heating"
                                                                                                               />
-                                                                                                    </div>
-                                                                                                    <div>
+                                                                                                    </Box>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -358,8 +420,8 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has electrical heating"
                                                                                                               />
-                                                                                                    </div>
-                                                                                                    <div>
+                                                                                                    </Box>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -370,8 +432,8 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has solar power"
                                                                                                               />
-                                                                                                    </div>
-                                                                                                    <div>
+                                                                                                    </Box>
+                                                                                                    <Box>
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
@@ -382,7 +444,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                                         }
                                                                                                                         label="Has own water pump"
                                                                                                               />
-                                                                                                    </div>
+                                                                                                    </Box>
                                                                                           </Stack>
                                                                                 </Grid>
                                                                       </Grid>
@@ -408,7 +470,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                   </Stack>
                                         </Stack>
                               </form>
-                    </div>
+                    </Box>
 
           );
 };

@@ -286,7 +286,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                           files={files}
                                                                                           onDrop={handleFilesDrop}
                                                                                           onRemove={handleFileRemove}
-                                                                                          onRemoveAll={handleFilesRemoveAll}
+                                                                                //onRemoveAll={handleFilesRemoveAll}
                                                                                 />
                                                                       </Grid>
                                                             </Grid>
