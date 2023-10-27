@@ -173,7 +173,7 @@ FileDropzone.propTypes = {
           caption: PropTypes.string,
           files: PropTypes.array,
           onRemove: PropTypes.func,
-          onRemoveAll: PropTypes.func,
+          //onRemoveAll: PropTypes.func,
           onUpload: PropTypes.func,
           // From Dropzone
           accept: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string.isRequired).isRequired),
