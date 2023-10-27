@@ -60,7 +60,7 @@
                     "mongodb": "^6.0.0",
                     "mongoose": "^7.5.0",
                     "mui-one-time-password-input": "1.1.2",
-                    "next": "13.4.8",
+                    "next": "^14.0.0",
                     "nprogress": "0.2.0",
                     "numeral": "2.0.6",
                     "places-autocomplete": "^0.4.1",
