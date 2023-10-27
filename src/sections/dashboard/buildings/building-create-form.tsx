@@ -205,8 +205,6 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                           </Stack>
                                                                                 </Grid>
                                                                                 <Box
-                                                                                          xs={12}
-                                                                                          md={8}
                                                                                           sx={{
                                                                                                     display: 'flex',
                                                                                                     flexDirection: 'column',
