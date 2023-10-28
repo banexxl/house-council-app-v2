@@ -16,11 +16,12 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                     } else if (request.method === 'POST') {
 
-                              const createBoardResponse = await collectionBoards.insertOne(request.body).then(async (createBoardResponse: any) => {
+                              await collectionBoards.insertOne(request.body).then(async (createBoardResponse: any) => {
 
                                         if (createBoardResponse.acknowledged) {
 
-                                                  const modifyBuildingResponse = await fetch('http://localhost:3000/api/buildings/buildings-api', {
+
+                                                  const modifyBuildingResponse = await fetch(`${process.env.NEXT_DEV_URL}/api/buildings/buildings-api`, {
                                                             method: 'PUT',
                                                             headers: {
                                                                       'Content-Type': 'application/json',
