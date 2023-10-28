@@ -6,6 +6,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
           const collectionBoards = mongoClient.db('HouseCouncilAppDB').collection('Boards')
+          console.log(process.env.NODE_ENV);
+
+          const apiUrl = process.env.NODE_ENV === 'development' ?
+                    process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
           try {
                     if (request.method === 'GET') {
@@ -20,8 +24,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                                         if (createBoardResponse.acknowledged) {
 
-
-                                                  const modifyBuildingResponse = await fetch(`${process.env.NEXT_DEV_URL}/api/buildings/buildings-api`, {
+                                                  const modifyBuildingResponse = await fetch(`${apiUrl}/api/buildings/buildings-api`, {
                                                             method: 'PUT',
                                                             headers: {
                                                                       'Content-Type': 'application/json',

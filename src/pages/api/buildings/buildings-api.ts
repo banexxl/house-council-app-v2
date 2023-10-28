@@ -7,7 +7,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
           const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('Buildings')
-
+          const apiUrl = process.env.NODE_ENV === 'development' ?
+                    process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
           try {
                     if (request.method === 'GET') {
@@ -39,7 +40,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch(`${process.env.NEXT_DEV_URL}/api/boards/board-api`, {
+                                                                      const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
                                                                                 method: 'POST',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
@@ -87,7 +88,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch(`${process.env.NEXT_DEV_URL}/api/boards/board-api`, {
+                                                                      const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
                                                                                 method: 'DELETE',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
