@@ -213,7 +213,10 @@ const Page: NextPage = (props: any) => {
                               >
                                         <Box sx={{ px: 3, display: 'flex', flexDirection: 'column' }}>
 
-                                                  <Typography variant="h4" color={'primary'}>Board</Typography>
+                                                  <Typography variant="h4"
+                                                            color={'primary'}>
+                                                            Board
+                                                  </Typography>
 
                                                   <Autocomplete
                                                             id="country-select-demo"
@@ -316,7 +319,11 @@ const Page: NextPage = (props: any) => {
                                                                                 py: 3,
                                                                       }}
                                                             >
-                                                                      <Typography color='primary'>Please select building to display board!</Typography>
+                                                                      <Typography
+                                                                                color='primary'
+                                                                      >
+                                                                                Please select building to display board!
+                                                                      </Typography>
                                                             </Box>
                                         }
                               </Box>
