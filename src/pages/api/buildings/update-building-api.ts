@@ -67,8 +67,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                     // } else
                     if (request.method === 'PUT') {
 
-                              console.log('updatre building api request', request.body);
-
                               try {
                                         await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {

@@ -15,7 +15,9 @@ import { ColumnCard } from 'src/sections/dashboard/board/column-card';
 import { ColumnAdd } from 'src/sections/dashboard/board/column-add';
 import { useDispatch, useSelector } from 'src/store';
 import { thunks } from 'src/thunks/board';
-import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Building } from '@/types/building';
+import { boardServices } from '@/utils/board-services';
 
 const useColumnsIds = (): string[] => {
 
@@ -40,10 +42,11 @@ const useBoard = (): void => {
           );
 };
 
-const Page: NextPage = () => {
+const Page: NextPage = (props: any) => {
           const dispatch = useDispatch();
           const columnsIds = useColumnsIds();
           const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+          console.log('props sa boards page-a', props);
 
           usePageView();
           useBoard();
@@ -61,6 +64,7 @@ const Page: NextPage = () => {
           const handleOpen = () => {
                     setOpen(true);
           };
+
           const handleDragEnd = useCallback(
                     async ({ source, destination, draggableId }: DropResult): Promise<void> => {
                               try {
@@ -210,27 +214,23 @@ const Page: NextPage = () => {
 
                                                   <Typography variant="h4">Board</Typography>
 
-                                                  <FormControl sx={{ m: 1, minWidth: 120 }}>
-                                                            <InputLabel id="demo-controlled-open-select-label">Age</InputLabel>
-                                                            <Select
-                                                                      labelId="demo-controlled-open-select-label"
-                                                                      id="demo-controlled-open-select"
-                                                                      open={open}
-                                                                      onClose={handleClose}
-                                                                      onOpen={handleOpen}
-                                                                      value={age}
-                                                                      label="Age"
-                                                                      onChange={handleChange}
-                                                                      sx={{ width: '400px' }}
-                                                            >
-                                                                      <MenuItem value="">
-                                                                                <em>None</em>
-                                                                      </MenuItem>
-                                                                      <MenuItem value={10}>Ten</MenuItem>
-                                                                      <MenuItem value={20}>Twenty</MenuItem>
-                                                                      <MenuItem value={30}>Thirty</MenuItem>
-                                                            </Select>
-                                                  </FormControl>
+                                                  <Autocomplete
+                                                            id="country-select-demo"
+                                                            sx={{ width: 300 }}
+                                                            options={props.userBoards}
+                                                            autoHighlight
+                                                            getOptionLabel={(option: any) => option.boardLabel}
+                                                            renderInput={(params: any) => (
+                                                                      <TextField
+                                                                                {...params}
+                                                                                label="Choose a building"
+                                                                                inputProps={{
+                                                                                          ...params.inputProps,
+                                                                                          autoComplete: 'building', // disable autocomplete and autofill
+                                                                                }}
+                                                                      />
+                                                            )}
+                                                  />
 
 
                                         </Box>
@@ -275,6 +275,22 @@ const Page: NextPage = () => {
                     </>
           );
 };
+
+export const getServerSideProps = async (context: any) => {
+
+          const allUserBoards = await boardServices().getAllBoards()
+
+          redirect: {
+                    destination: "/404"
+          }
+
+          return {
+                    props: {
+                              userBoards: JSON.parse(JSON.stringify(allUserBoards)),
+                    },
+          }
+
+}
 
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;

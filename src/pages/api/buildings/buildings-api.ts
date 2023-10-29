@@ -7,6 +7,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
           const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('Buildings')
+          console.log(process.env.NODE_ENV);
           const apiUrl = process.env.NODE_ENV === 'development' ?
                     process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
@@ -49,6 +50,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                                 },
                                                                                 body: JSON.stringify({
                                                                                           buildingId: dbResponse.insertedId,
+                                                                                          boardLabel: request.body.fullAddress,
                                                                                           columns: [],
                                                                                           tasks: []
                                                                                 })
