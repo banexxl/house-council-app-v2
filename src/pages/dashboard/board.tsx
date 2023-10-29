@@ -47,7 +47,7 @@ const Page: NextPage = (props: any) => {
           const columnsIds = useColumnsIds();
           const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
           const [selectedBuilding, setSelectedBuilding] = useState()
-          console.log('props sa boards page-a', props);
+          console.log('props sa boards page-aaaaaa', props);
 
           usePageView();
           useBoard();
