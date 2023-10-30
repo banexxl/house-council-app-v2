@@ -242,7 +242,8 @@ const Page: NextPage = (props: any) => {
 
                                         </Box>
 
-                                        {/* <DragDropContext onDragEnd={handleDragEnd}>
+
+                                        <DragDropContext onDragEnd={handleDragEnd}>
                                                   <Box
                                                             sx={{
                                                                       display: 'flex',
@@ -259,74 +260,52 @@ const Page: NextPage = (props: any) => {
                                                                       direction="row"
                                                                       spacing={3}
                                                             >
-                                                                      {columnsIds.map((columnId: string) => (
-                                                                                <ColumnCard
-                                                                                          key={columnId}
-                                                                                          columnId={columnId}
-                                                                                          onClear={() => handleColumnClear(columnId)}
-                                                                                          onDelete={() => handleColumnDelete(columnId)}
-                                                                                          onRename={(name) => handleColumnRename(columnId, name)}
-                                                                                          onTaskAdd={(name) => handleTaskAdd(columnId, name)}
-                                                                                          onTaskOpen={handleTaskOpen}
-                                                                                />
-                                                                      ))}
-                                                                      <ColumnAdd onAdd={handleColumnAdd} />
+                                                                      {
+                                                                                selectedBuilding ?
+                                                                                          <Stack
+                                                                                                    alignItems="flex-start"
+                                                                                                    direction="row"
+                                                                                                    spacing={3}
+                                                                                          >
+
+                                                                                                    {
+                                                                                                              columnsIds.map((columnId: string) => (
+                                                                                                                        <ColumnCard
+                                                                                                                                  key={columnId}
+                                                                                                                                  columnId={columnId}
+                                                                                                                                  onClear={() => handleColumnClear(columnId)}
+                                                                                                                                  onDelete={() => handleColumnDelete(columnId)}
+                                                                                                                                  onRename={(name) => handleColumnRename(columnId, name)}
+                                                                                                                                  onTaskAdd={(name) => handleTaskAdd(columnId, name)}
+                                                                                                                                  onTaskOpen={handleTaskOpen}
+                                                                                                                        />
+                                                                                                              ))
+                                                                                                    }
+                                                                                                    <ColumnAdd onAdd={handleColumnAdd} />
+                                                                                          </Stack>
+                                                                                          :
+                                                                                          <Box
+                                                                                                    sx={{
+                                                                                                              display: 'flex',
+                                                                                                              flexGrow: 1,
+                                                                                                              flexShrink: 1,
+                                                                                                              overflowX: 'auto',
+                                                                                                              overflowY: 'hidden',
+                                                                                                              px: 3,
+                                                                                                              py: 3,
+                                                                                                    }}
+                                                                                          >
+                                                                                                    <Typography
+                                                                                                              color='primary'
+                                                                                                    >
+                                                                                                              Please select building to display board!
+                                                                                                    </Typography>
+                                                                                          </Box>
+                                                                      }
                                                             </Stack>
                                                   </Box>
-                                        </DragDropContext> */}
-                                        {
-                                                  selectedBuilding ?
-                                                            <DragDropContext onDragEnd={handleDragEnd}>
-                                                                      <Box
-                                                                                sx={{
-                                                                                          display: 'flex',
-                                                                                          flexGrow: 1,
-                                                                                          flexShrink: 1,
-                                                                                          overflowX: 'auto',
-                                                                                          overflowY: 'hidden',
-                                                                                          px: 3,
-                                                                                          py: 3,
-                                                                                }}
-                                                                      >
-                                                                                <Stack
-                                                                                          alignItems="flex-start"
-                                                                                          direction="row"
-                                                                                          spacing={3}
-                                                                                >
-                                                                                          {columnsIds.map((columnId: string) => (
-                                                                                                    <ColumnCard
-                                                                                                              key={columnId}
-                                                                                                              columnId={columnId}
-                                                                                                              onClear={() => handleColumnClear(columnId)}
-                                                                                                              onDelete={() => handleColumnDelete(columnId)}
-                                                                                                              onRename={(name) => handleColumnRename(columnId, name)}
-                                                                                                              onTaskAdd={(name) => handleTaskAdd(columnId, name)}
-                                                                                                              onTaskOpen={handleTaskOpen}
-                                                                                                    />
-                                                                                          ))}
-                                                                                          <ColumnAdd onAdd={handleColumnAdd} />
-                                                                                </Stack>
-                                                                      </Box>
-                                                            </DragDropContext>
-                                                            :
-                                                            <Box
-                                                                      sx={{
-                                                                                display: 'flex',
-                                                                                flexGrow: 1,
-                                                                                flexShrink: 1,
-                                                                                overflowX: 'auto',
-                                                                                overflowY: 'hidden',
-                                                                                px: 3,
-                                                                                py: 3,
-                                                                      }}
-                                                            >
-                                                                      <Typography
-                                                                                color='primary'
-                                                                      >
-                                                                                Please select building to display board!
-                                                                      </Typography>
-                                                            </Box>
-                                        }
+                                        </DragDropContext>
+
                               </Box>
                               <TaskModal
                                         onClose={handleTaskClose}

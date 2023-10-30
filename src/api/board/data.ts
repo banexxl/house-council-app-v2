@@ -6,43 +6,43 @@ const now = new Date();
 
 const board: Board = {
           _id: "aaaa",
-          // members: [
-          //           {
-          //                     _id: '5e86809283e28b96d2d38537',
-          //                     avatar: '/assets/avatars/avatar-anika-visser.png',
-          //                     firstName: 'Anika Visser',
-          //                     secondName: 'Anika Visser',
-          //                     email: 'Anika Visser',
-          //           },
-          //           {
-          //                     _id: '5e887a62195cc5aef7e8ca5d',
-          //                     avatar: '/assets/avatars/avatar-marcus-finn.png',
-          //                     firstName: 'Marcus Finn',
-          //                     secondName: 'Anika Visser',
-          //                     email: 'Anika Visser',
-          //           },
-          //           {
-          //                     _id: '5e887ac47eed253091be10cb',
-          //                     avatar: '/assets/avatars/avatar-carson-darrin.png',
-          //                     firstName: 'Marcus Finn',
-          //                     secondName: 'Anika Visser',
-          //                     email: 'Anika Visser',
-          //           },
-          //           {
-          //                     _id: '5e887b209c28ac3dd97f6db5',
-          //                     avatar: '/assets/avatars/avatar-fran-perez.png',
-          //                     firstName: 'Marcus Finn',
-          //                     secondName: 'Anika Visser',
-          //                     email: 'Anika Visser',
-          //           },
-          //           {
-          //                     _id: '5e887b7602bdbc4dbb234b27',
-          //                     avatar: '/assets/avatars/avatar-jie-yan-song.png',
-          //                     firstName: 'Marcus Finn',
-          //                     secondName: 'Anika Visser',
-          //                     email: 'Anika Visser',
-          //           },
-          // ],
+          members: [
+                    {
+                              _id: '5e86809283e28b96d2d38537',
+                              avatar: '/assets/avatars/avatar-anika-visser.png',
+                              firstName: 'Anika Visser',
+                              secondName: 'Anika Visser',
+                              email: 'Anika Visser',
+                    },
+                    {
+                              _id: '5e887a62195cc5aef7e8ca5d',
+                              avatar: '/assets/avatars/avatar-marcus-finn.png',
+                              firstName: 'Marcus Finn',
+                              secondName: 'Anika Visser',
+                              email: 'Anika Visser',
+                    },
+                    {
+                              _id: '5e887ac47eed253091be10cb',
+                              avatar: '/assets/avatars/avatar-carson-darrin.png',
+                              firstName: 'Marcus Finn',
+                              secondName: 'Anika Visser',
+                              email: 'Anika Visser',
+                    },
+                    {
+                              _id: '5e887b209c28ac3dd97f6db5',
+                              avatar: '/assets/avatars/avatar-fran-perez.png',
+                              firstName: 'Marcus Finn',
+                              secondName: 'Anika Visser',
+                              email: 'Anika Visser',
+                    },
+                    {
+                              _id: '5e887b7602bdbc4dbb234b27',
+                              avatar: '/assets/avatars/avatar-jie-yan-song.png',
+                              firstName: 'Marcus Finn',
+                              secondName: 'Anika Visser',
+                              email: 'Anika Visser',
+                    },
+          ],
           columns: [
                     {
                               _id: '5e849c39325dc5ef58e5a5db',
