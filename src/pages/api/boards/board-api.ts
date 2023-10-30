@@ -22,11 +22,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                                         if (createBoardResponse.acknowledged) {
 
-<<<<<<< HEAD
-                                                  const modifyBuildingResponse = await fetch('https://house-council-app-v2.vercel.app/api/buildings/buildings-api', {
-=======
                                                   const modifyBuildingResponse = await fetch(`${apiUrl}/api/buildings/buildings-api`, {
->>>>>>> d52692a8444e869d8b6471eeec1dc4de32c2bbc8
                                                             method: 'PUT',
                                                             headers: {
                                                                       'Content-Type': 'application/json',

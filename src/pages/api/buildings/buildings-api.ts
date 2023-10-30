@@ -90,11 +90,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-<<<<<<< HEAD
-                                                                      const boardResponse = await fetch('https://house-council-app-v2.vercel.app/api/boards/board-api', {
-=======
                                                                       const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
->>>>>>> d52692a8444e869d8b6471eeec1dc4de32c2bbc8
                                                                                 method: 'DELETE',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
