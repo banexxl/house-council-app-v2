@@ -48,6 +48,8 @@ const Page: NextPage = (props: any) => {
           const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
           const [selectedBuilding, setSelectedBuilding] = useState()
           console.log('props sa boards page-aaaaaa', props);
+          console.log('selectedBuilding', selectedBuilding);
+
 
           usePageView();
           useBoard();
@@ -234,7 +236,7 @@ const Page: NextPage = (props: any) => {
                                                                                 }}
                                                                       />
                                                             )}
-                                                            onSelect={(e: any) => console.log(e)}
+                                                            onSelect={(e: any) => setSelectedBuilding(e.target.value)}
                                                   />
 
 
@@ -291,7 +293,6 @@ const Page: NextPage = (props: any) => {
                                                                                           direction="row"
                                                                                           spacing={3}
                                                                                 >
-                                                                                          <Typography>Please select building</Typography>
                                                                                           {columnsIds.map((columnId: string) => (
                                                                                                     <ColumnCard
                                                                                                               key={columnId}

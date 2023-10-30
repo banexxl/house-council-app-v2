@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useFormik } from 'formik';
 import Box from '@mui/material/Box';
@@ -7,26 +7,20 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Unstable_Grid2';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { File } from 'src/components/file-dropzone';
-import { FileDropzone } from 'src/components/file-dropzone';
 import { QuillEditor } from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-import { buildingCategoryOptions, initialValues, validationSchema } from './building-options';
+import { initialValues, validationSchema } from './building-options';
 import { GoogleMaps } from './map-component'
-import { ImageListItem, Input } from '@mui/material';
+import { Input } from '@mui/material';
 import Image from 'next/image';
-import { borderRadius } from '@mui/system';
-import { fileToBase64 } from '@/utils/file-to-base64';
 
 export const BuildingCreateForm: FC = (props) => {
 
@@ -50,7 +44,7 @@ export const BuildingCreateForm: FC = (props) => {
           const formik = useFormik({
                     initialValues,
                     validationSchema,
-                    onSubmit: async (values, helpers): Promise<void> => {
+                    onSubmit: async (values: any, helpers: any): Promise<void> => {
                               try {
                                         console.log(values);
 

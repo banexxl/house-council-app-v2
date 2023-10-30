@@ -83,6 +83,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               }
 
                     } else if (request.method === 'DELETE') {
+
                               const buildingExists = await dbBuildings.findOne({ _id: request.body._id })
 
                               if (buildingExists === null) {
