@@ -3,9 +3,11 @@ import type { NextApiRequest, NextApiResponse } from 'next/types'
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
 
-          // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
           const collectionBoards = mongoClient.db('HouseCouncilAppDB').collection('Boards')
+
+          const apiUrl = process.env.NODE_ENV === 'development' ?
+                    process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
           try {
                     if (request.method === 'GET') {
@@ -16,11 +18,15 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                     } else if (request.method === 'POST') {
 
-                              const createBoardResponse = await collectionBoards.insertOne(request.body).then(async (createBoardResponse: any) => {
+                              await collectionBoards.insertOne(request.body).then(async (createBoardResponse: any) => {
 
                                         if (createBoardResponse.acknowledged) {
 
+<<<<<<< HEAD
                                                   const modifyBuildingResponse = await fetch('https://house-council-app-v2.vercel.app/api/buildings/buildings-api', {
+=======
+                                                  const modifyBuildingResponse = await fetch(`${apiUrl}/api/buildings/buildings-api`, {
+>>>>>>> d52692a8444e869d8b6471eeec1dc4de32c2bbc8
                                                             method: 'PUT',
                                                             headers: {
                                                                       'Content-Type': 'application/json',

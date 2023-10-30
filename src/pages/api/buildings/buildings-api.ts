@@ -7,6 +7,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
           const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('Buildings')
+          console.log(process.env.NODE_ENV);
+          const apiUrl = process.env.NODE_ENV === 'development' ?
+                    process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
           try {
                     if (request.method === 'GET') {
@@ -38,7 +41,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch('https://house-council-app-v2.vercel.app/api/boards/board-api', {
+                                                                      const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
                                                                                 method: 'POST',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
@@ -47,6 +50,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                                 },
                                                                                 body: JSON.stringify({
                                                                                           buildingId: dbResponse.insertedId,
+                                                                                          boardLabel: request.body.fullAddress,
                                                                                           columns: [],
                                                                                           tasks: []
                                                                                 })
@@ -86,7 +90,11 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
+<<<<<<< HEAD
                                                                       const boardResponse = await fetch('https://house-council-app-v2.vercel.app/api/boards/board-api', {
+=======
+                                                                      const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
+>>>>>>> d52692a8444e869d8b6471eeec1dc4de32c2bbc8
                                                                                 method: 'DELETE',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',

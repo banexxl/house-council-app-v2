@@ -15,6 +15,9 @@ import { ColumnCard } from 'src/sections/dashboard/board/column-card';
 import { ColumnAdd } from 'src/sections/dashboard/board/column-add';
 import { useDispatch, useSelector } from 'src/store';
 import { thunks } from 'src/thunks/board';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Building } from '@/types/building';
+import { boardServices } from '@/utils/board-services';
 
 const useColumnsIds = (): string[] => {
 
@@ -39,14 +42,29 @@ const useBoard = (): void => {
           );
 };
 
-const Page: NextPage = () => {
+const Page: NextPage = (props: any) => {
           const dispatch = useDispatch();
           const columnsIds = useColumnsIds();
           const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+          const [selectedBuilding, setSelectedBuilding] = useState()
+          console.log('props sa boards page-aaaaaa', props);
 
           usePageView();
-
           useBoard();
+          const [age, setAge] = useState<string | number>('');
+          const [open, setOpen] = useState(false);
+
+          const handleChange = (event: SelectChangeEvent<typeof age>) => {
+                    setAge(event.target.value);
+          };
+
+          const handleClose = () => {
+                    setOpen(false);
+          };
+
+          const handleOpen = () => {
+                    setOpen(true);
+          };
 
           const handleDragEnd = useCallback(
                     async ({ source, destination, draggableId }: DropResult): Promise<void> => {
@@ -193,10 +211,36 @@ const Page: NextPage = () => {
                                                   pt: 8,
                                         }}
                               >
-                                        <Box sx={{ px: 3 }}>
-                                                  <Typography variant="h4">Board</Typography>
+                                        <Box sx={{ px: 3, display: 'flex', flexDirection: 'column' }}>
+
+                                                  <Typography variant="h4"
+                                                            color={'primary'}>
+                                                            Board
+                                                  </Typography>
+
+                                                  <Autocomplete
+                                                            id="country-select-demo"
+                                                            sx={{ width: 300 }}
+                                                            options={props.userBoards}
+                                                            autoHighlight
+                                                            getOptionLabel={(option: any) => option.boardLabel}
+                                                            renderInput={(params: any) => (
+                                                                      <TextField
+                                                                                {...params}
+                                                                                label="Choose a building"
+                                                                                inputProps={{
+                                                                                          ...params.inputProps,
+                                                                                          autoComplete: 'building', // disable autocomplete and autofill
+                                                                                }}
+                                                                      />
+                                                            )}
+                                                            onSelect={(e: any) => console.log(e)}
+                                                  />
+
+
                                         </Box>
-                                        <DragDropContext onDragEnd={handleDragEnd}>
+
+                                        {/* <DragDropContext onDragEnd={handleDragEnd}>
                                                   <Box
                                                             sx={{
                                                                       display: 'flex',
@@ -227,7 +271,61 @@ const Page: NextPage = () => {
                                                                       <ColumnAdd onAdd={handleColumnAdd} />
                                                             </Stack>
                                                   </Box>
-                                        </DragDropContext>
+                                        </DragDropContext> */}
+                                        {
+                                                  selectedBuilding ?
+                                                            <DragDropContext onDragEnd={handleDragEnd}>
+                                                                      <Box
+                                                                                sx={{
+                                                                                          display: 'flex',
+                                                                                          flexGrow: 1,
+                                                                                          flexShrink: 1,
+                                                                                          overflowX: 'auto',
+                                                                                          overflowY: 'hidden',
+                                                                                          px: 3,
+                                                                                          py: 3,
+                                                                                }}
+                                                                      >
+                                                                                <Stack
+                                                                                          alignItems="flex-start"
+                                                                                          direction="row"
+                                                                                          spacing={3}
+                                                                                >
+                                                                                          <Typography>Please select building</Typography>
+                                                                                          {columnsIds.map((columnId: string) => (
+                                                                                                    <ColumnCard
+                                                                                                              key={columnId}
+                                                                                                              columnId={columnId}
+                                                                                                              onClear={() => handleColumnClear(columnId)}
+                                                                                                              onDelete={() => handleColumnDelete(columnId)}
+                                                                                                              onRename={(name) => handleColumnRename(columnId, name)}
+                                                                                                              onTaskAdd={(name) => handleTaskAdd(columnId, name)}
+                                                                                                              onTaskOpen={handleTaskOpen}
+                                                                                                    />
+                                                                                          ))}
+                                                                                          <ColumnAdd onAdd={handleColumnAdd} />
+                                                                                </Stack>
+                                                                      </Box>
+                                                            </DragDropContext>
+                                                            :
+                                                            <Box
+                                                                      sx={{
+                                                                                display: 'flex',
+                                                                                flexGrow: 1,
+                                                                                flexShrink: 1,
+                                                                                overflowX: 'auto',
+                                                                                overflowY: 'hidden',
+                                                                                px: 3,
+                                                                                py: 3,
+                                                                      }}
+                                                            >
+                                                                      <Typography
+                                                                                color='primary'
+                                                                      >
+                                                                                Please select building to display board!
+                                                                      </Typography>
+                                                            </Box>
+                                        }
                               </Box>
                               <TaskModal
                                         onClose={handleTaskClose}
@@ -237,6 +335,23 @@ const Page: NextPage = () => {
                     </>
           );
 };
+
+export const getServerSideProps = async (context: any) => {
+
+          const allUserBoards = await boardServices().getAllBoards()
+
+          redirect: {
+                    destination: "/404"
+          }
+
+          return {
+                    props: {
+                              userBoards: JSON.parse(JSON.stringify(allUserBoards)),
+                    },
+          }
+
+}
+
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 

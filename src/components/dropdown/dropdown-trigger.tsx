@@ -1,5 +1,5 @@
 import type { FC, MouseEvent, ReactElement } from 'react';
-import { cloneElement, useContext } from 'react';
+import { useContext, cloneElement } from 'react';
 import PropTypes from 'prop-types';
 
 import { DropdownContext } from './dropdown-context';
@@ -9,6 +9,8 @@ interface DropdownButtonProps {
 }
 
 export const DropdownTrigger: FC<DropdownButtonProps> = (props) => {
+          console.log('aaaaaaaaaaaaaa', props);
+
           const { children } = props;
           const { onTriggerEnter, onTriggerLeave } = useContext(DropdownContext);
 

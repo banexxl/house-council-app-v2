@@ -51,7 +51,7 @@ export const TaskAdd: FC<TaskAddProps> = (props) => {
                                                   <OutlinedInput
                                                             autoFocus
                                                             fullWidth
-                                                            placeholder="My new task"
+                                                            placeholder="Add task title"
                                                             name="name"
                                                             onChange={handleNameChange}
                                                             sx={{
