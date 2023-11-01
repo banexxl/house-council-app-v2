@@ -298,10 +298,8 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                           }}
                                                                                           format='DD.MM.YYYY'
                                                                                           slotProps={{
-                                                                                                    layout: {
-                                                                                                              sx: {
-                                                                                                                        backgroundColor: 'primary',
-                                                                                                              }
+                                                                                                    textField: {
+                                                                                                              error: false
                                                                                                     }
                                                                                           }}
                                                                                 />

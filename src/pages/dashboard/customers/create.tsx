@@ -13,8 +13,11 @@ import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
 import { CustomerCreateForm } from '@/sections/dashboard/customer/customer-create-form';
+import { buildingServices } from '@/utils/building-services';
+import { Building } from '@/types/building';
 
-const Page: NextPage = () => {
+const Page: NextPage = (props: any) => {
+
           usePageView();
 
           return (
@@ -56,13 +59,29 @@ const Page: NextPage = () => {
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <CustomerCreateForm />
+                                                            <CustomerCreateForm allBuildings={props.allBuildings} />
                                                   </Stack>
                                         </Container>
                               </Box>
                     </>
           );
 };
+
+export const getServerSideProps = async () => {
+
+          const allBuildings = await buildingServices().getAllBuildings()
+
+          redirect: {
+                    destination: "/404"
+          }
+
+          return {
+                    props: {
+                              allBuildings: JSON.parse(JSON.stringify(allBuildings)),
+                    },
+          }
+
+}
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 

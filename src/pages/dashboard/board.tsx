@@ -267,7 +267,6 @@ const Page: NextPage = (props: any) => {
                                                                                                     direction="row"
                                                                                                     spacing={3}
                                                                                           >
-
                                                                                                     {
                                                                                                               columnsIds.map((columnId: string) => (
                                                                                                                         <ColumnCard

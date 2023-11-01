@@ -16,7 +16,11 @@ import { paths } from 'src/paths';
 import { customerSchema as validationSchema, Customer } from '@/types/customer';
 import { RouterLink } from '@/components/router-link';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { Checkbox } from '@mui/material';
+import { Autocomplete, Box, Checkbox, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Building } from '@/types/building';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
+import moment, { Moment } from 'moment';
 
 const initialValues: Customer = {
           address1: '',
@@ -36,10 +40,16 @@ const initialValues: Customer = {
           zipCode: 0,
 };
 
-export const CustomerCreateForm: FC = (props) => {
+export const CustomerCreateForm = (props: any) => {
 
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
+          const [age, setAge] = useState('');
+          console.log('ffffffffff', props.allBuildings);
+
+          const handleAddressChange = (event: SelectChangeEvent) => {
+                    setAge(event.target.value as string);
+          };
 
           const formik = useFormik({
                     initialValues,
@@ -103,7 +113,6 @@ export const CustomerCreateForm: FC = (props) => {
           return (
                     <form
                               onSubmit={formik.handleSubmit}
-                              {...props}
                     >
                               <Stack spacing={4}>
                                         <Card>
@@ -160,7 +169,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.lastName}
                                                                                           />
-                                                                                          <TextField
+                                                                                          {/* <TextField
                                                                                                     error={!!(formik.touched.address1 && formik.errors.address1)}
                                                                                                     fullWidth
                                                                                                     helperText={formik.touched.address1 && formik.errors.address1}
@@ -169,7 +178,16 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.address1}
+                                                                                          /> */}
+
+                                                                                          <Autocomplete
+                                                                                                    disablePortal
+                                                                                                    id="combo-box-demo"
+                                                                                                    options={props.allBuildings}
+                                                                                                    getOptionLabel={(building: Building) => building.fullAddress}
+                                                                                                    renderInput={(params) => <TextField {...params} label="Building address" />}
                                                                                           />
+
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.appartmentNumber && formik.errors.appartmentNumber)}
                                                                                                     fullWidth
@@ -180,7 +198,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.appartmentNumber}
                                                                                           />
-                                                                                          <TextField
+                                                                                          {/* <TextField
                                                                                                     error={!!(formik.touched.city && formik.errors.city)}
                                                                                                     fullWidth
                                                                                                     helperText={formik.touched.city && formik.errors.city}
@@ -199,7 +217,7 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.country}
-                                                                                          />
+                                                                                          /> */}
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}
                                                                                                     fullWidth
@@ -246,6 +264,23 @@ export const CustomerCreateForm: FC = (props) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.email}
                                                                                           />
+                                                                                          <LocalizationProvider dateAdapter={AdapterMoment}>
+                                                                                                    <MobileDatePicker
+                                                                                                              views={['year', 'month', 'day']}
+                                                                                                              label='Date of birth'
+                                                                                                              disableFuture
+                                                                                                              value={moment(formik.values.dateOfBirth)}
+                                                                                                              onAccept={(date: Moment | null) => {
+                                                                                                                        formik.setFieldValue('dateOfBirth', date)
+                                                                                                              }}
+                                                                                                              format='DD.MM.YYYY'
+                                                                                                              slotProps={{
+                                                                                                                        textField: {
+                                                                                                                                  error: false
+                                                                                                                        }
+                                                                                                              }}
+                                                                                                    />
+                                                                                          </LocalizationProvider>
                                                                                 </Stack>
                                                                                 <FormControlLabel
                                                                                           control={<Checkbox />}

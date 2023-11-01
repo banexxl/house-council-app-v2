@@ -18,13 +18,12 @@ export const boardServices = () => {
                     }
           }
 
-          const getProductsForHomePage = async () => {
+          const getBoardByBuildingID = async (buildingId: string) => {
 
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
-
+                    const db = client.db('HouseCouncilAppDB')
                     try {
-                              const db = client.db('DAR_DB')
-                              let data = await db.collection('Products').find().toArray()
+                              let data = await db.collection('Boards').findOne({ _id: new ObjectId(buildingId) })
                               return data
                     } catch (error) {
                               return { message: error.message }
@@ -192,7 +191,7 @@ export const boardServices = () => {
 
           return {
                     getAllBoards,
-                    getProductsForHomePage,
+                    getBoardByBuildingID,
                     getProductById,
                     getProductsByNameAndOrManufacturer,
                     getProductsByManufacturer,
