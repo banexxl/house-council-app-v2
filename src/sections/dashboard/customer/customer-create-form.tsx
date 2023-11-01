@@ -45,7 +45,6 @@ export const CustomerCreateForm = (props: any) => {
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
           const [age, setAge] = useState('');
-          console.log('ffffffffff', props.allBuildings);
 
           const handleAddressChange = (event: SelectChangeEvent) => {
                     setAge(event.target.value as string);

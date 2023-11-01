@@ -40,7 +40,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         (error as any).cause = { status: 409 };
                                         return response.status(409).json({ error: error });
                               }
-                    } else if (request.method === 'PUT') {
+                    }
+                    else if (request.method === 'PUT') {
 
                               try {
                                         await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
@@ -69,7 +70,17 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                               }
 
-                    } else {
+                    }
+                    else if (request.method === 'DELETE') {
+                              const objectIdArray = request.body.map((_id: any) => new ObjectId(_id));
+                              try {
+                                        await dbTenants.deleteMany({ _id: { $in: objectIdArray } });
+                                        return response.status(200).json({ message: 'Customer successfully deleted!' });
+                              } catch (error) {
+                                        console.log(error);
+                              }
+                    }
+                    else {
                               return response.status(405).json({ error: 'Method not allowed!' });
                     }
           } catch (error) {

@@ -1,4 +1,4 @@
-import type { ChangeEvent, FC, MouseEvent } from 'react';
+import { useState, type ChangeEvent, type FC, type MouseEvent } from 'react';
 import numeral from 'numeral';
 import PropTypes from 'prop-types';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
@@ -24,6 +24,9 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
 import type { Customer } from 'src/types/customer';
 import { getInitials } from 'src/utils/get-initials';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/router';
+import Swal from 'sweetalert2';
 
 
 interface CustomerQueryParams {
@@ -67,7 +70,45 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
           const selectedAll = items.length > 0 && selected.length === items.length;
           const enableBulkActions = selected.length > 0;
           const enableEditAction = selected.length == 1
+          const router = useRouter();
 
+          const handleTenantDeleteClick = () => {
+                    Swal.fire({
+                              title: 'Are you sure?',
+                              text: "This action is irrevertable!",
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#3085d6',
+                              cancelButtonColor: '#d33',
+                              confirmButtonText: 'Yes, delete tenants!'
+                    }).then((result: any) => {
+                              if (result.isConfirmed) {
+                                        handleCustomersDelete(selected)
+                              }
+                    })
+          }
+
+          const handleCustomersDelete = async (customerIDs: string[]) => {
+                    await fetch('/api/customers/customers-api', {
+                              method: 'DELETE',
+                              headers: {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*',
+                                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                              },
+                              body: JSON.stringify(customerIDs)
+                    }).then((res: any) => {
+                              if (res.ok) {
+                                        toast.success('Customer deleted');
+                                        router.reload()
+                              } else {
+                                        const errorData = res.json(); // Parse the error response
+                                        console.error(errorData);
+                                        toast.error('Something went wrong!');
+                                        //helpers.setStatus({ success: false });
+                              }
+                    })
+          }
           return (
                     <Box sx={{ position: 'relative' }}>
                               {enableBulkActions && (
@@ -115,7 +156,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                   <Button
                                                             color="inherit"
                                                             size="small"
-
+                                                            onClick={() => handleTenantDeleteClick()}
                                                   >
                                                             Delete
                                                   </Button>
