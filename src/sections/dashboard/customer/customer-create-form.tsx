@@ -185,6 +185,7 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     options={props.allBuildings}
                                                                                                     getOptionLabel={(building: Building) => building.fullAddress}
                                                                                                     renderInput={(params) => <TextField {...params} label="Building address" />}
+                                                                                                    onSelect={(e: any) => console.log(e.target.value)}
                                                                                           />
 
                                                                                           <TextField

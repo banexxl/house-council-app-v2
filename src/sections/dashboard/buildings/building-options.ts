@@ -45,11 +45,7 @@ export interface BuildingFilters {
 }
 
 export const initialValues: Building = {
-          street: '',
-          streetNumber: 0,
-          city: '',
           region: '',
-          country: '',
           fullAddress: '',
           isRecentlyBuilt: false,
           description: '',
@@ -78,11 +74,7 @@ export const initialValues: Building = {
 };
 
 export const validationSchema = Yup.object({
-          street: Yup.string().max(30),
-          streetNumber: Yup.number(),
-          city: Yup.string().max(30),
           region: Yup.string().max(30),
-          country: Yup.string().max(30),
           fullAddress: Yup.string().required("This field is mandatory").max(70),
           isRecentlyBuilt: Yup.boolean(),
           dateTimeRegistered: Yup.date(),
@@ -106,6 +98,6 @@ export const validationSchema = Yup.object({
           isToThreeStoriesHigh: Yup.boolean(),
           tenantMeetings: Yup.array(),
           tenantCount: Yup.number(),
-          //image: Yup.array(),
+          image: Yup.array(),
           buildingStatus: Yup.boolean(),
 });

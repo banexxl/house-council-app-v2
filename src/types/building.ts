@@ -1,11 +1,7 @@
 export interface Building {
           _id?: string;
           isActive: boolean;
-          street: string;
-          streetNumber: number
-          city: string;
           region: string;
-          country: string;
           fullAddress: string;
           description: string;
           /////////////////////////////////////////

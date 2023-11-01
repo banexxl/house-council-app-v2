@@ -243,9 +243,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                   <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                                         </IconButton>
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{building.city}</TableCell>
-                                                                                                              <TableCell>{building.street}</TableCell>
-                                                                                                              <TableCell>{building.streetNumber}</TableCell>
+                                                                                                              <TableCell>{building.fullAddress}</TableCell>
                                                                                                               <TableCell>
                                                                                                                         {/* <LinearProgress
                                                                                                                         value={building.unresolvedIssues.length}
@@ -327,82 +325,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             street: e.target.value
                                                                                                                                                                                                                   }))}
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={building.street}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Building street"
-                                                                                                                                                                                                        name="street"
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            street: e.target.value
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={building.streetNumber}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Building street number"
-                                                                                                                                                                                                        name="streetNumber"
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            streetNumber: parseInt(e.target.value)
-
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        type='number'
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={building.city}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Building city"
-                                                                                                                                                                                                        name="city"
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            city: e.target.value
-
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={building.country}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Building country"
-                                                                                                                                                                                                        name="country"
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            country: e.target.value
-
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -505,6 +427,20 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                                   />
                                                                                                                                                                                                         }
                                                                                                                                                                                                         label="Active"
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.tenants.length}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Building tenant count"
+                                                                                                                                                                                                        name="tenantCount"
+                                                                                                                                                                                                        type='number'
+                                                                                                                                                                                                        disabled
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -783,13 +719,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                                             ml: 2,
                                                                                                                                                                                                                   }}
                                                                                                                                                                                                         >
-                                                                                                                                                                                                                  <Typography variant="subtitle2">{building.street + " " + building.streetNumber}</Typography>
-                                                                                                                                                                                                                  <Typography
-                                                                                                                                                                                                                            color="text.secondary"
-                                                                                                                                                                                                                            variant="body2"
-                                                                                                                                                                                                                  >
-                                                                                                                                                                                                                            in {building.city}
-                                                                                                                                                                                                                  </Typography>
+                                                                                                                                                                                                                  <Typography variant="subtitle2">{building.fullAddress}</Typography>
                                                                                                                                                                                                         </Box>
                                                                                                                                                                                               </Box>
                                                                                                                                                                                     </Grid>
