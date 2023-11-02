@@ -26,7 +26,7 @@ const AutocompleteComponent = ({ selectedAddress, setSelectedAddress, handleSele
                                                                       </Box>
                                                             )}
                                                             {suggestions.map((suggestion, index) => {
-                                                                      const style = {};
+                                                                      const style = { cursor: 'pointer' };
                                                                       return (
                                                                                 <div {...getSuggestionItemProps(suggestion, { style })}
                                                                                           key={`${suggestion.placeId}-${index}`}>
@@ -109,6 +109,7 @@ export const GoogleMaps = ({ onMapAddressChange }: any) => {
                                         selectedAddress={selectedAddress}
                                         setSelectedAddress={setSelectedAddress}
                                         handleSelect={handleSelect}
+
                               />
                     </Box>
           );
