@@ -23,21 +23,16 @@ import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import moment, { Moment } from 'moment';
 
 const initialValues: Customer = {
-          address1: '',
-          address2: '',
+          fullAddress: '',
           appartmentNumber: 0,
           avatar: '',
-          city: '',
-          country: '',
           email: '',
           firstName: '',
           lastName: '',
           phoneNumber: '',
-          state: '',
           updatedAt: '',
           dateOfBirth: '',
           isOwner: false,
-          zipCode: 0,
 };
 
 export const CustomerCreateForm = (props: any) => {
@@ -168,16 +163,6 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.lastName}
                                                                                           />
-                                                                                          {/* <TextField
-                                                                                                    error={!!(formik.touched.address1 && formik.errors.address1)}
-                                                                                                    fullWidth
-                                                                                                    helperText={formik.touched.address1 && formik.errors.address1}
-                                                                                                    label="Address"
-                                                                                                    name="address1"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.address1}
-                                                                                          /> */}
 
                                                                                           <Autocomplete
                                                                                                     disablePortal

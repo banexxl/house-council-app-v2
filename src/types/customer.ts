@@ -2,22 +2,17 @@ import * as Yup from 'yup';
 
 export interface Customer {
           _id?: string;
-          address1: string;
-          address2?: string;
+          fullAddress: string;
           appartmentNumber?: number;
           avatar?: string;
-          city: string;
-          country: string;
           email?: string;
           firstName: string;
           lastName: string;
           phoneNumber: string;
           dateOfBirth?: string;
-          state?: string;
           updatedAt?: string;
           isOwner?: boolean;
           isSubtenant?: boolean;
-          zipCode?: number;
           permissionLevel?: number;
           buildingID?: string;
 }

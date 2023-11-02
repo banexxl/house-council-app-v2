@@ -18,6 +18,7 @@ import { paths } from 'src/paths';
 import { CustomerEditForm } from 'src/sections/dashboard/customer/customer-edit-form';
 import { getInitials } from 'src/utils/get-initials';
 import { MongoClient, ObjectId } from 'mongodb';
+import { buildingServices } from '@/utils/building-services';
 
 const Page: NextPage = (props: any) => {
           usePageView();
@@ -25,6 +26,7 @@ const Page: NextPage = (props: any) => {
           if (!props.customer) {
                     return null;
           }
+          console.log('customer edit props', props);
 
           return (
                     <>
@@ -113,10 +115,11 @@ export async function getServerSideProps(context: any) {
           const customerID = urlSplit[4];
 
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
-          const dbTenants = mongoClient.db('HouseCouncilAppDB').collection('Tenants')
 
+          const dbTenants = mongoClient.db('HouseCouncilAppDB').collection('Tenants')
           const customer: any = await dbTenants.findOne({ _id: new ObjectId(`${customerID}`) })
 
+          const allBuildings = buildingServices().getAllBuildings()
 
           // notFound: true -> ako vratimo ovo umesto ovog dole, vratice na 404 page tj not found page
           redirect: {
@@ -128,6 +131,7 @@ export async function getServerSideProps(context: any) {
           return {
                     props: {
                               customer: JSON.parse(JSON.stringify(customer)),
+                              allBuildings: JSON.parse(JSON.stringify(allBuildings))
                     },
           }
 }

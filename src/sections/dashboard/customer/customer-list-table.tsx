@@ -18,7 +18,8 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { RouterLink } from 'src/components/router-link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
@@ -181,209 +182,129 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                       </TableCell>
                                                                       <TableCell>First Name</TableCell>
                                                                       <TableCell>Second Name</TableCell>
-                                                                      <TableCell>Street</TableCell>
-                                                                      <TableCell>Appartment</TableCell>
-                                                                      <TableCell>City</TableCell>
-                                                                      <TableCell>Edit/Details</TableCell>
+                                                                      <TableCell>Full Address</TableCell>
+                                                                      <TableCell>Appartment number</TableCell>
+                                                                      <TableCell>Owner</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
-                                                            {items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((customer) => {
-                                                                      const isSelected = selected.includes(customer._id ? customer._id : '')
-                                                                      //const location = `${customer.city}, ${customer.state}, ${customer.country}`;
-                                                                      // const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
+                                                            {
 
-                                                                      return (
-                                                                                <TableRow
-                                                                                          hover
-                                                                                          key={customer._id}
-                                                                                          selected={isSelected}
-                                                                                >
-                                                                                          <TableCell padding="checkbox">
-                                                                                                    <Checkbox
-                                                                                                              checked={isSelected}
-                                                                                                              onChange={(event: ChangeEvent<HTMLInputElement>): void => {
-                                                                                                                        if (event.target.checked) {
-                                                                                                                                  onSelectOne?.(customer._id ? customer._id : '');
-                                                                                                                        } else {
-                                                                                                                                  onDeselectOne?.(customer._id ? customer._id : '');
-                                                                                                                        }
-                                                                                                              }}
-                                                                                                              value={isSelected}
-                                                                                                    />
-                                                                                          </TableCell>
-                                                                                          <TableCell>
-                                                                                                    <Stack
-                                                                                                              alignItems="center"
-                                                                                                              direction="row"
-                                                                                                              spacing={1}
-                                                                                                    >
-                                                                                                              {/* <Avatar
-                                                                                                                        src={customer.avatar}
-                                                                                                                        sx={{
-                                                                                                                                  height: 42,
-                                                                                                                                  width: 42,
+                                                                      items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((customer) => {
+
+                                                                                const isSelected = selected.includes(customer._id ? customer._id : '')
+                                                                                const isOwnerColor = customer.isOwner === true ? 'success' : 'warning'
+                                                                                // const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
+
+                                                                                return (
+                                                                                          <TableRow
+                                                                                                    hover
+                                                                                                    key={customer._id}
+                                                                                                    selected={isSelected}
+                                                                                          >
+                                                                                                    <TableCell padding="checkbox">
+                                                                                                              <Checkbox
+                                                                                                                        checked={isSelected}
+                                                                                                                        onChange={(event: ChangeEvent<HTMLInputElement>): void => {
+                                                                                                                                  if (event.target.checked) {
+                                                                                                                                            onSelectOne?.(customer._id ? customer._id : '');
+                                                                                                                                  } else {
+                                                                                                                                            onDeselectOne?.(customer._id ? customer._id : '');
+                                                                                                                                  }
                                                                                                                         }}
+                                                                                                                        value={isSelected}
+                                                                                                              />
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>
+                                                                                                              <Stack
+                                                                                                                        alignItems="center"
+                                                                                                                        direction="row"
+                                                                                                                        spacing={1}
                                                                                                               >
-                                                                                                                        {getInitials(customer.firstName)}
-                                                                                                              </Avatar> */}
-                                                                                                              <div>
+                                                                                                                        <Avatar
+                                                                                                                                  src={customer.avatar}
+                                                                                                                                  sx={{
+                                                                                                                                            height: 42,
+                                                                                                                                            width: 42,
+                                                                                                                                  }}
+                                                                                                                        >
+                                                                                                                                  {getInitials(customer.firstName)}
+                                                                                                                        </Avatar>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.firstName}
                                                                                                                         </Link>
-                                                                                                                        {/* <Typography
+                                                                                                                        <Typography
                                                                                                                                   color="text.secondary"
                                                                                                                                   variant="body2"
                                                                                                                         >
                                                                                                                                   {customer.email}
-                                                                                                                        </Typography> */}
-                                                                                                              </div>
-                                                                                                    </Stack>
-                                                                                          </TableCell>
-                                                                                          <TableCell>
-                                                                                                    <Stack
-                                                                                                              alignItems="center"
-                                                                                                              direction="row"
-                                                                                                              spacing={1}
-                                                                                                    >
-                                                                                                              {/* <Avatar
-                                                                                                                        src={customer.avatar}
-                                                                                                                        sx={{
-                                                                                                                                  height: 42,
-                                                                                                                                  width: 42,
-                                                                                                                        }}
+                                                                                                                        </Typography>
+                                                                                                              </Stack>
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>
+                                                                                                              <Stack
+                                                                                                                        alignItems="center"
+                                                                                                                        direction="row"
+                                                                                                                        spacing={1}
                                                                                                               >
-                                                                                                                        {getInitials(customer.firstName)}
-                                                                                                              </Avatar> */}
-                                                                                                              <div>
+                                                                                                                        <div>
+                                                                                                                                  <Link
+                                                                                                                                            color="inherit"
+                                                                                                                                            variant="subtitle2"
+                                                                                                                                  >
+                                                                                                                                            {customer.lastName}
+                                                                                                                                  </Link>
+                                                                                                                        </div>
+                                                                                                              </Stack>
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>
+                                                                                                              <Stack
+                                                                                                                        alignItems="center"
+                                                                                                                        direction="row"
+                                                                                                                        spacing={1}
+                                                                                                              >
                                                                                                                         <Link
                                                                                                                                   color="inherit"
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
-                                                                                                                                  {customer.lastName}
+                                                                                                                                  {customer.fullAddress}
                                                                                                                         </Link>
-                                                                                                                        {/* <Typography
-                                                                                                                                  color="text.secondary"
-                                                                                                                                  variant="body2"
-                                                                                                                        >
-                                                                                                                                  {customer.email}
-                                                                                                                        </Typography> */}
-                                                                                                              </div>
-                                                                                                    </Stack>
-                                                                                          </TableCell>
-                                                                                          <TableCell>
-                                                                                                    <Stack
-                                                                                                              alignItems="center"
-                                                                                                              direction="row"
-                                                                                                              spacing={1}
-                                                                                                    >
-                                                                                                              {/* <Avatar
-                                                                                                                        src={customer.avatar}
-                                                                                                                        sx={{
-                                                                                                                                  height: 42,
-                                                                                                                                  width: 42,
-                                                                                                                        }}
+                                                                                                              </Stack>
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>
+                                                                                                              <Stack
+                                                                                                                        alignItems="center"
+                                                                                                                        direction="row"
+                                                                                                                        spacing={1}
                                                                                                               >
-                                                                                                                        {getInitials(customer.firstName)}
-                                                                                                              </Avatar> */}
-                                                                                                              <div>
-                                                                                                                        <Link
-                                                                                                                                  color="inherit"
-                                                                                                                                  variant="subtitle2"
-                                                                                                                        >
-                                                                                                                                  {customer.address1}
-                                                                                                                        </Link>
-                                                                                                                        {/* <Typography
-                                                                                                                                  color="text.secondary"
-                                                                                                                                  variant="body2"
-                                                                                                                        >
-                                                                                                                                  {customer.email}
-                                                                                                                        </Typography> */}
-                                                                                                              </div>
-                                                                                                    </Stack>
-                                                                                          </TableCell>
-                                                                                          <TableCell>
-                                                                                                    <Stack
-                                                                                                              alignItems="center"
-                                                                                                              direction="row"
-                                                                                                              spacing={1}
-                                                                                                    >
-                                                                                                              {/* <Avatar
-                                                                                                                        src={customer.avatar}
-                                                                                                                        sx={{
-                                                                                                                                  height: 42,
-                                                                                                                                  width: 42,
-                                                                                                                        }}
-                                                                                                              >
-                                                                                                                        {getInitials(customer.firstName)}
-                                                                                                              </Avatar> */}
-                                                                                                              <div>
                                                                                                                         <Link
                                                                                                                                   color="inherit"
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
                                                                                                                                   {customer.appartmentNumber}
                                                                                                                         </Link>
-                                                                                                                        {/* <Typography
-                                                                                                                                  color="text.secondary"
-                                                                                                                                  variant="body2"
-                                                                                                                        >
-                                                                                                                                  {customer.email}
-                                                                                                                        </Typography> */}
-                                                                                                              </div>
-                                                                                                    </Stack>
-                                                                                          </TableCell>
-                                                                                          <TableCell>
-                                                                                                    <Stack
-                                                                                                              alignItems="center"
-                                                                                                              direction="row"
-                                                                                                              spacing={1}
-                                                                                                    >
-                                                                                                              {/* <Avatar
-                                                                                                                        src={customer.avatar}
-                                                                                                                        sx={{
-                                                                                                                                  height: 42,
-                                                                                                                                  width: 42,
-                                                                                                                        }}
+                                                                                                              </Stack>
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>
+                                                                                                              <Stack
+                                                                                                                        alignItems="center"
+                                                                                                                        direction="row"
+                                                                                                                        spacing={1}
                                                                                                               >
-                                                                                                                        {getInitials(customer.firstName)}
-                                                                                                              </Avatar> */}
-                                                                                                              <div>
-                                                                                                                        <Link
-                                                                                                                                  color="inherit"
-                                                                                                                                  variant="subtitle2"
-                                                                                                                        >
-                                                                                                                                  {customer.city}
-                                                                                                                        </Link>
-                                                                                                                        {/* <Typography
-                                                                                                                                  color="text.secondary"
-                                                                                                                                  variant="body2"
-                                                                                                                        >
-                                                                                                                                  {customer.email}
-                                                                                                                        </Typography> */}
-                                                                                                              </div>
-                                                                                                    </Stack>
-                                                                                          </TableCell>
-                                                                                          <TableCell>
-                                                                                                    <IconButton
-                                                                                                    >
-                                                                                                              <SvgIcon>
-                                                                                                                        <Edit02Icon />
-                                                                                                              </SvgIcon>
-                                                                                                    </IconButton>
-                                                                                                    <IconButton
-                                                                                                    >
-                                                                                                              <SvgIcon>
-                                                                                                                        <ArrowRightIcon />
-                                                                                                              </SvgIcon>
-                                                                                                    </IconButton>
-                                                                                          </TableCell>
-                                                                                </TableRow>
-                                                                      );
-                                                            })}
+                                                                                                                        {
+                                                                                                                                  customer.isOwner ?
+                                                                                                                                            <CheckCircleOutlineIcon color={isOwnerColor} />
+                                                                                                                                            :
+                                                                                                                                            <CancelIcon color={isOwnerColor} />
+                                                                                                                        }
+                                                                                                              </Stack>
+                                                                                                    </TableCell>
+                                                                                          </TableRow>
+                                                                                );
+                                                                      })}
                                                   </TableBody>
                                         </Table>
                               </Scrollbar>

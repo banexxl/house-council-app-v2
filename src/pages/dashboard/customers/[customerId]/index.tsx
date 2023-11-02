@@ -265,13 +265,10 @@ const Page: NextPage = () => {
                                                                                                     lg={4}
                                                                                           >
                                                                                                     <CustomerBasicDetails
-                                                                                                              address1={customer.address1}
-                                                                                                              address2={customer.address2}
-                                                                                                              country={customer.country}
+                                                                                                              fullAddress={customer.fullAddress}
                                                                                                               email={customer.email ? customer.email : ''}
                                                                                                               isVerified={true}
                                                                                                               phone={customer.phoneNumber}
-                                                                                                              state={customer.state}
                                                                                                     />
                                                                                           </Grid>
                                                                                           <Grid

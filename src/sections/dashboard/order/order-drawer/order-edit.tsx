@@ -75,19 +75,7 @@ export const OrderEdit: FC<OrderEditProps> = (props) => {
                                                             fullWidth
                                                             label="Address"
                                                             name="address"
-                                                            value={order.customer.address1}
-                                                  />
-                                                  <TextField
-                                                            fullWidth
-                                                            label="Country"
-                                                            name="country"
-                                                            value={order.customer.country}
-                                                  />
-                                                  <TextField
-                                                            fullWidth
-                                                            label="State/Region"
-                                                            name="state_region"
-                                                            value={order.customer.city}
+                                                            value={order.customer.fullAddress}
                                                   />
                                                   <TextField
                                                             fullWidth

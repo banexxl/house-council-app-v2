@@ -47,21 +47,16 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {
                                                             $set: {
-                                                                      address1: request.body.address1 || '',
-                                                                      address2: request.body.address2 || '',
-                                                                      city: request.body.city || '',
-                                                                      country: request.body.country || '',
+                                                                      fullAddres: request.body.fullAddres || '',
                                                                       email: request.body.email || '',
                                                                       firstName: request.body.firstName || '',
                                                                       lastName: request.body.lastName || '',
                                                                       phoneNumber: request.body.phoneNumber || '',
-                                                                      state: request.body.state || '',
                                                                       appartmentNumber: request.body.appartmentNumber || '',
                                                                       avatar: request.body.avatar || '',
                                                                       updatedAt: request.body.updatedAt || '',
                                                                       dateOfBirth: request.body.dateOfBirth || '',
                                                                       isOwner: request.body.isOwner || '',
-                                                                      zipCode: request.body.zipCode || ''
                                                             }
                                                   })
                                         return response.status(200).json({ message: 'Customer successfully updated!' });

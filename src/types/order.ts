@@ -1,9 +1,6 @@
 interface OrderCustomer {
-          address1?: string;
-          address2?: string;
+          fullAddress?: string;
           avatar?: string;
-          city?: string;
-          country?: string;
           email: string;
           name: string;
 }

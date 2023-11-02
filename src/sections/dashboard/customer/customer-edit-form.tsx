@@ -22,7 +22,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { enUS } from '@mui/x-date-pickers/locales'
 import 'dayjs/locale/en';
 import 'dayjs/locale/en-gb';
-import { FormControlLabel } from '@mui/material';
+import { Autocomplete, FormControlLabel } from '@mui/material';
 import moment, { Moment } from 'moment'
 import { useRouter } from 'next/router';
 
@@ -39,33 +39,25 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
           const formik = useFormik({
                     initialValues: {
                               _id: customer._id,
-                              address1: customer.address1 || '',
-                              address2: customer.address2 || '',
-                              country: customer.country || '',
+                              fullAddress: customer.fullAddress || '',
                               email: customer.email || '',
                               firstName: customer.firstName || '',
                               lastName: customer.lastName || '',
                               phoneNumber: customer.phoneNumber || '',
-                              state: customer.state || '',
                               appartmentNumber: customer.appartmentNumber || '',
                               avatar: customer.avatar || '',
-                              city: customer.city || '',
                               updatedAt: customer.updatedAt || '',
                               dateOfBirth: customer.dateOfBirth || '',
                               isOwner: customer.isOwner || false,
-                              zipCode: customer.zipCode || ''
                     },
                     validationSchema: Yup.object({
                               _id: Yup.string().max(36),
-                              address1: Yup.string().max(255),
-                              address2: Yup.string().max(255),
-                              country: Yup.string().max(255),
+                              fullAddress: Yup.string().max(100),
                               email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
                               // isVerified: Yup.bool(),
                               firstName: Yup.string().max(32),
                               lastName: Yup.string().max(32),
                               phoneNumber: Yup.string().max(15),
-                              state: Yup.string().max(255),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
 
@@ -183,90 +175,23 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <TextField
-                                                                                error={!!(formik.touched.country && formik.errors.country)}
+                                                                                error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
                                                                                 fullWidth
-                                                                                helperText={formik.touched.country && formik.errors.country}
-                                                                                label="Country"
-                                                                                name="country"
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.country}
-                                                                      />
-                                                            </Grid>
-                                                            <Grid
-                                                                      xs={12}
-                                                                      md={6}
-                                                            >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.state && formik.errors.state)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.state && formik.errors.state}
-                                                                                label="State/Region"
-                                                                                name="state"
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.state}
-                                                                      />
-                                                            </Grid>
-                                                            <Grid
-                                                                      xs={12}
-                                                                      md={6}
-                                                            >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.city && formik.errors.city)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.city && formik.errors.city}
-                                                                                label="City"
-                                                                                name="city"
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.city}
-                                                                      />
-                                                            </Grid>
-                                                            <Grid
-                                                                      xs={12}
-                                                                      md={6}
-                                                            >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.address1 && formik.errors.address1)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.address1 && formik.errors.address1}
-                                                                                label="Address 1"
-                                                                                name="address1"
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.address1}
-                                                                      />
-                                                            </Grid>
-                                                            <Grid
-                                                                      xs={12}
-                                                                      md={6}
-                                                            >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.address2 && formik.errors.address2)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.address2 && formik.errors.address2}
+                                                                                helperText={formik.touched.fullAddress && formik.errors.fullAddress}
                                                                                 label="Address 2"
                                                                                 name="address2"
                                                                                 onBlur={formik.handleBlur}
                                                                                 onChange={formik.handleChange}
-                                                                                value={formik.values.address2}
+                                                                                value={formik.values.fullAddress}
                                                                       />
-                                                            </Grid>
-                                                            <Grid
-                                                                      xs={12}
-                                                                      md={6}
-                                                            >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.zipCode && formik.errors.zipCode)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.zipCode && formik.errors.zipCode}
-                                                                                label="Zip code"
-                                                                                name="zipCode"
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.zipCode}
-                                                                      />
+                                                                      {/* <Autocomplete
+                                                                                disablePortal
+                                                                                id="combo-box-demo"
+                                                                                options={props.allBuildings}
+                                                                                getOptionLabel={(building: Building) => building.fullAddress}
+                                                                                renderInput={(params) => <TextField {...params} label="Building address" />}
+                                                                                onSelect={(e: any) => console.log(e.target.value)}
+                                                                      /> */}
                                                             </Grid>
                                                             <Grid
                                                                       xs={12}
