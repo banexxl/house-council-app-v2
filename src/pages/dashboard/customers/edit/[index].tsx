@@ -22,11 +22,11 @@ import { buildingServices } from '@/utils/building-services';
 
 const Page: NextPage = (props: any) => {
           usePageView();
+          console.log('customer edit index page', props);
 
           if (!props.customer) {
                     return null;
           }
-          console.log('customer edit props', props);
 
           return (
                     <>
@@ -98,7 +98,7 @@ const Page: NextPage = (props: any) => {
                                                                                 </Stack>
                                                                       </Stack>
                                                             </Stack>
-                                                            <CustomerEditForm customer={props.customer} />
+                                                            <CustomerEditForm customer={props.customer} allBuildings={props.allBuildings} />
                                                   </Stack>
                                         </Container>
                               </Box>
@@ -118,9 +118,7 @@ export async function getServerSideProps(context: any) {
 
           const dbTenants = mongoClient.db('HouseCouncilAppDB').collection('Tenants')
           const customer: any = await dbTenants.findOne({ _id: new ObjectId(`${customerID}`) })
-
-          const allBuildings = buildingServices().getAllBuildings()
-
+          const allBuildings = await buildingServices().getAllBuildings()
           // notFound: true -> ako vratimo ovo umesto ovog dole, vratice na 404 page tj not found page
           redirect: {
                     destination: "/404"

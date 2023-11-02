@@ -46,8 +46,6 @@ export const BuildingCreateForm: FC = (props) => {
                     validationSchema,
                     onSubmit: async (values: any, helpers: any): Promise<void> => {
                               try {
-                                        console.log(values);
-
                                         const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
                                                   method: 'POST',
                                                   headers: {
@@ -93,17 +91,19 @@ export const BuildingCreateForm: FC = (props) => {
           }
 
           const onMapAddressChange = (mapAddressProps: any) => {
+                    console.log('mapAddressProps', mapAddressProps);
+
                     formik.setFieldValue('lng', mapAddressProps.latLng.lng)
                     formik.setFieldValue('lat', mapAddressProps.latLng.lat)
                     setLocationAddress(mapAddressProps);
                     formik.setFieldValue('fullAddress', mapAddressProps.address)
-                    const fullAddressString = mapAddressProps.address as String
-                    const fullAddressArray = fullAddressString.split(',')
-                    formik.setFieldValue('country', fullAddressArray[2])
-                    formik.setFieldValue('city', fullAddressArray[1])
-                    const [street, streetNumber] = fullAddressArray[0].split(/\s+(?=\d)/)
-                    formik.setFieldValue('street', street)
-                    formik.setFieldValue('streetNumber', streetNumber)
+                    // const fullAddressString = mapAddressProps.address as String
+                    // const fullAddressArray = fullAddressString.split(',')
+                    // formik.setFieldValue('country', fullAddressArray[2])
+                    // formik.setFieldValue('city', fullAddressArray[1])
+                    // const [street, streetNumber] = fullAddressArray[0].split(/\s+(?=\d)/)
+                    // formik.setFieldValue('street', street)
+                    // formik.setFieldValue('streetNumber', streetNumber)
           }
 
           return (

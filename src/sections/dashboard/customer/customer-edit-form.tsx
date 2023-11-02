@@ -22,16 +22,20 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { enUS } from '@mui/x-date-pickers/locales'
 import 'dayjs/locale/en';
 import 'dayjs/locale/en-gb';
-import { Autocomplete, FormControlLabel } from '@mui/material';
+import { Autocomplete, Checkbox, FormControlLabel } from '@mui/material';
 import moment, { Moment } from 'moment'
 import { useRouter } from 'next/router';
+import { Building } from '@/types/building';
 
 
 interface CustomerEditFormProps {
           customer: Customer;
+          allBuildings: Building[]
 }
 
 export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
+
+          console.log('customer edit form props', props);
 
           const { customer, ...other } = props;
           const router = useRouter()
@@ -174,24 +178,17 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       xs={12}
                                                                       md={6}
                                                             >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.fullAddress && formik.errors.fullAddress}
-                                                                                label="Address 2"
-                                                                                name="address2"
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.fullAddress}
-                                                                      />
-                                                                      {/* <Autocomplete
+                                                                      <Autocomplete
                                                                                 disablePortal
                                                                                 id="combo-box-demo"
                                                                                 options={props.allBuildings}
                                                                                 getOptionLabel={(building: Building) => building.fullAddress}
                                                                                 renderInput={(params) => <TextField {...params} label="Building address" />}
-                                                                                onSelect={(e: any) => console.log(e.target.value)}
-                                                                      /> */}
+                                                                                onChange={(e: any) => formik.setFieldValue('fullAddress', e.target.textContent)}
+                                                                                defaultValue={props.allBuildings.find(
+                                                                                          (building) => building.fullAddress === formik.values.fullAddress
+                                                                                )}
+                                                                      />
                                                             </Grid>
                                                             <Grid
                                                                       xs={12}
@@ -235,19 +232,12 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <FormControlLabel
-                                                                                control={
-                                                                                          <Switch
-                                                                                                    checked={formik.values.isOwner}
-                                                                                                    color="primary"
-                                                                                                    edge="start"
-                                                                                                    name="isOwner"
-                                                                                                    aria-label='Is owner'
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.isOwner}
-                                                                                                    sx={{ marginLeft: '5px' }}
-                                                                                          />
-                                                                                }
-                                                                                label='Is owner'
+                                                                                control={<Checkbox />}
+                                                                                label={'Is owner'}
+                                                                                value={formik.values.isOwner}
+                                                                                onChange={(e: any) => formik.setFieldValue('isOwner', e.target.checked)}
+                                                                                name={'isOwner'}
+                                                                                checked={formik.values.isOwner}
                                                                       />
                                                             </Grid>
                                                             <Grid
@@ -261,8 +251,6 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 label="Updated at"
                                                                                 name="updatedAt"
                                                                                 disabled
-                                                                                onBlur={formik.handleBlur}
-                                                                                onChange={formik.handleChange}
                                                                                 value={formik.values.updatedAt}
                                                                       />
                                                             </Grid>

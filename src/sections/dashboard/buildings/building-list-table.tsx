@@ -199,12 +199,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                   <TableHead>
                                                             <TableRow>
                                                                       <TableCell />
-                                                                      <TableCell>City</TableCell>
-                                                                      <TableCell>Street</TableCell>
-                                                                      <TableCell>Street number</TableCell>
-                                                                      <TableCell>Unresolved issue count</TableCell>
-                                                                      <TableCell>Elevator</TableCell>
+                                                                      <TableCell>Full Address</TableCell>
                                                                       <TableCell>Appartment Count</TableCell>
+                                                                      <TableCell>Elevator</TableCell>
+                                                                      <TableCell>Unresolved issue count</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -319,6 +317,24 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building ID"
                                                                                                                                                                                                         name="_id"
+                                                                                                                                                                                                        disabled
+                                                                                                                                                                                                        onLoad={(e: any) =>
+                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                            ...previousObject,
+                                                                                                                                                                                                                            street: e.target.value
+                                                                                                                                                                                                                  }))}
+                                                                                                                                                                                              />
+                                                                                                                                                                                    </Grid>
+                                                                                                                                                                                    <Grid
+                                                                                                                                                                                              item
+                                                                                                                                                                                              md={6}
+                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                    >
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={building.fullAddress}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Full Address"
+                                                                                                                                                                                                        name="fullAddress"
                                                                                                                                                                                                         disabled
                                                                                                                                                                                                         onLoad={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({

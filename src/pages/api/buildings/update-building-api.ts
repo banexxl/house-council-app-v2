@@ -72,11 +72,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   {
                                                             $set:
                                                             {
-                                                                      street: request.body.street,
-                                                                      streetNumber: request.body.streetNumber,
-                                                                      city: request.body.city,
                                                                       region: request.body.region,
-                                                                      country: request.body.country,
                                                                       fullAddress: request.body.fullAddress,
                                                                       description: request.body.description,
                                                                       isRecentlyBuilt: request.body.isRecentlyBuilt,

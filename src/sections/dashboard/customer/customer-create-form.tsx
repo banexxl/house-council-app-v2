@@ -168,9 +168,9 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     disablePortal
                                                                                                     id="combo-box-demo"
                                                                                                     options={props.allBuildings}
-                                                                                                    getOptionLabel={(building: Building) => building.fullAddress}
+                                                                                                    getOptionLabel={(building: any) => building.fullAddress}
                                                                                                     renderInput={(params) => <TextField {...params} label="Building address" />}
-                                                                                                    onSelect={(e: any) => console.log(e.target.value)}
+                                                                                                    onChange={(e: any) => formik.setFieldValue('fullAddress', e.target.textContent)}
                                                                                           />
 
                                                                                           <TextField
@@ -183,26 +183,6 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.appartmentNumber}
                                                                                           />
-                                                                                          {/* <TextField
-                                                                                                    error={!!(formik.touched.city && formik.errors.city)}
-                                                                                                    fullWidth
-                                                                                                    helperText={formik.touched.city && formik.errors.city}
-                                                                                                    label="City"
-                                                                                                    name="city"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.city}
-                                                                                          />
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.country && formik.errors.country)}
-                                                                                                    fullWidth
-                                                                                                    helperText={formik.touched.country && formik.errors.country}
-                                                                                                    label="Country"
-                                                                                                    name="country"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.country}
-                                                                                          /> */}
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}
                                                                                                     fullWidth
@@ -271,6 +251,7 @@ export const CustomerCreateForm = (props: any) => {
                                                                                           control={<Checkbox />}
                                                                                           label={'Is owner'}
                                                                                           value={formik.values.isOwner}
+                                                                                          onChange={(e: any) => formik.setFieldValue('isOwner', e.target.checked)}
                                                                                 />
                                                                       </Grid>
                                                             </Grid>

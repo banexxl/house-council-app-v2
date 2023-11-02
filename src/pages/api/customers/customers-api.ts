@@ -29,6 +29,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Customers found!', data: allTenants, totalCount });
 
                     } else if (request.method === 'POST') {
+                              console.log('api customer add request body', request.body);
 
                               const customerExists = await dbTenants.findOne({ email: request.body.email })
 
@@ -47,7 +48,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {
                                                             $set: {
-                                                                      fullAddres: request.body.fullAddres || '',
+                                                                      fullAddress: request.body.fullAddress || '',
                                                                       email: request.body.email || '',
                                                                       firstName: request.body.firstName || '',
                                                                       lastName: request.body.lastName || '',

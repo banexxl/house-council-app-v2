@@ -22,6 +22,7 @@ import type { Customer } from 'src/types/customer';
 import { GetServerSideProps } from 'next/types';
 import { paths } from '@/paths';
 import { RouterLink } from '@/components/router-link';
+import { buildingServices } from '@/utils/building-services';
 
 interface Filters {
           query?: string;
@@ -44,6 +45,9 @@ interface CustomersStoreState {
 
 
 const Page: NextPage = (props: any) => {
+
+          console.log('customer index page props', props);
+
 
           const useCustomersSearch = () => {
 
@@ -232,6 +236,7 @@ const Page: NextPage = (props: any) => {
                                                                       <CustomerListTable
                                                                                 count={customersStore.customersCount}
                                                                                 items={customersStore.customers}
+                                                                                allBuildings={props.allBuildings}
                                                                                 onDeselectAll={customersSelection.handleDeselectAll}
                                                                                 onDeselectOne={customersSelection.handleDeselectOne}
                                                                                 onPageChange={customersSearch.handlePageChange}
@@ -241,7 +246,6 @@ const Page: NextPage = (props: any) => {
                                                                                 page={customersSearch.state.page}
                                                                                 rowsPerPage={customersSearch.state.rowsPerPage}
                                                                                 selected={customersSelection.selected}
-
                                                                       />
                                                             </Card>
                                                   </Stack>
@@ -282,10 +286,12 @@ export const getServerSideProps: GetServerSideProps = async ({ query, req }) => 
 
                     const data = await response.json();
 
+                    const allBuildings = await buildingServices().getAllBuildings()
 
                     return {
                               props: {
-                                        allTenants: JSON.parse(JSON.stringify(data.data))
+                                        allTenants: JSON.parse(JSON.stringify(data.data)),
+                                        allBuildings: JSON.parse(JSON.stringify(allBuildings))
                               },
                     }
           } catch (e) {

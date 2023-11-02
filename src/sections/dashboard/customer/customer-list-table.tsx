@@ -28,6 +28,7 @@ import { getInitials } from 'src/utils/get-initials';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
+import { Building } from '@/types/building';
 
 
 interface CustomerQueryParams {
@@ -40,6 +41,7 @@ interface CustomerQueryParams {
 interface CustomerListTableProps {
           count?: number;
           items?: Customer[];
+          allBuildings?: Building[];
           onDeselectAll?: () => void;
           onDeselectOne?: (customerId: string) => void;
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
@@ -56,6 +58,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
           const {
                     count = 0,
                     items = [],
+                    allBuildings = [],
                     onDeselectAll,
                     onDeselectOne,
                     onPageChange = () => { },
@@ -110,6 +113,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                               }
                     })
           }
+
           return (
                     <Box sx={{ position: 'relative' }}>
                               {enableBulkActions && (
@@ -189,7 +193,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                   </TableHead>
                                                   <TableBody>
                                                             {
-
                                                                       items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((customer) => {
 
                                                                                 const isSelected = selected.includes(customer._id ? customer._id : '')

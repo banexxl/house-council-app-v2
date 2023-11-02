@@ -4,7 +4,6 @@ import { ObjectId } from "mongodb"
 export const buildingServices = () => {
 
           const getAllBuildings = async () => {
-
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
                     const db = client.db('HouseCouncilAppDB')
                     try {
