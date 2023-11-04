@@ -114,7 +114,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
 
           const handleBuildingUpdate = async (currentBuildingObject: any) => {
                     try {
-                              const buildingCreateResponse = await fetch('/api/buildings/update-building-api', {
+                              const buildingCreateResponse = await fetch('/api/buildings/update-building-board-api', {
                                         method: 'PUT',
                                         headers: {
                                                   'Content-Type': 'application/json',

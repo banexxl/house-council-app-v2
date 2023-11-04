@@ -33,15 +33,17 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
                     } else if (request.method === 'POST') {
+                              console.log('building api post req', request.body);
 
                               const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
                               if (buildingExists === null) {
                                         await dbBuildings.insertOne(request.body).then(async (dbResponse: any) => {
+
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
+                                                                      await fetch(`${apiUrl}/api/boards/board-api`, {
                                                                                 method: 'POST',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
@@ -74,7 +76,33 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {
                                                             $set:
-                                                                      { board: request.body.board }
+                                                            {
+                                                                      region: request.body.region,
+                                                                      fullAddress: request.body.fullAddress,
+                                                                      description: request.body.description,
+                                                                      isRecentlyBuilt: request.body.isRecentlyBuilt,
+                                                                      storiesHigh: request.body.storiesHigh,
+                                                                      hasOwnParkingLot: request.body.hasOwnParkingLot,
+                                                                      appartmentCount: request.body.appartmentCount,
+                                                                      hasOwnElevator: request.body.hasOwnElevator,
+                                                                      hasOwnBicycleRoom: request.body.hasOwnBicycleRoom,
+                                                                      hasGasHeating: request.body.hasGasHeating,
+                                                                      hasCentralHeating: request.body.hasCentralHeating,
+                                                                      hasElectricHeating: request.body.hasElectricHeating,
+                                                                      hasSolarPower: request.body.hasSolarPower,
+                                                                      hasOwnWaterPump: request.body.hasOwnWaterPump,
+                                                                      image: request.body.image,
+                                                                      lng: request.body.lng,
+                                                                      lat: request.body.lat,
+                                                                      buildingStatus: request.body.buildingStatus,
+                                                                      dateTimeAdded: request.body.stdateTimeAddedreet,
+                                                                      dateTimeUpdated: request.body.dateTimeUpdated,
+                                                                      tenants: request.body.tenants,
+                                                                      tenantMeetings: request.body.tenantMeetings,
+                                                                      invoices: request.body.invoices,
+                                                                      parkingLots: request.body.parkingLots,
+                                                                      board: request.body.board
+                                                            }
                                                   })
 
                                         return response.status(200).json({ message: 'Building successfully updated!' });

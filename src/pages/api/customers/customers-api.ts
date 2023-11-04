@@ -6,6 +6,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!, {})
           const dbTenants = mongoClient.db('HouseCouncilAppDB').collection('Tenants')
+          const apiUrl = process.env.NODE_ENV === 'development' ?
+                    process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
           try {
                     if (request.method === 'GET') {
@@ -35,6 +37,24 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                               if (customerExists === null) {
                                         await dbTenants.insertOne(request.body)
+                                                  .then(async (createTenantResponse: any) => {
+
+                                                            if (createTenantResponse.acknowledged) {
+
+                                                                      await fetch(`${apiUrl}/api/buildings/buildings-api`, {
+                                                                                method: 'PUT',
+                                                                                headers: {
+                                                                                          'Content-Type': 'application/json',
+                                                                                          'Access-Control-Allow-Origin': '*',
+                                                                                          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                                                },
+                                                                                body: JSON.stringify({
+                                                                                          tenantID: createTenantResponse.insertedId,
+                                                                                })
+                                                                      })
+                                                            }
+                                                            else return response.status(400).json({ message: 'Something went wrong!' })
+                                                  })
                                         return response.status(200).json({ message: 'Customer successfully added!' });
                               } else {
                                         const error = new Error('Customer already exists!');

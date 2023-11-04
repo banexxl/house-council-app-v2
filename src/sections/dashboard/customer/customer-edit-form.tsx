@@ -56,12 +56,12 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                     },
                     validationSchema: Yup.object({
                               _id: Yup.string().max(36),
-                              fullAddress: Yup.string().max(100),
+                              fullAddress: Yup.string().max(100).required('Full address is required'),
                               email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
                               // isVerified: Yup.bool(),
-                              firstName: Yup.string().max(32),
-                              lastName: Yup.string().max(32),
-                              phoneNumber: Yup.string().max(15),
+                              firstName: Yup.string().max(32).required('First name is required'),
+                              lastName: Yup.string().max(32).required('Last name is required'),
+                              phoneNumber: Yup.string().max(15).required('Phone number is required'),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
 

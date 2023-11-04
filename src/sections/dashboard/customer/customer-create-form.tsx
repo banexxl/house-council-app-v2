@@ -169,8 +169,25 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     id="combo-box-demo"
                                                                                                     options={props.allBuildings}
                                                                                                     getOptionLabel={(building: any) => building.fullAddress}
-                                                                                                    renderInput={(params) => <TextField {...params} label="Building address" />}
-                                                                                                    onChange={(e: any) => formik.setFieldValue('fullAddress', e.target.textContent)}
+                                                                                                    renderInput={(params) =>
+                                                                                                              <TextField
+                                                                                                                        {...params}
+                                                                                                                        label="Building address"
+                                                                                                                        helperText={
+                                                                                                                                  formik.touched.fullAddress && formik.errors.fullAddress
+                                                                                                                                            ? formik.errors.fullAddress
+                                                                                                                                            : ''
+                                                                                                                        }
+                                                                                                                        error={formik.touched.fullAddress && Boolean(formik.errors.fullAddress)}
+                                                                                                              />
+                                                                                                    }
+                                                                                                    onChange={(e: any, value: Building | null) => {
+                                                                                                              formik.setFieldValue('fullAddress', value ? value.fullAddress : '');
+                                                                                                    }}
+                                                                                                    defaultValue={props.allBuildings.find(
+                                                                                                              (building: any) => building.fullAddress === formik.values.fullAddress
+                                                                                                    )}
+                                                                                                    onBlur={formik.handleBlur('fullAddress')}
                                                                                           />
 
                                                                                           <TextField

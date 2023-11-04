@@ -29,9 +29,11 @@ export const customerSchema = Yup.object({
                     .max(50, 'Last name cannot exceed 50 characters')
                     .required('Last name is required'),
 
-          // dateOfBirth: Yup.date(),
+          fullAddress: Yup.string().max(100).required('Full addreess is required'),
 
-          email: Yup.string().email('Invalid email address'),
+          appartmentNumber: Yup.number().typeError('You must specify a number').min(1, 'Appartment number must be greather then 0'),
+
+          email: Yup.string().email('Invalid email address').required('Email is required'),
 
           phoneNumber: Yup.string()
                     .matches(/^[0-9]+$/, 'Phone number must contain only digits')

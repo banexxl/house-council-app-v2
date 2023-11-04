@@ -22,7 +22,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                                         if (createBoardResponse.acknowledged) {
 
-                                                  const modifyBuildingResponse = await fetch(`${apiUrl}/api/buildings/buildings-api`, {
+                                                  const modifyBuildingResponse = await fetch(`${apiUrl}/api/buildings/update-building-board-api`, {
                                                             method: 'PUT',
                                                             headers: {
                                                                       'Content-Type': 'application/json',
