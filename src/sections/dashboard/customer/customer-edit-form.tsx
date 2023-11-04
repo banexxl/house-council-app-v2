@@ -61,7 +61,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               // isVerified: Yup.bool(),
                               firstName: Yup.string().max(32).required('First name is required'),
                               lastName: Yup.string().max(32).required('Last name is required'),
-                              phoneNumber: Yup.string().max(15).required('Phone number is required'),
+                              phoneNumber: Yup.string().max(15).required('Phone is required'),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
 
@@ -302,14 +302,6 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                           new projects
                                                                                 </Typography>
                                                                       </Stack>
-                                                                      {/* <Switch
-                                                                                checked={formik.values.hasDiscount}
-                                                                                color="primary"
-                                                                                edge="start"
-                                                                                name="hasDiscount"
-                                                                                onChange={formik.handleChange}
-                                                                                value={formik.values.hasDiscount}
-                                                                      /> */}
                                                             </Stack>
                                                   </Stack>
                                         </CardContent>

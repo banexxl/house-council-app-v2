@@ -17,13 +17,13 @@ export const buildingServices = () => {
                     }
           }
 
-          const getProductsForHomePage = async () => {
+          const getAllBuildingIDs = async () => {
 
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
 
                     try {
-                              const db = client.db('DAR_DB')
-                              let data = await db.collection('Products').find().toArray()
+                              const db = client.db('HouseCouncilAppDB')
+                              let data = await db.collection('Buildings').distinct('_id')
                               return data
                     } catch (error) {
                               return { message: error.message }
@@ -33,14 +33,21 @@ export const buildingServices = () => {
                     }
           }
 
-          const getAllLogos = async () => {
+          const getFullAddressByBuildingID = async (buildingID: string) => {
 
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
 
                     try {
-                              const db = client.db('DAR_DB')
-                              let data = await db.collection('LogoURLs').find().toArray()
-                              return data
+                              const db = client.db('HouseCouncilAppDB')
+                              let collection = await db.collection('Buildings')
+                              const document = await collection.findOne({ _id: new ObjectId(buildingID) });
+
+                              if (document) {
+                                        const fullAddress = document.fullAddress;
+                                        return fullAddress
+                              } else {
+                                        console.log('Document not found with the provided _id.');
+                              }
                     } catch (error) {
                               return { message: error.message }
                     }
@@ -191,7 +198,7 @@ export const buildingServices = () => {
 
           return {
                     getAllBuildings,
-                    getProductsForHomePage,
+                    getAllBuildingIDs,
                     getProductById,
                     getProductsByNameAndOrManufacturer,
                     getProductsByManufacturer,
@@ -199,7 +206,7 @@ export const buildingServices = () => {
                     getProductsByMainCategory,
                     getProductsByMainCategoryMidCategory,
                     getProductsByMainCategoryMidCategorySubCategory,
-                    getAllLogos,
+                    getFullAddressByBuildingID,
                     getAllManufacturers
           }
 }

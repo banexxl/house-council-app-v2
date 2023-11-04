@@ -91,7 +91,6 @@ export const BuildingCreateForm: FC = (props) => {
           }
 
           const onMapAddressChange = (mapAddressProps: any) => {
-                    console.log('mapAddressProps', mapAddressProps);
 
                     formik.setFieldValue('lng', mapAddressProps.latLng.lng)
                     formik.setFieldValue('lat', mapAddressProps.latLng.lat)

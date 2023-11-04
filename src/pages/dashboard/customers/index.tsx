@@ -286,12 +286,12 @@ export const getServerSideProps: GetServerSideProps = async ({ query, req }) => 
 
                     const data = await response.json();
 
-                    const allBuildings = await buildingServices().getAllBuildings()
+                    const allBuildingsIDs = await buildingServices().getAllBuildingIDs()
 
                     return {
                               props: {
                                         allTenants: JSON.parse(JSON.stringify(data.data)),
-                                        allBuildings: JSON.parse(JSON.stringify(allBuildings))
+                                        allBuildingsIDs: JSON.parse(JSON.stringify(allBuildingsIDs))
                               },
                     }
           } catch (e) {

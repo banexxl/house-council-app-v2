@@ -40,6 +40,7 @@ export const CustomerCreateForm = (props: any) => {
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
           const [age, setAge] = useState('');
+          const [buildingID, setBuildingID] = useState('')
 
           const handleAddressChange = (event: SelectChangeEvent) => {
                     setAge(event.target.value as string);
@@ -59,7 +60,7 @@ export const CustomerCreateForm = (props: any) => {
                                                             'Access-Control-Allow-Origin': '*',
                                                             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                                   },
-                                                  body: JSON.stringify(values), // Convert your data to JSON
+                                                  body: JSON.stringify({ values, buildingID }), // Convert your data to JSON
                                         });
 
                                         if (response.ok) {
@@ -182,7 +183,8 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                               />
                                                                                                     }
                                                                                                     onChange={(e: any, value: Building | null) => {
-                                                                                                              formik.setFieldValue('fullAddress', value ? value.fullAddress : '');
+                                                                                                              formik.setFieldValue('fullAddress', value ? value.fullAddress : '')
+                                                                                                              setBuildingID(value?._id || '')
                                                                                                     }}
                                                                                                     defaultValue={props.allBuildings.find(
                                                                                                               (building: any) => building.fullAddress === formik.values.fullAddress
@@ -210,32 +212,6 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.phoneNumber}
                                                                                           />
-                                                                                          {/* <LocalizationProvider dateAdapter={AdapterMoment}>
-                                                                                                    <DatePicker
-                                                                                                              label="Date of birth"
-                                                                                                              value={moment(formik.values.dateOfBirth)}
-                                                                                                              //format="mm.dd.yyyy"
-                                                                                                              onChange={(value) => { formik.setFieldValue('dateOfBirth', moment(value)); }}
-                                                                                                              slotProps={{
-                                                                                                                        textField: {
-                                                                                                                                  variant: 'outlined',
-                                                                                                                                  error: formik.touched.dateOfBirth && Boolean(formik.errors.dateOfBirth),
-                                                                                                                                  helperText: formik.touched.dateOfBirth && formik.errors.dateOfBirth,
-                                                                                                                        },
-                                                                                                              }}
-                                                                                                    />
-                                                                                          </LocalizationProvider> */}
-                                                                                          {/* <KeyboardDatePicker
-                                                                                                    _id="date-picker-dialog"
-                                                                                                    label="Date picker dialog"
-                                                                                                    inputVariant="outlined"
-                                                                                                    format="MM/dd/yyyy"
-                                                                                                    value={props.values.date}
-                                                                                                    onChange={value => props.setFieldValue("date", value)}
-                                                                                                    KeyboardButtonProps={{
-                                                                                                              "aria-label": "change date"
-                                                                                                    }}
-                                                                                          /> */}
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.email && formik.errors.email)}
                                                                                                     fullWidth

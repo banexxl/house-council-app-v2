@@ -10,11 +10,12 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
           try {
                     if (request.method === 'PUT') {
+                              console.log('update building customer api put req', request.body);
+
                               try {
-                                        await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
+                                        await dbBuildings.updateOne({ _id: new ObjectId(request.body.buildingID) },
                                                   {
-                                                            $set:
-                                                                      { board: request.body.board }
+                                                            $push: { tenants: request.body.insertedId }
                                                   })
 
                                         return response.status(200).json({ message: 'Building successfully updated!' });

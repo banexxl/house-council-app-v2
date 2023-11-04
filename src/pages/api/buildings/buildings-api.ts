@@ -33,7 +33,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildings, totalCount });
 
                     } else if (request.method === 'POST') {
-                              console.log('building api post req', request.body);
 
                               const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
 
