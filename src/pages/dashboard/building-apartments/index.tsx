@@ -26,6 +26,7 @@ import { BuildingFilters } from '@/sections/dashboard/buildings/building-options
 import { applyPagination } from '@/utils/apply-pagination';
 import { useSelection } from '@/hooks/use-selection';
 import { buildingServices } from '@/utils/building-services';
+import { BuildingApartmentsListTable } from '@/sections/dashboard/building-apartments/building-apartments-list-table';
 
 interface BuildingSearchState {
           filters: BuildingFilters;
@@ -128,7 +129,7 @@ const Page: NextPage = (props: any) => {
                                                                       spacing={4}
                                                             >
                                                                       <Stack spacing={1}>
-                                                                                <Typography variant="h4">Buildings</Typography>
+                                                                                <Typography variant="h4">Building apartments</Typography>
                                                                                 <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                                                                           <Link
                                                                                                     color="text.primary"
@@ -144,7 +145,7 @@ const Page: NextPage = (props: any) => {
                                                                                                     href={paths.dashboard.buildings.index}
                                                                                                     variant="subtitle2"
                                                                                           >
-                                                                                                    Buildings
+                                                                                                    Building apartments
                                                                                           </Link>
                                                                                           <Typography
                                                                                                     color="text.secondary"
@@ -161,7 +162,7 @@ const Page: NextPage = (props: any) => {
                                                                       >
                                                                                 <Button
                                                                                           component={RouterLink}
-                                                                                          href={paths.dashboard.buildings.create}
+                                                                                          href={paths.dashboard.buildingApartments.create}
                                                                                           startIcon={
                                                                                                     <SvgIcon>
                                                                                                               <PlusIcon />
@@ -175,7 +176,7 @@ const Page: NextPage = (props: any) => {
                                                             </Stack>
                                                             <Card>
                                                                       <BuildingListSearch onFiltersChange={useBuildingsSearch().handleFiltersChange} />
-                                                                      <BuildingListTable
+                                                                      <BuildingApartmentsListTable
                                                                                 count={props.buildings.length}
                                                                                 items={props.buildings}
                                                                                 onPageChange={useBuildingsSearch().handlePageChange}

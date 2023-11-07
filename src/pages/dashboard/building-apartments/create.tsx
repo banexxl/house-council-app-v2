@@ -13,8 +13,9 @@ import { usePageView } from 'src/hooks/use-page-view';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
 import { BuildingApartmentCreateForm } from '@/sections/dashboard/building-apartments/building-apartments-create-form';
+import { buildingServices } from '@/utils/building-services';
 
-const Page: NextPage = () => {
+const Page: NextPage = (props: any) => {
           usePageView();
 
           return (
@@ -56,13 +57,29 @@ const Page: NextPage = () => {
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <BuildingApartmentCreateForm />
+                                                            <BuildingApartmentCreateForm allBuildings={props.allBuildings} />
                                                   </Stack>
                                         </Container>
                               </Box>
                     </>
           );
 };
+
+export const getServerSideProps = async (context: any) => {
+
+          const allBuildings = await buildingServices().getAllBuildings()
+
+          redirect: {
+                    destination: "/404"
+          }
+
+          return {
+                    props: {
+                              allBuildings: JSON.parse(JSON.stringify(allBuildings)),
+                    },
+          }
+
+}
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 

@@ -106,152 +106,152 @@ export const BuildingCreateForm: FC = (props) => {
           }
 
           return (
-                    <Box>
-                              <form
-                                        onSubmit={formik.handleSubmit}
-                                        {...props}
-                              >
 
-                                        <Stack spacing={4}>
-                                                  {/*-------------------Basic info-------------------*/}
-                                                  <Card>
-                                                            <CardContent>
+                    <form
+                              onSubmit={formik.handleSubmit}
+                              {...props}
+                    >
+
+                              <Stack spacing={4}>
+                                        {/*-------------------Basic info-------------------*/}
+                                        <Card>
+                                                  <CardContent>
+                                                            <Grid
+                                                                      container
+                                                                      spacing={3}
+                                                            >
                                                                       <Grid
-                                                                                container
-                                                                                spacing={3}
+                                                                                xs={12}
+                                                                                md={4}
                                                                       >
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={4}
-                                                                                >
-                                                                                          <Typography variant="h6">Basic information</Typography>
-                                                                                </Grid>
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={8}
-                                                                                >
-                                                                                          <Stack spacing={3}>
-                                                                                                    <GoogleMaps onMapAddressChange={onMapAddressChange} />
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
-                                                                                                              fullWidth
-                                                                                                              helperText={formik.touched.fullAddress && formik.errors.fullAddress}
-                                                                                                              label="Building Address"
-                                                                                                              name="fullAddress"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              value={formik.values.fullAddress}
-                                                                                                              disabled
-                                                                                                    />
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.region && formik.errors.region)}
-                                                                                                              fullWidth
-                                                                                                              label="Region"
-                                                                                                              name="region"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="string"
-                                                                                                              value={formik.values.region}
-                                                                                                    />
-                                                                                                    <Box>
-                                                                                                              <Typography
-                                                                                                                        color="text.secondary"
-                                                                                                                        sx={{ mb: 2 }}
-                                                                                                                        variant="subtitle2"
-                                                                                                              >
-                                                                                                                        Description
-                                                                                                              </Typography>
-                                                                                                              <QuillEditor
-                                                                                                                        onChange={(value: string): void => {
-                                                                                                                                  formik.setFieldValue('description', value);
-                                                                                                                        }}
-                                                                                                                        placeholder="Write something"
-                                                                                                                        sx={{ height: 400 }}
-                                                                                                                        value={formik.values.description}
-                                                                                                              />
-
-                                                                                                    </Box>
-                                                                                          </Stack>
-                                                                                </Grid>
+                                                                                <Typography variant="h6">Basic information</Typography>
                                                                       </Grid>
-                                                            </CardContent>
-                                                  </Card>
-                                                  {/*-------------------Image-------------------*/}
-                                                  <Card>
-                                                            <CardContent>
                                                                       <Grid
-                                                                                container
-                                                                                spacing={3}
+                                                                                xs={12}
+                                                                                md={8}
                                                                       >
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={4}
-                                                                                >
-                                                                                          <Stack spacing={1}>
-                                                                                                    <Typography variant="h6">Images</Typography>
+                                                                                <Stack spacing={3}>
+                                                                                          <GoogleMaps onMapAddressChange={onMapAddressChange} />
+                                                                                          <TextField
+                                                                                                    error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
+                                                                                                    fullWidth
+                                                                                                    helperText={formik.touched.fullAddress && formik.errors.fullAddress}
+                                                                                                    label="Building Address"
+                                                                                                    name="fullAddress"
+                                                                                                    onBlur={formik.handleBlur}
+                                                                                                    onChange={formik.handleChange}
+                                                                                                    value={formik.values.fullAddress}
+                                                                                                    disabled
+                                                                                          />
+                                                                                          <TextField
+                                                                                                    error={!!(formik.touched.region && formik.errors.region)}
+                                                                                                    fullWidth
+                                                                                                    label="Region"
+                                                                                                    name="region"
+                                                                                                    onBlur={formik.handleBlur}
+                                                                                                    onChange={formik.handleChange}
+                                                                                                    type="string"
+                                                                                                    value={formik.values.region}
+                                                                                          />
+                                                                                          <Box>
                                                                                                     <Typography
                                                                                                               color="text.secondary"
-                                                                                                              variant="body2"
+                                                                                                              sx={{ mb: 2 }}
+                                                                                                              variant="subtitle2"
                                                                                                     >
-                                                                                                              Images will appear in the store front of your website.
+                                                                                                              Description
                                                                                                     </Typography>
-                                                                                          </Stack>
-                                                                                </Grid>
-                                                                                <Box
-                                                                                          sx={{
-                                                                                                    display: 'flex',
-                                                                                                    flexDirection: 'column',
-                                                                                                    alignItems: 'center',
-                                                                                                    gap: '10px'
-                                                                                          }}
-                                                                                >
-
-                                                                                          {
-                                                                                                    selectedImage ?
-                                                                                                              <Image src={selectedImage}
-                                                                                                                        alt='sds'
-                                                                                                                        width={300}
-                                                                                                                        height={300}
-                                                                                                                        style={{
-                                                                                                                                  borderRadius: '10px',
-                                                                                                                                  cursor: 'pointer'
-                                                                                                                        }}
-                                                                                                                        onClick={() => handleFileRemove()}
-                                                                                                              />
-                                                                                                              :
-                                                                                                              <InsertPhotoIcon
-                                                                                                                        color='primary'
-                                                                                                                        sx={{ width: '300px', height: '300px' }}
-                                                                                                              />
-                                                                                          }
-
-                                                                                          <Button component="label"
-                                                                                                    variant="contained"
-                                                                                                    startIcon={<CloudUploadIcon />}
-                                                                                                    sx={{
-                                                                                                              maxWidth: '150px'
-                                                                                                    }}
-
-                                                                                          >
-                                                                                                    Upload file
-                                                                                                    <Input
-                                                                                                              type="file"
-                                                                                                              inputProps={{ accept: 'image/*' }}
-                                                                                                              sx={{
-                                                                                                                        clip: 'rect(0 0 0 0)',
-                                                                                                                        clipPath: 'inset(50%)',
-                                                                                                                        height: 1,
-                                                                                                                        overflow: 'hidden',
-                                                                                                                        position: 'absolute',
-                                                                                                                        bottom: 0,
-                                                                                                                        left: 0,
-                                                                                                                        whiteSpace: 'nowrap',
-                                                                                                                        width: 1,
+                                                                                                    <QuillEditor
+                                                                                                              onChange={(value: string): void => {
+                                                                                                                        formik.setFieldValue('description', value);
                                                                                                               }}
-                                                                                                              onInput={(e: any) => handleImageChange(e)}
+                                                                                                              placeholder="Write something"
+                                                                                                              sx={{ height: 400 }}
+                                                                                                              value={formik.values.description}
                                                                                                     />
-                                                                                          </Button>
-                                                                                          {/* <FileDropzone
+
+                                                                                          </Box>
+                                                                                </Stack>
+                                                                      </Grid>
+                                                            </Grid>
+                                                  </CardContent>
+                                        </Card>
+                                        {/*-------------------Image-------------------*/}
+                                        <Card>
+                                                  <CardContent>
+                                                            <Grid
+                                                                      container
+                                                                      spacing={3}
+                                                            >
+                                                                      <Grid
+                                                                                xs={12}
+                                                                                md={4}
+                                                                      >
+                                                                                <Stack spacing={1}>
+                                                                                          <Typography variant="h6">Images</Typography>
+                                                                                          <Typography
+                                                                                                    color="text.secondary"
+                                                                                                    variant="body2"
+                                                                                          >
+                                                                                                    Images will appear in the store front of your website.
+                                                                                          </Typography>
+                                                                                </Stack>
+                                                                      </Grid>
+                                                                      <Box
+                                                                                sx={{
+                                                                                          display: 'flex',
+                                                                                          flexDirection: 'column',
+                                                                                          alignItems: 'center',
+                                                                                          gap: '10px'
+                                                                                }}
+                                                                      >
+
+                                                                                {
+                                                                                          selectedImage ?
+                                                                                                    <Image src={selectedImage}
+                                                                                                              alt='sds'
+                                                                                                              width={300}
+                                                                                                              height={300}
+                                                                                                              style={{
+                                                                                                                        borderRadius: '10px',
+                                                                                                                        cursor: 'pointer'
+                                                                                                              }}
+                                                                                                              onClick={() => handleFileRemove()}
+                                                                                                    />
+                                                                                                    :
+                                                                                                    <InsertPhotoIcon
+                                                                                                              color='primary'
+                                                                                                              sx={{ width: '300px', height: '300px' }}
+                                                                                                    />
+                                                                                }
+
+                                                                                <Button component="label"
+                                                                                          variant="contained"
+                                                                                          startIcon={<CloudUploadIcon />}
+                                                                                          sx={{
+                                                                                                    maxWidth: '150px'
+                                                                                          }}
+
+                                                                                >
+                                                                                          Upload file
+                                                                                          <Input
+                                                                                                    type="file"
+                                                                                                    inputProps={{ accept: 'image/*' }}
+                                                                                                    sx={{
+                                                                                                              clip: 'rect(0 0 0 0)',
+                                                                                                              clipPath: 'inset(50%)',
+                                                                                                              height: 1,
+                                                                                                              overflow: 'hidden',
+                                                                                                              position: 'absolute',
+                                                                                                              bottom: 0,
+                                                                                                              left: 0,
+                                                                                                              whiteSpace: 'nowrap',
+                                                                                                              width: 1,
+                                                                                                    }}
+                                                                                                    onInput={(e: any) => handleImageChange(e)}
+                                                                                          />
+                                                                                </Button>
+                                                                                {/* <FileDropzone
                                                                                                     multiple={false}
                                                                                                     accept={{ 'image/*': [] }}
                                                                                                     caption="(SVG, JPG, PNG, or gif maximum 900x400)"
@@ -259,211 +259,211 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                     onDrop={handleFilesDrop}
                                                                                                     onRemove={handleFileRemove}
                                                                                           /> */}
-                                                                                </Box>
-                                                                      </Grid>
-                                                            </CardContent>
-                                                  </Card>
-                                                  {/*-------------------Detailed information-------------------*/}
-                                                  <Card>
-                                                            <CardContent>
+                                                                      </Box>
+                                                            </Grid>
+                                                  </CardContent>
+                                        </Card>
+                                        {/*-------------------Detailed information-------------------*/}
+                                        <Card>
+                                                  <CardContent>
+                                                            <Grid
+                                                                      container
+                                                                      spacing={3}
+                                                            >
                                                                       <Grid
-                                                                                container
-                                                                                spacing={3}
+                                                                                xs={12}
+                                                                                md={4}
                                                                       >
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={4}
-                                                                                >
-                                                                                          <Typography variant="h6">Detailed information</Typography>
-                                                                                </Grid>
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={8}
-                                                                                          flexDirection={'row'}
-                                                                                          container
-                                                                                >
-                                                                                          <Stack spacing={5}>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.isRecentlyBuilt}
-                                                                                                                                            name='isRecentlyBuilt'
-                                                                                                                                            onChange={() => formik.setFieldValue('isRecentlyBuilt', !formik.values.isRecentlyBuilt)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Is recently built"
-                                                                                                              />
-                                                                                                    </Box><Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasOwnParkingLot}
-                                                                                                                                            name='hasOwnParkingLot'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnParkingLot', !formik.values.hasOwnParkingLot)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has own parking lot"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasOwnElevator}
-                                                                                                                                            name='hasOwnElevator'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnElevator', !formik.values.hasOwnElevator)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has own elevator"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasOwnBicycleRoom}
-                                                                                                                                            name='hasOwnBicycleRoom'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnBicycleRoom', !formik.values.hasOwnBicycleRoom)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has own bicycle room"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                          </Stack>
-                                                                                          <Stack spacing={2}>
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.storiesHigh && formik.errors.storiesHigh)}
-                                                                                                              fullWidth
-                                                                                                              label="Stories high"
-                                                                                                              name="storiesHigh"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="number"
-                                                                                                              value={formik.values.storiesHigh}
-                                                                                                    />
-                                                                                                    <TextField
-                                                                                                              error={!!(formik.touched.ApartmentCount && formik.errors.ApartmentCount)}
-                                                                                                              fullWidth
-                                                                                                              label="Apartment count"
-                                                                                                              name="ApartmentCount"
-                                                                                                              onBlur={formik.handleBlur}
-                                                                                                              onChange={formik.handleChange}
-                                                                                                              type="number"
-                                                                                                              value={formik.values.ApartmentCount}
-                                                                                                    />
-                                                                                          </Stack>
-                                                                                </Grid>
+                                                                                <Typography variant="h6">Detailed information</Typography>
                                                                       </Grid>
-                                                            </CardContent>
-                                                  </Card>
-                                                  {/*-------------------Advanced information info-------------------*/}
-                                                  <Card>
-                                                            <CardContent>
                                                                       <Grid
+                                                                                xs={12}
+                                                                                md={8}
+                                                                                flexDirection={'row'}
                                                                                 container
-                                                                                spacing={3}
                                                                       >
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={4}
-                                                                                >
-                                                                                          <Typography variant="h6">Advanced information</Typography>
-                                                                                </Grid>
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={8}
-                                                                                          flexDirection={'row'}
-                                                                                          container
-                                                                                >
-                                                                                          <Stack spacing={2}>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasGasHeating}
-                                                                                                                                            name='hasGasHeating'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasGasHeating', !formik.values.hasGasHeating)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has gas heating"
-                                                                                                                        value={formik.values.hasGasHeating}
-                                                                                                                        name='hasGasHeating'
-                                                                                                              />
-                                                                                                    </Box><Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasCentralHeating}
-                                                                                                                                            name='hasCentralHeating'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasCentralHeating', !formik.values.hasCentralHeating)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has central heating"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasElectricHeating}
-                                                                                                                                            name='hasElectricHeating'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasElectricHeating', !formik.values.hasElectricHeating)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has electrical heating"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasSolarPower}
-                                                                                                                                            name='hasSolarPower'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasSolarPower', !formik.values.hasSolarPower)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has solar power"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                                    <Box>
-                                                                                                              <FormControlLabel
-                                                                                                                        control={
-                                                                                                                                  <Switch
-                                                                                                                                            value={formik.values.hasOwnWaterPump}
-                                                                                                                                            name='hasOwnWaterPump'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnWaterPump', !formik.values.hasOwnWaterPump)}
-                                                                                                                                  />
-                                                                                                                        }
-                                                                                                                        label="Has own water pump"
-                                                                                                              />
-                                                                                                    </Box>
-                                                                                          </Stack>
-                                                                                </Grid>
+                                                                                <Stack spacing={5}>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.isRecentlyBuilt}
+                                                                                                                                  name='isRecentlyBuilt'
+                                                                                                                                  onChange={() => formik.setFieldValue('isRecentlyBuilt', !formik.values.isRecentlyBuilt)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Is recently built"
+                                                                                                    />
+                                                                                          </Box><Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasOwnParkingLot}
+                                                                                                                                  name='hasOwnParkingLot'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnParkingLot', !formik.values.hasOwnParkingLot)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has own parking lot"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasOwnElevator}
+                                                                                                                                  name='hasOwnElevator'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnElevator', !formik.values.hasOwnElevator)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has own elevator"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasOwnBicycleRoom}
+                                                                                                                                  name='hasOwnBicycleRoom'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnBicycleRoom', !formik.values.hasOwnBicycleRoom)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has own bicycle room"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                </Stack>
+                                                                                <Stack spacing={2}>
+                                                                                          <TextField
+                                                                                                    error={!!(formik.touched.storiesHigh && formik.errors.storiesHigh)}
+                                                                                                    fullWidth
+                                                                                                    label="Stories high"
+                                                                                                    name="storiesHigh"
+                                                                                                    onBlur={formik.handleBlur}
+                                                                                                    onChange={formik.handleChange}
+                                                                                                    type="number"
+                                                                                                    value={formik.values.storiesHigh}
+                                                                                          />
+                                                                                          <TextField
+                                                                                                    error={!!(formik.touched.ApartmentCount && formik.errors.ApartmentCount)}
+                                                                                                    fullWidth
+                                                                                                    label="Apartment count"
+                                                                                                    name="ApartmentCount"
+                                                                                                    onBlur={formik.handleBlur}
+                                                                                                    onChange={formik.handleChange}
+                                                                                                    type="number"
+                                                                                                    value={formik.values.ApartmentCount}
+                                                                                          />
+                                                                                </Stack>
                                                                       </Grid>
-                                                            </CardContent>
-                                                  </Card>
-                                                  <Stack
-                                                            alignItems="center"
-                                                            direction="row"
-                                                            justifyContent="flex-end"
-                                                            spacing={1}
+                                                            </Grid>
+                                                  </CardContent>
+                                        </Card>
+                                        {/*-------------------Advanced information info-------------------*/}
+                                        <Card>
+                                                  <CardContent>
+                                                            <Grid
+                                                                      container
+                                                                      spacing={3}
+                                                            >
+                                                                      <Grid
+                                                                                xs={12}
+                                                                                md={4}
+                                                                      >
+                                                                                <Typography variant="h6">Advanced information</Typography>
+                                                                      </Grid>
+                                                                      <Grid
+                                                                                xs={12}
+                                                                                md={8}
+                                                                                flexDirection={'row'}
+                                                                                container
+                                                                      >
+                                                                                <Stack spacing={2}>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasGasHeating}
+                                                                                                                                  name='hasGasHeating'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasGasHeating', !formik.values.hasGasHeating)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has gas heating"
+                                                                                                              value={formik.values.hasGasHeating}
+                                                                                                              name='hasGasHeating'
+                                                                                                    />
+                                                                                          </Box><Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasCentralHeating}
+                                                                                                                                  name='hasCentralHeating'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasCentralHeating', !formik.values.hasCentralHeating)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has central heating"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasElectricHeating}
+                                                                                                                                  name='hasElectricHeating'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasElectricHeating', !formik.values.hasElectricHeating)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has electrical heating"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasSolarPower}
+                                                                                                                                  name='hasSolarPower'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasSolarPower', !formik.values.hasSolarPower)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has solar power"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                          <Box>
+                                                                                                    <FormControlLabel
+                                                                                                              control={
+                                                                                                                        <Switch
+                                                                                                                                  value={formik.values.hasOwnWaterPump}
+                                                                                                                                  name='hasOwnWaterPump'
+                                                                                                                                  onChange={() => formik.setFieldValue('hasOwnWaterPump', !formik.values.hasOwnWaterPump)}
+                                                                                                                        />
+                                                                                                              }
+                                                                                                              label="Has own water pump"
+                                                                                                    />
+                                                                                          </Box>
+                                                                                </Stack>
+                                                                      </Grid>
+                                                            </Grid>
+                                                  </CardContent>
+                                        </Card>
+                                        <Stack
+                                                  alignItems="center"
+                                                  direction="row"
+                                                  justifyContent="flex-end"
+                                                  spacing={1}
+                                        >
+                                                  <Button color="inherit"
+                                                            onClick={() => router.push(paths.dashboard.buildings.index)}
                                                   >
-                                                            <Button color="inherit"
-                                                                      onClick={() => router.push(paths.dashboard.buildings.index)}
-                                                            >
-                                                                      Cancel
-                                                            </Button>
-                                                            <Button
-                                                                      type="submit"
-                                                                      variant="contained"
-                                                            >
-                                                                      Create
-                                                            </Button>
-                                                  </Stack>
+                                                            Cancel
+                                                  </Button>
+                                                  <Button
+                                                            type="submit"
+                                                            variant="contained"
+                                                  >
+                                                            Create
+                                                  </Button>
                                         </Stack>
-                              </form>
-                    </Box>
+                              </Stack>
+                    </form>
+
 
           );
 };

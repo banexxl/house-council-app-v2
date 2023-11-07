@@ -18,13 +18,14 @@ import { paths } from 'src/paths';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import { initialValues, validationSchema } from './building-apartments-options';
-import { Input } from '@mui/material';
+import { Autocomplete, Input } from '@mui/material';
 import Image from 'next/image';
+import { Building } from '@/types/building';
 
-export const BuildingApartmentCreateForm: FC = (props) => {
+export const BuildingApartmentCreateForm = (props: any) => {
 
           const router = useRouter();
-
+          const [buildingID, setBuildingID] = useState('')
           const [selectedImage, setSelectedImage] = useState(null);
 
           const handleImageChange = (event: any) => {
@@ -44,6 +45,8 @@ export const BuildingApartmentCreateForm: FC = (props) => {
                     initialValues,
                     validationSchema,
                     onSubmit: async (values: any, helpers: any): Promise<void> => {
+                              console.log('u sao u submit apartmana');
+
                               try {
                                         const buildingApartmentCreateResponse = await fetch('/api/building-apartments/apartments-api', {
                                                   method: 'POST',
@@ -93,30 +96,45 @@ export const BuildingApartmentCreateForm: FC = (props) => {
                                         onSubmit={formik.handleSubmit}
                                         {...props}
                               >
-
                                         <Stack spacing={4}>
                                                   <Card>
                                                             <CardContent>
                                                                       <Box
-                                                                                sx={{ display: 'flex', justifyContent: 'space-between', maxWidth: '800px' }}
+                                                                                sx={{ display: 'flex', gap: '15px', justifyContent: 'space-between', maxWidth: '800px', flexDirection: { md: 'row', xs: 'column' } }}
 
                                                                       >
-                                                                                <Grid
-                                                                                          xs={12}
-                                                                                          md={4}
-                                                                                >
+                                                                                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '15px' }}>
                                                                                           <Typography variant="h6">Basic information</Typography>
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
-                                                                                                    fullWidth
-                                                                                                    label="Full address"
-                                                                                                    name="fullAddress"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    type="text"
-                                                                                                    value={formik.values.fullAddress}
+                                                                                          <Autocomplete
+                                                                                                    sx={{ minWidth: '300px' }}
+                                                                                                    disablePortal
+                                                                                                    id="combo-box-demo"
+                                                                                                    options={props.allBuildings}
+                                                                                                    getOptionLabel={(building: any) => building.fullAddress}
+                                                                                                    renderInput={(params) =>
+                                                                                                              <TextField
+                                                                                                                        {...params}
+                                                                                                                        label="Building address"
+                                                                                                                        helperText={
+                                                                                                                                  formik.touched.fullAddress && formik.errors.fullAddress
+                                                                                                                                            ? formik.errors.fullAddress
+                                                                                                                                            : ''
+                                                                                                                        }
+                                                                                                                        error={formik.touched.fullAddress && Boolean(formik.errors.fullAddress)}
+                                                                                                              />
+                                                                                                    }
+                                                                                                    onChange={(e: any, value: Building | null) => {
+                                                                                                              formik.setFieldValue('fullAddress', value ? value.fullAddress : '')
+                                                                                                              formik.setFieldValue('buildingID', value ? value._id : '')
+                                                                                                              setBuildingID(value?._id || '')
+                                                                                                    }}
+                                                                                                    defaultValue={props.allBuildings.find(
+                                                                                                              (building: any) => building.fullAddress === formik.values.fullAddress
+                                                                                                    )}
+                                                                                                    onBlur={formik.handleBlur('fullAddress')}
                                                                                           />
-                                                                                </Grid>
+                                                                                </Box>
+
                                                                                 <Box
                                                                                           sx={{ display: 'flex', justifyContent: 'space-between' }}
                                                                                 >
@@ -181,7 +199,7 @@ export const BuildingApartmentCreateForm: FC = (props) => {
                                                                                                               />
                                                                                                     </Box>
                                                                                           </Stack>
-                                                                                          <Stack spacing={2}>
+                                                                                          <Stack spacing={3}>
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.apartmentNumber && formik.errors.apartmentNumber)}
                                                                                                               fullWidth
@@ -351,6 +369,24 @@ export const BuildingApartmentCreateForm: FC = (props) => {
                                                                                 <Image src={''} alt={''} ></Image>
                                                                       </Grid>
                                                             </CardContent>
+                                                            <Stack
+                                                                      alignItems="center"
+                                                                      direction="row"
+                                                                      justifyContent="flex-end"
+                                                                      spacing={1}
+                                                            >
+                                                                      <Button color="inherit"
+                                                                                onClick={() => router.push(paths.dashboard.buildingApartments.index)}
+                                                                      >
+                                                                                Cancel
+                                                                      </Button>
+                                                                      <Button
+                                                                                type="submit"
+                                                                                variant="contained"
+                                                                      >
+                                                                                Create
+                                                                      </Button>
+                                                            </Stack>
                                                   </Card>
                                         </Stack>
                               </form>

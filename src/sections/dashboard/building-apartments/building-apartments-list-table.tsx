@@ -51,7 +51,7 @@ interface BuildingApartmentsListTableProps {
           rowsPerPage?: number;
 }
 
-export const BuildingListTable: FC<BuildingApartmentsListTableProps> = (props) => {
+export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> = (props) => {
 
           const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
 
@@ -800,7 +800,7 @@ export const BuildingListTable: FC<BuildingApartmentsListTableProps> = (props) =
           );
 };
 
-BuildingListTable.propTypes = {
+BuildingApartmentsListTable.propTypes = {
           count: PropTypes.number,
           items: PropTypes.array,
           onPageChange: PropTypes.func,
