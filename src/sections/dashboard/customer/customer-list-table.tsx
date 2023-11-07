@@ -41,7 +41,7 @@ interface CustomerQueryParams {
 interface CustomerListTableProps {
           count?: number;
           items?: Customer[];
-          allBuildings?: Building[];
+          allBuildings?: string[];
           onDeselectAll?: () => void;
           onDeselectOne?: (customerId: string) => void;
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
@@ -75,6 +75,9 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
           const enableBulkActions = selected.length > 0;
           const enableEditAction = selected.length == 1
           const router = useRouter();
+          console.log('selected tenants', selected);
+          console.log('allBuildingIDs', allBuildings);
+
 
           const handleTenantDeleteClick = () => {
                     Swal.fire({
@@ -100,7 +103,10 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                         'Access-Control-Allow-Origin': '*',
                                         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                               },
-                              body: JSON.stringify(customerIDs)
+                              body: JSON.stringify({
+                                        customerIDs: customerIDs,
+
+                              })
                     }).then((res: any) => {
                               if (res.ok) {
                                         toast.success('Customer deleted');
@@ -187,7 +193,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                       <TableCell>First Name</TableCell>
                                                                       <TableCell>Second Name</TableCell>
                                                                       <TableCell>Full Address</TableCell>
-                                                                      <TableCell>Appartment number</TableCell>
+                                                                      <TableCell>Apartment number</TableCell>
                                                                       <TableCell>Owner</TableCell>
                                                             </TableRow>
                                                   </TableHead>
@@ -210,7 +216,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         checked={isSelected}
                                                                                                                         onChange={(event: ChangeEvent<HTMLInputElement>): void => {
                                                                                                                                   if (event.target.checked) {
-                                                                                                                                            onSelectOne?.(customer._id ? customer._id : '');
+                                                                                                                                            onSelectOne?.(customer._id ? customer._id : '')
                                                                                                                                   } else {
                                                                                                                                             onDeselectOne?.(customer._id ? customer._id : '');
                                                                                                                                   }
@@ -287,7 +293,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                                   color="inherit"
                                                                                                                                   variant="subtitle2"
                                                                                                                         >
-                                                                                                                                  {customer.appartmentNumber}
+                                                                                                                                  {customer.ApartmentNumber}
                                                                                                                         </Link>
                                                                                                               </Stack>
                                                                                                     </TableCell>

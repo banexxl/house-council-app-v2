@@ -96,6 +96,10 @@ export const paths = {
                               index: '/dashboard/buildings',
                               create: '/dashboard/buildings/create',
                     },
+                    buildingApartments: {
+                              index: '/dashboard/building-apartments',
+                              create: '/dashboard/building-apartments/create',
+                    },
                     social: {
                               index: '/dashboard/social',
                               profile: '/dashboard/social/profile',

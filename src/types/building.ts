@@ -8,7 +8,7 @@ export interface Building {
           isRecentlyBuilt: boolean;
           storiesHigh: number;
           hasOwnParkingLot: boolean;
-          appartmentCount: number;
+          ApartmentCount: number;
           hasOwnElevator: boolean;
           hasOwnBicycleRoom: boolean;
           /////////////////////////////////////////

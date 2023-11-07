@@ -20,78 +20,78 @@ import { Modal9 } from 'src/sections/components/modals/modal-9';
 import { Modal10 } from 'src/sections/components/modals/modal-10';
 
 const components: { element: JSX.Element; title: string }[] = [
-  {
-    element: <Modal1 />,
-    title: 'Modal 1',
-  },
-  {
-    element: <Modal2 />,
-    title: 'Modal 2',
-  },
-  {
-    element: <Modal3 />,
-    title: 'Modal 3',
-  },
-  {
-    element: <Modal4 />,
-    title: 'Modal 4',
-  },
-  {
-    element: <Modal5 />,
-    title: 'Modal 5',
-  },
-  {
-    element: <Modal6 />,
-    title: 'Modal 6',
-  },
-  {
-    element: <Modal7 />,
-    title: 'Modal 7',
-  },
-  {
-    element: <Modal8 />,
-    title: 'Modal 8',
-  },
-  {
-    element: <Modal9 />,
-    title: 'Modal 9',
-  },
-  {
-    element: <Modal10 />,
-    title: 'Modal 10',
-  },
+          {
+                    element: <Modal1 />,
+                    title: 'Modal 1',
+          },
+          {
+                    element: <Modal2 />,
+                    title: 'Modal 2',
+          },
+          {
+                    element: <Modal3 />,
+                    title: 'Modal 3',
+          },
+          {
+                    element: <Modal4 />,
+                    title: 'Modal 4',
+          },
+          {
+                    element: <Modal5 />,
+                    title: 'Modal 5',
+          },
+          {
+                    element: <Modal6 />,
+                    title: 'Modal 6',
+          },
+          {
+                    element: <Modal7 />,
+                    title: 'Modal 7',
+          },
+          {
+                    element: <Modal8 />,
+                    title: 'Modal 8',
+          },
+          {
+                    element: <Modal9 />,
+                    title: 'Modal 9',
+          },
+          {
+                    element: <Modal10 />,
+                    title: 'Modal 10',
+          },
 ];
 
 const Page: NextPage = () => {
-  usePageView();
+          usePageView();
 
-  return (
-    <>
-      <Seo title="Components: Modals" />
-      <ComponentsLayout title="Modals">
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            py: 8,
-          }}
-        >
-          <Container maxWidth="lg">
-            <Stack spacing={8}>
-              {components.map((component) => (
-                <Previewer
-                  key={component.title}
-                  title={component.title}
-                >
-                  {component.element}
-                </Previewer>
-              ))}
-            </Stack>
-          </Container>
-        </Box>
-      </ComponentsLayout>
-    </>
-  );
+          return (
+                    <>
+                              <Seo title="Components: Modals" />
+                              <ComponentsLayout title="Modals">
+                                        <Box
+                                                  component="main"
+                                                  sx={{
+                                                            flexGrow: 1,
+                                                            py: 8,
+                                                  }}
+                                        >
+                                                  <Container maxWidth="lg">
+                                                            <Stack spacing={8}>
+                                                                      {components.map((component) => (
+                                                                                <Previewer
+                                                                                          key={component.title}
+                                                                                          title={component.title}
+                                                                                >
+                                                                                          {component.element}
+                                                                                </Previewer>
+                                                                      ))}
+                                                            </Stack>
+                                                  </Container>
+                                        </Box>
+                              </ComponentsLayout>
+                    </>
+          );
 };
 
 Page.getLayout = (page) => <MarketingLayout>{page}</MarketingLayout>;

@@ -78,7 +78,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                       firstName: request.body.firstName || '',
                                                                       lastName: request.body.lastName || '',
                                                                       phoneNumber: request.body.phoneNumber || '',
-                                                                      appartmentNumber: request.body.appartmentNumber || '',
+                                                                      apartmentNumber: request.body.apartmentNumber || '',
                                                                       avatar: request.body.avatar || '',
                                                                       updatedAt: request.body.updatedAt || '',
                                                                       dateOfBirth: request.body.dateOfBirth || '',
@@ -92,9 +92,37 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                     }
                     else if (request.method === 'DELETE') {
+                              console.log('customers api delete request', request.body);
+
                               const objectIdArray = request.body.map((_id: any) => new ObjectId(_id));
+
                               try {
-                                        await dbTenants.deleteMany({ _id: { $in: objectIdArray } });
+                                        await dbTenants.deleteMany({ _id: { $in: objectIdArray } })
+                                                  .then(async (deleteTenantResponse: any) => {
+
+                                                            if (deleteTenantResponse.acknowledged) {
+                                                                      try {
+                                                                                await fetch(`${apiUrl}/api/buildings/delete-building-customers-api`, {
+                                                                                          method: 'PUT',
+                                                                                          headers: {
+                                                                                                    'Content-Type': 'application/json',
+                                                                                                    'Access-Control-Allow-Origin': '*',
+                                                                                                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                                                          },
+                                                                                          body: JSON.stringify({
+                                                                                                    tenantsToRemove: request.body,
+                                                                                                    //ovo ispod nemamo
+                                                                                                    buildingID: request.body.buildingID
+                                                                                          })
+                                                                                })
+                                                                                return response.status(200).json({ message: 'Customer successfully added!' });
+                                                                      } catch (error) {
+                                                                                return response.status(500).json({ message: 'update-building-customer-api failed!' });
+                                                                      }
+
+                                                            }
+                                                            else return response.status(400).json({ message: 'Something went wrong!' })
+                                                  })
                                         return response.status(200).json({ message: 'Customer successfully deleted!' });
                               } catch (error) {
                                         console.log(error);

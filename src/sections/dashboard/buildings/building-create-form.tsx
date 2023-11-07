@@ -343,14 +343,14 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                               value={formik.values.storiesHigh}
                                                                                                     />
                                                                                                     <TextField
-                                                                                                              error={!!(formik.touched.appartmentCount && formik.errors.appartmentCount)}
+                                                                                                              error={!!(formik.touched.ApartmentCount && formik.errors.ApartmentCount)}
                                                                                                               fullWidth
-                                                                                                              label="Appartment count"
-                                                                                                              name="appartmentCount"
+                                                                                                              label="Apartment count"
+                                                                                                              name="ApartmentCount"
                                                                                                               onBlur={formik.handleBlur}
                                                                                                               onChange={formik.handleChange}
                                                                                                               type="number"
-                                                                                                              value={formik.values.appartmentCount}
+                                                                                                              value={formik.values.ApartmentCount}
                                                                                                     />
                                                                                           </Stack>
                                                                                 </Grid>

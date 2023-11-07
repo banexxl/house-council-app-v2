@@ -46,9 +46,6 @@ interface CustomersStoreState {
 
 const Page: NextPage = (props: any) => {
 
-          console.log('customer index page props', props);
-
-
           const useCustomersSearch = () => {
 
                     const [state, setState] = useState<CustomersSearchState>({
@@ -146,7 +143,6 @@ const Page: NextPage = (props: any) => {
                     }, []);
           };
 
-
           const customersSearch = useCustomersSearch();
           const customersStore = useCustomersStore(customersSearch.state);
           const customersIds = useCustomersIds(customersStore.customers);
@@ -178,7 +174,7 @@ const Page: NextPage = (props: any) => {
                                                             >
                                                                       <Stack spacing={1}>
                                                                                 <Typography variant="h4">Customers</Typography>
-                                                                                {/* <Stack
+                                                                                <Stack
                                                                                           alignItems="center"
                                                                                           direction="row"
                                                                                           spacing={1}
@@ -205,7 +201,7 @@ const Page: NextPage = (props: any) => {
                                                                                           >
                                                                                                     Export
                                                                                           </Button>
-                                                                                </Stack> */}
+                                                                                </Stack>
                                                                       </Stack>
                                                                       <Stack
                                                                                 alignItems="center"
@@ -286,12 +282,12 @@ export const getServerSideProps: GetServerSideProps = async ({ query, req }) => 
 
                     const data = await response.json();
 
-                    const allBuildingsIDs = await buildingServices().getAllBuildingIDs()
+                    const allBuildings = await buildingServices().getAllBuildings()
 
                     return {
                               props: {
                                         allTenants: JSON.parse(JSON.stringify(data.data)),
-                                        allBuildingsIDs: JSON.parse(JSON.stringify(allBuildingsIDs))
+                                        allBuildings: JSON.parse(JSON.stringify(allBuildings))
                               },
                     }
           } catch (e) {

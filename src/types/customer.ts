@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 export interface Customer {
           _id?: string;
           fullAddress: string;
-          appartmentNumber?: number;
+          ApartmentNumber?: number;
           avatar?: string;
           email?: string;
           firstName: string;
@@ -31,7 +31,7 @@ export const customerSchema = Yup.object({
 
           fullAddress: Yup.string().max(100).required('Full addreess is required'),
 
-          appartmentNumber: Yup.number().typeError('You must specify a number').min(1, 'Appartment number must be greather then 0'),
+          ApartmentNumber: Yup.number().typeError('You must specify a number').min(1, 'Apartment number must be greather then 0'),
 
           email: Yup.string().email('Invalid email address').required('Email is required'),
 

@@ -13,67 +13,67 @@ import { useSettings } from 'src/hooks/use-settings';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 
 const Page: NextPage = () => {
-  const settings = useSettings();
+          const settings = useSettings();
 
-  usePageView();
+          usePageView();
 
-  return (
-    <>
-      <Seo title="Dashboard: Blank" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth={settings.stretch ? false : 'xl'}>
-          <Stack
-            spacing={{
-              xs: 3,
-              lg: 4,
-            }}
-          >
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              spacing={4}
-            >
-              <div>
-                <Typography variant="h4">Blank</Typography>
-              </div>
-              <div>
-                <Stack
-                  direction="row"
-                  spacing={4}
-                >
-                  <Button
-                    startIcon={
-                      <SvgIcon>
-                        <PlusIcon />
-                      </SvgIcon>
-                    }
-                    variant="contained"
-                  >
-                    Action
-                  </Button>
-                </Stack>
-              </div>
-            </Stack>
-            <Box
-              sx={{
-                borderColor: 'neutral.300',
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                height: 300,
-                p: '4px',
-              }}
-            />
-          </Stack>
-        </Container>
-      </Box>
-    </>
-  );
+          return (
+                    <>
+                              <Seo title="Dashboard: Blank" />
+                              <Box
+                                        component="main"
+                                        sx={{
+                                                  flexGrow: 1,
+                                                  py: 8,
+                                        }}
+                              >
+                                        <Container maxWidth={settings.stretch ? false : 'xl'}>
+                                                  <Stack
+                                                            spacing={{
+                                                                      xs: 3,
+                                                                      lg: 4,
+                                                            }}
+                                                  >
+                                                            <Stack
+                                                                      direction="row"
+                                                                      justifyContent="space-between"
+                                                                      spacing={4}
+                                                            >
+                                                                      <div>
+                                                                                <Typography variant="h4">Blank</Typography>
+                                                                      </div>
+                                                                      <div>
+                                                                                <Stack
+                                                                                          direction="row"
+                                                                                          spacing={4}
+                                                                                >
+                                                                                          <Button
+                                                                                                    startIcon={
+                                                                                                              <SvgIcon>
+                                                                                                                        <PlusIcon />
+                                                                                                              </SvgIcon>
+                                                                                                    }
+                                                                                                    variant="contained"
+                                                                                          >
+                                                                                                    Action
+                                                                                          </Button>
+                                                                                </Stack>
+                                                                      </div>
+                                                            </Stack>
+                                                            <Box
+                                                                      sx={{
+                                                                                borderColor: 'neutral.300',
+                                                                                borderStyle: 'dashed',
+                                                                                borderWidth: 1,
+                                                                                height: 300,
+                                                                                p: '4px',
+                                                                      }}
+                                                            />
+                                                  </Stack>
+                                        </Container>
+                              </Box>
+                    </>
+          );
 };
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;

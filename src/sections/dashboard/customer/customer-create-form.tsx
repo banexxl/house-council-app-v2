@@ -24,7 +24,7 @@ import moment, { Moment } from 'moment';
 
 const initialValues: Customer = {
           fullAddress: '',
-          appartmentNumber: 0,
+          ApartmentNumber: 0,
           avatar: '',
           email: '',
           firstName: '',
@@ -184,6 +184,7 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     }
                                                                                                     onChange={(e: any, value: Building | null) => {
                                                                                                               formik.setFieldValue('fullAddress', value ? value.fullAddress : '')
+                                                                                                              formik.setFieldValue('buildingID', value ? value._id : '')
                                                                                                               setBuildingID(value?._id || '')
                                                                                                     }}
                                                                                                     defaultValue={props.allBuildings.find(
@@ -193,14 +194,14 @@ export const CustomerCreateForm = (props: any) => {
                                                                                           />
 
                                                                                           <TextField
-                                                                                                    error={!!(formik.touched.appartmentNumber && formik.errors.appartmentNumber)}
+                                                                                                    error={!!(formik.touched.ApartmentNumber && formik.errors.ApartmentNumber)}
                                                                                                     fullWidth
-                                                                                                    helperText={formik.touched.appartmentNumber && formik.errors.appartmentNumber}
-                                                                                                    label="Appartment number"
-                                                                                                    name="appartmentNumber"
+                                                                                                    helperText={formik.touched.ApartmentNumber && formik.errors.ApartmentNumber}
+                                                                                                    label="Apartment number"
+                                                                                                    name="ApartmentNumber"
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
-                                                                                                    value={formik.values.appartmentNumber}
+                                                                                                    value={formik.values.ApartmentNumber}
                                                                                           />
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}

@@ -46,6 +46,7 @@ export const tokens = {
                     postList: 'nav.postList',
                     pricing: 'nav.pricing',
                     buildingList: 'nav.buildings',
+                    buildingApartments: 'nav.buildingApartments',
                     profile: 'nav.profile',
                     register: 'nav.register',
                     resetPassword: 'nav.resetPassword',

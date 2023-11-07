@@ -34,12 +34,12 @@ import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from '@/types/building';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { QuillEditor } from '@/components/quill-editor';
-import { initialValues, validationSchema } from './building-options';
+import { initialValues, validationSchema } from './building-apartments-options';
 import { paths } from '@/paths';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
 
-interface BuildingListTableProps {
+interface BuildingApartmentsListTableProps {
           count?: number;
           items?: Building[];
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
@@ -51,7 +51,7 @@ interface BuildingListTableProps {
           rowsPerPage?: number;
 }
 
-export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
+export const BuildingListTable: FC<BuildingApartmentsListTableProps> = (props) => {
 
           const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
 

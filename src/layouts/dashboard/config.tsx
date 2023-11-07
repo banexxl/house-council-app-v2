@@ -29,6 +29,7 @@ import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 import Truck01Icon from 'src/icons/untitled-ui/duocolor/truck-01';
 import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
 import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import XSquareIcon from 'src/icons/untitled-ui/duocolor/x-square';
 import { tokens } from 'src/locales/tokens';
 import { paths } from 'src/paths';
@@ -147,6 +148,25 @@ export const useSections = () => {
                                                                       {
                                                                                 title: t(tokens.nav.create),
                                                                                 path: paths.dashboard.buildings.create,
+                                                                      },
+                                                            ],
+                                                  },
+                                                  {
+                                                            title: t(tokens.nav.buildingApartments),
+                                                            path: paths.dashboard.buildingApartments.index,
+                                                            icon: (
+                                                                      <SvgIcon fontSize="small">
+                                                                                <MeetingRoomIcon />
+                                                                      </SvgIcon>
+                                                            ),
+                                                            items: [
+                                                                      {
+                                                                                title: t(tokens.nav.list),
+                                                                                path: paths.dashboard.buildingApartments.index,
+                                                                      },
+                                                                      {
+                                                                                title: t(tokens.nav.create),
+                                                                                path: paths.dashboard.buildingApartments.create,
                                                                       },
                                                             ],
                                                   },

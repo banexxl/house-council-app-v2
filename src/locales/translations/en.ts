@@ -44,6 +44,7 @@ export const en = {
           [tokens.nav.postList]: 'Post List',
           [tokens.nav.pricing]: 'Pricing',
           [tokens.nav.buildingList]: 'Buildings',
+          [tokens.nav.buildingApartments]: 'Building apartments',
           [tokens.nav.profile]: 'Profile',
           [tokens.nav.register]: 'Register',
           [tokens.nav.resetPassword]: 'Reset Password',

@@ -82,7 +82,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                       isRecentlyBuilt: request.body.isRecentlyBuilt,
                                                                       storiesHigh: request.body.storiesHigh,
                                                                       hasOwnParkingLot: request.body.hasOwnParkingLot,
-                                                                      appartmentCount: request.body.appartmentCount,
+                                                                      apartmentCount: request.body.apartmentCount,
                                                                       hasOwnElevator: request.body.hasOwnElevator,
                                                                       hasOwnBicycleRoom: request.body.hasOwnBicycleRoom,
                                                                       hasGasHeating: request.body.hasGasHeating,
