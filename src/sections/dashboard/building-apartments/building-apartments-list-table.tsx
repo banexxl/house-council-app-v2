@@ -31,29 +31,29 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import type { Building } from '@/types/building';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { QuillEditor } from '@/components/quill-editor';
 import { initialValues, validationSchema } from './building-apartments-options';
 import { paths } from '@/paths';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
+import { BuildingApartment } from '@/types/building-appartment';
 
 interface BuildingApartmentsListTableProps {
           count?: number;
-          items?: Building[];
+          items?: BuildingApartment[];
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
           onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
           onDeselectOne?: (item: unknown) => void;
           onSelectOne?: (item: unknown) => void;
-          selected?: Building[];
+          selected?: BuildingApartment[];
           page?: number;
           rowsPerPage?: number;
 }
 
 export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> = (props) => {
 
-          const [currentBuildingObject, setCurrentBuildingObject] = useState<Building | null>();
+          const [currentBuildingApartmentObject, setCurrentBuildingApartmentObject] = useState<BuildingApartment | null>();
 
           const router = useRouter();
 
@@ -67,7 +67,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                     selected = []
           } = props;
 
-          const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
+          const [currentBuildingApartment, setCurrentBuildingApartment] = useState<string | null>(null);
 
           const getObjectById = (_id: any, arrayToSearch: any) => {
                     for (const obj of arrayToSearch) {
@@ -78,28 +78,28 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                     return null;  // Object with the desired ID not found
           }
 
-          const handleBuildingToggle = (buildingId: string): void => {
-                    setCurrentBuilding((prevBuildingId) => {
-                              if (prevBuildingId === buildingId) {
-                                        setCurrentBuildingObject(null)
+          const handleBuildingApartmentToggle = (buildingApartmentId: string): void => {
+                    setCurrentBuildingApartment((prevBuildingApartmentId) => {
+                              if (prevBuildingApartmentId === buildingApartmentId) {
+                                        setCurrentBuildingApartmentObject(null)
                                         return null;
                               }
-                              const map = new Map(items.map((obj: Building) => [obj._id, obj]));
-                              const result = map.get(buildingId);
+                              const map = new Map(items.map((obj: BuildingApartment) => [obj._id, obj]));
+                              const result = map.get(buildingApartmentId);
 
-                              setCurrentBuildingObject(result)
-                              return buildingId;
+                              setCurrentBuildingApartmentObject(result)
+                              return buildingApartmentId;
                     });
           }
 
           const handleBuildingClose = (): void => {
-                    setCurrentBuilding(null);
+                    setCurrentBuildingApartment(null);
           }
 
-          const handleBuildingUpdateClick = () => {
+          const handleBuildingApartmentUpdateClick = () => {
                     Swal.fire({
                               title: 'Are you sure?',
-                              text: "You can edit this Building at any time!",
+                              text: "You can edit this Apartment at any time!",
                               icon: 'warning',
                               showCancelButton: true,
                               confirmButtonColor: '#3085d6',
@@ -107,27 +107,27 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                               confirmButtonText: 'Yes, update it!'
                     }).then((result: any) => {
                               if (result.isConfirmed) {
-                                        handleBuildingUpdate(currentBuildingObject)
+                                        handleBuildingApartmentUpdate(currentBuildingApartmentObject)
                               }
                     })
           }
 
-          const handleBuildingUpdate = async (currentBuildingObject: any) => {
+          const handleBuildingApartmentUpdate = async (currentBuildingApartmentObject: any) => {
                     try {
-                              const buildingCreateResponse = await fetch('/api/buildings/update-building-board-api', {
+                              await fetch('/api/building-apartments/apartments-api', {
                                         method: 'PUT',
                                         headers: {
                                                   'Content-Type': 'application/json',
                                                   'Access-Control-Allow-Origin': '*',
                                                   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                         },
-                                        body: JSON.stringify(currentBuildingObject), // Convert your data to JSON
+                                        body: JSON.stringify(currentBuildingApartmentObject), // Convert your data to JSON
                               }).then(async (response) => {
 
                                         if (response.ok) {
-                                                  toast.success('Building updated');
-                                                  router.push(paths.dashboard.buildings.index);
-                                                  setCurrentBuilding(null)
+                                                  toast.success('Apartment updated');
+                                                  router.push(paths.dashboard.buildingApartments.index);
+                                                  setCurrentBuildingApartment(null)
                                         } else {
                                                   const errorData = await response.json(); // Parse the error response
                                                   console.error(errorData);
@@ -143,10 +143,10 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                     }
           }
 
-          const handleBuildingDeleteClick = () => {
+          const handleBuildingApartmentDeleteClick = () => {
                     Swal.fire({
                               title: 'Are you sure?',
-                              text: "Deleting a building cannot be undone!",
+                              text: "Deleting an apartment cannot be undone!",
                               icon: 'warning',
                               showCancelButton: true,
                               confirmButtonColor: '#3085d6',
@@ -154,34 +154,32 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                               confirmButtonText: 'Yes, delete it!'
                     }).then((result: any) => {
                               if (result.isConfirmed) {
-                                        handleBuildingDelete(currentBuildingObject)
+                                        handleBuildingApartmentDelete(currentBuildingApartmentObject)
                               }
                     })
           }
 
-          const handleBuildingDelete = async (currentBuildingObject: any) => {
+          const handleBuildingApartmentDelete = async (currentBuildingApartmentObject: any) => {
                     try {
-                              const deleteBuildingResponse = await fetch('/api/buildings/buildings-api', {
+                              await fetch('/api/building-apartments/apartments-api', {
                                         method: 'DELETE',
                                         headers: {
                                                   'Content-Type': 'application/json',
                                                   'Access-Control-Allow-Origin': '*',
                                                   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                         },
-                                        body: JSON.stringify(currentBuildingObject), // Convert your data to JSON
+                                        body: JSON.stringify(currentBuildingApartmentObject), // Convert your data to JSON
                               }).then(async (response) => {
                                         if (response.ok) {
                                                   toast.success('Building deleted!');
-                                                  router.push(paths.dashboard.buildings.index);
-                                                  setCurrentBuilding(null)
+                                                  router.push(paths.dashboard.buildingApartments.index);
+                                                  setCurrentBuildingApartment(null)
                                         } else {
                                                   const errorData = await response.json(); // Parse the error response
                                                   console.error(errorData);
                                                   toast.error('Something went wrong!');
                                         }
                               })
-                              console.log(deleteBuildingResponse);
-
                     } catch (err) {
                               console.error(err);
                               toast.error('Something went wrong!');
@@ -200,24 +198,27 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                             <TableRow>
                                                                       <TableCell />
                                                                       <TableCell>Full Address</TableCell>
-                                                                      <TableCell>Apartment Count</TableCell>
-                                                                      <TableCell>Elevator</TableCell>
-                                                                      <TableCell>Unresolved issue count</TableCell>
+                                                                      <TableCell>Has own parking spot</TableCell>
+                                                                      <TableCell>Apartment number</TableCell>
+                                                                      <TableCell>Surface area</TableCell>
+                                                                      <TableCell>Bedroom count</TableCell>
+                                                                      <TableCell>Bathroom count</TableCell>
+                                                                      <TableCell>Terrace count</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
                                                             {
-                                                                      items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((building: Building) => {
-                                                                                const isCurrent = building._id === currentBuilding;
-                                                                                // const issueCountColor = building.unresolvedIssues.length >= 10 ? 'success' : 'error';
-                                                                                const hasElevatorColor = building.hasOwnElevator === true ? 'success' : 'error';
-                                                                                // const hasManyVariants = building.variants > 1;
+                                                                      items.slice(page * rowsPerPage, (page * rowsPerPage) + rowsPerPage).map((apartment: BuildingApartment) => {
+                                                                                const isCurrent = apartment._id === currentBuildingApartment;
+                                                                                // const issueCountColor = apartment.unresolvedIssues.length >= 10 ? 'success' : 'error';
+                                                                                const hasOwnParkingSpace = apartment.hasOwnParking === true ? 'success' : 'warning';
+                                                                                // const hasManyVariants = apartment.variants > 1;
 
                                                                                 return (
-                                                                                          <Fragment key={building._id}>
+                                                                                          <Fragment key={apartment._id}>
                                                                                                     <TableRow
                                                                                                               hover
-                                                                                                              key={building._id}
+                                                                                                              key={apartment._id}
                                                                                                     >
                                                                                                               <TableCell
                                                                                                                         padding="checkbox"
@@ -237,38 +238,24 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                         }}
                                                                                                                         width="25%"
                                                                                                               >
-                                                                                                                        <IconButton onClick={() => handleBuildingToggle(building._id!)}>
+                                                                                                                        <IconButton onClick={() => handleBuildingApartmentToggle(apartment._id!)}>
                                                                                                                                   <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                                         </IconButton>
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{building.fullAddress}</TableCell>
-                                                                                                              <TableCell>
-                                                                                                                        {/* <LinearProgress
-                                                                                                                        value={building.unresolvedIssues.length}
-                                                                                                                        variant="determinate"
-                                                                                                                        color={issueCountColor}
-                                                                                                                        sx={{
-                                                                                                                                  height: 8,
-                                                                                                                                  width: 36,
-                                                                                                                        }}
-                                                                                                              /> */}
-                                                                                                                        {/* <Typography
-                                                                                                                        color="text.secondary"
-                                                                                                                        variant="body2"
-                                                                                                              >
-                                                                                                                        {building.unresolvedIssues.length} unresolved issues <br />
-                                                                                                                        out of {building.unresolvedIssues.length}
-                                                                                                              </Typography> */}
-                                                                                                              </TableCell>
+                                                                                                              <TableCell>{apartment.fullAddress}</TableCell>
                                                                                                               <TableCell>
                                                                                                                         {
-                                                                                                                                  building.hasOwnElevator ?
-                                                                                                                                            <CheckCircleOutlineIcon color={hasElevatorColor} />
+                                                                                                                                  apartment.hasOwnParking ?
+                                                                                                                                            <CheckCircleOutlineIcon color={hasOwnParkingSpace} />
                                                                                                                                             :
-                                                                                                                                            <CancelIcon color={hasElevatorColor} />
+                                                                                                                                            <CancelIcon color={hasOwnParkingSpace} />
                                                                                                                         }
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{building.ApartmentCount}</TableCell>
+                                                                                                              <TableCell>{apartment.apartmentNumber}</TableCell>
+                                                                                                              <TableCell>{apartment.surfaceArea}</TableCell>
+                                                                                                              <TableCell>{apartment.bedroomNumber}</TableCell>
+                                                                                                              <TableCell>{apartment.bathroomNumber}</TableCell>
+                                                                                                              <TableCell>{apartment.terraceNumber}</TableCell>
                                                                                                     </TableRow>
 
                                                                                                     {
@@ -313,16 +300,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building._id}
+                                                                                                                                                                                                        defaultValue={apartment._id}
                                                                                                                                                                                                         fullWidth
-                                                                                                                                                                                                        label="Building ID"
-                                                                                                                                                                                                        name="_id"
+                                                                                                                                                                                                        label="Apartment ID"
+                                                                                                                                                                                                        name="apartmentID"
                                                                                                                                                                                                         disabled
-                                                                                                                                                                                                        onLoad={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            street: e.target.value
-                                                                                                                                                                                                                  }))}
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -331,16 +313,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.fullAddress}
+                                                                                                                                                                                                        defaultValue={apartment.fullAddress}
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Full Address"
                                                                                                                                                                                                         name="fullAddress"
                                                                                                                                                                                                         disabled
-                                                                                                                                                                                                        onLoad={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            street: e.target.value
-                                                                                                                                                                                                                  }))}
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -349,16 +326,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.region}
+                                                                                                                                                                                                        defaultValue={apartment.createdAt}
                                                                                                                                                                                                         fullWidth
-                                                                                                                                                                                                        label="Building region"
-                                                                                                                                                                                                        name="region"
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            region: e.target.value
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
+                                                                                                                                                                                                        label="Created at:"
+                                                                                                                                                                                                        name="createdAt"
+                                                                                                                                                                                                        disabled
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -367,17 +339,10 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.storiesHigh}
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            storiesHigh: parseInt(e.target.value)
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
+                                                                                                                                                                                                        defaultValue={apartment.updatedAt}
                                                                                                                                                                                                         fullWidth
-                                                                                                                                                                                                        label="Building stories high"
-                                                                                                                                                                                                        name="storiesHigh"
-                                                                                                                                                                                                        type='number'
+                                                                                                                                                                                                        label="Updated at:"
+                                                                                                                                                                                                        name="updatedAt"
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -386,17 +351,16 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.ApartmentCount}
+                                                                                                                                                                                                        defaultValue={apartment.owners}
                                                                                                                                                                                                         onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  setCurrentBuildingApartmentObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
-                                                                                                                                                                                                                            ApartmentCount: parseInt(e.target.value)
+                                                                                                                                                                                                                            owners: parseInt(e.target.value)
                                                                                                                                                                                                                   }))
                                                                                                                                                                                                         }
                                                                                                                                                                                                         fullWidth
-                                                                                                                                                                                                        label="Building Apartment count"
-                                                                                                                                                                                                        name="ApartmentCount"
-                                                                                                                                                                                                        type='number'
+                                                                                                                                                                                                        label="Owners"
+                                                                                                                                                                                                        name="owners"
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -407,42 +371,19 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               <FormControlLabel
                                                                                                                                                                                                         control={
                                                                                                                                                                                                                   <Checkbox
-                                                                                                                                                                                                                            checked={building.isRecentlyBuilt}
-                                                                                                                                                                                                                            name='isRecentlyBuilt'
+                                                                                                                                                                                                                            checked={apartment.hasOwnParking}
+                                                                                                                                                                                                                            name='hasOwnParking'
                                                                                                                                                                                                                             onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                                      setCurrentBuildingApartmentObject((previousObject: any) => ({
                                                                                                                                                                                                                                                 ...previousObject,
-                                                                                                                                                                                                                                                isRecentlyBuilt: e.target.checked
+                                                                                                                                                                                                                                                hasOwnParking: e.target.checked
                                                                                                                                                                                                                                       }))
-                                                                                                                                                                                                                                      building.isRecentlyBuilt = !building.isRecentlyBuilt
+                                                                                                                                                                                                                                      apartment.hasOwnParking = !apartment.hasOwnParking
                                                                                                                                                                                                                             }
                                                                                                                                                                                                                             }
                                                                                                                                                                                                                   />
                                                                                                                                                                                                         }
-                                                                                                                                                                                                        label="Is recently built"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.buildingStatus}
-                                                                                                                                                                                                                            name='buildingStatus'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                buildingStatus: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.buildingStatus = !building.buildingStatus
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Active"
+                                                                                                                                                                                                        label="Has own parking spot"
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -451,12 +392,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.tenants.length}
+                                                                                                                                                                                                        defaultValue={apartment.tenants.length}
                                                                                                                                                                                                         fullWidth
-                                                                                                                                                                                                        label="Building tenant count"
+                                                                                                                                                                                                        label="Apartment tenant count"
                                                                                                                                                                                                         name="tenantCount"
                                                                                                                                                                                                         type='number'
-                                                                                                                                                                                                        disabled
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -472,11 +412,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                         Description
                                                                                                                                                                                               </Typography>
                                                                                                                                                                                               <QuillEditor
-                                                                                                                                                                                                        defaultValue={building.description}
+                                                                                                                                                                                                        defaultValue={apartment.description}
                                                                                                                                                                                                         placeholder="Short description"
                                                                                                                                                                                                         sx={{ height: 400 }}
                                                                                                                                                                                                         onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
+                                                                                                                                                                                                                  setCurrentBuildingApartmentObject((previousObject: any) => ({
                                                                                                                                                                                                                             ...previousObject,
                                                                                                                                                                                                                             description: e
                                                                                                                                                                                                                   }))
@@ -504,22 +444,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               md={6}
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasCentralHeating}
-                                                                                                                                                                                                                            name='hasCentralHeating'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasCentralHeating: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasCentralHeating = !building.hasCentralHeating
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has Central Heating"
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={apartment.bathroomNumber}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Number of bathrooms"
+                                                                                                                                                                                                        name="bathroomNumber"
+                                                                                                                                                                                                        type='number'
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -527,22 +457,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               md={6}
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasElectricHeating}
-                                                                                                                                                                                                                            name='hasElectricHeating'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasElectricHeating: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasElectricHeating = !building.hasElectricHeating
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has Electrical Heating"
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={apartment.bedroomNumber}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Number of bedrooms"
+                                                                                                                                                                                                        name="bedroomNumber"
+                                                                                                                                                                                                        type='number'
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -550,22 +470,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               md={6}
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasGasHeating}
-                                                                                                                                                                                                                            name='hasGasHeating'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasGasHeating: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasGasHeating = !building.hasGasHeating
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has Gas Heating"
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={apartment.terraceNumber}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Number of terraces"
+                                                                                                                                                                                                        name="terraceNumber"
+                                                                                                                                                                                                        type='number'
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -573,22 +483,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               md={6}
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasOwnBicycleRoom}
-                                                                                                                                                                                                                            name='hasOwnBicycleRoom'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasOwnBicycleRoom: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasOwnBicycleRoom = !building.hasOwnBicycleRoom
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has own bicycle room"
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={apartment.status}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Status"
+                                                                                                                                                                                                        name="status"
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -596,91 +495,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               md={6}
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasOwnElevator}
-                                                                                                                                                                                                                            name='hasOwnElevator'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasOwnElevator: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasOwnElevator = !building.hasOwnElevator
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has own elevator"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasOwnParkingLot}
-                                                                                                                                                                                                                            name='hasOwnParkingLot'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasOwnParkingLot: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasOwnParkingLot = !building.hasOwnParkingLot
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has own parking lot"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasOwnWaterPump}
-                                                                                                                                                                                                                            name='hasOwnWaterPump'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasOwnWaterPump: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasOwnWaterPump = !building.hasOwnWaterPump
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has own water pump"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={building.hasSolarPower}
-                                                                                                                                                                                                                            name='hasSolarPower'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasSolarPower: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      building.hasSolarPower = !building.hasSolarPower
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has own solar power"
+                                                                                                                                                                                              <TextField
+                                                                                                                                                                                                        defaultValue={apartment.surfaceArea}
+                                                                                                                                                                                                        fullWidth
+                                                                                                                                                                                                        label="Surface area"
+                                                                                                                                                                                                        name="surfaceArea"
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
                                                                                                                                                                                     <Grid
@@ -695,12 +514,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                                   flexDirection: 'column',
                                                                                                                                                                                                         }}
                                                                                                                                                                                               >
-                                                                                                                                                                                                        {building.image ? (
+                                                                                                                                                                                                        {apartment.images ? (
                                                                                                                                                                                                                   <Box
                                                                                                                                                                                                                             sx={{
                                                                                                                                                                                                                                       alignItems: 'center',
                                                                                                                                                                                                                                       backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                                      backgroundImage: `url(${building.image})`,
+                                                                                                                                                                                                                                      backgroundImage: `url(${apartment.images})`,
                                                                                                                                                                                                                                       backgroundPosition: 'center',
                                                                                                                                                                                                                                       backgroundSize: 'cover',
                                                                                                                                                                                                                                       borderRadius: 1,
@@ -735,7 +554,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                                             ml: 2,
                                                                                                                                                                                                                   }}
                                                                                                                                                                                                         >
-                                                                                                                                                                                                                  <Typography variant="subtitle2">{building.fullAddress}</Typography>
+                                                                                                                                                                                                                  <Typography variant="subtitle2">{apartment.fullAddress}</Typography>
                                                                                                                                                                                                         </Box>
                                                                                                                                                                                               </Box>
                                                                                                                                                                                     </Grid>
@@ -756,7 +575,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                 spacing={2}
                                                                                                                                                       >
                                                                                                                                                                 <Button
-                                                                                                                                                                          onClick={handleBuildingUpdateClick}
+                                                                                                                                                                          onClick={handleBuildingApartmentUpdateClick}
                                                                                                                                                                           type="submit"
                                                                                                                                                                           variant="contained"
                                                                                                                                                                 >
@@ -771,7 +590,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                       </Stack>
 
                                                                                                                                                       <Button
-                                                                                                                                                                onClick={handleBuildingDeleteClick}
+                                                                                                                                                                onClick={handleBuildingApartmentDeleteClick}
                                                                                                                                                                 color="error"
                                                                                                                                                       >
                                                                                                                                                                 Delete building

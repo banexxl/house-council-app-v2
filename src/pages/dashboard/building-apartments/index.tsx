@@ -27,6 +27,8 @@ import { applyPagination } from '@/utils/apply-pagination';
 import { useSelection } from '@/hooks/use-selection';
 import { buildingServices } from '@/utils/building-services';
 import { BuildingApartmentsListTable } from '@/sections/dashboard/building-apartments/building-apartments-list-table';
+import { apartmentServices } from '@/utils/apartment-services';
+import { BuildingApartment } from '@/types/building-appartment';
 
 interface BuildingSearchState {
           filters: BuildingFilters;
@@ -81,7 +83,7 @@ interface BuildingStoreState {
           buildingsCount: number;
 }
 
-const useBuildings = (data: any, page: any, rowsPerPage: any) => {
+const useBuildingApartment = (data: any, page: any, rowsPerPage: any) => {
           return useMemo(
                     () => {
                               return applyPagination(data, page, rowsPerPage);
@@ -90,12 +92,12 @@ const useBuildings = (data: any, page: any, rowsPerPage: any) => {
           );
 };
 
-const useBuildingIds = (buildings: any) => {
+const useBuildingIds = (buildingApartments: any) => {
           return useMemo(
                     () => {
-                              return buildings.map((building: any) => building._id);
+                              return buildingApartments.map((apartment: any) => apartment._id);
                     },
-                    [buildings]
+                    [buildingApartments]
           );
 };
 
@@ -105,9 +107,9 @@ const Page: NextPage = (props: any) => {
           const [open, setOpen] = useState(false)
           const [openEdit, setOpenEdit] = useState(false)
           const [rowsPerPage, setRowsPerPage] = useState(5);
-          const buildings = useBuildings(props.buildings, page, rowsPerPage);
-          const buildingsIds = useBuildingIds(props.buildings);
-          const buildingSelection = useSelection(buildingsIds);
+          const buildingApartments = useBuildingApartment(props.allAppartments, page, rowsPerPage);
+          const buildingApartmentIDs = useBuildingIds(props.allAppartments);
+          const buildingApartmentSelection = useSelection(buildingApartmentIDs);
 
           usePageView();
 
@@ -175,18 +177,18 @@ const Page: NextPage = (props: any) => {
                                                                       </Stack>
                                                             </Stack>
                                                             <Card>
-                                                                      <BuildingListSearch onFiltersChange={useBuildingsSearch().handleFiltersChange} />
+                                                                      {/* <BuildingListSearch onFiltersChange={useBuildingsSearch().handleFiltersChange} /> */}
                                                                       <BuildingApartmentsListTable
-                                                                                count={props.buildings.length}
-                                                                                items={props.buildings}
+                                                                                count={props.allAppartments.length}
+                                                                                items={props.allAppartments}
                                                                                 onPageChange={useBuildingsSearch().handlePageChange}
                                                                                 onRowsPerPageChange={useBuildingsSearch().handleRowsPerPageChange}
-                                                                                onDeselectOne={buildingSelection.handleDeselectOne}
-                                                                                onSelectOne={buildingSelection.handleSelectOne}
+                                                                                onDeselectOne={buildingApartmentSelection.handleDeselectOne}
+                                                                                onSelectOne={buildingApartmentSelection.handleSelectOne}
                                                                                 // onSelectAll={buildingSelection.handleSelectAll}
                                                                                 page={page}
                                                                                 rowsPerPage={rowsPerPage}
-                                                                                selected={buildingSelection.selected as Building[]}
+                                                                                selected={buildingApartmentSelection.selected as BuildingApartment[]}
                                                                       />
                                                             </Card>
                                                   </Stack>
@@ -198,7 +200,8 @@ const Page: NextPage = (props: any) => {
 
 export const getServerSideProps = async (context: any) => {
 
-          const allBuildings = await buildingServices().getAllBuildings()
+          const allAppartments = await apartmentServices().getAllApartments()
+
 
           redirect: {
                     destination: "/404"
@@ -206,7 +209,7 @@ export const getServerSideProps = async (context: any) => {
 
           return {
                     props: {
-                              buildings: JSON.parse(JSON.stringify(allBuildings)),
+                              allAppartments: JSON.parse(JSON.stringify(allAppartments)),
                     },
           }
 

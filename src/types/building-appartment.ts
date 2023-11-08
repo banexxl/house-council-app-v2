@@ -10,12 +10,12 @@ export interface BuildingApartment {
           images: string;
           tenants: string[];
           status: string;
-          petFriendly: boolean;
-          smokingAllowed: boolean;
-          furnished: boolean;
+          petFriendly?: boolean;
+          smokingAllowed?: boolean;
+          furnished?: boolean;
           owners: string[];
           hasOwnParking: boolean;
-          utilitiesIncluded: boolean;
+          utilitiesIncluded?: boolean;
           createdAt: string;
           updatedAt: string;
 }
