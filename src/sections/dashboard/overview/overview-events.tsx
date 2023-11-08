@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 
 type Event = {
           _id: string;
-          createdAt: Date;
+          createdDateTime: Date;
           description: string;
           title: string;
 };
@@ -42,8 +42,8 @@ export const OverviewEvents: FC<OverviewEventsProps> = (props) => {
                               <CardContent sx={{ pt: 0 }}>
                                         <List disablePadding>
                                                   {events.map((event) => {
-                                                            const createdAtMonth = format(event.createdAt, 'LLL').toUpperCase();
-                                                            const createdAtDay = format(event.createdAt, 'd');
+                                                            const createdAtMonth = format(event.createdDateTime, 'LLL').toUpperCase();
+                                                            const createdAtDay = format(event.createdDateTime, 'd');
 
                                                             return (
                                                                       <ListItem

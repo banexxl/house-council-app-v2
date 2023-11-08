@@ -15,7 +15,7 @@ export interface EmailParticipant {
 export interface Email {
           _id: string;
           attachments?: Attachment[];
-          createdAt: number;
+          createdDateTime: number;
           folder: string;
           from: EmailParticipant;
           isImportant: boolean;

@@ -99,7 +99,7 @@ export const CustomerEmailsSummary: FC = (props) => {
                                         </TableHead>
                                         {/* <TableBody>
                                                   {emails.map((email) => {
-                                                            const createdAt = format(email.createdAt, 'dd/MM/yyyy | HH:mm');
+                                                            const createdDateTime = format(email.createdDateTime, 'dd/MM/yyyy | HH:mm');
 
                                                             return (
                                                                       <TableRow
@@ -109,7 +109,7 @@ export const CustomerEmailsSummary: FC = (props) => {
                                                                                 <TableCell>
                                                                                           <Typography variant="subtitle2">{email.description}</Typography>
                                                                                 </TableCell>
-                                                                                <TableCell>{createdAt}</TableCell>
+                                                                                <TableCell>{createdDateTime}</TableCell>
                                                                       </TableRow>
                                                             );
                                                   })}

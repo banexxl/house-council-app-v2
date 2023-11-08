@@ -17,7 +17,7 @@ interface Transaction {
           _id: string;
           amount: number;
           currency: string;
-          createdAt: number;
+          createdDateTime: number;
           sender: string;
           type: string;
 }
@@ -27,7 +27,7 @@ const transactions: Transaction[] = [
                     _id: 'd46800328cd510a668253b45',
                     amount: 25000,
                     currency: 'usd',
-                    createdAt: now.getTime(),
+                    createdDateTime: now.getTime(),
                     sender: 'Devias',
                     type: 'receive',
           },
@@ -35,7 +35,7 @@ const transactions: Transaction[] = [
                     _id: 'b4b19b21656e44b487441c50',
                     amount: 6843,
                     currency: 'usd',
-                    createdAt: subDays(now, 1).getTime(),
+                    createdDateTime: subDays(now, 1).getTime(),
                     sender: 'Zimbru',
                     type: 'send',
           },
@@ -43,7 +43,7 @@ const transactions: Transaction[] = [
                     _id: '56c09ad91f6d44cb313397db',
                     amount: 91823,
                     currency: 'usd',
-                    createdAt: subDays(now, 1).getTime(),
+                    createdDateTime: subDays(now, 1).getTime(),
                     sender: 'Vertical Jelly',
                     type: 'send',
           },
@@ -51,7 +51,7 @@ const transactions: Transaction[] = [
                     _id: 'aaeb96c5a131a55d9623f44d',
                     amount: 49550,
                     currency: 'usd',
-                    createdAt: subDays(now, 3).getTime(),
+                    createdDateTime: subDays(now, 3).getTime(),
                     sender: 'Devias',
                     type: 'receive',
           },
@@ -70,8 +70,8 @@ export const GroupedList6: FC = () => (
                               <Table>
                                         <TableBody>
                                                   {transactions.map((transaction) => {
-                                                            const createdAtMonth = format(transaction.createdAt, 'LLL').toUpperCase();
-                                                            const createdAtDay = format(transaction.createdAt, 'd');
+                                                            const createdAtMonth = format(transaction.createdDateTime, 'LLL').toUpperCase();
+                                                            const createdAtDay = format(transaction.createdDateTime, 'd');
                                                             const type = transaction.type === 'receive' ? 'Payment received' : 'Payment sent';
                                                             const amount =
                                                                       (transaction.type === 'receive' ? '+' : '-') +

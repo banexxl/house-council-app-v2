@@ -21,12 +21,16 @@ import { initialValues, validationSchema } from './building-apartments-options';
 import { Autocomplete, Input } from '@mui/material';
 import Image from 'next/image';
 import { Building } from '@/types/building';
+import moment from 'moment';
+import { Customer } from '@/types/customer';
 
 export const BuildingApartmentCreateForm = (props: any) => {
 
           const router = useRouter();
           const [buildingID, setBuildingID] = useState('')
           const [selectedImage, setSelectedImage] = useState(null);
+          console.log(props);
+
 
           const handleImageChange = (event: any) => {
                     const file = event.target.files[0]; // Get the first selected file
@@ -36,7 +40,6 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                         setSelectedImage(e.target.result);
                                         formik.setFieldValue('image', e.target.result)
                               };
-
                               reader.readAsDataURL(file);
                     }
           };
@@ -202,6 +205,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                           <Stack spacing={3}>
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.apartmentNumber && formik.errors.apartmentNumber)}
+                                                                                                              helperText={formik.touched.apartmentNumber && formik.errors.apartmentNumber}
                                                                                                               fullWidth
                                                                                                               label="Apartment number"
                                                                                                               name="apartmentNumber"
@@ -212,6 +216,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                     />
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.bathroomNumber && formik.errors.bathroomNumber)}
+                                                                                                              helperText={formik.touched.bathroomNumber && formik.errors.bathroomNumber}
                                                                                                               fullWidth
                                                                                                               label="Bathroom number"
                                                                                                               name="bathroomNumber"
@@ -222,6 +227,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                     />
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.bedroomNumber && formik.errors.bedroomNumber)}
+                                                                                                              helperText={formik.touched.bedroomNumber && formik.errors.bedroomNumber}
                                                                                                               fullWidth
                                                                                                               label="Bedroom number"
                                                                                                               name="bedroomNumber"
@@ -232,20 +238,22 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                     />
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.terraceNumber && formik.errors.terraceNumber)}
+                                                                                                              helperText={formik.touched.terraceNumber && formik.errors.terraceNumber}
                                                                                                               fullWidth
                                                                                                               label="Terrace number"
                                                                                                               name="terraceNumber"
-                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onBlur={formik.handleBlur('terraceNumber')}
                                                                                                               onChange={formik.handleChange}
                                                                                                               type="number"
                                                                                                               value={formik.values.terraceNumber}
                                                                                                     />
                                                                                                     <TextField
                                                                                                               error={!!(formik.touched.surfaceArea && formik.errors.surfaceArea)}
+                                                                                                              helperText={formik.touched.surfaceArea && formik.errors.surfaceArea}
                                                                                                               fullWidth
                                                                                                               label="Surface area"
                                                                                                               name="surfaceArea"
-                                                                                                              onBlur={formik.handleBlur}
+                                                                                                              onBlur={formik.handleBlur('surfaceArea')}
                                                                                                               onChange={formik.handleChange}
                                                                                                               type="number"
                                                                                                               value={formik.values.surfaceArea}
@@ -289,20 +297,38 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                               />
                                                                                                     </Box>
                                                                                                     <Box>
-                                                                                                              <TextField
-                                                                                                                        error={!!(formik.touched.owners && formik.errors.owners)}
-                                                                                                                        fullWidth
-                                                                                                                        label="Owners"
-                                                                                                                        name="owners"
-                                                                                                                        onBlur={formik.handleBlur}
-                                                                                                                        onChange={formik.handleChange}
-                                                                                                                        type="text"
-                                                                                                                        value={formik.values.owners}
+                                                                                                              <Autocomplete
+                                                                                                                        sx={{ minWidth: '300px' }}
+                                                                                                                        disablePortal
+                                                                                                                        id="combo-box-demo"
+                                                                                                                        options={props.allCustomers}
+                                                                                                                        getOptionLabel={(customer: any) => customer.firstName + ' ' + customer.lastName + ' ' + customer.email}
+                                                                                                                        renderInput={(params) =>
+                                                                                                                                  <TextField
+                                                                                                                                            {...params}
+                                                                                                                                            label="Owners"
+                                                                                                                                            helperText={
+                                                                                                                                                      formik.touched.owners && formik.errors.owners
+                                                                                                                                                                ? formik.errors.owners
+                                                                                                                                                                : ''
+                                                                                                                                            }
+                                                                                                                                            error={formik.touched.owners && Boolean(formik.errors.owners)}
+                                                                                                                                  />
+                                                                                                                        }
+                                                                                                                        onChange={(e: any, value: Customer | null) => {
+                                                                                                                                  formik.setFieldValue('owners', value ? value._id : '')
+                                                                                                                                  formik.setFieldValue('buildingID', value ? value._id : '')
+                                                                                                                                  setBuildingID(value?._id || '')
+                                                                                                                        }}
+                                                                                                                        defaultValue={props.allCustomers.find(
+                                                                                                                                  (customer: any) => customer.fullAddress === formik.values.fullAddress
+                                                                                                                        )}
+                                                                                                                        onBlur={formik.handleBlur('owners')}
                                                                                                               />
                                                                                                     </Box>
                                                                                                     <Box>
                                                                                                               <TextField
-                                                                                                                        error={!!(formik.touched.tenants && formik.errors.tenants)}
+                                                                                                                        // error={!!(formik.touched.tenants && formik.errors.tenants)}
                                                                                                                         fullWidth
                                                                                                                         label="Tenants"
                                                                                                                         name="tenants"
@@ -338,14 +364,13 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                     </Box>
                                                                                                     <Box>
                                                                                                               <TextField
-                                                                                                                        error={!!(formik.touched.createdAt && formik.errors.createdAt)}
+                                                                                                                        error={!!(formik.touched.createdDateTime && formik.errors.createdDateTime)}
                                                                                                                         fullWidth
                                                                                                                         label="Created at"
-                                                                                                                        name="createdAt"
+                                                                                                                        name="createdDateTime"
                                                                                                                         onBlur={formik.handleBlur}
-                                                                                                                        onChange={formik.handleChange}
                                                                                                                         type="text"
-                                                                                                                        value={formik.values.createdAt}
+                                                                                                                        value={formik.values.createdDateTime}
                                                                                                               />
                                                                                                     </Box>
                                                                                           </Stack>
@@ -383,6 +408,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                       <Button
                                                                                 type="submit"
                                                                                 variant="contained"
+                                                                                onSubmit={() => formik.setFieldValue('createdDateTime', moment().format("YYYY/MM/DD HH:mm:ss"))}
                                                                       >
                                                                                 Create
                                                                       </Button>

@@ -16,6 +16,6 @@ export interface BuildingApartment {
           owners: string[];
           hasOwnParking: boolean;
           utilitiesIncluded?: boolean;
-          createdAt: string;
+          createdDateTime: string;
           updatedAt: string;
 }

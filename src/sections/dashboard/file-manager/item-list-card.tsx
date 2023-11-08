@@ -45,7 +45,7 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
                     size += `• ${item.itemsCount} items`;
           }
 
-          const createdAt = item.createdAt && format(item.createdAt, 'MMM dd, yyyy');
+          const createdDateTime = item.createdDateTime && format(item.createdDateTime, 'MMM dd, yyyy');
           const showShared = !item.isPublic && (item.shared || []).length > 0;
 
           return (
@@ -171,7 +171,7 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
                                                             color="text.secondary"
                                                             variant="caption"
                                                   >
-                                                            Created at {createdAt}
+                                                            Created at {createdDateTime}
                                                   </Typography>
                                         </Box>
                               </Card>

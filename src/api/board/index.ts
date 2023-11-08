@@ -462,7 +462,7 @@ class BoardApi {
                                         const comment = {
                                                   _id: createResourceId(),
                                                   authorId: user._id,
-                                                  createdAt: new Date().getTime(),
+                                                  createdDateTime: new Date().getTime(),
                                                   message,
                                         };
 

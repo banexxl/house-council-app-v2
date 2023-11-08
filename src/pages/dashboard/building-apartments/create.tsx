@@ -14,6 +14,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard';
 import { paths } from 'src/paths';
 import { BuildingApartmentCreateForm } from '@/sections/dashboard/building-apartments/building-apartments-create-form';
 import { buildingServices } from '@/utils/building-services';
+import { customersServices } from '@/utils/customer-services';
 
 const Page: NextPage = (props: any) => {
           usePageView();
@@ -57,7 +58,7 @@ const Page: NextPage = (props: any) => {
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <BuildingApartmentCreateForm allBuildings={props.allBuildings} />
+                                                            <BuildingApartmentCreateForm allBuildings={props.allBuildings} allCustomers={props.allCustomers} />
                                                   </Stack>
                                         </Container>
                               </Box>
@@ -68,6 +69,7 @@ const Page: NextPage = (props: any) => {
 export const getServerSideProps = async (context: any) => {
 
           const allBuildings = await buildingServices().getAllBuildings()
+          const allCustomers = await customersServices().getAllCustomers()
 
           redirect: {
                     destination: "/404"
@@ -76,6 +78,7 @@ export const getServerSideProps = async (context: any) => {
           return {
                     props: {
                               allBuildings: JSON.parse(JSON.stringify(allBuildings)),
+                              allCustomers: JSON.parse(JSON.stringify(allCustomers)),
                     },
           }
 

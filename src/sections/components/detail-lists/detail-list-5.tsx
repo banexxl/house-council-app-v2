@@ -20,7 +20,7 @@ import Typography from '@mui/material/Typography';
 interface Order {
           _id: string;
           coupon: string | null;
-          createdAt: number;
+          createdDateTime: number;
           currency: string;
           customer: {
                     fullAddress: string;
@@ -44,7 +44,7 @@ interface Order {
 const order: Order = {
           _id: '5ecb8a6879877087d4aa2690',
           coupon: null,
-          createdAt: new Date().getTime(),
+          createdDateTime: new Date().getTime(),
           currency: '$',
           customer: {
                     fullAddress: 'Street John Wick, no. 7',
@@ -84,7 +84,7 @@ export const DetailList5: FC = () => {
                     setStatus(event.target.value);
           }, []);
 
-          const createdAt = format(order.createdAt, 'dd/MM/yyyy HH:mm');
+          const createdDateTime = format(order.createdDateTime, 'dd/MM/yyyy HH:mm');
           const totalAmount = numeral(order.totalAmount).format(`${order.currency}0,0.00`);
 
           return (
@@ -124,7 +124,7 @@ export const DetailList5: FC = () => {
                                                                       <TableCell>
                                                                                 <Typography variant="subtitle2">Date</Typography>
                                                                       </TableCell>
-                                                                      <TableCell>{createdAt}</TableCell>
+                                                                      <TableCell>{createdDateTime}</TableCell>
                                                             </TableRow>
                                                             <TableRow>
                                                                       <TableCell>

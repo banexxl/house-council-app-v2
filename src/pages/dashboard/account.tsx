@@ -90,17 +90,17 @@ const Page: NextPage = () => {
                                                                                 {
                                                                                           _id: '5547409069c59755261f5546',
                                                                                           amount: 4.99,
-                                                                                          createdAt: subMonths(now, 1).getTime(),
+                                                                                          createdDateTime: subMonths(now, 1).getTime(),
                                                                                 },
                                                                                 {
                                                                                           _id: 'a3e17f4b551ff8766903f31f',
                                                                                           amount: 4.99,
-                                                                                          createdAt: subMonths(now, 2).getTime(),
+                                                                                          createdDateTime: subMonths(now, 2).getTime(),
                                                                                 },
                                                                                 {
                                                                                           _id: '28ca7c66fc360d8203644256',
                                                                                           amount: 4.99,
-                                                                                          createdAt: subMonths(now, 3).getTime(),
+                                                                                          createdDateTime: subMonths(now, 3).getTime(),
                                                                                 },
                                                                       ]}
                                                             />
@@ -129,14 +129,14 @@ const Page: NextPage = () => {
                                                                       loginEvents={[
                                                                                 {
                                                                                           _id: '1bd6d44321cb78fd915462fa',
-                                                                                          createdAt: subDays(subHours(subMinutes(now, 5), 7), 1).getTime(),
+                                                                                          createdDateTime: subDays(subHours(subMinutes(now, 5), 7), 1).getTime(),
                                                                                           ip: '95.130.17.84',
                                                                                           type: 'Credential login',
                                                                                           userAgent: 'Chrome, Mac OS 10.15.7',
                                                                                 },
                                                                                 {
                                                                                           _id: 'bde169c2fe9adea5d4598ea9',
-                                                                                          createdAt: subDays(subHours(subMinutes(now, 25), 9), 1).getTime(),
+                                                                                          createdDateTime: subDays(subHours(subMinutes(now, 25), 9), 1).getTime(),
                                                                                           ip: '95.130.17.84',
                                                                                           type: 'Credential login',
                                                                                           userAgent: 'Chrome, Mac OS 10.15.7',

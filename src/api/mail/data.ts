@@ -109,7 +109,7 @@ export const emails: Email[] = [
                                         url: '/assets/covers/minimal-1-4x4-small.png',
                               },
                     ],
-                    createdAt: now.getTime(),
+                    createdDateTime: now.getTime(),
                     folder: 'inbox',
                     from: {
                               avatar: '/assets/avatars/avatar-marcus-finn.png',
@@ -143,7 +143,7 @@ Marcus Finn
           },
           {
                     _id: '5e86bcbd8406cd3055f2b6c8',
-                    createdAt: now.getTime(),
+                    createdDateTime: now.getTime(),
                     folder: 'spam',
                     from: {
                               avatar: '/assets/avatars/avatar-miron-vitold.png',
@@ -168,7 +168,7 @@ Hey, nice projects! I really liked the one in react. What's your quote on kinda 
           },
           {
                     _id: '5e86bcb9fee1ec12453fa13b',
-                    createdAt: now.getTime(),
+                    createdDateTime: now.getTime(),
                     folder: 'inbox',
                     from: {
                               avatar: '/assets/avatars/avatar-penjani-inyene.png',
@@ -193,7 +193,7 @@ Dear Anika, Your flight is coming up soon. Please don’t forget to check in for
           },
           {
                     _id: '5e86bcb5575181a5e527e24f',
-                    createdAt: now.getTime(),
+                    createdDateTime: now.getTime(),
                     folder: 'trash',
                     from: {
                               avatar: '/assets/avatars/avatar-carson-darrin.png',

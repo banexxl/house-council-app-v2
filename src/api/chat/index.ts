@@ -291,7 +291,7 @@ class ChatApi {
                                                   attachments: [],
                                                   body,
                                                   contentType: 'text',
-                                                  createdAt: new Date().getTime(),
+                                                  createdDateTime: new Date().getTime(),
                                                   authorId: user._id,
                                         };
 

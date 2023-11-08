@@ -39,7 +39,7 @@ const getLastActivity = (lastMessage?: Message): string | null => {
                     return null;
           }
 
-          return formatDistanceStrict(lastMessage.createdAt, new Date(), {
+          return formatDistanceStrict(lastMessage.createdDateTime, new Date(), {
                     addSuffix: false,
                     locale: customLocale,
           });

@@ -20,7 +20,7 @@ const now = new Date();
 
 interface Activity {
           _id: string;
-          createdAt: number;
+          createdDateTime: number;
           customer: {
                     _id: string;
                     avatar: string;
@@ -33,7 +33,7 @@ interface Activity {
 const activities: Activity[] = [
           {
                     _id: '5e89140bcc768199d1e0dc49',
-                    createdAt: subMinutes(now, 23).getTime(),
+                    createdDateTime: subMinutes(now, 23).getTime(),
                     customer: {
                               _id: '5e887a62195cc5aef7e8ca5d',
                               avatar: '/assets/avatars/avatar-marcus-finn.png',
@@ -44,7 +44,7 @@ const activities: Activity[] = [
           },
           {
                     _id: '5e891411b0290b175166cd32',
-                    createdAt: subMinutes(now, 56).getTime(),
+                    createdDateTime: subMinutes(now, 56).getTime(),
                     customer: {
                               _id: '5e887ac47eed253091be10cb',
                               avatar: '/assets/avatars/avatar-carson-darrin.png',
@@ -55,7 +55,7 @@ const activities: Activity[] = [
           },
           {
                     _id: '5e89141633dc5e52c923ef27',
-                    createdAt: subHours(now, 2).getTime(),
+                    createdDateTime: subHours(now, 2).getTime(),
                     customer: {
                               _id: '5e887b209c28ac3dd97f6db5',
                               avatar: '/assets/avatars/avatar-fran-perez.png',
@@ -66,7 +66,7 @@ const activities: Activity[] = [
           },
           {
                     _id: '5e89141bd975c7f33aee9f4b',
-                    createdAt: subMinutes(now, 5).getTime(),
+                    createdDateTime: subMinutes(now, 5).getTime(),
                     customer: {
                               _id: '5e887b7602bdbc4dbb234b27',
                               avatar: '/assets/avatars/avatar-jie-yan-song.png',
@@ -77,7 +77,7 @@ const activities: Activity[] = [
           },
           {
                     _id: '5e891421d7945778863cf9ca',
-                    createdAt: subMinutes(now, 5).getTime(),
+                    createdDateTime: subMinutes(now, 5).getTime(),
                     customer: {
                               _id: '5e86809283e28b96d2d38537',
                               avatar: '/assets/avatars/avatar-anika-visser.png',
@@ -162,7 +162,7 @@ export const GroupedList1: FC = () => (
                                         <List disablePadding>
                                                   {activities.map((activity, index) => {
                                                             const showDivider = index < activities.length - 1;
-                                                            const ago = formatDistanceToNowStrict(activity.createdAt);
+                                                            const ago = formatDistanceToNowStrict(activity.createdDateTime);
 
                                                             return (
                                                                       <ListItem

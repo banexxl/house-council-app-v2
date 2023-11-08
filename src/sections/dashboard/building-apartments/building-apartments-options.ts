@@ -20,17 +20,17 @@ export const initialValues: BuildingApartment = {
           owners: [],
           hasOwnParking: false,
           utilitiesIncluded: false,
-          createdAt: '',
+          createdDateTime: '',
           updatedAt: ''
 };
 
 export const validationSchema = Yup.object({
           fullAddress: Yup.string().required('Full address of the apartment is required'),
-          apartmentNumber: Yup.number().min(1, 'Apartment number must be a non zero positive number'),
-          surfaceArea: Yup.number().min(1, 'Apartment area must be a non zero positive number'),
-          bedroomNumer: Yup.number().min(1, 'Bedroom number must be a non zero positive number'),
-          bathroomNumber: Yup.number().min(1, 'Bathroom number must be a non zero positive number'),
-          terraceNumber: Yup.number().min(1, 'Terrace number must be a non zero positive number'),
+          apartmentNumber: Yup.number().min(1, 'Must be a non zero positive number'),
+          surfaceArea: Yup.number().min(1, 'Must be a non zero positive number'),
+          bedroomNumber: Yup.number().min(1, 'Must be a non zero positive number'),
+          bathroomNumber: Yup.number().min(1, 'Must be a non zero positive number'),
+          terraceNumber: Yup.number().min(0, 'Must be a positive number'),
           description: Yup.string(),
           images: Yup.string(),
           tenants: Yup.string(),
@@ -41,6 +41,6 @@ export const validationSchema = Yup.object({
           owners: Yup.string(),
           hasOwnParking: Yup.boolean(),
           utilitiesIncluded: Yup.boolean(),
-          createdAt: Yup.string(),
+          createdDateTime: Yup.string(),
           updatedAt: Yup.string(),
 });

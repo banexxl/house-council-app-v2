@@ -33,7 +33,7 @@ export interface Comment {
                     avatar: string;
                     name: string;
           };
-          createdAt: number;
+          createdDateTime: number;
           message: string;
 }
 
@@ -45,7 +45,7 @@ export interface Post {
                     name: string;
           };
           comments: Comment[];
-          createdAt: number;
+          createdDateTime: number;
           isLiked: boolean;
           likes: number;
           media?: string;

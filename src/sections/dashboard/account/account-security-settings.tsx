@@ -23,7 +23,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 
 interface LoginEvent {
           _id: string;
-          createdAt: number;
+          createdDateTime: number;
           ip: string;
           type: string;
           userAgent: string;
@@ -242,7 +242,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
                                                             </TableHead>
                                                             <TableBody>
                                                                       {loginEvents.map((event) => {
-                                                                                const createdAt = format(event.createdAt, 'HH:mm a MM/dd/yyyy');
+                                                                                const createdDateTime = format(event.createdDateTime, 'HH:mm a MM/dd/yyyy');
 
                                                                                 return (
                                                                                           <TableRow
@@ -255,7 +255,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
                                                                                                                         variant="body2"
                                                                                                                         color="body2"
                                                                                                               >
-                                                                                                                        on {createdAt}
+                                                                                                                        on {createdDateTime}
                                                                                                               </Typography>
                                                                                                     </TableCell>
                                                                                                     <TableCell>{event.ip}</TableCell>

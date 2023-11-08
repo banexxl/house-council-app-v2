@@ -38,6 +38,7 @@ import { paths } from '@/paths';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
 import { BuildingApartment } from '@/types/building-appartment';
+import { Customer } from '@/types/customer';
 
 interface BuildingApartmentsListTableProps {
           count?: number;
@@ -326,10 +327,10 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={apartment.createdAt}
+                                                                                                                                                                                                        defaultValue={apartment.createdDateTime}
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Created at:"
-                                                                                                                                                                                                        name="createdAt"
+                                                                                                                                                                                                        name="createdDateTime"
                                                                                                                                                                                                         disabled
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
@@ -578,6 +579,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                           onClick={handleBuildingApartmentUpdateClick}
                                                                                                                                                                           type="submit"
                                                                                                                                                                           variant="contained"
+
                                                                                                                                                                 >
                                                                                                                                                                           Update
                                                                                                                                                                 </Button>

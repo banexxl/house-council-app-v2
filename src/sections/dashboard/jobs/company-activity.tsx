@@ -131,7 +131,7 @@ export const CompanyActivity: FC<CompanyActivityProps> = (props) => {
                                         >
                                                   {activities.map((activity, index) => {
                                                             const showConnector = activities.length - 1 > index;
-                                                            const createdAt = format(activity.createdAt, 'MMM dd, HH:mm a');
+                                                            const createdDateTime = format(activity.createdDateTime, 'MMM dd, HH:mm a');
 
                                                             return (
                                                                       <TimelineItem
@@ -160,7 +160,7 @@ export const CompanyActivity: FC<CompanyActivityProps> = (props) => {
                                                                                                     variant="caption"
                                                                                                     sx={{ mt: 1 }}
                                                                                           >
-                                                                                                    {createdAt}
+                                                                                                    {createdDateTime}
                                                                                           </Typography>
                                                                                 </TimelineContent>
                                                                       </TimelineItem>

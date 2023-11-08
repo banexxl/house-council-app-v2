@@ -26,7 +26,7 @@ export const TaskComment: FC<TaskCommentProps> = (props) => {
           const author = useAuthor(comment.authorId);
 
           const avatar = author?.avatar || undefined;
-          const createdAt = format(comment.createdAt, "MMM dd, yyyy 'at' hh:mm a");
+          const createdDateTime = format(comment.createdDateTime, "MMM dd, yyyy 'at' hh:mm a");
 
           return (
                     <Stack
@@ -56,7 +56,7 @@ export const TaskComment: FC<TaskCommentProps> = (props) => {
                                                   component="p"
                                                   variant="caption"
                                         >
-                                                  {createdAt}
+                                                  {createdDateTime}
                                         </Typography>
                               </Stack>
                     </Stack>

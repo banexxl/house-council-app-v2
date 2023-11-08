@@ -45,7 +45,7 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
                     size += `• ${item.itemsCount} items`;
           }
 
-          const createdAt = item.createdAt && format(item.createdAt, 'MMM dd, yyyy');
+          const createdDateTime = item.createdDateTime && format(item.createdDateTime, 'MMM dd, yyyy');
           const showShared = !item.isPublic && (item.shared || []).length > 0;
 
           return (
@@ -135,7 +135,7 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
                                                             noWrap
                                                             variant="body2"
                                                   >
-                                                            {createdAt}
+                                                            {createdDateTime}
                                                   </Typography>
                                         </TableCell>
                                         <TableCell>

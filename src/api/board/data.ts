@@ -94,7 +94,7 @@ const board: Board = {
                                         {
                                                   _id: '15e849c5a35d4dff4f88ebff6',
                                                   authorId: '5e887ac47eed253091be10cb',
-                                                  createdAt: subDays(now, 5).getTime(),
+                                                  createdDateTime: subDays(now, 5).getTime(),
                                                   message: 'This is a comment',
                                         },
                               ],

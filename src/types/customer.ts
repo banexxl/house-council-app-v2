@@ -48,7 +48,7 @@ export default customerSchema;
 
 export interface CustomerLog {
           _id: string;
-          createdAt: number;
+          createdDateTime: number;
           description: string;
           ip: string;
           method: string;

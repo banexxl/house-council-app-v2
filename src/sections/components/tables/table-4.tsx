@@ -29,7 +29,7 @@ type OrderStatus = 'canceled' | 'complete' | 'pending' | 'rejected';
 
 interface Order {
           _id: string;
-          createdAt: number;
+          createdDateTime: number;
           currency: string;
           customer: {
                     email: string;
@@ -44,7 +44,7 @@ interface Order {
 const orders: Order[] = [
           {
                     _id: '5ecb8a6d9f53bfae09e16115',
-                    createdAt: subMinutes(subSeconds(now, 23), 32).getTime(),
+                    createdDateTime: subMinutes(subSeconds(now, 23), 32).getTime(),
                     currency: '$',
                     customer: {
                               email: 'carson.darrin@devias.io',
@@ -57,7 +57,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5ecb8a738aa6f3e577c2b3ec',
-                    createdAt: subMinutes(subSeconds(now, 51), 36).getTime(),
+                    createdDateTime: subMinutes(subSeconds(now, 51), 36).getTime(),
                     currency: '$',
                     customer: {
                               email: 'fran.perez@devias.io',
@@ -70,7 +70,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5ecb8a795e53f134013eba3b',
-                    createdAt: subMinutes(subSeconds(now, 55), 38).getTime(),
+                    createdDateTime: subMinutes(subSeconds(now, 55), 38).getTime(),
                     currency: '$',
                     customer: {
                               email: 'jie.yan.song@devias.io',
@@ -83,7 +83,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5ecb8a7f738cc572a9ce0277',
-                    createdAt: subMinutes(subSeconds(now, 3), 40).getTime(),
+                    createdDateTime: subMinutes(subSeconds(now, 3), 40).getTime(),
                     currency: '$',
                     customer: {
                               email: 'clarke.gillebert@devias.io',
@@ -96,7 +96,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5e86805e2bafd54f66cc95c3',
-                    createdAt: subMinutes(subSeconds(now, 32), 45).getTime(),
+                    createdDateTime: subMinutes(subSeconds(now, 32), 45).getTime(),
                     currency: '$',
                     customer: {
                               email: 'miron.vitold@devias.io',
@@ -170,7 +170,7 @@ export const Table4: FC = () => (
                                                   </TableHead>
                                                   <TableBody>
                                                             {orders.map((order) => {
-                                                                      const createdAt = format(order.createdAt, 'dd MMM yyyy | HH:mm');
+                                                                      const createdDateTime = format(order.createdDateTime, 'dd MMM yyyy | HH:mm');
                                                                       const totalAmount = numeral(order.totalAmount).format(`${order.currency}0,0.00`);
                                                                       const statusPill = getStatusPill(order.status);
 
@@ -188,7 +188,7 @@ export const Table4: FC = () => (
                                                                                                               color="text.secondary"
                                                                                                               variant="body2"
                                                                                                     >
-                                                                                                              {createdAt}
+                                                                                                              {createdDateTime}
                                                                                                     </Typography>
                                                                                           </TableCell>
                                                                                           <TableCell>

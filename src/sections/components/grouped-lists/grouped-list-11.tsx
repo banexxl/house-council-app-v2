@@ -19,7 +19,7 @@ interface Campaign {
           _id: string;
           clickRate: number;
           conversionRate: number;
-          createdAt: string;
+          createdDateTime: string;
           name: string;
           platform: string;
           status: CampaignStatus;
@@ -31,7 +31,7 @@ const campaigns: Campaign[] = [
                     _id: '4be0679f811115c9d2d28497',
                     clickRate: 6.32,
                     conversionRate: 1.05,
-                    createdAt: 'Jan 23 2022',
+                    createdDateTime: 'Jan 23 2022',
                     name: 'Summer Active Health',
                     platform: 'Google',
                     status: 'draft',
@@ -41,7 +41,7 @@ const campaigns: Campaign[] = [
                     _id: '4e1cd375bfa59e4347404e20',
                     clickRate: 7.94,
                     conversionRate: 0.31,
-                    createdAt: 'Feb 1 2022',
+                    createdDateTime: 'Feb 1 2022',
                     name: 'New prospects blog',
                     platform: 'Facebook',
                     status: 'active',
@@ -51,7 +51,7 @@ const campaigns: Campaign[] = [
                     _id: '6b37fdf83195ca7e36622040',
                     clickRate: 20.15,
                     conversionRate: 2.1,
-                    createdAt: 'Feb 5 2022',
+                    createdDateTime: 'Feb 5 2022',
                     name: 'Amazon Gift Cards',
                     platform: 'Facebook',
                     status: 'stopped',
@@ -61,7 +61,7 @@ const campaigns: Campaign[] = [
                     _id: 'e3651f8f9565cdbe8d2e5fea',
                     clickRate: 7.94,
                     conversionRate: 0.5,
-                    createdAt: 'Feb 1 2022',
+                    createdDateTime: 'Feb 1 2022',
                     name: 'Best Marketing Course Online',
                     platform: 'Bing',
                     status: 'draft',
@@ -128,7 +128,7 @@ export const GroupedList11: FC = () => (
                                                                                                               color="text.secondary"
                                                                                                               variant="body2"
                                                                                                     >
-                                                                                                              {`${campaign.target}, ${campaign.createdAt}`}
+                                                                                                              {`${campaign.target}, ${campaign.createdDateTime}`}
                                                                                                     </Typography>
                                                                                           </Box>
                                                                                 </TableCell>

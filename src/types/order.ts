@@ -16,7 +16,7 @@ export interface OrderItem {
 
 export interface OrderLog {
           _id: string;
-          createdAt: number;
+          createdDateTime: number;
           message: string;
 }
 
@@ -25,7 +25,7 @@ export type OrderStatus = 'canceled' | 'complete' | 'pending' | 'rejected';
 export interface Order {
           _id: string;
           coupon?: string | null;
-          createdAt: number;
+          createdDateTime: number;
           currency?: string;
           customer: OrderCustomer;
           items?: OrderItem[];

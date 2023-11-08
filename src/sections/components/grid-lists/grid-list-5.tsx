@@ -26,7 +26,7 @@ interface Post {
                     avatar: string;
                     name: string;
           };
-          createdAt: number;
+          createdDateTime: number;
           likes: number;
           media: string;
           message: string;
@@ -40,7 +40,7 @@ const posts: Post[] = [
                               avatar: '/assets/avatars/avatar-anika-visser.png',
                               name: 'Anika Visser',
                     },
-                    createdAt: subHours(now, 4).getTime(),
+                    createdDateTime: subHours(now, 4).getTime(),
                     likes: 24,
                     media: '/assets/covers/abstract-1-4x4-small.png',
                     message: "Hey guys! What's your favorite framework?",
@@ -52,7 +52,7 @@ const posts: Post[] = [
                               avatar: '/assets/avatars/avatar-anika-visser.png',
                               name: 'Anika Visser',
                     },
-                    createdAt: subHours(now, 7).getTime(),
+                    createdDateTime: subHours(now, 7).getTime(),
                     likes: 65,
                     media: '/assets/covers/minimal-1-4x3-small.png',
                     message: 'Just made this overview screen for a project, what-cha thinkin?',
@@ -71,7 +71,7 @@ export const GridList5: FC = () => (
                               spacing={3}
                     >
                               {posts.map((post) => {
-                                        const ago = formatDistanceToNowStrict(post.createdAt);
+                                        const ago = formatDistanceToNowStrict(post.createdDateTime);
 
                                         return (
                                                   <Grid

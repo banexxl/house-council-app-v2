@@ -77,7 +77,7 @@ const Page: NextPage = () => {
                                                                                 authorAvatar={post.author.avatar}
                                                                                 authorName={post.author.name}
                                                                                 comments={post.comments}
-                                                                                createdAt={post.createdAt}
+                                                                                createdDateTime={post.createdDateTime}
                                                                                 isLiked={post.isLiked}
                                                                                 likes={post.likes}
                                                                                 media={post.media}

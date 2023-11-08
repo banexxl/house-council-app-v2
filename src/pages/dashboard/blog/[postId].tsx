@@ -33,7 +33,7 @@ interface Comment {
           authorName: string;
           authorRole: string;
           content: string;
-          createdAt: number;
+          createdDateTime: number;
           isLiked: boolean;
           likes: number;
 }
@@ -47,7 +47,7 @@ const useComments = (): Comment[] => {
                               authorRole: 'Product Designer',
                               content:
                                         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                              createdAt: subHours(new Date(), 2).getTime(),
+                              createdDateTime: subHours(new Date(), 2).getTime(),
                               isLiked: true,
                               likes: 12,
                     },
@@ -57,7 +57,7 @@ const useComments = (): Comment[] => {
                               authorName: 'Jie Yan Song',
                               authorRole: 'Web Developer',
                               content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.',
-                              createdAt: subHours(new Date(), 8).getTime(),
+                              createdDateTime: subHours(new Date(), 8).getTime(),
                               isLiked: false,
                               likes: 8,
                     },

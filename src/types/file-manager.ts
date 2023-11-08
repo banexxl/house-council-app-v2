@@ -6,7 +6,7 @@ export interface Item {
                     avatar?: string;
                     name?: string;
           };
-          createdAt?: number | null;
+          createdDateTime?: number | null;
           extension?: string;
           isFavorite?: boolean;
           isPublic?: boolean;

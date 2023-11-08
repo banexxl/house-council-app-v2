@@ -22,7 +22,7 @@ export interface Review {
           _id: string;
           author: string;
           avatar?: string;
-          createdAt: number;
+          createdDateTime: number;
           description?: string;
           rating: number;
           title: string;
@@ -34,7 +34,7 @@ export interface Activity {
           addedMember?: string;
           author: string;
           avatar?: string;
-          createdAt: number;
+          createdDateTime: number;
           createdCompany?: string;
           type: 'new_job' | 'new_team_member' | 'created';
 }

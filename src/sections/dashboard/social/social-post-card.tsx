@@ -28,7 +28,7 @@ interface SocialPostCardProps {
           authorAvatar: string;
           authorName: string;
           comments: Comment[];
-          createdAt: number;
+          createdDateTime: number;
           isLiked: boolean;
           likes: number;
           media?: string;
@@ -40,7 +40,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                     authorAvatar,
                     authorName,
                     comments,
-                    createdAt,
+                    createdDateTime,
                     isLiked: isLikedProp,
                     likes: likesProp,
                     media,
@@ -84,7 +84,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                                                                       color="text.secondary"
                                                                       variant="caption"
                                                             >
-                                                                      {formatDistanceToNowStrict(createdAt)} ago
+                                                                      {formatDistanceToNowStrict(createdDateTime)} ago
                                                             </Typography>
                                                   </Stack>
                                         }
@@ -185,7 +185,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                                                             <SocialComment
                                                                       authorAvatar={comment.author.avatar}
                                                                       authorName={comment.author.name}
-                                                                      createdAt={comment.createdAt}
+                                                                      createdDateTime={comment.createdDateTime}
                                                                       key={comment._id}
                                                                       message={comment.message}
                                                             />
@@ -202,7 +202,7 @@ SocialPostCard.propTypes = {
           authorAvatar: PropTypes.string.isRequired,
           authorName: PropTypes.string.isRequired,
           comments: PropTypes.array.isRequired,
-          createdAt: PropTypes.number.isRequired,
+          createdDateTime: PropTypes.number.isRequired,
           isLiked: PropTypes.bool.isRequired,
           likes: PropTypes.number.isRequired,
           media: PropTypes.string,

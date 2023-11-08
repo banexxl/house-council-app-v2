@@ -16,7 +16,7 @@ export interface Message {
           attachments: Attachment[];
           body: string;
           contentType: string;
-          createdAt: number;
+          createdDateTime: number;
           authorId: string;
 }
 

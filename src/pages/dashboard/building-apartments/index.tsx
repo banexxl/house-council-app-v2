@@ -29,6 +29,7 @@ import { buildingServices } from '@/utils/building-services';
 import { BuildingApartmentsListTable } from '@/sections/dashboard/building-apartments/building-apartments-list-table';
 import { apartmentServices } from '@/utils/apartment-services';
 import { BuildingApartment } from '@/types/building-appartment';
+import { customersServices } from '@/utils/customer-services';
 
 interface BuildingSearchState {
           filters: BuildingFilters;
@@ -201,7 +202,6 @@ const Page: NextPage = (props: any) => {
 export const getServerSideProps = async (context: any) => {
 
           const allAppartments = await apartmentServices().getAllApartments()
-
 
           redirect: {
                     destination: "/404"

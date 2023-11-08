@@ -23,7 +23,7 @@ import { customLocale } from 'src/utils/date-locale';
 interface Message {
           _id: string;
           content: string;
-          createdAt: Date;
+          createdDateTime: Date;
           senderAvatar: string;
           senderName: string;
           senderOnline?: boolean;
@@ -50,7 +50,7 @@ export const OverviewInbox: FC<OverviewInboxProps> = (props) => {
                               />
                               <List disablePadding>
                                         {messages.map((message) => {
-                                                  const ago = formatDistanceStrict(message.createdAt, new Date(), {
+                                                  const ago = formatDistanceStrict(message.createdDateTime, new Date(), {
                                                             addSuffix: true,
                                                             locale: customLocale,
                                                   });

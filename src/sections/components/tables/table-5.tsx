@@ -37,7 +37,7 @@ interface Product {
           attributes: string[];
           category: string;
           currency: string;
-          createdAt: number;
+          createdDateTime: number;
           image: string | null;
           inventoryType: InventoryType;
           isAvailable: boolean;
@@ -55,7 +55,7 @@ const products: Product[] = [
                     attributes: ['Cotton'],
                     category: 'dress',
                     currency: '$',
-                    createdAt: subDays(now, 1).getTime(),
+                    createdDateTime: subDays(now, 1).getTime(),
                     image: '/assets/products/product-1.png',
                     inventoryType: 'in_stock',
                     isAvailable: true,
@@ -71,7 +71,7 @@ const products: Product[] = [
                     attributes: ['Cotton'],
                     category: 'dress',
                     currency: '$',
-                    createdAt: subDays(now, 3).getTime(),
+                    createdDateTime: subDays(now, 3).getTime(),
                     image: '/assets/products/product-2.png',
                     inventoryType: 'out_of_stock',
                     isAvailable: false,
@@ -87,7 +87,7 @@ const products: Product[] = [
                     attributes: ['Variety of styles'],
                     category: 'jewelry',
                     currency: '$',
-                    createdAt: subDays(now, 6).getTime(),
+                    createdDateTime: subDays(now, 6).getTime(),
                     image: null,
                     inventoryType: 'in_stock',
                     isAvailable: true,
@@ -103,7 +103,7 @@ const products: Product[] = [
                     attributes: ['Polyester and Spandex'],
                     category: 'blouse',
                     currency: '$',
-                    createdAt: subDays(now, 12).getTime(),
+                    createdDateTime: subDays(now, 12).getTime(),
                     image: '/assets/products/product-4.png',
                     inventoryType: 'limited',
                     isAvailable: false,
@@ -170,11 +170,11 @@ const sortOptions: Option[] = [
           },
           {
                     label: 'Creation date (newest first)',
-                    value: 'createdAt|desc',
+                    value: 'createdDateTime|desc',
           },
           {
                     label: 'Creation date (oldest first)',
-                    value: 'createdAt|asc',
+                    value: 'createdDateTime|asc',
           },
 ];
 

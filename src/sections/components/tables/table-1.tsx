@@ -27,7 +27,7 @@ type OrderStatus = 'complete' | 'pending' | 'rejected';
 
 interface Order {
           _id: string;
-          createdAt: number;
+          createdDateTime: number;
           customer: {
                     email: string;
                     name: string;
@@ -44,7 +44,7 @@ const now = new Date();
 const orders: Order[] = [
           {
                     _id: '5eff2548979e396cb4b000ba',
-                    createdAt: subMinutes(subSeconds(now, 10), 7).getTime(),
+                    createdDateTime: subMinutes(subSeconds(now, 10), 7).getTime(),
                     customer: {
                               email: 'ekaterina@devias.io',
                               name: 'Ekaterina Tankova',
@@ -57,7 +57,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5eff254e46b753a166e7d7af',
-                    createdAt: subHours(subMinutes(subSeconds(now, 50), 12), 2).getTime(),
+                    createdDateTime: subHours(subMinutes(subSeconds(now, 50), 12), 2).getTime(),
                     customer: {
                               email: 'carson.darrin@devias.io',
                               name: 'Carson Darrin',
@@ -70,7 +70,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5eff2553e1c551e2e28a9205',
-                    createdAt: subHours(subMinutes(subSeconds(now, 12), 39), 5).getTime(),
+                    createdDateTime: subHours(subMinutes(subSeconds(now, 12), 39), 5).getTime(),
                     customer: {
                               email: 'fran.perez@devias.io',
                               name: 'Fran Perez',
@@ -83,7 +83,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5eff25590f3e28f013c39a0e',
-                    createdAt: subHours(subMinutes(subSeconds(now, 21), 46), 5).getTime(),
+                    createdDateTime: subHours(subMinutes(subSeconds(now, 21), 46), 5).getTime(),
                     customer: {
                               email: 'anje.keiser@devias.io',
                               name: 'Jie Yan Song',
@@ -96,7 +96,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5eff255f57499089243805d8',
-                    createdAt: subHours(subMinutes(subSeconds(now, 54), 19), 8).getTime(),
+                    createdDateTime: subHours(subMinutes(subSeconds(now, 54), 19), 8).getTime(),
                     customer: {
                               name: 'Clarke Gillebert',
                               email: 'clarke.gillebert@devias.io',
@@ -109,7 +109,7 @@ const orders: Order[] = [
           },
           {
                     _id: '5eff25658d416fc5adb96a3a',
-                    createdAt: subDays(subMinutes(subSeconds(now, 12), 45), 1).getTime(),
+                    createdDateTime: subDays(subMinutes(subSeconds(now, 12), 45), 1).getTime(),
                     customer: {
                               email: 'nasimiyu.danai@devias.io',
                               name: 'Nasimiyu Danai',
@@ -175,7 +175,7 @@ export const Table1: FC = () => (
                                                             {orders.map((order) => {
                                                                       const totalAmount = numeral(order.totalAmount).format(`${order.currency}0,0.00`);
                                                                       const statusColor = labelColors[order.status];
-                                                                      const createdAt = format(order.createdAt, 'dd MMM, yyyy HH:mm:ss');
+                                                                      const createdDateTime = format(order.createdDateTime, 'dd MMM, yyyy HH:mm:ss');
 
                                                                       return (
                                                                                 <TableRow
@@ -191,7 +191,7 @@ export const Table1: FC = () => (
                                                                                           <TableCell>
                                                                                                     <SeverityPill color={statusColor}>{order.status}</SeverityPill>
                                                                                           </TableCell>
-                                                                                          <TableCell align="right">{createdAt}</TableCell>
+                                                                                          <TableCell align="right">{createdDateTime}</TableCell>
                                                                                 </TableRow>
                                                                       );
                                                             })}

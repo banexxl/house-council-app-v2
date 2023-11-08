@@ -32,7 +32,7 @@ export const OrderSummary: FC<OrderSummaryProps> = (props) => {
           }, []);
 
           const align = mdUp ? 'horizontal' : 'vertical';
-          const createdAt = format(order.createdAt, 'dd/MM/yyyy HH:mm');
+          const createdDateTime = format(order.createdDateTime, 'dd/MM/yyyy HH:mm');
 
           return (
                     <Card {...other}>
@@ -67,7 +67,7 @@ export const OrderSummary: FC<OrderSummaryProps> = (props) => {
                                         <PropertyListItem
                                                   align={align}
                                                   label="Date"
-                                                  value={createdAt}
+                                                  value={createdDateTime}
                                         />
                                         <Divider />
                                         <PropertyListItem
