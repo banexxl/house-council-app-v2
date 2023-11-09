@@ -50,10 +50,11 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               createdDateTime: customer.createdDateTime || '',
                               dateOfBirth: customer.dateOfBirth || '',
                               isOwner: customer.isOwner || false,
+                              isSubtenant: customer.isSubtenant || false,
                     },
                     validationSchema: Yup.object({
                               _id: Yup.string().max(36),
-                              fullAddress: Yup.string().max(100).required('Full address is required'),
+                              //fullAddress: Yup.string().max(100).required('Full address is required'),
                               email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
                               // isVerified: Yup.bool(),
                               firstName: Yup.string().max(32).required('First name is required'),
@@ -270,12 +271,19 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <FormControlLabel
-                                                                                control={<Checkbox />}
+                                                                                control={<Switch />}
                                                                                 label={'Is owner'}
                                                                                 value={formik.values.isOwner}
-                                                                                onChange={(e: any) => formik.setFieldValue('isOwner', e.target.checked)}
                                                                                 name={'isOwner'}
-                                                                                checked={formik.values.isOwner}
+                                                                                onChange={(e: any) => formik.setFieldValue('isOwner', !formik.values.isOwner)}
+                                                                      />
+                                                                      <FormControlLabel
+                                                                                control={<Switch />}
+                                                                                label={'Is subtenant'}
+                                                                                value={formik.values.isSubtenant}
+                                                                                name={'isSubtenant'}
+                                                                                onChange={(e: any) => formik.setFieldValue('isSubtenant', !formik.values.isSubtenant)}
+
                                                                       />
                                                             </Grid>
                                                   </Grid>
