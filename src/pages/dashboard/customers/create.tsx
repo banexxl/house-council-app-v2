@@ -15,6 +15,7 @@ import { paths } from 'src/paths';
 import { CustomerCreateForm } from '@/sections/dashboard/customer/customer-create-form';
 import { buildingServices } from '@/utils/building-services';
 import { Building } from '@/types/building';
+import { apartmentServices } from '@/utils/apartment-services';
 
 const Page: NextPage = (props: any) => {
 
@@ -59,7 +60,7 @@ const Page: NextPage = (props: any) => {
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <CustomerCreateForm allBuildings={props.allBuildings} />
+                                                            <CustomerCreateForm allApartments={props.allApartments} />
                                                   </Stack>
                                         </Container>
                               </Box>
@@ -69,7 +70,7 @@ const Page: NextPage = (props: any) => {
 
 export const getServerSideProps = async () => {
 
-          const allBuildings = await buildingServices().getAllBuildings()
+          const allApartments = await apartmentServices().getAllApartments()
 
           redirect: {
                     destination: "/404"
@@ -77,7 +78,7 @@ export const getServerSideProps = async () => {
 
           return {
                     props: {
-                              allBuildings: JSON.parse(JSON.stringify(allBuildings)),
+                              allApartments: JSON.parse(JSON.stringify(allApartments)),
                     },
           }
 

@@ -37,7 +37,7 @@ interface Project {
           membersCount: number;
           title: string;
           type: string;
-          updatedAt: number;
+          updatedDateTime: number;
 }
 
 const projects: Project[] = [
@@ -60,7 +60,7 @@ const projects: Project[] = [
                     membersCount: 2,
                     title: 'Mella Full Screen Slider',
                     type: 'Full-Time',
-                    updatedAt: subMinutes(now, 24).getTime(),
+                    updatedDateTime: subMinutes(now, 24).getTime(),
           },
           {
                     _id: '5e8dcf076c50b9d8e756a5a2',
@@ -81,7 +81,7 @@ const projects: Project[] = [
                     membersCount: 3,
                     title: 'Overview Design',
                     type: 'Full-Time',
-                    updatedAt: subHours(now, 1).getTime(),
+                    updatedDateTime: subHours(now, 1).getTime(),
           },
           {
                     _id: '5e8dcf105a6732b3ed82cf7a',
@@ -102,7 +102,7 @@ const projects: Project[] = [
                     membersCount: 8,
                     title: 'Ten80 Web Design',
                     type: 'Full-Time',
-                    updatedAt: subHours(now, 16).getTime(),
+                    updatedDateTime: subHours(now, 16).getTime(),
           },
 ];
 
@@ -118,7 +118,7 @@ export const GridList2: FC = () => (
                               spacing={3}
                     >
                               {projects.map((project) => {
-                                        const updatedAgo = formatDistanceToNowStrict(project.updatedAt);
+                                        const updatedAgo = formatDistanceToNowStrict(project.updatedDateTime);
                                         const budget = numeral(project.budget).format(`${project.currency}0,0.00`);
 
                                         return (

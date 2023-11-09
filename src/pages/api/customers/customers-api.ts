@@ -31,36 +31,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Customers found!', data: allTenants, totalCount });
 
                     } else if (request.method === 'POST') {
+                              console.log('create customer request body', request.body);
 
                               const customerExists = await dbTenants.findOne({ email: request.body.email })
 
                               if (customerExists === null) {
-                                        await dbTenants.insertOne(request.body.values)
-                                                  .then(async (createTenantResponse: any) => {
-
-                                                            if (createTenantResponse.acknowledged) {
-                                                                      try {
-                                                                                await fetch(`${apiUrl}/api/buildings/update-building-customer-api`, {
-                                                                                          method: 'PUT',
-                                                                                          headers: {
-                                                                                                    'Content-Type': 'application/json',
-                                                                                                    'Access-Control-Allow-Origin': '*',
-                                                                                                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
-                                                                                          },
-                                                                                          body: JSON.stringify({
-                                                                                                    insertedId: createTenantResponse.insertedId,
-                                                                                                    buildingID: request.body.buildingID
-                                                                                          })
-                                                                                })
-                                                                                return response.status(200).json({ message: 'Customer successfully added!' });
-                                                                      } catch (error) {
-                                                                                return response.status(500).json({ message: 'update-building-customer-api failed!' });
-                                                                      }
-
-                                                            }
-                                                            else return response.status(400).json({ message: 'Something went wrong!' })
-                                                  })
-
+                                        await dbTenants.insertOne(request.body)
+                                        return response.status(200).json({ message: 'Customer successfully added!' });
                               } else {
                                         const error = new Error('Customer already exists!');
                                         (error as any).cause = { status: 409 };
@@ -80,7 +57,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                       phoneNumber: request.body.phoneNumber || '',
                                                                       apartmentNumber: request.body.apartmentNumber || '',
                                                                       avatar: request.body.avatar || '',
-                                                                      updatedAt: request.body.updatedAt || '',
+                                                                      updatedDateTime: request.body.updatedDateTime || '',
                                                                       dateOfBirth: request.body.dateOfBirth || '',
                                                                       isOwner: request.body.isOwner || '',
                                                             }

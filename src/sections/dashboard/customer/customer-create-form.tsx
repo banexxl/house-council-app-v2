@@ -16,40 +16,58 @@ import { paths } from 'src/paths';
 import { customerSchema as validationSchema, Customer } from '@/types/customer';
 import { RouterLink } from '@/components/router-link';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { Autocomplete, Box, Checkbox, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Autocomplete, Box, Checkbox, FormControl, Input, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { Building } from '@/types/building';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import moment, { Moment } from 'moment';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
+import Image from 'next/image';
 
 const initialValues: Customer = {
-          fullAddress: '',
-          ApartmentNumber: 0,
+          apartmentID: '',
           avatar: '',
           email: '',
           firstName: '',
           lastName: '',
           phoneNumber: '',
-          updatedAt: '',
+          updatedDateTime: '',
+          createdDateTime: '',
           dateOfBirth: '',
           isOwner: false,
+          permissionLevel: 0
 };
 
 export const CustomerCreateForm = (props: any) => {
 
           const router = useRouter();
           const [files, setFiles] = useState<File[]>([]);
-          const [age, setAge] = useState('');
-          const [buildingID, setBuildingID] = useState('')
+          const [selectedImage, setSelectedImage] = useState(null);
 
-          const handleAddressChange = (event: SelectChangeEvent) => {
-                    setAge(event.target.value as string);
+
+          const handleImageChange = (event: any) => {
+                    const file = event.target.files[0]; // Get the first selected file
+                    if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (e: any) => {
+                                        setSelectedImage(e.target.result);
+                                        formik.setFieldValue('image', e.target.result)
+                              };
+
+                              reader.readAsDataURL(file);
+                    }
           };
+
+          const handleFileRemove = (): void => {
+                    setSelectedImage(null);
+          }
 
           const formik = useFormik({
                     initialValues,
                     validationSchema,
                     onSubmit: async (values, helpers): Promise<void> => {
+                              console.log('customer create values', values);
 
                               try {
                                         //API CALL
@@ -60,7 +78,7 @@ export const CustomerCreateForm = (props: any) => {
                                                             'Access-Control-Allow-Origin': '*',
                                                             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                                   },
-                                                  body: JSON.stringify({ values, buildingID }), // Convert your data to JSON
+                                                  body: JSON.stringify(values), // Convert your data to JSON
                                         });
 
                                         if (response.ok) {
@@ -93,16 +111,6 @@ export const CustomerCreateForm = (props: any) => {
                     setFiles((prevFiles) => {
                               return [...prevFiles, ...newFiles];
                     });
-          }, []);
-
-          const handleFileRemove = useCallback((file: File): void => {
-                    setFiles((prevFiles) => {
-                              return prevFiles.filter((_file) => _file.path !== file.path);
-                    });
-          }, []);
-
-          const handleFilesRemoveAll = useCallback((): void => {
-                    setFiles([]);
           }, []);
 
           return (
@@ -141,19 +149,6 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     value={formik.values.firstName}
                                                                                           />
 
-                                                                                          {/* <QuillEditor
-                                                                                                              onChange={(value: string): void => {
-                                                                                                                        formik.setFieldValue('description', value);
-                                                                                                              }}
-                                                                                                              placeholder="Write something"
-                                                                                                              sx={{ height: 400 }}
-                                                                                                              value={formik.values.description}
-                                                                                                    />
-                                                                                                    {!!(formik.touched.description && formik.errors.description) && (
-                                                                                                              <Box sx={{ mt: 2 }}>
-                                                                                                                        <FormHelperText error>{formik.errors.description}</FormHelperText>
-                                                                                                              </Box>
-                                                                                                    )} */}
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.lastName && formik.errors.lastName)}
                                                                                                     fullWidth
@@ -165,44 +160,6 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     value={formik.values.lastName}
                                                                                           />
 
-                                                                                          <Autocomplete
-                                                                                                    disablePortal
-                                                                                                    id="combo-box-demo"
-                                                                                                    options={props.allBuildings}
-                                                                                                    getOptionLabel={(building: any) => building.fullAddress}
-                                                                                                    renderInput={(params) =>
-                                                                                                              <TextField
-                                                                                                                        {...params}
-                                                                                                                        label="Building address"
-                                                                                                                        helperText={
-                                                                                                                                  formik.touched.fullAddress && formik.errors.fullAddress
-                                                                                                                                            ? formik.errors.fullAddress
-                                                                                                                                            : ''
-                                                                                                                        }
-                                                                                                                        error={formik.touched.fullAddress && Boolean(formik.errors.fullAddress)}
-                                                                                                              />
-                                                                                                    }
-                                                                                                    onChange={(e: any, value: Building | null) => {
-                                                                                                              formik.setFieldValue('fullAddress', value ? value.fullAddress : '')
-                                                                                                              formik.setFieldValue('buildingID', value ? value._id : '')
-                                                                                                              setBuildingID(value?._id || '')
-                                                                                                    }}
-                                                                                                    defaultValue={props.allBuildings.find(
-                                                                                                              (building: any) => building.fullAddress === formik.values.fullAddress
-                                                                                                    )}
-                                                                                                    onBlur={formik.handleBlur('fullAddress')}
-                                                                                          />
-
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.ApartmentNumber && formik.errors.ApartmentNumber)}
-                                                                                                    fullWidth
-                                                                                                    helperText={formik.touched.ApartmentNumber && formik.errors.ApartmentNumber}
-                                                                                                    label="Apartment number"
-                                                                                                    name="ApartmentNumber"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    value={formik.values.ApartmentNumber}
-                                                                                          />
                                                                                           <TextField
                                                                                                     error={!!(formik.touched.phoneNumber && formik.errors.phoneNumber)}
                                                                                                     fullWidth
@@ -223,6 +180,7 @@ export const CustomerCreateForm = (props: any) => {
                                                                                                     onChange={formik.handleChange}
                                                                                                     value={formik.values.email}
                                                                                           />
+
                                                                                           <LocalizationProvider dateAdapter={AdapterMoment}>
                                                                                                     <MobileDatePicker
                                                                                                               views={['year', 'month', 'day']}
@@ -246,6 +204,14 @@ export const CustomerCreateForm = (props: any) => {
                                                                                           label={'Is owner'}
                                                                                           value={formik.values.isOwner}
                                                                                           onChange={(e: any) => formik.setFieldValue('isOwner', e.target.checked)}
+                                                                                          disabled={formik.values.isSubtenant}
+                                                                                />
+                                                                                <FormControlLabel
+                                                                                          control={<Checkbox />}
+                                                                                          label={'Is subtenant'}
+                                                                                          value={formik.values.isSubtenant}
+                                                                                          onChange={(e: any) => formik.setFieldValue('isSubtenant', e.target.checked)}
+                                                                                          disabled={formik.values.isOwner}
                                                                                 />
                                                                       </Grid>
                                                             </Grid>
@@ -255,7 +221,7 @@ export const CustomerCreateForm = (props: any) => {
                                                   <CardContent>
                                                             <Grid
                                                                       container
-                                                                      spacing={3}
+                                                                      spacing={5}
                                                             >
                                                                       <Grid
                                                                                 xs={12}
@@ -271,19 +237,70 @@ export const CustomerCreateForm = (props: any) => {
                                                                                           </Typography>
                                                                                 </Stack>
                                                                       </Grid>
-                                                                      <Grid
-                                                                                xs={12}
-                                                                                md={8}
-                                                                      >
-                                                                                <FileDropzone
-                                                                                          accept={{ 'image/*': [] }}
-                                                                                          caption="(SVG, JPG, PNG, or gif maximum 900x400)"
-                                                                                          files={files}
-                                                                                          onDrop={handleFilesDrop}
-                                                                                          onRemove={handleFileRemove}
-                                                                                //onRemoveAll={handleFilesRemoveAll}
-                                                                                />
-                                                                      </Grid>
+                                                                      <Card>
+                                                                                <CardContent>
+                                                                                          <Grid
+                                                                                                    container
+                                                                                                    spacing={3}
+                                                                                          >
+                                                                                                    <Box
+                                                                                                              sx={{
+                                                                                                                        display: 'flex',
+                                                                                                                        flexDirection: 'column',
+                                                                                                                        alignItems: 'center',
+                                                                                                                        gap: '10px'
+                                                                                                              }}
+                                                                                                    >
+
+                                                                                                              {
+                                                                                                                        selectedImage ?
+                                                                                                                                  <Image src={selectedImage}
+                                                                                                                                            alt='sds'
+                                                                                                                                            width={300}
+                                                                                                                                            height={300}
+                                                                                                                                            style={{
+                                                                                                                                                      borderRadius: '10px',
+                                                                                                                                                      cursor: 'pointer'
+                                                                                                                                            }}
+                                                                                                                                            onClick={() => handleFileRemove()}
+                                                                                                                                  />
+                                                                                                                                  :
+                                                                                                                                  <InsertPhotoIcon
+                                                                                                                                            color='primary'
+                                                                                                                                            sx={{ width: '300px', height: '300px' }}
+                                                                                                                                  />
+                                                                                                              }
+
+                                                                                                              <Button component="label"
+                                                                                                                        variant="contained"
+                                                                                                                        startIcon={<CloudUploadIcon />}
+                                                                                                                        sx={{
+                                                                                                                                  maxWidth: '150px'
+                                                                                                                        }}
+
+                                                                                                              >
+                                                                                                                        Upload file
+                                                                                                                        <Input
+                                                                                                                                  type="file"
+                                                                                                                                  inputProps={{ accept: 'image/*' }}
+                                                                                                                                  sx={{
+                                                                                                                                            clip: 'rect(0 0 0 0)',
+                                                                                                                                            clipPath: 'inset(50%)',
+                                                                                                                                            height: 1,
+                                                                                                                                            overflow: 'hidden',
+                                                                                                                                            position: 'absolute',
+                                                                                                                                            bottom: 0,
+                                                                                                                                            left: 0,
+                                                                                                                                            whiteSpace: 'nowrap',
+                                                                                                                                            width: 1,
+                                                                                                                                  }}
+                                                                                                                                  onInput={(e: any) => handleImageChange(e)}
+                                                                                                                        />
+                                                                                                              </Button>
+                                                                                                    </Box>
+                                                                                          </Grid>
+                                                                                </CardContent>
+                                                                      </Card>
                                                             </Grid>
                                                   </CardContent>
                                         </Card>
@@ -306,6 +323,8 @@ export const CustomerCreateForm = (props: any) => {
                                                             disabled={!formik.dirty}
                                                             type="submit"
                                                             variant="contained"
+                                                            onClick={() => formik.setFieldValue('createdDateTime', moment().format("YYYY/MM/DD HH:mm:ss"))}
+                                                            value={formik.values.createdDateTime}
                                                   >
                                                             Create
                                                   </Button>

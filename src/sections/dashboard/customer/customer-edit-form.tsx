@@ -35,22 +35,19 @@ interface CustomerEditFormProps {
 
 export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
 
-          console.log('customer edit form props', props);
-
           const { customer, ...other } = props;
           const router = useRouter()
 
           const formik = useFormik({
                     initialValues: {
                               _id: customer._id,
-                              fullAddress: customer.fullAddress || '',
                               email: customer.email || '',
                               firstName: customer.firstName || '',
                               lastName: customer.lastName || '',
                               phoneNumber: customer.phoneNumber || '',
-                              ApartmentNumber: customer.ApartmentNumber || '',
                               avatar: customer.avatar || '',
-                              updatedAt: customer.updatedAt || '',
+                              updatedDateTime: customer.updatedDateTime || '',
+                              createdDateTime: customer.createdDateTime || '',
                               dateOfBirth: customer.dateOfBirth || '',
                               isOwner: customer.isOwner || false,
                     },
@@ -64,6 +61,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                               phoneNumber: Yup.string().max(15).required('Phone is required'),
                     }),
                     onSubmit: async (values, helpers): Promise<void> => {
+                              console.log('edit customer values', values);
 
                               try {
                                         const response = await fetch('/api/customers/customers-api', {
@@ -174,7 +172,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 value={formik.values.email}
                                                                       />
                                                             </Grid>
-                                                            <Grid
+                                                            {/* <Grid
                                                                       xs={12}
                                                                       md={6}
                                                             >
@@ -188,7 +186,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                                     {...params}
                                                                                                     label="Building address"
                                                                                                     helperText={
-                                                                                                              formik.touched.fullAddress && formik.errors.fullAddress
+                                                                                                              formik.touched.ApartmentNumber && formik.errors.fullAddress
                                                                                                                         ? formik.errors.fullAddress
                                                                                                                         : ''
                                                                                                     }
@@ -200,7 +198,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                           (building) => building.fullAddress === formik.values.fullAddress
                                                                                 )}
                                                                       />
-                                                            </Grid>
+                                                            </Grid> */}
                                                             <Grid
                                                                       xs={12}
                                                                       md={6}
@@ -238,6 +236,35 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 />
                                                                       </LocalizationProvider>
                                                             </Grid>
+
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
+                                                                                error={!!(formik.touched.updatedDateTime && formik.errors.updatedDateTime)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched.updatedDateTime && formik.errors.updatedDateTime}
+                                                                                label="Updated date/time"
+                                                                                name="updatedDateTime"
+                                                                                disabled
+                                                                                value={formik.values.updatedDateTime}
+                                                                      />
+                                                            </Grid>
+                                                            <Grid
+                                                                      xs={12}
+                                                                      md={6}
+                                                            >
+                                                                      <TextField
+                                                                                error={!!(formik.touched.createdDateTime && formik.errors.createdDateTime)}
+                                                                                fullWidth
+                                                                                helperText={formik.touched.createdDateTime && formik.errors.createdDateTime}
+                                                                                label="Created date/time"
+                                                                                name="createdDateTime"
+                                                                                disabled
+                                                                                value={formik.values.createdDateTime}
+                                                                      />
+                                                            </Grid>
                                                             <Grid
                                                                       xs={12}
                                                                       md={6}
@@ -249,20 +276,6 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 onChange={(e: any) => formik.setFieldValue('isOwner', e.target.checked)}
                                                                                 name={'isOwner'}
                                                                                 checked={formik.values.isOwner}
-                                                                      />
-                                                            </Grid>
-                                                            <Grid
-                                                                      xs={12}
-                                                                      md={6}
-                                                            >
-                                                                      <TextField
-                                                                                error={!!(formik.touched.updatedAt && formik.errors.updatedAt)}
-                                                                                fullWidth
-                                                                                helperText={formik.touched.updatedAt && formik.errors.updatedAt}
-                                                                                label="Updated at"
-                                                                                name="updatedAt"
-                                                                                disabled
-                                                                                value={formik.values.updatedAt}
                                                                       />
                                                             </Grid>
                                                   </Grid>
@@ -329,7 +342,8 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             disabled={formik.isSubmitting}
                                                             type="submit"
                                                             variant="contained"
-                                                            onClick={() => formik.values.updatedAt = moment().format('DD.MM.YYYY hh:mm:ss').toString()}
+                                                            onClick={() => formik.setFieldValue('updatedDateTime', moment().format('YYYY/MM/DD hh:mm:ss').toString())}
+                                                            value={formik.values.updatedDateTime}
                                                   >
                                                             Update
                                                   </Button>

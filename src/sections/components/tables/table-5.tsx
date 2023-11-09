@@ -45,7 +45,7 @@ interface Product {
           name: string;
           price: number;
           quantity: number;
-          updatedAt: number;
+          updatedDateTime: number;
           variants: number;
 }
 
@@ -63,7 +63,7 @@ const products: Product[] = [
                     name: 'Healthcare Erbology',
                     price: 23.99,
                     quantity: 85,
-                    updatedAt: subHours(now, 6).getTime(),
+                    updatedDateTime: subHours(now, 6).getTime(),
                     variants: 2,
           },
           {
@@ -79,7 +79,7 @@ const products: Product[] = [
                     name: 'Makeup Lancome Rouge',
                     price: 95.0,
                     quantity: 0,
-                    updatedAt: subDays(subHours(now, 8), 2).getTime(),
+                    updatedDateTime: subDays(subHours(now, 8), 2).getTime(),
                     variants: 1,
           },
           {
@@ -95,7 +95,7 @@ const products: Product[] = [
                     name: 'Layering Bracelets Collection',
                     price: 155.0,
                     quantity: 48,
-                    updatedAt: subDays(subHours(now, 2), 1).getTime(),
+                    updatedDateTime: subDays(subHours(now, 2), 1).getTime(),
                     variants: 5,
           },
           {
@@ -111,7 +111,7 @@ const products: Product[] = [
                     name: 'Skincare Necessaire',
                     price: 17.99,
                     quantity: 5,
-                    updatedAt: subDays(subHours(now, 7), 1).getTime(),
+                    updatedDateTime: subDays(subHours(now, 7), 1).getTime(),
                     variants: 1,
           },
 ];
@@ -162,11 +162,11 @@ const availabilityOptions: Option[] = [
 const sortOptions: Option[] = [
           {
                     label: 'Last update (newest first)',
-                    value: 'updatedAt|desc',
+                    value: 'updatedDateTime|desc',
           },
           {
                     label: 'Last update (oldest first)',
-                    value: 'updatedAt|asc',
+                    value: 'updatedDateTime|asc',
           },
           {
                     label: 'Creation date (newest first)',

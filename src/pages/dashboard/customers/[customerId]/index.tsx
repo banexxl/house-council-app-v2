@@ -265,7 +265,7 @@ const Page: NextPage = () => {
                                                                                                     lg={4}
                                                                                           >
                                                                                                     <CustomerBasicDetails
-                                                                                                              fullAddress={customer.fullAddress}
+                                                                                                              fullAddress={customer.apartmentID}
                                                                                                               email={customer.email ? customer.email : ''}
                                                                                                               isVerified={true}
                                                                                                               phone={customer.phoneNumber}

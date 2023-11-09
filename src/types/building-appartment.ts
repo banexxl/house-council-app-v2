@@ -1,6 +1,6 @@
 export interface BuildingApartment {
           _id?: string;
-          fullAddress: string;
+          apartmentAddress: string;
           apartmentNumber: number;
           surfaceArea: number;
           bedroomNumber: number;
@@ -17,5 +17,5 @@ export interface BuildingApartment {
           hasOwnParking: boolean;
           utilitiesIncluded?: boolean;
           createdDateTime: string;
-          updatedAt: string;
+          updatedDateTime: string;
 }

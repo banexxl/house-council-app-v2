@@ -75,8 +75,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
           const enableBulkActions = selected.length > 0;
           const enableEditAction = selected.length == 1
           const router = useRouter();
-          console.log('selected tenants', selected);
-          console.log('allBuildingIDs', allBuildings);
 
 
           const handleTenantDeleteClick = () => {
@@ -275,12 +273,14 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         direction="row"
                                                                                                                         spacing={1}
                                                                                                               >
-                                                                                                                        <Link
-                                                                                                                                  color="inherit"
-                                                                                                                                  variant="subtitle2"
-                                                                                                                        >
-                                                                                                                                  {customer.fullAddress}
-                                                                                                                        </Link>
+                                                                                                                        <div>
+                                                                                                                                  <Link
+                                                                                                                                            color="inherit"
+                                                                                                                                            variant="subtitle2"
+                                                                                                                                  >
+                                                                                                                                            {customer.phoneNumber}
+                                                                                                                                  </Link>
+                                                                                                                        </div>
                                                                                                               </Stack>
                                                                                                     </TableCell>
                                                                                                     <TableCell>
@@ -289,12 +289,14 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         direction="row"
                                                                                                                         spacing={1}
                                                                                                               >
-                                                                                                                        <Link
-                                                                                                                                  color="inherit"
-                                                                                                                                  variant="subtitle2"
-                                                                                                                        >
-                                                                                                                                  {customer.ApartmentNumber}
-                                                                                                                        </Link>
+                                                                                                                        <div>
+                                                                                                                                  <Link
+                                                                                                                                            color="inherit"
+                                                                                                                                            variant="subtitle2"
+                                                                                                                                  >
+                                                                                                                                            {customer.avatar}
+                                                                                                                                  </Link>
+                                                                                                                        </div>
                                                                                                               </Stack>
                                                                                                     </TableCell>
                                                                                                     <TableCell>

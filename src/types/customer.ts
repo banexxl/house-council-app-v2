@@ -2,19 +2,18 @@ import * as Yup from 'yup';
 
 export interface Customer {
           _id?: string;
-          fullAddress: string;
-          ApartmentNumber?: number;
+          apartmentID?: string;
           avatar?: string;
-          email?: string;
+          email: string;
           firstName: string;
           lastName: string;
           phoneNumber: string;
           dateOfBirth?: string;
-          updatedAt?: string;
+          updatedDateTime?: string;
+          createdDateTime?: string;
           isOwner?: boolean;
           isSubtenant?: boolean;
-          permissionLevel?: number;
-          buildingID?: string;
+          permissionLevel: number;
 }
 
 
@@ -29,10 +28,6 @@ export const customerSchema = Yup.object({
                     .max(50, 'Last name cannot exceed 50 characters')
                     .required('Last name is required'),
 
-          fullAddress: Yup.string().max(100).required('Full addreess is required'),
-
-          ApartmentNumber: Yup.number().typeError('You must specify a number').min(1, 'Apartment number must be greather then 0'),
-
           email: Yup.string().email('Invalid email address').required('Email is required'),
 
           phoneNumber: Yup.string()
@@ -40,8 +35,6 @@ export const customerSchema = Yup.object({
                     .min(10, 'Phone number must be at least 10 digits')
                     .max(15, 'Phone number cannot exceed 15 digits')
                     .required('Phone number is required'),
-
-          isOwner: Yup.boolean()
 });
 
 export default customerSchema;

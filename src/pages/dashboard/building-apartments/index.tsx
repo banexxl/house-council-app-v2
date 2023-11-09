@@ -145,7 +145,7 @@ const Page: NextPage = (props: any) => {
                                                                                           <Link
                                                                                                     color="text.primary"
                                                                                                     component={RouterLink}
-                                                                                                    href={paths.dashboard.buildings.index}
+                                                                                                    href={paths.dashboard.buildingApartments.index}
                                                                                                     variant="subtitle2"
                                                                                           >
                                                                                                     Building apartments

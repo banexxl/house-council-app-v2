@@ -352,20 +352,22 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                     </Box>
                                                                                                     <Box>
                                                                                                               <TextField
-                                                                                                                        error={!!(formik.touched.updatedAt && formik.errors.updatedAt)}
+                                                                                                                        error={!!(formik.touched.updatedDateTime && formik.errors.updatedDateTime)}
                                                                                                                         fullWidth
                                                                                                                         label="Updated at"
-                                                                                                                        name="updatedAt"
+                                                                                                                        name="updatedDateTime"
                                                                                                                         onBlur={formik.handleBlur}
                                                                                                                         onChange={formik.handleChange}
                                                                                                                         type="text"
-                                                                                                                        value={formik.values.updatedAt}
+                                                                                                                        disabled
+                                                                                                                        value={formik.values.updatedDateTime}
                                                                                                               />
                                                                                                     </Box>
                                                                                                     <Box>
                                                                                                               <TextField
                                                                                                                         error={!!(formik.touched.createdDateTime && formik.errors.createdDateTime)}
                                                                                                                         fullWidth
+                                                                                                                        disabled
                                                                                                                         label="Created at"
                                                                                                                         name="createdDateTime"
                                                                                                                         onBlur={formik.handleBlur}

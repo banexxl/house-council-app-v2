@@ -21,7 +21,7 @@ export const initialValues: BuildingApartment = {
           hasOwnParking: false,
           utilitiesIncluded: false,
           createdDateTime: '',
-          updatedAt: ''
+          updatedDateTime: ''
 };
 
 export const validationSchema = Yup.object({
@@ -42,5 +42,5 @@ export const validationSchema = Yup.object({
           hasOwnParking: Yup.boolean(),
           utilitiesIncluded: Yup.boolean(),
           createdDateTime: Yup.string(),
-          updatedAt: Yup.string(),
+          updatedDateTime: Yup.string(),
 });

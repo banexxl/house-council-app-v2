@@ -20,5 +20,5 @@ export interface Item {
           size: number;
           tags?: string[];
           type: ItemType;
-          updatedAt?: number | null;
+          updatedDateTime?: number | null;
 }
