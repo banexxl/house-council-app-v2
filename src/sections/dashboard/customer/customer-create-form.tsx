@@ -26,7 +26,6 @@ import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import Image from 'next/image';
 
 const initialValues: Customer = {
-          apartmentID: '',
           avatar: '',
           email: '',
           firstName: '',
@@ -36,6 +35,7 @@ const initialValues: Customer = {
           createdDateTime: '',
           dateOfBirth: '',
           isOwner: false,
+          isSubtenant: false,
           permissionLevel: 0
 };
 

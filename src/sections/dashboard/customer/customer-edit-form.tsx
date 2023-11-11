@@ -41,16 +41,16 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
           const formik = useFormik({
                     initialValues: {
                               _id: customer._id,
-                              email: customer.email || '',
-                              firstName: customer.firstName || '',
-                              lastName: customer.lastName || '',
-                              phoneNumber: customer.phoneNumber || '',
-                              avatar: customer.avatar || '',
-                              updatedDateTime: customer.updatedDateTime || '',
-                              createdDateTime: customer.createdDateTime || '',
-                              dateOfBirth: customer.dateOfBirth || '',
-                              isOwner: customer.isOwner || false,
-                              isSubtenant: customer.isSubtenant || false,
+                              email: customer.email,
+                              firstName: customer.firstName,
+                              lastName: customer.lastName,
+                              phoneNumber: customer.phoneNumber,
+                              avatar: customer.avatar,
+                              updatedDateTime: customer.updatedDateTime,
+                              createdDateTime: customer.createdDateTime,
+                              dateOfBirth: customer.dateOfBirth,
+                              isOwner: customer.isOwner,
+                              isSubtenant: customer.isSubtenant,
                     },
                     validationSchema: Yup.object({
                               _id: Yup.string().max(36),
@@ -107,9 +107,9 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             container
                                                             spacing={3}
                                                   >
-                                                            {/* <Typography>
-                                                                      {`${JSON.stringify(formik.errors)}`}
-                                                            </Typography> */}
+                                                            <Typography>
+                                                                      {`${JSON.stringify(formik.values)}`}
+                                                            </Typography>
                                                             <Grid
                                                                       xs={12}
                                                                       md={6}
@@ -271,19 +271,27 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                       md={6}
                                                             >
                                                                       <FormControlLabel
-                                                                                control={<Switch />}
+                                                                                control={<Checkbox
+                                                                                          value={formik.values.isOwner}
+                                                                                          onChange={(e: any) => {
+                                                                                                    formik.setFieldValue('isOwner', e.target.checked);
+                                                                                                    formik.setFieldValue('isSubtenant', !e.target.checked ? formik.values.isSubtenant : false);
+                                                                                          }}
+                                                                                          itemType='boolean'
+                                                                                          checked={formik.values.isOwner}
+                                                                                />}
                                                                                 label={'Is owner'}
-                                                                                value={formik.values.isOwner}
-                                                                                name={'isOwner'}
-                                                                                onChange={(e: any) => formik.setFieldValue('isOwner', !formik.values.isOwner)}
+
                                                                       />
                                                                       <FormControlLabel
-                                                                                control={<Switch />}
+                                                                                control={<Checkbox />}
                                                                                 label={'Is subtenant'}
                                                                                 value={formik.values.isSubtenant}
-                                                                                name={'isSubtenant'}
-                                                                                onChange={(e: any) => formik.setFieldValue('isSubtenant', !formik.values.isSubtenant)}
-
+                                                                                onChange={(e: any) => {
+                                                                                          formik.setFieldValue('isSubtenant', e.target.checked);
+                                                                                          formik.setFieldValue('isOwner', !e.target.checked ? formik.values.isOwner : false);
+                                                                                }}
+                                                                                checked={formik.values.isSubtenant}
                                                                       />
                                                             </Grid>
                                                   </Grid>
@@ -350,7 +358,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             disabled={formik.isSubmitting}
                                                             type="submit"
                                                             variant="contained"
-                                                            onClick={() => formik.setFieldValue('updatedDateTime', moment().format('YYYY/MM/DD hh:mm:ss').toString())}
+                                                            onClick={() => formik.setFieldValue('updatedDateTime', moment().format('YYYY/MM/DD HH:mm:ss').toString())}
                                                             value={formik.values.updatedDateTime}
                                                   >
                                                             Update

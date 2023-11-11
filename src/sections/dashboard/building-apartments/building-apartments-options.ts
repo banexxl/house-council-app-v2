@@ -4,7 +4,7 @@ import moment from 'moment';
 import * as Yup from 'yup';
 
 export const initialValues: BuildingApartment = {
-          fullAddress: '',
+          apartmentAddress: '',
           apartmentNumber: 0,
           surfaceArea: 0,
           bedroomNumber: 0,

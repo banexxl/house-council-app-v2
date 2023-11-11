@@ -119,11 +119,11 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                                         {...params}
                                                                                                                         label="Building address"
                                                                                                                         helperText={
-                                                                                                                                  formik.touched.fullAddress && formik.errors.fullAddress
-                                                                                                                                            ? formik.errors.fullAddress
+                                                                                                                                  formik.touched.apartmentAddress && formik.errors.apartmentAddress
+                                                                                                                                            ? formik.errors.apartmentAddress
                                                                                                                                             : ''
                                                                                                                         }
-                                                                                                                        error={formik.touched.fullAddress && Boolean(formik.errors.fullAddress)}
+                                                                                                                        error={formik.touched.apartmentAddress && Boolean(formik.errors.apartmentAddress)}
                                                                                                               />
                                                                                                     }
                                                                                                     onChange={(e: any, value: Building | null) => {
@@ -132,7 +132,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                               setBuildingID(value?._id || '')
                                                                                                     }}
                                                                                                     defaultValue={props.allBuildings.find(
-                                                                                                              (building: any) => building.fullAddress === formik.values.fullAddress
+                                                                                                              (building: any) => building.fullAddress === formik.values.apartmentAddress
                                                                                                     )}
                                                                                                     onBlur={formik.handleBlur('fullAddress')}
                                                                                           />
@@ -321,7 +321,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                                                   setBuildingID(value?._id || '')
                                                                                                                         }}
                                                                                                                         defaultValue={props.allCustomers.find(
-                                                                                                                                  (customer: any) => customer.fullAddress === formik.values.fullAddress
+                                                                                                                                  (customer: any) => customer.fullAddress === formik.values.apartmentAddress
                                                                                                                         )}
                                                                                                                         onBlur={formik.handleBlur('owners')}
                                                                                                               />

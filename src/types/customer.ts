@@ -2,7 +2,6 @@ import * as Yup from 'yup';
 
 export interface Customer {
           _id?: string;
-          apartmentID?: string;
           avatar?: string;
           email: string;
           firstName: string;

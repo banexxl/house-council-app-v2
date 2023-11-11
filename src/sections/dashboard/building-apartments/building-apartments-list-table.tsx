@@ -243,7 +243,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                   <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                                         </IconButton>
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{apartment.fullAddress}</TableCell>
+                                                                                                              <TableCell>{apartment.apartmentAddress}</TableCell>
                                                                                                               <TableCell>
                                                                                                                         {
                                                                                                                                   apartment.hasOwnParking ?
@@ -314,7 +314,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={apartment.fullAddress}
+                                                                                                                                                                                                        defaultValue={apartment.apartmentAddress}
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Full Address"
                                                                                                                                                                                                         name="fullAddress"
@@ -555,7 +555,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                                             ml: 2,
                                                                                                                                                                                                                   }}
                                                                                                                                                                                                         >
-                                                                                                                                                                                                                  <Typography variant="subtitle2">{apartment.fullAddress}</Typography>
+                                                                                                                                                                                                                  <Typography variant="subtitle2">{apartment.apartmentAddress}</Typography>
                                                                                                                                                                                                         </Box>
                                                                                                                                                                                               </Box>
                                                                                                                                                                                     </Grid>

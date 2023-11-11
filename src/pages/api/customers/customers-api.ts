@@ -45,23 +45,23 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               }
                     }
                     else if (request.method === 'PUT') {
-
                               try {
-                                        await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
+                                        const findAndUpdate = await dbTenants.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {
                                                             $set: {
-                                                                      fullAddress: request.body.fullAddress || '',
                                                                       email: request.body.email || '',
                                                                       firstName: request.body.firstName || '',
                                                                       lastName: request.body.lastName || '',
                                                                       phoneNumber: request.body.phoneNumber || '',
-                                                                      apartmentNumber: request.body.apartmentNumber || '',
                                                                       avatar: request.body.avatar || '',
                                                                       updatedDateTime: request.body.updatedDateTime || '',
                                                                       dateOfBirth: request.body.dateOfBirth || '',
-                                                                      isOwner: request.body.isOwner || '',
+                                                                      isOwner: request.body.isOwner,
+                                                                      isSubtenant: request.body.isSubtenant
                                                             }
                                                   })
+                                        console.log(findAndUpdate);
+
                                         return response.status(200).json({ message: 'Customer successfully updated!' });
                               } catch (error) {
                                         console.log(error);
@@ -79,7 +79,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                                                             if (deleteTenantResponse.acknowledged) {
                                                                       try {
-                                                                                await fetch(`${apiUrl}/api/buildings/delete-building-customers-api`, {
+                                                                                await fetch(`${apiUrl}/api/building-apartments/delete-building-customers-api`, {
                                                                                           method: 'PUT',
                                                                                           headers: {
                                                                                                     'Content-Type': 'application/json',
