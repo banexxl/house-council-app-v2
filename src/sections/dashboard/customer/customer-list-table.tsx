@@ -88,12 +88,13 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                               confirmButtonText: 'Yes, delete tenants!'
                     }).then((result: any) => {
                               if (result.isConfirmed) {
-                                        handleCustomersDelete(selected)
+                                        handleCustomersDelete()
                               }
                     })
           }
 
-          const handleCustomersDelete = async (customerIDs: string[]) => {
+          const handleCustomersDelete = async () => {
+
                     await fetch('/api/customers/customers-api', {
                               method: 'DELETE',
                               headers: {
@@ -101,10 +102,9 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                         'Access-Control-Allow-Origin': '*',
                                         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                               },
-                              body: JSON.stringify({
-                                        customerIDs: customerIDs,
-
-                              })
+                              body: JSON.stringify(
+                                        selected
+                              )
                     }).then((res: any) => {
                               if (res.ok) {
                                         toast.success('Customer deleted');

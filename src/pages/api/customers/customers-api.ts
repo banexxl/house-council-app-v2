@@ -79,7 +79,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                                                             if (deleteTenantResponse.acknowledged) {
                                                                       try {
-                                                                                await fetch(`${apiUrl}/api/building-apartments/delete-building-customers-api`, {
+                                                                                await fetch(`${apiUrl}/api/building-apartments/delete-customers-from-apartment-api`, {
                                                                                           method: 'PUT',
                                                                                           headers: {
                                                                                                     'Content-Type': 'application/json',

@@ -1,4 +1,3 @@
-import { Building } from '@/types/building';
 import { MongoClient, ObjectId } from 'mongodb';
 import type { NextApiRequest, NextApiResponse } from 'next/types'
 
@@ -6,20 +5,17 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
-          const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('Buildings')
-          //KADA BRISEMO STANARA, IZMENIMO TABELU STANOVA, TJ IZBACUJEMO STANARE IZ LISTE STANARA
+          const dbBuildings = mongoClient.db('HouseCouncilAppDB').collection('BuildingApartments')
+          //KADA BRISEMO STANARA, IZMENIMO TABELU STANOVA, TJ IZBACUJEMO STANARE IZ LISTE STANARA 
           try {
                     if (request.method === 'PUT') {
-                              console.log('delete building customer api put req', request.body);
 
                               try {
                                         const removeTenantFromBuildingReponse = await dbBuildings.updateOne({ _id: new ObjectId(request.body.buildingID) },
                                                   {
                                                             $pull: { tenants: { $in: request.body.tenantsToRemove } }
                                                   })
-                                        console.log('removeTenantFromBuildingReponse', removeTenantFromBuildingReponse);
-
-                                        return response.status(200).json({ message: 'Building successfully updated!' });
+                                        return response.status(200).json({ message: 'Apartment successfully updated!' });
                               } catch (error) {
                                         console.log(error);
                               }

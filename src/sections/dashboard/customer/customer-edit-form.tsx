@@ -107,9 +107,9 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                             container
                                                             spacing={3}
                                                   >
-                                                            <Typography>
+                                                            {/* <Typography>
                                                                       {`${JSON.stringify(formik.values)}`}
-                                                            </Typography>
+                                                            </Typography> */}
                                                             <Grid
                                                                       xs={12}
                                                                       md={6}
