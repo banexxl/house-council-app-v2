@@ -9,7 +9,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 4), 1).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -41,7 +41,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 7), 1).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -73,7 +73,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 2), 2).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -105,7 +105,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 3), 5).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -137,7 +137,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 1), 6).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -169,7 +169,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 3), 7).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -201,7 +201,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 6), 8).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -233,7 +233,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 7), 8).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -265,7 +265,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 6), 9).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -297,7 +297,7 @@ export const orders: Order[] = [
                     createdDateTime: subDays(subHours(now, 3), 10).getTime(),
                     currency: '$',
                     customer: {
-                              fullAddress: 'Street John Wick, no. 7',
+                              buildingAddress: 'Street John Wick, no. 7',
                               email: 'miron.vitold@devias.io',
                               name: 'Miron Vitold',
                     },
@@ -332,7 +332,7 @@ export const order: Order = {
           createdDateTime: subDays(subHours(now, 4), 1).getTime(),
           currency: '$',
           customer: {
-                    fullAddress: 'Street John Wick, no. 7',
+                    buildingAddress: 'Street John Wick, no. 7',
                     email: 'miron.vitold@devias.io',
                     name: 'Miron Vitold',
           },

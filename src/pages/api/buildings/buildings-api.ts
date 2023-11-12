@@ -34,7 +34,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                     } else if (request.method === 'POST') {
 
-                              const buildingExists = await dbBuildings.findOne({ fullAddress: request.body.fullAddress })
+                              const buildingExists = await dbBuildings.findOne({ buildingAddress: request.body.buildingAddress })
 
                               if (buildingExists === null) {
                                         await dbBuildings.insertOne(request.body).then(async (dbResponse: any) => {
@@ -51,7 +51,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                                 },
                                                                                 body: JSON.stringify({
                                                                                           buildingId: dbResponse.insertedId,
-                                                                                          boardLabel: request.body.fullAddress,
+                                                                                          boardLabel: request.body.buildingAddress,
                                                                                           columns: [],
                                                                                           tasks: []
                                                                                 })
@@ -77,7 +77,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                             $set:
                                                             {
                                                                       region: request.body.region,
-                                                                      fullAddress: request.body.fullAddress,
+                                                                      buildingAddress: request.body.buildingAddress,
                                                                       description: request.body.description,
                                                                       isRecentlyBuilt: request.body.isRecentlyBuilt,
                                                                       storiesHigh: request.body.storiesHigh,

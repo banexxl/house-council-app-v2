@@ -18,6 +18,7 @@ import { customersServices } from '@/utils/customer-services';
 
 const Page: NextPage = (props: any) => {
           usePageView();
+          console.log(props);
 
           return (
                     <>
@@ -58,7 +59,7 @@ const Page: NextPage = (props: any) => {
                                                                                 </Typography>
                                                                       </Breadcrumbs>
                                                             </Stack>
-                                                            <BuildingApartmentCreateForm allBuildings={props.allBuildings} allCustomers={props.allCustomers} />
+                                                            <BuildingApartmentCreateForm allBuildings={props.allBuildings} allCustomers={props.allCustomers} allOwners={props.allOwners} />
                                                   </Stack>
                                         </Container>
                               </Box>
@@ -70,6 +71,7 @@ export const getServerSideProps = async (context: any) => {
 
           const allBuildings = await buildingServices().getAllBuildings()
           const allCustomers = await customersServices().getAllCustomers()
+          const allOwners = await customersServices().getAllOwners()
 
           redirect: {
                     destination: "/404"
@@ -79,6 +81,7 @@ export const getServerSideProps = async (context: any) => {
                     props: {
                               allBuildings: JSON.parse(JSON.stringify(allBuildings)),
                               allCustomers: JSON.parse(JSON.stringify(allCustomers)),
+                              allOwners: JSON.parse(JSON.stringify(allOwners)),
                     },
           }
 

@@ -9,14 +9,14 @@ import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
 
 interface CustomerBasicDetailsProps {
-          fullAddress?: string;
+          buildingAddress?: string;
           email: string;
           isVerified: boolean;
           phone?: string;
 }
 
 export const CustomerBasicDetails: FC<CustomerBasicDetailsProps> = (props) => {
-          const { fullAddress, email, isVerified, phone, ...other } = props;
+          const { buildingAddress, email, isVerified, phone, ...other } = props;
 
           return (
                     <Card {...other}>
@@ -34,8 +34,8 @@ export const CustomerBasicDetails: FC<CustomerBasicDetailsProps> = (props) => {
                                         />
                                         <PropertyListItem
                                                   divider
-                                                  label="fullAddress"
-                                                  value={fullAddress}
+                                                  label="buildingAddress"
+                                                  value={buildingAddress}
                                         />
                               </PropertyList>
                               <CardActions>
@@ -51,7 +51,7 @@ export const CustomerBasicDetails: FC<CustomerBasicDetailsProps> = (props) => {
 };
 
 CustomerBasicDetails.propTypes = {
-          fullAddress: PropTypes.string,
+          buildingAddress: PropTypes.string,
           email: PropTypes.string.isRequired,
           isVerified: PropTypes.bool.isRequired,
           phone: PropTypes.string,

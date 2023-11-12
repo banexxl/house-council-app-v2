@@ -2,7 +2,7 @@ export interface Building {
           _id?: string;
           isActive: boolean;
           region: string;
-          fullAddress: string;
+          buildingAddress: string;
           description: string;
           /////////////////////////////////////////
           isRecentlyBuilt: boolean;
@@ -18,7 +18,7 @@ export interface Building {
           hasSolarPower: boolean;
           hasOwnWaterPump: boolean;
           /////////////////////////////////////////
-          image: string[];
+          image: string;
           lng: number;
           lat: number;
           buildingStatus: boolean;

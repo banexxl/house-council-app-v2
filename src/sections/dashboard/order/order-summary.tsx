@@ -48,7 +48,7 @@ export const OrderSummary: FC<OrderSummaryProps> = (props) => {
                                                             color="text.secondary"
                                                             variant="body2"
                                                   >
-                                                            {order.customer.fullAddress}
+                                                            {order.customer.buildingAddress}
                                                   </Typography>
                                         </PropertyListItem>
                                         <Divider />

@@ -262,17 +262,6 @@ const Page: NextPage = () => {
                                                                                 >
                                                                                           <Grid
                                                                                                     xs={12}
-                                                                                                    lg={4}
-                                                                                          >
-                                                                                                    <CustomerBasicDetails
-                                                                                                              fullAddress={customer.apartmentID}
-                                                                                                              email={customer.email ? customer.email : ''}
-                                                                                                              isVerified={true}
-                                                                                                              phone={customer.phoneNumber}
-                                                                                                    />
-                                                                                          </Grid>
-                                                                                          <Grid
-                                                                                                    xs={12}
                                                                                                     lg={8}
                                                                                           >
                                                                                                     <Stack spacing={4}>

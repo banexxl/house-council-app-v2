@@ -119,6 +119,9 @@ export const CustomerCreateForm = (props: any) => {
                     >
                               <Stack spacing={4}>
                                         <Card>
+                                                  {/* <Typography>
+                                                            {`${JSON.stringify(formik.errors)}`}
+                                                  </Typography> */}
                                                   <CardContent>
                                                             <Grid
                                                                       container

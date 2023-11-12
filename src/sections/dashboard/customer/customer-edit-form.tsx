@@ -54,7 +54,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                     },
                     validationSchema: Yup.object({
                               _id: Yup.string().max(36),
-                              //fullAddress: Yup.string().max(100).required('Full address is required'),
+                              //buildingAddress: Yup.string().max(100).required('Full address is required'),
                               email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
                               // isVerified: Yup.bool(),
                               firstName: Yup.string().max(32).required('First name is required'),
@@ -181,22 +181,22 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
                                                                                 disablePortal
                                                                                 id="combo-box-demo"
                                                                                 options={props.allBuildings}
-                                                                                getOptionLabel={(building: Building) => building.fullAddress}
+                                                                                getOptionLabel={(building: Building) => building.buildingAddress}
                                                                                 renderInput={(params) =>
                                                                                           <TextField
                                                                                                     {...params}
                                                                                                     label="Building address"
                                                                                                     helperText={
-                                                                                                              formik.touched.ApartmentNumber && formik.errors.fullAddress
-                                                                                                                        ? formik.errors.fullAddress
+                                                                                                              formik.touched.ApartmentNumber && formik.errors.buildingAddress
+                                                                                                                        ? formik.errors.buildingAddress
                                                                                                                         : ''
                                                                                                     }
-                                                                                                    error={formik.touched.fullAddress && Boolean(formik.errors.fullAddress)}
+                                                                                                    error={formik.touched.buildingAddress && Boolean(formik.errors.buildingAddress)}
                                                                                           />
                                                                                 }
-                                                                                onChange={(e: any) => formik.setFieldValue('fullAddress', e.target.textContent)}
+                                                                                onChange={(e: any) => formik.setFieldValue('buildingAddress', e.target.textContent)}
                                                                                 defaultValue={props.allBuildings.find(
-                                                                                          (building) => building.fullAddress === formik.values.fullAddress
+                                                                                          (building) => building.buildingAddress === formik.values.buildingAddress
                                                                                 )}
                                                                       />
                                                             </Grid> */}

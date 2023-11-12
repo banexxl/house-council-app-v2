@@ -100,7 +100,7 @@ export const OrderDetails: FC<OrderDetailsProps> = (props) => {
                                                                       color="text.secondary"
                                                                       variant="body2"
                                                             >
-                                                                      {order.customer.fullAddress}
+                                                                      {order.customer.buildingAddress}
                                                             </Typography>
                                                   </PropertyListItem>
                                                   <PropertyListItem

@@ -1,19 +1,19 @@
 export interface BuildingApartment {
           _id?: string;
-          apartmentAddress: string;
+          buildingAddress: string;
           apartmentNumber: number;
           surfaceArea: number;
           bedroomNumber: number;
           bathroomNumber: number;
           terraceNumber: number;
           description: string;
-          images: string;
+          images: string[];
           tenants: string[];
+          owners: string[];
           status: string;
           petFriendly?: boolean;
           smokingAllowed?: boolean;
           furnished?: boolean;
-          owners: string[];
           hasOwnParking: boolean;
           utilitiesIncluded?: boolean;
           createdDateTime: string;

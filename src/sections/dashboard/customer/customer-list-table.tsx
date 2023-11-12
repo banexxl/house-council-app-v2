@@ -190,8 +190,8 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                       </TableCell>
                                                                       <TableCell>First Name</TableCell>
                                                                       <TableCell>Second Name</TableCell>
-                                                                      <TableCell>Full Address</TableCell>
-                                                                      <TableCell>Apartment number</TableCell>
+                                                                      <TableCell>Phone number</TableCell>
+                                                                      <TableCell>Email</TableCell>
                                                                       <TableCell>Owner</TableCell>
                                                             </TableRow>
                                                   </TableHead>
@@ -243,12 +243,6 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         >
                                                                                                                                   {customer.firstName}
                                                                                                                         </Link>
-                                                                                                                        <Typography
-                                                                                                                                  color="text.secondary"
-                                                                                                                                  variant="body2"
-                                                                                                                        >
-                                                                                                                                  {customer.email}
-                                                                                                                        </Typography>
                                                                                                               </Stack>
                                                                                                     </TableCell>
                                                                                                     <TableCell>
@@ -277,6 +271,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                                   <Link
                                                                                                                                             color="inherit"
                                                                                                                                             variant="subtitle2"
+                                                                                                                                            href={`tel:${customer.phoneNumber}`}
                                                                                                                                   >
                                                                                                                                             {customer.phoneNumber}
                                                                                                                                   </Link>
@@ -289,14 +284,13 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                                                                                                                         direction="row"
                                                                                                                         spacing={1}
                                                                                                               >
-                                                                                                                        <div>
-                                                                                                                                  <Link
-                                                                                                                                            color="inherit"
-                                                                                                                                            variant="subtitle2"
-                                                                                                                                  >
-                                                                                                                                            {customer.avatar}
-                                                                                                                                  </Link>
-                                                                                                                        </div>
+                                                                                                                        <Link
+                                                                                                                                  color="inherit"
+                                                                                                                                  variant="subtitle2"
+                                                                                                                                  href={`mailto:${customer.email}`}
+                                                                                                                        >
+                                                                                                                                  {customer.email}
+                                                                                                                        </Link>
                                                                                                               </Stack>
                                                                                                     </TableCell>
                                                                                                     <TableCell>

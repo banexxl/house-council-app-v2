@@ -200,9 +200,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                             <TableRow>
                                                                       <TableCell />
                                                                       <TableCell>Full Address</TableCell>
+                                                                      <TableCell>Stories high</TableCell>
                                                                       <TableCell>Apartment Count</TableCell>
                                                                       <TableCell>Elevator</TableCell>
-                                                                      <TableCell>Unresolved issue count</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -241,25 +241,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                   <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                                         </IconButton>
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{building.fullAddress}</TableCell>
-                                                                                                              <TableCell>
-                                                                                                                        {/* <LinearProgress
-                                                                                                                        value={building.unresolvedIssues.length}
-                                                                                                                        variant="determinate"
-                                                                                                                        color={issueCountColor}
-                                                                                                                        sx={{
-                                                                                                                                  height: 8,
-                                                                                                                                  width: 36,
-                                                                                                                        }}
-                                                                                                              /> */}
-                                                                                                                        {/* <Typography
-                                                                                                                        color="text.secondary"
-                                                                                                                        variant="body2"
-                                                                                                              >
-                                                                                                                        {building.unresolvedIssues.length} unresolved issues <br />
-                                                                                                                        out of {building.unresolvedIssues.length}
-                                                                                                              </Typography> */}
-                                                                                                              </TableCell>
+                                                                                                              <TableCell>{building.buildingAddress}</TableCell>
+                                                                                                              <TableCell>{building.storiesHigh}</TableCell>
+                                                                                                              <TableCell>{building.ApartmentCount}</TableCell>
                                                                                                               <TableCell>
                                                                                                                         {
                                                                                                                                   building.hasOwnElevator ?
@@ -268,7 +252,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                             <CancelIcon color={hasElevatorColor} />
                                                                                                                         }
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{building.ApartmentCount}</TableCell>
                                                                                                     </TableRow>
 
                                                                                                     {
@@ -331,10 +314,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.fullAddress}
+                                                                                                                                                                                                        defaultValue={building.buildingAddress}
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Full Address"
-                                                                                                                                                                                                        name="fullAddress"
+                                                                                                                                                                                                        name="buildingAddress"
                                                                                                                                                                                                         disabled
                                                                                                                                                                                                         onLoad={(e: any) =>
                                                                                                                                                                                                                   setCurrentBuildingObject((previousObject: any) => ({
@@ -735,7 +718,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                                             ml: 2,
                                                                                                                                                                                                                   }}
                                                                                                                                                                                                         >
-                                                                                                                                                                                                                  <Typography variant="subtitle2">{building.fullAddress}</Typography>
+                                                                                                                                                                                                                  <Typography variant="subtitle2">{building.buildingAddress}</Typography>
                                                                                                                                                                                                         </Box>
                                                                                                                                                                                               </Box>
                                                                                                                                                                                     </Grid>

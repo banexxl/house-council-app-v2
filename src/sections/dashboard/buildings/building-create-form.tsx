@@ -95,12 +95,12 @@ export const BuildingCreateForm: FC = (props) => {
                     formik.setFieldValue('lng', mapAddressProps.latLng.lng)
                     formik.setFieldValue('lat', mapAddressProps.latLng.lat)
                     setLocationAddress(mapAddressProps);
-                    formik.setFieldValue('fullAddress', mapAddressProps.address)
-                    // const fullAddressString = mapAddressProps.address as String
-                    // const fullAddressArray = fullAddressString.split(',')
-                    // formik.setFieldValue('country', fullAddressArray[2])
-                    // formik.setFieldValue('city', fullAddressArray[1])
-                    // const [street, streetNumber] = fullAddressArray[0].split(/\s+(?=\d)/)
+                    formik.setFieldValue('buildingAddress', mapAddressProps.address)
+                    // const buildingAddressString = mapAddressProps.address as String
+                    // const buildingAddressArray = buildingAddressString.split(',')
+                    // formik.setFieldValue('country', buildingAddressArray[2])
+                    // formik.setFieldValue('city', buildingAddressArray[1])
+                    // const [street, streetNumber] = buildingAddressArray[0].split(/\s+(?=\d)/)
                     // formik.setFieldValue('street', street)
                     // formik.setFieldValue('streetNumber', streetNumber)
           }
@@ -115,6 +115,9 @@ export const BuildingCreateForm: FC = (props) => {
                               <Stack spacing={4}>
                                         {/*-------------------Basic info-------------------*/}
                                         <Card>
+                                                  <Typography>
+                                                            {`${JSON.stringify(formik.errors)}`}
+                                                  </Typography>
                                                   <CardContent>
                                                             <Grid
                                                                       container
@@ -133,14 +136,14 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                 <Stack spacing={3}>
                                                                                           <GoogleMaps onMapAddressChange={onMapAddressChange} />
                                                                                           <TextField
-                                                                                                    error={!!(formik.touched.fullAddress && formik.errors.fullAddress)}
                                                                                                     fullWidth
-                                                                                                    helperText={formik.touched.fullAddress && formik.errors.fullAddress}
+                                                                                                    error={!!(formik.touched.buildingAddress && formik.errors.buildingAddress)}
+                                                                                                    helperText={formik.touched.buildingAddress && formik.errors.buildingAddress}
                                                                                                     label="Building Address"
-                                                                                                    name="fullAddress"
+                                                                                                    name="buildingAddress"
                                                                                                     onBlur={formik.handleBlur}
                                                                                                     onChange={formik.handleChange}
-                                                                                                    value={formik.values.fullAddress}
+                                                                                                    value={formik.values.buildingAddress}
                                                                                                     disabled
                                                                                           />
                                                                                           <TextField
@@ -462,7 +465,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                   </Button>
                                         </Stack>
                               </Stack>
-                    </form>
+                    </form >
 
 
           );

@@ -40,13 +40,13 @@ export const buildingCategoryOptions: BuildingOptions[] = [
 ];
 
 export interface BuildingFilters {
-          fullAddress?: string;
+          buildingAddress?: string;
           category: boolean[]
 }
 
 export const initialValues: Building = {
           region: '',
-          fullAddress: '',
+          buildingAddress: '',
           isRecentlyBuilt: false,
           description: '',
           dateTimeAdded: `${localDateTime}`,
@@ -62,7 +62,7 @@ export const initialValues: Building = {
           hasOwnElevator: false,
           storiesHigh: 0,
           tenantMeetings: [],
-          image: ['new Uint8Array'],
+          image: '',
           buildingStatus: false,
           lng: 19.8227,
           lat: 45.2396,
@@ -75,7 +75,7 @@ export const initialValues: Building = {
 
 export const validationSchema = Yup.object({
           region: Yup.string().max(30),
-          fullAddress: Yup.string().required("This field is mandatory").max(70),
+          buildingAddress: Yup.string().required("This field is mandatory").max(70),
           isRecentlyBuilt: Yup.boolean(),
           dateTimeRegistered: Yup.date(),
           dateTimeUpdated: Yup.date(),
@@ -92,6 +92,6 @@ export const validationSchema = Yup.object({
           storiesHigh: Yup.number(),
           isToThreeStoriesHigh: Yup.boolean(),
           tenantMeetings: Yup.array(),
-          image: Yup.array(),
+          image: Yup.string(),
           buildingStatus: Yup.boolean(),
 });

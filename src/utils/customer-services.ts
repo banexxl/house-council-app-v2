@@ -17,6 +17,20 @@ export const customersServices = () => {
                     }
           }
 
+          const getAllOwners = async () => {
+                    const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
+                    const db = client.db('HouseCouncilAppDB')
+                    try {
+                              let data = await db.collection('Tenants').find({ isOwner: true }).toArray()
+                              return data
+                    } catch (error) {
+                              return { message: error.message }
+                    }
+                    finally {
+                              await client.close();
+                    }
+          }
+
           const getAllBuildingIDs = async () => {
 
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
@@ -33,7 +47,7 @@ export const customersServices = () => {
                     }
           }
 
-          const getFullAddressByBuildingID = async (buildingID: string) => {
+          const getbuildingAddressByBuildingID = async (buildingID: string) => {
 
                     const client = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
 
@@ -43,8 +57,8 @@ export const customersServices = () => {
                               const document = await collection.findOne({ _id: new ObjectId(buildingID) });
 
                               if (document) {
-                                        const fullAddress = document.fullAddress;
-                                        return fullAddress
+                                        const buildingAddress = document.buildingAddress;
+                                        return buildingAddress
                               } else {
                                         console.log('Document not found with the provided _id.');
                               }
@@ -199,14 +213,14 @@ export const customersServices = () => {
           return {
                     getAllCustomers,
                     getAllBuildingIDs,
-                    getProductById,
+                    getAllOwners,
                     getProductsByNameAndOrManufacturer,
                     getProductsByManufacturer,
                     getProductsByDiscount,
                     getProductsByMainCategory,
                     getProductsByMainCategoryMidCategory,
                     getProductsByMainCategoryMidCategorySubCategory,
-                    getFullAddressByBuildingID,
+                    getbuildingAddressByBuildingID,
                     getAllManufacturers
           }
 }

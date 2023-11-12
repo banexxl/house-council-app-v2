@@ -16,7 +16,7 @@ import { BuildingFilters, buildingCategoryOptions } from './building-options';
 
 interface SearchChip {
           label: string;
-          field: 'fullAddress' | 'category'
+          field: 'buildingAddress' | 'category'
           value: unknown;
           displayValue?: unknown;
 }
@@ -32,16 +32,16 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
           const handleChipsUpdate = useCallback(() => {
                     const filters: BuildingFilters = {
-                              fullAddress: '',
+                              buildingAddress: '',
                               category: []
                     };
 
                     chips.forEach((chip) => {
                               switch (chip.field) {
-                                        case 'fullAddress':
+                                        case 'buildingAddress':
                                                   // There will (or should) be only one chips with field "name"
                                                   // so we can set up it directly
-                                                  filters.fullAddress = chip.value as string;
+                                                  filters.buildingAddress = chip.value as string;
                                                   break;
                                         case 'category':
                                                   filters.category.push(chip.value as boolean)
@@ -75,11 +75,11 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                     const value = queryRef.current?.value || '';
 
                     setChips((prevChips) => {
-                              const found = prevChips.find((chip) => chip.field === 'fullAddress');
+                              const found = prevChips.find((chip) => chip.field === 'buildingAddress');
 
                               if (found && value) {
                                         return prevChips.map((chip) => {
-                                                  if (chip.field === 'fullAddress') {
+                                                  if (chip.field === 'buildingAddress') {
                                                             return {
                                                                       ...chip,
                                                                       value: queryRef.current?.value || '',
@@ -91,13 +91,13 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                               }
 
                               if (found && !value) {
-                                        return prevChips.filter((chip) => chip.field !== 'fullAddress');
+                                        return prevChips.filter((chip) => chip.field !== 'buildingAddress');
                               }
 
                               if (!found && value) {
                                         const chip: SearchChip = {
                                                   label: 'Full Address',
-                                                  field: 'fullAddress',
+                                                  field: 'buildingAddress',
                                                   value,
                                         };
 

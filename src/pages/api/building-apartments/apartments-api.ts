@@ -38,7 +38,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               const buildingApartmentExists = await dbBuildingApartments.findOne({
                                         $and: [
                                                   {
-                                                            fullAddress: request.body.fullAddress
+                                                            buildingAddress: request.body.buildingAddress
                                                   },
                                                   {
                                                             apartmentNumber: request.body.apartmentNumber
@@ -78,39 +78,34 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
+                              console.log('aaaaaaaa', request.body);
 
                               try {
-                                        await dbBuildingApartments.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
+                                        const updateresponse = await dbBuildingApartments.findOneAndUpdate({ _id: new ObjectId(request.body.currentBuildingApartmentID) },
                                                   {
                                                             $set:
                                                             {
-                                                                      region: request.body.region,
-                                                                      fullAddress: request.body.fullAddress,
+                                                                      buildingAddress: request.body.buildingAddress,
+                                                                      apartmentNumber: request.body.apartmentNumber,
+                                                                      surfaceArea: request.body.surfaceArea,
+                                                                      bedroomNumber: request.body.bedroomNumber,
+                                                                      bathroomNumber: request.body.bathroomNumber,
+                                                                      terraceNumber: request.body.terraceNumber,
                                                                       description: request.body.description,
-                                                                      isRecentlyBuilt: request.body.isRecentlyBuilt,
-                                                                      storiesHigh: request.body.storiesHigh,
-                                                                      hasOwnParkingLot: request.body.hasOwnParkingLot,
-                                                                      apartmentCount: request.body.apartmentCount,
-                                                                      hasOwnElevator: request.body.hasOwnElevator,
-                                                                      hasOwnBicycleRoom: request.body.hasOwnBicycleRoom,
-                                                                      hasGasHeating: request.body.hasGasHeating,
-                                                                      hasCentralHeating: request.body.hasCentralHeating,
-                                                                      hasElectricHeating: request.body.hasElectricHeating,
-                                                                      hasSolarPower: request.body.hasSolarPower,
-                                                                      hasOwnWaterPump: request.body.hasOwnWaterPump,
-                                                                      image: request.body.image,
-                                                                      lng: request.body.lng,
-                                                                      lat: request.body.lat,
-                                                                      buildingStatus: request.body.buildingStatus,
-                                                                      dateTimeAdded: request.body.stdateTimeAddedreet,
-                                                                      dateTimeUpdated: request.body.dateTimeUpdated,
+                                                                      images: request.body.images,
                                                                       tenants: request.body.tenants,
-                                                                      tenantMeetings: request.body.tenantMeetings,
-                                                                      invoices: request.body.invoices,
-                                                                      parkingLots: request.body.parkingLots,
-                                                                      board: request.body.board
+                                                                      owners: request.body.owners,
+                                                                      status: request.body.status,
+                                                                      petFriendly: request.body.petFriendl,
+                                                                      smokingAllowed: request.body.smokingAllowed,
+                                                                      furnished: request.body.furnished,
+                                                                      hasOwnParking: request.body.hasOwnParking,
+                                                                      utilitiesIncluded: request.body.utilitiesIncluded,
+                                                                      createdDateTime: request.body.createdDateTime,
+                                                                      updatedDateTime: request.body.updatedDateTime,
                                                             }
                                                   })
+                                        console.log(updateresponse)
 
                                         return response.status(200).json({ message: 'Building successfully updated!' });
                               } catch (error) {

@@ -55,7 +55,7 @@ const tenantSchema = new mongoose.Schema({
           },
 
           // Address and apartment information
-          fullAddress: {
+          buildingAddress: {
                     type: String,
                     required: true,
                     minlength: 5,

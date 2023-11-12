@@ -37,7 +37,7 @@ const useBuildingsSearch = () => {
 
           const [state, setState] = useState<BuildingSearchState>({
                     filters: {
-                              fullAddress: '',
+                              buildingAddress: '',
                               category: []
                     },
                     page: 0,

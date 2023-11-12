@@ -1,5 +1,5 @@
 interface OrderCustomer {
-          fullAddress?: string;
+          buildingAddress?: string;
           avatar?: string;
           email: string;
           name: string;

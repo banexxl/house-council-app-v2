@@ -31,7 +31,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import { Checkbox, FormControlLabel } from '@mui/material';
+import { Autocomplete, Checkbox, FormControlLabel } from '@mui/material';
 import { QuillEditor } from '@/components/quill-editor';
 import { initialValues, validationSchema } from './building-apartments-options';
 import { paths } from '@/paths';
@@ -39,10 +39,13 @@ import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
 import { BuildingApartment } from '@/types/building-appartment';
 import { Customer } from '@/types/customer';
+import { useFormik } from 'formik';
+import moment from 'moment';
 
 interface BuildingApartmentsListTableProps {
           count?: number;
           items?: BuildingApartment[];
+          allOwners: Customer[];
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
           onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
           onDeselectOne?: (item: unknown) => void;
@@ -50,11 +53,12 @@ interface BuildingApartmentsListTableProps {
           selected?: BuildingApartment[];
           page?: number;
           rowsPerPage?: number;
+
 }
 
 export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> = (props) => {
 
-          const [currentBuildingApartmentObject, setCurrentBuildingApartmentObject] = useState<BuildingApartment | null>();
+          const [currentBuildingApartmentID, setCurrentBuildingApartmentID] = useState<string | null>();
 
           const router = useRouter();
 
@@ -80,68 +84,22 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
           }
 
           const handleBuildingApartmentToggle = (buildingApartmentId: string): void => {
+                    console.log(buildingApartmentId);
+
                     setCurrentBuildingApartment((prevBuildingApartmentId) => {
                               if (prevBuildingApartmentId === buildingApartmentId) {
-                                        setCurrentBuildingApartmentObject(null)
+                                        setCurrentBuildingApartmentID('')
                                         return null;
                               }
                               const map = new Map(items.map((obj: BuildingApartment) => [obj._id, obj]));
                               const result = map.get(buildingApartmentId);
-
-                              setCurrentBuildingApartmentObject(result)
+                              setCurrentBuildingApartmentID(buildingApartmentId)
                               return buildingApartmentId;
                     });
           }
 
           const handleBuildingClose = (): void => {
                     setCurrentBuildingApartment(null);
-          }
-
-          const handleBuildingApartmentUpdateClick = () => {
-                    Swal.fire({
-                              title: 'Are you sure?',
-                              text: "You can edit this Apartment at any time!",
-                              icon: 'warning',
-                              showCancelButton: true,
-                              confirmButtonColor: '#3085d6',
-                              cancelButtonColor: '#d33',
-                              confirmButtonText: 'Yes, update it!'
-                    }).then((result: any) => {
-                              if (result.isConfirmed) {
-                                        handleBuildingApartmentUpdate(currentBuildingApartmentObject)
-                              }
-                    })
-          }
-
-          const handleBuildingApartmentUpdate = async (currentBuildingApartmentObject: any) => {
-                    try {
-                              await fetch('/api/building-apartments/apartments-api', {
-                                        method: 'PUT',
-                                        headers: {
-                                                  'Content-Type': 'application/json',
-                                                  'Access-Control-Allow-Origin': '*',
-                                                  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
-                                        },
-                                        body: JSON.stringify(currentBuildingApartmentObject), // Convert your data to JSON
-                              }).then(async (response) => {
-
-                                        if (response.ok) {
-                                                  toast.success('Apartment updated');
-                                                  router.push(paths.dashboard.buildingApartments.index);
-                                                  setCurrentBuildingApartment(null)
-                                        } else {
-                                                  const errorData = await response.json(); // Parse the error response
-                                                  console.error(errorData);
-                                                  toast.error('Something went wrong!');
-                                        }
-                              })
-                    } catch (err) {
-                              console.error(err);
-                              toast.error('Something went wrong!');
-                              // helpers.setStatus({ success: false });
-                              // //helpers.setErrors({ submit: err.message });
-                              // helpers.setSubmitting(false);
-                    }
           }
 
           const handleBuildingApartmentDeleteClick = () => {
@@ -155,7 +113,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                               confirmButtonText: 'Yes, delete it!'
                     }).then((result: any) => {
                               if (result.isConfirmed) {
-                                        handleBuildingApartmentDelete(currentBuildingApartmentObject)
+                                        handleBuildingApartmentDelete(selected)
                               }
                     })
           }
@@ -190,6 +148,75 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                     }
           }
 
+          const formik = useFormik({
+                    initialValues: {
+                              buildingAddress: props?.items![0].buildingAddress || '',
+                              apartmentNumber: props?.items![0].apartmentNumber || 0,
+                              surfaceArea: props?.items![0].surfaceArea || 0,
+                              bedroomNumber: props?.items![0].bedroomNumber || 0,
+                              bathroomNumber: props?.items![0].bathroomNumber || 0,
+                              terraceNumber: props?.items![0].terraceNumber || 0,
+                              description: props?.items![0].description || '',
+                              images: props?.items![0].images || [],
+                              tenants: props?.items![0].tenants || [],
+                              owners: props?.items![0].owners || [],
+                              status: props?.items![0].status || '',
+                              petFriendly: props?.items![0].petFriendly || '',
+                              smokingAllowed: props?.items![0].smokingAllowed || false,
+                              furnished: props?.items![0].furnished || false,
+                              hasOwnParking: props?.items![0].hasOwnParking || false,
+                              utilitiesIncluded: props?.items![0].utilitiesIncluded || false,
+                              createdDateTime: props?.items![0].createdDateTime || '',
+                              updatedDateTime: props?.items![0].updatedDateTime || '',
+                    },
+                    validationSchema,
+                    onSubmit: async (values: any, helpers: any): Promise<void> => {
+
+                              Swal.fire({
+                                        title: 'Are you sure?',
+                                        text: "You can edit this Apartment at any time!",
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#3085d6',
+                                        cancelButtonColor: '#d33',
+                                        confirmButtonText: 'Yes, update it!'
+                              }).then(async (result: any) => {
+                                        if (result.isConfirmed) {
+                                                  try {
+                                                            const buildingApartmentCreateResponse = await fetch('/api/building-apartments/apartments-api', {
+                                                                      method: 'PUT',
+                                                                      headers: {
+                                                                                'Content-Type': 'application/json',
+                                                                                'Access-Control-Allow-Origin': '*',
+                                                                                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
+                                                                      },
+                                                                      body: JSON.stringify({
+                                                                                currentBuildingApartmentID,
+                                                                                values
+                                                                      }), // Convert your data to JSON
+                                                            })
+
+                                                            if (buildingApartmentCreateResponse.ok) {
+                                                                      toast.success('Building apartment updated');
+                                                                      router.push(paths.dashboard.buildingApartments.index);
+                                                            } else {
+                                                                      const errorData = await buildingApartmentCreateResponse.json(); // Parse the error response
+                                                                      toast.error('Something went wrong!');
+                                                                      helpers.setStatus({ success: false });
+                                                            }
+
+                                                  } catch (err) {
+                                                            console.error(err);
+                                                            toast.error('Something went wrong!');
+                                                            helpers.setStatus({ success: false });
+                                                            //helpers.setErrors({ submit: err.message });
+                                                            helpers.setSubmitting(false);
+                                                  }
+                                        }
+                              })
+
+                    },
+          });
 
           return (
                     <Box>
@@ -199,12 +226,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                             <TableRow>
                                                                       <TableCell />
                                                                       <TableCell>Full Address</TableCell>
-                                                                      <TableCell>Has own parking spot</TableCell>
                                                                       <TableCell>Apartment number</TableCell>
                                                                       <TableCell>Surface area</TableCell>
                                                                       <TableCell>Bedroom count</TableCell>
                                                                       <TableCell>Bathroom count</TableCell>
                                                                       <TableCell>Terrace count</TableCell>
+                                                                      <TableCell>Has own parking spot</TableCell>
                                                             </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -216,7 +243,9 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                 // const hasManyVariants = apartment.variants > 1;
 
                                                                                 return (
+
                                                                                           <Fragment key={apartment._id}>
+
                                                                                                     <TableRow
                                                                                                               hover
                                                                                                               key={apartment._id}
@@ -243,7 +272,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                   <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                                                                                                                         </IconButton>
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{apartment.apartmentAddress}</TableCell>
+                                                                                                              <TableCell>{apartment.buildingAddress}</TableCell>
+                                                                                                              <TableCell>{apartment.apartmentNumber}</TableCell>
+                                                                                                              <TableCell>{apartment.surfaceArea}</TableCell>
+                                                                                                              <TableCell>{apartment.bedroomNumber}</TableCell>
+                                                                                                              <TableCell>{apartment.bathroomNumber}</TableCell>
+                                                                                                              <TableCell>{apartment.terraceNumber}</TableCell>
                                                                                                               <TableCell>
                                                                                                                         {
                                                                                                                                   apartment.hasOwnParking ?
@@ -252,15 +286,11 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                             <CancelIcon color={hasOwnParkingSpace} />
                                                                                                                         }
                                                                                                               </TableCell>
-                                                                                                              <TableCell>{apartment.apartmentNumber}</TableCell>
-                                                                                                              <TableCell>{apartment.surfaceArea}</TableCell>
-                                                                                                              <TableCell>{apartment.bedroomNumber}</TableCell>
-                                                                                                              <TableCell>{apartment.bathroomNumber}</TableCell>
-                                                                                                              <TableCell>{apartment.terraceNumber}</TableCell>
                                                                                                     </TableRow>
 
                                                                                                     {
                                                                                                               isCurrent && (
+
                                                                                                                         <TableRow>
 
                                                                                                                                   <TableCell
@@ -279,329 +309,350 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                       },
                                                                                                                                             }}
                                                                                                                                   >
-                                                                                                                                            <CardContent>
-                                                                                                                                                      <Grid
-                                                                                                                                                                container
-                                                                                                                                                                spacing={3}
-                                                                                                                                                      >
+                                                                                                                                            <form
+                                                                                                                                                      onSubmit={formik.handleSubmit}
+                                                                                                                                                      {...props}
+                                                                                                                                            >
+
+                                                                                                                                                      <CardContent>
+                                                                                                                                                                <Typography>
+                                                                                                                                                                          {`${JSON.stringify(formik.errors)}`}
+                                                                                                                                                                </Typography>
+
                                                                                                                                                                 <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
+                                                                                                                                                                          container
+                                                                                                                                                                          spacing={3}
                                                                                                                                                                 >
-                                                                                                                                                                          <Typography variant="h6">Basic Info</Typography>
-                                                                                                                                                                          <Divider sx={{ my: 2 }} />
                                                                                                                                                                           <Grid
-                                                                                                                                                                                    container
-                                                                                                                                                                                    spacing={3}
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
                                                                                                                                                                           >
+                                                                                                                                                                                    <Typography variant="h6">Basic Info</Typography>
+                                                                                                                                                                                    <Divider sx={{ my: 2 }} />
                                                                                                                                                                                     <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                              container
+                                                                                                                                                                                              spacing={3}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment._id}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Apartment ID"
-                                                                                                                                                                                                        name="apartmentID"
-                                                                                                                                                                                                        disabled
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.apartmentAddress}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Full Address"
-                                                                                                                                                                                                        name="fullAddress"
-                                                                                                                                                                                                        disabled
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.createdDateTime}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Created at:"
-                                                                                                                                                                                                        name="createdDateTime"
-                                                                                                                                                                                                        disabled
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.updatedDateTime}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Updated at:"
-                                                                                                                                                                                                        name="updatedDateTime"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.owners}
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingApartmentObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            owners: parseInt(e.target.value)
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Owners"
-                                                                                                                                                                                                        name="owners"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <FormControlLabel
-                                                                                                                                                                                                        control={
-                                                                                                                                                                                                                  <Checkbox
-                                                                                                                                                                                                                            checked={apartment.hasOwnParking}
-                                                                                                                                                                                                                            name='hasOwnParking'
-                                                                                                                                                                                                                            onChange={(e: any) => {
-                                                                                                                                                                                                                                      setCurrentBuildingApartmentObject((previousObject: any) => ({
-                                                                                                                                                                                                                                                ...previousObject,
-                                                                                                                                                                                                                                                hasOwnParking: e.target.checked
-                                                                                                                                                                                                                                      }))
-                                                                                                                                                                                                                                      apartment.hasOwnParking = !apartment.hasOwnParking
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        label="Has own parking spot"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.tenants.length}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Apartment tenant count"
-                                                                                                                                                                                                        name="tenantCount"
-                                                                                                                                                                                                        type='number'
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={12}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <Typography
-                                                                                                                                                                                                        color="text.secondary"
-                                                                                                                                                                                                        sx={{ mb: 2 }}
-                                                                                                                                                                                                        variant="subtitle2"
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
                                                                                                                                                                                               >
-                                                                                                                                                                                                        Description
-                                                                                                                                                                                              </Typography>
-                                                                                                                                                                                              <QuillEditor
-                                                                                                                                                                                                        defaultValue={apartment.description}
-                                                                                                                                                                                                        placeholder="Short description"
-                                                                                                                                                                                                        sx={{ height: 400 }}
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingApartmentObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            description: e
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        style={{
-                                                                                                                                                                                                                  height: '200px'
-                                                                                                                                                                                                        }}
-                                                                                                                                                                                              />
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.buildingAddress}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Building Address"
+                                                                                                                                                                                                                  name="buildingAddress"
+                                                                                                                                                                                                                  disabled
+                                                                                                                                                                                                                  error={!!(formik.touched.buildingAddress && formik.errors.buildingAddress)}
+                                                                                                                                                                                                                  helperText={formik.touched.buildingAddress && formik.errors.buildingAddress}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Apartment number"
+                                                                                                                                                                                                                  name="apartmentNumber"
+                                                                                                                                                                                                                  type='number'
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  defaultValue={formik.values.apartmentNumber}
+                                                                                                                                                                                                                  onChange={(e) => formik.setFieldValue('apartmentNumber', e.target.value)}
+                                                                                                                                                                                                                  error={!!(formik.touched.apartmentNumber && formik.errors.apartmentNumber)}
+                                                                                                                                                                                                                  helperText={formik.touched.apartmentNumber && formik.errors.apartmentNumber}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.createdDateTime}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Created at:"
+                                                                                                                                                                                                                  name="createdDateTime"
+                                                                                                                                                                                                                  disabled
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.updatedDateTime}
+                                                                                                                                                                                                                  disabled
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Updated at:"
+                                                                                                                                                                                                                  name="updatedDateTime"
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={12}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <Autocomplete
+                                                                                                                                                                                                                  multiple
+                                                                                                                                                                                                                  sx={{ minWidth: '300px' }}
+                                                                                                                                                                                                                  disablePortal
+                                                                                                                                                                                                                  id="combo-box-demo"
+                                                                                                                                                                                                                  options={props.allOwners}
+                                                                                                                                                                                                                  getOptionLabel={(customer: Customer) => customer.firstName + ' ' + customer.lastName + ' ' + customer.email}
+                                                                                                                                                                                                                  renderInput={(params) =>
+                                                                                                                                                                                                                            <TextField
+                                                                                                                                                                                                                                      {...params}
+                                                                                                                                                                                                                                      label="Owners"
+                                                                                                                                                                                                                                      helperText={formik.touched.owners && formik.errors.owners ? formik.errors.owners : ''}
+                                                                                                                                                                                                                                      error={formik.touched.owners && Boolean(formik.errors.owners)}
+                                                                                                                                                                                                                            />
+                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                  onChange={(e: any, value: Customer[] | null) => {
+                                                                                                                                                                                                                            formik.setFieldValue('owners', value ? value : [])
+                                                                                                                                                                                                                            // formik.setFieldValue('buildingID', value ? value._id : '')
+                                                                                                                                                                                                                            // setBuildingID(value?._id || '')
+                                                                                                                                                                                                                  }}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur('owners')}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <FormControlLabel
+                                                                                                                                                                                                                  control={<Checkbox />}
+                                                                                                                                                                                                                  defaultChecked={formik.values.hasOwnParking}
+                                                                                                                                                                                                                  name='hasOwnParking'
+                                                                                                                                                                                                                  onChange={(e: any) => formik.setFieldValue('hasOwnParking', e.target.checked)}
+                                                                                                                                                                                                                  label="Has own parking spot"
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={12}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <Typography
+                                                                                                                                                                                                                  color="text.secondary"
+                                                                                                                                                                                                                  sx={{ mb: 2 }}
+                                                                                                                                                                                                                  variant="subtitle2"
+                                                                                                                                                                                                        >
+                                                                                                                                                                                                                  Description
+                                                                                                                                                                                                        </Typography>
+                                                                                                                                                                                                        <QuillEditor
+                                                                                                                                                                                                                  defaultValue={formik.values.description}
+                                                                                                                                                                                                                  placeholder="Short description"
+                                                                                                                                                                                                                  sx={{ height: 400 }}
+                                                                                                                                                                                                                  onChange={(e: any) => formik.setFieldValue('description', e)}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  style={{
+                                                                                                                                                                                                                            height: '200px'
+                                                                                                                                                                                                                  }}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
                                                                                                                                                                                     </Grid>
                                                                                                                                                                           </Grid>
-                                                                                                                                                                </Grid>
-                                                                                                                                                                <Grid
-                                                                                                                                                                          item
-                                                                                                                                                                          md={6}
-                                                                                                                                                                          xs={12}
-                                                                                                                                                                >
-                                                                                                                                                                          <Typography variant="h6">Detailed Info</Typography>
-                                                                                                                                                                          <Divider sx={{ my: 2 }} />
                                                                                                                                                                           <Grid
-                                                                                                                                                                                    container
-                                                                                                                                                                                    spacing={4.5}
+                                                                                                                                                                                    item
+                                                                                                                                                                                    md={6}
+                                                                                                                                                                                    xs={12}
                                                                                                                                                                           >
+                                                                                                                                                                                    <Typography variant="h6">Detailed Info</Typography>
+                                                                                                                                                                                    <Divider sx={{ my: 2 }} />
                                                                                                                                                                                     <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
+                                                                                                                                                                                              container
+                                                                                                                                                                                              spacing={4.5}
                                                                                                                                                                                     >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.bathroomNumber}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Number of bathrooms"
-                                                                                                                                                                                                        name="bathroomNumber"
-                                                                                                                                                                                                        type='number'
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.bedroomNumber}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Number of bedrooms"
-                                                                                                                                                                                                        name="bedroomNumber"
-                                                                                                                                                                                                        type='number'
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.terraceNumber}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Number of terraces"
-                                                                                                                                                                                                        name="terraceNumber"
-                                                                                                                                                                                                        type='number'
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.status}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Status"
-                                                                                                                                                                                                        name="status"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={apartment.surfaceArea}
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Surface area"
-                                                                                                                                                                                                        name="surfaceArea"
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={12}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <Box
-                                                                                                                                                                                                        sx={{
-                                                                                                                                                                                                                  alignItems: 'center',
-                                                                                                                                                                                                                  display: 'flex',
-                                                                                                                                                                                                                  flexDirection: 'column',
-                                                                                                                                                                                                        }}
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
                                                                                                                                                                                               >
-                                                                                                                                                                                                        {apartment.images ? (
-                                                                                                                                                                                                                  <Box
-                                                                                                                                                                                                                            sx={{
-                                                                                                                                                                                                                                      alignItems: 'center',
-                                                                                                                                                                                                                                      backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                                      backgroundImage: `url(${apartment.images})`,
-                                                                                                                                                                                                                                      backgroundPosition: 'center',
-                                                                                                                                                                                                                                      backgroundSize: 'cover',
-                                                                                                                                                                                                                                      borderRadius: 1,
-                                                                                                                                                                                                                                      display: 'flex',
-                                                                                                                                                                                                                                      height: 300,
-                                                                                                                                                                                                                                      justifyContent: 'center',
-                                                                                                                                                                                                                                      overflow: 'hidden',
-                                                                                                                                                                                                                                      width: 300,
-                                                                                                                                                                                                                            }}
-                                                                                                                                                                                                                  />
-                                                                                                                                                                                                        ) : (
-                                                                                                                                                                                                                  <Box
-                                                                                                                                                                                                                            sx={{
-                                                                                                                                                                                                                                      alignItems: 'center',
-                                                                                                                                                                                                                                      backgroundColor: 'neutral.50',
-                                                                                                                                                                                                                                      borderRadius: 1,
-                                                                                                                                                                                                                                      display: 'flex',
-
-                                                                                                                                                                                                                                      height: 300,
-                                                                                                                                                                                                                                      justifyContent: 'center',
-                                                                                                                                                                                                                                      width: 400,
-                                                                                                                                                                                                                            }}
-                                                                                                                                                                                                                  >
-                                                                                                                                                                                                                            <SvgIcon>
-                                                                                                                                                                                                                                      <Image01Icon />
-                                                                                                                                                                                                                            </SvgIcon>
-                                                                                                                                                                                                                  </Box>
-                                                                                                                                                                                                        )}
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.bathroomNumber}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Number of bathrooms"
+                                                                                                                                                                                                                  name="bathroomNumber"
+                                                                                                                                                                                                                  onChange={(e) => formik.setFieldValue('bathroomNumber', e.target.value)}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  type='number'
+                                                                                                                                                                                                                  error={!!(formik.touched.bathroomNumber && formik.errors.bathroomNumber)}
+                                                                                                                                                                                                                  helperText={formik.touched.bathroomNumber && formik.errors.bathroomNumber}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.bedroomNumber}
+                                                                                                                                                                                                                  onChange={(e) => formik.setFieldValue('bedroomNumber', e.target.value)}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Number of bedrooms"
+                                                                                                                                                                                                                  name="bedroomNumber"
+                                                                                                                                                                                                                  type='number'
+                                                                                                                                                                                                                  error={!!(formik.touched.bedroomNumber && formik.errors.bedroomNumber)}
+                                                                                                                                                                                                                  helperText={formik.touched.bedroomNumber && formik.errors.bedroomNumber}
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.terraceNumber}
+                                                                                                                                                                                                                  onChange={(e) => formik.setFieldValue('terraceNumber', e.target.value)}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  error={!!(formik.touched.terraceNumber && formik.errors.terraceNumber)}
+                                                                                                                                                                                                                  helperText={formik.touched.terraceNumber && formik.errors.terraceNumber}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Number of terraces"
+                                                                                                                                                                                                                  name="terraceNumber"
+                                                                                                                                                                                                                  type='number'
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.status}
+                                                                                                                                                                                                                  onChange={(e) => formik.setFieldValue('status', e.target.value)}
+                                                                                                                                                                                                                  error={!!(formik.touched.status && formik.errors.status)}
+                                                                                                                                                                                                                  helperText={formik.touched.status && formik.errors.status}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Status"
+                                                                                                                                                                                                                  name="status"
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={6}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
+                                                                                                                                                                                                        <TextField
+                                                                                                                                                                                                                  defaultValue={formik.values.surfaceArea}
+                                                                                                                                                                                                                  onChange={(e) => formik.setFieldValue('surfaceArea', e.target.value)}
+                                                                                                                                                                                                                  error={!!(formik.touched.surfaceArea && formik.errors.surfaceArea)}
+                                                                                                                                                                                                                  helperText={formik.touched.surfaceArea && formik.errors.surfaceArea}
+                                                                                                                                                                                                                  onBlur={formik.handleBlur}
+                                                                                                                                                                                                                  fullWidth
+                                                                                                                                                                                                                  label="Surface area"
+                                                                                                                                                                                                                  name="surfaceArea"
+                                                                                                                                                                                                        />
+                                                                                                                                                                                              </Grid>
+                                                                                                                                                                                              <Grid
+                                                                                                                                                                                                        item
+                                                                                                                                                                                                        md={12}
+                                                                                                                                                                                                        xs={12}
+                                                                                                                                                                                              >
                                                                                                                                                                                                         <Box
                                                                                                                                                                                                                   sx={{
-                                                                                                                                                                                                                            cursor: 'pointer',
-                                                                                                                                                                                                                            ml: 2,
+                                                                                                                                                                                                                            alignItems: 'center',
+                                                                                                                                                                                                                            display: 'flex',
+                                                                                                                                                                                                                            flexDirection: 'column',
                                                                                                                                                                                                                   }}
                                                                                                                                                                                                         >
-                                                                                                                                                                                                                  <Typography variant="subtitle2">{apartment.apartmentAddress}</Typography>
+                                                                                                                                                                                                                  {apartment.images ? (
+                                                                                                                                                                                                                            <Box
+                                                                                                                                                                                                                                      sx={{
+                                                                                                                                                                                                                                                alignItems: 'center',
+                                                                                                                                                                                                                                                backgroundColor: 'neutral.50',
+                                                                                                                                                                                                                                                backgroundImage: `url(${apartment.images})`,
+                                                                                                                                                                                                                                                backgroundPosition: 'center',
+                                                                                                                                                                                                                                                backgroundSize: 'cover',
+                                                                                                                                                                                                                                                borderRadius: 1,
+                                                                                                                                                                                                                                                display: 'flex',
+                                                                                                                                                                                                                                                height: 300,
+                                                                                                                                                                                                                                                justifyContent: 'center',
+                                                                                                                                                                                                                                                overflow: 'hidden',
+                                                                                                                                                                                                                                                width: 300,
+                                                                                                                                                                                                                                      }}
+                                                                                                                                                                                                                            />
+                                                                                                                                                                                                                  ) : (
+                                                                                                                                                                                                                            <Box
+                                                                                                                                                                                                                                      sx={{
+                                                                                                                                                                                                                                                alignItems: 'center',
+                                                                                                                                                                                                                                                backgroundColor: 'neutral.50',
+                                                                                                                                                                                                                                                borderRadius: 1,
+                                                                                                                                                                                                                                                display: 'flex',
+
+                                                                                                                                                                                                                                                height: 300,
+                                                                                                                                                                                                                                                justifyContent: 'center',
+                                                                                                                                                                                                                                                width: 400,
+                                                                                                                                                                                                                                      }}
+                                                                                                                                                                                                                            >
+                                                                                                                                                                                                                                      <SvgIcon>
+                                                                                                                                                                                                                                                <Image01Icon />
+                                                                                                                                                                                                                                      </SvgIcon>
+                                                                                                                                                                                                                            </Box>
+                                                                                                                                                                                                                  )}
+                                                                                                                                                                                                                  <Box
+                                                                                                                                                                                                                            sx={{
+                                                                                                                                                                                                                                      cursor: 'pointer',
+                                                                                                                                                                                                                                      ml: 2,
+                                                                                                                                                                                                                            }}
+                                                                                                                                                                                                                  >
+                                                                                                                                                                                                                            <Typography variant="subtitle2">{formik.values.buildingAddress}</Typography>
+                                                                                                                                                                                                                  </Box>
                                                                                                                                                                                                         </Box>
-                                                                                                                                                                                              </Box>
+                                                                                                                                                                                              </Grid>
                                                                                                                                                                                     </Grid>
                                                                                                                                                                           </Grid>
                                                                                                                                                                 </Grid>
-                                                                                                                                                      </Grid>
-                                                                                                                                            </CardContent>
-                                                                                                                                            <Divider />
-                                                                                                                                            <Stack
-                                                                                                                                                      alignItems="center"
-                                                                                                                                                      direction="row"
-                                                                                                                                                      justifyContent="space-between"
-                                                                                                                                                      sx={{ p: 2 }}
-                                                                                                                                            >
+                                                                                                                                                      </CardContent>
+                                                                                                                                                      <Divider />
                                                                                                                                                       <Stack
                                                                                                                                                                 alignItems="center"
                                                                                                                                                                 direction="row"
-                                                                                                                                                                spacing={2}
+                                                                                                                                                                justifyContent="space-between"
+                                                                                                                                                                sx={{ p: 2 }}
                                                                                                                                                       >
-                                                                                                                                                                <Button
-                                                                                                                                                                          onClick={handleBuildingApartmentUpdateClick}
-                                                                                                                                                                          type="submit"
-                                                                                                                                                                          variant="contained"
+                                                                                                                                                                <Stack
+                                                                                                                                                                          alignItems="center"
+                                                                                                                                                                          direction="row"
+                                                                                                                                                                          spacing={2}
+                                                                                                                                                                >
+                                                                                                                                                                          <Button
+                                                                                                                                                                                    onClick={() => formik.setFieldValue('updatedDateTime', moment().format("YYYY/MM/DD HH:mm:ss"))}
+                                                                                                                                                                                    type="submit"
+                                                                                                                                                                                    variant="contained"
+                                                                                                                                                                          >
+                                                                                                                                                                                    Update
+                                                                                                                                                                          </Button>
+                                                                                                                                                                          <Button
+                                                                                                                                                                                    color="inherit"
+                                                                                                                                                                                    onClick={handleBuildingClose}
+                                                                                                                                                                          >
+                                                                                                                                                                                    Cancel
+                                                                                                                                                                          </Button>
+                                                                                                                                                                </Stack>
 
-                                                                                                                                                                >
-                                                                                                                                                                          Update
-                                                                                                                                                                </Button>
                                                                                                                                                                 <Button
-                                                                                                                                                                          color="inherit"
-                                                                                                                                                                          onClick={handleBuildingClose}
+                                                                                                                                                                          onClick={handleBuildingApartmentDeleteClick}
+                                                                                                                                                                          color="error"
                                                                                                                                                                 >
-                                                                                                                                                                          Cancel
+                                                                                                                                                                          Delete building
                                                                                                                                                                 </Button>
+
                                                                                                                                                       </Stack>
-
-                                                                                                                                                      <Button
-                                                                                                                                                                onClick={handleBuildingApartmentDeleteClick}
-                                                                                                                                                                color="error"
-                                                                                                                                                      >
-                                                                                                                                                                Delete building
-                                                                                                                                                      </Button>
-
-                                                                                                                                            </Stack>
+                                                                                                                                            </form>
                                                                                                                                   </TableCell>
                                                                                                                         </TableRow>
+
                                                                                                               )}
+
                                                                                           </Fragment>
                                                                                 );
                                                                       })}

@@ -41,7 +41,7 @@ const useBuildingsSearch = () => {
 
           const [state, setState] = useState<BuildingSearchState>({
                     filters: {
-                              fullAddress: '',
+                              buildingAddress: '',
                               category: []
                     },
                     page: 0,
@@ -182,6 +182,7 @@ const Page: NextPage = (props: any) => {
                                                                       <BuildingApartmentsListTable
                                                                                 count={props.allAppartments.length}
                                                                                 items={props.allAppartments}
+                                                                                allOwners={props.allOwners}
                                                                                 onPageChange={useBuildingsSearch().handlePageChange}
                                                                                 onRowsPerPageChange={useBuildingsSearch().handleRowsPerPageChange}
                                                                                 onDeselectOne={buildingApartmentSelection.handleDeselectOne}
@@ -202,6 +203,7 @@ const Page: NextPage = (props: any) => {
 export const getServerSideProps = async (context: any) => {
 
           const allAppartments = await apartmentServices().getAllApartments()
+          const allOwners = await customersServices().getAllOwners()
 
           redirect: {
                     destination: "/404"
@@ -210,6 +212,7 @@ export const getServerSideProps = async (context: any) => {
           return {
                     props: {
                               allAppartments: JSON.parse(JSON.stringify(allAppartments)),
+                              allOwners: JSON.parse(JSON.stringify(allOwners)),
                     },
           }
 

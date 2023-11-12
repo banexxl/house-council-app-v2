@@ -75,7 +75,7 @@ export const OrderEdit: FC<OrderEditProps> = (props) => {
                                                             fullWidth
                                                             label="Address"
                                                             name="address"
-                                                            value={order.customer.fullAddress}
+                                                            value={order.customer.buildingAddress}
                                                   />
                                                   <TextField
                                                             fullWidth
