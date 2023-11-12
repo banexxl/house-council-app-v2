@@ -78,34 +78,33 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
-                              console.log('aaaaaaaa', request.body);
+                              console.log('aaaaaaaaaaaa', request.body);
 
                               try {
-                                        const updateresponse = await dbBuildingApartments.findOneAndUpdate({ _id: new ObjectId(request.body.currentBuildingApartmentID) },
+                                        await dbBuildingApartments.findOneAndUpdate({ _id: new ObjectId(request.body.currentBuildingApartmentID) },
                                                   {
                                                             $set:
                                                             {
-                                                                      buildingAddress: request.body.buildingAddress,
-                                                                      apartmentNumber: request.body.apartmentNumber,
-                                                                      surfaceArea: request.body.surfaceArea,
-                                                                      bedroomNumber: request.body.bedroomNumber,
-                                                                      bathroomNumber: request.body.bathroomNumber,
-                                                                      terraceNumber: request.body.terraceNumber,
-                                                                      description: request.body.description,
-                                                                      images: request.body.images,
-                                                                      tenants: request.body.tenants,
-                                                                      owners: request.body.owners,
-                                                                      status: request.body.status,
-                                                                      petFriendly: request.body.petFriendl,
-                                                                      smokingAllowed: request.body.smokingAllowed,
-                                                                      furnished: request.body.furnished,
-                                                                      hasOwnParking: request.body.hasOwnParking,
-                                                                      utilitiesIncluded: request.body.utilitiesIncluded,
-                                                                      createdDateTime: request.body.createdDateTime,
-                                                                      updatedDateTime: request.body.updatedDateTime,
+                                                                      buildingAddress: request.body.values.buildingAddress,
+                                                                      apartmentNumber: request.body.values.apartmentNumber,
+                                                                      surfaceArea: request.body.values.surfaceArea,
+                                                                      bedroomNumber: request.body.values.bedroomNumber,
+                                                                      bathroomNumber: request.body.values.bathroomNumber,
+                                                                      terraceNumber: request.body.values.terraceNumber,
+                                                                      description: request.body.values.description,
+                                                                      images: request.body.values.images,
+                                                                      tenants: request.body.values.tenants,
+                                                                      owners: request.body.values.owners,
+                                                                      status: request.body.values.status,
+                                                                      petFriendly: request.body.values.petFriendly,
+                                                                      smokingAllowed: request.body.values.smokingAllowed,
+                                                                      furnished: request.body.values.furnished,
+                                                                      hasOwnParking: request.body.values.hasOwnParking,
+                                                                      utilitiesIncluded: request.body.values.utilitiesIncluded,
+                                                                      createdDateTime: request.body.values.createdDateTime,
+                                                                      updatedDateTime: request.body.values.updatedDateTime,
                                                             }
                                                   })
-                                        console.log(updateresponse)
 
                                         return response.status(200).json({ message: 'Building successfully updated!' });
                               } catch (error) {
@@ -117,27 +116,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               const buildingExists = await dbBuildingApartments.findOne({ _id: request.body._id })
 
                               if (buildingExists === null) {
-                                        await dbBuildingApartments.deleteOne({ _id: new ObjectId(request.body._id) }).then(async (dbResponse: any) => {
-                                                  try {
-                                                            if (dbResponse.acknowledged) {
-
-                                                                      const boardResponse = await fetch(`${apiUrl}/api/boards/board-api`, {
-                                                                                method: 'DELETE',
-                                                                                headers: {
-                                                                                          'Content-Type': 'application/json',
-                                                                                          'Access-Control-Allow-Origin': '*',
-                                                                                          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
-                                                                                },
-                                                                                body: JSON.stringify(request.body.board)
-                                                                      })
-                                                                      console.log(boardResponse.statusText);
-
-                                                            }
-
-                                                  } catch (error) {
-                                                            console.log(error);
-                                                  }
-                                        })
+                                        await dbBuildingApartments.deleteOne({ _id: new ObjectId(request.body._id) })
                                         return response.status(200).json({ message: 'Building successfully deleted!' });
                               } else {
                                         const error = new Error('Building does not exist!');

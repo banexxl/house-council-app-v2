@@ -17,7 +17,7 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-import { initialValues, validationSchema } from './building-apartments-options';
+import { ApartmentStatus, initialValues, validationSchema } from './building-apartments-options';
 import { Autocomplete, Input } from '@mui/material';
 import Image from 'next/image';
 import { Building } from '@/types/building';
@@ -357,15 +357,26 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                               />
                                                                                                     </Box>
                                                                                                     <Box>
-                                                                                                              <TextField
-                                                                                                                        error={!!(formik.touched.status && formik.errors.status)}
-                                                                                                                        fullWidth
-                                                                                                                        label="Status"
-                                                                                                                        name="status"
-                                                                                                                        onBlur={formik.handleBlur}
-                                                                                                                        onChange={formik.handleChange}
-                                                                                                                        type="text"
-                                                                                                                        value={formik.values.status}
+                                                                                                              <Autocomplete
+                                                                                                                        sx={{ minWidth: '300px' }}
+                                                                                                                        disablePortal
+                                                                                                                        id="combo-box-demo"
+                                                                                                                        options={['Empty', 'ForSale', 'Unavailable', 'OccupiedByOwner', 'OccupiedByTenants', 'OccupiedBySubtenants']}
+                                                                                                                        getOptionLabel={(status: ApartmentStatus) => status}
+                                                                                                                        renderInput={(params) =>
+                                                                                                                                  <TextField
+                                                                                                                                            {...params}
+                                                                                                                                            label="Status"
+                                                                                                                                            helperText={formik.touched.status && formik.errors.status ? formik.errors.status : ''}
+                                                                                                                                            error={formik.touched.status && Boolean(formik.errors.status)}
+                                                                                                                                  />
+                                                                                                                        }
+                                                                                                                        onChange={(e: any, value: ApartmentStatus | null) => {
+                                                                                                                                  formik.setFieldValue('status', value ? value : []);
+                                                                                                                                  // formik.setFieldValue('buildingID', value ? value._id : '')
+                                                                                                                                  // setBuildingID(value?._id || '')
+                                                                                                                        }}
+                                                                                                                        onBlur={formik.handleBlur('status')}
                                                                                                               />
                                                                                                     </Box>
                                                                                           </Stack>

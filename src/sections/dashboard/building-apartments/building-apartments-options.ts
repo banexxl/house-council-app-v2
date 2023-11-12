@@ -2,6 +2,8 @@
 import { BuildingApartment } from '@/types/building-appartment';
 import * as Yup from 'yup';
 
+export type ApartmentStatus = 'Empty' | 'ForSale' | 'Unavailable' | 'OccupiedByOwner' | 'OccupiedByTenants' | 'OccupiedBySubtenants'
+
 export const initialValues: BuildingApartment = {
           buildingAddress: '',
           apartmentNumber: 0,
@@ -26,11 +28,11 @@ export const initialValues: BuildingApartment = {
 export const validationSchema = Yup.object({
           buildingAddress: Yup.string().required('Full address of the apartment is required'),
           apartmentNumber: Yup.number().min(1, 'Must be a non zero positive number').max(500, 'To many apartments'),
-          surfaceArea: Yup.number().min(1, 'Must be a non zero positive number'),
-          bedroomNumber: Yup.number().min(1, 'Must be a non zero positive number'),
-          bathroomNumber: Yup.number().min(1, 'Must be a non zero positive number'),
-          terraceNumber: Yup.number().min(0, 'Must be a positive number'),
-          owners: Yup.array().min(1, 'You must specify at least one owner'),
+          surfaceArea: Yup.number().min(1, 'Must be a non zero positive number').max(1000, 'Apartment/house to large'),
+          bedroomNumber: Yup.number().min(1, 'Must be a non zero positive number').max(10, 'To many rooms! Max 10...'),
+          bathroomNumber: Yup.number().min(1, 'Must be a non zero positive number').max(5, 'To many bathrooms! Max 5...'),
+          terraceNumber: Yup.number().min(0, 'Must be a positive number').max(5, 'To many terraces! Max 5...'),
+          owners: Yup.array().required('Please select the owner!').min(1, 'You must specify at least one owner').max(5, 'To many owners! Max 5...'),
           description: Yup.string(),
           //images: Yup.array(),
           tenants: Yup.array(),
