@@ -183,6 +183,7 @@ const Page: NextPage = (props: any) => {
                                                                                 count={props.allAppartments.length}
                                                                                 items={props.allAppartments}
                                                                                 allOwners={props.allOwners}
+                                                                                allCustomers={props.allCustomers}
                                                                                 onPageChange={useBuildingsSearch().handlePageChange}
                                                                                 onRowsPerPageChange={useBuildingsSearch().handleRowsPerPageChange}
                                                                                 onDeselectOne={buildingApartmentSelection.handleDeselectOne}
@@ -204,6 +205,7 @@ export const getServerSideProps = async (context: any) => {
 
           const allAppartments = await apartmentServices().getAllApartments()
           const allOwners = await customersServices().getAllOwners()
+          const allCustomers = await customersServices().getAllCustomers()
 
           redirect: {
                     destination: "/404"
@@ -213,6 +215,7 @@ export const getServerSideProps = async (context: any) => {
                     props: {
                               allAppartments: JSON.parse(JSON.stringify(allAppartments)),
                               allOwners: JSON.parse(JSON.stringify(allOwners)),
+                              allCustomers: JSON.parse(JSON.stringify(allCustomers)),
                     },
           }
 

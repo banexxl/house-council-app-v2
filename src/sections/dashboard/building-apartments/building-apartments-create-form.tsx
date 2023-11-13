@@ -311,7 +311,9 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                                                             label="Owners"
                                                                                                                                             helperText={
                                                                                                                                                       formik.touched.owners && formik.errors.owners
-                                                                                                                                                                ? formik.errors.owners
+                                                                                                                                                                ? Array.isArray(formik.errors.owners)
+                                                                                                                                                                          ? formik.errors.owners.join(', ')
+                                                                                                                                                                          : formik.errors.owners
                                                                                                                                                                 : ''
                                                                                                                                             }
                                                                                                                                             error={formik.touched.owners && Boolean(formik.errors.owners)}
@@ -339,7 +341,9 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                                                             label="Tenants"
                                                                                                                                             helperText={
                                                                                                                                                       formik.touched.tenants && formik.errors.tenants
-                                                                                                                                                                ? formik.errors.tenants
+                                                                                                                                                                ? Array.isArray(formik.errors.tenants)
+                                                                                                                                                                          ? formik.errors.tenants.join(', ')
+                                                                                                                                                                          : formik.errors.tenants
                                                                                                                                                                 : ''
                                                                                                                                             }
                                                                                                                                             error={formik.touched.tenants && Boolean(formik.errors.tenants)}

@@ -46,6 +46,7 @@ interface BuildingApartmentsListTableProps {
           count?: number;
           items?: BuildingApartment[];
           allOwners: Customer[];
+          allCustomers: Customer[];
           onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
           onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
           onDeselectOne?: (item: unknown) => void;
@@ -56,7 +57,7 @@ interface BuildingApartmentsListTableProps {
 
 }
 
-export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> = (props) => {
+export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> = (props: BuildingApartmentsListTableProps) => {
 
           const [currentBuildingApartmentID, setCurrentBuildingApartmentID] = useState<string | null>();
 
@@ -71,7 +72,6 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                     rowsPerPage = 0,
                     selected = []
           } = props;
-          console.log(props);
 
           const [currentBuildingApartment, setCurrentBuildingApartment] = useState<string | null>(null);
 
@@ -85,7 +85,6 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
           }
 
           const handleBuildingApartmentToggle = (buildingApartmentId: string): void => {
-                    console.log(buildingApartmentId);
 
                     setCurrentBuildingApartment((prevBuildingApartmentId) => {
                               if (prevBuildingApartmentId === buildingApartmentId) {
@@ -103,6 +102,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                     setCurrentBuildingApartment(null);
           }
 
+
           const handleBuildingApartmentDeleteClick = () => {
                     Swal.fire({
                               title: 'Are you sure?',
@@ -114,12 +114,12 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                               confirmButtonText: 'Yes, delete it!'
                     }).then((result: any) => {
                               if (result.isConfirmed) {
-                                        handleBuildingApartmentDelete(selected)
+                                        handleBuildingApartmentDelete(currentBuildingApartment)
                               }
                     })
           }
 
-          const handleBuildingApartmentDelete = async (currentBuildingApartmentObject: any) => {
+          const handleBuildingApartmentDelete = async (currentBuildingApartment: any) => {
                     try {
                               await fetch('/api/building-apartments/apartments-api', {
                                         method: 'DELETE',
@@ -128,8 +128,9 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                   'Access-Control-Allow-Origin': '*',
                                                   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                         },
-                                        body: JSON.stringify(currentBuildingApartmentObject), // Convert your data to JSON
+                                        body: JSON.stringify(currentBuildingApartment), // Convert your data to JSON
                               }).then(async (response) => {
+
                                         if (response.ok) {
                                                   toast.success('Building deleted!');
                                                   router.push(paths.dashboard.buildingApartments.index);
@@ -148,27 +149,28 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                               // helpers.setSubmitting(false);
                     }
           }
+
           //propveri ovde ako nemamo props.items a to je kad je nemamo  i jedan stan
           const formik = useFormik({
                     initialValues: {
-                              buildingAddress: props?.items![0].buildingAddress || '',
-                              apartmentNumber: props?.items![0].apartmentNumber || 0,
-                              surfaceArea: props?.items![0].surfaceArea || 0,
-                              bedroomNumber: props?.items![0].bedroomNumber || 0,
-                              bathroomNumber: props?.items![0].bathroomNumber || 0,
-                              terraceNumber: props?.items![0].terraceNumber || 0,
-                              description: props?.items![0].description || '',
-                              images: props?.items![0].images || [],
-                              tenants: props?.items![0].tenants || [],
-                              owners: props?.items![0].owners || [],
-                              status: props?.items![0].status || '',
-                              petFriendly: props?.items![0].petFriendly || '',
-                              smokingAllowed: props?.items![0].smokingAllowed || false,
-                              furnished: props?.items![0].furnished || false,
-                              hasOwnParking: props?.items![0].hasOwnParking || false,
-                              utilitiesIncluded: props?.items![0].utilitiesIncluded || false,
-                              createdDateTime: props?.items![0].createdDateTime || '',
-                              updatedDateTime: props?.items![0].updatedDateTime || '',
+                              buildingAddress: props?.items![0]?.buildingAddress || '',
+                              apartmentNumber: props?.items![0]?.apartmentNumber || 0,
+                              surfaceArea: props?.items![0]?.surfaceArea || 0,
+                              bedroomNumber: props?.items![0]?.bedroomNumber || 0,
+                              bathroomNumber: props?.items![0]?.bathroomNumber || 0,
+                              terraceNumber: props?.items![0]?.terraceNumber || 0,
+                              description: props?.items![0]?.description || '',
+                              images: props?.items![0]?.images || [],
+                              tenants: props?.items![0]?.tenants || [],
+                              owners: props?.items![0]?.owners || [],
+                              status: props?.items![0]?.status || '',
+                              petFriendly: props?.items![0]?.petFriendly || '',
+                              smokingAllowed: props?.items![0]?.smokingAllowed || false,
+                              furnished: props?.items![0]?.furnished || false,
+                              hasOwnParking: props?.items![0]?.hasOwnParking || false,
+                              utilitiesIncluded: props?.items![0]?.utilitiesIncluded || false,
+                              createdDateTime: props?.items![0]?.createdDateTime || '',
+                              updatedDateTime: props?.items![0]?.updatedDateTime || '',
                     },
                     validationSchema,
                     onSubmit: async (values: any, helpers: any): Promise<void> => {
@@ -184,6 +186,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                               }).then(async (result: any) => {
                                         if (result.isConfirmed) {
                                                   try {
+                                                            setCurrentBuildingApartment(null)
                                                             const buildingApartmentCreateResponse = await fetch('/api/building-apartments/apartments-api', {
                                                                       method: 'PUT',
                                                                       headers: {
@@ -203,7 +206,6 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                             } else {
                                                                       const errorData = await buildingApartmentCreateResponse.json(); // Parse the error response
                                                                       toast.error('Something went wrong!');
-                                                                      helpers.setStatus({ success: false });
                                                             }
 
                                                   } catch (err) {
@@ -318,9 +320,9 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                             >
 
                                                                                                                                                       <CardContent>
-                                                                                                                                                                <Typography>
+                                                                                                                                                                {/* <Typography>
                                                                                                                                                                           {`${JSON.stringify(formik.errors)}`}
-                                                                                                                                                                </Typography>
+                                                                                                                                                                </Typography> */}
                                                                                                                                                                 {
                                                                                                                                                                           count === 0 ? <Typography>aaaa</Typography> :
                                                                                                                                                                                     <Grid
@@ -407,13 +409,57 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                                                       disablePortal
                                                                                                                                                                                                                                       id="combo-box-demo"
                                                                                                                                                                                                                                       options={props.allOwners}
+                                                                                                                                                                                                                                      defaultValue={apartment.owners}
                                                                                                                                                                                                                                       getOptionLabel={(customer: Customer) => customer.firstName + ' ' + customer.lastName + ' ' + customer.email}
                                                                                                                                                                                                                                       renderInput={(params) =>
                                                                                                                                                                                                                                                 <TextField
                                                                                                                                                                                                                                                           {...params}
                                                                                                                                                                                                                                                           label="Owners"
-                                                                                                                                                                                                                                                          helperText={formik.touched.owners && formik.errors.owners ? formik.errors.owners : ''}
+                                                                                                                                                                                                                                                          helperText={
+                                                                                                                                                                                                                                                                    formik.touched.owners && formik.errors.owners
+                                                                                                                                                                                                                                                                              ? Array.isArray(formik.errors.owners)
+                                                                                                                                                                                                                                                                                        ? formik.errors.owners.join(', ')
+                                                                                                                                                                                                                                                                                        : formik.errors.owners
+                                                                                                                                                                                                                                                                              : ''
+                                                                                                                                                                                                                                                          }
+
                                                                                                                                                                                                                                                           error={formik.touched.owners && Boolean(formik.errors.owners)}
+                                                                                                                                                                                                                                                />
+                                                                                                                                                                                                                                      }
+                                                                                                                                                                                                                                      onChange={(e: any, value: Customer[] | null) => {
+                                                                                                                                                                                                                                                formik.setFieldValue('owners', value ? value : [])
+                                                                                                                                                                                                                                                // formik.setFieldValue('buildingID', value ? value._id : '')
+                                                                                                                                                                                                                                                // setBuildingID(value?._id || '')
+                                                                                                                                                                                                                                      }}
+                                                                                                                                                                                                                                      onBlur={formik.handleBlur('owners')}
+                                                                                                                                                                                                                            />
+                                                                                                                                                                                                                  </Grid>
+                                                                                                                                                                                                                  <Grid
+                                                                                                                                                                                                                            item
+                                                                                                                                                                                                                            md={12}
+                                                                                                                                                                                                                            xs={12}
+                                                                                                                                                                                                                  >
+                                                                                                                                                                                                                            <Autocomplete
+                                                                                                                                                                                                                                      multiple
+                                                                                                                                                                                                                                      sx={{ minWidth: '300px' }}
+                                                                                                                                                                                                                                      disablePortal
+                                                                                                                                                                                                                                      id="combo-box-demo"
+                                                                                                                                                                                                                                      options={props.allCustomers}
+                                                                                                                                                                                                                                      defaultValue={apartment.tenants}
+                                                                                                                                                                                                                                      getOptionLabel={(customer: Customer) => customer.firstName + ' ' + customer.lastName + ' ' + customer.email}
+                                                                                                                                                                                                                                      renderInput={(params) =>
+                                                                                                                                                                                                                                                <TextField
+                                                                                                                                                                                                                                                          {...params}
+                                                                                                                                                                                                                                                          label="Tenants"
+                                                                                                                                                                                                                                                          helperText={
+                                                                                                                                                                                                                                                                    formik.touched.tenants && formik.errors.tenants
+                                                                                                                                                                                                                                                                              ? Array.isArray(formik.errors.tenants)
+                                                                                                                                                                                                                                                                                        ? formik.errors.tenants.join(', ')
+                                                                                                                                                                                                                                                                                        : formik.errors.tenants
+                                                                                                                                                                                                                                                                              : ''
+                                                                                                                                                                                                                                                          }
+
+                                                                                                                                                                                                                                                          error={formik.touched.tenants && Boolean(formik.errors.tenants)}
                                                                                                                                                                                                                                                 />
                                                                                                                                                                                                                                       }
                                                                                                                                                                                                                                       onChange={(e: any, value: Customer[] | null) => {
@@ -430,8 +476,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                                             xs={12}
                                                                                                                                                                                                                   >
                                                                                                                                                                                                                             <FormControlLabel
-                                                                                                                                                                                                                                      control={<Checkbox />}
-                                                                                                                                                                                                                                      defaultChecked={formik.values.hasOwnParking}
+                                                                                                                                                                                                                                      control={<Checkbox defaultChecked={formik.values.hasOwnParking} />}
                                                                                                                                                                                                                                       name='hasOwnParking'
                                                                                                                                                                                                                                       onChange={(e: any) => formik.setFieldValue('hasOwnParking', e.target.checked)}
                                                                                                                                                                                                                                       label="Has own parking spot"
@@ -471,7 +516,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                         <Divider sx={{ my: 2 }} />
                                                                                                                                                                                                         <Grid
                                                                                                                                                                                                                   container
-                                                                                                                                                                                                                  spacing={4.5}
+                                                                                                                                                                                                                  spacing={3}
                                                                                                                                                                                                         >
                                                                                                                                                                                                                   <Grid
                                                                                                                                                                                                                             item
@@ -533,18 +578,20 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                                                                                       sx={{ minWidth: '300px' }}
                                                                                                                                                                                                                                       disablePortal
                                                                                                                                                                                                                                       id="combo-box-demo"
+                                                                                                                                                                                                                                      defaultValue={formik.values.status}
                                                                                                                                                                                                                                       options={['Empty', 'ForSale', 'Unavailable', 'OccupiedByOwner', 'OccupiedByTenants', 'OccupiedBySubtenants']}
-                                                                                                                                                                                                                                      getOptionLabel={(status: ApartmentStatus) => status}
+                                                                                                                                                                                                                                      getOptionLabel={(status: any) => status}
                                                                                                                                                                                                                                       renderInput={(params) =>
                                                                                                                                                                                                                                                 <TextField
                                                                                                                                                                                                                                                           {...params}
+                                                                                                                                                                                                                                                          defaultValue={apartment.status}
                                                                                                                                                                                                                                                           label="Status"
                                                                                                                                                                                                                                                           helperText={formik.touched.status && formik.errors.status ? formik.errors.status : ''}
                                                                                                                                                                                                                                                           error={formik.touched.status && Boolean(formik.errors.status)}
                                                                                                                                                                                                                                                 />
                                                                                                                                                                                                                                       }
-                                                                                                                                                                                                                                      onChange={(e: any, value: ApartmentStatus | null) => {
-                                                                                                                                                                                                                                                formik.setFieldValue('status', value ? value : []);
+                                                                                                                                                                                                                                      onChange={(e: any, value: any) => {
+                                                                                                                                                                                                                                                return formik.setFieldValue('status', value ? value : '')
                                                                                                                                                                                                                                                 // formik.setFieldValue('buildingID', value ? value._id : '')
                                                                                                                                                                                                                                                 // setBuildingID(value?._id || '')
                                                                                                                                                                                                                                       }}
@@ -659,7 +706,7 @@ export const BuildingApartmentsListTable: FC<BuildingApartmentsListTableProps> =
                                                                                                                                                                           onClick={handleBuildingApartmentDeleteClick}
                                                                                                                                                                           color="error"
                                                                                                                                                                 >
-                                                                                                                                                                          Delete building
+                                                                                                                                                                          Delete apartment
                                                                                                                                                                 </Button>
 
                                                                                                                                                       </Stack>

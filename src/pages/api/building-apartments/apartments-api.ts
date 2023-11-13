@@ -113,10 +113,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
                     } else if (request.method === 'DELETE') {
 
-                              const buildingExists = await dbBuildingApartments.findOne({ _id: request.body._id })
-
+                              const buildingExists = await dbBuildingApartments.findOne({ _id: request.body })
                               if (buildingExists === null) {
-                                        await dbBuildingApartments.deleteOne({ _id: new ObjectId(request.body._id) })
+                                        await dbBuildingApartments.deleteOne({ _id: new ObjectId(request.body) })
                                         return response.status(200).json({ message: 'Building successfully deleted!' });
                               } else {
                                         const error = new Error('Building does not exist!');

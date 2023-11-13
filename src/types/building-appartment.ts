@@ -1,3 +1,5 @@
+import { Customer } from "./customer";
+
 export interface BuildingApartment {
           _id?: string;
           buildingAddress: string;
@@ -8,8 +10,8 @@ export interface BuildingApartment {
           terraceNumber: number;
           description: string;
           images: string[];
-          tenants: string[];
-          owners: string[];
+          tenants: Customer[];
+          owners: Customer[];
           status: string;
           petFriendly?: boolean;
           smokingAllowed?: boolean;
