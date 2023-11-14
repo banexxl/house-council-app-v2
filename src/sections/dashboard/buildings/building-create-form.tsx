@@ -345,16 +345,6 @@ export const BuildingCreateForm: FC = (props) => {
                                                                                                     type="number"
                                                                                                     value={formik.values.storiesHigh}
                                                                                           />
-                                                                                          <TextField
-                                                                                                    error={!!(formik.touched.ApartmentCount && formik.errors.ApartmentCount)}
-                                                                                                    fullWidth
-                                                                                                    label="Apartment count"
-                                                                                                    name="ApartmentCount"
-                                                                                                    onBlur={formik.handleBlur}
-                                                                                                    onChange={formik.handleChange}
-                                                                                                    type="number"
-                                                                                                    value={formik.values.ApartmentCount}
-                                                                                          />
                                                                                 </Stack>
                                                                       </Grid>
                                                             </Grid>

@@ -243,7 +243,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                               </TableCell>
                                                                                                               <TableCell>{building.buildingAddress}</TableCell>
                                                                                                               <TableCell>{building.storiesHigh}</TableCell>
-                                                                                                              <TableCell>{building.ApartmentCount}</TableCell>
                                                                                                               <TableCell>
                                                                                                                         {
                                                                                                                                   building.hasOwnElevator ?
@@ -360,25 +359,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                                         fullWidth
                                                                                                                                                                                                         label="Building stories high"
                                                                                                                                                                                                         name="storiesHigh"
-                                                                                                                                                                                                        type='number'
-                                                                                                                                                                                              />
-                                                                                                                                                                                    </Grid>
-                                                                                                                                                                                    <Grid
-                                                                                                                                                                                              item
-                                                                                                                                                                                              md={6}
-                                                                                                                                                                                              xs={12}
-                                                                                                                                                                                    >
-                                                                                                                                                                                              <TextField
-                                                                                                                                                                                                        defaultValue={building.ApartmentCount}
-                                                                                                                                                                                                        onChange={(e: any) =>
-                                                                                                                                                                                                                  setCurrentBuildingObject((previousObject: any) => ({
-                                                                                                                                                                                                                            ...previousObject,
-                                                                                                                                                                                                                            ApartmentCount: parseInt(e.target.value)
-                                                                                                                                                                                                                  }))
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        fullWidth
-                                                                                                                                                                                                        label="Building Apartment count"
-                                                                                                                                                                                                        name="ApartmentCount"
                                                                                                                                                                                                         type='number'
                                                                                                                                                                                               />
                                                                                                                                                                                     </Grid>
