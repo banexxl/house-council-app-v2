@@ -94,7 +94,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                       lng: request.body.lng,
                                                                       lat: request.body.lat,
                                                                       buildingStatus: request.body.buildingStatus,
-                                                                      createdDateTime: request.body.stcreatedDateTimereet,
+                                                                      createdDateTime: request.body.createdDateTime,
                                                                       updatedDateTime: request.body.updatedDateTime,
                                                                       tenants: request.body.tenants,
                                                                       tenantMeetings: request.body.tenantMeetings,
