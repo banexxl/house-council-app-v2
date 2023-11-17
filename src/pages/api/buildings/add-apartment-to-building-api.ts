@@ -10,11 +10,12 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
           try {
                     if (request.method === 'PUT') {
+                              console.log('usao u add aparmtent to building api', request.body);
 
                               try {
                                         await dbBuildings.updateOne({ _id: new ObjectId(request.body.buildingID) },
                                                   {
-                                                            $push: { apartmentNumber: request.body.insertedId }
+                                                            $push: { apartments: request.body.apartmentId }
                                                   })
 
                                         return response.status(200).json({ message: 'Apartment successfully updated!' });

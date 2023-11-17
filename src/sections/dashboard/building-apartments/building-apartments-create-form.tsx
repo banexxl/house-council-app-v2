@@ -46,7 +46,7 @@ export const BuildingApartmentCreateForm = (props: any) => {
                     initialValues,
                     validationSchema,
                     onSubmit: async (values: any, helpers: any): Promise<void> => {
-                              console.log('u sao u submit apartmana');
+                              console.log('u sao u submit apartmana', values);
 
                               try {
                                         const buildingApartmentCreateResponse = await fetch('/api/building-apartments/apartments-api', {

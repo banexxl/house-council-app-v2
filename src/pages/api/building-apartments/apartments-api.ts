@@ -33,6 +33,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildingApartments, totalCount });
 
                     } else if (request.method === 'POST') {
+                              console.log('usao u post apartment api', request.body);
 
                               const buildingApartmentExists = await dbBuildingApartments.findOne({
                                         $and: [
@@ -51,7 +52,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                   try {
                                                             if (dbResponse.acknowledged) {
 
-                                                                      await fetch(`${apiUrl}/api/buildings/update-building-apartment-api`, {
+                                                                      await fetch(`${apiUrl}/api/buildings/add-apartment-to-building-api`, {
                                                                                 method: 'PUT',
                                                                                 headers: {
                                                                                           'Content-Type': 'application/json',
@@ -59,8 +60,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                                                                           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS' // Set the content type to JSON
                                                                                 },
                                                                                 body: JSON.stringify({
+                                                                                          buildingID: request.body.buildingID,
                                                                                           apartmentId: dbResponse.insertedId,
-                                                                                          apartmentNumber: request.body.apartmentNumber,
                                                                                 })
                                                                       })
                                                             }
