@@ -38,6 +38,7 @@ import { initialValues, validationSchema } from './building-options';
 import { paths } from '@/paths';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 
 interface BuildingListTableProps {
           count?: number;
@@ -97,6 +98,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
           }
 
           const handleBuildingUpdateClick = () => {
+                    setCurrentBuildingObject((previousObject: any) => ({
+                              ...previousObject,
+                              createdDateTime: moment().format('YYYY/MM/DD HH:mm:ss')
+                    }))
                     Swal.fire({
                               title: 'Are you sure?',
                               text: "You can edit this Building at any time!",
@@ -114,7 +119,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
 
           const handleBuildingUpdate = async (currentBuildingObject: any) => {
                     try {
-                              const buildingCreateResponse = await fetch('/api/buildings/update-building-board-api', {
+                              const buildingCreateResponse = await fetch('/api/buildings/buildings-api', {
                                         method: 'PUT',
                                         headers: {
                                                   'Content-Type': 'application/json',
@@ -414,10 +419,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                                               xs={12}
                                                                                                                                                                                     >
                                                                                                                                                                                               <TextField
-                                                                                                                                                                                                        defaultValue={building.tenants.length}
+                                                                                                                                                                                                        defaultValue={building.apartments.length}
                                                                                                                                                                                                         fullWidth
-                                                                                                                                                                                                        label="Building tenant count"
-                                                                                                                                                                                                        name="tenantCount"
+                                                                                                                                                                                                        label="Building apartment count"
+                                                                                                                                                                                                        name="apartmentCount"
                                                                                                                                                                                                         type='number'
                                                                                                                                                                                                         disabled
                                                                                                                                                                                               />
@@ -722,6 +727,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                                                                                                                                                           onClick={handleBuildingUpdateClick}
                                                                                                                                                                           type="submit"
                                                                                                                                                                           variant="contained"
+
                                                                                                                                                                 >
                                                                                                                                                                           Update
                                                                                                                                                                 </Button>

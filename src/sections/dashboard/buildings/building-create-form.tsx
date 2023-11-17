@@ -115,9 +115,9 @@ export const BuildingCreateForm: FC = (props) => {
                               <Stack spacing={4}>
                                         {/*-------------------Basic info-------------------*/}
                                         <Card>
-                                                  <Typography>
+                                                  {/* <Typography>
                                                             {`${JSON.stringify(formik.errors)}`}
-                                                  </Typography>
+                                                  </Typography> */}
                                                   <CardContent>
                                                             <Grid
                                                                       container

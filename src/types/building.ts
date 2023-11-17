@@ -22,10 +22,10 @@ export interface Building {
           lat: number;
           buildingStatus: boolean;
           /////////////////////////////////////////
-          dateTimeAdded: string;
-          dateTimeUpdated: string;
+          createdDateTime: string;
+          updatedDateTime: string;
           /////////////////////////////////////////
-          tenants: string[];
+          apartments: string[];
           tenantMeetings: string[],
           invoices: string[],
           parkingLots: string[],

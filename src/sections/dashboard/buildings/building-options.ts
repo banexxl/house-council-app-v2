@@ -1,11 +1,6 @@
 
 import { Building } from '@/types/building';
-import moment from 'moment';
 import * as Yup from 'yup';
-
-var date = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-var stillUtc = moment.utc(date).toDate();
-var localDateTime = moment(stillUtc).local().format('DD.MM.YYYY HH:mm:ss');
 
 export interface BuildingOptions {
           label: string;
@@ -49,8 +44,8 @@ export const initialValues: Building = {
           buildingAddress: '',
           isRecentlyBuilt: false,
           description: '',
-          dateTimeAdded: `${localDateTime}`,
-          dateTimeUpdated: '',
+          createdDateTime: '',
+          updatedDateTime: '',
           hasOwnParkingLot: false,
           hasGasHeating: false,
           hasCentralHeating: false,
@@ -65,7 +60,7 @@ export const initialValues: Building = {
           buildingStatus: false,
           lng: 19.8227,
           lat: 45.2396,
-          tenants: [],
+          apartments: [],
           invoices: [],
           parkingLots: [],
           board: '',
@@ -77,7 +72,7 @@ export const validationSchema = Yup.object({
           buildingAddress: Yup.string().required("This field is mandatory").max(70),
           isRecentlyBuilt: Yup.boolean(),
           dateTimeRegistered: Yup.date(),
-          dateTimeUpdated: Yup.date(),
+          updatedDateTime: Yup.date(),
           hasOwnParkingLot: Yup.boolean(),
           parkingLotCount: Yup.number(),
           hasGasHeating: Yup.boolean(),
