@@ -170,9 +170,9 @@ export const BuildingApartmentCreateForm = (props: any) => {
                                                                                                               <FormControlLabel
                                                                                                                         control={
                                                                                                                                   <Switch
-                                                                                                                                            value={formik.values.hasOwnParking}
-                                                                                                                                            name='hasOwnParking'
-                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnParking', !formik.values.hasOwnParking)}
+                                                                                                                                            value={formik.values.hasOwnParkingSpace}
+                                                                                                                                            name='hasOwnParkingSpace'
+                                                                                                                                            onChange={() => formik.setFieldValue('hasOwnParkingSpace', !formik.values.hasOwnParkingSpace)}
                                                                                                                                   />
                                                                                                                         }
                                                                                                                         label="Has own parking"

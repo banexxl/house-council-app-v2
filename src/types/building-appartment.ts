@@ -16,7 +16,7 @@ export interface BuildingApartment {
           petFriendly?: boolean;
           smokingAllowed?: boolean;
           furnished?: boolean;
-          hasOwnParking: boolean;
+          hasOwnParkingSpace: boolean;
           utilitiesIncluded?: boolean;
           createdDateTime: string;
           updatedDateTime: string;

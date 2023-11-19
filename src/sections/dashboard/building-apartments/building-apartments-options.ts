@@ -19,7 +19,7 @@ export const initialValues: BuildingApartment = {
           petFriendly: false,
           smokingAllowed: false,
           furnished: false,
-          hasOwnParking: false,
+          hasOwnParkingSpace: false,
           utilitiesIncluded: false,
           createdDateTime: '',
           updatedDateTime: ''
@@ -40,7 +40,7 @@ export const validationSchema = Yup.object({
           petFriendly: Yup.boolean(),
           smokingAllowed: Yup.boolean(),
           furnished: Yup.boolean(),
-          hasOwnParking: Yup.boolean(),
+          hasOwnParkingSpace: Yup.boolean(),
           utilitiesIncluded: Yup.boolean(),
           createdDateTime: Yup.string(),
           updatedDateTime: Yup.string(),

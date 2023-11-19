@@ -7,7 +7,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
           // const mongoClient = await clientPromise;
           const mongoClient = await MongoClient.connect(process.env.NEXT_PUBLIC_MONGO_DB_CONNECT!)
           const dbBuildingApartments = mongoClient.db('HouseCouncilAppDB').collection('BuildingApartments')
-          console.log(process.env.NODE_ENV);
           const apiUrl = process.env.NODE_ENV === 'development' ?
                     process.env.NEXT_DEV_URL : process.env.NEXT_VERCEL_DEV_URL
 
@@ -33,8 +32,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                               return response.status(200).json({ message: 'Buildings found!', data: dbBuildingApartments, totalCount });
 
                     } else if (request.method === 'POST') {
-                              console.log('usao u post apartment api', request.body);
-
                               const buildingApartmentExists = await dbBuildingApartments.findOne({
                                         $and: [
                                                   {
@@ -78,35 +75,38 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
-                              console.log('aaaaaaaaaaaa', request.body);
+                              console.log('bbbbb', request.body);
 
                               try {
-                                        await dbBuildingApartments.findOneAndUpdate({ _id: new ObjectId(request.body.currentBuildingApartmentID) },
+                                        const res = await dbBuildingApartments.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {
                                                             $set:
                                                             {
-                                                                      buildingAddress: request.body.values.buildingAddress,
-                                                                      apartmentNumber: request.body.values.apartmentNumber,
-                                                                      surfaceArea: request.body.values.surfaceArea,
-                                                                      bedroomNumber: request.body.values.bedroomNumber,
-                                                                      bathroomNumber: request.body.values.bathroomNumber,
-                                                                      terraceNumber: request.body.values.terraceNumber,
-                                                                      description: request.body.values.description,
-                                                                      images: request.body.values.images,
-                                                                      tenants: request.body.values.tenants,
-                                                                      owners: request.body.values.owners,
-                                                                      status: request.body.values.status,
-                                                                      petFriendly: request.body.values.petFriendly,
-                                                                      smokingAllowed: request.body.values.smokingAllowed,
-                                                                      furnished: request.body.values.furnished,
-                                                                      hasOwnParking: request.body.values.hasOwnParking,
-                                                                      utilitiesIncluded: request.body.values.utilitiesIncluded,
-                                                                      createdDateTime: request.body.values.createdDateTime,
-                                                                      updatedDateTime: request.body.values.updatedDateTime,
+                                                                      buildingAddress: request.body.buildingAddress,
+                                                                      apartmentNumber: request.body.apartmentNumber,
+                                                                      surfaceArea: request.body.surfaceArea,
+                                                                      bedroomNumber: request.body.bedroomNumber,
+                                                                      bathroomNumber: request.body.bathroomNumber,
+                                                                      terraceNumber: request.body.terraceNumber,
+                                                                      description: request.body.description,
+                                                                      images: request.body.images,
+                                                                      tenants: request.body.tenants,
+                                                                      owners: request.body.owners,
+                                                                      status: request.body.status,
+                                                                      petFriendly: request.body.petFriendly,
+                                                                      smokingAllowed: request.body.smokingAllowed,
+                                                                      furnished: request.body.furnished,
+                                                                      hasOwnParkingSpace: request.body.hasOwnParkingSpace,
+                                                                      utilitiesIncluded: request.body.utilitiesIncluded,
+                                                                      createdDateTime: request.body.createdDateTime,
+                                                                      updatedDateTime: request.body.updatedDateTime,
                                                             }
                                                   })
-
-                                        return response.status(200).json({ message: 'Building successfully updated!' });
+                                        if (res === null) {
+                                                  return response.status(400).json({ message: 'Something is wrong with the request' });
+                                        } else {
+                                                  return response.status(200).json({ message: 'Building apartment successfully updated!' });
+                                        }
                               } catch (error) {
                                         console.log(error);
                               }
@@ -128,7 +128,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
           } catch (error) {
                     return response.status(500).json({ error: 'Internal server error!' });
           } finally {
-                    console.log(response.statusCode)
                     await mongoClient.close();
           }
 }

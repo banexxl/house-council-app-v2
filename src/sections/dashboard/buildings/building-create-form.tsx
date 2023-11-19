@@ -20,6 +20,7 @@ import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import { initialValues, validationSchema } from './building-options';
 import { GoogleMaps } from './map-component'
 import { Input } from '@mui/material';
+import moment from 'moment';
 import Image from 'next/image';
 
 export const BuildingCreateForm: FC = (props) => {
@@ -450,6 +451,7 @@ export const BuildingCreateForm: FC = (props) => {
                                                   <Button
                                                             type="submit"
                                                             variant="contained"
+                                                            onClick={() => formik.setFieldValue('createdDateTime', moment().format("YYYY/MM/DD HH:mm:ss"))}
                                                   >
                                                             Create
                                                   </Button>

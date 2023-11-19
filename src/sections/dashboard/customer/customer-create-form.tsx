@@ -67,8 +67,6 @@ export const CustomerCreateForm = (props: any) => {
                     initialValues,
                     validationSchema,
                     onSubmit: async (values, helpers): Promise<void> => {
-                              console.log('customer create values', values);
-
                               try {
                                         //API CALL
                                         const response = await fetch('/api/customers/customers-api', {

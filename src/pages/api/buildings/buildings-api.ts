@@ -70,7 +70,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
                                         return response.status(409).json({ error: error });
                               }
                     } else if (request.method === 'PUT') {
-
                               try {
                                         await dbBuildings.findOneAndUpdate({ _id: new ObjectId(request.body._id) },
                                                   {
