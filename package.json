@@ -1,18 +1,18 @@
 {
-  "name": "^@devias-kit-pro/next-app",
-  "version": "^6.4.2",
-  "author": "^Devias",
-  "homepage": "^https://devias.io",
+  "name": "house-council-app",
+  "version": "0.0.1",
+  "author": "Branislav Damjanovic & Nikola Terzic",
+  "homepage": "https://house-council-app.vercel.app",
   "private": true,
   "scripts": {
-    "dev": "^next",
-    "build": "^next build",
-    "start": "^next start",
-    "export": "^next export",
-    "lint": "^next lint",
-    "lint-fix": "^next lint --fix",
-    "format:write": "^prettier --write \"**/*.{js,jsx,ts,tsx,mdx}\" --cache",
-    "format:check": "^prettier --check \"**/*.{js,jsx,ts,tsx,mdx}\" --cache"
+    "dev": "next",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export",
+    "lint": "next lint",
+    "lint-fix": "next lint --fix",
+    "format:write": "prettier --write \"**/*.{js,jsx,ts,tsx,mdx}\" --cache",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
     "@emotion/cache": "^11.11.0",
