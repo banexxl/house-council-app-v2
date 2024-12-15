@@ -1,6 +1,5 @@
 'use client';
 
-import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
@@ -14,36 +13,37 @@ import Typography from '@mui/material/Typography';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
-
-interface Values {
-  email: string;
-  password: string;
-  submit: null;
-}
-
-const initialValues: Values = {
-  email: '',
-  password: '',
-  submit: null,
-};
-
-const validationSchema = Yup.object({
-  email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-  password: Yup.string().max(255).required('Password is required'),
-});
+import { initialValues, validationSchema } from './login-schema';
+import { supabase } from 'src/libs/supabase/client';
+import { login } from './actions';
+import { useState } from 'react';
 
 const Page = () => {
+
+  const [message, setMessage] = useState<string | null>('')
+
+  const onSubmit = async (values: typeof initialValues) => {
+
+
+    const result = await login(values.email)
+    if (result.error) {
+      setMessage(result.error)
+    } else if (result.success) {
+      setMessage(result.success)
+    }
+  };
+
   const formik = useFormik({
     initialValues,
     validationSchema,
-    onSubmit: (): void => {},
+    onSubmit,
   });
 
   return (
     <>
       <Seo title="Login" />
       <div>
-        <Box sx={{ mb: 4 }}>
+        {/* <Box sx={{ mb: 4 }}>
           <Link
             color="text.primary"
             component={RouterLink}
@@ -59,7 +59,7 @@ const Page = () => {
             </SvgIcon>
             <Typography variant="subtitle2">Dashboard</Typography>
           </Link>
-        </Box>
+        </Box> */}
         <Stack
           sx={{ mb: 4 }}
           spacing={1}
@@ -69,14 +69,14 @@ const Page = () => {
             color="text.secondary"
             variant="body2"
           >
-            Don&apos;t have an account? &nbsp;
-            <Link
+            We'll send you an email with a link to log in.
+            {/* <Link
               href="#"
               underline="hover"
               variant="subtitle2"
             >
               Register
-            </Link>
+            </Link> */}
           </Typography>
         </Stack>
         <form
@@ -88,24 +88,13 @@ const Page = () => {
               autoFocus
               error={!!(formik.touched.email && formik.errors.email)}
               fullWidth
-              helperText={formik.touched.email && formik.errors.email}
+              helperText={message || formik.touched.email && formik.errors.email}
               label="Email Address"
               name="email"
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               type="email"
               value={formik.values.email}
-            />
-            <TextField
-              error={!!(formik.touched.password && formik.errors.password)}
-              fullWidth
-              helperText={formik.touched.password && formik.errors.password}
-              label="Password"
-              name="password"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              type="password"
-              value={formik.values.password}
             />
           </Stack>
           <Button
@@ -117,15 +106,6 @@ const Page = () => {
           >
             Continue
           </Button>
-          <Box sx={{ mt: 3 }}>
-            <Link
-              href="#"
-              underline="hover"
-              variant="subtitle2"
-            >
-              Forgot password?
-            </Link>
-          </Box>
         </form>
       </div>
     </>
