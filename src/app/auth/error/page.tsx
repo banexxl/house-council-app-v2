@@ -53,8 +53,7 @@ const Page = async () => {
                                    src="/assets/errors/error-401.png"
                                    sx={{
                                         height: 'auto',
-                                        maxWidth: '100%',
-                                        width: 400,
+                                        width: 200,
                                    }}
                               />
                          </Box>

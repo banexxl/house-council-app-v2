@@ -41,23 +41,6 @@ const Page = () => {
     <>
       <Seo title="Login" />
       <div>
-        {/* <Box sx={{ mb: 4 }}>
-          <Link
-            color="text.primary"
-            component={RouterLink}
-            href={paths.dashboard.index}
-            sx={{
-              alignItems: 'center',
-              display: 'inline-flex',
-            }}
-            underline="hover"
-          >
-            <SvgIcon sx={{ mr: 1 }}>
-              <ArrowLeftIcon />
-            </SvgIcon>
-            <Typography variant="subtitle2">Dashboard</Typography>
-          </Link>
-        </Box> */}
         <Stack
           sx={{ mb: 4 }}
           spacing={1}
@@ -67,14 +50,7 @@ const Page = () => {
             color="text.secondary"
             variant="body2"
           >
-            We'll send you an email with a link to log in.
-            {/* <Link
-              href="#"
-              underline="hover"
-              variant="subtitle2"
-            >
-              Register
-            </Link> */}
+            If you already have an account, we'll send you an email with a link to log in.
           </Typography>
         </Stack>
         <form

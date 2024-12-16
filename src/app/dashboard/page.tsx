@@ -24,6 +24,8 @@ import { OverviewHelp } from 'src/sections/dashboard/overview/overview-help';
 import { OverviewJobs } from 'src/sections/dashboard/overview/overview-jobs';
 import { OverviewOpenTickets } from 'src/sections/dashboard/overview/overview-open-tickets';
 import { OverviewTips } from 'src/sections/dashboard/overview/overview-tips';
+import { supabase } from 'src/libs/supabase/client';
+import { redirect } from 'next/navigation';
 
 const now = new Date();
 
