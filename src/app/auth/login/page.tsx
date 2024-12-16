@@ -23,8 +23,6 @@ const Page = () => {
   const [message, setMessage] = useState<string | null>('')
 
   const onSubmit = async (values: typeof initialValues) => {
-
-
     const result = await login(values.email)
     if (result.error) {
       setMessage(result.error)

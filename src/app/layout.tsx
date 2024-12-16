@@ -7,6 +7,8 @@ import 'src/global.css';
 import { NProgress } from 'src/components/nprogress';
 import { Layout as RootLayout } from 'src/layouts/root';
 import type { Settings } from 'src/types/settings';
+import { createClient } from 'src/libs/supabase/server';
+import { redirect } from 'next/navigation';
 
 // Force-Dynamic is required otherwise all pages are marked as client-side
 // due to the usage of the "cookies" function.
@@ -14,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Devias Kit PRO',
-  viewport: 'initial-scale=1, width=device-width',
+  // viewport: 'initial-scale=1, width=device-width', izaziva warning na serveru
   icons: {
     icon: [
       { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
@@ -58,8 +60,15 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const Layout = (props: LayoutProps) => {
+const Layout = async (props: LayoutProps) => {
   const { children } = props;
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data?.user) {
+    redirect('/auth/login')
+  }
 
   const settings = restoreSettings();
 

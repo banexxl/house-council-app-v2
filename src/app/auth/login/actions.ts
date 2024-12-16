@@ -1,9 +1,9 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { createClient } from 'src/libs/supabase/server'
 
 export async function login(email: string) {
+
      const supabase = await createClient()
 
      const { error } = await supabase.auth.signInWithOtp({
