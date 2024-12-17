@@ -10,7 +10,6 @@ export async function GET(request: Request) {
      const error = requestUrl.searchParams.get('error');
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
-     console.log('all', code, error, errorCode, errorDescription);
 
      if (error) {
           // Redirect to error page with absolute URL
