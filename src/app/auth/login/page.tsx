@@ -17,16 +17,19 @@ import { initialValues, validationSchema } from './login-schema';
 import { supabase } from 'src/libs/supabase/client';
 import { login } from './actions';
 import { useState } from 'react';
+import { set } from 'nprogress';
 
 const Page = () => {
 
   const [message, setMessage] = useState<string | null>('')
-
+  const [loginError, setLoginError] = useState<boolean>(false)
   const onSubmit = async (values: typeof initialValues) => {
     const result = await login(values.email)
     if (result.error) {
+      setLoginError(true)
       setMessage(result.error)
     } else if (result.success) {
+      setLoginError(false)
       setMessage(result.success)
     }
   };
@@ -62,7 +65,13 @@ const Page = () => {
               autoFocus
               error={!!(formik.touched.email && formik.errors.email)}
               fullWidth
-              helperText={message || formik.touched.email && formik.errors.email}
+              helperText={
+                <span
+                  style={{ color: formik.touched.email && formik.errors.email ? 'red' : loginError ? 'red' : 'green' }}
+                >
+                  {message || (formik.touched.email && formik.errors.email)}
+                </span>
+              }
               label="Email Address"
               name="email"
               onBlur={formik.handleBlur}

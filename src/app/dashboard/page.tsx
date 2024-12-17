@@ -29,9 +29,12 @@ import { redirect } from 'next/navigation';
 
 const now = new Date();
 
-const Page = () => {
+const Page = async () => {
   const settings = useSettings();
-
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data?.user) {
+    redirect('/auth/login')
+  }
   usePageView();
 
   return (
