@@ -5,12 +5,11 @@ import { createClient } from 'src/libs/supabase/server'
 export async function login(email: string) {
 
      const supabase = await createClient()
-     console.log('process.env.BASE_URL', process.env.BASE_URL);
 
      const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-               emailRedirectTo: process.env.BASE_URL + 'auth/callback',
+               emailRedirectTo: process.env.BASE_URL,
           },
      })
 
