@@ -10,7 +10,7 @@ export async function login(email: string) {
      const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-               emailRedirectTo: process.env.BASE_URL + '/auth/callback',
+               emailRedirectTo: process.env.BASE_URL + 'auth/callback',
           },
      })
 
