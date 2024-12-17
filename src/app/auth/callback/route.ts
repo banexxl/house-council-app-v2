@@ -3,11 +3,14 @@ import { createClient } from 'src/libs/supabase/server';
 
 export async function GET(request: Request) {
      const requestUrl = new URL(request.url);
+     console.log('requestUrl', requestUrl);
+
      // Extract the "code" and "error" parameters
      const code = requestUrl.searchParams.get('code');
      const error = requestUrl.searchParams.get('error');
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
+     console.log('all', code, error, errorCode, errorDescription);
 
      if (error) {
           // Redirect to error page with absolute URL
