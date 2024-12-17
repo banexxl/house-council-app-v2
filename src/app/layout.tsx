@@ -7,6 +7,8 @@ import 'src/global.css';
 import { NProgress } from 'src/components/nprogress';
 import { Layout as RootLayout } from 'src/layouts/root';
 import type { Settings } from 'src/types/settings';
+import { createClient } from 'src/libs/supabase/server';
+import { redirect } from 'next/navigation';
 
 // Force-Dynamic is required otherwise all pages are marked as client-side
 // due to the usage of the "cookies" function.
