@@ -8,6 +8,8 @@ const Page = async () => {
      const { data, error } = await supabase.auth.getUser()
      if (error || !data?.user) {
           redirect('/auth/login')
+     } else {
+          redirect('/dashboard')
      }
 
      return (
