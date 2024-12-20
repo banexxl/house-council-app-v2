@@ -1,16 +1,15 @@
-import { supabase } from "../client";
+import { createClient } from "../server";
 
 export const checkUserExists = async (email: string) => {
-     const { data, error } = await supabase
-          .from('auth.users')
-          .select('id')
-          .eq('email', email)
-          .single(); // Use single() to get a single record
+     const supabase = await createClient();
+     const { data, error } = await supabase.auth.admin.listUsers()
 
      if (error) {
           console.error('Error checking user existence:', error.message);
           return false; // Return false if there's an error
      }
 
-     return data !== null; // Return true if user exists, false otherwise
+     if (data.users.length === 1 && data.users[0].email === email) {
+          return true; // Return true if the user exists
+     }
 };

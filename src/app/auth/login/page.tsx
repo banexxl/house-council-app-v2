@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { Seo } from 'src/components/seo';
 import { initialValues, validationSchema } from './login-schema';
-import { login } from './actions';
+import { login } from '../actions';
 import { useState } from 'react';
 
 const Page = () => {
@@ -17,8 +17,8 @@ const Page = () => {
 
   const onSubmit = async (values: typeof initialValues) => {
     const result = await login(values.email)
-    if (result.error) {
 
+    if (result.error) {
       setLoginError(true)
       setMessage(result.error)
     } else if (result.success) {

@@ -1,11 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Ensure these variables exist on the client side
-if (!process.env.SUPADB_SUPABASE_URL || !process.env.SUPADB_SUPABASE_SERVICE_ROLE_KEY) {
-     throw new Error('Missing Supabase environment variables');
-}
+const supabaseUrl = process.env.SUPADB_SUPABASE_URL!;
+const supabaseAnonKey = process.env.SUPADB_NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(
-     process.env.SUPADB_SUPABASE_URL!,
-     process.env.SUPADB_SUPABASE_SERVICE_ROLE_KEY!
-)
+export const createSupabaseClient = () => {
+     return createClient(supabaseUrl, supabaseAnonKey);
+};

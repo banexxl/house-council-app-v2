@@ -1,5 +1,7 @@
+"use client"
+
 import type { FC } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useTransition } from 'react';
 import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import CreditCard01Icon from '@untitled-ui/icons-react/build/esm/CreditCard01';
@@ -16,11 +18,10 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/components/router-link';
-// import { useAuth } from 'src/hooks/use-auth';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
-import { Issuer } from 'src/utils/auth';
+import { logout } from 'src/app/auth/actions';
 
 interface AccountPopoverProps {
   anchorEl: null | Element;
@@ -31,46 +32,15 @@ interface AccountPopoverProps {
 export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   const { anchorEl, onClose, open, ...other } = props;
   const router = useRouter();
-  // const auth = useAuth();
   const user = useMockedUser();
+  const [isPending, startTransition] = useTransition()
 
-  // const handleLogout = useCallback(async (): Promise<void> => {
-
-  //   try {
-  //     onClose?.();
-
-  //     switch (auth.issuer) {
-  //       case Issuer.Amplify: {
-  //         await auth.signOut();
-  //         break;
-  //       }
-
-  //       case Issuer.Auth0: {
-  //         await auth.logout();
-  //         break;
-  //       }
-
-  //       case Issuer.Firebase: {
-  //         await auth.signOut();
-  //         break;
-  //       }
-
-  //       case Issuer.JWT: {
-  //         await auth.signOut();
-  //         break;
-  //       }
-
-  //       default: {
-  //         console.warn('Using an unknown Auth Issuer, did not log out');
-  //       }
-  //     }
-
-  //     router.push(paths.index);
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error('Something went wrong!');
-  //   }
-  // }, [auth, router, onClose]);
+  const handleLogout = () => {
+    startTransition(() => {
+      logout()
+    })
+    onClose?.()
+  }
 
   return (
     <Popover
@@ -158,10 +128,11 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
       >
         <Button
           color="inherit"
-          // onClick={handleLogout}
+          onClick={handleLogout}
           size="small"
+          disabled={isPending}
         >
-          Logout
+          {isPending ? 'Logging out...' : 'Logout'}
         </Button>
       </Box>
     </Popover>

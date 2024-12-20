@@ -1,5 +1,5 @@
 import { error } from "console";
-import { login } from "./app/auth/login/actions";
+import { login } from "./app/auth/actions";
 
 export const paths = {
   index: '/',
