@@ -28,6 +28,15 @@ import type { Settings } from 'src/types/settings';
 
 const SETTINGS_STORAGE_KEY = 'app.settings';
 
+
+const restoreSettings = (): Settings | undefined => {
+  const value = Cookies.get(SETTINGS_STORAGE_KEY);
+  if (!value) {
+    return undefined;
+  }
+  return value ? JSON.parse(value) as Settings : undefined;
+};
+
 const resetSettings = (): void => {
   try {
     Cookies.remove(SETTINGS_STORAGE_KEY);
@@ -53,7 +62,7 @@ interface LayoutProps {
 
 export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   const { children, settings } = props;
-
+  restoreSettings()
   useAnalytics(gtmConfig);
 
   return (

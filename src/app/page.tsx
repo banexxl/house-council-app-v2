@@ -10,14 +10,6 @@ const Page = async () => {
      } else {
           redirect('/dashboard')
      }
-
-     return (
-          <>
-               <div>
-                    redirecting...
-               </div>
-          </>
-     );
 };
 
 export default Page;
