@@ -18,7 +18,6 @@ import { SplashScreen } from 'src/components/splash-screen';
 import { SettingsButton } from 'src/components/settings/settings-button';
 import { SettingsDrawer } from 'src/components/settings/settings-drawer';
 import { Toaster } from 'src/components/toaster';
-import { gtmConfig } from 'src/config';
 // import { AuthConsumer, AuthProvider } from 'src/contexts/auth/jwt';
 import { SettingsConsumer, SettingsProvider } from 'src/contexts/settings';
 import { store } from 'src/store';
