@@ -10,7 +10,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 
 const errorMessages: Record<string, string> = {
@@ -25,7 +25,7 @@ const Page = async () => {
      const errorCode = searchParams.get('error_code') || 'unknown_error'; // Default to "unknown_error"
      const errorMessage = errorMessages[errorCode] || 'An unexpected error occurred.';
 
-     usePageView();
+
 
      return (
           <>

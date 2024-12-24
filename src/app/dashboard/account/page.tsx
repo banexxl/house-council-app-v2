@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 
 import { Seo } from 'src/components/seo';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { AccountBillingSettings } from 'src/sections/dashboard/account/account-billing-settings';
 import { AccountGeneralSettings } from 'src/sections/dashboard/account/account-general-settings';
 import { AccountNotificationsSettings } from 'src/sections/dashboard/account/account-notifications-settings';
@@ -34,7 +34,7 @@ const Page = () => {
   const user = useMockedUser();
   const [currentTab, setCurrentTab] = useState<string>('general');
 
-  usePageView();
+
 
   const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
     setCurrentTab(value);

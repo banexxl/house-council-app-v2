@@ -14,7 +14,7 @@ import { ordersApi } from 'src/api/orders';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { OrderDrawer } from 'src/sections/dashboard/order/order-drawer';
 import { OrderListContainer } from 'src/sections/dashboard/order/order-list-container';
 import { OrderListSearch } from 'src/sections/dashboard/order/order-list-search';
@@ -145,7 +145,7 @@ const Page = () => {
   const dialog = useDialog<string>();
   const currentOrder = useCurrentOrder(ordersStore.orders, dialog.data);
 
-  usePageView();
+
 
   const handleOrderOpen = useCallback(
     (orderId: string): void => {

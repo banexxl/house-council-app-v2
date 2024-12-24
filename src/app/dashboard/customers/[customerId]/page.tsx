@@ -23,7 +23,7 @@ import { customersApi } from 'src/api/customers';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { CustomerBasicDetails } from 'src/sections/dashboard/customer/customer-basic-details';
 import { CustomerDataManagement } from 'src/sections/dashboard/customer/customer-data-management';
@@ -128,7 +128,7 @@ const Page = () => {
   const invoices = useInvoices();
   const logs = useLogs();
 
-  usePageView();
+
 
   const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
     setCurrentTab(value);

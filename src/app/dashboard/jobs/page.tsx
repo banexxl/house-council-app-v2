@@ -16,7 +16,7 @@ import { jobsApi } from 'src/api/jobs';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { CompanyCard } from 'src/sections/dashboard/jobs/company-card';
 import { JobListSearch } from 'src/sections/dashboard/jobs/job-list-search';
@@ -52,7 +52,7 @@ const useCompanies = (): Company[] => {
 const Page = () => {
   const companies = useCompanies();
 
-  usePageView();
+
 
   return (
     <>

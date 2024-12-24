@@ -32,7 +32,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const Layout = async (props: LayoutProps) => {
+const Layout = (props: LayoutProps) => {
   const { children } = props;
 
   return (

@@ -18,12 +18,12 @@ import { LogoSamsung } from 'src/components/logos/logo-samsung';
 import { LogoVisma } from 'src/components/logos/logo-visma';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { ContactForm } from 'src/sections/contact/contact-form';
 
 const Page = () => {
-  usePageView();
+
 
   return (
     <>

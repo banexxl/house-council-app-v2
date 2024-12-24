@@ -11,7 +11,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSettings } from 'src/hooks/use-settings';
 import { OverviewBanner } from 'src/sections/dashboard/overview/overview-banner';
 import { OverviewDoneTasks } from 'src/sections/dashboard/overview/overview-done-tasks';
@@ -24,13 +24,13 @@ import { OverviewHelp } from 'src/sections/dashboard/overview/overview-help';
 import { OverviewJobs } from 'src/sections/dashboard/overview/overview-jobs';
 import { OverviewOpenTickets } from 'src/sections/dashboard/overview/overview-open-tickets';
 import { OverviewTips } from 'src/sections/dashboard/overview/overview-tips';
+import { createSupabaseClient } from 'src/libs/supabase/client';
 
 const now = new Date();
 
-const Page = async () => {
-  const settings = useSettings();
+const Page = () => {
 
-  usePageView();
+  const settings = useSettings();
 
   return (
     <>

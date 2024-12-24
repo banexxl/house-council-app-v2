@@ -7,7 +7,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSearchParams } from 'src/hooks/use-search-params';
 import { MailComposer } from 'src/sections/dashboard/mail/mail-composer';
 import { MailThread } from 'src/sections/dashboard/mail/mail-thread';
@@ -162,7 +162,7 @@ const Page = () => {
   const composer = useComposer();
   const sidebar = useSidebar();
 
-  usePageView();
+
 
   const view = emailId ? 'details' : 'list';
 

@@ -15,7 +15,7 @@ import { fileManagerApi } from 'src/api/file-manager';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSettings } from 'src/hooks/use-settings';
 import { FileUploader } from 'src/sections/dashboard/file-manager/file-uploader';
 import { ItemDrawer } from 'src/sections/dashboard/file-manager/item-drawer';
@@ -180,7 +180,7 @@ const Page = () => {
   const detailsDialog = useDialog<string>();
   const currentItem = useCurrentItem(itemsStore.items, detailsDialog.data);
 
-  usePageView();
+
 
   const handleDelete = useCallback(
     (itemId: string): void => {

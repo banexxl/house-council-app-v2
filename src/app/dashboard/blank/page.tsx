@@ -9,13 +9,13 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSettings } from 'src/hooks/use-settings';
 
 const Page = () => {
   const settings = useSettings();
 
-  usePageView();
+
 
   return (
     <>

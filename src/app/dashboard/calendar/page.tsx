@@ -18,7 +18,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { CalendarEventDialog } from 'src/sections/dashboard/calendar/calendar-event-dialog';
 import { CalendarToolbar } from 'src/sections/dashboard/calendar/calendar-toolbar';
 import { CalendarContainer } from 'src/sections/dashboard/calendar/calendar-container';
@@ -80,7 +80,7 @@ const Page = () => {
   const updateDialog = useDialog<UpdateDialogData>();
   const updatingEvent = useCurrentEvent(events, updateDialog.data);
 
-  usePageView();
+
 
   const handleScreenResize = useCallback((): void => {
     const calendarEl = calendarRef.current;

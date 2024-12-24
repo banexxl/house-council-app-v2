@@ -22,7 +22,7 @@ import { FileDropzone } from 'src/components/file-dropzone';
 import { QuillEditor } from 'src/components/quill-editor';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { fileToBase64 } from 'src/utils/file-to-base64';
 
@@ -31,7 +31,7 @@ const initialCover = '/assets/covers/abstract-1-4x3-large.png';
 const Page = () => {
   const [cover, setCover] = useState<string | null>(initialCover);
 
-  usePageView();
+
 
   const handleCoverDrop = useCallback(async ([file]: File[]) => {
     const data = (await fileToBase64(file)) as string;

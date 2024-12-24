@@ -24,7 +24,7 @@ import { socialApi } from 'src/api/social';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { SocialConnections } from 'src/sections/dashboard/social/social-connections';
 import { SocialTimeline } from 'src/sections/dashboard/social/social-timeline';
@@ -122,7 +122,7 @@ const Page = () => {
   const [connectionsQuery, setConnectionsQuery] = useState<string>('');
   const connections = useConnections(connectionsQuery);
 
-  usePageView();
+
 
   const handleConnectionAdd = useCallback((): void => {
     setStatus('pending');

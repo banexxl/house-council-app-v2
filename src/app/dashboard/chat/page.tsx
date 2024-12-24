@@ -10,7 +10,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSearchParams } from 'src/hooks/use-search-params';
 import { ChatBlank } from 'src/sections/dashboard/chat/chat-blank';
 import { ChatComposer } from 'src/sections/dashboard/chat/chat-composer';
@@ -100,7 +100,7 @@ const Page = () => {
   const threadKey = searchParams.get('threadKey') || undefined;
   const sidebar = useSidebar();
 
-  usePageView();
+
 
   useThreads();
 

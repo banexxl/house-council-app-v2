@@ -9,13 +9,12 @@ import type { Theme } from '@mui/material/styles/createTheme';
 
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 
 const NotFound = () => {
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
 
-  usePageView();
 
   return (
     <>

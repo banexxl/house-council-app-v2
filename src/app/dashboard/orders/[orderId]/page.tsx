@@ -18,7 +18,7 @@ import { ordersApi } from 'src/api/orders';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { OrderItems } from 'src/sections/dashboard/order/order-items';
 import { OrderLogs } from 'src/sections/dashboard/order/order-logs';
@@ -55,7 +55,7 @@ const useOrder = (): Order | null => {
 const Page = () => {
   const order = useOrder();
 
-  usePageView();
+
 
   if (!order) {
     return null;

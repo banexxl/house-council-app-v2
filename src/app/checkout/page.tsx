@@ -17,7 +17,7 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { CheckoutBilling } from 'src/sections/checkout/checkout-billing';
 import { CheckoutSummary } from 'src/sections/checkout/checkout-summary';
@@ -79,7 +79,7 @@ const Page = () => {
   const [billing, setBilling] = useState(initialBilling);
   const [products, setProducts] = useState<Product[]>(initialProducts);
 
-  usePageView();
+
 
   const handleBillingChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setBilling((prevState) => ({

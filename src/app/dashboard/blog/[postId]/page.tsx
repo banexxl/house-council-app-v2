@@ -19,7 +19,7 @@ import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { paths } from 'src/paths';
 import { PostComment } from 'src/sections/dashboard/blog/post-comment';
 import { PostCommentAdd } from 'src/sections/dashboard/blog/post-comment-add';
@@ -95,7 +95,7 @@ const Page = () => {
   const post = usePost();
   const comments = useComments();
 
-  usePageView();
+
 
   if (!post) {
     return null;

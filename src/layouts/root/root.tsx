@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC, ReactNode } from 'react';
+import { type FC, type ReactNode } from 'react';
 import Head from 'next/head';
 import { Provider as ReduxProvider } from 'react-redux';
 import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
@@ -21,7 +21,6 @@ import { Toaster } from 'src/components/toaster';
 import { gtmConfig } from 'src/config';
 // import { AuthConsumer, AuthProvider } from 'src/contexts/auth/jwt';
 import { SettingsConsumer, SettingsProvider } from 'src/contexts/settings';
-import { useAnalytics } from 'src/hooks/use-analytics';
 import { store } from 'src/store';
 import { createTheme } from 'src/theme';
 import type { Settings } from 'src/types/settings';
@@ -62,8 +61,8 @@ interface LayoutProps {
 
 export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   const { children, settings } = props;
+
   restoreSettings()
-  useAnalytics(gtmConfig);
 
   return (
     <NextAppDirEmotionCacheProvider options={{ key: 'css' }}>

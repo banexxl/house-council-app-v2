@@ -16,7 +16,7 @@ import Typography from '@mui/material/Typography';
 import { customersApi } from 'src/api/customers';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSelection } from 'src/hooks/use-selection';
 import { CustomerListSearch } from 'src/sections/dashboard/customer/customer-list-search';
 import { CustomerListTable } from 'src/sections/dashboard/customer/customer-list-table';
@@ -147,7 +147,7 @@ const Page = () => {
   const customersIds = useCustomersIds(customersStore.customers);
   const customersSelection = useSelection<string>(customersIds);
 
-  usePageView();
+
 
   return (
     <>

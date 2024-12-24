@@ -16,7 +16,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 import { invoicesApi } from 'src/api/invoices';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { InvoiceListContainer } from 'src/sections/dashboard/invoice/invoice-list-container';
 import { InvoiceListSidebar } from 'src/sections/dashboard/invoice/invoice-list-sidebar';
 import { InvoiceListSummary } from 'src/sections/dashboard/invoice/invoice-list-summary';
@@ -130,7 +130,7 @@ const Page = () => {
   const [group, setGroup] = useState<boolean>(true);
   const [openSidebar, setOpenSidebar] = useState<boolean>(lgUp);
 
-  usePageView();
+
 
   const handleGroupChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setGroup(event.target.checked);

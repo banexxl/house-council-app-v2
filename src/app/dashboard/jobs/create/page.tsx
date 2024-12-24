@@ -6,11 +6,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { JobCreateForm } from 'src/sections/dashboard/jobs/job-create-form';
 
 const Page = () => {
-  usePageView();
+
 
   return (
     <>

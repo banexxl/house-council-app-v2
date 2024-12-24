@@ -10,7 +10,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { Seo } from 'src/components/seo';
-import { usePageView } from 'src/hooks/use-page-view';
+
 import { useSettings } from 'src/hooks/use-settings';
 import { AcademyDailyProgress } from 'src/sections/dashboard/academy/academy-daily-progress';
 import { AcademyFind } from 'src/sections/dashboard/academy/academy-find';
@@ -51,7 +51,7 @@ const Page = () => {
   const settings = useSettings();
   const courses = useCourses();
 
-  usePageView();
+
 
   return (
     <>
