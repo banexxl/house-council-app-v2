@@ -88,5 +88,8 @@ export const SettingsProvider: FC<SettingsProviderProps> = (props) => {
 };
 
 SettingsProvider.propTypes = {
-
+  children: PropTypes.element,
+  onReset: PropTypes.func,
+  onUpdate: PropTypes.func,
+  settings: PropTypes.object,
 };
