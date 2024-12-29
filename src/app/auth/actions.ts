@@ -4,17 +4,34 @@ import { checkUserExists } from 'src/libs/supabase/tbl-auth-users';
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { generateCodeChallenge, generateCodeVerifier } from 'src/utils/auth';
 
 export async function login(email: string) {
+
+     const codeVerifier = generateCodeVerifier(); // Generate a PKCE verifier
+     const codeChallenge = await generateCodeChallenge(codeVerifier); // Generate a PKCE challenge
+
+     console.log('codeVerifier', codeVerifier);
+     console.log('codeChallenge', codeChallenge);
+
      // Use the server-side Supabase client
+     const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           {
                cookies: {
-                    getAll: async () => (await cookies()).getAll(),
+                    getAll: () => cookieStore.getAll(),
+                    setAll: (cookiesToSet) => {
+                         cookiesToSet.forEach(({ name, value, options }) => {
+                              try {
+                                   cookieStore.set(name, value, options);
+                              } catch {
+                                   // Handle cases where setting cookies in server actions isn't supported
+                              }
+                         });
+                    },
                },
-
           }
      );
 
@@ -46,12 +63,22 @@ export async function login(email: string) {
 
 export async function logout() {
      // Use the server-side Supabase client
+     const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           {
                cookies: {
-                    getAll: async () => (await cookies()).getAll(),
+                    getAll: () => cookieStore.getAll(),
+                    setAll: (cookiesToSet) => {
+                         cookiesToSet.forEach(({ name, value, options }) => {
+                              try {
+                                   cookieStore.set(name, value, options);
+                              } catch {
+                                   // Handle cases where setting cookies in server actions isn't supported
+                              }
+                         });
+                    },
                },
           }
      );
