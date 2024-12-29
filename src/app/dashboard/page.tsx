@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Ovaj mora biti use client zbog komponenti silnih
 
 import { addDays, subDays, subHours, subMinutes } from 'date-fns';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
@@ -24,13 +24,13 @@ import { OverviewHelp } from 'src/sections/dashboard/overview/overview-help';
 import { OverviewJobs } from 'src/sections/dashboard/overview/overview-jobs';
 import { OverviewOpenTickets } from 'src/sections/dashboard/overview/overview-open-tickets';
 import { OverviewTips } from 'src/sections/dashboard/overview/overview-tips';
-import { createSupabaseClient } from 'src/libs/supabase/client';
 
 const now = new Date();
 
 const Page = () => {
 
   const settings = useSettings();
+
 
   return (
     <>

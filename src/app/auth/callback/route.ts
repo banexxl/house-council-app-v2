@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from 'src/libs/supabase/server';
+import { supabase } from 'src/libs/supabase/client';
 
 export async function GET(request: Request) {
      const requestUrl = new URL(request.url);
@@ -18,8 +18,9 @@ export async function GET(request: Request) {
      }
 
      if (code) {
-          const supabase = await createClient();
-          await supabase.auth.exchangeCodeForSession(code);
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          console.log('data', data);
+          console.log('error', error);
      }
 
      // Redirect to dashboard with absolute URL

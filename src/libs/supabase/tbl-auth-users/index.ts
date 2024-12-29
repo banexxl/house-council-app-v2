@@ -1,9 +1,7 @@
-import { createClient } from "../server";
+import { supabase } from "../client";
 
 export const checkUserExists = async (email: string) => {
-     const supabase = await createClient();
      const { data, error } = await supabase.auth.admin.listUsers()
-
      if (error) {
           console.error('Error checking user existence:', error.message);
           return false; // Return false if there's an error
