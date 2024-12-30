@@ -44,9 +44,6 @@ export async function login(email: string) {
           },
      });
 
-     console.log('data', data);
-     console.log('error', error);
-
      if (error) {
           return { error: error.message }; // Handle other errors
      }
@@ -77,5 +74,5 @@ export async function logout() {
      );
 
      await supabase.auth.signOut();
-     redirect('/');
+     redirect('/auth/login');
 }
