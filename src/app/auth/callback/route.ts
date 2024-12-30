@@ -25,21 +25,11 @@ export async function GET(request: Request) {
      );
 
      const requestUrl = new URL(request.url);
-     console.log('requestUrl', requestUrl);
-
      // Extract the "code" and "error" parameters
      const code = requestUrl.searchParams.get('code');
-     console.log('code', code);
-
      const error = requestUrl.searchParams.get('error');
-     console.log('error', error);
-
      const errorCode = requestUrl.searchParams.get('error_code');
-     console.log('errorCode', errorCode);
-
      const errorDescription = requestUrl.searchParams.get('error_description');
-     console.log('errorDescription', errorDescription);
-
 
      if (error) {
           // Redirect to error page with absolute URL
@@ -49,10 +39,6 @@ export async function GET(request: Request) {
 
      if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-
-          console.log('data', data);
-          console.log('error', error);
-
           if (error) {
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${error.message}`);
           }
