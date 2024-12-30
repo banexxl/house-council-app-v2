@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
           !request.nextUrl.pathname.startsWith('/auth/login') &&
           !request.nextUrl.pathname.startsWith('/auth')
      ) {
+          console.log('No user found, middleware is redirecting to login page')
           // no user, potentially respond by redirecting the user to the login page
           const url = request.nextUrl.clone()
           url.pathname = '/auth/login'
