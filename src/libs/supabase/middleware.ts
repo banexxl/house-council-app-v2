@@ -7,9 +7,6 @@ export async function updateSession(request: NextRequest) {
           request,
      })
 
-     console.log('env', process.env.NEXT_PUBLIC_SUPABASE_URL)
-     console.log('env', process.env.SUPABASE_SERVICE_ROLE_KEY)
-
      const supabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!,
