@@ -45,12 +45,18 @@ export async function updateSession(request: NextRequest) {
                return NextResponse.redirect(url);
           }
      } else {
-          // User is authenticated, redirect to /dashboard if not already there
-          if (request.nextUrl.pathname !== '/dashboard') {
-               console.log('Authenticated user found, redirecting to /dashboard');
+          // User is authenticated, handle redirection based on the requested route
+          const isProtectedRoute = ['/protected'].some((path) =>
+               request.nextUrl.pathname.startsWith(path)
+          );
+
+          if (isProtectedRoute && request.nextUrl.pathname !== '/dashboard') {
+               console.log('Authenticated user accessing protected route, redirecting to /dashboard');
                url.pathname = '/dashboard';
                return NextResponse.redirect(url);
           }
+
+          // Allow access to non-protected routes or the originally requested page
      }
 
      // Ensure to return the updated response object
