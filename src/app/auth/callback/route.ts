@@ -1,7 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { supabase } from 'src/libs/supabase/client';
 
 export async function GET(request: Request) {
 
@@ -30,9 +29,17 @@ export async function GET(request: Request) {
 
      // Extract the "code" and "error" parameters
      const code = requestUrl.searchParams.get('code');
+     console.log('code', code);
+
      const error = requestUrl.searchParams.get('error');
+     console.log('error', error);
+
      const errorCode = requestUrl.searchParams.get('error_code');
+     console.log('errorCode', errorCode);
+
      const errorDescription = requestUrl.searchParams.get('error_description');
+     console.log('errorDescription', errorDescription);
+
 
      if (error) {
           // Redirect to error page with absolute URL
@@ -41,12 +48,6 @@ export async function GET(request: Request) {
      }
 
      if (code) {
-          // Retrieve the code_verifier from cookies (or session storage)
-          const codeVerifier = cookieStore.get('code_verifier')?.value;
-          if (!codeVerifier) {
-               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=missing_code_verifier`);
-          }
-
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
           console.log('data', data);

@@ -1,4 +1,4 @@
-// utils/auth.js
+'use client'
 export const generateCodeVerifier = () => {
   const array = new Uint32Array(28);
   window.crypto.getRandomValues(array);

@@ -4,15 +4,8 @@ import { checkUserExists } from 'src/libs/supabase/tbl-auth-users';
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { generateCodeChallenge, generateCodeVerifier } from 'src/utils/auth';
 
 export async function login(email: string) {
-
-     const codeVerifier = generateCodeVerifier(); // Generate a PKCE verifier
-     const codeChallenge = await generateCodeChallenge(codeVerifier); // Generate a PKCE challenge
-
-     console.log('codeVerifier', codeVerifier);
-     console.log('codeChallenge', codeChallenge);
 
      // Use the server-side Supabase client
      const cookieStore = await cookies();
