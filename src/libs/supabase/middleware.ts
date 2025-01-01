@@ -32,32 +32,32 @@ export async function updateSession(request: NextRequest) {
           data: { user },
      } = await supabase.auth.getUser();
 
-     const url = request.nextUrl.clone();
+     const { pathname, searchParams } = request.nextUrl;
 
-     if (!user) {
-          // No user found, redirect to the login page if not already there
-          if (
-               !request.nextUrl.pathname.startsWith('/')
-          ) {
-               console.log('No user found, middleware is redirecting to login page');
-               url.pathname = '/auth/login';
-               return NextResponse.redirect(url);
-          }
-     } else {
-          // User is authenticated, handle redirection based on the requested route
-          const isProtectedRoute = ['/'].some((path) =>
-               request.nextUrl.pathname.startsWith(path)
-          );
+     // Define public routes that don't require authentication
+     const publicRoutes = ['/auth/login', '/auth/callback', '/auth/error'];
+     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
-          if (isProtectedRoute && request.nextUrl.pathname !== '/dashboard') {
-               console.log('Authenticated user accessing protected route, redirecting to /dashboard');
-               url.pathname = '/dashboard';
-               return NextResponse.redirect(url);
-          }
-
-          // Allow access to non-protected routes or the originally requested page
+     // Always allow access to the error page
+     if (pathname.startsWith('/auth/error')) {
+          return supabaseResponse;
      }
 
-     // Ensure to return the updated response object
+     if (user) {
+          // User is authenticated
+          if (pathname === '/auth/login' || pathname === '/') {
+               // Redirect to dashboard if trying to access login page or root
+               return NextResponse.redirect(new URL('/dashboard', request.url));
+          }
+     } else {
+          // User is not authenticated
+          if (!isPublicRoute) {
+               // Redirect to login page if trying to access a protected route
+               return NextResponse.redirect(new URL('/auth/login', request.url));
+          }
+     }
+
+     // Return the response for all other cases
      return supabaseResponse;
 }
+
