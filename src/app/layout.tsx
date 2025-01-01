@@ -10,7 +10,7 @@ import { Layout as RootLayout } from 'src/layouts/root';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Devias Kit PRO',
+  title: 'House Council App',
   // viewport: 'initial-scale=1, width=device-width', izaziva warning na serveru
   icons: {
     icon: [

@@ -37,8 +37,7 @@ export async function updateSession(request: NextRequest) {
      if (!user) {
           // No user found, redirect to the login page if not already there
           if (
-               !request.nextUrl.pathname.startsWith('/auth/login') &&
-               !request.nextUrl.pathname.startsWith('/auth')
+               !request.nextUrl.pathname.startsWith('/')
           ) {
                console.log('No user found, middleware is redirecting to login page');
                url.pathname = '/auth/login';
@@ -46,7 +45,7 @@ export async function updateSession(request: NextRequest) {
           }
      } else {
           // User is authenticated, handle redirection based on the requested route
-          const isProtectedRoute = ['/protected'].some((path) =>
+          const isProtectedRoute = ['/'].some((path) =>
                request.nextUrl.pathname.startsWith(path)
           );
 
