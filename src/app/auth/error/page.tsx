@@ -22,7 +22,7 @@ const errorMessages: Record<string, string> = {
 const Page = async () => {
      const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
      const searchParams = useSearchParams();
-     const errorCode = searchParams.get('error_code') || 'unknown_error'; // Default to "unknown_error"
+     const errorCode = searchParams.get('error_code') || 'access_denied'; // Default to access_denied
      const errorMessage = errorMessages[errorCode] || 'An unexpected error occurred.';
 
 
