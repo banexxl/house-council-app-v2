@@ -34,9 +34,9 @@ export interface SettingsContextType extends State {
 export const SettingsContext = createContext<SettingsContextType>({
   ...defaultSettings,
   ...initialState,
-  handleDrawerClose: () => {},
-  handleDrawerOpen: () => {},
-  handleReset: () => {},
-  handleUpdate: () => {},
+  handleDrawerClose: () => { },
+  handleDrawerOpen: () => { },
+  handleReset: () => { },
+  handleUpdate: () => { },
   isCustom: false,
 });

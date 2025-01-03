@@ -32,6 +32,7 @@ interface LayoutProps {
 }
 
 const Layout = async (props: LayoutProps) => {
+
   const { children } = props;
 
   return (

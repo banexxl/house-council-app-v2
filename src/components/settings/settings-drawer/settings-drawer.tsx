@@ -35,6 +35,8 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = (props) => {
 
   const handleFieldUpdate = useCallback(
     (field: keyof Settings, value: unknown): void => {
+      console.log('On update', field, value);
+
       onUpdate?.({
         [field]: value,
       });

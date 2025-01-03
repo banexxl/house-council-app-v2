@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, type ReactNode } from 'react';
+import { type FC, type ReactNode, useCallback } from 'react';
 import Head from 'next/head';
 import { Provider as ReduxProvider } from 'react-redux';
 import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
@@ -10,15 +10,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
-// Remove if locales are not used
 import 'src/locales/i18n';
 
 import { RTL } from 'src/components/rtl';
-import { SplashScreen } from 'src/components/splash-screen';
 import { SettingsButton } from 'src/components/settings/settings-button';
 import { SettingsDrawer } from 'src/components/settings/settings-drawer';
 import { Toaster } from 'src/components/toaster';
-// import { AuthConsumer, AuthProvider } from 'src/contexts/auth/jwt';
 import { SettingsConsumer, SettingsProvider } from 'src/contexts/settings';
 import { store } from 'src/store';
 import { createTheme } from 'src/theme';
@@ -26,54 +23,45 @@ import type { Settings } from 'src/types/settings';
 
 const SETTINGS_STORAGE_KEY = 'app.settings';
 
-
 const restoreSettings = (): Settings | undefined => {
-  const value = Cookies.get(SETTINGS_STORAGE_KEY);
-  if (!value) {
-    return undefined;
+  let value: string | undefined;
+  if (typeof window !== 'undefined') {
+    value = localStorage.getItem(SETTINGS_STORAGE_KEY!) || Cookies.get(SETTINGS_STORAGE_KEY!);
   }
   return value ? JSON.parse(value) as Settings : undefined;
 };
 
-const resetSettings = (): void => {
-  try {
-    Cookies.remove(SETTINGS_STORAGE_KEY);
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-  }
-};
-
 const updateSettings = (settings: Settings): void => {
-  try {
-    Cookies.set(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   }
 };
 
 interface LayoutProps {
   children: ReactNode;
-  settings?: Settings;
 }
 
 export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
-  const { children, settings } = props;
+  const { children } = props;
 
-  restoreSettings()
+  const handleSettingsUpdate = useCallback((newSettings: Settings) => {
+    updateSettings(newSettings);
+  }, []);
+
+  const handleSettingsReset = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    }
+  }, []);
 
   return (
     <NextAppDirEmotionCacheProvider options={{ key: 'css' }}>
       <ReduxProvider store={store}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-          {/* <AuthProvider> */}
-          {/* <AuthConsumer>
-              {(auth) => (*/}
           <SettingsProvider
-            onReset={resetSettings}
-            onUpdate={updateSettings}
-            settings={settings}
+            onReset={handleSettingsReset}
+            onUpdate={handleSettingsUpdate}
+            settings={restoreSettings()}
           >
             <SettingsConsumer>
               {(settings) => {
@@ -84,9 +72,6 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
                   paletteMode: settings.paletteMode,
                   responsiveFontSizes: settings.responsiveFontSizes,
                 });
-
-                // Prevent guards from redirecting
-                // const showSlashScreen = !auth.isInitialized;
 
                 return (
                   <ThemeProvider theme={theme}>
@@ -102,31 +87,25 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
                     </Head>
                     <RTL direction={settings.direction}>
                       <CssBaseline />
-                      {/* {showSlashScreen ? (
-                        <SplashScreen />
-                      ) : ( */}
-                      <>
-                        {children}
-                        <SettingsButton onClick={settings.handleDrawerOpen} />
-                        <SettingsDrawer
-                          canReset={settings.isCustom}
-                          onClose={settings.handleDrawerClose}
-                          onReset={settings.handleReset}
-                          onUpdate={settings.handleUpdate}
-                          open={settings.openDrawer}
-                          values={{
-                            colorPreset: settings.colorPreset,
-                            contrast: settings.contrast,
-                            direction: settings.direction,
-                            paletteMode: settings.paletteMode,
-                            responsiveFontSizes: settings.responsiveFontSizes,
-                            stretch: settings.stretch,
-                            layout: settings.layout,
-                            navColor: settings.navColor,
-                          }}
-                        />
-                      </>
-                      {/* )} */}
+                      {children}
+                      <SettingsButton onClick={settings.handleDrawerOpen} />
+                      <SettingsDrawer
+                        canReset={settings.isCustom}
+                        onClose={settings.handleDrawerClose}
+                        onReset={settings.handleReset}
+                        onUpdate={settings.handleUpdate}
+                        open={settings.openDrawer}
+                        values={{
+                          colorPreset: settings.colorPreset,
+                          contrast: settings.contrast,
+                          direction: settings.direction,
+                          paletteMode: settings.paletteMode,
+                          responsiveFontSizes: settings.responsiveFontSizes,
+                          stretch: settings.stretch,
+                          layout: settings.layout,
+                          navColor: settings.navColor,
+                        }}
+                      />
                       <Toaster />
                     </RTL>
                   </ThemeProvider>
@@ -134,11 +113,9 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
               }}
             </SettingsConsumer>
           </SettingsProvider>
-          {/* )} */}
-          {/* </AuthConsumer> */}
-          {/* </AuthProvider> */}
         </LocalizationProvider>
       </ReduxProvider>
-    </NextAppDirEmotionCacheProvider >
+    </NextAppDirEmotionCacheProvider>
   );
 };
+
