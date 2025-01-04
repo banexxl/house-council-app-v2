@@ -19,8 +19,8 @@ const useVehicles = (): Vehicle[] => {
     {
       id: 'VOL-653CD2',
       location: 'New York, NY, USA',
-      latitude: 40.74759625348667,
-      longitude: -74.00422032706065,
+      latitude: 45.238834198223444,
+      longitude: 19.828232831612066,
       temp: '8°C',
       startedAt: 'Sep 01, 7:53 AM',
       departedAt: 'Sep 01, 8:02 AM',
@@ -29,8 +29,8 @@ const useVehicles = (): Vehicle[] => {
     {
       id: 'VOL-653CD3',
       location: 'New York, NY, USA',
-      latitude: 40.75374208987527,
-      longitude: -74.02878378307403,
+      latitude: 45.24945427944629,
+      longitude: 19.81960521132045,
       temp: '6°C',
       startedAt: 'Sep 01, 8:21 AM',
       departedAt: 'Sep 01, 8:36 AM',
@@ -39,8 +39,8 @@ const useVehicles = (): Vehicle[] => {
     {
       id: 'VOL-653CD4',
       location: 'New York, NY, USA',
-      latitude: 40.765281069832085,
-      longitude: -73.96392724511145,
+      latitude: 45.25034715690252,
+      longitude: 19.81933263950763,
       temp: '8°C',
       startedAt: 'Sep 01, 6:34 AM',
       departedAt: 'Sep 01, 7:41 AM',
