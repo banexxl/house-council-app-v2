@@ -2,6 +2,7 @@ import { tokens } from '../tokens';
 
 export const de = {
   [tokens.common.languageChanged]: 'Sprache geändert',
+  [tokens.common.title]: 'Hausrat',
   [tokens.nav.academy]: 'Akademie',
   [tokens.nav.account]: 'Konto',
   [tokens.nav.analytics]: 'Analytik',

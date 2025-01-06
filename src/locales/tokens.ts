@@ -1,8 +1,10 @@
 export const tokens = {
   common: {
     languageChanged: 'common.languageChanged',
+    title: 'common.title',
   },
   nav: {
+    home: 'nav.home',
     academy: 'nav.academy',
     account: 'nav.account',
     analytics: 'nav.analytics',
