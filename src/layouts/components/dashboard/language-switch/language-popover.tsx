@@ -50,7 +50,6 @@ export const LanguagePopover: FC<LanguagePopoverProps> = (props) => {
 
   const { anchorEl, onClose, open = false, ...other } = props;
   const { i18n, t } = useTranslation();
-  console.log('i18n', i18n);
 
   const handleChange = useCallback(async (language: Language): Promise<void> => {
     onClose?.();

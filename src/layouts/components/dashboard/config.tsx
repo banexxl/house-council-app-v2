@@ -113,7 +113,7 @@ export const useSections = () => {
         items: [
           {
             title: t(tokens.nav.buildings),
-            path: paths.dashboard.buildings,
+            path: paths.dashboard.buildings.index,
             icon: (
               <SvgIcon fontSize="small">
                 <ApartmentIcon />
@@ -122,7 +122,7 @@ export const useSections = () => {
             items: [
               {
                 title: t(tokens.nav.list),
-                path: paths.dashboard.buildings,
+                path: paths.dashboard.buildings.index,
               },
               {
                 title: t(tokens.nav.buildingLocations),
