@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 
 import { tokens } from 'src/locales/tokens';
 
-type Language = 'en' | 'de' | 'es';
+type Language = 'en' | 'de' | 'es' | 'rs';
 
 type LanguageOptions = {
   [key in Language]: {
@@ -28,12 +28,16 @@ const languageOptions: LanguageOptions = {
   },
   de: {
     icon: '/assets/flags/flag-de.svg',
-    label: 'German',
+    label: 'Deutsch',
   },
   es: {
     icon: '/assets/flags/flag-es.svg',
-    label: 'Spanish',
+    label: 'Español',
   },
+  rs: {
+    icon: '/assets/flags/flag-rs.svg',
+    label: 'Srpski',
+  }
 };
 
 interface LanguagePopoverProps {
@@ -43,16 +47,17 @@ interface LanguagePopoverProps {
 }
 
 export const LanguagePopover: FC<LanguagePopoverProps> = (props) => {
+
   const { anchorEl, onClose, open = false, ...other } = props;
   const { i18n, t } = useTranslation();
+  console.log('i18n', i18n);
 
-  const handleChange = useCallback(
-    async (language: Language): Promise<void> => {
-      onClose?.();
-      await i18n.changeLanguage(language);
-      const message = t(tokens.common.languageChanged) as string;
-      toast.success(message);
-    },
+  const handleChange = useCallback(async (language: Language): Promise<void> => {
+    onClose?.();
+    await i18n.changeLanguage(language);
+    const message = t(tokens.common.languageChanged) as string;
+    toast.success(message);
+  },
     [onClose, i18n, t]
   );
 
@@ -75,7 +80,6 @@ export const LanguagePopover: FC<LanguagePopoverProps> = (props) => {
     >
       {(Object.keys(languageOptions) as Language[]).map((language) => {
         const option = languageOptions[language];
-
         return (
           <MenuItem
             onClick={() => handleChange(language)}

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Chip from '@mui/material/Chip';
 import SvgIcon from '@mui/material/SvgIcon';
-
+import ApartmentIcon from '@mui/icons-material/Apartment';
 import AlignLeft02Icon from 'src/icons/untitled-ui/duocolor/align-left-02';
 import BarChartSquare02Icon from 'src/icons/untitled-ui/duocolor/bar-chart-square-02';
 import Building04Icon from 'src/icons/untitled-ui/duocolor/building-04';
@@ -111,6 +111,29 @@ export const useSections = () => {
       {
         subheader: t(tokens.nav.concepts),
         items: [
+          {
+            title: t(tokens.nav.buildings),
+            path: paths.dashboard.buildings,
+            icon: (
+              <SvgIcon fontSize="small">
+                <ApartmentIcon />
+              </SvgIcon>
+            ),
+            items: [
+              {
+                title: t(tokens.nav.list),
+                path: paths.dashboard.buildings,
+              },
+              {
+                title: t(tokens.nav.buildingLocations),
+                path: paths.dashboard.buildings.buildingLocations,
+              },
+              {
+                title: t(tokens.nav.buildingsAdd),
+                path: paths.dashboard.buildings.add,
+              },
+            ],
+          },
           {
             title: t(tokens.nav.customers),
             path: paths.dashboard.customers.index,
@@ -336,216 +359,6 @@ export const useSections = () => {
             icon: (
               <SvgIcon fontSize="small">
                 <CalendarIcon />
-              </SvgIcon>
-            ),
-          },
-        ],
-      },
-      {
-        subheader: t(tokens.nav.pages),
-        items: [
-          {
-            title: t(tokens.nav.auth),
-            icon: (
-              <SvgIcon fontSize="small">
-                <Lock01Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.login),
-                items: [
-                  {
-                    title: 'Classic',
-                    path: paths.authDemo.login.classic,
-                  },
-                  {
-                    title: 'Modern',
-                    path: paths.authDemo.login.modern,
-                  },
-                ],
-              },
-              {
-                title: t(tokens.nav.register),
-                items: [
-                  {
-                    title: 'Classic',
-                    path: paths.authDemo.register.classic,
-                  },
-                  {
-                    title: 'Modern',
-                    path: paths.authDemo.register.modern,
-                  },
-                ],
-              },
-              {
-                title: t(tokens.nav.forgotPassword),
-                items: [
-                  {
-                    title: 'Classic',
-                    path: paths.authDemo.forgotPassword.classic,
-                  },
-                  {
-                    title: 'Modern',
-                    path: paths.authDemo.forgotPassword.modern,
-                  },
-                ],
-              },
-              {
-                title: t(tokens.nav.resetPassword),
-                items: [
-                  {
-                    title: 'Classic',
-                    path: paths.authDemo.resetPassword.classic,
-                  },
-                  {
-                    title: 'Modern',
-                    path: paths.authDemo.resetPassword.modern,
-                  },
-                ],
-              },
-              {
-                title: t(tokens.nav.verifyCode),
-                items: [
-                  {
-                    title: 'Classic',
-                    path: paths.authDemo.verifyCode.classic,
-                  },
-                  {
-                    title: 'Modern',
-                    path: paths.authDemo.verifyCode.modern,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.pricing),
-            path: paths.pricing,
-            icon: (
-              <SvgIcon fontSize="small">
-                <CreditCard01Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.checkout),
-            path: paths.checkout,
-            icon: (
-              <SvgIcon fontSize="small">
-                <LogOut01Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.contact),
-            path: paths.contact,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Mail04Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.error),
-            icon: (
-              <SvgIcon fontSize="small">
-                <XSquareIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: '401',
-                path: paths.notAuthorized,
-              },
-              {
-                title: '404',
-                path: paths.notFound,
-              },
-              {
-                title: '500',
-                path: paths.serverError,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        subheader: 'Misc',
-        items: [
-          {
-            title: 'Level 0',
-            icon: (
-              <SvgIcon fontSize="small">
-                <AlignLeft02Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: 'Level 1a',
-                items: [
-                  {
-                    title: 'Level 2a',
-                    items: [
-                      {
-                        title: 'Level 3a',
-                      },
-                      {
-                        title: 'Level 3b',
-                        disabled: true,
-                      },
-                    ],
-                  },
-                  {
-                    title: 'Level 2b',
-                  },
-                ],
-              },
-              {
-                title: 'Level 1b',
-              },
-            ],
-          },
-          {
-            title: 'Disabled',
-            disabled: true,
-            icon: (
-              <SvgIcon fontSize="small">
-                <XSquareIcon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: 'Label',
-            icon: (
-              <SvgIcon fontSize="small">
-                <File01Icon />
-              </SvgIcon>
-            ),
-            label: (
-              <Chip
-                color="primary"
-                label="New"
-                size="small"
-              />
-            ),
-          },
-          {
-            title: 'Blank',
-            path: paths.dashboard.blank,
-            icon: (
-              <SvgIcon fontSize="small">
-                <File01Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: 'External Link',
-            path: 'https://devias.io',
-            external: true,
-            icon: (
-              <SvgIcon fontSize="small">
-                <File01Icon />
               </SvgIcon>
             ),
           },

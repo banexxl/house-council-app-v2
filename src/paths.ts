@@ -42,6 +42,11 @@ export const paths = {
     account: '/dashboard/account',
     analytics: '/dashboard/analytics',
     blank: '/dashboard/blank',
+    buildings: {
+      index: '/dashboard/buildings',
+      buildingLocations: '/dashboard/buildings/locations',
+      add: '/dashboard/buildings/add',
+    },
     blog: {
       index: '/dashboard/blog',
       postDetails: '/dashboard/blog/:postId',
