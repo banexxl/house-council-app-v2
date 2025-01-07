@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { QuillEditor } from 'src/components/quill-editor';
+import QuillEditor from 'src/components/quill-editor';
 
 interface JobDescriptionStepProps {
   onBack?: () => void;
@@ -33,7 +33,6 @@ export const JobDescriptionStep: FC<JobDescriptionStepProps> = (props) => {
       <QuillEditor
         onChange={handleContentChange}
         placeholder="Write something"
-        sx={{ height: 400 }}
         value={content}
       />
       <Stack

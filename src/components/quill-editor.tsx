@@ -1,97 +1,96 @@
-import dynamic from 'next/dynamic';
-import type { ReactQuillProps as QuillProps } from 'react-quill';
-import { styled } from '@mui/material/styles';
+import React, { forwardRef, useImperativeHandle, useEffect } from 'react'
+import { useQuill } from 'react-quilljs'
+import 'quill/dist/quill.snow.css'
+import { styled } from '@mui/material/styles'
 
-const Editor = dynamic<QuillProps>(() => import('react-quill'), {
-  ssr: false,
-  loading: () => null,
-});
+interface QuillEditorProps {
+  placeholder?: string
+  onChange?: (value: string) => void
+  onBlur?: () => void
+  value?: string
+}
 
-export const QuillEditor = styled(Editor)(({ theme }) => ({
-  border: 1,
-  borderColor: theme.palette.divider,
-  borderRadius: theme.shape.borderRadius,
-  borderStyle: 'solid',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
+export interface QuillEditorRef {
+  getEditor: () => any
+  getContents: () => string
+}
+
+const StyledQuillWrapper = styled('div')(({ theme }) => ({
   '& .quill': {
     display: 'flex',
-    flex: 1,
     flexDirection: 'column',
-    overflow: 'hidden',
+    height: '100%',
   },
-  '& .ql-snow.ql-toolbar': {
-    borderColor: theme.palette.divider,
-    borderLeft: 'none',
-    borderRight: 'none',
-    borderTop: 'none',
-    '& .ql-picker-label:hover': {
-      color: theme.palette.primary.main,
-    },
-    '& .ql-picker-label.ql-active': {
-      color: theme.palette.primary.main,
-    },
-    '& .ql-picker-item:hover': {
-      color: theme.palette.primary.main,
-    },
-    '& .ql-picker-item.ql-selected': {
-      color: theme.palette.primary.main,
-    },
-    '& button:hover': {
-      color: theme.palette.primary.main,
-      '& .ql-stroke': {
-        stroke: theme.palette.primary.main,
-      },
-    },
-    '& button:focus': {
-      color: theme.palette.primary.main,
-      '& .ql-stroke': {
-        stroke: theme.palette.primary.main,
-      },
-    },
-    '& button.ql-active': {
-      '& .ql-stroke': {
-        stroke: theme.palette.primary.main,
-      },
-    },
-    '& .ql-stroke': {
-      stroke: theme.palette.text.primary,
-    },
-    '& .ql-picker': {
-      color: theme.palette.text.primary,
-    },
-    '& .ql-picker-options': {
-      backgroundColor: theme.palette.background.paper,
-      border: 'none',
-      borderRadius: theme.shape.borderRadius,
-      boxShadow: theme.shadows[10],
-      padding: theme.spacing(2),
+  '& .ql-toolbar.ql-snow': {
+    border: 'none',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  '& .ql-container.ql-snow': {
+    border: 'none',
+    flexGrow: 1,
+  },
+  '& .ql-editor': {
+    fontFamily: theme.typography.fontFamily,
+    fontSize: theme.typography.body1.fontSize,
+    color: theme.palette.text.primary,
+    '&.ql-blank::before': {
+      color: theme.palette.text.secondary,
+      fontStyle: 'normal',
     },
   },
-  '& .ql-snow.ql-container': {
-    borderBottom: 'none',
-    borderColor: theme.palette.divider,
-    borderLeft: 'none',
-    borderRight: 'none',
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'column',
-    height: 'auto',
-    overflow: 'hidden',
-    '& .ql-editor': {
-      color: theme.palette.text.primary,
-      flex: 1,
-      fontFamily: theme.typography.body1.fontFamily,
-      fontSize: theme.typography.body1.fontSize,
-      height: 'auto',
-      overflowY: 'auto',
-      padding: theme.spacing(2),
-      '&.ql-blank::before': {
-        color: theme.palette.text.secondary,
-        fontStyle: 'normal',
-        left: theme.spacing(2),
+}))
+
+const QuillEditor = forwardRef<QuillEditorRef, QuillEditorProps>(
+  ({ placeholder, onChange, onBlur, value }, ref) => {
+    const { quill, quillRef } = useQuill({
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link', 'image'],
+          ['clean'],
+        ],
       },
-    },
-  },
-}));
+      placeholder: placeholder || 'Start typing...',
+    })
+
+    useImperativeHandle(ref, () => ({
+      getEditor: () => quill,
+      getContents: () => quill?.root.innerHTML || '',
+    }))
+
+    useEffect(() => {
+      if (quill) {
+        quill.on('text-change', () => {
+          onChange && onChange(quill.root.innerHTML)
+        })
+
+        quill.root.addEventListener('blur', () => {
+          onBlur && onBlur()
+        })
+
+        return () => {
+          quill.off('text-change')
+          quill.root.removeEventListener('blur', onBlur as EventListener)
+        }
+      }
+    }, [quill, onChange, onBlur])
+
+    useEffect(() => {
+      if (quill && value !== undefined && value !== quill.root.innerHTML) {
+        quill.root.innerHTML = value
+      }
+    }, [quill, value])
+
+    return (
+      <StyledQuillWrapper>
+        <div ref={quillRef} />
+      </StyledQuillWrapper>
+    )
+  }
+)
+
+QuillEditor.displayName = 'QuillEditor'
+
+export default QuillEditor
+

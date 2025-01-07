@@ -19,7 +19,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { QuillEditor } from 'src/components/quill-editor';
+import QuillEditor from 'src/components/quill-editor';
 
 interface MailComposerProps {
   maximize?: boolean;
@@ -153,10 +153,6 @@ export const MailComposer: FC<MailComposerProps> = (props) => {
         <QuillEditor
           onChange={onMessageChange}
           placeholder="Leave a message"
-          sx={{
-            border: 'none',
-            flexGrow: 1,
-          }}
           value={message}
         />
         <Divider />

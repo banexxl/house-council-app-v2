@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import type { File } from 'src/components/file-dropzone';
 import { FileDropzone } from 'src/components/file-dropzone';
-import { QuillEditor } from 'src/components/quill-editor';
+import QuillEditor from 'src/components/quill-editor';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 
@@ -251,7 +251,6 @@ const Page = () => {
                   >
                     <QuillEditor
                       placeholder="Write something"
-                      sx={{ height: 330 }}
                     />
                   </Grid>
                 </Grid>

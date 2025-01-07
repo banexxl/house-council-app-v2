@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 
 import type { File } from 'src/components/file-dropzone';
 import { FileDropzone } from 'src/components/file-dropzone';
-import QuillEditor, { QuillEditorRef } from 'src/components/quill-editor';
+import QuillEditor from 'src/components/quill-editor';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 
@@ -89,7 +89,7 @@ const validationSchema = Yup.object({
   sku: Yup.string().max(255),
 });
 
-export const ProductCreateForm: FC = (props) => {
+export const BuildingCreateForm: FC = (props) => {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const formik = useFormik({
@@ -98,8 +98,8 @@ export const ProductCreateForm: FC = (props) => {
     onSubmit: async (values, helpers): Promise<void> => {
       try {
         // NOTE: Make API request
-        toast.success('Product created');
-        router.push(paths.dashboard.products.index);
+        toast.success('Building created');
+        router.push(paths.dashboard.buildings.index);
       } catch (err) {
         console.error(err);
         toast.error('Something went wrong!');
@@ -153,7 +153,7 @@ export const ProductCreateForm: FC = (props) => {
                     error={!!(formik.touched.name && formik.errors.name)}
                     fullWidth
                     helperText={formik.touched.name && formik.errors.name}
-                    label="Product Name"
+                    label="Building Name"
                     name="name"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
