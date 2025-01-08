@@ -30,7 +30,7 @@ import Typography from '@mui/material/Typography';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import type { Product } from 'src/types/product';
+import type { Building } from 'src/types/building';
 
 interface CategoryOption {
   label: string;
@@ -64,29 +64,29 @@ const categoryOptions: CategoryOption[] = [
   },
 ];
 
-interface ProductListTableProps {
+interface BuildingListTableProps {
   count?: number;
-  items?: Product[];
+  items?: Building[];
   onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   page?: number;
   rowsPerPage?: number;
 }
 
-export const ProductListTable: FC<ProductListTableProps> = (props) => {
+export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
   } = props;
-  const [currentProduct, setCurrentProduct] = useState<string | null>(null);
+  const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
 
-  const handleProductToggle = useCallback((productId: string): void => {
-    setCurrentProduct((prevProductId) => {
-      if (prevProductId === productId) {
+  const handleBuildingToggle = useCallback((productId: string): void => {
+    setCurrentBuilding((prevBuildingId) => {
+      if (prevBuildingId === productId) {
         return null;
       }
 
@@ -94,17 +94,17 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
     });
   }, []);
 
-  const handleProductClose = useCallback((): void => {
-    setCurrentProduct(null);
+  const handleBuildingClose = useCallback((): void => {
+    setCurrentBuilding(null);
   }, []);
 
-  const handleProductUpdate = useCallback((): void => {
-    setCurrentProduct(null);
-    toast.success('Product updated');
+  const handleBuildingUpdate = useCallback((): void => {
+    setCurrentBuilding(null);
+    toast.success('Building updated');
   }, []);
 
-  const handleProductDelete = useCallback((): void => {
-    toast.error('Product cannot be deleted');
+  const handleBuildingDelete = useCallback((): void => {
+    toast.error('Building cannot be deleted');
   }, []);
 
   return (
@@ -122,19 +122,19 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {items.map((product) => {
-              const isCurrent = product.id === currentProduct;
-              const price = numeral(product.price).format(`${product.currency}0,0.00`);
-              const quantityColor = product.quantity >= 10 ? 'success' : 'error';
-              const statusColor = product.status === 'published' ? 'success' : 'info';
-              const hasManyVariants = product.variants > 1;
+          {/* <TableBody>
+            {items.map((building) => {
+              const isCurrent = building.id === currentBuilding;
+              const price = numeral(building.price).format(`${building.currency}0,0.00`);
+              const quantityColor = building.quantity >= 10 ? 'success' : 'error';
+              const statusColor = building.status === 'published' ? 'success' : 'info';
+              const hasManyVariants = building.variants > 1;
 
               return (
-                <Fragment key={product.id}>
+                <Fragment key={building.id}>
                   <TableRow
                     hover
-                    key={product.id}
+                    key={building.id}
                   >
                     <TableCell
                       padding="checkbox"
@@ -154,7 +154,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                       }}
                       width="25%"
                     >
-                      <IconButton onClick={() => handleProductToggle(product.id)}>
+                      <IconButton onClick={() => handleBuildingToggle(building.id)}>
                         <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
                       </IconButton>
                     </TableCell>
@@ -165,12 +165,12 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                           display: 'flex',
                         }}
                       >
-                        {product.image ? (
+                        {building.image ? (
                           <Box
                             sx={{
                               alignItems: 'center',
                               backgroundColor: 'neutral.50',
-                              backgroundImage: `url(${product.image})`,
+                              backgroundImage: `url(${building.image})`,
                               backgroundPosition: 'center',
                               backgroundSize: 'cover',
                               borderRadius: 1,
@@ -204,19 +204,19 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                             ml: 2,
                           }}
                         >
-                          <Typography variant="subtitle2">{product.name}</Typography>
+                          <Typography variant="subtitle2">{building.name}</Typography>
                           <Typography
                             color="text.secondary"
                             variant="body2"
                           >
-                            in {product.category}
+                            in {building.category}
                           </Typography>
                         </Box>
                       </Box>
                     </TableCell>
                     <TableCell width="25%">
                       <LinearProgress
-                        value={product.quantity}
+                        value={building.quantity}
                         variant="determinate"
                         color={quantityColor}
                         sx={{
@@ -228,14 +228,14 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                         color="text.secondary"
                         variant="body2"
                       >
-                        {product.quantity} in stock
-                        {hasManyVariants && ` in ${product.variants} variants`}
+                        {building.quantity} in stock
+                        {hasManyVariants && ` in ${building.variants} variants`}
                       </Typography>
                     </TableCell>
                     <TableCell>{price}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
+                    <TableCell>{building.sku}</TableCell>
                     <TableCell>
-                      <SeverityPill color={statusColor}>{product.status}</SeverityPill>
+                      <SeverityPill color={statusColor}>{building.status}</SeverityPill>
                     </TableCell>
                     <TableCell align="right">
                       <IconButton>
@@ -285,9 +285,9 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   xs={12}
                                 >
                                   <TextField
-                                    defaultValue={product.name}
+                                    defaultValue={building.name}
                                     fullWidth
-                                    label="Product name"
+                                    label="Building name"
                                     name="name"
                                   />
                                 </Grid>
@@ -297,7 +297,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   xs={12}
                                 >
                                   <TextField
-                                    defaultValue={product.sku}
+                                    defaultValue={building.sku}
                                     disabled
                                     fullWidth
                                     label="SKU"
@@ -310,7 +310,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   xs={12}
                                 >
                                   <TextField
-                                    defaultValue={product.category}
+                                    defaultValue={building.category}
                                     fullWidth
                                     label="Category"
                                     select
@@ -331,7 +331,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   xs={12}
                                 >
                                   <TextField
-                                    defaultValue={product.id}
+                                    defaultValue={building.id}
                                     disabled
                                     fullWidth
                                     label="Barcode"
@@ -357,14 +357,14 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   xs={12}
                                 >
                                   <TextField
-                                    defaultValue={product.price}
+                                    defaultValue={building.price}
                                     fullWidth
                                     label="Old price"
                                     name="old-price"
                                     InputProps={{
                                       startAdornment: (
                                         <InputAdornment position="start">
-                                          {product.currency}
+                                          {building.currency}
                                         </InputAdornment>
                                       ),
                                     }}
@@ -377,7 +377,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   xs={12}
                                 >
                                   <TextField
-                                    defaultValue={product.price}
+                                    defaultValue={building.price}
                                     fullWidth
                                     label="New price"
                                     name="new-price"
@@ -420,7 +420,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                             spacing={2}
                           >
                             <Button
-                              onClick={handleProductUpdate}
+                              onClick={handleBuildingUpdate}
                               type="submit"
                               variant="contained"
                             >
@@ -428,17 +428,17 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                             </Button>
                             <Button
                               color="inherit"
-                              onClick={handleProductClose}
+                              onClick={handleBuildingClose}
                             >
                               Cancel
                             </Button>
                           </Stack>
                           <div>
                             <Button
-                              onClick={handleProductDelete}
+                              onClick={handleBuildingDelete}
                               color="error"
                             >
-                              Delete product
+                              Delete building
                             </Button>
                           </div>
                         </Stack>
@@ -448,7 +448,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                 </Fragment>
               );
             })}
-          </TableBody>
+          </TableBody> */}
         </Table>
       </Scrollbar>
       <TablePagination
@@ -464,7 +464,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
   );
 };
 
-ProductListTable.propTypes = {
+BuildingListTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onPageChange: PropTypes.func,

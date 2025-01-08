@@ -1,15 +1,20 @@
 import { tokens } from '../tokens';
 
 export const en = {
+  // Common
   [tokens.common.languageChanged]: 'Language changed',
   [tokens.common.title]: 'House Council',
+  // Navigation
+  [tokens.nav.locations]: 'Locations',
+  [tokens.nav.location]: 'Location',
+  [tokens.nav.locationAdd]: 'Add new location',
+  [tokens.nav.buildings]: 'Buildings',
+  [tokens.nav.building]: 'Building',
+  [tokens.nav.buildingAdd]: 'Add new building',
   [tokens.nav.academy]: 'Academy',
   [tokens.nav.account]: 'Account',
   [tokens.nav.analytics]: 'Analytics',
   [tokens.nav.auth]: 'Auth',
-  [tokens.nav.buildings]: 'Buildings',
-  [tokens.nav.buildingLocations]: 'Locations',
-  [tokens.nav.buildingsAdd]: 'Add new',
   [tokens.nav.blog]: 'Blog',
   [tokens.nav.browse]: 'Browse',
   [tokens.nav.calendar]: 'Calendar',
@@ -52,4 +57,18 @@ export const en = {
   [tokens.nav.resetPassword]: 'Reset Password',
   [tokens.nav.socialMedia]: 'Social Media',
   [tokens.nav.verifyCode]: 'Verify Code',
+  // Locations
+  [tokens.locations.locationsTitle]: 'Locations',
+  [tokens.locations.locationList]: 'Location List',
+  [tokens.locations.locationDetails]: 'Location Details',
+  [tokens.locations.locationCreate]: 'Create Location',
+  [tokens.locations.locationEdit]: 'Location Edit',
+  // Buildings
+  [tokens.buildings.buildingsTitle]: 'Buildings',
+  [tokens.buildings.buildingList]: 'Building List',
+  [tokens.buildings.buildingDetails]: 'Building Details',
+  [tokens.buildings.buildingCreate]: 'Create Building',
+  [tokens.buildings.buildingEdit]: 'Building Edit',
+  // Errors
+  [tokens.errors.locationPermissionDenied]: 'Location permission denied!',
 };

@@ -1,15 +1,20 @@
 import { tokens } from '../tokens';
 
 export const es = {
+  // Common
   [tokens.common.languageChanged]: 'Se ha cambiado el idioma',
   [tokens.common.title]: 'Consejo de Casa',
+  // Navigation
   [tokens.nav.academy]: 'Academia',
   [tokens.nav.account]: 'Cuenta',
   [tokens.nav.analytics]: 'Analítica',
   [tokens.nav.auth]: 'Autenticación',
   [tokens.nav.buildings]: 'Edificios',
-  [tokens.nav.buildingLocations]: 'Ubicaciones',
-  [tokens.nav.buildingsAdd]: 'Agregar nuevo',
+  [tokens.nav.building]: 'Edificio',
+  [tokens.nav.buildingAdd]: 'Agregar nuevo',
+  [tokens.nav.locations]: 'Ubicaciones',
+  [tokens.nav.location]: 'Ubicación',
+  [tokens.nav.locationAdd]: 'Agregar nueva',
   [tokens.nav.blog]: 'Blog',
   [tokens.nav.browse]: 'Buscar',
   [tokens.nav.calendar]: 'Calendario',
@@ -52,4 +57,18 @@ export const es = {
   [tokens.nav.resetPassword]: 'Restablecer Contraseña',
   [tokens.nav.socialMedia]: 'Redes Sociales',
   [tokens.nav.verifyCode]: 'Verificar Código',
+  // Locations
+  [tokens.locations.locationsTitle]: 'Ubicaciones',
+  [tokens.locations.locationList]: 'Lista de Ubicaciones',
+  [tokens.locations.locationDetails]: 'Detalles de la Ubicación',
+  [tokens.locations.locationCreate]: 'Crear Ubicación',
+  [tokens.locations.locationEdit]: 'Editar Ubicación',
+  // Buildings
+  [tokens.buildings.buildingsTitle]: 'Edificios',
+  [tokens.buildings.buildingList]: 'Lista de Edificios',
+  [tokens.buildings.buildingDetails]: 'Detalles del Edificio',
+  [tokens.buildings.buildingCreate]: 'Crear Edificio',
+  [tokens.buildings.buildingEdit]: 'Editar Edificio',
+  // Errors
+  [tokens.errors.locationPermissionDenied]: 'Permiso de ubicación denegado!',
 };

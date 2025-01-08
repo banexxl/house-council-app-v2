@@ -1,15 +1,20 @@
 import { tokens } from '../tokens';
 
 export const de = {
+  // Common
   [tokens.common.languageChanged]: 'Sprache geändert',
   [tokens.common.title]: 'Hausrat',
+  // Navigation
   [tokens.nav.academy]: 'Akademie',
   [tokens.nav.account]: 'Konto',
   [tokens.nav.analytics]: 'Analytik',
   [tokens.nav.auth]: 'Authentifizierung',
   [tokens.nav.buildings]: 'Gebäude',
-  [tokens.nav.buildingLocations]: 'Standorte',
-  [tokens.nav.buildingsAdd]: 'Neu hinzufügen',
+  [tokens.nav.building]: 'Gebäude',
+  [tokens.nav.buildingAdd]: 'Neu hinzufügen',
+  [tokens.nav.locations]: 'Orte',
+  [tokens.nav.location]: 'Ort',
+  [tokens.nav.locationAdd]: 'Neu hinzufügen',
   [tokens.nav.blog]: 'Blog',
   [tokens.nav.browse]: 'Durchsuche',
   [tokens.nav.calendar]: 'Kalender',
@@ -52,4 +57,18 @@ export const de = {
   [tokens.nav.resetPassword]: 'Passwort Zurücksetzen',
   [tokens.nav.socialMedia]: 'Sozialen Medien',
   [tokens.nav.verifyCode]: 'Code Überprüfen',
+  // Locations
+  [tokens.locations.locationsTitle]: 'Orte',
+  [tokens.locations.locationList]: 'Ortliste',
+  [tokens.locations.locationDetails]: 'Ort Details',
+  [tokens.locations.locationCreate]: 'Ort Erstellen',
+  [tokens.locations.locationEdit]: 'Ort Bearbeiten',
+  // Buildings
+  [tokens.buildings.buildingsTitle]: 'Gebäude',
+  [tokens.buildings.buildingList]: 'Gebäudeliste',
+  [tokens.buildings.buildingDetails]: 'Gebäude Details',
+  [tokens.buildings.buildingCreate]: 'Gebäude Erstellen',
+  [tokens.buildings.buildingEdit]: 'Gebäude Bearbeiten',
+  // Errors
+  [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',
 };

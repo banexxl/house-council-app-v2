@@ -20,6 +20,7 @@ import Lock01Icon from 'src/icons/untitled-ui/duocolor/lock-01';
 import LogOut01Icon from 'src/icons/untitled-ui/duocolor/log-out-01';
 import Mail03Icon from 'src/icons/untitled-ui/duocolor/mail-03';
 import Mail04Icon from 'src/icons/untitled-ui/duocolor/mail-04';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import MessageChatSquareIcon from 'src/icons/untitled-ui/duocolor/message-chat-square';
 import ReceiptCheckIcon from 'src/icons/untitled-ui/duocolor/receipt-check';
 import Share07Icon from 'src/icons/untitled-ui/duocolor/share-07';
@@ -125,14 +126,37 @@ export const useSections = () => {
                 path: paths.dashboard.buildings.index,
               },
               {
-                title: t(tokens.nav.buildingLocations),
-                path: paths.dashboard.buildings.buildingLocations,
+                title: t(tokens.nav.building),
+                path: paths.dashboard.buildings.building,
               },
               {
-                title: t(tokens.nav.buildingsAdd),
+                title: t(tokens.nav.buildingAdd),
                 path: paths.dashboard.buildings.add,
               },
             ],
+          },
+          {
+            title: t(tokens.nav.locations),
+            path: paths.dashboard.locations.index,
+            icon: (
+              <SvgIcon fontSize="small">
+                <LocationOnIcon />
+              </SvgIcon>
+            ),
+            items: [
+              {
+                title: t(tokens.nav.list),
+                path: paths.dashboard.locations.index,
+              },
+              {
+                title: t(tokens.nav.location),
+                path: paths.dashboard.locations.location,
+              },
+              {
+                title: t(tokens.nav.locationAdd),
+                path: paths.dashboard.locations.add,
+              },
+            ]
           },
           {
             title: t(tokens.nav.customers),

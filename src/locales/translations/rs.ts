@@ -1,15 +1,20 @@
 import { tokens } from '../tokens';
 
 export const rs = {
+     // Common
      [tokens.common.languageChanged]: 'Jezik je promenjen',
      [tokens.common.title]: 'Kućni savet',
+     // Navigation
      [tokens.nav.academy]: 'Akademija',
      [tokens.nav.account]: 'Nalog',
      [tokens.nav.analytics]: 'Analitika',
      [tokens.nav.auth]: 'Autentikacija',
      [tokens.nav.buildings]: 'Zgrade',
-     [tokens.nav.buildingLocations]: 'Lokacije',
-     [tokens.nav.buildingsAdd]: 'Dodaj',
+     [tokens.nav.building]: 'Zgrada',
+     [tokens.nav.buildingAdd]: 'Dodaj',
+     [tokens.nav.locations]: 'Lokacije',
+     [tokens.nav.location]: 'Lokacija',
+     [tokens.nav.locationAdd]: 'Dodaj',
      [tokens.nav.blog]: 'Blog',
      [tokens.nav.browse]: 'Pregledaj',
      [tokens.nav.calendar]: 'Kalendar',
@@ -52,4 +57,19 @@ export const rs = {
      [tokens.nav.resetPassword]: 'Resetuj lozinku',
      [tokens.nav.socialMedia]: 'Društvene mreže',
      [tokens.nav.verifyCode]: 'Verifikacioni kod',
+     [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
+     // Locations
+     [tokens.locations.locationsTitle]: 'Pregled lokacija',
+     [tokens.locations.locationList]: 'Lista lokacija',
+     [tokens.locations.locationDetails]: 'Detalji lokacije',
+     [tokens.locations.locationCreate]: 'Kreiraj lokaciju',
+     [tokens.locations.locationEdit]: 'Izmeni lokaciju',
+     // Buildings
+     [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
+     [tokens.buildings.buildingList]: 'Lista zgrada',
+     [tokens.buildings.buildingDetails]: 'Detalji zgrade',
+     [tokens.buildings.buildingCreate]: 'Kreiraj zgradu',
+     [tokens.buildings.buildingEdit]: 'Izmeni zgradu',
+     // Errors
+     [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',
 };

@@ -20,9 +20,9 @@ import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
 
 import { paths } from 'src/paths';
-import { ProductListSearch } from 'src/sections/dashboard/product/product-list-search';
-import { ProductListTable } from 'src/sections/dashboard/product/product-list-table';
-import type { Product } from 'src/types/product';
+import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
+import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
+import type { Building } from 'src/types/building';
 
 interface Filters {
   name?: string;
@@ -31,14 +31,14 @@ interface Filters {
   inStock?: boolean;
 }
 
-interface ProductsSearchState {
+interface BuildingsSearchState {
   filters: Filters;
   page: number;
   rowsPerPage: number;
 }
 
-const useProductsSearch = () => {
-  const [state, setState] = useState<ProductsSearchState>({
+const useBuildingsSearch = () => {
+  const [state, setState] = useState<BuildingsSearchState>({
     filters: {
       name: undefined,
       category: [],
@@ -81,40 +81,40 @@ const useProductsSearch = () => {
   };
 };
 
-interface ProductsStoreState {
-  products: Product[];
+interface BuildingsStoreState {
+  products: Building[];
   productsCount: number;
 }
 
-const useProductsStore = (searchState: ProductsSearchState) => {
+const useBuildingsStore = (searchState: BuildingsSearchState) => {
   const isMounted = useMounted();
-  const [state, setState] = useState<ProductsStoreState>({
+  const [state, setState] = useState<BuildingsStoreState>({
     products: [],
     productsCount: 0,
   });
 
-  const handleProductsGet = useCallback(async () => {
-    try {
-      const response = await productsApi.getProducts(searchState);
+  // const handleBuildingsGet = useCallback(async () => {
+  //   try {
+  //     const response = await productsApi.getBuildings(searchState);
 
-      if (isMounted()) {
-        setState({
-          products: response.data,
-          productsCount: response.count,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [searchState, isMounted]);
+  //     if (isMounted()) {
+  //       setState({
+  //         products: response.data,
+  //         productsCount: response.count,
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }, [searchState, isMounted]);
 
-  useEffect(
-    () => {
-      handleProductsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchState]
-  );
+  // useEffect(
+  //   () => {
+  //     handleBuildingsGet();
+  //   },
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   [searchState]
+  // );
 
   return {
     ...state,
@@ -122,14 +122,14 @@ const useProductsStore = (searchState: ProductsSearchState) => {
 };
 
 const Page = () => {
-  const productsSearch = useProductsSearch();
-  const productsStore = useProductsStore(productsSearch.state);
+  const productsSearch = useBuildingsSearch();
+  const productsStore = useBuildingsStore(productsSearch.state);
 
 
 
   return (
     <>
-      <Seo title="Dashboard: Product List" />
+      <Seo title="Dashboard: Building List" />
       <Box
         component="main"
         sx={{
@@ -145,7 +145,7 @@ const Page = () => {
               spacing={4}
             >
               <Stack spacing={1}>
-                <Typography variant="h4">Products</Typography>
+                <Typography variant="h4">Buildings</Typography>
                 <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                   <Link
                     color="text.primary"
@@ -161,7 +161,7 @@ const Page = () => {
                     href={paths.dashboard.products.index}
                     variant="subtitle2"
                   >
-                    Products
+                    Buildings
                   </Link>
                   <Typography
                     color="text.secondary"
@@ -191,8 +191,8 @@ const Page = () => {
               </Stack>
             </Stack>
             <Card>
-              <ProductListSearch onFiltersChange={productsSearch.handleFiltersChange} />
-              <ProductListTable
+              <BuildingListSearch onFiltersChange={productsSearch.handleFiltersChange} />
+              <BuildingListTable
                 onPageChange={productsSearch.handlePageChange}
                 onRowsPerPageChange={productsSearch.handleRowsPerPageChange}
                 page={productsSearch.state.page}

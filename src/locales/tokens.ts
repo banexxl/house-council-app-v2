@@ -10,8 +10,11 @@ export const tokens = {
     analytics: 'nav.analytics',
     auth: 'nav.auth',
     buildings: 'nav.buildings',
-    buildingLocations: 'nav.buildingLocations',
-    buildingsAdd: 'nav.buildingsAdd',
+    building: 'nav.building',
+    buildingAdd: 'nav.buildingAdd',
+    locations: 'nav.locations',
+    location: 'nav.location',
+    locationAdd: 'nav.locationAdd',
     blog: 'nav.blog',
     browse: 'nav.browse',
     calendar: 'nav.calendar',
@@ -56,4 +59,21 @@ export const tokens = {
     socialMedia: 'nav.socialMedia',
     verifyCode: 'nav.verifyCode',
   },
+  buildings: {
+    buildingsTitle: 'buildings.buildingsTitle',
+    buildingList: 'buildings.buildingList',
+    buildingDetails: 'buildings.buildingDetails',
+    buildingCreate: 'buildings.buildingCreate',
+    buildingEdit: 'buildings.buildingEdit',
+  },
+  locations: {
+    locationsTitle: 'locations.locationsTitle',
+    locationList: 'locations.locationList',
+    locationDetails: 'locations.locationDetails',
+    locationCreate: 'locations.locationCreate',
+    locationEdit: 'locations.locationEdit',
+  },
+  errors: {
+    locationPermissionDenied: 'errors.locationPermissionDenied',
+  }
 };

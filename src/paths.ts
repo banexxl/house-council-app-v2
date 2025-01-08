@@ -44,8 +44,13 @@ export const paths = {
     blank: '/dashboard/blank',
     buildings: {
       index: '/dashboard/buildings',
-      buildingLocations: '/dashboard/buildings/locations',
+      building: '/dashboard/buildings/:buildingId',
       add: '/dashboard/buildings/add',
+    },
+    locations: {
+      index: '/dashboard/locations',
+      location: '/dashboard/locations/:locationId',
+      add: '/dashboard/locations/add',
     },
     blog: {
       index: '/dashboard/blog',
