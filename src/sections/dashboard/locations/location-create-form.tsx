@@ -25,14 +25,12 @@ const LocationCreateForm = () => {
       */
 
      const fetchLocation = async () => {
-          const location = await askForLocationPermission(t);
-          if (location) {
-               console.log('usao u fetchLocation nakon odobravanja', location);
-
+          const permission = await askForLocationPermission(t);
+          if (permission?.locationPermissionGranted) {
                mapRef.current = new mapboxgl.Map({
                     container: 'map', // container ID
                     style: 'mapbox://styles/mapbox/streets-v12', // style URL
-                    center: [location!.lng, location!.lat], // starting position [lng, lat]
+                    center: [permission!.lng, permission!.lat], // starting position [lng, lat]
                     zoom: 9, // starting zoom
                });
           } else {
@@ -40,7 +38,7 @@ const LocationCreateForm = () => {
                mapRef.current = new mapboxgl.Map({
                     container: 'map', // container ID
                     style: 'mapbox://styles/mapbox/streets-v12', // style URL
-                    center: [location!.lng, location!.lat], // starting position [lng, lat]
+                    center: [permission!.lng, permission!.lat], // starting position [lng, lat]
                     zoom: 9, // starting zoom
                });
           }
@@ -72,11 +70,14 @@ const LocationCreateForm = () => {
      };
 
      return (
-          <Box>
+          <Box sx={{
+               display: 'flex',
+               flexDirection: 'row',
+          }}>
 
                <Box id="map" ref={mapContainerRef} sx={{
                     height: '300px',
-                    width: 'auto'
+                    width: '300px'
                }}>
 
                </Box>
