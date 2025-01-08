@@ -22,7 +22,6 @@ const Page = () => {
 
      return (
           <>
-               <Seo title="Dashboard: Add Location" />
                <Box
                     component="main"
                     sx={{
@@ -33,7 +32,7 @@ const Page = () => {
                     <Container maxWidth="xl">
                          <Stack spacing={3}>
                               <Stack spacing={1}>
-                                   <Typography variant="h4">{t('locations.locationsTitle')}</Typography>
+                                   <Typography variant="h4">{t('locations.locationCreate')}</Typography>
                                    <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                         <Link
                                              color="text.primary"

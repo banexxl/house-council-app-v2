@@ -10,52 +10,48 @@ import mapboxgl from 'mapbox-gl';
 
 const LocationCreateForm = () => {
 
-     const [selectedLocation, setSelectedLocation] = useState<{ lat: number, lng: number } | null>(null);
      const { t } = useTranslation();
      const [fullAddress, setFullAddress] = useState('');
-
+     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!
      const mapContainerRef = useRef();
      const mapRef = useRef<mapboxgl.Map | null>(null);
 
+     /**
+      * Asynchronously fetches the user's current location using geolocation permissions.
+      * If the user grants permission, sets the selected location state with the fetched
+      * coordinates and initializes a map centered at that location. If permission is denied 
+      * or an error occurs, defaults to a predefined location (Belgrade) and initializes 
+      * the map centered there.
+      */
 
-     // Set initial viewport to Belgrade
-     const [viewport, setViewport] = useState({
-          latitude: 44.7866,
-          longitude: 20.4489,
-          zoom: 12,
-     });
+     const fetchLocation = async () => {
+          const location = await askForLocationPermission(t);
+          if (location) {
+               console.log('usao u fetchLocation nakon odobravanja', location);
+
+               mapRef.current = new mapboxgl.Map({
+                    container: 'map', // container ID
+                    style: 'mapbox://styles/mapbox/streets-v12', // style URL
+                    center: [location!.lng, location!.lat], // starting position [lng, lat]
+                    zoom: 9, // starting zoom
+               });
+          } else {
+               // Default to Belgrade
+               mapRef.current = new mapboxgl.Map({
+                    container: 'map', // container ID
+                    style: 'mapbox://styles/mapbox/streets-v12', // style URL
+                    center: [location!.lng, location!.lat], // starting position [lng, lat]
+                    zoom: 9, // starting zoom
+               });
+          }
+     };
 
      useEffect(() => {
-
-          mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!
-          const fetchLocation = async () => {
-               const location = await askForLocationPermission(t);
-               if (location) {
-                    setSelectedLocation({ ...location });
-                    setViewport({
-                         ...viewport,
-                         latitude: location.lat,
-                         longitude: location.lng,
-                         zoom: 14,
-                    });
-               } else {
-                    setSelectedLocation(null);
-               }
-          };
           fetchLocation();
-
-          mapRef.current = new mapboxgl.Map({
-               container: 'map', // container ID
-               style: 'mapbox://styles/mapbox/streets-v12', // style URL
-               center: [-74.5, 40], // starting position [lng, lat]
-               zoom: 9, // starting zoom
-          });
-
-
-     }, [t, viewport]);
+     }, []);
 
      const handleSave = async (values: any) => {
-          if (!selectedLocation) return;
+          if (!values) return;
 
           // const { data, error } = await supabase.from('locations').insert([
           //      {
@@ -172,7 +168,7 @@ const LocationCreateForm = () => {
                                         variant="contained"
                                         color="primary"
                                         type="submit"
-                                        disabled={!selectedLocation}
+                                        disabled={!location}
                                    >
                                         Save Location
                                    </Button>

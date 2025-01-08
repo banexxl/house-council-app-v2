@@ -2,8 +2,6 @@ import toast from "react-hot-toast";
 
 // utils/location-permission.ts
 export const askForLocationPermission = async (t: (key: string) => string): Promise<{ lat: number; lng: number } | null> => {
-
-
      if (navigator.geolocation) {
           try {
                const position = await new Promise<GeolocationPosition>((resolve, reject) =>
@@ -19,6 +17,8 @@ export const askForLocationPermission = async (t: (key: string) => string): Prom
                     duration: 3000,
                     position: 'top-center',
                });
+               // Default to Belgrade
+               return { lat: 44.7866, lng: 20.4489 };
           }
      }
 
