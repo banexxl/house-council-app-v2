@@ -10,6 +10,7 @@ import { BuildingLocation } from 'src/types/location';
 import { insertLocation } from 'src/services/building-location-services';
 import { transliterate } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
+import Marker from './map-marker';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!;
 
@@ -30,6 +31,7 @@ const LocationCreateForm = () => {
                longitude: 0,
           },
      });
+     const [markerData, setMarkerData] = useState<{ lat: number; lng: number; address: string; image: string } | null>(null)
 
      const addressSelected = !!watch('country') && !!watch('city') && !!watch('streetAddress');
 
@@ -118,6 +120,14 @@ const LocationCreateForm = () => {
           if (center) {
                setLocation({ lng: center[0], lat: center[1] });
           }
+
+          // Set marker data
+          setMarkerData({
+               lat: center[1],
+               lng: center[0],
+               address: `${streetAddress} ${streetNumber}, ${city}, ${country}`,
+               image: 'https://via.placeholder.com/300x140', // Replace with actual image URL
+          });
      };
 
      return (
@@ -250,12 +260,22 @@ const LocationCreateForm = () => {
                     id="map"
                     ref={mapContainerRef}
                     sx={{
-                         height: '400px',
+                         height: '700px',
                          width: '700px',
                          border: '1px solid #ccc',
                          borderRadius: '14px',
                     }}
-               />
+               >
+                    {mapRef.current && markerData && (
+                         <Marker
+                              lat={markerData.lat}
+                              lng={markerData.lng}
+                              address={markerData.address}
+                              image={markerData.image}
+                              map={mapRef.current}
+                         />
+                    )}
+               </Box>
           </Card>
      );
 };

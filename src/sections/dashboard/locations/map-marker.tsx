@@ -12,6 +12,7 @@ interface MarkerProps {
 }
 
 const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
+
      const markerEl = useRef<HTMLDivElement>(null);
      const markerRef = useRef<mapboxgl.Marker | null>(null);
      const popupEl = useRef<HTMLDivElement>(null);
@@ -20,6 +21,9 @@ const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
      useEffect(() => {
           const marker = new mapboxgl.Marker({
                element: markerEl.current!,
+               anchor: 'bottom',
+               draggable: true,
+               offset: [0, 60],
           })
                .setLngLat([lng, lat])
                .addTo(map);
@@ -40,7 +44,7 @@ const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
                closeOnClick: true,
                closeOnMove: true,
                maxWidth: '300px',
-               offset: 25,
+               offset: [0, -60],
           })
                .setDOMContent(popupEl.current!)
                .on('open', () => setActive(true))
@@ -70,7 +74,7 @@ const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
                          <CardMedia
                               component="img"
                               height="140"
-                              image={image}
+                              image={'/assets/no-image.png'}
                               alt={address}
                          />
                          <CardContent>
