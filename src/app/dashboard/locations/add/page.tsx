@@ -6,7 +6,6 @@ import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
@@ -15,6 +14,7 @@ import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 
 const Page = () => {
+
      const { t } = useTranslation();
 
      return (

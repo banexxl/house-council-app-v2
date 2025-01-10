@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, List, ListItem, ListItemButton, ListItemText, Box } from '@mui/material';
+import { TextField, List, ListItem, ListItemButton, ListItemText, Box, IconButton } from '@mui/material';
+import { ClearIcon } from '@mui/x-date-pickers';
 
 interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
@@ -43,6 +44,11 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected }) => {
           onAddressSelected(feature);
      };
 
+     const handleClear = () => {
+          setInputValue('');
+          setSuggestions([]);
+     };
+
      return (
           <Box sx={{ position: 'relative', width: '300px' }}>
                <TextField
@@ -52,7 +58,16 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected }) => {
                     value={inputValue}
                     onChange={handleInputChange}
                     InputProps={{
-                         endAdornment: loading ? <span>Loading...</span> : null,
+                         endAdornment: (
+                              <>
+                                   {loading && <span>Loading...</span>}
+                                   {inputValue && (
+                                        <IconButton onClick={handleClear}>
+                                             <ClearIcon />
+                                        </IconButton>
+                                   )}
+                              </>
+                         ),
                     }}
                />
                {suggestions.length > 0 && (

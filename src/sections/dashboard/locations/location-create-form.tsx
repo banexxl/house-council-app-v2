@@ -31,17 +31,18 @@ const LocationCreateForm = () => {
           },
      });
 
-     const addressSelected = !!watch('country') && !!watch('city');
+     const addressSelected = !!watch('country') && !!watch('city') && !!watch('streetAddress');
 
      useEffect(() => {
           if (mapRef.current) {
-               mapRef.current.flyTo({ center: [location.lng, location.lat], zoom: 9 });
+               mapRef.current.flyTo({ center: [location.lng, location.lat], zoom: 19 });
           } else {
+               // This happens on page reload
                mapRef.current = new mapboxgl.Map({
                     container: mapContainerRef.current!,
                     style: 'mapbox://styles/mapbox/streets-v12',
                     center: [location.lng, location.lat],
-                    zoom: 9,
+                    zoom: 8,
                });
           }
           // return () => {
@@ -64,24 +65,34 @@ const LocationCreateForm = () => {
           try {
                const response = await insertLocation(payload);
                if (response.success) {
-                    toast.success('Location saved successfully', {
+                    toast.success(t('locations.locationSaved'), {
                          duration: 3000,
                          position: 'top-center',
                     })
                } else {
-                    toast.error('An error occurred while saving the location', {
+                    toast.error(t('locations.locationNotSaved'), {
                          duration: 3000,
                          position: 'top-center',
                     })
                }
           } catch (error) {
-               toast.error('An error occurred while saving the location', {
+               toast.error(t('locations.locationNotSaved'), {
                     duration: 3000,
                     position: 'top-center',
                })
           }
      };
 
+     const handleClear = () => {
+          setValue('country', '');
+          setValue('region', '');
+          setValue('city', '');
+          setValue('zip', '');
+          setValue('streetAddress', '');
+          setValue('streetNumber', '');
+          setValue('latitude', 0);
+          setValue('longitude', 0);
+     }
      const onAddressSelected = (event: any) => {
           // Extract values from the event object
           const { context, address, text, center } = event;
@@ -214,14 +225,24 @@ const LocationCreateForm = () => {
                                         )}
                                    />
                               </Stack>
-                              <Button
-                                   variant="contained"
-                                   color="primary"
-                                   type="submit"
-                                   disabled={!addressSelected}
-                              >
-                                   {t('locations.locationSaveButton')}
-                              </Button>
+                              <Box sx={{ justifyContent: 'space-between', display: 'flex' }}>
+                                   <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleClear}
+                                        disabled={!addressSelected}
+                                   >
+                                        {t('common.btnClear')}
+                                   </Button>
+                                   <Button
+                                        variant="contained"
+                                        color="primary"
+                                        type="submit"
+                                        disabled={!addressSelected}
+                                   >
+                                        {t('common.btnSave')}
+                                   </Button>
+                              </Box>
                          </Stack>
                     </form>
                </Box>
