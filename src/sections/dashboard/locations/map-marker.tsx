@@ -12,12 +12,12 @@ interface MarkerProps {
 }
 
 const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
-
      const markerEl = useRef<HTMLDivElement>(null);
      const markerRef = useRef<mapboxgl.Marker | null>(null);
      const popupEl = useRef<HTMLDivElement>(null);
      const [active, setActive] = useState(false);
 
+     // Initialize the marker
      useEffect(() => {
           const marker = new mapboxgl.Marker({
                element: markerEl.current!,
@@ -35,6 +35,15 @@ const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
           };
      }, [map]);
 
+     // Update marker position when `lat` or `lng` changes
+     useEffect(() => {
+          const marker = markerRef.current;
+          if (marker) {
+               marker.setLngLat([lng, lat]);
+          }
+     }, [lat, lng]);
+
+     // Initialize and handle popup
      useEffect(() => {
           const marker = markerRef.current;
           if (!marker) return;
@@ -92,4 +101,3 @@ const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
 };
 
 export default Marker;
-

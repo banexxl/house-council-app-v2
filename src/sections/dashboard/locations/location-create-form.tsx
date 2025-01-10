@@ -50,7 +50,7 @@ const LocationCreateForm = () => {
           // return () => {
           //      mapRef.current?.remove();
           // };
-     }, [location]);
+     }, [location, markerData]);
 
      const handleSave = async (data: any) => {
 
