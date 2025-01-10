@@ -260,7 +260,7 @@ const LocationCreateForm = () => {
                     id="map"
                     ref={mapContainerRef}
                     sx={{
-                         height: '700px',
+                         height: '600px',
                          width: '700px',
                          border: '1px solid #ccc',
                          borderRadius: '14px',
@@ -271,7 +271,7 @@ const LocationCreateForm = () => {
                               lat={markerData.lat}
                               lng={markerData.lng}
                               address={markerData.address}
-                              image={markerData.image}
+                              // image={markerData.image}
                               map={mapRef.current}
                          />
                     )}

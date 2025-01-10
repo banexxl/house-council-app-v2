@@ -93,6 +93,7 @@ export const en = {
   [tokens.locations.locationPostalCode]: 'Postal Code',
   [tokens.locations.locationSaved]: 'Location saved',
   [tokens.locations.locationNotSaved]: 'Location not saved',
+  [tokens.locations.locationAddress]: 'Address',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Buildings',
   [tokens.buildings.buildingList]: 'Building List',

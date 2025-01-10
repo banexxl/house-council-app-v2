@@ -93,6 +93,7 @@ export const de = {
   [tokens.locations.locationPostalCode]: 'Postleitzahl',
   [tokens.locations.locationSaved]: 'Ort gespeichert',
   [tokens.locations.locationNotSaved]: 'Ort nicht gespeichert',
+  [tokens.locations.locationAddress]: 'Adresse',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Gebäude',
   [tokens.buildings.buildingList]: 'Gebäudeliste',

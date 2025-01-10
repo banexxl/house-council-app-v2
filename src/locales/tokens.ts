@@ -102,6 +102,7 @@ export const tokens = {
     locationPostalCode: 'locations.locationPostalCode',
     locationSaved: 'locations.locationSaved',
     locationNotSaved: 'locations.locationNotSaved',
+    locationAddress: 'locations.locationAddress',
   },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',

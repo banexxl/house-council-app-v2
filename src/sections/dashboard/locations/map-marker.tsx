@@ -2,16 +2,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Box, Typography, Card, CardContent, CardMedia } from '@mui/material';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
+import { useTranslation } from 'react-i18next';
 
 interface MarkerProps {
      lat: number;
      lng: number;
      address: string;
-     image: string;
+     // image: string;
      map: mapboxgl.Map;
 }
 
-const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
+const Marker: React.FC<MarkerProps> = ({ lat, lng, address, map }) => {
+
+     const { t } = useTranslation();
+
      const markerEl = useRef<HTMLDivElement>(null);
      const markerRef = useRef<mapboxgl.Marker | null>(null);
      const popupEl = useRef<HTMLDivElement>(null);
@@ -79,16 +83,16 @@ const Marker: React.FC<MarkerProps> = ({ lat, lng, address, image, map }) => {
                     <LocationCityIcon fontSize="large" />
                </Box>
                <Box ref={popupEl}>
-                    <Card sx={{ maxWidth: 300 }}>
-                         <CardMedia
+                    <Card sx={{ maxWidth: 200 }}>
+                         {/* <CardMedia
                               component="img"
                               height="140"
                               image={'/assets/no-image.png'}
                               alt={address}
-                         />
+                         /> */}
                          <CardContent>
                               <Typography gutterBottom variant="h6" component="div">
-                                   Adresa:
+                                   {t('locations.locationAddress')}:
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
                                    {address}

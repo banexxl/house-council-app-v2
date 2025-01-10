@@ -94,6 +94,7 @@ export const rs = {
      [tokens.locations.locationPostalCode]: 'Pošta',
      [tokens.locations.locationSaved]: 'Lokacija sačuvana',
      [tokens.locations.locationNotSaved]: 'Greška prilikom čuvanja lokacije',
+     [tokens.locations.locationAddress]: 'Adresa',
      // Buildings
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      [tokens.buildings.buildingList]: 'Lista zgrada',
