@@ -94,6 +94,7 @@ export const en = {
   [tokens.locations.locationSaved]: 'Location saved',
   [tokens.locations.locationNotSaved]: 'Location not saved',
   [tokens.locations.locationAddress]: 'Address',
+  [tokens.locations.locationPopupTitle]: 'Pin is placed on',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Buildings',
   [tokens.buildings.buildingList]: 'Building List',

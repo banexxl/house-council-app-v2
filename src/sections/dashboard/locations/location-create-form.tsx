@@ -136,7 +136,7 @@ const LocationCreateForm = () => {
                     display: 'flex',
                     flexDirection: 'row',
                     padding: '20px',
-                    justifyContent: 'space-between',
+                    justifyContent: 'space-around',
                }}
           >
                <Box

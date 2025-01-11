@@ -103,6 +103,7 @@ export const tokens = {
     locationSaved: 'locations.locationSaved',
     locationNotSaved: 'locations.locationNotSaved',
     locationAddress: 'locations.locationAddress',
+    locationPopupTitle: 'locations.locationPopupTitle',
   },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',

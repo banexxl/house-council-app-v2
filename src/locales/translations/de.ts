@@ -94,6 +94,7 @@ export const de = {
   [tokens.locations.locationSaved]: 'Ort gespeichert',
   [tokens.locations.locationNotSaved]: 'Ort nicht gespeichert',
   [tokens.locations.locationAddress]: 'Adresse',
+  [tokens.locations.locationPopupTitle]: 'Der Stift wird platziert bei',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Gebäude',
   [tokens.buildings.buildingList]: 'Gebäudeliste',
