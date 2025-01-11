@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Box, Typography, Card, CardContent, CardMedia } from '@mui/material';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import { useTranslation } from 'react-i18next';
+import { SettingsContext } from 'src/contexts/settings/settings-context';
 import { getPrimary } from 'src/theme/utils';
 
 interface MarkerProps {
@@ -20,7 +21,8 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
      const markerEl = useRef<HTMLDivElement>(null);
      const markerRef = useRef<mapboxgl.Marker | null>(null);
      const popupEl = useRef<HTMLDivElement>(null);
-     const [active, setActive] = useState(false);
+     const { colorPreset } = useContext(SettingsContext); // Access colorPreset from the context
+     const primary = getPrimary(colorPreset); // Dynamically get the primary color
 
      // Initialize the marker
      useEffect(() => {
@@ -63,10 +65,10 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
           })
                .setDOMContent(popupEl.current!)
                .on('open', () => {
-                    markerEl.current?.style.setProperty('color', getPrimary().main); // Set active color
+                    markerEl.current?.style.setProperty('color', primary.darkest!); // Set active color
                })
                .on('close', () => {
-                    markerEl.current?.style.setProperty('color', getPrimary().darkest!); // Reset color
+                    markerEl.current?.style.setProperty('color', primary.main); // Reset color
                });
 
           const marker = markerRef.current;
@@ -86,7 +88,7 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
                     ref={markerEl}
                     sx={{
                          cursor: 'pointer',
-                         color: getPrimary().dark,
+                         color: primary.main,
                          transition: 'color 0.3s ease',
                     }}
                >
