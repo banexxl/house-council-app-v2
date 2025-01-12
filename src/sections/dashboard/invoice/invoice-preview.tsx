@@ -163,13 +163,13 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           Billed to
         </Typography>
         <Typography variant="body2">
-          {invoice.customer.name}
+          {invoice.client.name}
           <br />
-          {invoice.customer.company}
+          {invoice.client.company}
           <br />
-          {invoice.customer.taxId}
+          {invoice.client.taxId}
           <br />
-          {invoice.customer.address}
+          {invoice.client.address}
         </Typography>
       </Box>
       <Table sx={{ mt: 4 }}>

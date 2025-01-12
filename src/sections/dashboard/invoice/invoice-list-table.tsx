@@ -87,7 +87,7 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
               width: 42,
             }}
           >
-            {getInitials(invoice.customer.name)}
+            {getInitials(invoice.client.name)}
           </Avatar>
           <div>
             <Typography
@@ -100,7 +100,7 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
               color="text.secondary"
               variant="body2"
             >
-              {invoice.customer.name}
+              {invoice.client.name}
             </Typography>
           </div>
         </Stack>
@@ -166,7 +166,7 @@ export const InvoiceListTable: FC<InvoiceListTableProps> = (props) => {
     group = false,
     items = [],
     count = 0,
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,

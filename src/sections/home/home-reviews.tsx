@@ -83,7 +83,7 @@ const reviews: Review[] = [
   {
     author: 'Cole S.',
     message:
-      'Great template and great customer support. Easy to customize, code is easy to read, documentation is good. Very happy!',
+      'Great template and great client support. Easy to customize, code is easy to read, documentation is good. Very happy!',
     stars: 5,
   },
 ];

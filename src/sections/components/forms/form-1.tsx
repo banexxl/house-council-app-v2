@@ -147,7 +147,7 @@ export const Form1: FC = () => (
           type="submit"
           variant="contained"
         >
-          Update Customer
+          Update Client
         </Button>
       </Box>
     </form>

@@ -40,7 +40,7 @@ const faqs: FaqType[] = [
   {
     question: 'For what kind of projects is the Standard license intended?',
     answer:
-      'The Standard license is designed for internal applications in which staff will access the application. An example could be the back-office dashboard of a public-facing e-commerce website in which staff would sign in and manage inventory, customers, etc.',
+      'The Standard license is designed for internal applications in which staff will access the application. An example could be the back-office dashboard of a public-facing e-commerce website in which staff would sign in and manage inventory, clients, etc.',
   },
 ];
 

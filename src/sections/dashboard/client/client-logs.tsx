@@ -14,13 +14,13 @@ import Typography from '@mui/material/Typography';
 import { MoreMenu } from 'src/components/more-menu';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import type { CustomerLog } from 'src/types/customer';
+import type { ClientLog } from 'src/types/client';
 
-interface CustomerLogsProps {
-  logs?: CustomerLog[];
+interface ClientLogsProps {
+  logs?: ClientLog[];
 }
 
-export const CustomerLogs: FC<CustomerLogsProps> = (props) => {
+export const ClientLogs: FC<ClientLogsProps> = (props) => {
   const { logs = [], ...other } = props;
 
   return (
@@ -72,8 +72,8 @@ export const CustomerLogs: FC<CustomerLogsProps> = (props) => {
       <TablePagination
         component="div"
         count={logs.length}
-        onPageChange={(): void => {}}
-        onRowsPerPageChange={(): void => {}}
+        onPageChange={(): void => { }}
+        onRowsPerPageChange={(): void => { }}
         page={0}
         rowsPerPage={10}
         rowsPerPageOptions={[5, 10, 25]}
@@ -82,6 +82,6 @@ export const CustomerLogs: FC<CustomerLogsProps> = (props) => {
   );
 };
 
-CustomerLogs.propTypes = {
+ClientLogs.propTypes = {
   logs: PropTypes.array,
 };

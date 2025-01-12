@@ -34,7 +34,7 @@ class OrdersApi {
     if (typeof filters !== 'undefined') {
       data = data.filter((order) => {
         if (typeof filters.query !== 'undefined' && filters.query !== '') {
-          // Checks only the order number, but can be extended to support other fields, such as customer
+          // Checks only the order number, but can be extended to support other fields, such as client
           // name, email, etc.
           const containsQuery = (order.number || '')
             .toLowerCase()

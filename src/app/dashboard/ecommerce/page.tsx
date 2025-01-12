@@ -86,7 +86,7 @@ const Page = () => {
                 <EcommerceSalesRevenue
                   chartSeries={[
                     {
-                      name: 'New Customers',
+                      name: 'New Clients',
                       data: [
                         3350, 1840, 2254, 5780, 9349, 5241, 2770, 2051, 3764, 2385, 5912, 8323,
                       ],

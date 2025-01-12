@@ -175,7 +175,7 @@ export const QuickStats2: FC = () => (
                 color="inherit"
                 variant="overline"
               >
-                Roi per customer
+                Roi per client
               </Typography>
               <Typography
                 color="inherit"

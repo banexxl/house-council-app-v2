@@ -8,7 +8,7 @@ import { invoice, invoices } from './data';
 
 type GetInvoicesRequest = {
   filters?: {
-    customers?: string[];
+    clients?: string[];
     endDate?: Date;
     query?: string;
     startDate?: Date;
@@ -68,8 +68,8 @@ class InvoicesApi {
           }
         }
 
-        if (typeof filters.customers !== 'undefined' && filters.customers.length > 0) {
-          const matched = filters.customers.includes(invoice.customer.name);
+        if (typeof filters.clients !== 'undefined' && filters.clients.length > 0) {
+          const matched = filters.clients.includes(invoice.client.name);
 
           if (!matched) {
             return false;

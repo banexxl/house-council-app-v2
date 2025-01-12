@@ -15,7 +15,7 @@ type ChartSeries = {
 
 const chartSeries: ChartSeries = [
   {
-    name: 'New Customers',
+    name: 'New Clients',
     data: [31, 40, 28, 51, 42, 109, 100, 120, 80, 42, 90, 140],
   },
   {

@@ -41,26 +41,26 @@ export const OrderSummary: FC<OrderSummaryProps> = (props) => {
       <PropertyList>
         <PropertyListItem
           align={align}
-          label="Customer"
+          label="Client"
         >
-          <Typography variant="subtitle2">{order.customer.name}</Typography>
+          <Typography variant="subtitle2">{order.client.name}</Typography>
           <Typography
             color="text.secondary"
             variant="body2"
           >
-            {order.customer.address1}
+            {order.client.address1}
           </Typography>
           <Typography
             color="text.secondary"
             variant="body2"
           >
-            {order.customer.city}
+            {order.client.city}
           </Typography>
           <Typography
             color="text.secondary"
             variant="body2"
           >
-            {order.customer.country}
+            {order.client.country}
           </Typography>
         </PropertyListItem>
         <Divider />

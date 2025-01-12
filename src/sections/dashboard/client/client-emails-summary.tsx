@@ -16,19 +16,19 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { customersApi } from 'src/api/customers';
+import { clientsApi } from 'src/api/clients';
 import { useMounted } from 'src/hooks/use-mounted';
-import type { CustomerEmail } from 'src/types/customer';
+import type { ClientEmail } from 'src/types/client';
 
 const emailOptions: string[] = ['Resend last invoice', 'Send password reset', 'Send verification'];
 
-const useEmails = (): CustomerEmail[] => {
+const useEmails = (): ClientEmail[] => {
   const isMounted = useMounted();
-  const [emails, setEmails] = useState<CustomerEmail[]>([]);
+  const [emails, setEmails] = useState<ClientEmail[]>([]);
 
   const handleEmailsGet = useCallback(async () => {
     try {
-      const response = await customersApi.getEmails();
+      const response = await clientsApi.getEmails();
 
       if (isMounted()) {
         setEmails(response);
@@ -49,7 +49,7 @@ const useEmails = (): CustomerEmail[] => {
   return emails;
 };
 
-export const CustomerEmailsSummary: FC = (props) => {
+export const ClientEmailsSummary: FC = (props) => {
   const [emailOption, setEmailOption] = useState<string>(emailOptions[0]);
   const emails = useEmails();
 

@@ -6,7 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 
-export const CustomerDataManagement: FC = (props) => (
+export const ClientDataManagement: FC = (props) => (
   <Card {...props}>
     <CardHeader title="Data Management" />
     <CardContent sx={{ pt: 0 }}>
@@ -21,7 +21,7 @@ export const CustomerDataManagement: FC = (props) => (
           color="text.secondary"
           variant="body2"
         >
-          Remove this customer’s chart if he requested that, if not please be aware that what has
+          Remove this client’s chart if he requested that, if not please be aware that what has
           been deleted can never brought back
         </Typography>
       </Box>

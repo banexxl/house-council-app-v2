@@ -1,4 +1,4 @@
-export interface Customer {
+export interface Client {
   id: string;
   address1?: string;
   address2?: string;
@@ -23,7 +23,7 @@ export interface Customer {
   zipCode?: string;
 }
 
-export interface CustomerLog {
+export interface ClientLog {
   id: string;
   createdAt: number;
   description: string;
@@ -33,13 +33,13 @@ export interface CustomerLog {
   status: number;
 }
 
-export interface CustomerEmail {
+export interface ClientEmail {
   id: string;
   description: string;
   createdAt: number;
 }
 
-export interface CustomerInvoice {
+export interface ClientInvoice {
   id: string;
   issueDate: number;
   status: string;

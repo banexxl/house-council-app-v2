@@ -24,7 +24,7 @@ import { InvoiceListTable } from 'src/sections/dashboard/invoice/invoice-list-ta
 import type { Invoice, InvoiceStatus } from 'src/types/invoice';
 
 interface Filters {
-  customers?: string[];
+  clients?: string[];
   endDate?: Date;
   query?: string;
   startDate?: Date;
@@ -40,7 +40,7 @@ interface InvoicesSearchState {
 const useInvoicesSearch = () => {
   const [state, setState] = useState<InvoicesSearchState>({
     filters: {
-      customers: [],
+      clients: [],
       endDate: undefined,
       query: '',
       startDate: undefined,

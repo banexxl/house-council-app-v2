@@ -8,7 +8,7 @@ import CardHeader from '@mui/material/CardHeader';
 import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
 
-interface CustomerBasicDetailsProps {
+interface ClientBasicDetailsProps {
   address1?: string;
   address2?: string;
   country?: string;
@@ -18,7 +18,7 @@ interface CustomerBasicDetailsProps {
   state?: string;
 }
 
-export const CustomerBasicDetails: FC<CustomerBasicDetailsProps> = (props) => {
+export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
   const { address1, address2, country, email, isVerified, phone, state, ...other } = props;
 
   return (
@@ -68,7 +68,7 @@ export const CustomerBasicDetails: FC<CustomerBasicDetailsProps> = (props) => {
   );
 };
 
-CustomerBasicDetails.propTypes = {
+ClientBasicDetails.propTypes = {
   address1: PropTypes.string,
   address2: PropTypes.string,
   country: PropTypes.string,

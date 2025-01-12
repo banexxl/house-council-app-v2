@@ -10,7 +10,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
 
-export const CustomerPayment: FC = (props) => {
+export const ClientPayment: FC = (props) => {
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
   const align = mdUp ? 'horizontal' : 'vertical';

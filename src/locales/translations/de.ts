@@ -44,7 +44,7 @@ export const de = {
   [tokens.nav.course]: 'Kurs',
   [tokens.nav.create]: 'Schaffen',
   [tokens.nav.crypto]: 'Crypto',
-  [tokens.nav.customers]: 'Kunden',
+  [tokens.nav.clients]: 'Kunden',
   [tokens.nav.dashboard]: 'Dashboard',
   [tokens.nav.details]: 'Einzelheiten',
   [tokens.nav.ecommerce]: 'E-Commerce',
@@ -102,6 +102,12 @@ export const de = {
   [tokens.buildings.buildingDetails]: 'Gebäude Details',
   [tokens.buildings.buildingCreate]: 'Gebäude Erstellen',
   [tokens.buildings.buildingEdit]: 'Gebäude Bearbeiten',
+  // Clients
+  [tokens.clients.clientsList]: 'Kundenliste',
+  [tokens.clients.customerDetails]: 'Kunden Details',
+  [tokens.clients.customerCreate]: 'Kunde Erstellen',
+  [tokens.clients.customerEdit]: 'Kunde Bearbeiten',
+  [tokens.clients.customerDelete]: 'Kunde Löschen',
   // Errors
   [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',
 };

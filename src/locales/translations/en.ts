@@ -44,7 +44,7 @@ export const en = {
   [tokens.nav.course]: 'Course',
   [tokens.nav.create]: 'Create',
   [tokens.nav.crypto]: 'Crypto',
-  [tokens.nav.customers]: 'Customers',
+  [tokens.nav.clients]: 'Clients',
   [tokens.nav.dashboard]: 'Dashboard',
   [tokens.nav.details]: 'Details',
   [tokens.nav.ecommerce]: 'E-Commerce',
@@ -102,6 +102,12 @@ export const en = {
   [tokens.buildings.buildingDetails]: 'Building Details',
   [tokens.buildings.buildingCreate]: 'Create Building',
   [tokens.buildings.buildingEdit]: 'Building Edit',
+  // Clients
+  [tokens.clients.clientsList]: 'Clients List',
+  [tokens.clients.customerDetails]: 'Client Details',
+  [tokens.clients.customerCreate]: 'Create Client',
+  [tokens.clients.customerEdit]: 'Client Edit',
+  [tokens.clients.customerDelete]: 'Client Delete',
   // Errors
   [tokens.errors.locationPermissionDenied]: 'Location permission denied!',
 };

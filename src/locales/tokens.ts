@@ -1,3 +1,5 @@
+import { clients } from "src/api/clients/data";
+
 export const tokens = {
   common: {
     languageChanged: 'common.languageChanged',
@@ -44,7 +46,7 @@ export const tokens = {
     course: 'nav.course',
     create: 'nav.create',
     crypto: 'nav.crypto',
-    customers: 'nav.customers',
+    clients: 'nav.clients',
     dashboard: 'nav.dashboard',
     details: 'nav.details',
     ecommerce: 'nav.ecommerce',
@@ -105,6 +107,13 @@ export const tokens = {
     locationAddress: 'locations.locationAddress',
     locationPopupTitle: 'locations.locationPopupTitle',
     locationAlreadyExists: 'locations.locationAlreadyExists',
+  },
+  clients: {
+    clientsList: 'clients.clientsList',
+    customerDetails: 'clients.customerDetails',
+    customerCreate: 'clients.customerCreate',
+    customerEdit: 'clients.customerEdit',
+    customerDelete: 'clients.customerDelete',
   },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',

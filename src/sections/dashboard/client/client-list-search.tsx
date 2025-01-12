@@ -75,14 +75,14 @@ const sortOptions: SortOption[] = [
 
 type SortDir = 'asc' | 'desc';
 
-interface CustomerListSearchProps {
+interface ClientListSearchProps {
   onFiltersChange?: (filters: Filters) => void;
   onSortChange?: (sort: { sortBy: string; sortDir: SortDir }) => void;
   sortBy?: string;
   sortDir?: SortDir;
 }
 
-export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
+export const ClientListSearch: FC<ClientListSearchProps> = (props) => {
   const { onFiltersChange, onSortChange, sortBy, sortDir } = props;
   const queryRef = useRef<HTMLInputElement | null>(null);
   const [currentTab, setCurrentTab] = useState<TabValue>('all');
@@ -170,7 +170,7 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
             defaultValue=""
             fullWidth
             inputProps={{ ref: queryRef }}
-            placeholder="Search customers"
+            placeholder="Search clients"
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
@@ -202,7 +202,7 @@ export const CustomerListSearch: FC<CustomerListSearchProps> = (props) => {
   );
 };
 
-CustomerListSearch.propTypes = {
+ClientListSearch.propTypes = {
   onFiltersChange: PropTypes.func,
   onSortChange: PropTypes.func,
   sortBy: PropTypes.string,

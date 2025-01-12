@@ -152,7 +152,7 @@ const board: Board = {
       due: null,
       isSubscribed: true,
       labels: [],
-      name: 'Update the customer API for payments',
+      name: 'Update the client API for payments',
     },
     {
       id: '5e849cb5d0c6e8894451fdfa',

@@ -18,13 +18,13 @@ import { RouterLink } from 'src/components/router-link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import { paths } from 'src/paths';
-import type { CustomerInvoice } from 'src/types/customer';
+import type { ClientInvoice } from 'src/types/client';
 
-interface CustomerInvoicesProps {
-  invoices?: CustomerInvoice[];
+interface ClientInvoicesProps {
+  invoices?: ClientInvoice[];
 }
 
-export const CustomerInvoices: FC<CustomerInvoicesProps> = (props) => {
+export const ClientInvoices: FC<ClientInvoicesProps> = (props) => {
   const { invoices = [], ...other } = props;
 
   return (
@@ -76,8 +76,8 @@ export const CustomerInvoices: FC<CustomerInvoicesProps> = (props) => {
       <TablePagination
         component="div"
         count={invoices.length}
-        onPageChange={(): void => {}}
-        onRowsPerPageChange={(): void => {}}
+        onPageChange={(): void => { }}
+        onRowsPerPageChange={(): void => { }}
         page={0}
         rowsPerPage={5}
         rowsPerPageOptions={[5, 10, 25]}
@@ -86,6 +86,6 @@ export const CustomerInvoices: FC<CustomerInvoicesProps> = (props) => {
   );
 };
 
-CustomerInvoices.propTypes = {
+ClientInvoices.propTypes = {
   invoices: PropTypes.array,
 };

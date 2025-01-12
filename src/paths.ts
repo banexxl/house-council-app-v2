@@ -60,10 +60,10 @@ export const paths = {
     calendar: '/dashboard/calendar',
     chat: '/dashboard/chat',
     crypto: '/dashboard/crypto',
-    customers: {
-      index: '/dashboard/customers',
-      details: '/dashboard/customers/:customerId',
-      edit: '/dashboard/customers/:customerId/edit',
+    clients: {
+      index: '/dashboard/clients',
+      details: '/dashboard/client/',
+      new: '/dashboard/clients/new',
     },
     ecommerce: '/dashboard/ecommerce',
     fileManager: '/dashboard/file-manager',

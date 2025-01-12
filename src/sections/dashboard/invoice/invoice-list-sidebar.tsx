@@ -23,7 +23,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { InvoiceStatus } from 'src/types/invoice';
 
-const customers: string[] = [
+const clients: string[] = [
   'Blind Spots Inc.',
   'Dispatcher Inc.',
   'ACME SRL',
@@ -36,7 +36,7 @@ export interface Filters {
   query?: string;
   startDate?: Date;
   endDate?: Date;
-  customers?: string[];
+  clients?: string[];
   status?: InvoiceStatus;
 }
 
@@ -109,19 +109,19 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
     [filters, onFiltersChange]
   );
 
-  const handleCustomerToggle = useCallback(
+  const handleClientToggle = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
-      let customers: string[];
+      let clients: string[];
 
       if (event.target.checked) {
-        customers = [...(filters.customers || []), event.target.value];
+        clients = [...(filters.clients || []), event.target.value];
       } else {
-        customers = (filters.customers || []).filter((customer) => customer !== event.target.value);
+        clients = (filters.clients || []).filter((client) => client !== event.target.value);
       }
 
       onFiltersChange?.({
         ...filters,
-        customers: customers,
+        clients: clients,
       });
     },
     [filters, onFiltersChange]
@@ -204,7 +204,7 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
               mb: 2,
             }}
           >
-            From customer
+            From client
           </FormLabel>
           <Box
             sx={{
@@ -223,20 +223,20 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
                   px: 1.5,
                 }}
               >
-                {customers.map((customer) => {
-                  const isChecked = filters.customers?.includes(customer);
+                {clients.map((client) => {
+                  const isChecked = filters.clients?.includes(client);
 
                   return (
                     <FormControlLabel
                       control={
                         <Checkbox
                           checked={isChecked}
-                          onChange={handleCustomerToggle}
+                          onChange={handleClientToggle}
                         />
                       }
-                      key={customer}
-                      label={customer}
-                      value={customer}
+                      key={client}
+                      label={client}
+                      value={client}
                     />
                   );
                 })}

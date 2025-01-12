@@ -1,4 +1,4 @@
-interface OrderCustomer {
+interface OrderClient {
   address1?: string;
   address2?: string;
   avatar?: string;
@@ -30,7 +30,7 @@ export interface Order {
   coupon?: string | null;
   createdAt: number;
   currency?: string;
-  customer: OrderCustomer;
+  client: OrderClient;
   items?: OrderItem[];
   logs?: OrderLog[];
   number?: string;

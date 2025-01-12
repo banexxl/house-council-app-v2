@@ -22,7 +22,7 @@ interface Order {
   coupon: string | null;
   createdAt: number;
   currency: string;
-  customer: {
+  client: {
     address1: string;
     address2: string;
     city: string;
@@ -49,7 +49,7 @@ const order: Order = {
   coupon: null,
   createdAt: new Date().getTime(),
   currency: '$',
-  customer: {
+  client: {
     address1: 'Street John Wick, no. 7',
     address2: 'House #25',
     city: 'San Diego',
@@ -107,13 +107,13 @@ export const DetailList5: FC = () => {
           <TableBody>
             <TableRow>
               <TableCell>
-                <Typography variant="subtitle2">Customer</Typography>
+                <Typography variant="subtitle2">Client</Typography>
               </TableCell>
               <TableCell>
-                <div>{order.customer.name}</div>
-                <div>{order.customer.address1}</div>
-                <div>{order.customer.city}</div>
-                <div>{order.customer.country}</div>
+                <div>{order.client.name}</div>
+                <div>{order.client.address1}</div>
+                <div>{order.client.city}</div>
+                <div>{order.client.country}</div>
               </TableCell>
             </TableRow>
             <TableRow>

@@ -159,8 +159,8 @@ export const useSections = () => {
             ]
           },
           {
-            title: t(tokens.nav.customers),
-            path: paths.dashboard.customers.index,
+            title: t(tokens.nav.clients),
+            path: paths.dashboard.clients.index,
             icon: (
               <SvgIcon fontSize="small">
                 <Users03Icon />
@@ -168,16 +168,16 @@ export const useSections = () => {
             ),
             items: [
               {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.customers.index,
+                title: t(tokens.clients.clientsList),
+                path: paths.dashboard.clients.index,
               },
               {
-                title: t(tokens.nav.details),
-                path: paths.dashboard.customers.details,
+                title: t(tokens.clients.customerDetails),
+                path: paths.dashboard.clients.details,
               },
               {
-                title: t(tokens.nav.edit),
-                path: paths.dashboard.customers.edit,
+                title: t(tokens.clients.customerCreate),
+                path: paths.dashboard.clients.new,
               },
             ],
           },

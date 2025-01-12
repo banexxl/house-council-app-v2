@@ -19,20 +19,20 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-import { customersApi } from 'src/api/customers';
+import { clientsApi } from 'src/api/clients';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
 
 import { paths } from 'src/paths';
-import { CustomerBasicDetails } from 'src/sections/dashboard/customer/customer-basic-details';
-import { CustomerDataManagement } from 'src/sections/dashboard/customer/customer-data-management';
-import { CustomerEmailsSummary } from 'src/sections/dashboard/customer/customer-emails-summary';
-import { CustomerInvoices } from 'src/sections/dashboard/customer/customer-invoices';
-import { CustomerPayment } from 'src/sections/dashboard/customer/customer-payment';
-import { CustomerLogs } from 'src/sections/dashboard/customer/customer-logs';
-import type { Customer } from 'src/types/customer';
-import { CustomerInvoice, CustomerLog } from 'src/types/customer';
+import { ClientBasicDetails } from 'src/sections/dashboard/client/client-basic-details';
+import { ClientDataManagement } from 'src/sections/dashboard/client/client-data-management';
+import { ClientEmailsSummary } from 'src/sections/dashboard/client/client-emails-summary';
+import { ClientInvoices } from 'src/sections/dashboard/client/client-invoices';
+import { ClientPayment } from 'src/sections/dashboard/client/client-payment';
+import { ClientLogs } from 'src/sections/dashboard/client/client-logs';
+import type { Client } from 'src/types/client';
+import { ClientInvoice, ClientLog } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 
 const tabs = [
@@ -41,16 +41,16 @@ const tabs = [
   { label: 'Logs', value: 'logs' },
 ];
 
-const useCustomer = (): Customer | null => {
+const useClient = (): Client | null => {
   const isMounted = useMounted();
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [client, setClient] = useState<Client | null>(null);
 
-  const handleCustomerGet = useCallback(async () => {
+  const handleClientGet = useCallback(async () => {
     try {
-      const response = await customersApi.getCustomer();
+      const response = await clientsApi.getClient();
 
       if (isMounted()) {
-        setCustomer(response);
+        setClient(response);
       }
     } catch (err) {
       console.error(err);
@@ -59,22 +59,22 @@ const useCustomer = (): Customer | null => {
 
   useEffect(
     () => {
-      handleCustomerGet();
+      handleClientGet();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
-  return customer;
+  return client;
 };
 
-const useInvoices = (): CustomerInvoice[] => {
+const useInvoices = (): ClientInvoice[] => {
   const isMounted = useMounted();
-  const [invoices, setInvoices] = useState<CustomerInvoice[]>([]);
+  const [invoices, setInvoices] = useState<ClientInvoice[]>([]);
 
   const handleInvoicesGet = useCallback(async () => {
     try {
-      const response = await customersApi.getInvoices();
+      const response = await clientsApi.getInvoices();
 
       if (isMounted()) {
         setInvoices(response);
@@ -95,13 +95,13 @@ const useInvoices = (): CustomerInvoice[] => {
   return invoices;
 };
 
-const useLogs = (): CustomerLog[] => {
+const useLogs = (): ClientLog[] => {
   const isMounted = useMounted();
-  const [logs, setLogs] = useState<CustomerLog[]>([]);
+  const [logs, setLogs] = useState<ClientLog[]>([]);
 
   const handleLogsGet = useCallback(async () => {
     try {
-      const response = await customersApi.getLogs();
+      const response = await clientsApi.getLogs();
 
       if (isMounted()) {
         setLogs(response);
@@ -124,7 +124,7 @@ const useLogs = (): CustomerLog[] => {
 
 const Page = () => {
   const [currentTab, setCurrentTab] = useState<string>('details');
-  const customer = useCustomer();
+  const client = useClient();
   const invoices = useInvoices();
   const logs = useLogs();
 
@@ -134,13 +134,13 @@ const Page = () => {
     setCurrentTab(value);
   }, []);
 
-  if (!customer) {
+  if (!client) {
     return null;
   }
 
   return (
     <>
-      <Seo title="Dashboard: Customer Details" />
+      <Seo title="Dashboard: Client Details" />
       <Box
         component="main"
         sx={{
@@ -155,7 +155,7 @@ const Page = () => {
                 <Link
                   color="text.primary"
                   component={RouterLink}
-                  href={paths.dashboard.customers.index}
+                  href={paths.dashboard.clients.index}
                   sx={{
                     alignItems: 'center',
                     display: 'inline-flex',
@@ -165,7 +165,7 @@ const Page = () => {
                   <SvgIcon sx={{ mr: 1 }}>
                     <ArrowLeftIcon />
                   </SvgIcon>
-                  <Typography variant="subtitle2">Customers</Typography>
+                  <Typography variant="subtitle2">Clients</Typography>
                 </Link>
               </div>
               <Stack
@@ -183,16 +183,16 @@ const Page = () => {
                   spacing={2}
                 >
                   <Avatar
-                    src={customer.avatar}
+                    src={client.avatar}
                     sx={{
                       height: 64,
                       width: 64,
                     }}
                   >
-                    {getInitials(customer.name)}
+                    {getInitials(client.name)}
                   </Avatar>
                   <Stack spacing={1}>
-                    <Typography variant="h4">{customer.email}</Typography>
+                    <Typography variant="h4">{client.email}</Typography>
                     <Stack
                       alignItems="center"
                       direction="row"
@@ -200,7 +200,7 @@ const Page = () => {
                     >
                       <Typography variant="subtitle2">user_id:</Typography>
                       <Chip
-                        label={customer.id}
+                        label={client.id}
                         size="small"
                       />
                     </Stack>
@@ -219,7 +219,7 @@ const Page = () => {
                         <Edit02Icon />
                       </SvgIcon>
                     }
-                    href={paths.dashboard.customers.edit}
+                    href={paths.dashboard.clients.new}
                   >
                     Edit
                   </Button>
@@ -266,14 +266,14 @@ const Page = () => {
                     xs={12}
                     lg={4}
                   >
-                    <CustomerBasicDetails
-                      address1={customer.address1}
-                      address2={customer.address2}
-                      country={customer.country}
-                      email={customer.email}
-                      isVerified={!!customer.isVerified}
-                      phone={customer.phone}
-                      state={customer.state}
+                    <ClientBasicDetails
+                      address1={client.address1}
+                      address2={client.address2}
+                      country={client.country}
+                      email={client.email}
+                      isVerified={!!client.isVerified}
+                      phone={client.phone}
+                      state={client.state}
                     />
                   </Grid>
                   <Grid
@@ -281,16 +281,16 @@ const Page = () => {
                     lg={8}
                   >
                     <Stack spacing={4}>
-                      <CustomerPayment />
-                      <CustomerEmailsSummary />
-                      <CustomerDataManagement />
+                      <ClientPayment />
+                      <ClientEmailsSummary />
+                      <ClientDataManagement />
                     </Stack>
                   </Grid>
                 </Grid>
               </div>
             )}
-            {currentTab === 'invoices' && <CustomerInvoices invoices={invoices} />}
-            {currentTab === 'logs' && <CustomerLogs logs={logs} />}
+            {currentTab === 'invoices' && <ClientInvoices invoices={invoices} />}
+            {currentTab === 'logs' && <ClientLogs logs={logs} />}
           </Stack>
         </Container>
       </Box>

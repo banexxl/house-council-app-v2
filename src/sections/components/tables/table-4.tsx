@@ -31,7 +31,7 @@ interface Order {
   id: string;
   createdAt: number;
   currency: string;
-  customer: {
+  client: {
     email: string;
     name: string;
   };
@@ -46,7 +46,7 @@ const orders: Order[] = [
     id: '5ecb8a6d9f53bfae09e16115',
     createdAt: subMinutes(subSeconds(now, 23), 32).getTime(),
     currency: '$',
-    customer: {
+    client: {
       email: 'carson.darrin@devias.io',
       name: 'Carson Darrin',
     },
@@ -59,7 +59,7 @@ const orders: Order[] = [
     id: '5ecb8a738aa6f3e577c2b3ec',
     createdAt: subMinutes(subSeconds(now, 51), 36).getTime(),
     currency: '$',
-    customer: {
+    client: {
       email: 'fran.perez@devias.io',
       name: 'Fran Perez',
     },
@@ -72,7 +72,7 @@ const orders: Order[] = [
     id: '5ecb8a795e53f134013eba3b',
     createdAt: subMinutes(subSeconds(now, 55), 38).getTime(),
     currency: '$',
-    customer: {
+    client: {
       email: 'jie.yan.song@devias.io',
       name: 'Jie Yan Song',
     },
@@ -85,7 +85,7 @@ const orders: Order[] = [
     id: '5ecb8a7f738cc572a9ce0277',
     createdAt: subMinutes(subSeconds(now, 3), 40).getTime(),
     currency: '$',
-    customer: {
+    client: {
       email: 'clarke.gillebert@devias.io',
       name: 'Clarke Gillebert',
     },
@@ -98,7 +98,7 @@ const orders: Order[] = [
     id: '5e86805e2bafd54f66cc95c3',
     createdAt: subMinutes(subSeconds(now, 32), 45).getTime(),
     currency: '$',
-    customer: {
+    client: {
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
     },
@@ -161,7 +161,7 @@ export const Table4: FC = () => (
                 <Checkbox />
               </TableCell>
               <TableCell>Number</TableCell>
-              <TableCell>Customer</TableCell>
+              <TableCell>Client</TableCell>
               <TableCell>Method</TableCell>
               <TableCell>Total</TableCell>
               <TableCell>Status</TableCell>
@@ -192,12 +192,12 @@ export const Table4: FC = () => (
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="subtitle2">{order.customer.name}</Typography>
+                    <Typography variant="subtitle2">{order.client.name}</Typography>
                     <Typography
                       color="text.secondary"
                       variant="body2"
                     >
-                      {order.customer.email}
+                      {order.client.email}
                     </Typography>
                   </TableCell>
                   <TableCell>{order.paymentMethod}</TableCell>
@@ -224,8 +224,8 @@ export const Table4: FC = () => (
       <TablePagination
         component="div"
         count={orders.length}
-        onPageChange={() => {}}
-        onRowsPerPageChange={() => {}}
+        onPageChange={() => { }}
+        onRowsPerPageChange={() => { }}
         page={0}
         rowsPerPage={5}
         rowsPerPageOptions={[5, 10, 25]}

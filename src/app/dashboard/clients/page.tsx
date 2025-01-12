@@ -13,14 +13,14 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { customersApi } from 'src/api/customers';
+import { clientsApi } from 'src/api/clients';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
 
 import { useSelection } from 'src/hooks/use-selection';
-import { CustomerListSearch } from 'src/sections/dashboard/customer/customer-list-search';
-import { CustomerListTable } from 'src/sections/dashboard/customer/customer-list-table';
-import type { Customer } from 'src/types/customer';
+import { ClientListSearch } from 'src/sections/dashboard/client/client-list-search';
+import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
+import type { Client } from 'src/types/client';
 
 interface Filters {
   query?: string;
@@ -29,7 +29,7 @@ interface Filters {
   isReturning?: boolean;
 }
 
-interface CustomersSearchState {
+interface ClientsSearchState {
   filters: Filters;
   page: number;
   rowsPerPage: number;
@@ -37,8 +37,9 @@ interface CustomersSearchState {
   sortDir: 'asc' | 'desc';
 }
 
-const useCustomersSearch = () => {
-  const [state, setState] = useState<CustomersSearchState>({
+const useClientsSearch = () => {
+
+  const [state, setState] = useState<ClientsSearchState>({
     filters: {
       query: undefined,
       hasAcceptedMarketing: undefined,
@@ -95,26 +96,26 @@ const useCustomersSearch = () => {
   };
 };
 
-interface CustomersStoreState {
-  customers: Customer[];
-  customersCount: number;
+interface ClientsStoreState {
+  clients: Client[];
+  clientsCount: number;
 }
 
-const useCustomersStore = (searchState: CustomersSearchState) => {
+const useClientsStore = (searchState: ClientsSearchState) => {
   const isMounted = useMounted();
-  const [state, setState] = useState<CustomersStoreState>({
-    customers: [],
-    customersCount: 0,
+  const [state, setState] = useState<ClientsStoreState>({
+    clients: [],
+    clientsCount: 0,
   });
 
-  const handleCustomersGet = useCallback(async () => {
+  const handleClientsGet = useCallback(async () => {
     try {
-      const response = await customersApi.getCustomers(searchState);
+      const response = await clientsApi.getClients(searchState);
 
       if (isMounted()) {
         setState({
-          customers: response.data,
-          customersCount: response.count,
+          clients: response.data,
+          clientsCount: response.count,
         });
       }
     } catch (err) {
@@ -124,7 +125,7 @@ const useCustomersStore = (searchState: CustomersSearchState) => {
 
   useEffect(
     () => {
-      handleCustomersGet();
+      handleClientsGet();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchState]
@@ -135,23 +136,23 @@ const useCustomersStore = (searchState: CustomersSearchState) => {
   };
 };
 
-const useCustomersIds = (customers: Customer[] = []) => {
+const useClientsIds = (clients: Client[] = []) => {
   return useMemo(() => {
-    return customers.map((customer) => customer.id);
-  }, [customers]);
+    return clients.map((client) => client.id);
+  }, [clients]);
 };
 
 const Page = () => {
-  const customersSearch = useCustomersSearch();
-  const customersStore = useCustomersStore(customersSearch.state);
-  const customersIds = useCustomersIds(customersStore.customers);
-  const customersSelection = useSelection<string>(customersIds);
+  const clientsSearch = useClientsSearch();
+  const clientsStore = useClientsStore(clientsSearch.state);
+  const clientsIds = useClientsIds(clientsStore.clients);
+  const clientsSelection = useSelection<string>(clientsIds);
 
 
 
   return (
     <>
-      <Seo title="Dashboard: Customer List" />
+      <Seo title="Dashboard: Client List" />
       <Box
         component="main"
         sx={{
@@ -167,7 +168,7 @@ const Page = () => {
               spacing={4}
             >
               <Stack spacing={1}>
-                <Typography variant="h4">Customers</Typography>
+                <Typography variant="h4">Clients</Typography>
                 <Stack
                   alignItems="center"
                   direction="row"
@@ -215,24 +216,24 @@ const Page = () => {
               </Stack>
             </Stack>
             <Card>
-              <CustomerListSearch
-                onFiltersChange={customersSearch.handleFiltersChange}
-                onSortChange={customersSearch.handleSortChange}
-                sortBy={customersSearch.state.sortBy}
-                sortDir={customersSearch.state.sortDir}
+              <ClientListSearch
+                onFiltersChange={clientsSearch.handleFiltersChange}
+                onSortChange={clientsSearch.handleSortChange}
+                sortBy={clientsSearch.state.sortBy}
+                sortDir={clientsSearch.state.sortDir}
               />
-              <CustomerListTable
-                count={customersStore.customersCount}
-                items={customersStore.customers}
-                onDeselectAll={customersSelection.handleDeselectAll}
-                onDeselectOne={customersSelection.handleDeselectOne}
-                onPageChange={customersSearch.handlePageChange}
-                onRowsPerPageChange={customersSearch.handleRowsPerPageChange}
-                onSelectAll={customersSelection.handleSelectAll}
-                onSelectOne={customersSelection.handleSelectOne}
-                page={customersSearch.state.page}
-                rowsPerPage={customersSearch.state.rowsPerPage}
-                selected={customersSelection.selected}
+              <ClientListTable
+                count={clientsStore.clientsCount}
+                items={clientsStore.clients}
+                onDeselectAll={clientsSelection.handleDeselectAll}
+                onDeselectOne={clientsSelection.handleDeselectOne}
+                onPageChange={clientsSearch.handlePageChange}
+                onRowsPerPageChange={clientsSearch.handleRowsPerPageChange}
+                onSelectAll={clientsSelection.handleSelectAll}
+                onSelectOne={clientsSelection.handleSelectOne}
+                page={clientsSearch.state.page}
+                rowsPerPage={clientsSearch.state.rowsPerPage}
+                selected={clientsSelection.selected}
               />
             </Card>
           </Stack>

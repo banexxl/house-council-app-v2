@@ -16,26 +16,26 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
-import type { Customer } from 'src/types/customer';
+import type { Client } from 'src/types/client';
 import { wait } from 'src/utils/wait';
 
-interface CustomerEditFormProps {
-  customer: Customer;
+interface ClientEditFormProps {
+  client: Client;
 }
 
-export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
-  const { customer, ...other } = props;
+export const ClientEditForm: FC<ClientEditFormProps> = (props) => {
+  const { client, ...other } = props;
   const formik = useFormik({
     initialValues: {
-      address1: customer.address1 || '',
-      address2: customer.address2 || '',
-      country: customer.country || '',
-      email: customer.email || '',
-      hasDiscount: customer.hasDiscount || false,
-      isVerified: customer.isVerified || false,
-      name: customer.name || '',
-      phone: customer.phone || '',
-      state: customer.state || '',
+      address1: client.address1 || '',
+      address2: client.address2 || '',
+      country: client.country || '',
+      email: client.email || '',
+      hasDiscount: client.hasDiscount || false,
+      isVerified: client.isVerified || false,
+      name: client.name || '',
+      phone: client.phone || '',
+      state: client.state || '',
       submit: null,
     },
     validationSchema: Yup.object({
@@ -55,7 +55,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
         await wait(500);
         helpers.setStatus({ success: true });
         helpers.setSubmitting(false);
-        toast.success('Customer updated');
+        toast.success('Client updated');
       } catch (err) {
         console.error(err);
         toast.error('Something went wrong!');
@@ -72,7 +72,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
       {...other}
     >
       <Card>
-        <CardHeader title="Edit Customer" />
+        <CardHeader title="Edit Client" />
         <CardContent sx={{ pt: 0 }}>
           <Grid
             container
@@ -272,7 +272,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
             color="inherit"
             component={RouterLink}
             disabled={formik.isSubmitting}
-            href={paths.dashboard.customers.details}
+            href={paths.dashboard.clients.details}
           >
             Cancel
           </Button>
@@ -282,7 +282,7 @@ export const CustomerEditForm: FC<CustomerEditFormProps> = (props) => {
   );
 };
 
-CustomerEditForm.propTypes = {
+ClientEditForm.propTypes = {
   // @ts-ignore
-  customer: PropTypes.object.isRequired,
+  client: PropTypes.object.isRequired,
 };

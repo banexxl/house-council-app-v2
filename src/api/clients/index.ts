@@ -1,11 +1,11 @@
-import type { Customer, CustomerEmail, CustomerInvoice, CustomerLog } from 'src/types/customer';
+import type { Client, ClientEmail, ClientInvoice, ClientLog } from 'src/types/client';
 import { applyPagination } from 'src/utils/apply-pagination';
 import { applySort } from 'src/utils/apply-sort';
 import { deepCopy } from 'src/utils/deep-copy';
 
-import { customer, customers, emails, invoices, logs } from './data';
+import { client, clients, emails, invoices, logs } from './data';
 
-type GetCustomersRequest = {
+type GetClientsRequest = {
   filters?: {
     query?: string;
     hasAcceptedMarketing?: boolean;
@@ -18,42 +18,42 @@ type GetCustomersRequest = {
   sortDir?: 'asc' | 'desc';
 };
 
-type GetCustomersResponse = Promise<{
-  data: Customer[];
+type GetClientsResponse = Promise<{
+  data: Client[];
   count: number;
 }>;
 
-type GetCustomerRequest = object;
+type GetClientRequest = object;
 
-type GetCustomerResponse = Promise<Customer>;
+type GetClientResponse = Promise<Client>;
 
-type GetCustomerEmailsRequest = object;
+type GetClientEmailsRequest = object;
 
-type GetCustomerEmailsResponse = Promise<CustomerEmail[]>;
+type GetClientEmailsResponse = Promise<ClientEmail[]>;
 
-type GetCustomerInvoicesRequest = object;
+type GetClientInvoicesRequest = object;
 
-type GetCustomerInvoicesResponse = Promise<CustomerInvoice[]>;
+type GetClientInvoicesResponse = Promise<ClientInvoice[]>;
 
-type GetCustomerLogsRequest = object;
+type GetClientLogsRequest = object;
 
-type GetCustomerLogsResponse = Promise<CustomerLog[]>;
+type GetClientLogsResponse = Promise<ClientLog[]>;
 
-class CustomersApi {
-  getCustomers(request: GetCustomersRequest = {}): GetCustomersResponse {
+class ClientsApi {
+  getClients(request: GetClientsRequest = {}): GetClientsResponse {
     const { filters, page, rowsPerPage, sortBy, sortDir } = request;
 
-    let data = deepCopy(customers) as Customer[];
+    let data = deepCopy(clients) as Client[];
     let count = data.length;
 
     if (typeof filters !== 'undefined') {
-      data = data.filter((customer) => {
+      data = data.filter((client) => {
         if (typeof filters.query !== 'undefined' && filters.query !== '') {
           let queryMatched = false;
           const properties: ('email' | 'name')[] = ['email', 'name'];
 
           properties.forEach((property) => {
-            if (customer[property].toLowerCase().includes(filters.query!.toLowerCase())) {
+            if (client[property].toLowerCase().includes(filters.query!.toLowerCase())) {
               queryMatched = true;
             }
           });
@@ -64,19 +64,19 @@ class CustomersApi {
         }
 
         if (typeof filters.hasAcceptedMarketing !== 'undefined') {
-          if (customer.hasAcceptedMarketing !== filters.hasAcceptedMarketing) {
+          if (client.hasAcceptedMarketing !== filters.hasAcceptedMarketing) {
             return false;
           }
         }
 
         if (typeof filters.isProspect !== 'undefined') {
-          if (customer.isProspect !== filters.isProspect) {
+          if (client.isProspect !== filters.isProspect) {
             return false;
           }
         }
 
         if (typeof filters.isReturning !== 'undefined') {
-          if (customer.isReturning !== filters.isReturning) {
+          if (client.isReturning !== filters.isReturning) {
             return false;
           }
         }
@@ -100,21 +100,21 @@ class CustomersApi {
     });
   }
 
-  getCustomer(request?: GetCustomerRequest): GetCustomerResponse {
-    return Promise.resolve(deepCopy(customer));
+  getClient(request?: GetClientRequest): GetClientResponse {
+    return Promise.resolve(deepCopy(client));
   }
 
-  getEmails(request?: GetCustomerEmailsRequest): GetCustomerEmailsResponse {
+  getEmails(request?: GetClientEmailsRequest): GetClientEmailsResponse {
     return Promise.resolve(deepCopy(emails));
   }
 
-  getInvoices(request?: GetCustomerInvoicesRequest): GetCustomerInvoicesResponse {
+  getInvoices(request?: GetClientInvoicesRequest): GetClientInvoicesResponse {
     return Promise.resolve(deepCopy(invoices));
   }
 
-  getLogs(request?: GetCustomerLogsRequest): GetCustomerLogsResponse {
+  getLogs(request?: GetClientLogsRequest): GetClientLogsResponse {
     return Promise.resolve(deepCopy(logs));
   }
 }
 
-export const customersApi = new CustomersApi();
+export const clientsApi = new ClientsApi();

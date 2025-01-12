@@ -30,7 +30,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 
 const now = new Date();
 
-interface Customer {
+interface Client {
   id: string;
   avatar: string;
   city: string;
@@ -47,7 +47,7 @@ interface Customer {
   updatedAt: number;
 }
 
-const customers: Customer[] = [
+const clients: Client[] = [
   {
     id: '5e887ac47eed253091be10cb',
     avatar: '/assets/avatars/avatar-carson-darrin.png',
@@ -206,7 +206,7 @@ export const Table3: FC = () => (
         sx={{ p: 3 }}
       >
         <OutlinedInput
-          placeholder="Search customers"
+          placeholder="Search clients"
           startAdornment={
             <InputAdornment position="start">
               <SvgIcon>
@@ -247,14 +247,14 @@ export const Table3: FC = () => (
             </TableRow>
           </TableHead>
           <TableBody>
-            {customers.map((customer) => {
-              const location = `${customer.city}, ${customer.state}, ${customer.country}`;
-              const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
+            {clients.map((client) => {
+              const location = `${client.city}, ${client.state}, ${client.country}`;
+              const totalSpent = numeral(client.totalSpent).format(`${client.currency}0,0.00`);
 
               return (
                 <TableRow
                   hover
-                  key={customer.id}
+                  key={client.id}
                 >
                   <TableCell padding="checkbox">
                     <Checkbox />
@@ -266,7 +266,7 @@ export const Table3: FC = () => (
                       spacing={1}
                     >
                       <Avatar
-                        src={customer.avatar}
+                        src={client.avatar}
                         sx={{
                           height: 42,
                           width: 42,
@@ -277,19 +277,19 @@ export const Table3: FC = () => (
                           color="inherit"
                           variant="subtitle2"
                         >
-                          {customer.name}
+                          {client.name}
                         </Link>
                         <Typography
                           color="text.secondary"
                           variant="body2"
                         >
-                          {customer.email}
+                          {client.email}
                         </Typography>
                       </div>
                     </Stack>
                   </TableCell>
                   <TableCell>{location}</TableCell>
-                  <TableCell>{customer.totalOrders}</TableCell>
+                  <TableCell>{client.totalOrders}</TableCell>
                   <TableCell>{totalSpent}</TableCell>
                   <TableCell align="right">
                     <IconButton>
@@ -311,9 +311,9 @@ export const Table3: FC = () => (
       </Scrollbar>
       <TablePagination
         component="div"
-        count={customers.length}
-        onPageChange={() => {}}
-        onRowsPerPageChange={() => {}}
+        count={clients.length}
+        onPageChange={() => { }}
+        onRowsPerPageChange={() => { }}
         page={0}
         rowsPerPage={5}
         rowsPerPageOptions={[5, 10, 25]}

@@ -44,7 +44,7 @@ export const rs = {
      [tokens.nav.course]: 'Kurs',
      [tokens.nav.create]: 'Kreiraj',
      [tokens.nav.crypto]: 'Kripto',
-     [tokens.nav.customers]: 'Kupci',
+     [tokens.nav.clients]: 'Kupci',
      [tokens.nav.dashboard]: 'Kontrolna tabla',
      [tokens.nav.details]: 'Detalji',
      [tokens.nav.ecommerce]: 'E-Trgovina',
@@ -103,6 +103,12 @@ export const rs = {
      [tokens.buildings.buildingDetails]: 'Detalji zgrade',
      [tokens.buildings.buildingCreate]: 'Kreiraj zgradu',
      [tokens.buildings.buildingEdit]: 'Izmeni zgradu',
+     // Clients
+     [tokens.clients.clientsList]: 'Pregled klijenata',
+     [tokens.clients.customerDetails]: 'Detalji klijenta',
+     [tokens.clients.customerCreate]: 'Kreiraj klijenta',
+     [tokens.clients.customerEdit]: 'Izmeni klijenta',
+     [tokens.clients.customerDelete]: 'Brisanje klijenta',
      // Errors
      [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',
 };

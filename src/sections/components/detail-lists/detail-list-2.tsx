@@ -132,7 +132,7 @@ export const DetailList2: FC = () => (
             </SvgIcon>
           }
         >
-          Login as Customer
+          Login as Client
         </Button>
       </Stack>
     </Card>

@@ -28,7 +28,7 @@ type OrderStatus = 'complete' | 'pending' | 'rejected';
 interface Order {
   id: string;
   createdAt: number;
-  customer: {
+  client: {
     email: string;
     name: string;
   };
@@ -45,7 +45,7 @@ const orders: Order[] = [
   {
     id: '5eff2548979e396cb4b000ba',
     createdAt: subMinutes(subSeconds(now, 10), 7).getTime(),
-    customer: {
+    client: {
       email: 'ekaterina@devias.io',
       name: 'Ekaterina Tankova',
     },
@@ -58,7 +58,7 @@ const orders: Order[] = [
   {
     id: '5eff254e46b753a166e7d7af',
     createdAt: subHours(subMinutes(subSeconds(now, 50), 12), 2).getTime(),
-    customer: {
+    client: {
       email: 'carson.darrin@devias.io',
       name: 'Carson Darrin',
     },
@@ -71,7 +71,7 @@ const orders: Order[] = [
   {
     id: '5eff2553e1c551e2e28a9205',
     createdAt: subHours(subMinutes(subSeconds(now, 12), 39), 5).getTime(),
-    customer: {
+    client: {
       email: 'fran.perez@devias.io',
       name: 'Fran Perez',
     },
@@ -84,7 +84,7 @@ const orders: Order[] = [
   {
     id: '5eff25590f3e28f013c39a0e',
     createdAt: subHours(subMinutes(subSeconds(now, 21), 46), 5).getTime(),
-    customer: {
+    client: {
       email: 'anje.keiser@devias.io',
       name: 'Jie Yan Song',
     },
@@ -97,7 +97,7 @@ const orders: Order[] = [
   {
     id: '5eff255f57499089243805d8',
     createdAt: subHours(subMinutes(subSeconds(now, 54), 19), 8).getTime(),
-    customer: {
+    client: {
       name: 'Clarke Gillebert',
       email: 'clarke.gillebert@devias.io',
     },
@@ -110,7 +110,7 @@ const orders: Order[] = [
   {
     id: '5eff25658d416fc5adb96a3a',
     createdAt: subDays(subMinutes(subSeconds(now, 12), 45), 1).getTime(),
-    customer: {
+    client: {
       email: 'nasimiyu.danai@devias.io',
       name: 'Nasimiyu Danai',
     },
@@ -164,7 +164,7 @@ export const Table1: FC = () => (
                   </TableSortLabel>
                 </Tooltip>
               </TableCell>
-              <TableCell>Customer</TableCell>
+              <TableCell>Client</TableCell>
               <TableCell>Items</TableCell>
               <TableCell>Total</TableCell>
               <TableCell>Status</TableCell>
@@ -185,7 +185,7 @@ export const Table1: FC = () => (
                   <TableCell>
                     <Typography variant="subtitle2">{order.number}</Typography>
                   </TableCell>
-                  <TableCell>{order.customer.name}</TableCell>
+                  <TableCell>{order.client.name}</TableCell>
                   <TableCell>{order.items}</TableCell>
                   <TableCell>{totalAmount}</TableCell>
                   <TableCell>

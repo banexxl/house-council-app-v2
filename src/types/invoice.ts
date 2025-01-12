@@ -1,4 +1,4 @@
-interface InvoiceCustomer {
+interface InvoiceClient {
   address?: string;
   company?: string;
   email: string;
@@ -20,7 +20,7 @@ export type InvoiceStatus = 'canceled' | 'paid' | 'pending';
 export interface Invoice {
   id: string;
   currency: string;
-  customer: InvoiceCustomer;
+  client: InvoiceClient;
   dueDate?: number;
   issueDate?: number;
   items?: InvoiceItem[];

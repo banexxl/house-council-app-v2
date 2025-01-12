@@ -33,7 +33,7 @@ type InvoiceStatus = 'canceled' | 'paid' | 'pending';
 interface Invoice {
   id: string;
   currency: string;
-  customer: {
+  client: {
     email: string;
     name: string;
   };
@@ -46,7 +46,7 @@ const invoices: Invoice[] = [
   {
     id: '5ecb868d0f437390ef3ac62c',
     currency: '$',
-    customer: {
+    client: {
       email: 'contact@anahenisky.io',
       name: 'Ana Henisky',
     },
@@ -57,7 +57,7 @@ const invoices: Invoice[] = [
   {
     id: '5ecb868ada8deedee0638502',
     currency: '$',
-    customer: {
+    client: {
       email: 'sales@matt-jason.com',
       name: 'Matt Jason',
     },
@@ -68,7 +68,7 @@ const invoices: Invoice[] = [
   {
     id: '5ecb868700aba84d0f1c0e48',
     currency: '$',
-    customer: {
+    client: {
       email: 'support@terrythomas.io',
       name: 'Terry Thomas',
     },
@@ -79,7 +79,7 @@ const invoices: Invoice[] = [
   {
     id: '5ecb8682038e1ddf4e868764',
     currency: '$',
-    customer: {
+    client: {
       email: 'contact@triv-shopper.co.uk',
       name: 'Triv Shopper',
     },
@@ -223,7 +223,7 @@ export const Table6: FC = () => (
               <TableCell padding="checkbox">
                 <Checkbox />
               </TableCell>
-              <TableCell>Customer</TableCell>
+              <TableCell>Client</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>ID</TableCell>
@@ -251,13 +251,13 @@ export const Table6: FC = () => (
                       underline="none"
                       variant="subtitle2"
                     >
-                      {invoice.customer.name}
+                      {invoice.client.name}
                     </Link>
                     <Typography
                       color="text.secondary"
                       variant="body2"
                     >
-                      {invoice.customer.email}
+                      {invoice.client.email}
                     </Typography>
                   </TableCell>
                   <TableCell>{statusPill}</TableCell>
@@ -285,8 +285,8 @@ export const Table6: FC = () => (
       <TablePagination
         component="div"
         count={invoices.length}
-        onPageChange={() => {}}
-        onRowsPerPageChange={() => {}}
+        onPageChange={() => { }}
+        onRowsPerPageChange={() => { }}
         page={0}
         rowsPerPage={5}
         rowsPerPageOptions={[5, 10, 25]}

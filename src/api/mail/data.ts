@@ -96,7 +96,7 @@ export const emails: Email[] = [
       },
       {
         id: '09223c93e60f815fdce487af',
-        name: 'summer-customers.pdf',
+        name: 'summer-clients.pdf',
         size: '782.3Kb',
         type: 'file',
         url: '#',

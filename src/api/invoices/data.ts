@@ -8,7 +8,7 @@ export const invoices: Invoice[] = [
   {
     id: '5ecb868d0f437390ef3ac62c',
     currency: '$',
-    customer: {
+    client: {
       email: 'contact@acme.com',
       name: 'ACME SRL',
     },
@@ -21,7 +21,7 @@ export const invoices: Invoice[] = [
   {
     id: '59d78b0b0e15394130c373ff',
     currency: '$',
-    customer: {
+    client: {
       email: 'sales@blind-spots.com',
       name: 'Blind Spots Inc.',
     },
@@ -34,7 +34,7 @@ export const invoices: Invoice[] = [
   {
     id: '2a05e7f757c35fe823da3c5a',
     currency: '$',
-    customer: {
+    client: {
       email: 'sales@beauty-clinic.com',
       name: 'Beauty Clinic SRL',
     },
@@ -47,7 +47,7 @@ export const invoices: Invoice[] = [
   {
     id: '5ecb868ada8deedee0638502',
     currency: '$',
-    customer: {
+    client: {
       email: 'sales@matt-jason.com',
       name: 'Matt Jason',
     },
@@ -60,7 +60,7 @@ export const invoices: Invoice[] = [
   {
     id: '750f519b8bc4d21af9528437',
     currency: '$',
-    customer: {
+    client: {
       email: 'sales@matt-jason.com',
       name: 'Matt Jason',
     },
@@ -73,7 +73,7 @@ export const invoices: Invoice[] = [
   {
     id: '5ecb868700aba84d0f1c0e48',
     currency: '$',
-    customer: {
+    client: {
       email: 'support@terrythomas.io',
       name: 'Terry Thomas',
     },
@@ -86,7 +86,7 @@ export const invoices: Invoice[] = [
   {
     id: '5ecb8682038e1rl239438dks1',
     currency: '$',
-    customer: {
+    client: {
       email: 'contact@dispatcher.co.uk',
       name: 'Dispatcher Inc.',
     },
@@ -99,7 +99,7 @@ export const invoices: Invoice[] = [
   {
     id: '5ecb8682038e1ddf4e868764',
     currency: '$',
-    customer: {
+    client: {
       email: 'info@novelty.co.uk',
       name: 'Novelty I.S',
     },
@@ -114,7 +114,7 @@ export const invoices: Invoice[] = [
 export const invoice: Invoice = {
   id: '5ecb86785312dcc69b5799ad',
   currency: '$',
-  customer: {
+  client: {
     address: '271 Richmond Rd, Grey Lynn, Auckland 1022, New Zealand',
     company: 'Countdown Grey Lynn',
     email: 'contact@acme.com',

@@ -22,12 +22,12 @@ import Typography from '@mui/material/Typography';
 import { RouterLink } from 'src/components/router-link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Customer } from 'src/types/customer';
+import type { Client } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 
-interface CustomerListTableProps {
+interface ClientListTableProps {
   count?: number;
-  items?: Customer[];
+  items?: Client[];
   onDeselectAll?: () => void;
   onDeselectOne?: (customerId: string) => void;
   onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
@@ -39,13 +39,13 @@ interface CustomerListTableProps {
   selected?: string[];
 }
 
-export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
+export const ClientListTable: FC<ClientListTableProps> = (props) => {
   const {
     count = 0,
     items = [],
     onDeselectAll,
     onDeselectOne,
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     onSelectAll,
     onSelectOne,
@@ -128,15 +128,15 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((customer) => {
-              const isSelected = selected.includes(customer.id);
-              const location = `${customer.city}, ${customer.state}, ${customer.country}`;
-              const totalSpent = numeral(customer.totalSpent).format(`${customer.currency}0,0.00`);
+            {items.map((client) => {
+              const isSelected = selected.includes(client.id);
+              const location = `${client.city}, ${client.state}, ${client.country}`;
+              const totalSpent = numeral(client.totalSpent).format(`${client.currency}0,0.00`);
 
               return (
                 <TableRow
                   hover
-                  key={customer.id}
+                  key={client.id}
                   selected={isSelected}
                 >
                   <TableCell padding="checkbox">
@@ -144,9 +144,9 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                       checked={isSelected}
                       onChange={(event: ChangeEvent<HTMLInputElement>): void => {
                         if (event.target.checked) {
-                          onSelectOne?.(customer.id);
+                          onSelectOne?.(client.id);
                         } else {
-                          onDeselectOne?.(customer.id);
+                          onDeselectOne?.(client.id);
                         }
                       }}
                       value={isSelected}
@@ -159,41 +159,41 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                       spacing={1}
                     >
                       <Avatar
-                        src={customer.avatar}
+                        src={client.avatar}
                         sx={{
                           height: 42,
                           width: 42,
                         }}
                       >
-                        {getInitials(customer.name)}
+                        {getInitials(client.name)}
                       </Avatar>
                       <div>
                         <Link
                           color="inherit"
                           component={RouterLink}
-                          href={paths.dashboard.customers.details}
+                          href={paths.dashboard.clients.details}
                           variant="subtitle2"
                         >
-                          {customer.name}
+                          {client.name}
                         </Link>
                         <Typography
                           color="text.secondary"
                           variant="body2"
                         >
-                          {customer.email}
+                          {client.email}
                         </Typography>
                       </div>
                     </Stack>
                   </TableCell>
                   <TableCell>{location}</TableCell>
-                  <TableCell>{customer.totalOrders}</TableCell>
+                  <TableCell>{client.totalOrders}</TableCell>
                   <TableCell>
                     <Typography variant="subtitle2">{totalSpent}</Typography>
                   </TableCell>
                   <TableCell align="right">
                     <IconButton
                       component={RouterLink}
-                      href={paths.dashboard.customers.edit}
+                      href={paths.dashboard.clients.new}
                     >
                       <SvgIcon>
                         <Edit02Icon />
@@ -201,7 +201,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
                     </IconButton>
                     <IconButton
                       component={RouterLink}
-                      href={paths.dashboard.customers.details}
+                      href={paths.dashboard.clients.details}
                     >
                       <SvgIcon>
                         <ArrowRightIcon />
@@ -227,7 +227,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = (props) => {
   );
 };
 
-CustomerListTable.propTypes = {
+ClientListTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,

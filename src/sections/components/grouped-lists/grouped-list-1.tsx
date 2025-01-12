@@ -21,7 +21,7 @@ const now = new Date();
 interface Activity {
   id: string;
   createdAt: number;
-  customer: {
+  client: {
     id: string;
     avatar: string;
     name: string;
@@ -34,7 +34,7 @@ const activities: Activity[] = [
   {
     id: '5e89140bcc768199d1e0dc49',
     createdAt: subMinutes(now, 23).getTime(),
-    customer: {
+    client: {
       id: '5e887a62195cc5aef7e8ca5d',
       avatar: '/assets/avatars/avatar-marcus-finn.png',
       name: 'Marcus Finn',
@@ -45,7 +45,7 @@ const activities: Activity[] = [
   {
     id: '5e891411b0290b175166cd32',
     createdAt: subMinutes(now, 56).getTime(),
-    customer: {
+    client: {
       id: '5e887ac47eed253091be10cb',
       avatar: '/assets/avatars/avatar-carson-darrin.png',
       name: 'Carson Darrin',
@@ -56,7 +56,7 @@ const activities: Activity[] = [
   {
     id: '5e89141633dc5e52c923ef27',
     createdAt: subHours(now, 2).getTime(),
-    customer: {
+    client: {
       id: '5e887b209c28ac3dd97f6db5',
       avatar: '/assets/avatars/avatar-fran-perez.png',
       name: 'Fran Perez',
@@ -67,7 +67,7 @@ const activities: Activity[] = [
   {
     id: '5e89141bd975c7f33aee9f4b',
     createdAt: subMinutes(now, 5).getTime(),
-    customer: {
+    client: {
       id: '5e887b7602bdbc4dbb234b27',
       avatar: '/assets/avatars/avatar-jie-yan-song.png',
       name: 'Jie Yan Song',
@@ -78,7 +78,7 @@ const activities: Activity[] = [
   {
     id: '5e891421d7945778863cf9ca',
     createdAt: subMinutes(now, 5).getTime(),
-    customer: {
+    client: {
       id: '5e86809283e28b96d2d38537',
       avatar: '/assets/avatars/avatar-anika-visser.png',
       name: 'Anika Visser',
@@ -171,7 +171,7 @@ export const GroupedList1: FC = () => (
               >
                 <ListItemAvatar>
                   <Avatar
-                    src={activity.customer.avatar}
+                    src={activity.client.avatar}
                     sx={{ cursor: 'pointer' }}
                   />
                 </ListItemAvatar>
@@ -184,7 +184,7 @@ export const GroupedList1: FC = () => (
                       underline="none"
                       variant="subtitle2"
                     >
-                      {activity.customer.name}
+                      {activity.client.name}
                     </Link>
                   }
                   secondary={

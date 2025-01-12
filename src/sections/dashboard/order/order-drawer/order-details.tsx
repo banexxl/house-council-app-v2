@@ -88,31 +88,31 @@ export const OrderDetails: FC<OrderDetailsProps> = (props) => {
             align={align}
             disableGutters
             divider
-            label="Customer"
+            label="Client"
           >
             <Typography
               color="text.secondary"
               variant="body2"
             >
-              {order.customer.name}
+              {order.client.name}
             </Typography>
             <Typography
               color="text.secondary"
               variant="body2"
             >
-              {order.customer.address1}
+              {order.client.address1}
             </Typography>
             <Typography
               color="text.secondary"
               variant="body2"
             >
-              {order.customer.city}
+              {order.client.city}
             </Typography>
             <Typography
               color="text.secondary"
               variant="body2"
             >
-              {order.customer.country}
+              {order.client.country}
             </Typography>
           </PropertyListItem>
           <PropertyListItem

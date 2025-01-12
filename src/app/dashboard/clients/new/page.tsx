@@ -11,55 +11,21 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { customersApi } from 'src/api/customers';
+import { clientsApi } from 'src/api/clients';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useMounted } from 'src/hooks/use-mounted';
 
 import { paths } from 'src/paths';
-import { CustomerEditForm } from 'src/sections/dashboard/customer/customer-edit-form';
-import type { Customer } from 'src/types/customer';
+import { ClientEditForm } from 'src/sections/dashboard/client/client-edit-form';
+import type { Client } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 
-const useCustomer = (): Customer | null => {
-  const isMounted = useMounted();
-  const [customer, setCustomer] = useState<Customer | null>(null);
-
-  const handleCustomerGet = useCallback(async () => {
-    try {
-      const response = await customersApi.getCustomer();
-
-      if (isMounted()) {
-        setCustomer(response);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [isMounted]);
-
-  useEffect(
-    () => {
-      handleCustomerGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  return customer;
-};
-
 const Page = () => {
-  const customer = useCustomer();
-
-
-
-  if (!customer) {
-    return null;
-  }
 
   return (
     <>
-      <Seo title="Dashboard: Customer Edit" />
+      <Seo title="Dashboard: Client Edit" />
       <Box
         component="main"
         sx={{
@@ -74,7 +40,7 @@ const Page = () => {
                 <Link
                   color="text.primary"
                   component={RouterLink}
-                  href={paths.dashboard.customers.index}
+                  href={paths.dashboard.clients.index}
                   sx={{
                     alignItems: 'center',
                     display: 'inline-flex',
@@ -84,7 +50,7 @@ const Page = () => {
                   <SvgIcon sx={{ mr: 1 }}>
                     <ArrowLeftIcon />
                   </SvgIcon>
-                  <Typography variant="subtitle2">Customers</Typography>
+                  <Typography variant="subtitle2">Clients</Typography>
                 </Link>
               </div>
               <Stack
@@ -101,17 +67,17 @@ const Page = () => {
                   direction="row"
                   spacing={2}
                 >
-                  <Avatar
-                    src={customer.avatar}
+                  {/* <Avatar
+                    src={client.avatar}
                     sx={{
                       height: 64,
                       width: 64,
                     }}
                   >
-                    {getInitials(customer.name)}
-                  </Avatar>
+                    {getInitials(client.name)}
+                  </Avatar> */}
                   <Stack spacing={1}>
-                    <Typography variant="h4">{customer.email}</Typography>
+                    <Typography variant="h4">aasasas</Typography>
                     <Stack
                       alignItems="center"
                       direction="row"
@@ -119,7 +85,7 @@ const Page = () => {
                     >
                       <Typography variant="subtitle2">user_id:</Typography>
                       <Chip
-                        label={customer.id}
+                        label={'asaasa'}
                         size="small"
                       />
                     </Stack>
@@ -127,7 +93,7 @@ const Page = () => {
                 </Stack>
               </Stack>
             </Stack>
-            <CustomerEditForm customer={customer} />
+            {/* <ClientEditForm client={client} /> */}
           </Stack>
         </Container>
       </Box>

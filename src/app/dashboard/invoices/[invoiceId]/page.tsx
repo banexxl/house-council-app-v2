@@ -113,7 +113,7 @@ const Page = () => {
                       width: 42,
                     }}
                   >
-                    {getInitials(invoice.customer.name)}
+                    {getInitials(invoice.client.name)}
                   </Avatar>
                   <div>
                     <Typography variant="h4">{invoice.number}</Typography>
@@ -121,7 +121,7 @@ const Page = () => {
                       color="text.secondary"
                       variant="body2"
                     >
-                      {invoice.customer.name}
+                      {invoice.client.name}
                     </Typography>
                   </div>
                 </Stack>
