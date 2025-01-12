@@ -11,6 +11,9 @@ import { insertLocation } from 'src/services/building-location-services';
 import { transliterate } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
 import Marker from './map-marker';
+import { LoadingButton } from '@mui/lab';
+import SaveIcon from '@mui/icons-material/Save';
+import NotInterestedIcon from '@mui/icons-material/NotInterested';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!;
 
@@ -19,6 +22,9 @@ const LocationCreateForm = () => {
      const [location, setLocation] = useState({ lng: 20.457273, lat: 44.817619 }); // Default to Belgrade
      const mapContainerRef = useRef<HTMLDivElement>(null);
      const mapRef = useRef<mapboxgl.Map | null>(null);
+     const [loading, setLoading] = useState<boolean>(false);
+     console.log(loading);
+
      const { control, handleSubmit, setValue, watch } = useForm({
           defaultValues: {
                country: '',
@@ -53,6 +59,7 @@ const LocationCreateForm = () => {
      }, [location, markerData]);
 
      const handleSave = async (data: any) => {
+          setLoading(true);
           const payload: BuildingLocation = {
                streetAddress: transliterate(data.streetAddress),
                city: data.city,
@@ -66,8 +73,6 @@ const LocationCreateForm = () => {
 
           try {
                const response = await insertLocation(payload);
-
-               console.log('response', response);
 
                if (response.success) {
                     toast.success(t('locations.locationSaved'), {
@@ -90,6 +95,9 @@ const LocationCreateForm = () => {
                     duration: 3000,
                     position: 'top-center',
                })
+          } finally {
+               handleClear();
+               setLoading(false);
           }
      };
 
@@ -251,17 +259,21 @@ const LocationCreateForm = () => {
                                         color="primary"
                                         onClick={handleClear}
                                         disabled={!addressSelected}
+                                        endIcon={<NotInterestedIcon />}
                                    >
                                         {t('common.btnClear')}
                                    </Button>
-                                   <Button
+                                   <LoadingButton
                                         variant="contained"
                                         color="primary"
                                         type="submit"
                                         disabled={!addressSelected}
+                                        endIcon={<SaveIcon />}
+                                        loading={loading}
+                                        loadingPosition='end'
                                    >
                                         {t('common.btnSave')}
-                                   </Button>
+                                   </LoadingButton>
                               </Box>
                          </Stack>
                     </form>

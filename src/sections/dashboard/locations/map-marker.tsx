@@ -60,8 +60,9 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
                closeButton: false,
                closeOnClick: true,
                closeOnMove: true,
-               anchor: 'bottom',
+               anchor: 'right',
                maxWidth: '300px',
+               offset: [-20, 0],
           })
                .setDOMContent(popupEl.current!)
                .on('open', () => {
@@ -98,17 +99,17 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
                     <Card sx={{ width: 200 }}>
                          <CardMedia
                               component="img"
-                              height="140"
+                              height="200"
                               image={'/assets/no-image.png'}
                               alt={address}
                          />
                          <CardContent>
-                              <Typography>
-                                   {t('locations.locationPopupTitle')}
-                              </Typography>
                               <Typography gutterBottom variant="h6" component="div">
-                                   {t('locations.locationAddress')}:
+                                   {t('locations.locationPopupTitle')}:
                               </Typography>
+                              {/* <Typography gutterBottom variant="h6" component="div">
+                                   {t('locations.locationAddress')}:
+                              </Typography> */}
                               <Typography variant="body2" color="text.secondary">
                                    {address}
                               </Typography>
