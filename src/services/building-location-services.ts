@@ -52,3 +52,19 @@ export const insertLocation = async (values: BuildingLocation) => {
      }
 }
 
+export const getAllLocationsFromClient = async () => {
+     try {
+          const { data, error } = await supabase.from('tblBuildingLocations').select('*')
+          if (error) {
+               console.error('Error fetching locations:', error);
+               return { success: false, error: error };
+          } else {
+               console.log('Locations fetched:', data);
+               return { success: true, data };
+          }
+     } catch (error) {
+          console.error('Error fetching locations:', error);
+          return { success: false, error };
+     }
+}
+

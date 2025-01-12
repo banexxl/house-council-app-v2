@@ -4,11 +4,12 @@ import { alpha } from '@mui/system/colorManipulator';
 import { useTheme } from '@mui/material/styles';
 
 export const Toaster: FC = () => {
+
   const theme = useTheme();
 
   return (
     <HotToaster
-      position="bottom-right"
+      position="top-center"
       toastOptions={{
         style: {
           backdropFilter: 'blur(6px)',

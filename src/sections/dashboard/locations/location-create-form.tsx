@@ -77,23 +77,19 @@ const LocationCreateForm = () => {
                if (response.success) {
                     toast.success(t('locations.locationSaved'), {
                          duration: 3000,
-                         position: 'top-center',
                     })
                } else if (!response.success && response.message == "Location already exists with the same address, city, street number, and region.") {
                     toast.error(t('locations.locationAlreadyExists'), {
                          duration: 3000,
-                         position: 'top-center',
                     })
                } else {
                     toast.error(t('locations.locationNotSaved'), {
                          duration: 3000,
-                         position: 'top-center',
                     })
                }
           } catch (error) {
                toast.error(t('locations.locationNotSaved'), {
                     duration: 3000,
-                    position: 'top-center',
                })
           } finally {
                handleClear();
