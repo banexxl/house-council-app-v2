@@ -96,7 +96,7 @@ export const rs = {
      [tokens.locations.locationNotSaved]: 'Greška prilikom čuvanja lokacije',
      [tokens.locations.locationAddress]: 'Adresa',
      [tokens.locations.locationPopupTitle]: 'Pin je postavljen na',
-     [tokens.locations.locationAlreadyExists]: 'Lokacija već postoji',
+     [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
      // Buildings
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      [tokens.buildings.buildingList]: 'Lista zgrada',

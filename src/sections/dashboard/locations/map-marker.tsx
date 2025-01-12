@@ -107,9 +107,6 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
                               <Typography gutterBottom variant="h6" component="div">
                                    {t('locations.locationPopupTitle')}:
                               </Typography>
-                              {/* <Typography gutterBottom variant="h6" component="div">
-                                   {t('locations.locationAddress')}:
-                              </Typography> */}
                               <Typography variant="body2" color="text.secondary">
                                    {address}
                               </Typography>

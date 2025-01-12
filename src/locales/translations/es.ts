@@ -95,7 +95,7 @@ export const es = {
   [tokens.locations.locationNotSaved]: 'Ubicación no guardada',
   [tokens.locations.locationAddress]: 'Dirección',
   [tokens.locations.locationPopupTitle]: 'El pin se coloca en',
-  [tokens.locations.locationAlreadyExists]: 'La ubicación ya existe',
+  [tokens.locations.locationAlreadyExists]: 'Ubicación ya existente!',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Edificios',
   [tokens.buildings.buildingList]: 'Lista de Edificios',
