@@ -7,7 +7,7 @@ export interface BuildingLocation {
      region?: string; // Optional region or state
      country: string; // Optional country name
      streetNumber: string; // Street number, defaults to 1
-     zip?: string; // Optional zip code
-     latitude?: number; // Optional latitude
-     longitude?: number; // Optional longitude
+     post_code: number; // Optional zip code
+     latitude: number; // Optional latitude
+     longitude: number; // Optional longitude
 }

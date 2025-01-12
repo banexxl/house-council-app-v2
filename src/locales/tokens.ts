@@ -104,6 +104,7 @@ export const tokens = {
     locationNotSaved: 'locations.locationNotSaved',
     locationAddress: 'locations.locationAddress',
     locationPopupTitle: 'locations.locationPopupTitle',
+    locationAlreadyExists: 'locations.locationAlreadyExists',
   },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',

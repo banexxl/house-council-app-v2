@@ -24,7 +24,7 @@ const LocationCreateForm = () => {
                country: '',
                region: '',
                city: '',
-               zip: '',
+               postcode: 0,
                streetAddress: '',
                streetNumber: '',
                latitude: 0,
@@ -53,7 +53,6 @@ const LocationCreateForm = () => {
      }, [location, markerData]);
 
      const handleSave = async (data: any) => {
-
           const payload: BuildingLocation = {
                streetAddress: transliterate(data.streetAddress),
                city: data.city,
@@ -62,12 +61,21 @@ const LocationCreateForm = () => {
                streetNumber: data.streetNumber,
                latitude: data.latitude,
                longitude: data.longitude,
+               post_code: parseInt(data.postcode),
           };
 
           try {
                const response = await insertLocation(payload);
+
+               console.log('response', response);
+
                if (response.success) {
                     toast.success(t('locations.locationSaved'), {
+                         duration: 3000,
+                         position: 'top-center',
+                    })
+               } else if (!response.success && response.message == "Location already exists with the same address, city, street number, and region.") {
+                    toast.error(t('locations.locationAlreadyExists'), {
                          duration: 3000,
                          position: 'top-center',
                     })
@@ -89,20 +97,22 @@ const LocationCreateForm = () => {
           setValue('country', '');
           setValue('region', '');
           setValue('city', '');
-          setValue('zip', '');
+          setValue('postcode', 0);
           setValue('streetAddress', '');
           setValue('streetNumber', '');
           setValue('latitude', 0);
           setValue('longitude', 0);
      }
      const onAddressSelected = (event: any) => {
+          console.log(event);
+
           // Extract values from the event object
           const { context, address, text, center } = event;
 
           const country = context.find((ctx: any) => ctx.id.includes('country'))?.text || '';
           const region = context.find((ctx: any) => ctx.id.includes('region'))?.text || '';
           const city = context.find((ctx: any) => ctx.id.includes('place'))?.text || '';
-          const zip = context.find((ctx: any) => ctx.id.includes('postcode'))?.text || '';
+          const postcode = context.find((ctx: any) => ctx.id.includes('postcode'))?.text || '';
           const streetAddress = text || '';
           const streetNumber = address || '';
 
@@ -110,7 +120,7 @@ const LocationCreateForm = () => {
           setValue('country', country);
           setValue('region', region);
           setValue('city', city);
-          setValue('zip', zip);
+          setValue('postcode', postcode);
           setValue('streetAddress', streetAddress);
           setValue('streetNumber', streetNumber);
           setValue('latitude', center[1]);
@@ -196,12 +206,12 @@ const LocationCreateForm = () => {
                                         )}
                                    />
                                    <Controller
-                                        name="zip"
+                                        name="postcode"
                                         control={control}
                                         render={({ field }) => (
                                              <TextField
                                                   {...field}
-                                                  label={t('locations.locationZipCode')}
+                                                  label={t('locations.locationPostalCode')}
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
