@@ -21,6 +21,7 @@ import { useSelection } from 'src/hooks/use-selection';
 import { ClientListSearch } from 'src/sections/dashboard/client/client-list-search';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 import type { Client } from 'src/types/client';
+import { paths } from 'src/paths';
 
 interface Filters {
   query?: string;
@@ -204,6 +205,7 @@ const Page = () => {
                 spacing={3}
               >
                 <Button
+                  href={paths.dashboard.clients.new}
                   startIcon={
                     <SvgIcon>
                       <PlusIcon />

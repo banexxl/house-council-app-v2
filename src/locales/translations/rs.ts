@@ -110,6 +110,7 @@ export const rs = {
      [tokens.clients.clientEdit]: 'Izmeni klijenta',
      [tokens.clients.clientDelete]: 'Brisanje klijenta',
      // Client form
+     [tokens.clients.clientType]: 'Tip klijenta',
      [tokens.clients.clientName]: 'Ime',
      [tokens.clients.clientEmail]: 'Email',
      [tokens.clients.clientPhone]: 'Telefon',

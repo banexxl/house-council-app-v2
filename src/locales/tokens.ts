@@ -115,6 +115,7 @@ export const tokens = {
     clientEdit: 'clients.clientEdit',
     clientDelete: 'clients.clientDelete',
     // Client form
+    clientType: 'clients.clientType',
     clientName: 'clients.clientName',
     clientEmail: 'clients.clientEmail',
     clientPhone: 'clients.clientPhone',

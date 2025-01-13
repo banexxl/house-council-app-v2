@@ -109,6 +109,7 @@ export const es = {
   [tokens.clients.clientEdit]: 'Editar Cliente',
   [tokens.clients.clientDelete]: 'Borrar Cliente',
   // Client form
+  [tokens.clients.clientType]: 'Tipo de Cliente',
   [tokens.clients.clientName]: 'Nombre',
   [tokens.clients.clientEmail]: 'Correo',
   [tokens.clients.clientPhone]: 'Telefono',

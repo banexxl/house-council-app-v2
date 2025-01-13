@@ -25,6 +25,12 @@ export interface Client {
   zipCode?: string;
 }
 
+export interface ClientType {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export interface ClientLog {
   id: string;
   createdAt: number;

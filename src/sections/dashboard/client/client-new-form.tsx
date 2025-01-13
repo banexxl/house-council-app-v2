@@ -1,26 +1,33 @@
-import type { FC } from 'react';
-import * as Yup from 'yup';
-import { useFormik } from 'formik';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
-import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { RouterLink } from 'src/components/router-link';
-import { paths } from 'src/paths';
-import toast from 'react-hot-toast';
-import { useTranslation } from 'react-i18next';
-import { clientValidationSchema } from 'src/types/client';
+'use client'
 
-export const ClientNewForm: FC = () => {
+import { type FC } from 'react'
+import { useFormik } from 'formik'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Unstable_Grid2'
+import Stack from '@mui/material/Stack'
+import Switch from '@mui/material/Switch'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import { RouterLink } from 'src/components/router-link'
+import { paths } from 'src/paths'
+import toast from 'react-hot-toast'
+import { ClientType, clientValidationSchema } from 'src/types/client'
+import { MenuItem } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 
-  const { t } = useTranslation();
-  // Formik setup
+interface ClientNewFormProps {
+  clientTypes: ClientType[]
+}
+
+export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
+
+
+  const { t } = useTranslation()
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -33,6 +40,7 @@ export const ClientNewForm: FC = () => {
       postalCode: '',
       country: '',
       state: '',
+      clientType: '',
       isVerified: false,
       hasDiscount: false,
     },
@@ -40,16 +48,16 @@ export const ClientNewForm: FC = () => {
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
         // Simulate a server call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        toast.success('Client information updated successfully!');
-        resetForm();
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        toast.success('Client information updated successfully!')
+        resetForm()
       } catch (error) {
-        toast.error('Something went wrong. Please try again.');
+        toast.error('Something went wrong. Please try again.')
       } finally {
-        setSubmitting(false);
+        setSubmitting(false)
       }
     },
-  });
+  })
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -59,15 +67,21 @@ export const ClientNewForm: FC = () => {
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField
-                error={!!(formik.touched.name && formik.errors.name)}
+                select
                 fullWidth
-                helperText={formik.touched.name && formik.errors.name}
-                label={t('clients.clientName')}
-                name="name"
-                onBlur={formik.handleBlur}
+                label={t('clients.clientType')}
+                name="clientType"
+                value={formik.values.clientType}
                 onChange={formik.handleChange}
-                value={formik.values.name}
-              />
+                error={formik.touched.clientType && Boolean(formik.errors.clientType)}
+                helperText={formik.touched.clientType && formik.errors.clientType}
+              >
+                {clientTypes.map((option) => (
+                  <MenuItem key={option.name} value={option.name}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
             <Grid xs={12} md={6}>
               <TextField
@@ -78,7 +92,6 @@ export const ClientNewForm: FC = () => {
                 name="email"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
-
                 value={formik.values.email}
               />
             </Grid>
@@ -91,7 +104,6 @@ export const ClientNewForm: FC = () => {
                 name="address1"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
-
                 value={formik.values.address1}
               />
             </Grid>
@@ -164,7 +176,6 @@ export const ClientNewForm: FC = () => {
                 name="country"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
-
                 value={formik.values.country}
               />
             </Grid>
@@ -177,7 +188,6 @@ export const ClientNewForm: FC = () => {
                 name="state"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
-
                 value={formik.values.state}
               />
             </Grid>
@@ -239,12 +249,13 @@ export const ClientNewForm: FC = () => {
             color="inherit"
             component={RouterLink}
             disabled={formik.isSubmitting}
-            href={paths.dashboard.clients.details}
+            href={paths.dashboard.clients.index}
           >
             Cancel
           </Button>
         </Stack>
       </Card>
     </form>
-  );
-};
+  )
+}
+
