@@ -172,11 +172,11 @@ export const useSections = () => {
                 path: paths.dashboard.clients.index,
               },
               {
-                title: t(tokens.clients.customerDetails),
+                title: t(tokens.clients.clientDetails),
                 path: paths.dashboard.clients.details,
               },
               {
-                title: t(tokens.clients.customerCreate),
+                title: t(tokens.clients.clientCreate),
                 path: paths.dashboard.clients.new,
               },
             ],

@@ -104,10 +104,33 @@ export const de = {
   [tokens.buildings.buildingEdit]: 'Gebäude Bearbeiten',
   // Clients
   [tokens.clients.clientsList]: 'Kundenliste',
-  [tokens.clients.customerDetails]: 'Kunden Details',
-  [tokens.clients.customerCreate]: 'Kunde Erstellen',
-  [tokens.clients.customerEdit]: 'Kunde Bearbeiten',
-  [tokens.clients.customerDelete]: 'Kunde Löschen',
+  [tokens.clients.clientDetails]: 'Kunden Details',
+  [tokens.clients.clientCreate]: 'Kunde Erstellen',
+  [tokens.clients.clientEdit]: 'Kunde Bearbeiten',
+  [tokens.clients.clientDelete]: 'Kunde Löschen',
+  // Client form
+  [tokens.clients.clientName]: 'Name',
+  [tokens.clients.clientEmail]: 'Email',
+  [tokens.clients.clientPhone]: 'Telefon',
+  [tokens.clients.clientMobilePhone]: 'Mobiltelefon',
+  [tokens.clients.clientAddress1]: 'Adresse 1',
+  [tokens.clients.clientAddress2]: 'Adresse 2',
+  [tokens.clients.clientCity]: 'Stadt',
+  [tokens.clients.clientState]: 'Bundesland',
+  [tokens.clients.clientCountry]: 'Land',
+  [tokens.clients.clientPostalCode]: 'Postleitzahl',
+  // Client validationž
+  [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
+  [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',
+  [tokens.clients.clientEmailRequired]: 'Email ist erforderlich',
+  [tokens.clients.cliendAddressRequired]: 'Adresse ist erforderlich',
+  [tokens.clients.clientMobilePhoneRequired]: 'Mobiltelefon ist erforderlich',
+  [tokens.clients.clientCityRequired]: 'Stadt ist erforderlich',
+  // Client popup
+  [tokens.clients.clientSave]: 'Speichern',
+  [tokens.clients.clientSaved]: 'Kunde gespeichert',
+  [tokens.clients.clientNotSaved]: 'Kunde nicht gespeichert',
+  [tokens.clients.clientAlreadyExists]: 'Kunde bereits vorhanden!',
   // Errors
   [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',
 };
