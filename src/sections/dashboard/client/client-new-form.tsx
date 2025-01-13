@@ -56,9 +56,6 @@ export const ClientNewForm: FC = () => {
       <Card>
         <CardHeader title={t('clients.clientCreate')} />
         <CardContent sx={{ pt: 0 }}>
-          <Typography>
-            {JSON.stringify(formik.errors)}
-          </Typography>
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField
@@ -231,7 +228,11 @@ export const ClientNewForm: FC = () => {
           spacing={3}
           sx={{ p: 3 }}
         >
-          <Button disabled={formik.isSubmitting} type="submit" variant="contained">
+          <Button
+            disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+            type="submit"
+            variant="contained"
+          >
             {t('clients.clientSave')}
           </Button>
           <Button

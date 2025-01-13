@@ -58,8 +58,8 @@ export const clientValidationSchema = (t: (key: string) => string) => {
   return Yup.object({
     name: Yup.string().max(255).required(t('clients.clientNameRequired')),
     email: Yup.string().email(t('clients.clientEmailMustBeValid')).max(255).required(t('clients.clientEmailRequired')),
-    address_1: Yup.string().max(255).required(t('clients.cliendAddressRequired')),
-    address_2: Yup.string().max(255),
+    address1: Yup.string().max(255).required(t('clients.cliendAddressRequired')),
+    address2: Yup.string().max(255),
     phone: Yup.string().max(15),
     mobilePhone: Yup.string().max(15).required(t('clients.clientMobilePhoneRequired')),
     city: Yup.string().max(255).required(t('clients.clientCityRequired')),
