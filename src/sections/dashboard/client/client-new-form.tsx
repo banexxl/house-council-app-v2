@@ -1,7 +1,7 @@
 'use client'
 
 import { type FC } from 'react'
-import { useFormik } from 'formik'
+import { Field, useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -15,15 +15,15 @@ import Typography from '@mui/material/Typography'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
-import { ClientType, clientValidationSchema } from 'src/types/client'
+import { Client, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
+import { ListItem, MenuItem } from '@mui/material'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[]
 }
 
 export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
-
 
   const { t } = useTranslation()
 
@@ -44,7 +44,10 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
       hasDiscount: false,
     },
     validationSchema: clientValidationSchema(t),
+
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      console.log('values', values);
+
       try {
         // Simulate a server call
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -62,10 +65,35 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
     <form onSubmit={formik.handleSubmit}>
       <Card>
         <CardHeader title={t('clients.clientCreate')} />
+
         <CardContent sx={{ pt: 0 }}>
           {/* <Typography>
             {JSON.stringify(formik.errors)}
           </Typography> */}
+          <Grid container spacing={3}>
+            <Grid xs={12} md={6}>
+
+              <TextField
+                select
+                fullWidth
+                label={t('clients.clientType')}
+                name="clientType"
+                value={formik.values.clientType}
+                onChange={formik.handleChange} // Use onChange for handling selection
+                error={!!(formik.touched.clientType && formik.errors.clientType)}
+                helperText={formik.touched.clientType && formik.errors.clientType}
+              >
+                {clientTypes.map((option: ClientType) => (
+                  <MenuItem
+                    key={option.id} value={option.name}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {option.name}
+                  </MenuItem >
+                ))}
+              </TextField>
+            </Grid>
+          </Grid>
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField

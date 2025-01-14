@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 
 export interface Client {
   id: string;
-  address1?: string;
+  address1: string;
   address2?: string;
   avatar?: string;
   balance?: number;
@@ -58,6 +58,7 @@ export const clientInitialState: Client = {
   id: '',
   email: '',
   name: '',
+  address1: ''
 };
 
 export const clientValidationSchema = (t: (key: string) => string) => {
@@ -72,6 +73,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     postalCode: Yup.string().max(255),
     state: Yup.string().max(255),
     country: Yup.string().max(255).required(t('clients.clientCountryRequired')),
+    clientType: Yup.string().max(255).required(t('clients.clientTypeRequired')),
     hasDiscount: Yup.bool(),
     isVerified: Yup.bool(),
   })

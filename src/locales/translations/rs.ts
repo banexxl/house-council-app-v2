@@ -129,6 +129,7 @@ export const rs = {
      [tokens.clients.clientMobilePhoneRequired]: 'Mobilni telefon je obavezan',
      [tokens.clients.clientCityRequired]: 'Grad je obavezan',
      [tokens.clients.clientCountryRequired]: 'Država je obavezna',
+     [tokens.clients.clientTypeRequired]: 'Tip klijenta je obavezan',
      // Client popup
      [tokens.clients.clientSave]: 'Sačuvaj',
      [tokens.clients.clientSaved]: 'Klijent sačuvan',

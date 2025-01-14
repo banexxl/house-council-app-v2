@@ -134,6 +134,7 @@ export const tokens = {
     clientMobilePhoneRequired: 'clients.clientMobilePhoneRequired',
     clientCityRequired: 'clients.clientCityRequired',
     clientCountryRequired: 'clients.clientCountryRequired',
+    clientTypeRequired: 'clients.clientTypeRequired',
     // Client popup
     clientSave: 'clients.clientSave',
     clientSaved: 'clients.clientSaved',

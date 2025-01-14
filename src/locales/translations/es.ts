@@ -128,6 +128,7 @@ export const es = {
   [tokens.clients.clientMobilePhoneRequired]: 'El telefono es obligatorio',
   [tokens.clients.clientCityRequired]: 'La ciudad es obligatoria',
   [tokens.clients.clientCountryRequired]: 'El país es obligatorio',
+  [tokens.clients.clientTypeRequired]: 'El tipo de cliente es obligatorio',
   // Client popup
   [tokens.clients.clientSave]: 'Guardar',
   [tokens.clients.clientSaved]: 'Cliente guardado',
