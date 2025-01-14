@@ -4,7 +4,7 @@ import type { Client, ClientEmail, ClientInvoice, ClientLog } from 'src/types/cl
 
 const now = new Date();
 
-export const clients: Client[] = [
+export const clients = [
   {
     id: '5e887ac47eed253091be10cb',
     avatar: '/assets/avatars/avatar-carson-darrin.png',
