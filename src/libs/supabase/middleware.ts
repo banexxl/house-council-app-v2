@@ -13,8 +13,6 @@ export async function updateSession(request: NextRequest) {
           {
                cookies: {
                     getAll() {
-                         console.log('request.cookies.getAll', request.cookies.getAll());
-
                          return request.cookies.getAll();
                     },
                     setAll(cookiesToSet) {
@@ -34,9 +32,8 @@ export async function updateSession(request: NextRequest) {
      const {
           data: { user },
      } = await supabase.auth.getUser();
-     console.log('user', user);
 
-     const { pathname, searchParams } = request.nextUrl;
+     const { pathname } = request.nextUrl;
 
      // Define public routes that don't require authentication
      const publicRoutes = ['/auth/login', '/auth/callback', '/auth/error'];
