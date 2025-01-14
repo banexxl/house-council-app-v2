@@ -26,7 +26,6 @@ const Page = async () => {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientHeader />
-            {/* <ClientNewFormWrapper clientTypes={clientTypes} /> */}
             <ClientNewForm clientTypes={clientTypes} />
           </Stack>
         </Container>

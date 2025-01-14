@@ -127,6 +127,7 @@ export const en = {
   [tokens.clients.cliendAddressRequired]: 'Address is required',
   [tokens.clients.clientMobilePhoneRequired]: 'Mobile phone is required',
   [tokens.clients.clientCityRequired]: 'City is required',
+  [tokens.clients.clientCountryRequired]: 'Country is required',
   // Client popup
   [tokens.clients.clientSave]: 'Save',
   [tokens.clients.clientSaved]: 'Client saved',

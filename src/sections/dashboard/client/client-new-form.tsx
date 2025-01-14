@@ -16,7 +16,6 @@ import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
 import { ClientType, clientValidationSchema } from 'src/types/client'
-import { MenuItem } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 
 interface ClientNewFormProps {
@@ -64,32 +63,29 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
       <Card>
         <CardHeader title={t('clients.clientCreate')} />
         <CardContent sx={{ pt: 0 }}>
+          {/* <Typography>
+            {JSON.stringify(formik.errors)}
+          </Typography> */}
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField
-                select
                 fullWidth
-                label={t('clients.clientType')}
-                name="clientType"
-                value={formik.values.clientType}
+                label={t('clients.clientName')}
+                name="name"
+                value={formik.values.name}
                 onChange={formik.handleChange}
-                error={formik.touched.clientType && Boolean(formik.errors.clientType)}
-                helperText={formik.touched.clientType && formik.errors.clientType}
-              >
-                {clientTypes.map((option) => (
-                  <MenuItem key={option.name} value={option.name}>
-                    {option.name}
-                  </MenuItem>
-                ))}
-              </TextField>
+                onBlur={formik.handleBlur}
+                error={!!(formik.touched.name && formik.errors.name)}
+                helperText={formik.touched.name && formik.errors.name}
+              />
             </Grid>
             <Grid xs={12} md={6}>
               <TextField
-                error={!!(formik.touched.email && formik.errors.email)}
                 fullWidth
-                helperText={formik.touched.email && formik.errors.email}
                 label={t('clients.clientEmail')}
                 name="email"
+                error={!!(formik.touched.email && formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.email}

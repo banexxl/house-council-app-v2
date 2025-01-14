@@ -118,8 +118,8 @@ export const rs = {
      [tokens.clients.clientAddress1]: 'Adresa 1',
      [tokens.clients.clientAddress2]: 'Adresa 2',
      [tokens.clients.clientCity]: 'Grad',
-     [tokens.clients.clientState]: 'Država',
-     [tokens.clients.clientCountry]: 'Zemlja',
+     [tokens.clients.clientState]: 'Region',
+     [tokens.clients.clientCountry]: 'Država',
      [tokens.clients.clientPostalCode]: 'Poštanski broj',
      // Client validation
      [tokens.clients.clientNameRequired]: 'Ime je obavezno',
@@ -128,6 +128,7 @@ export const rs = {
      [tokens.clients.cliendAddressRequired]: 'Adresa je obavezna',
      [tokens.clients.clientMobilePhoneRequired]: 'Mobilni telefon je obavezan',
      [tokens.clients.clientCityRequired]: 'Grad je obavezan',
+     [tokens.clients.clientCountryRequired]: 'Država je obavezna',
      // Client popup
      [tokens.clients.clientSave]: 'Sačuvaj',
      [tokens.clients.clientSaved]: 'Klijent sačuvan',
