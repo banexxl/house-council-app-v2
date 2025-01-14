@@ -1,10 +1,9 @@
 'use client';
 
-import { type FC, type ReactNode, useCallback } from 'react';
+import { type FC, type ReactNode, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Provider as ReduxProvider } from 'react-redux';
 import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
-import Cookies from 'js-cookie';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -23,36 +22,34 @@ import type { Settings } from 'src/types/settings';
 
 const SETTINGS_STORAGE_KEY = 'app.settings';
 
-const restoreSettings = (): Settings | undefined => {
-  let value: string | undefined;
-  if (typeof window !== 'undefined') {
-    value = localStorage.getItem(SETTINGS_STORAGE_KEY!) || Cookies.get(SETTINGS_STORAGE_KEY!);
-  }
-  return value ? JSON.parse(value) as Settings : undefined;
-};
-
-const updateSettings = (settings: Settings): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-  }
-};
-
 interface LayoutProps {
   children: ReactNode;
 }
 
 export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   const { children } = props;
+  const [mounted, setMounted] = useState(false);
+  const [initialSettings, setInitialSettings] = useState<Settings | undefined>(undefined);
 
-  const handleSettingsUpdate = useCallback((newSettings: Settings) => {
-    updateSettings(newSettings);
-  }, []);
-
-  const handleSettingsReset = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+  useEffect(() => {
+    setMounted(true);
+    const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (storedSettings) {
+      setInitialSettings(JSON.parse(storedSettings));
     }
   }, []);
+
+  const handleSettingsUpdate = (newSettings: Settings) => {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
+  };
+
+  const handleSettingsReset = () => {
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+  };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <NextAppDirEmotionCacheProvider options={{ key: 'css' }}>
@@ -61,7 +58,6 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
           <SettingsProvider
             onReset={handleSettingsReset}
             onUpdate={handleSettingsUpdate}
-            settings={restoreSettings()}
           >
             <SettingsConsumer>
               {(settings) => {
