@@ -18,12 +18,12 @@ import NotInterestedIcon from '@mui/icons-material/NotInterested';
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!;
 
 const LocationCreateForm = () => {
+
      const { t } = useTranslation();
      const [location, setLocation] = useState({ lng: 20.457273, lat: 44.817619 }); // Default to Belgrade
      const mapContainerRef = useRef<HTMLDivElement>(null);
      const mapRef = useRef<mapboxgl.Map | null>(null);
      const [loading, setLoading] = useState<boolean>(false);
-     console.log(loading);
 
      const { control, handleSubmit, setValue, watch } = useForm({
           defaultValues: {

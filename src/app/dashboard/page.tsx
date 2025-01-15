@@ -1,4 +1,4 @@
-'use client'; // Ovaj mora biti use client zbog komponenti silnih
+'use client'; // Ovaj mora biti use client zbog usesettings
 
 import { addDays, subDays, subHours, subMinutes } from 'date-fns';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';

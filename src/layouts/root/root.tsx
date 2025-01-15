@@ -18,7 +18,7 @@ import { Toaster } from 'src/components/toaster';
 import { SettingsConsumer, SettingsProvider } from 'src/contexts/settings';
 import { store } from 'src/store';
 import { createTheme } from 'src/theme';
-import type { Settings } from 'src/types/settings';
+import { initialAppSettings, type Settings } from 'src/types/settings';
 
 const SETTINGS_STORAGE_KEY = 'app.settings';
 
@@ -29,7 +29,7 @@ interface LayoutProps {
 export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   const { children } = props;
   const [mounted, setMounted] = useState(false);
-  const [initialSettings, setInitialSettings] = useState<Settings | undefined>(undefined);
+  const [initialSettings, setInitialSettings] = useState<Settings | undefined>(initialAppSettings);
 
   useEffect(() => {
     setMounted(true);
@@ -58,6 +58,7 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
           <SettingsProvider
             onReset={handleSettingsReset}
             onUpdate={handleSettingsUpdate}
+            settings={initialSettings}
           >
             <SettingsConsumer>
               {(settings) => {

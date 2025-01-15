@@ -1,3 +1,5 @@
+'use client';
+
 import type { FC, ReactNode } from 'react';
 import propTypes from 'prop-types';
 import CheckIcon from '@untitled-ui/icons-react/build/esm/Check';

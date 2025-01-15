@@ -1,3 +1,5 @@
+'use client';
+
 import type { ColorPreset, Contrast, Direction, PaletteMode } from 'src/theme';
 
 export type Layout = 'horizontal' | 'vertical';
@@ -14,3 +16,14 @@ export interface Settings {
   responsiveFontSizes?: boolean;
   stretch?: boolean;
 }
+
+export const initialAppSettings: Settings = {
+  colorPreset: 'indigo',
+  contrast: 'normal',
+  direction: 'ltr',
+  layout: 'vertical',
+  navColor: 'evident',
+  paletteMode: 'light',
+  responsiveFontSizes: true,
+  stretch: false,
+};
