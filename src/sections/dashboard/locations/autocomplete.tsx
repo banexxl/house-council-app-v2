@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { TextField, List, ListItem, ListItemButton, ListItemText, Box, IconButton } from '@mui/material';
 import { ClearIcon } from '@mui/x-date-pickers';
+import { useTranslation } from 'react-i18next';
 
 interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
 }
 
 const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected }) => {
+
+     const { t } = useTranslation();
      const [inputValue, setInputValue] = useState('');
      const [suggestions, setSuggestions] = useState<any[]>([]);
      const [loading, setLoading] = useState(false);
@@ -52,7 +55,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected }) => {
      return (
           <Box sx={{ position: 'relative', width: '300px' }}>
                <TextField
-                    label="Search Location"
+                    label={t('locations.searchLocationLabel')}
                     variant="outlined"
                     fullWidth
                     value={inputValue}

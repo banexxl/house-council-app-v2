@@ -97,6 +97,7 @@ export const rs = {
      [tokens.locations.locationAddress]: 'Adresa',
      [tokens.locations.locationPopupTitle]: 'Pin je postavljen na',
      [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
+     [tokens.locations.searchLocationLabel]: 'Pretraga lokacija',
      // Buildings
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      [tokens.buildings.buildingList]: 'Lista zgrada',

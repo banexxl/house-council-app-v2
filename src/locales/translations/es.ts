@@ -96,6 +96,7 @@ export const es = {
   [tokens.locations.locationAddress]: 'Dirección',
   [tokens.locations.locationPopupTitle]: 'El pin se coloca en',
   [tokens.locations.locationAlreadyExists]: 'Ubicación ya existente!',
+  [tokens.locations.searchLocationLabel]: 'Buscar ubicación',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Edificios',
   [tokens.buildings.buildingList]: 'Lista de Edificios',

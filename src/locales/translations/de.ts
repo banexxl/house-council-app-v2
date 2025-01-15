@@ -96,6 +96,7 @@ export const de = {
   [tokens.locations.locationAddress]: 'Adresse',
   [tokens.locations.locationPopupTitle]: 'Der Stift wird platziert bei',
   [tokens.locations.locationAlreadyExists]: 'Ort bereits vorhanden!',
+  [tokens.locations.searchLocationLabel]: 'Ort suchen',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Gebäude',
   [tokens.buildings.buildingList]: 'Gebäudeliste',

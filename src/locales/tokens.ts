@@ -1,5 +1,3 @@
-import { clients } from "src/api/clients/data";
-
 export const tokens = {
   common: {
     languageChanged: 'common.languageChanged',
@@ -107,6 +105,7 @@ export const tokens = {
     locationAddress: 'locations.locationAddress',
     locationPopupTitle: 'locations.locationPopupTitle',
     locationAlreadyExists: 'locations.locationAlreadyExists',
+    searchLocationLabel: 'locations.searchLocationLabel',
   },
   clients: {
     clientsList: 'clients.clientsList',

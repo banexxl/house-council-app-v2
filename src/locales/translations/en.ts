@@ -96,6 +96,7 @@ export const en = {
   [tokens.locations.locationAddress]: 'Address',
   [tokens.locations.locationPopupTitle]: 'Pin is placed on',
   [tokens.locations.locationAlreadyExists]: 'Location has been taken!',
+  [tokens.locations.searchLocationLabel]: 'Search location',
   // Buildings
   [tokens.buildings.buildingsTitle]: 'Buildings',
   [tokens.buildings.buildingList]: 'Building List',
