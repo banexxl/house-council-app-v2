@@ -76,6 +76,7 @@ const initialProducts: Product[] = [
 ];
 
 const Page = () => {
+
   const [billing, setBilling] = useState(initialBilling);
   const [products, setProducts] = useState<Product[]>(initialProducts);
 

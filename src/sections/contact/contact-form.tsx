@@ -1,3 +1,5 @@
+'use client';
+
 import type { FC, FormEvent } from 'react';
 import { useCallback } from 'react';
 import Box from '@mui/material/Box';
