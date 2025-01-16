@@ -9,6 +9,7 @@ interface LayoutProps {
 }
 
 export const Layout: FC<LayoutProps> = ((props) => {
+
   const settings = useSettings();
   const sections = useSections();
 

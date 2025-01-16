@@ -49,11 +49,56 @@ export interface Section {
 }
 
 export const useSections = () => {
+
   const { t } = useTranslation();
 
   return useMemo(() => {
     return [
       {
+        subheader: t(tokens.nav.adminDashboard),
+        items: [
+          {
+            title: t(tokens.nav.clients),
+            icon: (
+              <SvgIcon fontSize="small">
+                <Users03Icon />
+              </SvgIcon>
+            ),
+            items: [
+              {
+                title: t(tokens.nav.list),
+                path: paths.dashboard.clients.index,
+                icon: (
+                  <SvgIcon fontSize="small">
+                    <Users03Icon />
+                  </SvgIcon>
+                )
+              },
+              {
+                title: t(tokens.nav.create),
+                path: paths.dashboard.clients.new,
+                icon: (
+                  <SvgIcon fontSize="small">
+                    <Users03Icon />
+                  </SvgIcon>
+                )
+              },
+              {
+                title: t(tokens.nav.edit),
+                path: paths.dashboard.clients.details,
+                icon: (
+                  <SvgIcon fontSize="small">
+                    <Users03Icon />
+                  </SvgIcon>
+                )
+              }
+            ]
+          },
+
+        ]
+      },
+      {
+        subheader: t(tokens.nav.clientDashboard),
         items: [
           {
             title: t(tokens.nav.overview),
@@ -110,7 +155,7 @@ export const useSections = () => {
         ],
       },
       {
-        subheader: t(tokens.nav.concepts),
+        subheader: t(tokens.nav.tenants),
         items: [
           {
             title: t(tokens.nav.buildings),

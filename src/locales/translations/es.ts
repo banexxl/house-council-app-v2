@@ -1,7 +1,7 @@
 import { tokens } from '../tokens';
 
 export const es = {
-  // Common
+  //#region Common
   [tokens.common.languageChanged]: 'Se ha cambiado el idioma',
   [tokens.common.title]: 'Consejo de Casa',
   [tokens.common.btnSave]: 'Guardar',
@@ -23,9 +23,11 @@ export const es = {
   [tokens.common.btnRemove]: 'Quitar',
   [tokens.common.btnSearch]: 'Buscar',
   [tokens.common.btnClear]: 'Limpiar',
-  // Navigation
+  //#endregion
+  //#region Navigation
   [tokens.nav.academy]: 'Academia',
   [tokens.nav.account]: 'Cuenta',
+  [tokens.nav.adminDashboard]: 'Dashboard Administrador',
   [tokens.nav.analytics]: 'Analítica',
   [tokens.nav.auth]: 'Autenticación',
   [tokens.nav.buildings]: 'Edificios',
@@ -39,7 +41,8 @@ export const es = {
   [tokens.nav.calendar]: 'Calendario',
   [tokens.nav.chat]: 'Chat',
   [tokens.nav.checkout]: 'Pago',
-  [tokens.nav.concepts]: 'Conceptos',
+  [tokens.nav.clientDashboard]: 'Dashboard Cliente',
+  [tokens.nav.tenants]: 'Inquilinos',
   [tokens.nav.contact]: 'Contacto',
   [tokens.nav.course]: 'Curso',
   [tokens.nav.create]: 'Crear',
@@ -76,7 +79,8 @@ export const es = {
   [tokens.nav.resetPassword]: 'Restablecer Contraseña',
   [tokens.nav.socialMedia]: 'Redes Sociales',
   [tokens.nav.verifyCode]: 'Verificar Código',
-  // Locations
+  //#endregion
+  //#region Locations
   [tokens.locations.locationsTitle]: 'Ubicaciones',
   [tokens.locations.locationList]: 'Lista de Ubicaciones',
   [tokens.locations.locationDetails]: 'Detalles de la Ubicación',
@@ -97,13 +101,15 @@ export const es = {
   [tokens.locations.locationPopupTitle]: 'El pin se coloca en',
   [tokens.locations.locationAlreadyExists]: 'Ubicación ya existente!',
   [tokens.locations.searchLocationLabel]: 'Buscar ubicación',
-  // Buildings
+  //#endregion
+  //#region Buildings
   [tokens.buildings.buildingsTitle]: 'Edificios',
   [tokens.buildings.buildingList]: 'Lista de Edificios',
   [tokens.buildings.buildingDetails]: 'Detalles del Edificio',
   [tokens.buildings.buildingCreate]: 'Crear Edificio',
   [tokens.buildings.buildingEdit]: 'Editar Edificio',
-  // Clients
+  //#endregion
+  //#region Clients
   [tokens.clients.clientsList]: 'Listado de Clientes',
   [tokens.clients.clientDetails]: 'Detalles del Cliente',
   [tokens.clients.clientCreate]: 'Crear Cliente',
@@ -130,11 +136,17 @@ export const es = {
   [tokens.clients.clientCityRequired]: 'La ciudad es obligatoria',
   [tokens.clients.clientCountryRequired]: 'El país es obligatorio',
   [tokens.clients.clientTypeRequired]: 'El tipo de cliente es obligatorio',
+  [tokens.clients.clientContactPersonRequired]: 'La persona de contacto es obligatoria',
+  [tokens.clients.clientStatusRequired]: 'El estado es obligatorio',
+  [tokens.clients.clientSubscriptionPlanRequired]: 'El plan de suscripcion es obligatorio',
+  [tokens.clients.clientBillingInformationRequired]: 'La informacion de facturacion es obligatoria',
   // Client popup
   [tokens.clients.clientSave]: 'Guardar',
   [tokens.clients.clientSaved]: 'Cliente guardado',
   [tokens.clients.clientNotSaved]: 'Cliente no guardado',
   [tokens.clients.clientAlreadyExists]: 'El cliente ya existe!',
-  // Errors
+  //#endregion
+  //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Permiso de ubicación denegado!',
+  //#endregion
 };

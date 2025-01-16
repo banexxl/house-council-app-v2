@@ -1,7 +1,7 @@
 import { tokens } from '../tokens';
 
 export const de = {
-  // Common
+  //#region Common
   [tokens.common.languageChanged]: 'Sprache geändert',
   [tokens.common.title]: 'Hausrat',
   [tokens.common.btnSave]: 'Speichern',
@@ -23,9 +23,11 @@ export const de = {
   [tokens.common.btnRemove]: 'Entfernen',
   [tokens.common.btnSearch]: 'Suchen',
   [tokens.common.btnClear]: 'Löschen',
-  // Navigation
+  //#endregion
+  //#region Navigation
   [tokens.nav.academy]: 'Akademie',
   [tokens.nav.account]: 'Konto',
+  [tokens.nav.adminDashboard]: 'Administrator dashboard',
   [tokens.nav.analytics]: 'Analytik',
   [tokens.nav.auth]: 'Authentifizierung',
   [tokens.nav.buildings]: 'Gebäude',
@@ -39,7 +41,8 @@ export const de = {
   [tokens.nav.calendar]: 'Kalender',
   [tokens.nav.chat]: 'Plaudern',
   [tokens.nav.checkout]: 'Auschecken',
-  [tokens.nav.concepts]: 'Konzepte',
+  [tokens.nav.clientDashboard]: 'Kundendashboard',
+  [tokens.nav.tenants]: 'Mietnehmer',
   [tokens.nav.contact]: 'Kontakt',
   [tokens.nav.course]: 'Kurs',
   [tokens.nav.create]: 'Schaffen',
@@ -76,7 +79,8 @@ export const de = {
   [tokens.nav.resetPassword]: 'Passwort Zurücksetzen',
   [tokens.nav.socialMedia]: 'Sozialen Medien',
   [tokens.nav.verifyCode]: 'Code Überprüfen',
-  // Locations
+  //#endregion
+  //#region Locations
   [tokens.locations.locationsTitle]: 'Orte',
   [tokens.locations.locationList]: 'Ortliste',
   [tokens.locations.locationDetails]: 'Ort Details',
@@ -97,13 +101,15 @@ export const de = {
   [tokens.locations.locationPopupTitle]: 'Der Stift wird platziert bei',
   [tokens.locations.locationAlreadyExists]: 'Ort bereits vorhanden!',
   [tokens.locations.searchLocationLabel]: 'Ort suchen',
-  // Buildings
+  //#endregion
+  //#region Buildings
   [tokens.buildings.buildingsTitle]: 'Gebäude',
   [tokens.buildings.buildingList]: 'Gebäudeliste',
   [tokens.buildings.buildingDetails]: 'Gebäude Details',
   [tokens.buildings.buildingCreate]: 'Gebäude Erstellen',
   [tokens.buildings.buildingEdit]: 'Gebäude Bearbeiten',
-  // Clients
+  //#endregion
+  //#region Clients
   [tokens.clients.clientsList]: 'Kundenliste',
   [tokens.clients.clientDetails]: 'Kunden Details',
   [tokens.clients.clientCreate]: 'Kunde Erstellen',
@@ -121,7 +127,7 @@ export const de = {
   [tokens.clients.clientState]: 'Bundesland',
   [tokens.clients.clientCountry]: 'Land',
   [tokens.clients.clientPostalCode]: 'Postleitzahl',
-  // Client validationž
+  // Client validation
   [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
   [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',
   [tokens.clients.clientEmailRequired]: 'Email ist erforderlich',
@@ -130,11 +136,17 @@ export const de = {
   [tokens.clients.clientCityRequired]: 'Stadt ist erforderlich',
   [tokens.clients.clientCountryRequired]: 'Land ist erforderlich',
   [tokens.clients.clientTypeRequired]: 'Kundentyp ist erforderlich',
+  [tokens.clients.clientContactPersonRequired]: 'Kontaktperson ist erforderlich',
+  [tokens.clients.clientStatusRequired]: 'Status ist erforderlich',
+  [tokens.clients.clientSubscriptionPlanRequired]: 'Abonnementplan ist erforderlich',
+  [tokens.clients.clientBillingInformationRequired]: 'Rechnungsdaten sind erforderlich',
   // Client popup
   [tokens.clients.clientSave]: 'Speichern',
   [tokens.clients.clientSaved]: 'Kunde gespeichert',
   [tokens.clients.clientNotSaved]: 'Kunde nicht gespeichert',
   [tokens.clients.clientAlreadyExists]: 'Kunde bereits vorhanden!',
-  // Errors
+  //#endregion
+  //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',
+  //#endregion
 };

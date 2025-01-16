@@ -1,7 +1,7 @@
 import { tokens } from '../tokens';
 
 export const en = {
-  // Common
+  //#region Common
   [tokens.common.languageChanged]: 'Language changed',
   [tokens.common.title]: 'House Council',
   [tokens.common.btnSave]: 'Save',
@@ -23,23 +23,23 @@ export const en = {
   [tokens.common.btnRemove]: 'Remove',
   [tokens.common.btnSearch]: 'Search',
   [tokens.common.btnClear]: 'Clear',
-  // Navigation
-  [tokens.nav.locations]: 'Locations',
-  [tokens.nav.location]: 'Location',
-  [tokens.nav.locationAdd]: 'Add new location',
-  [tokens.nav.buildings]: 'Buildings',
-  [tokens.nav.building]: 'Building',
-  [tokens.nav.buildingAdd]: 'Add new building',
+  //#endregion
+  //#region Navigation
+  [tokens.nav.adminDashboard]: 'Admin dashboard',
   [tokens.nav.academy]: 'Academy',
   [tokens.nav.account]: 'Account',
   [tokens.nav.analytics]: 'Analytics',
   [tokens.nav.auth]: 'Auth',
   [tokens.nav.blog]: 'Blog',
+  [tokens.nav.buildings]: 'Buildings',
+  [tokens.nav.building]: 'Building',
+  [tokens.nav.buildingAdd]: 'Add new building',
   [tokens.nav.browse]: 'Browse',
   [tokens.nav.calendar]: 'Calendar',
   [tokens.nav.chat]: 'Chat',
   [tokens.nav.checkout]: 'Checkout',
-  [tokens.nav.concepts]: 'Concepts',
+  [tokens.nav.clientDashboard]: 'Client dashboard',
+  [tokens.nav.tenants]: 'Tenants',
   [tokens.nav.contact]: 'Contact',
   [tokens.nav.course]: 'Course',
   [tokens.nav.create]: 'Create',
@@ -61,6 +61,9 @@ export const en = {
   [tokens.nav.list]: 'List',
   [tokens.nav.login]: 'Login',
   [tokens.nav.logistics]: 'Logistics',
+  [tokens.nav.locations]: 'Locations',
+  [tokens.nav.location]: 'Location',
+  [tokens.nav.locationAdd]: 'Add new location',
   [tokens.nav.mail]: 'Mail',
   [tokens.nav.management]: 'Management',
   [tokens.nav.orderList]: 'Orders',
@@ -76,7 +79,8 @@ export const en = {
   [tokens.nav.resetPassword]: 'Reset Password',
   [tokens.nav.socialMedia]: 'Social Media',
   [tokens.nav.verifyCode]: 'Verify Code',
-  // Locations
+  //#endregion
+  //#region Locations
   [tokens.locations.locationsTitle]: 'Locations',
   [tokens.locations.locationList]: 'Location List',
   [tokens.locations.locationDetails]: 'Location Details',
@@ -97,13 +101,15 @@ export const en = {
   [tokens.locations.locationPopupTitle]: 'Pin is placed on',
   [tokens.locations.locationAlreadyExists]: 'Location has been taken!',
   [tokens.locations.searchLocationLabel]: 'Search location',
-  // Buildings
+  //#endregion
+  //#region Buildings
   [tokens.buildings.buildingsTitle]: 'Buildings',
   [tokens.buildings.buildingList]: 'Building List',
   [tokens.buildings.buildingDetails]: 'Building Details',
   [tokens.buildings.buildingCreate]: 'Create Building',
   [tokens.buildings.buildingEdit]: 'Building Edit',
-  // Clients
+  //#endregion
+  //#region Clients
   [tokens.clients.clientsList]: 'Clients List',
   [tokens.clients.clientDetails]: 'Client Details',
   [tokens.clients.clientCreate]: 'Create Client',
@@ -130,11 +136,17 @@ export const en = {
   [tokens.clients.clientCityRequired]: 'City is required',
   [tokens.clients.clientCountryRequired]: 'Country is required',
   [tokens.clients.clientTypeRequired]: 'Client type is required',
+  [tokens.clients.clientContactPersonRequired]: 'Contact person is required',
+  [tokens.clients.clientStatusRequired]: 'Status is required',
+  [tokens.clients.clientSubscriptionPlanRequired]: 'Subscription plan is required',
+  [tokens.clients.clientBillingInformationRequired]: 'Billing information is required',
   // Client popup
   [tokens.clients.clientSave]: 'Save',
   [tokens.clients.clientSaved]: 'Client saved',
   [tokens.clients.clientNotSaved]: 'Client not saved',
   [tokens.clients.clientAlreadyExists]: 'Client already exists!',
-  // Errors
+  //#endregion
+  //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Location permission denied!',
+  //#endregion
 };

@@ -1,7 +1,7 @@
 import { tokens } from '../tokens';
 
 export const rs = {
-     // Common
+     //#region Common
      [tokens.common.languageChanged]: 'Jezik promjenjen',
      [tokens.common.title]: 'Kućni savet',
      [tokens.common.btnSave]: 'Sačuvaj',
@@ -23,9 +23,11 @@ export const rs = {
      [tokens.common.btnRemove]: 'Ukloni',
      [tokens.common.btnSearch]: 'Traži',
      [tokens.common.btnClear]: 'Obriši',
-     // Navigation
+     //#endregion
+     //#region Navigation
      [tokens.nav.academy]: 'Akademija',
      [tokens.nav.account]: 'Nalog',
+     [tokens.nav.adminDashboard]: 'Administrator',
      [tokens.nav.analytics]: 'Analitika',
      [tokens.nav.auth]: 'Autentikacija',
      [tokens.nav.buildings]: 'Zgrade',
@@ -39,7 +41,8 @@ export const rs = {
      [tokens.nav.calendar]: 'Kalendar',
      [tokens.nav.chat]: 'Ćaskanje',
      [tokens.nav.checkout]: 'Plaćanje',
-     [tokens.nav.concepts]: 'Koncepti',
+     [tokens.nav.clientDashboard]: 'Klijent',
+     [tokens.nav.tenants]: 'Stanari',
      [tokens.nav.contact]: 'Kontakt',
      [tokens.nav.course]: 'Kurs',
      [tokens.nav.create]: 'Kreiraj',
@@ -77,7 +80,8 @@ export const rs = {
      [tokens.nav.socialMedia]: 'Društvene mreže',
      [tokens.nav.verifyCode]: 'Verifikacioni kod',
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
-     // Locations
+     //#endregion
+     //#region Locations
      [tokens.locations.locationsTitle]: 'Pregled lokacija',
      [tokens.locations.locationList]: 'Lista lokacija',
      [tokens.locations.locationDetails]: 'Detalji lokacije',
@@ -98,13 +102,15 @@ export const rs = {
      [tokens.locations.locationPopupTitle]: 'Pin je postavljen na',
      [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
      [tokens.locations.searchLocationLabel]: 'Pretraga lokacija',
-     // Buildings
+     //#endregion
+     //#region Buildings
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      [tokens.buildings.buildingList]: 'Lista zgrada',
      [tokens.buildings.buildingDetails]: 'Detalji zgrade',
      [tokens.buildings.buildingCreate]: 'Kreiraj zgradu',
      [tokens.buildings.buildingEdit]: 'Izmeni zgradu',
-     // Clients
+     //#endregion
+     //#region Clients
      [tokens.clients.clientsList]: 'Pregled klijenata',
      [tokens.clients.clientDetails]: 'Detalji klijenta',
      [tokens.clients.clientCreate]: 'Kreiraj klijenta',
@@ -131,11 +137,17 @@ export const rs = {
      [tokens.clients.clientCityRequired]: 'Grad je obavezan',
      [tokens.clients.clientCountryRequired]: 'Država je obavezna',
      [tokens.clients.clientTypeRequired]: 'Tip klijenta je obavezan',
+     [tokens.clients.clientContactPersonRequired]: 'Kontakt osoba je obavezna',
+     [tokens.clients.clientStatusRequired]: 'Status je obavezan',
+     [tokens.clients.clientSubscriptionPlanRequired]: 'Plan prijava je obavezan',
+     [tokens.clients.clientBillingInformationRequired]: 'Informacije o fakturiranju je obavezna',
      // Client popup
      [tokens.clients.clientSave]: 'Sačuvaj',
      [tokens.clients.clientSaved]: 'Klijent sačuvan',
      [tokens.clients.clientNotSaved]: 'Klijent nije sačuvan',
      [tokens.clients.clientAlreadyExists]: 'Klijent postoji!',
-     // Errors
+     //#endregion
+     //#region Errors
      [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',
+     //#endregion
 };

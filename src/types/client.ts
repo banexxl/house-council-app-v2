@@ -1,28 +1,31 @@
 import * as Yup from 'yup';
 
 export interface Client {
-  id: string;
-  address1: string;
-  address2?: string;
-  avatar?: string;
-  balance?: number;
-  city?: string;
-  country?: string;
-  currency?: string;
+  id?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  name?: string;
   email: string;
+  phone?: string;
+  address1: string;
+  contact_person: string;
+  type: string;
+  status: string;
+  subscription_plan?: string;
+  billing_information?: string;
+  notes?: string;
+  address2?: string;
+  mobilePhone?: string;
+  avatar?: string;
+  ////////
+  balance?: number;
   hasAcceptedMarketing?: boolean;
   hasDiscount?: boolean;
-  isProspect?: boolean;
+  isPotential?: boolean;
   isReturning?: boolean;
   isVerified?: boolean;
-  name: string;
-  phone?: string;
-  state?: string;
   totalSpent?: number;
   totalOrders?: number;
-  updatedAt?: number;
-  vatRate?: number;
-  zipCode?: string;
 }
 
 export interface ClientType {
@@ -55,26 +58,33 @@ export interface ClientInvoice {
 }
 
 export const clientInitialState: Client = {
-  id: '',
   email: '',
   name: '',
+  contact_person: '',
+  type: '',
+  status: '',
   address1: ''
 };
 
 export const clientValidationSchema = (t: (key: string) => string) => {
   return Yup.object({
-    name: Yup.string().max(255).required(t('clients.clientNameRequired')),
+    name: Yup.string().max(255),
+    contact_person: Yup.string().max(255).required(t('clients.clientContactPersonRequired')),
     email: Yup.string().email(t('clients.clientEmailMustBeValid')).max(255).required(t('clients.clientEmailRequired')),
+    phone: Yup.string().max(15),
+    mobile_phone: Yup.string().max(15).required(t('clients.clientMobilePhoneRequired')),
     address1: Yup.string().max(255).required(t('clients.cliendAddressRequired')),
     address2: Yup.string().max(255),
-    phone: Yup.string().max(15),
-    mobilePhone: Yup.string().max(15).required(t('clients.clientMobilePhoneRequired')),
-    city: Yup.string().max(255).required(t('clients.clientCityRequired')),
-    postalCode: Yup.string().max(255),
-    state: Yup.string().max(255),
-    country: Yup.string().max(255).required(t('clients.clientCountryRequired')),
-    clientType: Yup.string().max(255).required(t('clients.clientTypeRequired')),
-    hasDiscount: Yup.bool(),
-    isVerified: Yup.bool(),
+    client_type: Yup.string().max(255).required(t('clients.clientTypeRequired')),
+    has_discount: Yup.bool(),
+    is_verified: Yup.bool(),
+    status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
+    subscription_plan: Yup.string().max(255).required(t('clients.clientSubscriptionPlanRequired')),
+    billing_information: Yup.string().max(255).required(t('clients.clientBillingInformationRequired')),
+    notes: Yup.string().max(255),
+    avatar: Yup.string().max(255),
+    has_accepted_marketing: Yup.bool(),
+    is_potential: Yup.bool(),
+    is_returning: Yup.bool()
   })
 }

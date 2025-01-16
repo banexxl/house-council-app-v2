@@ -7,13 +7,14 @@ import Typography from '@mui/material/Typography'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import { useTranslation } from 'react-i18next'
+import { Box } from '@mui/system'
 
 export const ClientHeader = () => {
 
      const { t } = useTranslation()
 
      return (
-          <div>
+          <Box>
                <Link
                     color="text.primary"
                     component={RouterLink}
@@ -29,7 +30,10 @@ export const ClientHeader = () => {
                     </SvgIcon>
                     <Typography variant="subtitle2">{t('clients.clientsList')}</Typography>
                </Link>
-          </div>
+               <Typography variant="h4">
+                    {t('clients.clientCreate')}
+               </Typography>
+          </Box>
      )
 }
 

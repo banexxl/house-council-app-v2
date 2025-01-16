@@ -37,6 +37,7 @@ interface VerticalLayoutProps {
 }
 
 export const VerticalLayout: FC<VerticalLayoutProps> = (props) => {
+
   const { children, sections, navColor } = props;
   const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
   const mobileNav = useMobileNav();
