@@ -11,8 +11,8 @@ export interface Client {
   contact_person: string;
   type: string;
   status: string;
-  subscription_plan?: string;
-  billing_information?: string;
+  subscription_plan?: string | null;
+  billing_information?: string | null;
   notes?: string;
   address_2?: string;
   mobile_phone?: string;
@@ -94,8 +94,8 @@ export const clientInitialValues: Client = {
   contact_person: '',
   type: '',
   status: '',
-  subscription_plan: '',
-  billing_information: '',
+  subscription_plan: null,
+  billing_information: null,
   address_2: '',
   phone: '',
   mobile_phone: '',

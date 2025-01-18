@@ -1,7 +1,7 @@
 'use client'
 
 import { type FC } from 'react'
-import { Field, useFormik } from 'formik'
+import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -15,10 +15,11 @@ import Typography from '@mui/material/Typography'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
-import { Client, clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
+import { clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
-import { ListItem, MenuItem } from '@mui/material'
+import { MenuItem } from '@mui/material'
 import LocationAutocomplete from '../locations/autocomplete'
+import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
@@ -34,17 +35,25 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
     validationSchema: clientValidationSchema(t),
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      console.log('values', values);
+      const submissionValues = {
+        ...values,
+        subscription_plan: values.subscription_plan === '' ? null : values.subscription_plan,
+        billing_information: values.billing_information === '' ? null : values.billing_information,
+      };
 
       try {
         // Simulate a server call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        toast.success('Client information updated successfully!')
-        resetForm()
+        const saveClientResponse = await saveClientAction(submissionValues)
+        if (saveClientResponse.success) {
+          toast.success(t('clients.clientSaved'))
+        } else if (saveClientResponse.error) {
+          toast.error(t('clients.clientNotSaved') + ': \n' + saveClientResponse.error.message)
+        }
       } catch (error) {
-        toast.error('Something went wrong. Please try again.')
+        toast.error(t('clients.clientNotSaved'), error.message)
       } finally {
         setSubmitting(false)
+        resetForm()
       }
     },
   })
@@ -72,7 +81,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
               >
                 {clientTypes.map((option: ClientType) => (
                   <MenuItem
-                    key={option.id} value={option.name}
+                    key={option.id} value={option.id}
                     sx={{ cursor: 'pointer' }}
                   >
                     {option.name}
@@ -93,7 +102,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
               >
                 {clientStatuses.map((status: ClientStatus) => (
                   <MenuItem
-                    key={status.id} value={status.name}
+                    key={status.id} value={status.id}
                     sx={{ cursor: 'pointer' }}
                   >
                     {status.name}
