@@ -8,9 +8,9 @@ import { client, clients, emails, invoices, logs } from './data';
 type GetClientsRequest = {
   filters?: {
     query?: string;
-    hasAcceptedMarketing?: boolean;
-    isProspect?: boolean;
-    isReturning?: boolean;
+    has_accepted_marketing?: boolean;
+    is_potential?: boolean;
+    is_returning?: boolean;
   };
   page?: number;
   rowsPerPage?: number;
@@ -53,7 +53,7 @@ class ClientsApi {
           const properties: ('email' | 'name')[] = ['email', 'name'];
 
           properties.forEach((property) => {
-            if (client[property].toLowerCase().includes(filters.query!.toLowerCase())) {
+            if (client[property]!.toLowerCase().includes(filters.query!.toLowerCase())) {
               queryMatched = true;
             }
           });
@@ -63,20 +63,20 @@ class ClientsApi {
           }
         }
 
-        if (typeof filters.hasAcceptedMarketing !== 'undefined') {
-          if (client.hasAcceptedMarketing !== filters.hasAcceptedMarketing) {
+        if (typeof filters.has_accepted_marketing !== 'undefined') {
+          if (client.has_accepted_marketing !== filters.has_accepted_marketing) {
             return false;
           }
         }
 
-        if (typeof filters.isProspect !== 'undefined') {
-          if (client.isProspect !== filters.isProspect) {
+        if (typeof filters.is_potential !== 'undefined') {
+          if (client.is_potential !== filters.is_potential) {
             return false;
           }
         }
 
-        if (typeof filters.isReturning !== 'undefined') {
-          if (client.isReturning !== filters.isReturning) {
+        if (typeof filters.is_returning !== 'undefined') {
+          if (client.is_returning !== filters.is_returning) {
             return false;
           }
         }

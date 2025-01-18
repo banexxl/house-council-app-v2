@@ -96,25 +96,25 @@ export const HomeHero: FC = () => {
               sx={(theme) =>
                 theme.palette.mode === 'dark'
                   ? {
-                      backgroundColor: 'neutral.50',
-                      color: 'neutral.900',
-                      '&:hover': {
-                        backgroundColor: 'neutral.200',
-                      },
-                    }
+                    backgroundColor: 'neutral.50',
+                    color: 'neutral.900',
+                    '&:hover': {
+                      backgroundColor: 'neutral.200',
+                    },
+                  }
                   : {
-                      backgroundColor: 'neutral.900',
-                      color: 'neutral.50',
-                      '&:hover': {
-                        backgroundColor: 'neutral.700',
-                      },
-                    }
+                    backgroundColor: 'neutral.900',
+                    color: 'neutral.50',
+                    '&:hover': {
+                      backgroundColor: 'neutral.700',
+                    },
+                  }
               }
               variant="contained"
             >
               Live Demo
             </Button>
-            <Button
+            {/* <Button
               color="inherit"
               component={RouterLink}
               href={paths.components.index}
@@ -125,7 +125,7 @@ export const HomeHero: FC = () => {
               }
             >
               Components
-            </Button>
+            </Button> */}
           </Stack>
         </Box>
         <Box

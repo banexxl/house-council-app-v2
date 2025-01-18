@@ -37,9 +37,9 @@ interface Client {
   country: string;
   currency: string;
   email: string;
-  hasAcceptedMarketing: boolean;
-  isProspect: boolean;
-  isReturning: boolean;
+  has_accepted_marketing: boolean;
+  is_potential: boolean;
+  is_returning: boolean;
   name: string;
   state: string;
   totalSpent: number;
@@ -55,9 +55,9 @@ const clients: Client[] = [
     country: 'USA',
     currency: '$',
     email: 'carson.darrin@devias.io',
-    hasAcceptedMarketing: true,
-    isProspect: false,
-    isReturning: true,
+    has_accepted_marketing: true,
+    is_potential: false,
+    is_returning: true,
     name: 'Carson Darrin',
     state: 'Ohio',
     totalSpent: 300.0,
@@ -71,9 +71,9 @@ const clients: Client[] = [
     country: 'USA',
     currency: '$',
     email: 'fran.perez@devias.io',
-    hasAcceptedMarketing: true,
-    isProspect: true,
-    isReturning: false,
+    has_accepted_marketing: true,
+    is_potential: true,
+    is_returning: false,
     name: 'Fran Perez',
     state: 'Georgia',
     totalSpent: 0.0,
@@ -87,9 +87,9 @@ const clients: Client[] = [
     country: 'USA',
     currency: '$',
     email: 'jie.yan.song@devias.io',
-    hasAcceptedMarketing: false,
-    isProspect: false,
-    isReturning: false,
+    has_accepted_marketing: false,
+    is_potential: false,
+    is_returning: false,
     name: 'Jie Yan Song',
     state: 'Ohio',
     totalSpent: 5600.0,
@@ -103,31 +103,15 @@ const clients: Client[] = [
     country: 'Spain',
     currency: '$',
     email: 'anika.visser@devias.io',
-    hasAcceptedMarketing: true,
-    isProspect: false,
-    isReturning: true,
+    has_accepted_marketing: true,
+    is_potential: false,
+    is_returning: true,
     name: 'Anika Visser',
     state: 'Madrid',
     totalSpent: 500.0,
     totalOrders: 1,
     updated_at: subDays(subHours(now, 11), 2).getTime(),
-  },
-  {
-    id: '5e86805e2bafd54f66cc95c3',
-    avatar: '/assets/avatars/avatar-miron-vitold.png',
-    city: 'San Diego',
-    country: 'USA',
-    currency: '$',
-    email: 'miron.vitold@devias.io',
-    hasAcceptedMarketing: true,
-    isProspect: true,
-    isReturning: false,
-    name: 'Miron Vitold',
-    totalSpent: 0.0,
-    totalOrders: 0,
-    state: 'California',
-    updated_at: subDays(subHours(now, 7), 3).getTime(),
-  },
+  }
 ];
 
 const tabs = [
@@ -137,15 +121,15 @@ const tabs = [
   },
   {
     label: 'Accepts Marketing',
-    value: 'hasAcceptedMarketing',
+    value: 'has_accepted_marketing',
   },
   {
     label: 'Prospect',
-    value: 'isProspect',
+    value: 'is_potential',
   },
   {
     label: 'Returning',
-    value: 'isReturning',
+    value: 'is_returning',
   },
 ];
 

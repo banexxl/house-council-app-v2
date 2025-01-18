@@ -4,14 +4,15 @@ import Stack from '@mui/material/Stack'
 
 import { Seo } from 'src/components/seo'
 import { ClientHeader } from 'src/components/clients/clients-header'
-import { fetchClientTypes } from 'src/services/client-types-services'
+import { fetchClientStatuses, fetchClientTypes } from 'src/services/client-types-services'
 
-import { ClientType } from 'src/types/client'
+import { ClientStatus, ClientType } from 'src/types/client'
 import { ClientNewForm } from 'src/sections/dashboard/client/client-new-form'
 
 const Page = async () => {
 
   const clientTypes: ClientType[] = await fetchClientTypes()
+  const clientStatuses: ClientStatus[] = await fetchClientStatuses()
 
   return (
     <>
@@ -26,7 +27,7 @@ const Page = async () => {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientHeader />
-            <ClientNewForm clientTypes={clientTypes} />
+            <ClientNewForm clientTypes={clientTypes} clientStatuses={clientStatuses} />
           </Stack>
         </Container>
       </Box>

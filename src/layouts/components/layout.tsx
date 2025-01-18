@@ -50,7 +50,7 @@ export const Layout: FC<LayoutProps> = (props) => {
           py: '120px',
         }}
       >
-        <Container maxWidth="lg">
+        {/* <Container maxWidth="lg">
           <Stack spacing={3}>
             {!breadcrumbs && (
               <div>
@@ -108,7 +108,7 @@ export const Layout: FC<LayoutProps> = (props) => {
               </div>
             )}
           </Stack>
-        </Container>
+        </Container> */}
       </Box>
       <Divider />
       <LayoutContainer>{children}</LayoutContainer>

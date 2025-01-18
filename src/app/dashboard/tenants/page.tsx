@@ -25,9 +25,9 @@ import { paths } from 'src/paths';
 
 interface Filters {
   query?: string;
-  hasAcceptedMarketing?: boolean;
-  isProspect?: boolean;
-  isReturning?: boolean;
+  has_accepted_marketing?: boolean;
+  is_potential?: boolean;
+  is_returning?: boolean;
 }
 
 interface ClientsSearchState {
@@ -43,9 +43,9 @@ const useClientsSearch = () => {
   const [state, setState] = useState<ClientsSearchState>({
     filters: {
       query: undefined,
-      hasAcceptedMarketing: undefined,
-      isProspect: undefined,
-      isReturning: undefined,
+      has_accepted_marketing: undefined,
+      is_potential: undefined,
+      is_returning: undefined,
     },
     page: 0,
     rowsPerPage: 5,
@@ -147,7 +147,7 @@ const Page = () => {
   const clientsSearch = useClientsSearch();
   const clientsStore = useClientsStore(clientsSearch.state);
   const clientsIds = useClientsIds(clientsStore.clients);
-  const clientsSelection = useSelection<string>(clientsIds);
+  const clientsSelection = useSelection<string>(clientsIds.filter((id): id is string => id !== undefined));
 
 
 

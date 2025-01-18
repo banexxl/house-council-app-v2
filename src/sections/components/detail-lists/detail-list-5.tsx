@@ -23,8 +23,8 @@ interface Order {
   created_at: number;
   currency: string;
   client: {
-    address1: string;
-    address2: string;
+    address_1: string;
+    address_2: string;
     city: string;
     country: string;
     email: string;
@@ -50,12 +50,13 @@ const order: Order = {
   created_at: new Date().getTime(),
   currency: '$',
   client: {
-    address1: 'Street John Wick, no. 7',
-    address2: 'House #25',
-    city: 'San Diego',
+    address_1: 'Street John Wick, no. 7',
+    address_2: 'House #25',
+
     country: 'USA',
     email: 'miron.vitold@devias.io',
     name: 'Miron Vitold',
+    city: ''
   },
   items: [
     {
@@ -111,7 +112,7 @@ export const DetailList5: FC = () => {
               </TableCell>
               <TableCell>
                 <div>{order.client.name}</div>
-                <div>{order.client.address1}</div>
+                <div>{order.client.address_1}</div>
                 <div>{order.client.city}</div>
                 <div>{order.client.country}</div>
               </TableCell>

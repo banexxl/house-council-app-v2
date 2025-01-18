@@ -131,13 +131,13 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
               <LocationAutocomplete
                 label={t('clients.clientAddress1')}
                 onAddressSelected={(e: any) => {
-                  formik.setFieldValue('address1', e.matching_place_name);
+                  formik.setFieldValue('address_1', e.matching_place_name);
                 }}
               />
             </Grid>
             <Grid xs={12} md={6}>
               <LocationAutocomplete label={t('clients.clientAddress2')} onAddressSelected={() => {
-                formik.setFieldValue('address2', '');
+                formik.setFieldValue('address_2', '');
               }} />
 
             </Grid>
@@ -155,14 +155,14 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
             </Grid>
             <Grid xs={12} md={6}>
               <TextField
-                error={!!(formik.touched.phone && formik.errors.phone)}
                 fullWidth
-                helperText={formik.touched.phone && formik.errors.phone}
                 label={t('clients.clientPhone')}
                 name="phone"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.phone}
+                error={!!(formik.touched.phone && formik.errors.phone)}
+                helperText={formik.touched.phone && formik.errors.phone}
               />
             </Grid>
             <Grid xs={12} md={6}>

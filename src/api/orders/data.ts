@@ -9,9 +9,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 4), 1).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -44,9 +44,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 7), 1).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -79,9 +79,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 2), 2).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -114,9 +114,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 3), 5).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -149,9 +149,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 1), 6).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -184,9 +184,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 3), 7).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -219,9 +219,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 6), 8).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -254,9 +254,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 7), 8).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -289,9 +289,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 6), 9).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -324,9 +324,9 @@ export const orders: Order[] = [
     created_at: subDays(subHours(now, 3), 10).getTime(),
     currency: '$',
     client: {
-      address1: 'Street John Wick, no. 7',
-      address2: 'House #25',
-      city: 'San Diego',
+      address_1: 'Street John Wick, no. 7',
+      address_2: 'House #25',
+
       country: 'USA',
       email: 'miron.vitold@devias.io',
       name: 'Miron Vitold',
@@ -362,9 +362,9 @@ export const order: Order = {
   created_at: subDays(subHours(now, 4), 1).getTime(),
   currency: '$',
   client: {
-    address1: 'Street John Wick, no. 7',
-    address2: 'House #25',
-    city: 'San Diego',
+    address_1: 'Street John Wick, no. 7',
+    address_2: 'House #25',
+
     country: 'USA',
     email: 'miron.vitold@devias.io',
     name: 'Miron Vitold',

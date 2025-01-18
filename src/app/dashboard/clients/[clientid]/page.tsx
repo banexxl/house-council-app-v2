@@ -267,13 +267,11 @@ const Page = () => {
                     lg={4}
                   >
                     <ClientBasicDetails
-                      address1={client.address1}
-                      address2={client.address2}
-                      country={client.country}
+                      address_1={client.address_1}
+                      address_2={client.address_2}
                       email={client.email}
-                      isVerified={!!client.isVerified}
+                      isVerified={!!client.is_verified}
                       phone={client.phone}
-                      state={client.state}
                     />
                   </Grid>
                   <Grid

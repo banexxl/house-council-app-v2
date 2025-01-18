@@ -9,8 +9,8 @@ import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
 
 interface ClientBasicDetailsProps {
-  address1?: string;
-  address2?: string;
+  address_1?: string;
+  address_2?: string;
   country?: string;
   email: string;
   isVerified: boolean;
@@ -19,7 +19,7 @@ interface ClientBasicDetailsProps {
 }
 
 export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
-  const { address1, address2, country, email, isVerified, phone, state, ...other } = props;
+  const { address_1, address_2, country, email, isVerified, phone, state, ...other } = props;
 
   return (
     <Card {...other}>
@@ -53,7 +53,7 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
         <PropertyListItem
           divider
           label="Address 2"
-          value={address2}
+          value={address_2}
         />
       </PropertyList>
       <CardActions>
@@ -69,8 +69,8 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
 };
 
 ClientBasicDetails.propTypes = {
-  address1: PropTypes.string,
-  address2: PropTypes.string,
+  address_1: PropTypes.string,
+  address_2: PropTypes.string,
   country: PropTypes.string,
   email: PropTypes.string.isRequired,
   isVerified: PropTypes.bool.isRequired,

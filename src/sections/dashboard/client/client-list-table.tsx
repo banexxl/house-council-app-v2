@@ -129,9 +129,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
           </TableHead>
           <TableBody>
             {items.map((client) => {
-              const isSelected = selected.includes(client.id);
-              const location = `${client.city}, ${client.state}, ${client.country}`;
-              const totalSpent = numeral(client.totalSpent).format(`${client.currency}0,0.00`);
+              const isSelected = selected.includes(client.id!);
+              // const location = `${client.city}, ${client.state}, ${client.country}`;
+              // const totalSpent = numeral(client.totalSpent).format(`${client.currency}0,0.00`);
 
               return (
                 <TableRow
@@ -144,9 +144,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                       checked={isSelected}
                       onChange={(event: ChangeEvent<HTMLInputElement>): void => {
                         if (event.target.checked) {
-                          onSelectOne?.(client.id);
+                          onSelectOne?.(client.id!);
                         } else {
-                          onDeselectOne?.(client.id);
+                          onDeselectOne?.(client.id!);
                         }
                       }}
                       value={isSelected}
@@ -185,11 +185,11 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                       </div>
                     </Stack>
                   </TableCell>
-                  <TableCell>{location}</TableCell>
+                  {/* <TableCell>{location}</TableCell>
                   <TableCell>{client.totalOrders}</TableCell>
                   <TableCell>
                     <Typography variant="subtitle2">{totalSpent}</Typography>
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell align="right">
                     <IconButton
                       component={RouterLink}

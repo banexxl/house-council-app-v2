@@ -16,12 +16,12 @@ import { useUpdateEffect } from 'src/hooks/use-update-effect';
 
 interface Filters {
   query?: string;
-  hasAcceptedMarketing?: boolean;
-  isProspect?: boolean;
-  isReturning?: boolean;
+  has_accepted_marketing?: boolean;
+  is_potential?: boolean;
+  is_returning?: boolean;
 }
 
-type TabValue = 'all' | 'hasAcceptedMarketing' | 'isProspect' | 'isReturning';
+type TabValue = 'all' | 'has_accepted_marketing' | 'is_potential' | 'is_returning';
 
 interface TabOption {
   label: string;
@@ -35,15 +35,15 @@ const tabs: TabOption[] = [
   },
   {
     label: 'Accepts Marketing',
-    value: 'hasAcceptedMarketing',
+    value: 'has_accepted_marketing',
   },
   {
     label: 'Prospect',
-    value: 'isProspect',
+    value: 'is_potential',
   },
   {
     label: 'Returning',
-    value: 'isReturning',
+    value: 'is_returning',
   },
 ];
 
@@ -101,9 +101,9 @@ export const ClientListSearch: FC<ClientListSearchProps> = (props) => {
     setFilters((prevState) => {
       const updatedFilters: Filters = {
         ...prevState,
-        hasAcceptedMarketing: undefined,
-        isProspect: undefined,
-        isReturning: undefined,
+        has_accepted_marketing: undefined,
+        is_potential: undefined,
+        is_returning: undefined,
       };
 
       if (value !== 'all') {

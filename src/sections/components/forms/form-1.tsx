@@ -66,7 +66,7 @@ export const Form1: FC = () => (
           <TextField
             fullWidth
             label="Address 1"
-            name="address1"
+            name="address_1"
             value="Street John Wick, no. 7"
           />
         </Grid>
@@ -77,7 +77,7 @@ export const Form1: FC = () => (
           <TextField
             fullWidth
             label="Address 2"
-            name="address2"
+            name="address_2"
             value="House #25"
           />
         </Grid>
