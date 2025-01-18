@@ -54,7 +54,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label })
      };
 
      return (
-          <Box sx={{ position: 'relative', width: '300px' }}>
+          <Box sx={{ position: 'relative', width: '100%' }}>
                <TextField
                     label={label}
                     variant="outlined"
