@@ -39,7 +39,7 @@ const getLastActivity = (lastMessage?: Message): string | null => {
     return null;
   }
 
-  return formatDistanceStrict(lastMessage.createdAt, new Date(), {
+  return formatDistanceStrict(lastMessage.created_at, new Date(), {
     addSuffix: false,
     locale: customLocale,
   });
@@ -89,16 +89,16 @@ export const ChatThreadItem: FC<ChatThreadItemProps> = (props) => {
           sx={{
             [`& .${avatarClasses.root}`]: groupThread
               ? {
-                  height: 26,
-                  width: 26,
-                  '&:nth-of-type(2)': {
-                    mt: '10px',
-                  },
-                }
-              : {
-                  height: 36,
-                  width: 36,
+                height: 26,
+                width: 26,
+                '&:nth-of-type(2)': {
+                  mt: '10px',
                 },
+              }
+              : {
+                height: 36,
+                width: 36,
+              },
           }}
         >
           {recipients.map((recipient) => (

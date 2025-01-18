@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
+     label: string;
 }
 
-const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected }) => {
+const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label }) => {
 
      const { t } = useTranslation();
      const [inputValue, setInputValue] = useState('');
@@ -55,7 +56,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected }) => {
      return (
           <Box sx={{ position: 'relative', width: '300px' }}>
                <TextField
-                    label={t('locations.searchLocationLabel')}
+                    label={label}
                     variant="outlined"
                     fullWidth
                     value={inputValue}

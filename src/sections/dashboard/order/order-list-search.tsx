@@ -78,7 +78,7 @@ export const OrderListSearch: FC<OrderListSearchProps> = (props) => {
   const {
     onFiltersChange,
     onSortChange,
-    // sortBy = 'createdAt',
+    // sortBy = 'created_at',
     sortDir = 'asc',
   } = props;
   const queryRef = useRef<HTMLInputElement | null>(null);

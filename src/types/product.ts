@@ -2,7 +2,7 @@ export interface Product {
   id: string;
   attributes: string[];
   category: string;
-  createdAt: number;
+  created_at: number;
   currency: string;
   image: string | null;
   inStock: boolean;
@@ -13,6 +13,6 @@ export interface Product {
   quantity: number;
   sku: string;
   status: 'published' | 'draft';
-  updatedAt: number;
+  updated_at: number;
   variants: number;
 }

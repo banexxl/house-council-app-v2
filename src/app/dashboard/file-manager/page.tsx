@@ -47,7 +47,7 @@ const useItemsSearch = () => {
     },
     page: 0,
     rowsPerPage: 9,
-    sortBy: 'createdAt',
+    sortBy: 'created_at',
     sortDir: 'desc',
   });
 

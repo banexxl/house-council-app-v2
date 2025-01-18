@@ -90,17 +90,17 @@ const Page = () => {
                 {
                   id: '5547409069c59755261f5546',
                   amount: 4.99,
-                  createdAt: subMonths(now, 1).getTime(),
+                  created_at: subMonths(now, 1).getTime(),
                 },
                 {
                   id: 'a3e17f4b551ff8766903f31f',
                   amount: 4.99,
-                  createdAt: subMonths(now, 2).getTime(),
+                  created_at: subMonths(now, 2).getTime(),
                 },
                 {
                   id: '28ca7c66fc360d8203644256',
                   amount: 4.99,
-                  createdAt: subMonths(now, 3).getTime(),
+                  created_at: subMonths(now, 3).getTime(),
                 },
               ]}
             />
@@ -129,14 +129,14 @@ const Page = () => {
               loginEvents={[
                 {
                   id: '1bd6d44321cb78fd915462fa',
-                  createdAt: subDays(subHours(subMinutes(now, 5), 7), 1).getTime(),
+                  created_at: subDays(subHours(subMinutes(now, 5), 7), 1).getTime(),
                   ip: '95.130.17.84',
                   type: 'Credential login',
                   userAgent: 'Chrome, Mac OS 10.15.7',
                 },
                 {
                   id: 'bde169c2fe9adea5d4598ea9',
-                  createdAt: subDays(subHours(subMinutes(now, 25), 9), 1).getTime(),
+                  created_at: subDays(subHours(subMinutes(now, 25), 9), 1).getTime(),
                   ip: '95.130.17.84',
                   type: 'Credential login',
                   userAgent: 'Chrome, Mac OS 10.15.7',

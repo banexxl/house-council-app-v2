@@ -44,7 +44,7 @@ const useOrdersSearch = () => {
     },
     page: 0,
     rowsPerPage: 5,
-    sortBy: 'createdAt',
+    sortBy: 'created_at',
     sortDir: 'desc',
   });
 

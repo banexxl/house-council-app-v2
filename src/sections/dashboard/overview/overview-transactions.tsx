@@ -27,7 +27,7 @@ const statusMap: Record<string, SeverityPillColor> = {
 interface Transaction {
   id: string;
   amount: number;
-  createdAt: number;
+  created_at: number;
   currency: string;
   sender: string;
   status: string;
@@ -70,8 +70,8 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = (props) => {
         <Table sx={{ minWidth: 600 }}>
           <TableBody>
             {transactions.map((transaction) => {
-              const createdAtMonth = format(transaction.createdAt, 'LLL').toUpperCase();
-              const createdAtDay = format(transaction.createdAt, 'd');
+              const createdAtMonth = format(transaction.created_at, 'LLL').toUpperCase();
+              const createdAtDay = format(transaction.created_at, 'd');
               const statusColor = statusMap[transaction.status];
               const type = transaction.type === 'receive' ? 'Payment received' : 'Payment sent';
               const amount =

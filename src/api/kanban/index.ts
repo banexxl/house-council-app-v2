@@ -461,7 +461,7 @@ class KanbanApi {
         const comment = {
           id: createResourceId(),
           authorId: user.id,
-          createdAt: new Date().getTime(),
+          created_at: new Date().getTime(),
           message,
         };
 

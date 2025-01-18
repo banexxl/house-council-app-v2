@@ -53,7 +53,7 @@ export const ItemSearch: FC<ItemSearchProps> = (props) => {
     onSortChange,
     onViewChange,
     view = 'grid',
-    // sortBy = 'createdAt',
+    // sortBy = 'created_at',
     sortDir = 'asc',
   } = props;
   const queryRef = useRef<HTMLInputElement | null>(null);

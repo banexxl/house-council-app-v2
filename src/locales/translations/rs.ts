@@ -78,6 +78,7 @@ export const rs = {
      [tokens.nav.register]: 'Registracija',
      [tokens.nav.resetPassword]: 'Resetuj lozinku',
      [tokens.nav.socialMedia]: 'Društvene mreže',
+     [tokens.nav.subscriptions]: 'Pretplate',
      [tokens.nav.verifyCode]: 'Verifikacioni kod',
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      //#endregion
@@ -117,8 +118,12 @@ export const rs = {
      [tokens.clients.clientEdit]: 'Izmeni klijenta',
      [tokens.clients.clientDelete]: 'Brisanje klijenta',
      // Client form
+     [tokens.clients.clientFormBasicInfo]: 'Osnovne informacije',
+     [tokens.clients.clientFormAdvancedInfo]: 'Napredne informacije',
      [tokens.clients.clientType]: 'Tip klijenta',
-     [tokens.clients.clientName]: 'Ime',
+     [tokens.clients.clientStatus]: 'Status',
+     [tokens.clients.clientName]: 'Naziv',
+     [tokens.clients.clientContactPerson]: 'Kontakt osoba',
      [tokens.clients.clientEmail]: 'Email',
      [tokens.clients.clientPhone]: 'Telefon',
      [tokens.clients.clientMobilePhone]: 'Mobilni telefon',
@@ -146,6 +151,31 @@ export const rs = {
      [tokens.clients.clientSaved]: 'Klijent sačuvan',
      [tokens.clients.clientNotSaved]: 'Klijent nije sačuvan',
      [tokens.clients.clientAlreadyExists]: 'Klijent postoji!',
+     //#endregion
+     //#region Tenants
+     [tokens.tenants.tenantsList]: 'Pregled mietnera',
+     [tokens.tenants.tenantDetails]: 'Detalji mietnere',
+     [tokens.tenants.tenantCreate]: 'Kreiraj mietnere',
+     [tokens.tenants.tenantEdit]: 'Izmeni mietnere',
+     [tokens.tenants.tenantDelete]: 'Brisanje mietnere',
+     // Tenant from
+     [tokens.tenants.tenantName]: 'Ime',
+     [tokens.tenants.tenantEmail]: 'Email',
+     [tokens.tenants.tenantPhone]: 'Telefon',
+     [tokens.tenants.tenantMobilePhone]: 'Mobilni telefon',
+     [tokens.tenants.tenantAddress1]: 'Adresa 1',
+     [tokens.tenants.tenantAddress2]: 'Adresa 2',
+     [tokens.tenants.tenantCity]: 'Grad',
+     [tokens.tenants.tenantState]: 'Region',
+     [tokens.tenants.tenantCountry]: 'Država',
+     [tokens.tenants.tenantPostalCode]: 'Poštanski broj',
+     // Tenant validation     
+     [tokens.tenants.tenantNameRequired]: 'Ime je obavezno',
+     [tokens.tenants.tenantEmailMustBeValid]: 'Email mora biti validan',
+     [tokens.tenants.tenantEmailRequired]: 'Email je obavezan',
+     [tokens.tenants.tenantMobilePhoneRequired]: 'Mobilni telefon je obavezan',
+     [tokens.tenants.tenantCityRequired]: 'Grad je obavezan',
+     [tokens.tenants.tenantCountryRequired]: 'Država je obavezna',
      //#endregion
      //#region Errors
      [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',

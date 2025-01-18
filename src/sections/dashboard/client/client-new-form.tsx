@@ -15,34 +15,22 @@ import Typography from '@mui/material/Typography'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
-import { Client, ClientType, clientValidationSchema } from 'src/types/client'
+import { Client, clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import { ListItem, MenuItem } from '@mui/material'
+import LocationAutocomplete from '../locations/autocomplete'
 
 interface ClientNewFormProps {
-  clientTypes: ClientType[]
+  clientTypes: ClientType[],
+  clientStatuses: ClientStatus[]
 }
 
-export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
+export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses }) => {
 
   const { t } = useTranslation()
 
   const formik = useFormik({
-    initialValues: {
-      name: '',
-      email: '',
-      address1: '',
-      address2: '',
-      phone: '',
-      mobilePhone: '',
-      city: '',
-      postalCode: '',
-      country: '',
-      state: '',
-      clientType: '',
-      isVerified: false,
-      hasDiscount: false,
-    },
+    initialValues: clientInitialValues,
     validationSchema: clientValidationSchema(t),
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
@@ -64,24 +52,23 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card>
-        <CardHeader title={t('clients.clientCreate')} />
+        <CardHeader title={t('clients.clientFormBasicInfo')} />
 
         <CardContent sx={{ pt: 0 }}>
-          {/* <Typography>
+          <Typography>
             {JSON.stringify(formik.errors)}
-          </Typography> */}
+          </Typography>
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
-
               <TextField
                 select
                 fullWidth
                 label={t('clients.clientType')}
-                name="clientType"
-                value={formik.values.clientType}
+                name="type"
+                value={formik.values.type}
                 onChange={formik.handleChange} // Use onChange for handling selection
-                error={!!(formik.touched.clientType && formik.errors.clientType)}
-                helperText={formik.touched.clientType && formik.errors.clientType}
+                error={!!(formik.touched.type && formik.errors.type)}
+                helperText={formik.touched.type && formik.errors.type}
               >
                 {clientTypes.map((option: ClientType) => (
                   <MenuItem
@@ -89,6 +76,27 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
                     sx={{ cursor: 'pointer' }}
                   >
                     {option.name}
+                  </MenuItem >
+                ))}
+              </TextField>
+            </Grid>
+            <Grid xs={12} md={6}>
+              <TextField
+                select
+                fullWidth
+                label={t('clients.clientStatus')}
+                name="status"
+                value={formik.values.status}
+                onChange={formik.handleChange} // Use onChange for handling selection
+                error={!!(formik.touched.status && formik.errors.status)}
+                helperText={formik.touched.status && formik.errors.status}
+              >
+                {clientStatuses.map((status: ClientStatus) => (
+                  <MenuItem
+                    key={status.id} value={status.name}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {status.name}
                   </MenuItem >
                 ))}
               </TextField>
@@ -110,6 +118,32 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
             <Grid xs={12} md={6}>
               <TextField
                 fullWidth
+                label={t('clients.clientContactPerson')}
+                name="contact_person"
+                value={formik.values.contact_person}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={!!(formik.touched.contact_person && formik.errors.contact_person)}
+                helperText={formik.touched.contact_person && formik.errors.contact_person}
+              />
+            </Grid>
+            <Grid xs={12} md={6}>
+              <LocationAutocomplete
+                label={t('clients.clientAddress1')}
+                onAddressSelected={(e: any) => {
+                  formik.setFieldValue('address1', e.matching_place_name);
+                }}
+              />
+            </Grid>
+            <Grid xs={12} md={6}>
+              <LocationAutocomplete label={t('clients.clientAddress2')} onAddressSelected={() => {
+                formik.setFieldValue('address2', '');
+              }} />
+
+            </Grid>
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
                 label={t('clients.clientEmail')}
                 name="email"
                 error={!!(formik.touched.email && formik.errors.email)}
@@ -117,54 +151,6 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.email}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.address1 && formik.errors.address1)}
-                fullWidth
-                helperText={formik.touched.address1 && formik.errors.address1}
-                label={t('clients.clientAddress1')}
-                name="address1"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.address1}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.address2 && formik.errors.address2)}
-                fullWidth
-                helperText={formik.touched.address2 && formik.errors.address2}
-                label={t('clients.clientAddress2')}
-                name="address2"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.address2}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.city && formik.errors.city)}
-                fullWidth
-                helperText={formik.touched.city && formik.errors.city}
-                label={t('clients.clientCity')}
-                name="city"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.city}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.postalCode && formik.errors.postalCode)}
-                fullWidth
-                helperText={formik.touched.postalCode && formik.errors.postalCode}
-                label={t('clients.clientPostalCode')}
-                name="postalCode"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.postalCode}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -181,41 +167,18 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
             </Grid>
             <Grid xs={12} md={6}>
               <TextField
-                error={!!(formik.touched.mobilePhone && formik.errors.mobilePhone)}
                 fullWidth
-                helperText={formik.touched.mobilePhone && formik.errors.mobilePhone}
                 label={t('clients.clientMobilePhone')}
-                name="mobilePhone"
+                name="mobile_phone"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
-                value={formik.values.mobilePhone}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.country && formik.errors.country)}
-                fullWidth
-                helperText={formik.touched.country && formik.errors.country}
-                label={t('clients.clientCountry')}
-                name="country"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.country}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.state && formik.errors.state)}
-                fullWidth
-                helperText={formik.touched.state && formik.errors.state}
-                label={t('clients.clientState')}
-                name="state"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.state}
+                value={formik.values.mobile_phone}
+                error={!!(formik.touched.mobile_phone && formik.errors.mobile_phone)}
+                helperText={formik.touched.mobile_phone && formik.errors.mobile_phone}
               />
             </Grid>
           </Grid>
+
           <Stack divider={<Divider />} spacing={3} sx={{ mt: 3 }}>
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
               <Stack spacing={1}>
@@ -227,12 +190,12 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
                 </Typography>
               </Stack>
               <Switch
-                checked={formik.values.isVerified}
+                checked={formik.values.is_verified}
                 color="primary"
                 edge="start"
-                name="isVerified"
+                name="is_verified"
                 onChange={formik.handleChange}
-                value={formik.values.isVerified}
+                value={formik.values.is_verified}
               />
             </Stack>
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
@@ -246,12 +209,12 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
                 </Typography>
               </Stack>
               <Switch
-                checked={formik.values.hasDiscount}
+                checked={formik.values.has_accepted_marketing}
                 color="primary"
                 edge="start"
                 name="hasDiscount"
                 onChange={formik.handleChange}
-                value={formik.values.hasDiscount}
+                value={formik.values.has_accepted_marketing}
               />
             </Stack>
           </Stack>
@@ -279,7 +242,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes }) => {
           </Button>
         </Stack>
       </Card>
-    </form>
+    </form >
   )
 }
 

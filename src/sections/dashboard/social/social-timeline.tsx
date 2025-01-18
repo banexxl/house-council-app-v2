@@ -51,7 +51,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                 authorAvatar={post.author.avatar}
                 authorName={post.author.name}
                 comments={post.comments}
-                createdAt={post.createdAt}
+                created_at={post.created_at}
                 isLiked={post.isLiked}
                 likes={post.likes}
                 media={post.media}

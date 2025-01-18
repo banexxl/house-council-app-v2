@@ -32,7 +32,7 @@ interface Project {
     name: string;
   };
   budget: number;
-  createdAt: number;
+  created_at: number;
   currency: string;
   technologies: string[];
   title: string;
@@ -46,7 +46,7 @@ const projects: Project[] = [
       name: 'Jie Yan Song',
     },
     budget: 12500,
-    createdAt: subHours(subMinutes(subSeconds(now, 10), 34), 2).getTime(),
+    created_at: subHours(subMinutes(subSeconds(now, 10), 34), 2).getTime(),
     currency: '$',
     technologies: ['angular'],
     title: 'Mella Full Screen Slider',
@@ -58,7 +58,7 @@ const projects: Project[] = [
       name: 'Omar Darobe',
     },
     budget: 15750,
-    createdAt: subHours(subMinutes(subSeconds(now, 25), 56), 10).getTime(),
+    created_at: subHours(subMinutes(subSeconds(now, 25), 56), 10).getTime(),
     currency: '$',
     technologies: ['sketch', 'html-css'],
     title: 'Overview Design',
@@ -70,7 +70,7 @@ const projects: Project[] = [
       name: 'Siegbert Gottfried',
     },
     budget: 15750,
-    createdAt: subDays(subMinutes(subSeconds(now, 50), 30), 1).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 50), 30), 1).getTime(),
     currency: '$',
     technologies: ['react-js'],
     title: 'Ten80 Web Design',
@@ -82,7 +82,7 @@ const projects: Project[] = [
       name: 'Iulia Albu',
     },
     budget: 12500,
-    createdAt: subDays(subMinutes(subSeconds(now, 30), 4), 1).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 30), 4), 1).getTime(),
     currency: '$',
     technologies: ['vue-js'],
     title: 'Neura e-commerce UI Kit',
@@ -94,7 +94,7 @@ const projects: Project[] = [
       name: 'Carson Darrin',
     },
     budget: 15750,
-    createdAt: subDays(subMinutes(subSeconds(now, 6), 11), 1).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 6), 11), 1).getTime(),
     currency: '$',
     technologies: ['angular', 'figma'],
     title: 'Administrator Overview',
@@ -158,7 +158,7 @@ export const Table2: FC = () => (
           <TableBody>
             {projects.map((project) => {
               const budget = numeral(project.budget).format(`${project.currency}0,0.00`);
-              const createdAt = format(project.createdAt, 'dd MMM, yyyy');
+              const created_at = format(project.created_at, 'dd MMM, yyyy');
 
               return (
                 <TableRow
@@ -201,7 +201,7 @@ export const Table2: FC = () => (
                       ))}
                     </Stack>
                   </TableCell>
-                  <TableCell align="right">{createdAt}</TableCell>
+                  <TableCell align="right">{created_at}</TableCell>
                 </TableRow>
               );
             })}

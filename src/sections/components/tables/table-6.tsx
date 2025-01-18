@@ -116,11 +116,11 @@ const statusOptions: Option[] = [
 const sortOptions: Option[] = [
   {
     label: 'Newest first',
-    value: 'createdAt|desc',
+    value: 'created_at|desc',
   },
   {
     label: 'Oldest first',
-    value: 'createdAt|asc',
+    value: 'created_at|asc',
   },
 ];
 

@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import Autocomplete from '@mui/material/Autocomplete';
+import LocationAutocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CardActions from '@mui/material/CardActions';
@@ -75,7 +75,7 @@ export const Form5: FC = () => (
             xs={12}
             md={6}
           >
-            <Autocomplete
+            <LocationAutocomplete
               getOptionLabel={(option: Option) => option.text}
               options={countries}
               renderInput={(params): JSX.Element => (

@@ -78,6 +78,7 @@ export const es = {
   [tokens.nav.register]: 'Registrarse',
   [tokens.nav.resetPassword]: 'Restablecer Contraseña',
   [tokens.nav.socialMedia]: 'Redes Sociales',
+  [tokens.nav.subscriptions]: 'Suscripciones',
   [tokens.nav.verifyCode]: 'Verificar Código',
   //#endregion
   //#region Locations
@@ -116,8 +117,12 @@ export const es = {
   [tokens.clients.clientEdit]: 'Editar Cliente',
   [tokens.clients.clientDelete]: 'Borrar Cliente',
   // Client form
+  [tokens.clients.clientFormBasicInfo]: 'Información Basica',
+  [tokens.clients.clientFormAdvancedInfo]: 'Información Avanzada',
   [tokens.clients.clientType]: 'Tipo de Cliente',
+  [tokens.clients.clientStatus]: 'Estado',
   [tokens.clients.clientName]: 'Nombre',
+  [tokens.clients.clientContactPerson]: 'Persona de Contacto',
   [tokens.clients.clientEmail]: 'Correo',
   [tokens.clients.clientPhone]: 'Telefono',
   [tokens.clients.clientMobilePhone]: 'Telefono Móvil',
@@ -145,6 +150,30 @@ export const es = {
   [tokens.clients.clientSaved]: 'Cliente guardado',
   [tokens.clients.clientNotSaved]: 'Cliente no guardado',
   [tokens.clients.clientAlreadyExists]: 'El cliente ya existe!',
+  //#endregion
+  //#region Tenants
+  [tokens.tenants.tenantsList]: 'Listado de Mietnehmer',
+  [tokens.tenants.tenantDetails]: 'Detalles del Mietnehmer',
+  [tokens.tenants.tenantCreate]: 'Crear Mietnehmer',
+  [tokens.tenants.tenantEdit]: 'Editar Mietnehmer',
+  [tokens.tenants.tenantDelete]: 'Borrar Mietnehmer',
+  // Tenant form
+  [tokens.tenants.tenantName]: 'Nombre',
+  [tokens.tenants.tenantEmail]: 'Correo',
+  [tokens.tenants.tenantMobilePhone]: 'Telefono Móvil',
+  [tokens.tenants.tenantAddress1]: 'Dirección 1',
+  [tokens.tenants.tenantAddress2]: 'Dirección 2',
+  [tokens.tenants.tenantCity]: 'Ciudad',
+  [tokens.tenants.tenantState]: 'Estado',
+  [tokens.tenants.tenantCountry]: 'País',
+  [tokens.tenants.tenantPostalCode]: 'Código Postal',
+  // Tenant validation
+  [tokens.tenants.tenantNameRequired]: 'El nombre es obligatorio',
+  [tokens.tenants.tenantEmailMustBeValid]: 'El correo debe ser valido',
+  [tokens.tenants.tenantEmailRequired]: 'El correo es obligatorio',
+  [tokens.tenants.tenantMobilePhoneRequired]: 'El telefono es obligatorio',
+  [tokens.tenants.tenantCityRequired]: 'La ciudad es obligatoria',
+  [tokens.tenants.tenantCountryRequired]: 'El país es obligatorio',
   //#endregion
   //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Permiso de ubicación denegado!',

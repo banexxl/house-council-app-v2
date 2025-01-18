@@ -19,7 +19,7 @@ export interface OrderItem {
 
 export interface OrderLog {
   id: string;
-  createdAt: number;
+  created_at: number;
   message: string;
 }
 
@@ -28,7 +28,7 @@ export type OrderStatus = 'canceled' | 'complete' | 'pending' | 'rejected';
 export interface Order {
   id: string;
   coupon?: string | null;
-  createdAt: number;
+  created_at: number;
   currency?: string;
   client: OrderClient;
   items?: OrderItem[];

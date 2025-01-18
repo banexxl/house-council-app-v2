@@ -20,19 +20,19 @@ const now = new Date();
 
 interface Email {
   id: string;
-  createdAt: number;
+  created_at: number;
   description: string;
 }
 
 const emails: Email[] = [
   {
     id: '5ece2ce3613486d95ffaea58',
-    createdAt: subDays(subHours(subMinutes(now, 34), 5), 3).getTime(),
+    created_at: subDays(subHours(subMinutes(now, 34), 5), 3).getTime(),
     description: 'Order confirmation',
   },
   {
     id: '5ece2ce8cebf7ad1d100c0cd',
-    createdAt: subDays(subHours(subMinutes(now, 49), 11), 4).getTime(),
+    created_at: subDays(subHours(subMinutes(now, 49), 11), 4).getTime(),
     description: 'Order confirmation',
   },
 ];
@@ -87,14 +87,14 @@ export const DetailList4: FC = () => {
             <Table>
               <TableBody>
                 {emails.map((email) => {
-                  const createdAt = format(email.createdAt, 'dd/MM/yyyy | HH:mm');
+                  const created_at = format(email.created_at, 'dd/MM/yyyy | HH:mm');
 
                   return (
                     <TableRow key={email.id}>
                       <TableCell>
                         <Typography variant="subtitle2">{email.description}</Typography>
                       </TableCell>
-                      <TableCell>{createdAt}</TableCell>
+                      <TableCell>{created_at}</TableCell>
                     </TableRow>
                   );
                 })}

@@ -36,7 +36,7 @@ interface OrderEditProps {
 export const OrderEdit: FC<OrderEditProps> = (props) => {
   const { onCancel, onSave, order } = props;
 
-  const createdAt = format(order.createdAt, 'dd/MM/yyyy HH:mm');
+  const created_at = format(order.created_at, 'dd/MM/yyyy HH:mm');
 
   return (
     <Stack spacing={6}>
@@ -69,7 +69,7 @@ export const OrderEdit: FC<OrderEditProps> = (props) => {
             fullWidth
             label="Date"
             name="date"
-            value={createdAt}
+            value={created_at}
           />
           <TextField
             fullWidth

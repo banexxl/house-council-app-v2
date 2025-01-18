@@ -10,14 +10,14 @@ import Typography from '@mui/material/Typography';
 interface SocialCommentProps {
   authorAvatar: string;
   authorName: string;
-  createdAt: number;
+  created_at: number;
   message: string;
 }
 
 export const SocialComment: FC<SocialCommentProps> = (props) => {
-  const { authorAvatar, authorName, createdAt, message, ...other } = props;
+  const { authorAvatar, authorName, created_at, message, ...other } = props;
 
-  const ago = formatDistanceToNowStrict(createdAt);
+  const ago = formatDistanceToNowStrict(created_at);
 
   return (
     <Stack
@@ -70,6 +70,6 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
 SocialComment.propTypes = {
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
-  createdAt: PropTypes.number.isRequired,
+  created_at: PropTypes.number.isRequired,
   message: PropTypes.string.isRequired,
 };

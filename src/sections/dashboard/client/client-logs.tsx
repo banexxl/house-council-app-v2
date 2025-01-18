@@ -44,7 +44,7 @@ export const ClientLogs: FC<ClientLogsProps> = (props) => {
           <TableBody>
             {logs.map((log) => {
               const statusColor = log.status >= 200 && log.status < 300 ? 'success' : 'error';
-              const createdAt = format(log.createdAt, 'yyyy/MM/dd HH:mm:ss');
+              const created_at = format(log.created_at, 'yyyy/MM/dd HH:mm:ss');
 
               return (
                 <TableRow key={log.id}>
@@ -62,7 +62,7 @@ export const ClientLogs: FC<ClientLogsProps> = (props) => {
                   <TableCell>{log.route}</TableCell>
                   <TableCell>{log.description}</TableCell>
                   <TableCell>{log.ip}</TableCell>
-                  <TableCell>{createdAt}</TableCell>
+                  <TableCell>{created_at}</TableCell>
                 </TableRow>
               );
             })}

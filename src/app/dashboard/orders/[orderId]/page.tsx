@@ -61,7 +61,7 @@ const Page = () => {
     return null;
   }
 
-  const createdAt = format(order.createdAt, 'dd/MM/yyyy HH:mm');
+  const created_at = format(order.created_at, 'dd/MM/yyyy HH:mm');
 
   return (
     <>
@@ -115,7 +115,7 @@ const Page = () => {
                     <SvgIcon color="action">
                       <CalendarIcon />
                     </SvgIcon>
-                    <Typography variant="body2">{createdAt}</Typography>
+                    <Typography variant="body2">{created_at}</Typography>
                   </Stack>
                 </Stack>
                 <div>

@@ -5,7 +5,7 @@ import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import mapboxgl from 'mapbox-gl';
 import { useTranslation } from 'react-i18next';
-import Autocomplete from './autocomplete';
+import LocationAutocomplete from './autocomplete';
 import { BuildingLocation } from 'src/types/location';
 import { insertLocation } from 'src/services/building-location-services';
 import { transliterate } from 'src/utils/transliterate';
@@ -150,7 +150,7 @@ const LocationCreateForm = () => {
                     display: 'flex',
                     flexDirection: 'row',
                     padding: '20px',
-                    justifyContent: 'space-around',
+                    justifyContent: 'space-between',
                }}
           >
                <Box
@@ -158,12 +158,13 @@ const LocationCreateForm = () => {
                          display: 'flex',
                          flexDirection: 'column',
                          gap: 2,
+                         width: '40%',
                     }}
                >
                     <Typography variant="h6">
                          {t('locations.locationsChooseAddress')}
                     </Typography>
-                    <Autocomplete onAddressSelected={onAddressSelected} />
+                    <LocationAutocomplete label={t('locations.locationsChooseAddress')} onAddressSelected={onAddressSelected} />
                     <form onSubmit={handleSubmit(handleSave)} style={{ width: '100%' }}>
                          <Stack spacing={3}>
                               <Typography variant="h6">

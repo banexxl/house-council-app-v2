@@ -94,7 +94,14 @@ export const useSections = () => {
               }
             ]
           },
-
+          {
+            title: t(tokens.nav.subscriptions),
+            icon: (
+              <SvgIcon fontSize="small">
+                <ReceiptCheckIcon />
+              </SvgIcon>
+            )
+          }
         ]
       },
       {
@@ -204,8 +211,8 @@ export const useSections = () => {
             ]
           },
           {
-            title: t(tokens.nav.clients),
-            path: paths.dashboard.clients.index,
+            title: t(tokens.nav.tenants),
+            path: paths.dashboard.tenants.index,
             icon: (
               <SvgIcon fontSize="small">
                 <Users03Icon />
@@ -213,16 +220,16 @@ export const useSections = () => {
             ),
             items: [
               {
-                title: t(tokens.clients.clientsList),
-                path: paths.dashboard.clients.index,
+                title: t(tokens.tenants.tenantsList),
+                path: paths.dashboard.tenants.index,
               },
               {
-                title: t(tokens.clients.clientDetails),
-                path: paths.dashboard.clients.details,
+                title: t(tokens.tenants.tenantDetails),
+                path: paths.dashboard.tenants.tenant,
               },
               {
-                title: t(tokens.clients.clientCreate),
-                path: paths.dashboard.clients.new,
+                title: t(tokens.tenants.tenantCreate),
+                path: paths.dashboard.tenants.new,
               },
             ],
           },

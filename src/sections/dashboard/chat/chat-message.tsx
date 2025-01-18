@@ -14,14 +14,14 @@ interface ChatMessageProps {
   authorName: string;
   body: string;
   contentType: string;
-  createdAt: number;
+  created_at: number;
   position?: 'left' | 'right';
 }
 
 export const ChatMessage: FC<ChatMessageProps> = (props) => {
-  const { authorAvatar, authorName, body, contentType, createdAt, position, ...other } = props;
+  const { authorAvatar, authorName, body, contentType, created_at, position, ...other } = props;
 
-  const ago = formatDistanceToNowStrict(createdAt);
+  const ago = formatDistanceToNowStrict(created_at);
 
   return (
     <Box
@@ -68,7 +68,7 @@ export const ChatMessage: FC<ChatMessageProps> = (props) => {
             </Box>
             {contentType === 'image' && (
               <CardMedia
-                onClick={(): void => {}}
+                onClick={(): void => { }}
                 image={body}
                 sx={{
                   height: 200,
@@ -112,6 +112,6 @@ ChatMessage.propTypes = {
   authorName: PropTypes.string.isRequired,
   body: PropTypes.string.isRequired,
   contentType: PropTypes.string.isRequired,
-  createdAt: PropTypes.number.isRequired,
+  created_at: PropTypes.number.isRequired,
   position: PropTypes.oneOf(['left', 'right']),
 };

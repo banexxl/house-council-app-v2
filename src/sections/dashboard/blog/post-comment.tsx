@@ -11,7 +11,7 @@ interface PostCommentProps {
   authorName: string;
   authorRole: string;
   content: string;
-  createdAt: number;
+  created_at: number;
   isLiked: boolean;
   likes: number;
 }
@@ -22,7 +22,7 @@ export const PostComment: FC<PostCommentProps> = (props) => {
     authorName,
     authorRole,
     content,
-    createdAt,
+    created_at,
     isLiked: isLikedProp,
     likes: likesProp,
     ...other
@@ -57,7 +57,7 @@ export const PostComment: FC<PostCommentProps> = (props) => {
             color="text.secondary"
             variant="caption"
           >
-            {formatDistanceToNow(createdAt, { addSuffix: true })}
+            {formatDistanceToNow(created_at, { addSuffix: true })}
           </Typography>
         </Box>
         <Typography
@@ -76,7 +76,7 @@ PostComment.propTypes = {
   authorName: PropTypes.string.isRequired,
   authorRole: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
-  createdAt: PropTypes.number.isRequired,
+  created_at: PropTypes.number.isRequired,
   isLiked: PropTypes.bool.isRequired,
   likes: PropTypes.number.isRequired,
 };

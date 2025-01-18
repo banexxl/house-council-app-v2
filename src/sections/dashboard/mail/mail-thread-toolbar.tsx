@@ -28,15 +28,15 @@ import { getInitials } from 'src/utils/get-initials';
 
 interface MailThreadToolbarProps {
   backHref: string;
-  createdAt: number;
+  created_at: number;
   from: EmailParticipant;
   to: EmailParticipant[];
 }
 
 export const MailThreadToolbar: FC<MailThreadToolbarProps> = (props) => {
-  const { backHref, createdAt, from, to } = props;
+  const { backHref, created_at, from, to } = props;
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
-  const formattedCreatedAt = format(createdAt, 'MMMM d yyyy, h:mm:ss a');
+  const formattedCreatedAt = format(created_at, 'MMMM d yyyy, h:mm:ss a');
 
   return (
     <div>
@@ -199,7 +199,7 @@ export const MailThreadToolbar: FC<MailThreadToolbarProps> = (props) => {
 
 MailThreadToolbar.propTypes = {
   backHref: PropTypes.string.isRequired,
-  createdAt: PropTypes.number.isRequired,
+  created_at: PropTypes.number.isRequired,
   // @ts-ignore
   from: PropTypes.object.isRequired,
   to: PropTypes.array.isRequired,

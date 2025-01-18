@@ -44,7 +44,7 @@ interface Client {
   state: string;
   totalSpent: number;
   totalOrders: number;
-  updatedAt: number;
+  updated_at: number;
 }
 
 const clients: Client[] = [
@@ -62,7 +62,7 @@ const clients: Client[] = [
     state: 'Ohio',
     totalSpent: 300.0,
     totalOrders: 3,
-    updatedAt: subDays(subHours(now, 7), 1).getTime(),
+    updated_at: subDays(subHours(now, 7), 1).getTime(),
   },
   {
     id: '5e887b209c28ac3dd97f6db5',
@@ -78,7 +78,7 @@ const clients: Client[] = [
     state: 'Georgia',
     totalSpent: 0.0,
     totalOrders: 0,
-    updatedAt: subDays(subHours(now, 1), 2).getTime(),
+    updated_at: subDays(subHours(now, 1), 2).getTime(),
   },
   {
     id: '5e887b7602bdbc4dbb234b27',
@@ -94,7 +94,7 @@ const clients: Client[] = [
     state: 'Ohio',
     totalSpent: 5600.0,
     totalOrders: 6,
-    updatedAt: subDays(subHours(now, 4), 2).getTime(),
+    updated_at: subDays(subHours(now, 4), 2).getTime(),
   },
   {
     id: '5e86809283e28b96d2d38537',
@@ -110,7 +110,7 @@ const clients: Client[] = [
     state: 'Madrid',
     totalSpent: 500.0,
     totalOrders: 1,
-    updatedAt: subDays(subHours(now, 11), 2).getTime(),
+    updated_at: subDays(subHours(now, 11), 2).getTime(),
   },
   {
     id: '5e86805e2bafd54f66cc95c3',
@@ -126,7 +126,7 @@ const clients: Client[] = [
     totalSpent: 0.0,
     totalOrders: 0,
     state: 'California',
-    updatedAt: subDays(subHours(now, 7), 3).getTime(),
+    updated_at: subDays(subHours(now, 7), 3).getTime(),
   },
 ];
 
@@ -157,11 +157,11 @@ interface Option {
 const sortOptions: Option[] = [
   {
     label: 'Last update (newest)',
-    value: 'updatedAt|desc',
+    value: 'updated_at|desc',
   },
   {
     label: 'Last update (oldest)',
-    value: 'updatedAt|asc',
+    value: 'updated_at|asc',
   },
   {
     label: 'Total orders (highest)',

@@ -39,8 +39,8 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
 
   if (item) {
     const size = bytesToSize(item.size);
-    const createdAt = item.createdAt && format(item.createdAt, 'MMM dd, yyyy HH:mm');
-    const updatedAt = item.updatedAt && format(item.updatedAt, 'MMM dd, yyyy HH:mm');
+    const created_at = item.created_at && format(item.created_at, 'MMM dd, yyyy HH:mm');
+    const updated_at = item.updated_at && format(item.updated_at, 'MMM dd, yyyy HH:mm');
 
     content = (
       <div>
@@ -159,7 +159,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               xs={12}
               sm={8}
             >
-              <Typography variant="body2">{createdAt}</Typography>
+              <Typography variant="body2">{created_at}</Typography>
             </Grid>
             <Grid
               xs={12}
@@ -176,7 +176,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               xs={12}
               sm={8}
             >
-              <Typography variant="body2">{updatedAt}</Typography>
+              <Typography variant="body2">{updated_at}</Typography>
             </Grid>
             <Grid
               xs={12}

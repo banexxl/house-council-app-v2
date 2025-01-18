@@ -49,7 +49,7 @@ const useClientsSearch = () => {
     },
     page: 0,
     rowsPerPage: 5,
-    sortBy: 'updatedAt',
+    sortBy: 'updated_at',
     sortDir: 'desc',
   });
 

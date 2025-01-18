@@ -65,7 +65,7 @@ export const MailThread: FC<MailThreadProps> = (props) => {
     >
       <MailThreadToolbar
         backHref={backHref}
-        createdAt={email.createdAt}
+        created_at={email.created_at}
         from={email.from}
         to={email.to}
       />

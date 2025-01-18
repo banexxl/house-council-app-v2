@@ -78,6 +78,7 @@ export const en = {
   [tokens.nav.register]: 'Register',
   [tokens.nav.resetPassword]: 'Reset Password',
   [tokens.nav.socialMedia]: 'Social Media',
+  [tokens.nav.subscriptions]: 'Subscriptions',
   [tokens.nav.verifyCode]: 'Verify Code',
   //#endregion
   //#region Locations
@@ -116,8 +117,12 @@ export const en = {
   [tokens.clients.clientEdit]: 'Client Edit',
   [tokens.clients.clientDelete]: 'Client Delete',
   // Client form
+  [tokens.clients.clientFormBasicInfo]: 'Basic Information',
+  [tokens.clients.clientFormAdvancedInfo]: 'Advanced Information',
   [tokens.clients.clientType]: 'Client Type',
+  [tokens.clients.clientStatus]: 'Status',
   [tokens.clients.clientName]: 'Name',
+  [tokens.clients.clientContactPerson]: 'Contact Person',
   [tokens.clients.clientEmail]: 'Email',
   [tokens.clients.clientPhone]: 'Phone',
   [tokens.clients.clientMobilePhone]: 'Mobile Phone',
@@ -145,6 +150,31 @@ export const en = {
   [tokens.clients.clientSaved]: 'Client saved',
   [tokens.clients.clientNotSaved]: 'Client not saved',
   [tokens.clients.clientAlreadyExists]: 'Client already exists!',
+  //#endregion
+  //#region Tenants
+  [tokens.tenants.tenantsList]: 'Tenants List',
+  [tokens.tenants.tenantDetails]: 'Tenant Details',
+  [tokens.tenants.tenantCreate]: 'Create Tenant',
+  [tokens.tenants.tenantEdit]: 'Tenant Edit',
+  [tokens.tenants.tenantDelete]: 'Tenant Delete',
+  // Tenant form
+  [tokens.tenants.tenantName]: 'Name',
+  [tokens.tenants.tenantEmail]: 'Email',
+  [tokens.tenants.tenantPhone]: 'Phone',
+  [tokens.tenants.tenantMobilePhone]: 'Mobile Phone',
+  [tokens.tenants.tenantAddress1]: 'Address 1',
+  [tokens.tenants.tenantAddress2]: 'Address 2',
+  [tokens.tenants.tenantCity]: 'City',
+  [tokens.tenants.tenantState]: 'State',
+  [tokens.tenants.tenantCountry]: 'Country',
+  [tokens.tenants.tenantPostalCode]: 'Postal Code',
+  // Tenant validation
+  [tokens.tenants.tenantNameRequired]: 'Name is required',
+  [tokens.tenants.tenantEmailMustBeValid]: 'Email must be valid',
+  [tokens.tenants.tenantEmailRequired]: 'Email is required',
+  [tokens.tenants.tenantMobilePhoneRequired]: 'Mobile phone is required',
+  [tokens.tenants.tenantCityRequired]: 'City is required',
+  [tokens.tenants.tenantCountryRequired]: 'Country is required',
   //#endregion
   //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Location permission denied!',

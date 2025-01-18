@@ -18,7 +18,7 @@ interface CompanyReviewProps {
 export const CompanyReview: FC<CompanyReviewProps> = (props) => {
   const { review } = props;
 
-  const ago = formatDistanceStrict(review.createdAt, new Date(), { addSuffix: true });
+  const ago = formatDistanceStrict(review.created_at, new Date(), { addSuffix: true });
 
   return (
     <Card variant="outlined">

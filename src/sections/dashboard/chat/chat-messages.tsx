@@ -61,7 +61,7 @@ export const ChatMessages: FC<ChatMessagesProps> = (props) => {
             authorName={author.name}
             body={message.body}
             contentType={message.contentType}
-            createdAt={message.createdAt}
+            created_at={message.created_at}
             key={message.id}
             position={author.isUser ? 'right' : 'left'}
           />

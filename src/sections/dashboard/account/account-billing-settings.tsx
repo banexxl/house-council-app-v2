@@ -57,7 +57,7 @@ const plans: Plan[] = [
 interface Invoice {
   id: string;
   amount: number;
-  createdAt: number;
+  created_at: number;
 }
 
 interface AccountBillingSettingsProps {
@@ -258,12 +258,12 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
           </TableHead>
           <TableBody>
             {invoices.map((invoice) => {
-              const createdAt = format(invoice.createdAt, 'dd MMM yyyy');
+              const created_at = format(invoice.created_at, 'dd MMM yyyy');
               const amount = numeral(invoice.amount).format('$0,0.00');
 
               return (
                 <TableRow key={invoice.id}>
-                  <TableCell>{createdAt}</TableCell>
+                  <TableCell>{created_at}</TableCell>
                   <TableCell>{amount}</TableCell>
                   <TableCell align="right">
                     <Link

@@ -47,7 +47,7 @@ const tabs: TabOption[] = [
   },
 ];
 
-type SortValue = 'updatedAt|desc' | 'updatedAt|asc' | 'totalOrders|desc' | 'totalOrders|asc';
+type SortValue = 'updated_at|desc' | 'updated_at|asc' | 'totalOrders|desc' | 'totalOrders|asc';
 
 interface SortOption {
   label: string;
@@ -57,11 +57,11 @@ interface SortOption {
 const sortOptions: SortOption[] = [
   {
     label: 'Last update (newest)',
-    value: 'updatedAt|desc',
+    value: 'updated_at|desc',
   },
   {
     label: 'Last update (oldest)',
-    value: 'updatedAt|asc',
+    value: 'updated_at|asc',
   },
   {
     label: 'Total orders (highest)',

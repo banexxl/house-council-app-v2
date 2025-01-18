@@ -20,7 +20,7 @@ const now = new Date();
 
 interface Log {
   id: string;
-  createdAt: number;
+  created_at: number;
   description: string;
   ip: string;
   method: string;
@@ -31,7 +31,7 @@ interface Log {
 const logs: Log[] = [
   {
     id: '5ece2cfeb6e2ac847bba11ce',
-    createdAt: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
     description: 'Purchase',
     ip: '84.234.243.42',
     method: 'POST',
@@ -40,7 +40,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d02510484b2952e1e05',
-    createdAt: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
     description: 'Purchase',
     ip: '84.234.243.42',
     method: 'POST',
@@ -49,7 +49,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d08e2748e4e9788901a',
-    createdAt: subDays(subMinutes(subSeconds(now, 23), 8), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 23), 8), 2).getTime(),
     description: 'Cart remove',
     ip: '84.234.243.42',
     method: 'DELETE',
@@ -58,7 +58,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d0c47214e342c2d7f28',
-    createdAt: subDays(subMinutes(subSeconds(now, 54), 20), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 54), 20), 2).getTime(),
     description: 'Cart add',
     ip: '84.234.243.42',
     method: 'GET',
@@ -67,7 +67,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d11e4060a97b2b57623',
-    createdAt: subDays(subMinutes(subSeconds(now, 16), 34), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 16), 34), 2).getTime(),
     description: 'Cart add',
     ip: '84.234.243.42',
     method: 'GET',
@@ -76,7 +76,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d16cf6d53d8e33656af',
-    createdAt: subDays(subMinutes(subSeconds(now, 30), 54), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 30), 54), 2).getTime(),
     description: 'View product',
     ip: '84.234.243.42',
     method: 'GET',
@@ -85,7 +85,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d1b2ec5071be9286a96',
-    createdAt: subDays(subMinutes(subSeconds(now, 40), 56), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 40), 56), 2).getTime(),
     description: 'Get products',
     ip: '84.234.243.42',
     method: 'GET',
@@ -94,7 +94,7 @@ const logs: Log[] = [
   },
   {
     id: '5ece2d22e68d5498917e47bc',
-    createdAt: subDays(subMinutes(subSeconds(now, 5), 57), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 5), 57), 2).getTime(),
     description: 'Login',
     ip: '84.234.243.42',
     method: 'POST',
@@ -127,7 +127,7 @@ export const Table10: FC = () => (
           <TableBody>
             {logs.map((log) => {
               const statusColor = log.status === 200 ? 'success' : 'error';
-              const createdAt = format(log.createdAt, 'yyyy/MM/dd | HH:mm:ss');
+              const created_at = format(log.created_at, 'yyyy/MM/dd | HH:mm:ss');
 
               return (
                 <TableRow key={log.id}>
@@ -140,7 +140,7 @@ export const Table10: FC = () => (
                   <TableCell>{log.route}</TableCell>
                   <TableCell>{log.description}</TableCell>
                   <TableCell align="right">{log.ip}</TableCell>
-                  <TableCell align="right">{createdAt}</TableCell>
+                  <TableCell align="right">{created_at}</TableCell>
                 </TableRow>
               );
             })}

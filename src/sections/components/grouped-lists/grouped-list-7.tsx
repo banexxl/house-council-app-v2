@@ -20,7 +20,7 @@ const now = new Date();
 interface Message {
   id: string;
   content: string;
-  createdAt: number;
+  created_at: number;
   senderAvatar: string;
   senderName: string;
   senderOnline?: boolean;
@@ -30,7 +30,7 @@ const messages: Message[] = [
   {
     id: 'b91cbe81ee3efefba6b915a7',
     content: 'Hello, we spoke earlier on the phone',
-    createdAt: subMinutes(now, 2).getTime(),
+    created_at: subMinutes(now, 2).getTime(),
     senderAvatar: '/assets/avatars/avatar-alcides-antonio.png',
     senderName: 'Alcides Antonio',
     senderOnline: true,
@@ -38,7 +38,7 @@ const messages: Message[] = [
   {
     id: 'de0eb1ac517aae1aa57c0b7e',
     content: 'Is the job still available?',
-    createdAt: subMinutes(now, 56).getTime(),
+    created_at: subMinutes(now, 56).getTime(),
     senderAvatar: '/assets/avatars/avatar-marcus-finn.png',
     senderName: 'Marcus Finn',
     senderOnline: true,
@@ -46,7 +46,7 @@ const messages: Message[] = [
   {
     id: '38e2b0942c90d0ad724e6f40',
     content: 'What is a screening task? I’d like to',
-    createdAt: subHours(subMinutes(now, 23), 3).getTime(),
+    created_at: subHours(subMinutes(now, 23), 3).getTime(),
     senderAvatar: '/assets/avatars/avatar-carson-darrin.png',
     senderName: 'Carson Darrin',
     senderOnline: false,
@@ -54,7 +54,7 @@ const messages: Message[] = [
   {
     id: '467505f3356f25a69f4c4890',
     content: 'Still waiting for feedback',
-    createdAt: subHours(subMinutes(now, 6), 8).getTime(),
+    created_at: subHours(subMinutes(now, 6), 8).getTime(),
     senderAvatar: '/assets/avatars/avatar-fran-perez.png',
     senderName: 'Fran Perez',
     senderOnline: true,
@@ -62,7 +62,7 @@ const messages: Message[] = [
   {
     id: '7e6af808e801a8361ce4cf8b',
     content: 'Need more information about current campaigns',
-    createdAt: subHours(subMinutes(now, 18), 10).getTime(),
+    created_at: subHours(subMinutes(now, 18), 10).getTime(),
     senderAvatar: '/assets/avatars/avatar-jie-yan-song.png',
     senderName: 'Jie Yan Song',
     senderOnline: false,
@@ -82,7 +82,7 @@ export const GroupedList7: FC = () => (
       <CardHeader title="Inbox" />
       <List disablePadding>
         {messages.map((message) => {
-          const ago = formatDistanceStrict(message.createdAt, new Date(), {
+          const ago = formatDistanceStrict(message.created_at, new Date(), {
             addSuffix: true,
             locale: customLocale,
           });

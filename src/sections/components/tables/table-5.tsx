@@ -37,7 +37,7 @@ interface Product {
   attributes: string[];
   category: string;
   currency: string;
-  createdAt: number;
+  created_at: number;
   image: string | null;
   inventoryType: InventoryType;
   isAvailable: boolean;
@@ -45,7 +45,7 @@ interface Product {
   name: string;
   price: number;
   quantity: number;
-  updatedAt: number;
+  updated_at: number;
   variants: number;
 }
 
@@ -55,7 +55,7 @@ const products: Product[] = [
     attributes: ['Cotton'],
     category: 'dress',
     currency: '$',
-    createdAt: subDays(now, 1).getTime(),
+    created_at: subDays(now, 1).getTime(),
     image: '/assets/products/product-1.png',
     inventoryType: 'in_stock',
     isAvailable: true,
@@ -63,7 +63,7 @@ const products: Product[] = [
     name: 'Healthcare Erbology',
     price: 23.99,
     quantity: 85,
-    updatedAt: subHours(now, 6).getTime(),
+    updated_at: subHours(now, 6).getTime(),
     variants: 2,
   },
   {
@@ -71,7 +71,7 @@ const products: Product[] = [
     attributes: ['Cotton'],
     category: 'dress',
     currency: '$',
-    createdAt: subDays(now, 3).getTime(),
+    created_at: subDays(now, 3).getTime(),
     image: '/assets/products/product-2.png',
     inventoryType: 'out_of_stock',
     isAvailable: false,
@@ -79,7 +79,7 @@ const products: Product[] = [
     name: 'Makeup Lancome Rouge',
     price: 95.0,
     quantity: 0,
-    updatedAt: subDays(subHours(now, 8), 2).getTime(),
+    updated_at: subDays(subHours(now, 8), 2).getTime(),
     variants: 1,
   },
   {
@@ -87,7 +87,7 @@ const products: Product[] = [
     attributes: ['Variety of styles'],
     category: 'jewelry',
     currency: '$',
-    createdAt: subDays(now, 6).getTime(),
+    created_at: subDays(now, 6).getTime(),
     image: null,
     inventoryType: 'in_stock',
     isAvailable: true,
@@ -95,7 +95,7 @@ const products: Product[] = [
     name: 'Layering Bracelets Collection',
     price: 155.0,
     quantity: 48,
-    updatedAt: subDays(subHours(now, 2), 1).getTime(),
+    updated_at: subDays(subHours(now, 2), 1).getTime(),
     variants: 5,
   },
   {
@@ -103,7 +103,7 @@ const products: Product[] = [
     attributes: ['Polyester and Spandex'],
     category: 'blouse',
     currency: '$',
-    createdAt: subDays(now, 12).getTime(),
+    created_at: subDays(now, 12).getTime(),
     image: '/assets/products/product-4.png',
     inventoryType: 'limited',
     isAvailable: false,
@@ -111,7 +111,7 @@ const products: Product[] = [
     name: 'Skincare Necessaire',
     price: 17.99,
     quantity: 5,
-    updatedAt: subDays(subHours(now, 7), 1).getTime(),
+    updated_at: subDays(subHours(now, 7), 1).getTime(),
     variants: 1,
   },
 ];
@@ -162,19 +162,19 @@ const availabilityOptions: Option[] = [
 const sortOptions: Option[] = [
   {
     label: 'Last update (newest first)',
-    value: 'updatedAt|desc',
+    value: 'updated_at|desc',
   },
   {
     label: 'Last update (oldest first)',
-    value: 'updatedAt|asc',
+    value: 'updated_at|asc',
   },
   {
     label: 'Creation date (newest first)',
-    value: 'createdAt|desc',
+    value: 'created_at|desc',
   },
   {
     label: 'Creation date (oldest first)',
-    value: 'createdAt|asc',
+    value: 'created_at|asc',
   },
 ];
 
@@ -408,8 +408,8 @@ export const Table5: FC = () => (
       <TablePagination
         component="div"
         count={products.length}
-        onPageChange={() => {}}
-        onRowsPerPageChange={() => {}}
+        onPageChange={() => { }}
+        onRowsPerPageChange={() => { }}
         page={0}
         rowsPerPage={5}
         rowsPerPageOptions={[5, 10, 25]}

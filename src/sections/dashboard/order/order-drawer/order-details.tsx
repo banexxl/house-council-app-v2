@@ -42,7 +42,7 @@ export const OrderDetails: FC<OrderDetailsProps> = (props) => {
 
   const align = lgUp ? 'horizontal' : 'vertical';
   const items = order.items || [];
-  const createdAt = format(order.createdAt, 'dd/MM/yyyy HH:mm');
+  const created_at = format(order.created_at, 'dd/MM/yyyy HH:mm');
   const statusColor = statusMap[order.status] as SeverityPillColor;
   const totalAmount = numeral(order.totalAmount).format(`${order.currency}0,0.00`);
 
@@ -120,7 +120,7 @@ export const OrderDetails: FC<OrderDetailsProps> = (props) => {
             disableGutters
             divider
             label="Date"
-            value={createdAt}
+            value={created_at}
           />
           <PropertyListItem
             align={align}

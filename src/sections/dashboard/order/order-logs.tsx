@@ -38,7 +38,7 @@ export const OrderLogs: FC<OrderLogsProps> = (props) => {
         >
           {logs.map((log, index) => {
             const showConnector = logs.length - 1 > index;
-            const createdAt = format(log.createdAt, 'MMM dd, h:mm a');
+            const created_at = format(log.created_at, 'MMM dd, h:mm a');
 
             return (
               <TimelineItem
@@ -71,7 +71,7 @@ export const OrderLogs: FC<OrderLogsProps> = (props) => {
                     sx={{ mt: 1 }}
                     variant="caption"
                   >
-                    {createdAt}
+                    {created_at}
                   </Typography>
                 </TimelineContent>
               </TimelineItem>

@@ -18,7 +18,7 @@ interface Review {
     name: string;
   };
   comment: string;
-  createdAt: number;
+  created_at: number;
   value: number;
 }
 
@@ -30,7 +30,7 @@ const reviews: Review[] = [
       name: 'Marcus Finn',
     },
     comment: 'Great company, providing an awesome & easy to use product.',
-    createdAt: subHours(now, 2).getTime(),
+    created_at: subHours(now, 2).getTime(),
     value: 5,
   },
   {
@@ -41,7 +41,7 @@ const reviews: Review[] = [
     },
     comment:
       "Not the best people managers, poor management skills, poor career development programs. Communication from corporate & leadership isn't always clear and is sometime one-sided. Low pay compared to FANG.",
-    createdAt: subHours(now, 2).getTime(),
+    created_at: subHours(now, 2).getTime(),
     value: 2,
   },
   {
@@ -52,7 +52,7 @@ const reviews: Review[] = [
     },
     comment:
       'I have been working with this company full-time. Great for the work life balance. Cons, decentralized decision making process across the organization.',
-    createdAt: subHours(now, 2).getTime(),
+    created_at: subHours(now, 2).getTime(),
     value: 4,
   },
 ];
@@ -66,7 +66,7 @@ export const GroupedList9: FC = () => (
   >
     <Stack spacing={3}>
       {reviews.map((review) => {
-        const ago = formatDistanceToNowStrict(review.createdAt);
+        const ago = formatDistanceToNowStrict(review.created_at);
 
         return (
           <Card key={review.id}>

@@ -106,7 +106,7 @@ export const company: Company = {
       addedJob: 'Remote React / React Native Developer',
       author: 'Jie Yang Song',
       avatar: '/assets/avatars/avatar-jie-yan-song.png',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 81).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 81).getTime(),
       type: 'new_job',
     },
     {
@@ -114,7 +114,7 @@ export const company: Company = {
       addedJob: 'Senior Golang Backend Engineer',
       author: 'Anika Visser',
       avatar: '/assets/avatars/avatar-iulia-albu.png',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 82).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 82).getTime(),
       type: 'new_job',
     },
     {
@@ -122,14 +122,14 @@ export const company: Company = {
       addedMember: 'Omar Darboe',
       author: 'Jie Yang Song',
       avatar: '/assets/avatars/avatar-jie-yan-song.png',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 83).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 83).getTime(),
       type: 'new_team_member',
     },
     {
       id: '53b48b76b01ed00bddee2038',
       author: 'Jie Yang Song',
       avatar: '/assets/avatars/avatar-jie-yan-song.png',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 84).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 3), 7), 5), 84).getTime(),
       createdCompany: 'Augmastic Inc',
       type: 'created',
     },
@@ -240,7 +240,7 @@ Our mission emphasizes seeking and hiring diverse voices, including those who ar
       id: 'ab8ed24cd579605c386e1275',
       author: 'Anika Visser',
       avatar: '/assets/avatars/avatar-anika-visser.png',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 4), 9), 4), 2).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 4), 9), 4), 2).getTime(),
       description:
         'I have been working with this company full-time. Great for the work life balance. Cons, decentralized decision making process across the organization.',
       rating: 3.8,
@@ -249,7 +249,7 @@ Our mission emphasizes seeking and hiring diverse voices, including those who ar
     {
       id: '973a87618e946f08ea8d8491',
       author: 'Victor Plesoianu',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 4), 9), 4), 25).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 4), 9), 4), 25).getTime(),
       description:
         'Every day you learn something new - that is a typical day at work in Augmastic. I am surrounded by supportive people, from different cultures, we have a strong and unified team and help each other whenever is needed. The most enjoyable part of the job is that you meet new people, experts on different disciplines that might help you in your work, but the hardest part of the job is that there are too many tools and systems to use.',
       rating: 3.4,
@@ -258,7 +258,7 @@ Our mission emphasizes seeking and hiring diverse voices, including those who ar
     {
       id: '7fdf64061aba2fd67d732006',
       author: 'Victor Plesoianu',
-      createdAt: subDays(subHours(subMinutes(subSeconds(now, 4), 9), 4), 70).getTime(),
+      created_at: subDays(subHours(subMinutes(subSeconds(now, 4), 9), 4), 70).getTime(),
       description:
         'I have been working with this company full-time. Great for the work life balance. Cons, decentralized decision making process across the organization.',
       rating: 3.8,

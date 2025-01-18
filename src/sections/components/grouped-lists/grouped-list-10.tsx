@@ -13,7 +13,7 @@ const now = new Date();
 
 interface Activity {
   id: string;
-  createdAt: number;
+  created_at: number;
   description: string;
   subject: string;
   type: string;
@@ -22,21 +22,21 @@ interface Activity {
 const activities: Activity[] = [
   {
     id: '5e8dd0828d628e6f40abdfe8',
-    createdAt: subMinutes(now, 23).getTime(),
+    created_at: subMinutes(now, 23).getTime(),
     description: 'has uploaded a new file',
     subject: 'Project author',
     type: 'upload_file',
   },
   {
     id: '5e8dd0893a6725f2bb603617',
-    createdAt: subHours(now, 2).getTime(),
+    created_at: subHours(now, 2).getTime(),
     description: 'joined team as a Front-End Developer',
     subject: 'Adrian Stefan',
     type: 'join_team',
   },
   {
     id: '5e8dd08f44603e3300b75cf1',
-    createdAt: subHours(now, 9).getTime(),
+    created_at: subHours(now, 9).getTime(),
     description: 'joined team as a Full Stack Developer',
     subject: 'Alexandru Robert',
     type: 'join_team',
@@ -52,7 +52,7 @@ export const GroupedList10: FC = () => (
   >
     <Stack spacing={3}>
       {activities.map((activity) => {
-        const ago = formatDistanceToNowStrict(activity.createdAt);
+        const ago = formatDistanceToNowStrict(activity.created_at);
 
         return (
           <Card

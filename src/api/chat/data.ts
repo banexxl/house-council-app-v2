@@ -93,7 +93,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: "Hey, nice projects! I really liked the one in react. What's your quote on kinda similar project?",
         contentType: 'text',
-        createdAt: subDays(subHours(now, 10), 4).getTime(),
+        created_at: subDays(subHours(now, 10), 4).getTime(),
         authorId: '5e86805e2bafd54f66cc95c3',
       },
       {
@@ -101,7 +101,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: 'I would need to know more details, but my hourly rate stats at $35/hour. Thanks!',
         contentType: 'text',
-        createdAt: subDays(subHours(now, 2), 4).getTime(),
+        created_at: subDays(subHours(now, 2), 4).getTime(),
         authorId: '5e86809283e28b96d2d38537',
       },
       {
@@ -109,7 +109,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: "Well it's a really easy one, I'm sure we can make it half of the price.",
         contentType: 'text',
-        createdAt: subHours(now, 5).getTime(),
+        created_at: subHours(now, 5).getTime(),
         authorId: '5e86805e2bafd54f66cc95c3',
       },
       {
@@ -117,7 +117,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: "Then why don't you make it if it's that easy? Sorry I'm not interetes, have fantastic day Adam!",
         contentType: 'text',
-        createdAt: subHours(now, 3).getTime(),
+        created_at: subHours(now, 3).getTime(),
         authorId: '5e86809283e28b96d2d38537',
       },
       {
@@ -125,7 +125,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: 'Last offer, $25 per hour',
         contentType: 'text',
-        createdAt: subHours(now, 2).getTime(),
+        created_at: subHours(now, 2).getTime(),
         authorId: '5e86805e2bafd54f66cc95c3',
       },
       {
@@ -133,7 +133,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: '/assets/covers/minimal-1-4x3-small.png',
         contentType: 'image',
-        createdAt: subHours(now, 1).getTime(),
+        created_at: subHours(now, 1).getTime(),
         authorId: '5e86805e2bafd54f66cc95c3',
       },
     ],
@@ -149,7 +149,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: 'Hey, would you like to collaborate?',
         contentType: 'text',
-        createdAt: subDays(subMinutes(now, 6), 3).getTime(),
+        created_at: subDays(subMinutes(now, 6), 3).getTime(),
         authorId: '5e8680e60cba5019c5ca6fda',
       },
       {
@@ -157,7 +157,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: 'Hi, Merrile!',
         contentType: 'text',
-        createdAt: subDays(subMinutes(now, 5), 3).getTime(),
+        created_at: subDays(subMinutes(now, 5), 3).getTime(),
         authorId: '5e86809283e28b96d2d38537',
       },
       {
@@ -165,7 +165,7 @@ export const threads: Thread[] = [
         attachments: [],
         body: 'Hello everyone 😀',
         contentType: 'text',
-        createdAt: subDays(subMinutes(now, 2), 1).getTime(),
+        created_at: subDays(subMinutes(now, 2), 1).getTime(),
         authorId: '5e8891ab188cd2855e6029b7',
       },
     ],

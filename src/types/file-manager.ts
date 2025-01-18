@@ -6,7 +6,7 @@ export interface Item {
     avatar?: string;
     name?: string;
   };
-  createdAt?: number | null;
+  created_at?: number | null;
   extension?: string;
   isFavorite?: boolean;
   isPublic?: boolean;
@@ -20,5 +20,5 @@ export interface Item {
   size: number;
   tags?: string[];
   type: ItemType;
-  updatedAt?: number | null;
+  updated_at?: number | null;
 }

@@ -78,6 +78,7 @@ export const de = {
   [tokens.nav.register]: 'Registrieren',
   [tokens.nav.resetPassword]: 'Passwort Zurücksetzen',
   [tokens.nav.socialMedia]: 'Sozialen Medien',
+  [tokens.nav.subscriptions]: 'Abos',
   [tokens.nav.verifyCode]: 'Code Überprüfen',
   //#endregion
   //#region Locations
@@ -116,8 +117,12 @@ export const de = {
   [tokens.clients.clientEdit]: 'Kunde Bearbeiten',
   [tokens.clients.clientDelete]: 'Kunde Löschen',
   // Client form
+  [tokens.clients.clientFormBasicInfo]: 'Grundlegende Informationen',
+  [tokens.clients.clientFormAdvancedInfo]: 'Erweiterte Informationen',
   [tokens.clients.clientType]: 'Kundentyp',
+  [tokens.clients.clientStatus]: 'Status',
   [tokens.clients.clientName]: 'Name',
+  [tokens.clients.clientContactPerson]: 'Kontaktperson',
   [tokens.clients.clientEmail]: 'Email',
   [tokens.clients.clientPhone]: 'Telefon',
   [tokens.clients.clientMobilePhone]: 'Mobiltelefon',
@@ -145,6 +150,31 @@ export const de = {
   [tokens.clients.clientSaved]: 'Kunde gespeichert',
   [tokens.clients.clientNotSaved]: 'Kunde nicht gespeichert',
   [tokens.clients.clientAlreadyExists]: 'Kunde bereits vorhanden!',
+  //#endregion
+  //#region Tenants
+  [tokens.tenants.tenantsList]: 'Mietnehmerliste',
+  [tokens.tenants.tenantDetails]: 'Mietnehmer Details',
+  [tokens.tenants.tenantCreate]: 'Mietnehmer Erstellen',
+  [tokens.tenants.tenantEdit]: 'Mietnehmer Bearbeiten',
+  [tokens.tenants.tenantDelete]: 'Mietnehmer Löschen',
+  // Tenant form
+  [tokens.tenants.tenantName]: 'Name',
+  [tokens.tenants.tenantEmail]: 'Email',
+  [tokens.tenants.tenantPhone]: 'Telefon',
+  [tokens.tenants.tenantMobilePhone]: 'Mobiltelefon',
+  [tokens.tenants.tenantAddress1]: 'Adresse 1',
+  [tokens.tenants.tenantAddress2]: 'Adresse 2',
+  [tokens.tenants.tenantCity]: 'Stadt',
+  [tokens.tenants.tenantState]: 'Bundesland',
+  [tokens.tenants.tenantCountry]: 'Land',
+  [tokens.tenants.tenantPostalCode]: 'Postleitzahl',
+  // Tenant validation
+  [tokens.tenants.tenantNameRequired]: 'Name ist erforderlich',
+  [tokens.tenants.tenantEmailMustBeValid]: 'Email muss gültig sein',
+  [tokens.tenants.tenantEmailRequired]: 'Email ist erforderlich',
+  [tokens.tenants.tenantMobilePhoneRequired]: 'Mobiltelefon ist erforderlich',
+  [tokens.tenants.tenantCityRequired]: 'Stadt ist erforderlich',
+  [tokens.tenants.tenantCountryRequired]: 'Land ist erforderlich',
   //#endregion
   //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',

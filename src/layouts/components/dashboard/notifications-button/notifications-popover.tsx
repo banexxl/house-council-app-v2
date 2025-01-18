@@ -26,7 +26,7 @@ import type { Notification } from './notifications';
 const renderContent = (notification: Notification): JSX.Element | null => {
   switch (notification.type) {
     case 'job_add': {
-      const createdAt = format(notification.createdAt, 'MMM dd, h:mm a');
+      const created_at = format(notification.created_at, 'MMM dd, h:mm a');
 
       return (
         <>
@@ -72,7 +72,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
                 color="text.secondary"
                 variant="caption"
               >
-                {createdAt}
+                {created_at}
               </Typography>
             }
             sx={{ my: 0 }}
@@ -81,7 +81,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
       );
     }
     case 'new_feature': {
-      const createdAt = format(notification.createdAt, 'MMM dd, h:mm a');
+      const created_at = format(notification.created_at, 'MMM dd, h:mm a');
 
       return (
         <>
@@ -115,7 +115,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
                 color="text.secondary"
                 variant="caption"
               >
-                {createdAt}
+                {created_at}
               </Typography>
             }
             sx={{ my: 0 }}
@@ -124,7 +124,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
       );
     }
     case 'company_created': {
-      const createdAt = format(notification.createdAt, 'MMM dd, h:mm a');
+      const created_at = format(notification.created_at, 'MMM dd, h:mm a');
 
       return (
         <>
@@ -171,7 +171,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
                 color="text.secondary"
                 variant="caption"
               >
-                {createdAt}
+                {created_at}
               </Typography>
             }
             sx={{ my: 0 }}

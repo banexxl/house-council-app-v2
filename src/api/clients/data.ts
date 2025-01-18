@@ -19,7 +19,7 @@ export const clients = [
     state: 'Ohio',
     totalSpent: 300.0,
     totalOrders: 3,
-    updatedAt: subDays(subHours(now, 7), 1).getTime(),
+    updated_at: subDays(subHours(now, 7), 1).getTime(),
   },
   {
     id: '5e887b209c28ac3dd97f6db5',
@@ -35,7 +35,7 @@ export const clients = [
     state: 'Georgia',
     totalSpent: 0.0,
     totalOrders: 0,
-    updatedAt: subDays(subHours(now, 1), 2).getTime(),
+    updated_at: subDays(subHours(now, 1), 2).getTime(),
   },
   {
     id: '5e887b7602bdbc4dbb234b27',
@@ -51,7 +51,7 @@ export const clients = [
     state: 'Ohio',
     totalSpent: 5600.0,
     totalOrders: 6,
-    updatedAt: subDays(subHours(now, 4), 2).getTime(),
+    updated_at: subDays(subHours(now, 4), 2).getTime(),
   },
   {
     id: '5e86809283e28b96d2d38537',
@@ -67,7 +67,7 @@ export const clients = [
     state: 'Madrid',
     totalSpent: 500.0,
     totalOrders: 1,
-    updatedAt: subDays(subHours(now, 11), 2).getTime(),
+    updated_at: subDays(subHours(now, 11), 2).getTime(),
   },
   {
     id: '5e86805e2bafd54f66cc95c3',
@@ -83,7 +83,7 @@ export const clients = [
     totalSpent: 0.0,
     totalOrders: 0,
     state: 'California',
-    updatedAt: subDays(subHours(now, 7), 3).getTime(),
+    updated_at: subDays(subHours(now, 7), 3).getTime(),
   },
   {
     id: '5e887a1fbefd7938eea9c981',
@@ -99,7 +99,7 @@ export const clients = [
     state: 'California',
     totalSpent: 0.0,
     totalOrders: 0,
-    updatedAt: subDays(subHours(now, 5), 4).getTime(),
+    updated_at: subDays(subHours(now, 5), 4).getTime(),
   },
   {
     id: '5e887d0b3d090c1b8f162003',
@@ -115,7 +115,7 @@ export const clients = [
     state: 'Nevada',
     totalSpent: 100.0,
     totalOrders: 4,
-    updatedAt: subDays(subHours(now, 15), 4).getTime(),
+    updated_at: subDays(subHours(now, 15), 4).getTime(),
   },
   {
     id: '5e88792be2d4cfb4bf0971d9',
@@ -131,7 +131,7 @@ export const clients = [
     state: 'California',
     totalSpent: 1000.0,
     totalOrders: 2,
-    updatedAt: subDays(subHours(now, 2), 5).getTime(),
+    updated_at: subDays(subHours(now, 2), 5).getTime(),
   },
   {
     id: '5e8877da9a65442b11551975',
@@ -146,7 +146,7 @@ export const clients = [
     state: 'Utah',
     totalSpent: 0.0,
     totalOrders: 0,
-    updatedAt: subDays(subHours(now, 8), 6).getTime(),
+    updated_at: subDays(subHours(now, 8), 6).getTime(),
   },
   {
     id: '5e8680e60cba5019c5ca6fda',
@@ -162,7 +162,7 @@ export const clients = [
     state: 'Utah',
     totalSpent: 200.0,
     totalOrders: 7,
-    updatedAt: subDays(subHours(now, 1), 9).getTime(),
+    updated_at: subDays(subHours(now, 1), 9).getTime(),
   },
 ];
 
@@ -188,12 +188,12 @@ export const client: Client = {
 export const emails: ClientEmail[] = [
   {
     id: '5ece2ce3613486d95ffaea58',
-    createdAt: subDays(subHours(subMinutes(now, 34), 5), 3).getTime(),
+    created_at: subDays(subHours(subMinutes(now, 34), 5), 3).getTime(),
     description: 'Order confirmation',
   },
   {
     id: '5ece2ce8cebf7ad1d100c0cd',
-    createdAt: subDays(subHours(subMinutes(now, 49), 11), 4).getTime(),
+    created_at: subDays(subHours(subMinutes(now, 49), 11), 4).getTime(),
     description: 'Order confirmation',
   },
 ];
@@ -216,7 +216,7 @@ export const invoices: ClientInvoice[] = [
 export const logs: ClientLog[] = [
   {
     id: '5ece2cfeb6e2ac847bba11ce',
-    createdAt: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
     description: 'Purchase',
     ip: '84.234.243.42',
     method: 'POST',
@@ -225,7 +225,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d02510484b2952e1e05',
-    createdAt: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 56), 2), 2).getTime(),
     description: 'Purchase',
     ip: '84.234.243.42',
     method: 'POST',
@@ -234,7 +234,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d08e2748e4e9788901a',
-    createdAt: subDays(subMinutes(subSeconds(now, 23), 8), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 23), 8), 2).getTime(),
     description: 'Cart remove',
     ip: '84.234.243.42',
     method: 'DELETE',
@@ -243,7 +243,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d0c47214e342c2d7f28',
-    createdAt: subDays(subMinutes(subSeconds(now, 54), 20), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 54), 20), 2).getTime(),
     description: 'Cart add',
     ip: '84.234.243.42',
     method: 'GET',
@@ -252,7 +252,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d11e4060a97b2b57623',
-    createdAt: subDays(subMinutes(subSeconds(now, 16), 34), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 16), 34), 2).getTime(),
     description: 'Cart add',
     ip: '84.234.243.42',
     method: 'GET',
@@ -261,7 +261,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d16cf6d53d8e33656af',
-    createdAt: subDays(subMinutes(subSeconds(now, 30), 54), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 30), 54), 2).getTime(),
     description: 'View product',
     ip: '84.234.243.42',
     method: 'GET',
@@ -270,7 +270,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d1b2ec5071be9286a96',
-    createdAt: subDays(subMinutes(subSeconds(now, 40), 56), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 40), 56), 2).getTime(),
     description: 'Get products',
     ip: '84.234.243.42',
     method: 'GET',
@@ -279,7 +279,7 @@ export const logs: ClientLog[] = [
   },
   {
     id: '5ece2d22e68d5498917e47bc',
-    createdAt: subDays(subMinutes(subSeconds(now, 5), 57), 2).getTime(),
+    created_at: subDays(subMinutes(subSeconds(now, 5), 57), 2).getTime(),
     description: 'Login',
     ip: '84.234.243.42',
     method: 'POST',

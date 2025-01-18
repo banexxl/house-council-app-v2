@@ -15,3 +15,17 @@ export const fetchClientTypes = async (): Promise<ClientType[]> => {
      return data
 }
 
+export const fetchClientStatuses = async (): Promise<ClientType[]> => {
+     // Fetch client statuses
+     const { data, error } = await supabase
+          .from('tblClientStatuses')
+          .select('id, name, description')
+
+     if (error) {
+          console.error('Error fetching client statuses:', error)
+          return []
+     }
+
+     return data
+}
+

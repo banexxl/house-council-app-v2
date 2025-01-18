@@ -1,7 +1,7 @@
 export interface Building {
      id: string; // UUID
-     createdAt: Date; // Timestamp of creation
-     updatedAt: Date; // Timestamp of last update
+     created_at: Date; // Timestamp of creation
+     updated_at: Date; // Timestamp of last update
      isRecentlyBuilt: boolean; // Is the building recently built
      description: string; // Description of the building
      hasParkingLog: boolean; // Does the building have parking

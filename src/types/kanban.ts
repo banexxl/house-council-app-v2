@@ -19,7 +19,7 @@ export interface Checklist {
 export interface Comment {
   id: string;
   authorId: string;
-  createdAt: number;
+  created_at: number;
   message: string;
 }
 

@@ -23,7 +23,7 @@ type Transaction = {
   amount: number;
   balance: number;
   coin: 'BTC' | 'ETH';
-  createdAt: number;
+  created_at: number;
   operation: 'add' | 'sub';
   title: string;
 };
@@ -41,7 +41,7 @@ export const CryptoTransactions: FC<CryptoTransactionsProps> = (props) => {
       <List disablePadding>
         {transactions.map((transaction) => {
           const icon = transaction.operation === 'add' ? <TrendUp02Icon /> : <TrendDown02Icon />;
-          const createdAt = format(transaction.createdAt, 'MM.dd.yyyy / HH:mm a');
+          const created_at = format(transaction.created_at, 'MM.dd.yyyy / HH:mm a');
           const amount =
             (transaction.operation === 'add' ? '+' : '-') +
             ' ' +
@@ -73,7 +73,7 @@ export const CryptoTransactions: FC<CryptoTransactionsProps> = (props) => {
                   color="text.secondary"
                   variant="body2"
                 >
-                  {createdAt}
+                  {created_at}
                 </Typography>
               </ListItemText>
               <ListItemSecondaryAction>

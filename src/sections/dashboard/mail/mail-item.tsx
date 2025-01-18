@@ -40,7 +40,7 @@ export const MailItem: FC<MailItemProps> = (props) => {
     [onSelect, onDeselect]
   );
 
-  const createdAt = format(email.createdAt, 'dd MMM');
+  const created_at = format(email.created_at, 'dd MMM');
   const hasAnyAttachments = !!(email.attachments && email.attachments.length > 0);
   const hasManyAttachments = !!(email.attachments && email.attachments.length > 1);
 
@@ -247,7 +247,7 @@ export const MailItem: FC<MailItemProps> = (props) => {
             width: 100,
           }}
         >
-          {createdAt}
+          {created_at}
         </Typography>
       </Box>
     </Box>
