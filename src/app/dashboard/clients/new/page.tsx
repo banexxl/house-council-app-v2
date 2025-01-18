@@ -4,10 +4,11 @@ import Stack from '@mui/material/Stack'
 
 import { Seo } from 'src/components/seo'
 import { ClientHeader } from 'src/components/clients/clients-header'
-import { fetchClientStatuses, fetchClientTypes } from 'src/services/client-types-services'
+import { fetchClientTypes } from 'src/services/client-types-services'
 
 import { ClientStatus, ClientType } from 'src/types/client'
 import { ClientNewForm } from 'src/sections/dashboard/client/client-new-form'
+import { fetchClientStatuses } from 'src/services/client-statuses-services'
 
 const Page = async () => {
 

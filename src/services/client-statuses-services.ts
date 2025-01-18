@@ -1,17 +1,16 @@
 import { supabase } from "src/libs/supabase/client"
 import { ClientType } from "src/types/client"
 
-export const fetchClientTypes = async (): Promise<ClientType[]> => {
-     // Fetch client types
+export const fetchClientStatuses = async (): Promise<ClientType[]> => {
+     // Fetch client statuses
      const { data, error } = await supabase
-          .from('tblClientTypes')
+          .from('tblClientStatuses')
           .select('id, name, description')
 
      if (error) {
-          console.error('Error fetching client types:', error)
+          console.error('Error fetching client statuses:', error)
           return []
      }
 
      return data
 }
-
