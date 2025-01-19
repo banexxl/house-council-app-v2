@@ -145,8 +145,8 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
               />
             </Grid>
             <Grid xs={12} md={6}>
-              <LocationAutocomplete label={t('clients.clientAddress2')} onAddressSelected={() => {
-                formik.setFieldValue('address_2', '');
+              <LocationAutocomplete label={t('clients.clientAddress2')} onAddressSelected={(e: any) => {
+                formik.setFieldValue('address_2', e.matching_place_name);
               }} />
 
             </Grid>
