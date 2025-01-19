@@ -1,3 +1,5 @@
+import { client } from "src/api/clients/data";
+
 export const tokens = {
   common: {
     languageChanged: 'common.languageChanged',
@@ -21,6 +23,7 @@ export const tokens = {
     btnRemove: 'common.btnRemove',
     btnSearch: 'common.btnSearch',
     btnClear: 'common.btnClear',
+    notes: 'common.notes',
   },
   nav: {
     home: 'nav.home',
@@ -132,6 +135,18 @@ export const tokens = {
     clientPostalCode: 'clients.clientPostalCode',
     clientState: 'clients.clientState',
     clientCountry: 'clients.clientCountry',
+    clientHasAcceptedMarketing: 'clients.clientHasAcceptedMarketing',
+    clientHasAcceptedTermsAndConditions: 'clients.clientHasAcceptedTermsAndConditions',
+    clientHasAcceptedTermsAndConditionsDescription: 'clients.clientHasAcceptedTermsAndConditionsDescription',
+    clientIsPotential: 'clients.clientIsPotential',
+    clientIsReturning: 'clients.clientIsReturning',
+    clientIsVerified: 'clients.clientIsVerified',
+    clientIsVerifiedDescription: 'clients.clientIsVerifiedDescription',
+    clientTotalSpent: 'clients.clientTotalSpent',
+    clientTotalOrders: 'clients.clientTotalOrders',
+    clientAvatar: 'clients.clientAvatar',
+    clientSubscriptionPlan: 'clients.clientSubscriptionPlan',
+    clientBillingInformation: 'clients.clientBillingInformation',
     // Client validation
     clientNameRequired: 'clients.clientNameRequired',
     clientEmailMustBeValid: 'clients.clientEmailMustBeValid',

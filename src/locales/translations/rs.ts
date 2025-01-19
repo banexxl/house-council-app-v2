@@ -23,6 +23,7 @@ export const rs = {
      [tokens.common.btnRemove]: 'Ukloni',
      [tokens.common.btnSearch]: 'Traži',
      [tokens.common.btnClear]: 'Obriši',
+     [tokens.common.notes]: 'Napomene',
      //#endregion
      //#region Navigation
      [tokens.nav.academy]: 'Akademija',
@@ -133,6 +134,18 @@ export const rs = {
      [tokens.clients.clientState]: 'Region',
      [tokens.clients.clientCountry]: 'Država',
      [tokens.clients.clientPostalCode]: 'Poštanski broj',
+     [tokens.clients.clientHasAcceptedMarketing]: 'Dozvolio Marketing',
+     [tokens.clients.clientHasAcceptedTermsAndConditions]: 'Prihvatio uslove korišćenja',
+     [tokens.clients.clientHasAcceptedTermsAndConditionsDescription]: 'Korisnik je uspešno prihvatio uslove korišćenja.',
+     [tokens.clients.clientIsPotential]: 'Potencijalni klijent',
+     [tokens.clients.clientIsReturning]: 'Povratnik',
+     [tokens.clients.clientIsVerified]: 'Verifikovan',
+     [tokens.clients.clientIsVerifiedDescription]: 'Klijent je uspešno izvršio verifikacioni proces.',
+     [tokens.clients.clientSubscriptionPlan]: 'Odabrana subskripcija',
+     [tokens.clients.clientBillingInformation]: 'Informacije o fakturiranju',
+     [tokens.clients.clientTotalOrders]: 'Ukupno porudžbina',
+     [tokens.clients.clientTotalSpent]: 'Ukupno potrošeno',
+     [tokens.clients.clientAvatar]: 'Avatar',
      // Client validation
      [tokens.clients.clientNameRequired]: 'Ime je obavezno',
      [tokens.clients.clientEmailMustBeValid]: 'Email mora biti validan',

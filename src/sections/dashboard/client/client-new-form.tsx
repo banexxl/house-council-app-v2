@@ -192,10 +192,10 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
               <Stack spacing={1}>
                 <Typography gutterBottom variant="subtitle1">
-                  Make Contact Info Public
+                  {t('clients.clientIsVerified')}
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
-                  Means that anyone viewing your profile will be able to see your contacts details
+                  {t('clients.clientIsVerifiedDescription')}
                 </Typography>
               </Stack>
               <Switch
@@ -210,20 +210,19 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
               <Stack spacing={1}>
                 <Typography gutterBottom variant="subtitle1">
-                  Available to hire
+                  {t('clients.clientHasAcceptedTermsAndConditions')}
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
-                  Toggling this will let your teammates know that you are available for acquiring
-                  new projects
+                  {t('clients.clientHasAcceptedTermsAndConditionsDescription')}
                 </Typography>
               </Stack>
               <Switch
-                checked={formik.values.has_accepted_marketing}
+                checked={formik.values.has_accepted_terms_and_conditions}
                 color="primary"
                 edge="start"
-                name="hasDiscount"
+                name="has_accepted_terms_and_conditions"
                 onChange={formik.handleChange}
-                value={formik.values.has_accepted_marketing}
+                value={formik.values.has_accepted_terms_and_conditions}
               />
             </Stack>
           </Stack>

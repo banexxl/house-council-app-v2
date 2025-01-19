@@ -23,6 +23,7 @@ export const es = {
   [tokens.common.btnRemove]: 'Quitar',
   [tokens.common.btnSearch]: 'Buscar',
   [tokens.common.btnClear]: 'Limpiar',
+  [tokens.common.notes]: 'Notas',
   //#endregion
   //#region Navigation
   [tokens.nav.academy]: 'Academia',
@@ -132,6 +133,18 @@ export const es = {
   [tokens.clients.clientState]: 'Estado',
   [tokens.clients.clientCountry]: 'País',
   [tokens.clients.clientPostalCode]: 'Código Postal',
+  [tokens.clients.clientHasAcceptedMarketing]: 'Aceptar Marketing',
+  [tokens.clients.clientHasAcceptedTermsAndConditions]: 'Aceptar Terminos y Condiciones',
+  [tokens.clients.clientHasAcceptedTermsAndConditionsDescription]: 'Los terminos y condiciones fueron aceptados.',
+  [tokens.clients.clientIsPotential]: 'Cliente Potencial',
+  [tokens.clients.clientIsReturning]: 'Cliente Regresante',
+  [tokens.clients.clientIsVerified]: 'Cliente Verificado',
+  [tokens.clients.clientIsVerifiedDescription]: 'El cliente fue verificado con exito.',
+  [tokens.clients.clientSubscriptionPlan]: 'Plan de Suscripción',
+  [tokens.clients.clientBillingInformation]: 'Información de Facturación',
+  [tokens.clients.clientTotalOrders]: 'Total de Pedidos',
+  [tokens.clients.clientTotalSpent]: 'Total Gastado',
+  [tokens.clients.clientAvatar]: 'Avatar',
   // Client validation
   [tokens.clients.clientNameRequired]: 'El nombre es obligatorio',
   [tokens.clients.clientEmailMustBeValid]: 'El correo debe ser valido',

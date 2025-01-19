@@ -21,6 +21,7 @@ export interface Client {
   balance?: number;
   has_active_subscription?: boolean;
   has_accepted_marketing?: boolean;
+  has_accepted_terms_and_conditions?: boolean;
   is_potential?: boolean;
   is_returning?: boolean;
   is_verified?: boolean;
@@ -81,6 +82,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     notes: Yup.string().max(255),
     avatar: Yup.string().max(255),
     has_accepted_marketing: Yup.bool(),
+    has_accepted_terms_and_conditions: Yup.bool(),
     is_potential: Yup.bool(),
     is_returning: Yup.bool()
   })
@@ -102,6 +104,7 @@ export const clientInitialValues: Client = {
   avatar: '',
   balance: 0,
   has_accepted_marketing: false,
+  has_accepted_terms_and_conditions: false,
   is_potential: false,
   is_returning: false,
   is_verified: false,

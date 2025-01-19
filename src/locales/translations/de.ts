@@ -23,6 +23,7 @@ export const de = {
   [tokens.common.btnRemove]: 'Entfernen',
   [tokens.common.btnSearch]: 'Suchen',
   [tokens.common.btnClear]: 'Löschen',
+  [tokens.common.notes]: 'Notizen',
   //#endregion
   //#region Navigation
   [tokens.nav.academy]: 'Akademie',
@@ -132,6 +133,18 @@ export const de = {
   [tokens.clients.clientState]: 'Bundesland',
   [tokens.clients.clientCountry]: 'Land',
   [tokens.clients.clientPostalCode]: 'Postleitzahl',
+  [tokens.clients.clientHasAcceptedMarketing]: 'Marketing akzeptieren',
+  [tokens.clients.clientHasAcceptedTermsAndConditions]: 'Bedingungen akzeptieren',
+  [tokens.clients.clientHasAcceptedTermsAndConditionsDescription]: 'Die Bedingungen wurden akzeptiert.',
+  [tokens.clients.clientIsPotential]: 'Potenziell',
+  [tokens.clients.clientIsReturning]: 'Zurückkehren',
+  [tokens.clients.clientIsVerified]: 'Verifiziert',
+  [tokens.clients.clientIsVerifiedDescription]: 'Der Kunde wurde erfolgreich verifiziert.',
+  [tokens.clients.clientSubscriptionPlan]: 'Abonnementplan',
+  [tokens.clients.clientBillingInformation]: 'Rechnungsdaten',
+  [tokens.clients.clientTotalSpent]: 'Gesamtumsatz',
+  [tokens.clients.clientTotalOrders]: 'Gesamtbestellungen',
+  [tokens.clients.clientAvatar]: 'Avatar',
   // Client validation
   [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
   [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',

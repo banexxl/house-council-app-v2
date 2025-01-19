@@ -23,6 +23,7 @@ export const en = {
   [tokens.common.btnRemove]: 'Remove',
   [tokens.common.btnSearch]: 'Search',
   [tokens.common.btnClear]: 'Clear',
+  [tokens.common.notes]: 'Notes',
   //#endregion
   //#region Navigation
   [tokens.nav.adminDashboard]: 'Admin dashboard',
@@ -132,6 +133,18 @@ export const en = {
   [tokens.clients.clientState]: 'State',
   [tokens.clients.clientCountry]: 'Country',
   [tokens.clients.clientPostalCode]: 'Postal Code',
+  [tokens.clients.clientHasAcceptedMarketing]: 'Accept Marketing',
+  [tokens.clients.clientHasAcceptedTermsAndConditions]: 'Accept Terms & Conditions',
+  [tokens.clients.clientHasAcceptedTermsAndConditionsDescription]: 'The terms and conditions were accepted.',
+  [tokens.clients.clientIsPotential]: 'Potencial client',
+  [tokens.clients.clientIsReturning]: 'Returning client',
+  [tokens.clients.clientIsVerified]: 'Verified client',
+  [tokens.clients.clientIsVerifiedDescription]: 'The client was successfully verified.',
+  [tokens.clients.clientSubscriptionPlan]: ' Subscription Plan',
+  [tokens.clients.clientBillingInformation]: 'Billing Information',
+  [tokens.clients.clientTotalSpent]: 'Total Spent',
+  [tokens.clients.clientTotalOrders]: 'Total Orders',
+  [tokens.clients.clientAvatar]: 'Avatar',
   // Client validation
   [tokens.clients.clientNameRequired]: 'Name is required',
   [tokens.clients.clientEmailMustBeValid]: 'Email must be valid',
