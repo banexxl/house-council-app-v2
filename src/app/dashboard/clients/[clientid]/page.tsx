@@ -138,6 +138,47 @@ const Page = () => {
     return null;
   }
 
+  // const handleLogoChange = async (event: any) => {
+  //   console.log(event.target.files)
+  //   const selectedFile = event.target.files[0];
+
+  //   if (!selectedFile) {
+  //     return;
+  //   }
+
+  //   setLoading(true);
+
+  //   // Extract file extension
+  //   const fileExtension = selectedFile.name.split('.')[1]
+
+  //   // Assuming you have a title for the image
+  //   const title = selectedFile.name.split('.')[0]
+
+  //   try {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(selectedFile);
+  //     reader.onloadend = async () => {
+  //       const base64Data = reader.result;
+  //       const formData = new FormData();
+  //       formData.append('file', base64Data as string);
+  //       formData.append('title', title);
+  //       formData.append('extension', fileExtension);
+  //       formData.append('fileName', selectedFile.name);
+
+  //       const imageUploadResponse = await uploadFile(formData)
+  //       console.log(imageUploadResponse)
+  //       if (imageUploadResponse.success) {
+  //         formik.setFieldValue('logo', imageUploadResponse.awsUrl)
+  //         toast.success('Image uploaded successfully')
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error uploading image:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   return (
     <>
       <Seo title="Dashboard: Client Details" />
@@ -274,6 +315,28 @@ const Page = () => {
                       phone={client.phone}
                     />
                   </Grid>
+                  {/* <Box sx={{ mt: 3, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      component="label"
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      {t('clients.clientUploadAvatar')}
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                      />
+                    </Button>
+                    {logoPreview && (
+                      <Avatar
+                        src={logoPreview}
+                        alt="Client Logo"
+                        sx={{ width: 100, height: 100 }}
+                      />
+                    )}
+                  </Box> */}
                   <Grid
                     xs={12}
                     lg={8}

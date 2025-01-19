@@ -145,6 +145,7 @@ export const tokens = {
     clientTotalSpent: 'clients.clientTotalSpent',
     clientTotalOrders: 'clients.clientTotalOrders',
     clientAvatar: 'clients.clientAvatar',
+    clientUploadAvatar: 'clients.clientUploadAvatar',
     clientSubscriptionPlan: 'clients.clientSubscriptionPlan',
     clientBillingInformation: 'clients.clientBillingInformation',
     // Client validation

@@ -146,6 +146,7 @@ export const rs = {
      [tokens.clients.clientTotalOrders]: 'Ukupno porudžbina',
      [tokens.clients.clientTotalSpent]: 'Ukupno potrošeno',
      [tokens.clients.clientAvatar]: 'Avatar',
+     [tokens.clients.clientUploadAvatar]: 'Učitaj Avatar',
      // Client validation
      [tokens.clients.clientNameRequired]: 'Ime je obavezno',
      [tokens.clients.clientEmailMustBeValid]: 'Email mora biti validan',

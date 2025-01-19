@@ -145,6 +145,7 @@ export const de = {
   [tokens.clients.clientTotalSpent]: 'Gesamtumsatz',
   [tokens.clients.clientTotalOrders]: 'Gesamtbestellungen',
   [tokens.clients.clientAvatar]: 'Avatar',
+  [tokens.clients.clientUploadAvatar]: 'Avatar hochladen',
   // Client validation
   [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
   [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',
