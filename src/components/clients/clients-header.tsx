@@ -14,7 +14,7 @@ export const ClientHeader = () => {
      const { t } = useTranslation()
 
      return (
-          <Box>
+          <Box >
                <Link
                     color="text.primary"
                     component={RouterLink}
@@ -30,7 +30,7 @@ export const ClientHeader = () => {
                     </SvgIcon>
                     <Typography variant="subtitle2">{t('clients.clientsList')}</Typography>
                </Link>
-               <Typography variant="h4">
+               <Typography variant="h4" sx={{ mt: 2 }}>
                     {t('clients.clientCreate')}
                </Typography>
           </Box>

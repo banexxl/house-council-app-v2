@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FC } from 'react'
+import { type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -17,11 +17,9 @@ import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
 import { clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
-import { Avatar, Box, MenuItem } from '@mui/material'
+import { MenuItem } from '@mui/material'
 import LocationAutocomplete from '../locations/autocomplete'
 import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { uploadFile } from 'src/app/actions/client-actions/client-image-actions'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
@@ -67,9 +65,9 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         <CardHeader title={t('clients.clientFormBasicInfo')} />
 
         <CardContent sx={{ pt: 0 }}>
-          <Typography>
+          {/* <Typography>
             {JSON.stringify(formik.errors)}
-          </Typography>
+          </Typography> */}
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField
