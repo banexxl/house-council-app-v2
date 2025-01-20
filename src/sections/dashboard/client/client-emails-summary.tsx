@@ -23,20 +23,20 @@ import type { ClientEmail } from 'src/types/client';
 const emailOptions: string[] = ['Resend last invoice', 'Send password reset', 'Send verification'];
 
 const useEmails = (): ClientEmail[] => {
-  const isMounted = ;
+
   const [emails, setEmails] = useState<ClientEmail[]>([]);
 
   const handleEmailsGet = useCallback(async () => {
     try {
       const response = await clientsApi.getEmails();
 
-      if (isMounted()) {
-        setEmails(response);
-      }
+
+      setEmails(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

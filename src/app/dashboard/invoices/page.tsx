@@ -88,7 +88,7 @@ interface InvoicesStoreState {
 }
 
 const useInvoicesStore = (searchState: InvoicesSearchState) => {
-  const isMounted = ;
+
   const [state, setState] = useState<InvoicesStoreState>({
     invoices: [],
     invoicesCount: 0,
@@ -98,16 +98,16 @@ const useInvoicesStore = (searchState: InvoicesSearchState) => {
     try {
       const response = await invoicesApi.getInvoices(searchState);
 
-      if (isMounted()) {
-        setState({
-          invoices: response.data,
-          invoicesCount: response.count,
-        });
-      }
+
+      setState({
+        invoices: response.data,
+        invoicesCount: response.count,
+      });
+
     } catch (err) {
       console.error(err);
     }
-  }, [searchState, isMounted]);
+  }, [searchState]);
 
   useEffect(
     () => {

@@ -23,20 +23,20 @@ import { JobListSearch } from 'src/sections/dashboard/jobs/job-list-search';
 import type { Company } from 'src/types/job';
 
 const useCompanies = (): Company[] => {
-  const isMounted = ;
+
   const [companies, setCompanies] = useState<Company[]>([]);
 
   const handleCompaniesGet = useCallback(async (): Promise<void> => {
     try {
       const response = await jobsApi.getCompanies();
 
-      if (isMounted()) {
-        setCompanies(response);
-      }
+
+      setCompanies(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

@@ -15,20 +15,20 @@ import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
 import type { Post } from 'src/types/social';
 
 const usePosts = (): Post[] => {
-  const isMounted = ;
+
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostsGet = useCallback(async () => {
     try {
       const response = await socialApi.getFeed();
 
-      if (isMounted()) {
-        setPosts(response);
-      }
+
+      setPosts(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

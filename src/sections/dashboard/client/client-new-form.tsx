@@ -13,13 +13,12 @@ import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import MenuItem from '@mui/material/MenuItem'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
 import { clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
-import LocationAutocomplete from '../locations/autocomplete'
+import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
 import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
 import { uploadFile } from 'src/app/actions/client-actions/client-image-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/components/clients/uplod-image'
@@ -34,6 +33,8 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
 
   const { t } = useTranslation()
   const avatarUploadRef = useRef<AvatarUploadRef>(null)
+  const autocompleteRef_1 = useRef<AutocompleteRef>(null)
+  const autocompleteRef_2 = useRef<AutocompleteRef>(null)
 
   const formik = useFormik({
     initialValues: clientInitialValues,
@@ -60,6 +61,8 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         setSubmitting(false)
         resetForm()
         avatarUploadRef.current?.clearImage()
+        autocompleteRef_1.current?.clearField()
+        autocompleteRef_2.current?.clearField()
       }
     },
   })
@@ -76,6 +79,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
           <AvatarUpload
             buttonDisabled={Object.keys(formik.errors).length > 0 || !formik.dirty}
             ref={avatarUploadRef}
+            onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
           />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
@@ -152,12 +156,17 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 onAddressSelected={(e: any) => {
                   formik.setFieldValue('address_1', e.matching_place_name);
                 }}
+                ref={autocompleteRef_1}
               />
             </Grid>
             <Grid xs={12} md={6}>
-              <LocationAutocomplete label={t('clients.clientAddress2')} onAddressSelected={(e: any) => {
-                formik.setFieldValue('address_2', e.matching_place_name);
-              }} />
+              <LocationAutocomplete
+                label={t('clients.clientAddress2')}
+                onAddressSelected={(e: any) => {
+                  formik.setFieldValue('address_2', e.matching_place_name);
+                }}
+                ref={autocompleteRef_2}
+              />
 
             </Grid>
             <Grid xs={12} md={6}>

@@ -87,7 +87,7 @@ interface BuildingsStoreState {
 }
 
 const useBuildingsStore = (searchState: BuildingsSearchState) => {
-  const isMounted = ;
+
   const [state, setState] = useState<BuildingsStoreState>({
     products: [],
     productsCount: 0,
@@ -97,7 +97,7 @@ const useBuildingsStore = (searchState: BuildingsSearchState) => {
   //   try {
   //     const response = await productsApi.getBuildings(searchState);
 
-  //     if (isMounted()) {
+  //   
   //       setState({
   //         products: response.data,
   //         productsCount: response.count,
@@ -106,7 +106,7 @@ const useBuildingsStore = (searchState: BuildingsSearchState) => {
   //   } catch (err) {
   //     console.error(err);
   //   }
-  // }, [searchState, isMounted]);
+  // }, [searchState]);
 
   // useEffect(
   //   () => {

@@ -42,20 +42,20 @@ const tabs = [
 ];
 
 const useClient = (): Client | null => {
-  const isMounted = ;
+
   const [client, setClient] = useState<Client | null>(null);
 
   const handleClientGet = useCallback(async () => {
     try {
       const response = await clientsApi.getClient();
 
-      if (isMounted()) {
-        setClient(response);
-      }
+
+      setClient(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {
@@ -69,20 +69,20 @@ const useClient = (): Client | null => {
 };
 
 const useInvoices = (): ClientInvoice[] => {
-  const isMounted = ;
+
   const [invoices, setInvoices] = useState<ClientInvoice[]>([]);
 
   const handleInvoicesGet = useCallback(async () => {
     try {
       const response = await clientsApi.getInvoices();
 
-      if (isMounted()) {
-        setInvoices(response);
-      }
+
+      setInvoices(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {
@@ -96,20 +96,20 @@ const useInvoices = (): ClientInvoice[] => {
 };
 
 const useLogs = (): ClientLog[] => {
-  const isMounted = ;
+
   const [logs, setLogs] = useState<ClientLog[]>([]);
 
   const handleLogsGet = useCallback(async () => {
     try {
       const response = await clientsApi.getLogs();
 
-      if (isMounted()) {
-        setLogs(response);
-      }
+
+      setLogs(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

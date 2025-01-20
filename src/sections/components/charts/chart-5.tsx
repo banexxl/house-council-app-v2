@@ -52,7 +52,6 @@ type ChartSeries = {
 const initialState: (number | null)[] = [163, 166, 161, 159, 99, 163, 173, 166, 167, 183, 176, 172];
 
 const useChartSeries = (): ChartSeries => {
-  const isMounted = ;
   const intervalRef = useRef<any>(undefined);
   const [data, setData] = useState<(number | null)[]>(initialState);
   const tickRate = 3000;
@@ -60,33 +59,32 @@ const useChartSeries = (): ChartSeries => {
 
   const handleTick = useCallback(
     async (value: number) => {
-      if (isMounted()) {
-        setData((prevState) => {
-          const newData = [...prevState];
 
-          // Remove the first value and add a null value to keep the same bar length
+      setData((prevState) => {
+        const newData = [...prevState];
 
-          newData.shift();
-          newData.push(null);
+        // Remove the first value and add a null value to keep the same bar length
 
-          return newData;
-        });
-      }
+        newData.shift();
+        newData.push(null);
+
+        return newData;
+      });
 
       await wait(delay);
 
-      if (isMounted()) {
-        setData((prevState) => {
-          const newData = [...prevState];
 
-          newData.pop();
-          newData.push(value);
+      setData((prevState) => {
+        const newData = [...prevState];
 
-          return newData;
-        });
-      }
+        newData.pop();
+        newData.push(value);
+
+        return newData;
+      });
+
     },
-    [isMounted]
+    []
   );
 
   const subscribe = useMemo(

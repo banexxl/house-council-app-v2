@@ -12,8 +12,6 @@ function extractInfoFromUrl(url: string) {
 }
 
 export async function uploadFile(formData: FormData): Promise<{ success: boolean, message: string, awsUrl?: string }> {
-     console.log('formData', formData);
-
      const file = formData.get('file') as string;
      const title = formData.get('title') as string;
      const extension = formData.get('extension') as string;

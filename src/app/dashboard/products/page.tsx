@@ -87,7 +87,7 @@ interface ProductsStoreState {
 }
 
 const useProductsStore = (searchState: ProductsSearchState) => {
-  const isMounted = ;
+
   const [state, setState] = useState<ProductsStoreState>({
     products: [],
     productsCount: 0,
@@ -97,16 +97,16 @@ const useProductsStore = (searchState: ProductsSearchState) => {
     try {
       const response = await productsApi.getProducts(searchState);
 
-      if (isMounted()) {
-        setState({
-          products: response.data,
-          productsCount: response.count,
-        });
-      }
+
+      setState({
+        products: response.data,
+        productsCount: response.count,
+      });
+
     } catch (err) {
       console.error(err);
     }
-  }, [searchState, isMounted]);
+  }, [searchState]);
 
   useEffect(
     () => {

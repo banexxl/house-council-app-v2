@@ -97,7 +97,7 @@ interface ItemsStoreState {
 }
 
 const useItemsStore = (searchState: ItemsSearchState) => {
-  const isMounted = ;
+
   const [state, setState] = useState<ItemsStoreState>({
     items: [],
     itemsCount: 0,
@@ -107,16 +107,16 @@ const useItemsStore = (searchState: ItemsSearchState) => {
     try {
       const response = await fileManagerApi.getItems(searchState);
 
-      if (isMounted()) {
-        setState({
-          items: response.data,
-          itemsCount: response.count,
-        });
-      }
+
+      setState({
+        items: response.data,
+        itemsCount: response.count,
+      });
+
     } catch (err) {
       console.error(err);
     }
-  }, [searchState, isMounted]);
+  }, [searchState]);
 
   useEffect(
     () => {

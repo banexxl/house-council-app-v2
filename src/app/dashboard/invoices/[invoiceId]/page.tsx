@@ -27,20 +27,20 @@ import type { Invoice } from 'src/types/invoice';
 import { getInitials } from 'src/utils/get-initials';
 
 const useInvoice = (): Invoice | null => {
-  const isMounted = ;
+
   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
   const handleInvoiceGet = useCallback(async () => {
     try {
       const response = await invoicesApi.getInvoice();
 
-      if (isMounted()) {
-        setInvoice(response);
-      }
+
+      setInvoice(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

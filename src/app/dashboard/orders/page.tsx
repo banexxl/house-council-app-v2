@@ -94,7 +94,7 @@ interface OrdersStoreState {
 }
 
 const useOrdersStore = (searchState: OrdersSearchState) => {
-  const isMounted = ;
+
   const [state, setState] = useState<OrdersStoreState>({
     orders: [],
     ordersCount: 0,
@@ -104,16 +104,16 @@ const useOrdersStore = (searchState: OrdersSearchState) => {
     try {
       const response = await ordersApi.getOrders(searchState);
 
-      if (isMounted()) {
-        setState({
-          orders: response.data,
-          ordersCount: response.count,
-        });
-      }
+
+      setState({
+        orders: response.data,
+        ordersCount: response.count,
+      });
+
     } catch (err) {
       console.error(err);
     }
-  }, [searchState, isMounted]);
+  }, [searchState]);
 
   useEffect(
     () => {

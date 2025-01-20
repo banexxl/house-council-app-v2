@@ -103,7 +103,7 @@ interface ClientsStoreState {
 }
 
 const useClientsStore = (searchState: ClientsSearchState) => {
-  const isMounted = ;
+
   const [state, setState] = useState<ClientsStoreState>({
     clients: [],
     clientsCount: 0,
@@ -113,16 +113,16 @@ const useClientsStore = (searchState: ClientsSearchState) => {
     try {
       const response = await clientsApi.getClients(searchState);
 
-      if (isMounted()) {
-        setState({
-          clients: response.data,
-          clientsCount: response.count,
-        });
-      }
+
+      setState({
+        clients: response.data,
+        clientsCount: response.count,
+      });
+
     } catch (err) {
       console.error(err);
     }
-  }, [searchState, isMounted]);
+  }, [searchState]);
 
   useEffect(
     () => {

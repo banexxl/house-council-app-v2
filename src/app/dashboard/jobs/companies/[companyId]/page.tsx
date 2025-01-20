@@ -42,20 +42,20 @@ const tabs = [
 ];
 
 const useCompany = (): Company | null => {
-  const isMounted = ;
+
   const [company, setCompany] = useState<Company | null>(null);
 
   const handleCompanyGet = useCallback(async () => {
     try {
       const response = await jobsApi.getCompany();
 
-      if (isMounted()) {
-        setCompany(response);
-      }
+
+      setCompany(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

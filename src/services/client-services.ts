@@ -2,10 +2,6 @@ import { supabase } from "src/libs/supabase/client"
 import { Client } from "src/types/client"
 
 export const saveClient = async (client: Client): Promise<{ success: boolean, data?: Client, error?: any }> => {
-     // Create a new client object without the id field
-     console.log('client', client);
-
-
      // Save client
      const { data, error } = await supabase
           .from('tblClients')

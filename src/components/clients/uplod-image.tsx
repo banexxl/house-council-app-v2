@@ -35,6 +35,7 @@ const VisuallyHiddenInput = styled("input")`
 
 type AvatarUploadProps = {
      buttonDisabled: boolean
+     onUploadSuccess: (url: string) => void
 }
 
 export type AvatarUploadRef = {
@@ -42,7 +43,7 @@ export type AvatarUploadRef = {
 }
 
 export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
-     ({ buttonDisabled }, ref) => {
+     ({ buttonDisabled, onUploadSuccess }, ref) => {
           const [avatarUrl, setAvatarUrl] = useState<string>("")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
@@ -81,13 +82,16 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          if (imageUploadResponse.success && imageUploadResponse.awsUrl) {
                               setAvatarUrl(imageUploadResponse.awsUrl)
                               toast.success("Image uploaded successfully")
+                              onUploadSuccess(imageUploadResponse.awsUrl)
                          } else {
                               toast.error(imageUploadResponse.message || "Failed to upload image")
+                              onUploadSuccess("")
                          }
                     }
                } catch (error) {
                     console.error("Error uploading image:", error)
                     toast.error("Failed to upload image")
+                    onUploadSuccess("")
                } finally {
                     setLoading(false)
                }

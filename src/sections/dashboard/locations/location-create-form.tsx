@@ -108,8 +108,6 @@ const LocationCreateForm = () => {
           setValue('longitude', 0);
      }
      const onAddressSelected = (event: any) => {
-          console.log(event);
-
           // Extract values from the event object
           const { context, address, text, center } = event;
 

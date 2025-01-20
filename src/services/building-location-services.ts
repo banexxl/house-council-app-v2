@@ -21,7 +21,6 @@ export const insertLocation = async (values: BuildingLocation) => {
           }
 
           if (existingLocations && existingLocations.length > 0) {
-               console.log('Location already exists');
                return { success: false, message: 'Location already exists with the same address, city, street number, and region.' };
           }
 
@@ -40,10 +39,8 @@ export const insertLocation = async (values: BuildingLocation) => {
           ]);
 
           if (error) {
-               console.error('Error saving location:', error);
                return { success: false, error: error };
           } else {
-               console.log('Location saved:', data);
                return { success: true, data };
           }
      } catch (error) {
@@ -56,10 +53,8 @@ export const getAllLocationsFromClient = async () => {
      try {
           const { data, error } = await supabase.from('tblBuildingLocations').select('*')
           if (error) {
-               console.error('Error fetching locations:', error);
                return { success: false, error: error };
           } else {
-               console.log('Locations fetched:', data);
                return { success: true, data };
           }
      } catch (error) {

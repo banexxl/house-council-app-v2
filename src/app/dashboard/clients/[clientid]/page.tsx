@@ -49,13 +49,13 @@ const tabs = [
 //     try {
 //       const response = await clientsApi.getClient();
 
-//       if (isMounted()) {
+//     
 //         setClient(response);
 //       }
 //     } catch (err) {
 //       console.error(err);
 //     }
-//   }, [isMounted]);
+//   }, []);
 
 //   useEffect(
 //     () => {
@@ -76,13 +76,13 @@ const tabs = [
 //     try {
 //       const response = await clientsApi.getInvoices();
 
-//       if (isMounted()) {
+//     
 //         setInvoices(response);
 //       }
 //     } catch (err) {
 //       console.error(err);
 //     }
-//   }, [isMounted]);
+//   }, []);
 
 //   useEffect(
 //     () => {
@@ -103,13 +103,13 @@ const tabs = [
 //     try {
 //       const response = await clientsApi.getLogs();
 
-//       if (isMounted()) {
+//     
 //         setLogs(response);
 //       }
 //     } catch (err) {
 //       console.error(err);
 //     }
-//   }, [isMounted]);
+//   }, []);
 
 //   useEffect(
 //     () => {

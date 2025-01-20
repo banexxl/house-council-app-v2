@@ -36,20 +36,19 @@ const tabs = [
 ];
 
 const useProfile = (): Profile | null => {
-  const isMounted = ;
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const handleProfileGet = useCallback(async () => {
     try {
       const response = await socialApi.getProfile();
 
-      if (isMounted()) {
-        setProfile(response);
-      }
+
+      setProfile(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {
@@ -63,20 +62,19 @@ const useProfile = (): Profile | null => {
 };
 
 const usePosts = (): Post[] => {
-  const isMounted = ;
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostsGet = useCallback(async () => {
     try {
       const response = await socialApi.getPosts();
 
-      if (isMounted()) {
-        setPosts(response);
-      }
+
+      setPosts(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {
@@ -91,15 +89,14 @@ const usePosts = (): Post[] => {
 
 const useConnections = (search: string = ''): Connection[] => {
   const [connections, setConnections] = useState<Connection[]>([]);
-  const isMounted = ;
 
   const handleConnectionsGet = useCallback(async () => {
     const response = await socialApi.getConnections();
 
-    if (isMounted()) {
-      setConnections(response);
-    }
-  }, [isMounted]);
+
+    setConnections(response);
+
+  }, []);
 
   useEffect(
     () => {

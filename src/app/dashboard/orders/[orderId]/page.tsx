@@ -26,20 +26,20 @@ import { OrderSummary } from 'src/sections/dashboard/order/order-summary';
 import type { Order } from 'src/types/order';
 
 const useOrder = (): Order | null => {
-  const isMounted = ;
+
   const [order, setOrder] = useState<Order | null>(null);
 
   const handleOrderGet = useCallback(async () => {
     try {
       const response = await ordersApi.getOrder();
 
-      if (isMounted()) {
-        setOrder(response);
-      }
+
+      setOrder(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

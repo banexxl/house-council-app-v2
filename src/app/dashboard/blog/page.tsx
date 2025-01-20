@@ -27,20 +27,20 @@ import { PostCard } from 'src/sections/dashboard/blog/post-card';
 import type { Post } from 'src/types/blog';
 
 const usePosts = (): Post[] => {
-  const isMounted = ;
+
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostsGet = useCallback(async () => {
     try {
       const response = await blogApi.getPosts();
 
-      if (isMounted()) {
-        setPosts(response);
-      }
+
+      setPosts(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {

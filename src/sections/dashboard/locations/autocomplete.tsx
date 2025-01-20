@@ -1,19 +1,37 @@
-import React, { useState } from 'react';
-import { TextField, List, ListItem, ListItemButton, ListItemText, Box, IconButton } from '@mui/material';
-import { ClearIcon } from '@mui/x-date-pickers';
-import { useTranslation } from 'react-i18next';
+import React, { useState, forwardRef, useImperativeHandle } from "react";
+import {
+     TextField,
+     List,
+     ListItem,
+     ListItemButton,
+     ListItemText,
+     Box,
+     IconButton,
+} from "@mui/material";
+import { Clear as ClearIcon } from "@mui/icons-material";
 
 interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
      label: string;
 }
 
-const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label }) => {
+export interface AutocompleteRef {
+     clearField: () => void; // Expose the clear method
+}
 
-     const { t } = useTranslation();
-     const [inputValue, setInputValue] = useState('');
+const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label }, ref) => {
+
+     const [inputValue, setInputValue] = useState("");
      const [suggestions, setSuggestions] = useState<any[]>([]);
      const [loading, setLoading] = useState(false);
+
+     // Expose clearField method to the parent
+     useImperativeHandle(ref, () => ({
+          clearField: () => {
+               setInputValue("");
+               setSuggestions([]);
+          },
+     }));
 
      const fetchSuggestions = async (query: string) => {
           if (!query) {
@@ -24,13 +42,15 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label })
           try {
                setLoading(true);
                const response = await fetch(
-                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}&limit=5`
+                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                         query
+                    )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}&limit=5`
                );
                const data = await response.json();
                const features = data.features || [];
                setSuggestions(features);
           } catch (error) {
-               console.error('Error fetching suggestions:', error);
+               console.error("Error fetching suggestions:", error);
           } finally {
                setLoading(false);
           }
@@ -43,18 +63,18 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label })
      };
 
      const handleSelect = (feature: any) => {
-          setInputValue(feature.matching_place_name);
+          setInputValue(feature.place_name);
           setSuggestions([]);
           onAddressSelected(feature);
      };
 
      const handleClear = () => {
-          setInputValue('');
+          setInputValue("");
           setSuggestions([]);
      };
 
      return (
-          <Box sx={{ position: 'relative', width: '100%' }}>
+          <Box sx={{ position: "relative", width: "100%" }}>
                <TextField
                     label={label}
                     variant="outlined"
@@ -77,13 +97,13 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label })
                {suggestions.length > 0 && (
                     <List
                          sx={{
-                              position: 'absolute',
-                              top: '100%',
+                              position: "absolute",
+                              top: "100%",
                               left: 0,
-                              width: '100%',
-                              bgcolor: 'background.paper',
+                              width: "100%",
+                              bgcolor: "background.paper",
                               zIndex: 10,
-                              border: '1px solid #ccc',
+                              border: "1px solid #ccc",
                               borderRadius: 1,
                          }}
                     >
@@ -98,6 +118,9 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ onAddressSelected, label })
                )}
           </Box>
      );
-};
+}
+);
+
+Autocomplete.displayName = "Autocomplete";
 
 export default Autocomplete;

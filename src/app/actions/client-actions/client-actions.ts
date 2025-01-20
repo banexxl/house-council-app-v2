@@ -5,9 +5,6 @@ import { supabase } from "src/libs/supabase/client"
 import { Client } from "src/types/client"
 
 export const saveClientAction = async (client: Client): Promise<{ success: boolean, data?: Client, error?: any }> => {
-     console.log('client', client);
-
-
      // Save client
      const { data, error } = await supabase
           .from('tblClients')

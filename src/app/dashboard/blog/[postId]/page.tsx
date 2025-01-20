@@ -65,20 +65,20 @@ const useComments = (): Comment[] => {
 };
 
 const usePost = (): Post | null => {
-  const isMounted = ;
+
   const [post, setPost] = useState<Post | null>(null);
 
   const handlePostGet = useCallback(async () => {
     try {
       const response = await blogApi.getPost();
 
-      if (isMounted()) {
-        setPost(response);
-      }
+
+      setPost(response);
+
     } catch (err) {
       console.error(err);
     }
-  }, [isMounted]);
+  }, []);
 
   useEffect(
     () => {
