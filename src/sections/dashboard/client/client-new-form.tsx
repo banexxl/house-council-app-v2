@@ -106,6 +106,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
     }
   };
 
+  console.log(formik.dirty);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -113,10 +114,12 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         <CardHeader title={t('clients.clientFormBasicInfo')} />
 
         <CardContent sx={{ pt: 0 }}>
-          {/* <Typography>
+          <Typography>
             {JSON.stringify(formik.errors)}
-          </Typography> */}
-          <AvatarUpload disabled={formik.values.name === ''} />
+          </Typography>
+          <AvatarUpload disabled={
+            Object.keys(formik.errors).length > 0 || !formik.dirty
+          } />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField

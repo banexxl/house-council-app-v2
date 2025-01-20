@@ -159,7 +159,7 @@ export const es = {
   [tokens.clients.clientStatusRequired]: 'El estado es obligatorio',
   [tokens.clients.clientSubscriptionPlanRequired]: 'El plan de suscripcion es obligatorio',
   [tokens.clients.clientBillingInformationRequired]: 'La informacion de facturacion es obligatoria',
-  [tokens.clients.nameFieldMandatory]: 'El nombre es obligatorio',
+  [tokens.clients.fillMandatoryFieldsFirst]: 'Por favor, rellene todos los campos obligatorios',
   // Client popup
   [tokens.clients.clientSave]: 'Guardar',
   [tokens.clients.clientSaved]: 'Cliente guardado',

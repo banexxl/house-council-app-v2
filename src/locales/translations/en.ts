@@ -159,7 +159,7 @@ export const en = {
   [tokens.clients.clientStatusRequired]: 'Status is required',
   [tokens.clients.clientSubscriptionPlanRequired]: 'Subscription plan is required',
   [tokens.clients.clientBillingInformationRequired]: 'Billing information is required',
-  [tokens.clients.nameFieldMandatory]: 'Name field is mandatory',
+  [tokens.clients.fillMandatoryFieldsFirst]: 'Please fill all mandatory fields first',
   // Client popup
   [tokens.clients.clientSave]: 'Save',
   [tokens.clients.clientSaved]: 'Client saved',

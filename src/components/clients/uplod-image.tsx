@@ -81,7 +81,7 @@ export const AvatarUpload = (props: AvatarUploadProps) => {
                     mb: 2,
                }}
           >
-               <Tooltip title={t('clients.nameFieldMandatory')}>
+               <Tooltip title={t('clients.fillMandatoryFieldsFirst')}>
                     <Box
                          sx={{
                               position: "relative",
