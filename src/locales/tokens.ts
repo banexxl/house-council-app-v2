@@ -161,6 +161,7 @@ export const tokens = {
     clientStatusRequired: 'clients.clientStatusRequired',
     clientSubscriptionPlanRequired: 'clients.clientSubscriptionPlanRequired',
     clientBillingInformationRequired: 'clients.clientBillingInformationRequired',
+    nameFieldMandatory: 'clients.nameFieldMandatory',
     // Client popup
     clientSave: 'clients.clientSave',
     clientSaved: 'clients.clientSaved',

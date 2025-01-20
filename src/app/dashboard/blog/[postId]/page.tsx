@@ -18,7 +18,7 @@ import { blogApi } from 'src/api/blog';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { PostComment } from 'src/sections/dashboard/blog/post-comment';
@@ -65,7 +65,7 @@ const useComments = (): Comment[] => {
 };
 
 const usePost = (): Post | null => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [post, setPost] = useState<Post | null>(null);
 
   const handlePostGet = useCallback(async () => {

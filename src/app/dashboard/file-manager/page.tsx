@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import { fileManagerApi } from 'src/api/file-manager';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { useSettings } from 'src/hooks/use-settings';
 import { FileUploader } from 'src/sections/dashboard/file-manager/file-uploader';
@@ -97,7 +97,7 @@ interface ItemsStoreState {
 }
 
 const useItemsStore = (searchState: ItemsSearchState) => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [state, setState] = useState<ItemsStoreState>({
     items: [],
     itemsCount: 0,

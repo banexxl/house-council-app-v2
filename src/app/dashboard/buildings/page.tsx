@@ -17,7 +17,7 @@ import { productsApi } from 'src/api/products';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
@@ -87,7 +87,7 @@ interface BuildingsStoreState {
 }
 
 const useBuildingsStore = (searchState: BuildingsSearchState) => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [state, setState] = useState<BuildingsStoreState>({
     products: [],
     productsCount: 0,

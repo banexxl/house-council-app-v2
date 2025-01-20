@@ -159,6 +159,7 @@ export const de = {
   [tokens.clients.clientStatusRequired]: 'Status ist erforderlich',
   [tokens.clients.clientSubscriptionPlanRequired]: 'Abonnementplan ist erforderlich',
   [tokens.clients.clientBillingInformationRequired]: 'Rechnungsdaten sind erforderlich',
+  [tokens.clients.nameFieldMandatory]: 'Name ist erforderlich',
   // Client popup
   [tokens.clients.clientSave]: 'Speichern',
   [tokens.clients.clientSaved]: 'Kunde gespeichert',

@@ -4,7 +4,7 @@ export interface Client {
   id?: string;
   created_at?: number;
   updated_at?: number;
-  name?: string;
+  name: string;
   email: string;
   phone?: string;
   address_1: string;
@@ -66,7 +66,7 @@ export interface ClientInvoice {
 
 export const clientValidationSchema = (t: (key: string) => string) => {
   return Yup.object({
-    name: Yup.string().max(255),
+    name: Yup.string().max(255).required(t('clients.clientNameRequired')),
     contact_person: Yup.string().max(255).required(t('clients.clientContactPersonRequired')),
     email: Yup.string().email(t('clients.clientEmailMustBeValid')).max(255).required(t('clients.clientEmailRequired')),
     phone: Yup.string().max(15),

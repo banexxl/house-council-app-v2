@@ -1,6 +1,6 @@
 'use client'
 
-import { type FC } from 'react'
+import { useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -12,14 +12,18 @@ import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import MenuItem from '@mui/material/MenuItem'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
 import { clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
-import { MenuItem } from '@mui/material'
 import LocationAutocomplete from '../locations/autocomplete'
 import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
+import { uploadFile } from 'src/app/actions/client-actions/client-image-actions'
+import { AvatarUpload } from 'src/components/clients/uplod-image'
+
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
@@ -28,6 +32,7 @@ interface ClientNewFormProps {
 
 export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses }) => {
 
+  const [loading, setLoading] = useState(false)
   const { t } = useTranslation()
 
   const formik = useFormik({
@@ -59,6 +64,49 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
   })
 
 
+  const handleLogoChange = async (event: any) => {
+    console.log(event.target.files)
+    const selectedFile = event.target.files[0];
+
+    if (!selectedFile) {
+      return;
+    }
+
+    setLoading(true);
+
+    // Extract file extension
+    const fileExtension = selectedFile.name.split('.')[1]
+
+    // Assuming you have a title for the image
+    const title = selectedFile.name.split('.')[0]
+
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
+      reader.onloadend = async () => {
+        const base64Data = reader.result;
+        const formData = new FormData();
+        formData.append('file', new Blob([base64Data!], { type: selectedFile.type })); // Wrap base64 data in a Blob
+        formData.append('title', title || ''); // Ensure title is not undefined
+        formData.append('extension', fileExtension || ''); // Ensure fileExtension is not undefined
+        formData.append('fileName', selectedFile.name);
+        formData.append('client', formik.values.name || '');
+
+        const imageUploadResponse = await uploadFile(formData)
+        console.log(imageUploadResponse)
+        if (imageUploadResponse.success) {
+          formik.setFieldValue('logo', imageUploadResponse.awsUrl)
+          toast.success('Image uploaded successfully')
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card>
@@ -68,6 +116,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
           {/* <Typography>
             {JSON.stringify(formik.errors)}
           </Typography> */}
+          <AvatarUpload disabled={formik.values.name === ''} />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField

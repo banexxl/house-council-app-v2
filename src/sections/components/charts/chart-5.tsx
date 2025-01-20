@@ -16,7 +16,7 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
 import { Chart } from 'src/components/chart';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 import { getRandomInt } from 'src/utils/get-random-int';
 import { wait } from 'src/utils/wait';
 
@@ -52,7 +52,7 @@ type ChartSeries = {
 const initialState: (number | null)[] = [163, 166, 161, 159, 99, 163, 173, 166, 167, 183, 176, 172];
 
 const useChartSeries = (): ChartSeries => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const intervalRef = useRef<any>(undefined);
   const [data, setData] = useState<(number | null)[]>(initialState);
   const tickRate = 3000;

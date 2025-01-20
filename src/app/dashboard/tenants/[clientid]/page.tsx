@@ -22,7 +22,7 @@ import Typography from '@mui/material/Typography';
 import { clientsApi } from 'src/api/clients';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { ClientBasicDetails } from 'src/sections/dashboard/client/client-basic-details';
@@ -42,7 +42,7 @@ const tabs = [
 ];
 
 const useClient = (): Client | null => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [client, setClient] = useState<Client | null>(null);
 
   const handleClientGet = useCallback(async () => {
@@ -69,7 +69,7 @@ const useClient = (): Client | null => {
 };
 
 const useInvoices = (): ClientInvoice[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [invoices, setInvoices] = useState<ClientInvoice[]>([]);
 
   const handleInvoicesGet = useCallback(async () => {
@@ -96,7 +96,7 @@ const useInvoices = (): ClientInvoice[] => {
 };
 
 const useLogs = (): ClientLog[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [logs, setLogs] = useState<ClientLog[]>([]);
 
   const handleLogsGet = useCallback(async () => {

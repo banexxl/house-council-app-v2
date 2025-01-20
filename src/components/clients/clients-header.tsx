@@ -9,7 +9,9 @@ import { paths } from 'src/paths'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@mui/system'
 
+
 export const ClientHeader = () => {
+
 
      const { t } = useTranslation()
 

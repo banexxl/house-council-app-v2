@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 import { jobsApi } from 'src/api/jobs';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { CompanyActivity } from 'src/sections/dashboard/jobs/company-activity';
@@ -42,7 +42,7 @@ const tabs = [
 ];
 
 const useCompany = (): Company | null => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [company, setCompany] = useState<Company | null>(null);
 
   const handleCompanyGet = useCallback(async () => {

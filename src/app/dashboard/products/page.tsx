@@ -17,7 +17,7 @@ import { productsApi } from 'src/api/products';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { ProductListSearch } from 'src/sections/dashboard/product/product-list-search';
@@ -87,7 +87,7 @@ interface ProductsStoreState {
 }
 
 const useProductsStore = (searchState: ProductsSearchState) => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [state, setState] = useState<ProductsStoreState>({
     products: [],
     productsCount: 0,

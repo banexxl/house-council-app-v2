@@ -17,7 +17,7 @@ import { invoicesApi } from 'src/api/invoices';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { InvoicePdfDialog } from 'src/sections/dashboard/invoice/invoice-pdf-dialog';
@@ -27,7 +27,7 @@ import type { Invoice } from 'src/types/invoice';
 import { getInitials } from 'src/utils/get-initials';
 
 const useInvoice = (): Invoice | null => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
   const handleInvoiceGet = useCallback(async () => {

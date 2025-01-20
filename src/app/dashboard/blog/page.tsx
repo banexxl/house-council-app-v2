@@ -19,7 +19,7 @@ import { blogApi } from 'src/api/blog';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { PostNewsletter } from 'src/sections/dashboard/blog/post-newsletter';
@@ -27,7 +27,7 @@ import { PostCard } from 'src/sections/dashboard/blog/post-card';
 import type { Post } from 'src/types/blog';
 
 const usePosts = (): Post[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostsGet = useCallback(async () => {

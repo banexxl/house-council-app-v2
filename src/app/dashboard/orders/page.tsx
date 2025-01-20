@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import { ordersApi } from 'src/api/orders';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { OrderDrawer } from 'src/sections/dashboard/order/order-drawer';
 import { OrderListContainer } from 'src/sections/dashboard/order/order-list-container';
@@ -94,7 +94,7 @@ interface OrdersStoreState {
 }
 
 const useOrdersStore = (searchState: OrdersSearchState) => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [state, setState] = useState<OrdersStoreState>({
     orders: [],
     ordersCount: 0,

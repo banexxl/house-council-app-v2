@@ -17,7 +17,7 @@ import Typography from '@mui/material/Typography';
 import { ordersApi } from 'src/api/orders';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { OrderItems } from 'src/sections/dashboard/order/order-items';
@@ -26,7 +26,7 @@ import { OrderSummary } from 'src/sections/dashboard/order/order-summary';
 import type { Order } from 'src/types/order';
 
 const useOrder = (): Order | null => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [order, setOrder] = useState<Order | null>(null);
 
   const handleOrderGet = useCallback(async () => {

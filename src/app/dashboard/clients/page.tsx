@@ -15,7 +15,7 @@ import Typography from '@mui/material/Typography';
 
 import { clientsApi } from 'src/api/clients';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { useSelection } from 'src/hooks/use-selection';
 import { ClientListSearch } from 'src/sections/dashboard/client/client-list-search';
@@ -103,7 +103,7 @@ interface ClientsStoreState {
 }
 
 const useClientsStore = (searchState: ClientsSearchState) => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [state, setState] = useState<ClientsStoreState>({
     clients: [],
     clientsCount: 0,

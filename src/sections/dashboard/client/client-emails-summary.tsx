@@ -17,13 +17,13 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { clientsApi } from 'src/api/clients';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 import type { ClientEmail } from 'src/types/client';
 
 const emailOptions: string[] = ['Resend last invoice', 'Send password reset', 'Send verification'];
 
 const useEmails = (): ClientEmail[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [emails, setEmails] = useState<ClientEmail[]>([]);
 
   const handleEmailsGet = useCallback(async () => {

@@ -8,14 +8,14 @@ import Typography from '@mui/material/Typography';
 
 import { socialApi } from 'src/api/social';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { SocialPostAdd } from 'src/sections/dashboard/social/social-post-add';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
 import type { Post } from 'src/types/social';
 
 const usePosts = (): Post[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostsGet = useCallback(async () => {

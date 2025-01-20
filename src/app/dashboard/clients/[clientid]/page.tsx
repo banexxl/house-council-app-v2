@@ -22,7 +22,7 @@ import Typography from '@mui/material/Typography';
 import { clientsApi } from 'src/api/clients';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { ClientBasicDetails } from 'src/sections/dashboard/client/client-basic-details';
@@ -41,92 +41,92 @@ const tabs = [
   { label: 'Logs', value: 'logs' },
 ];
 
-const useClient = (): Client | null => {
-  const isMounted = useMounted();
-  const [client, setClient] = useState<Client | null>(null);
+// const useClient = (): Client | null => {
 
-  const handleClientGet = useCallback(async () => {
-    try {
-      const response = await clientsApi.getClient();
+//   const [client, setClient] = useState<Client | null>(null);
 
-      if (isMounted()) {
-        setClient(response);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [isMounted]);
+//   const handleClientGet = useCallback(async () => {
+//     try {
+//       const response = await clientsApi.getClient();
 
-  useEffect(
-    () => {
-      handleClientGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+//       if (isMounted()) {
+//         setClient(response);
+//       }
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }, [isMounted]);
 
-  return client;
-};
+//   useEffect(
+//     () => {
+//       handleClientGet();
+//     },
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//     []
+//   );
 
-const useInvoices = (): ClientInvoice[] => {
-  const isMounted = useMounted();
-  const [invoices, setInvoices] = useState<ClientInvoice[]>([]);
+//   return client;
+// };
 
-  const handleInvoicesGet = useCallback(async () => {
-    try {
-      const response = await clientsApi.getInvoices();
+// const useInvoices = (): ClientInvoice[] => {
 
-      if (isMounted()) {
-        setInvoices(response);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [isMounted]);
+//   const [invoices, setInvoices] = useState<ClientInvoice[]>([]);
 
-  useEffect(
-    () => {
-      handleInvoicesGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+//   const handleInvoicesGet = useCallback(async () => {
+//     try {
+//       const response = await clientsApi.getInvoices();
 
-  return invoices;
-};
+//       if (isMounted()) {
+//         setInvoices(response);
+//       }
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }, [isMounted]);
 
-const useLogs = (): ClientLog[] => {
-  const isMounted = useMounted();
-  const [logs, setLogs] = useState<ClientLog[]>([]);
+//   useEffect(
+//     () => {
+//       handleInvoicesGet();
+//     },
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//     []
+//   );
 
-  const handleLogsGet = useCallback(async () => {
-    try {
-      const response = await clientsApi.getLogs();
+//   return invoices;
+// };
 
-      if (isMounted()) {
-        setLogs(response);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [isMounted]);
+// const useLogs = (): ClientLog[] => {
 
-  useEffect(
-    () => {
-      handleLogsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+//   const [logs, setLogs] = useState<ClientLog[]>([]);
 
-  return logs;
-};
+//   const handleLogsGet = useCallback(async () => {
+//     try {
+//       const response = await clientsApi.getLogs();
+
+//       if (isMounted()) {
+//         setLogs(response);
+//       }
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }, [isMounted]);
+
+//   useEffect(
+//     () => {
+//       handleLogsGet();
+//     },
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//     []
+//   );
+
+//   return logs;
+// };
 
 const Page = () => {
   const [currentTab, setCurrentTab] = useState<string>('details');
-  const client = useClient();
-  const invoices = useInvoices();
-  const logs = useLogs();
+  // const client = useClient();
+  // const invoices = useInvoices();
+  // const logs = useLogs();
 
 
 
@@ -134,9 +134,9 @@ const Page = () => {
     setCurrentTab(value);
   }, []);
 
-  if (!client) {
-    return null;
-  }
+  // if (!client) {
+  //   return null;
+  // }
 
   // const handleLogoChange = async (event: any) => {
   //   console.log(event.target.files)
@@ -218,35 +218,7 @@ const Page = () => {
                 justifyContent="space-between"
                 spacing={4}
               >
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={2}
-                >
-                  <Avatar
-                    src={client.avatar}
-                    sx={{
-                      height: 64,
-                      width: 64,
-                    }}
-                  >
-                    {getInitials(client.name)}
-                  </Avatar>
-                  <Stack spacing={1}>
-                    <Typography variant="h4">{client.email}</Typography>
-                    <Stack
-                      alignItems="center"
-                      direction="row"
-                      spacing={1}
-                    >
-                      <Typography variant="subtitle2">user_id:</Typography>
-                      <Chip
-                        label={client.id}
-                        size="small"
-                      />
-                    </Stack>
-                  </Stack>
-                </Stack>
+
                 <Stack
                   alignItems="center"
                   direction="row"
@@ -307,13 +279,13 @@ const Page = () => {
                     xs={12}
                     lg={4}
                   >
-                    <ClientBasicDetails
+                    {/* <ClientBasicDetails
                       address_1={client.address_1}
                       address_2={client.address_2}
                       email={client.email}
                       isVerified={!!client.is_verified}
                       phone={client.phone}
-                    />
+                    /> */}
                   </Grid>
                   {/* <Box sx={{ mt: 3, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button
@@ -350,8 +322,8 @@ const Page = () => {
                 </Grid>
               </div>
             )}
-            {currentTab === 'invoices' && <ClientInvoices invoices={invoices} />}
-            {currentTab === 'logs' && <ClientLogs logs={logs} />}
+            {/* {currentTab === 'invoices' && <ClientInvoices invoices={invoices} />}
+            {currentTab === 'logs' && <ClientLogs logs={logs} />} */}
           </Stack>
         </Container>
       </Box>

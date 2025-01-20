@@ -23,7 +23,7 @@ import { blueGrey } from '@mui/material/colors';
 import { socialApi } from 'src/api/social';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { SocialConnections } from 'src/sections/dashboard/social/social-connections';
@@ -36,7 +36,7 @@ const tabs = [
 ];
 
 const useProfile = (): Profile | null => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const handleProfileGet = useCallback(async () => {
@@ -63,7 +63,7 @@ const useProfile = (): Profile | null => {
 };
 
 const usePosts = (): Post[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostsGet = useCallback(async () => {
@@ -91,7 +91,7 @@ const usePosts = (): Post[] => {
 
 const useConnections = (search: string = ''): Connection[] => {
   const [connections, setConnections] = useState<Connection[]>([]);
-  const isMounted = useMounted();
+  const isMounted = ;
 
   const handleConnectionsGet = useCallback(async () => {
     const response = await socialApi.getConnections();

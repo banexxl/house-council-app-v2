@@ -15,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import { jobsApi } from 'src/api/jobs';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { paths } from 'src/paths';
 import { CompanyCard } from 'src/sections/dashboard/jobs/company-card';
@@ -23,7 +23,7 @@ import { JobListSearch } from 'src/sections/dashboard/jobs/job-list-search';
 import type { Company } from 'src/types/job';
 
 const useCompanies = (): Company[] => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [companies, setCompanies] = useState<Company[]>([]);
 
   const handleCompaniesGet = useCallback(async (): Promise<void> => {

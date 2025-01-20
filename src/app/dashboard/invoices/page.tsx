@@ -15,7 +15,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 
 import { invoicesApi } from 'src/api/invoices';
 import { Seo } from 'src/components/seo';
-import { useMounted } from 'src/hooks/use-mounted';
+;
 
 import { InvoiceListContainer } from 'src/sections/dashboard/invoice/invoice-list-container';
 import { InvoiceListSidebar } from 'src/sections/dashboard/invoice/invoice-list-sidebar';
@@ -88,7 +88,7 @@ interface InvoicesStoreState {
 }
 
 const useInvoicesStore = (searchState: InvoicesSearchState) => {
-  const isMounted = useMounted();
+  const isMounted = ;
   const [state, setState] = useState<InvoicesStoreState>({
     invoices: [],
     invoicesCount: 0,
