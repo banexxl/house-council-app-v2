@@ -80,6 +80,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
             buttonDisabled={Object.keys(formik.errors).length > 0 || !formik.dirty}
             ref={avatarUploadRef}
             onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
+            folderName={formik.values.name}
           />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>

@@ -16,8 +16,9 @@ export async function uploadFile(formData: FormData): Promise<{ success: boolean
      const title = formData.get('title') as string;
      const extension = formData.get('extension') as string;
      const fileName = formData.get('fileName') as string;
+     const folderName = formData.get('folderName') as string;
 
-     if (!file || !title || !extension) {
+     if (!file || !title || !extension || !fileName || !folderName) {
           throw new Error('Missing file, title, or extension');
      }
 
@@ -40,7 +41,7 @@ export async function uploadFile(formData: FormData): Promise<{ success: boolean
      const decodedFile = Buffer.from(file.replace(base64Prefix, ''), 'base64');
 
      // Adjust key to desired structure
-     const key = `Clients/Images/Logos/${title}}/${fileName.split('.')[0]}.${extension}`;
+     const key = `Clients/${folderName}/Images/Logos/${fileName.split('.')[0]}.${extension}`;
 
      const params: aws.S3.PutObjectRequest = {
           Bucket: process.env.AWS_S3_BUCKET_NAME!,

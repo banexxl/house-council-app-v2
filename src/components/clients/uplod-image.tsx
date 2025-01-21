@@ -36,6 +36,7 @@ const VisuallyHiddenInput = styled("input")`
 type AvatarUploadProps = {
      buttonDisabled: boolean
      onUploadSuccess: (url: string) => void
+     folderName: string
 }
 
 export type AvatarUploadRef = {
@@ -43,7 +44,7 @@ export type AvatarUploadRef = {
 }
 
 export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
-     ({ buttonDisabled, onUploadSuccess }, ref) => {
+     ({ buttonDisabled, onUploadSuccess, folderName }, ref) => {
           const [avatarUrl, setAvatarUrl] = useState<string>("")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
@@ -76,6 +77,7 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          formData.append("title", title)
                          formData.append("extension", fileExtension)
                          formData.append("fileName", selectedFile.name)
+                         formData.append("folderName", folderName)
 
                          const imageUploadResponse = await uploadFile(formData)
 
