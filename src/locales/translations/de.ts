@@ -194,4 +194,12 @@ export const de = {
   //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',
   //#endregion
+  //#region Errors Client
+  [tokens.errors.client.uniqueViolation]: 'Kunde mit dieser E-Mail existiert bereits!',
+  [tokens.errors.client.foreignKeyViolation]: 'Fremdschlüsselverletzung',
+  [tokens.errors.client.notNullViolation]: 'Erforderliche Felder dürfen nicht null sein',
+  [tokens.errors.client.unexpectedError]: 'Ein unerwarteter Fehler ist aufgetreten',
+  [tokens.errors.client.dataTypeMismatch]: 'Datentypen stimmen nicht überein',
+  [tokens.errors.client.unexpectedError]: 'Ein unerwarteter Fehler ist aufgetreten',
+  //#endregion
 };

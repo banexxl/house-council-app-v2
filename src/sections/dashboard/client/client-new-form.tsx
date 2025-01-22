@@ -53,7 +53,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         if (saveClientResponse.success) {
           toast.success(t('clients.clientSaved'))
         } else if (saveClientResponse.error) {
-          toast.error(t('clients.clientNotSaved') + ': \n' + saveClientResponse.error.message)
+          toast.error(t('clients.clientNotSaved') + ': \n' + saveClientResponse.error)
         }
       } catch (error) {
         toast.error(t('clients.clientNotSaved'), error.message)

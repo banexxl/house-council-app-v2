@@ -193,4 +193,12 @@ export const es = {
   //#region Errors
   [tokens.errors.locationPermissionDenied]: 'Permiso de ubicación denegado!',
   //#endregion
+  //#region Errors Client
+  [tokens.errors.client.uniqueViolation]: 'El cliente con esta email ya existe!',
+  [tokens.errors.client.foreignKeyViolation]: 'Violación de clave externa',
+  [tokens.errors.client.notNullViolation]: 'Los campos obligatorios no pueden ser nulos',
+  [tokens.errors.client.unexpectedError]: 'Ha ocurrido un error inesperado',
+  [tokens.errors.client.dataTypeMismatch]: 'Los tipos de datos no coinciden',
+  [tokens.errors.client.unexpectedError]: 'Ha ocurrido un error inesperado',
+  //#endregion
 };

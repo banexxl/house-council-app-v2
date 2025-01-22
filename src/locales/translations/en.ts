@@ -191,7 +191,15 @@ export const en = {
   [tokens.tenants.tenantCityRequired]: 'City is required',
   [tokens.tenants.tenantCountryRequired]: 'Country is required',
   //#endregion
-  //#region Errors
+  //#region Errors Common
   [tokens.errors.locationPermissionDenied]: 'Location permission denied!',
+  //#endregion
+  //#region Errors Client
+  [tokens.errors.client.uniqueViolation]: 'Client with this email already exists!',
+  [tokens.errors.client.notNullViolation]: 'Required fields cannot be null',
+  [tokens.errors.client.foreignKeyViolation]: 'Invalid foreign key reference',
+  [tokens.errors.client.dataTypeMismatch]: 'Data type mismatch. Please check your input',
+  [tokens.errors.client.checkViolation]: 'Data does not meet the required constraints',
+  [tokens.errors.client.unexpectedError]: 'An unexpected error occurred',
   //#endregion
 };

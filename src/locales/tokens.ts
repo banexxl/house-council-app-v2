@@ -195,5 +195,13 @@ export const tokens = {
   },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',
+    client: {
+      uniqueViolation: 'errors.uniqueViolation',
+      foreignKeyViolation: 'errors.foreignKeyViolation',
+      notNullViolation: 'errors.notNullViolation',
+      dataTypeMismatch: 'errors.dataTypeMismatch',
+      checkViolation: 'errors.checkViolation',
+      unexpectedError: 'errors.unexpectedError',
+    }
   }
 };
