@@ -73,9 +73,9 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         <CardHeader title={t('clients.clientFormBasicInfo')} />
 
         <CardContent sx={{ pt: 0 }}>
-          <Typography>
+          {/* <Typography>
             {JSON.stringify(formik.errors)}
-          </Typography>
+          </Typography> */}
           <AvatarUpload
             buttonDisabled={Object.keys(formik.errors).length > 0 || !formik.dirty}
             ref={avatarUploadRef}
