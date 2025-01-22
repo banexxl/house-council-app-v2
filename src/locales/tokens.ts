@@ -196,12 +196,12 @@ export const tokens = {
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',
     client: {
-      uniqueViolation: 'errors.uniqueViolation',
-      foreignKeyViolation: 'errors.foreignKeyViolation',
-      notNullViolation: 'errors.notNullViolation',
-      dataTypeMismatch: 'errors.dataTypeMismatch',
-      checkViolation: 'errors.checkViolation',
-      unexpectedError: 'errors.unexpectedError',
+      uniqueViolation: 'errors.client.uniqueViolation',
+      foreignKeyViolation: 'errors.client.foreignKeyViolation',
+      notNullViolation: 'errors.client.client.notNullViolation',
+      dataTypeMismatch: 'errors.client.dataTypeMismatch',
+      checkViolation: 'errors.client.checkViolation',
+      unexpectedError: 'errors.client.unexpectedError',
     }
   }
 };

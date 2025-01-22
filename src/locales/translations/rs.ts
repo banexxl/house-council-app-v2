@@ -196,11 +196,11 @@ export const rs = {
      [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',
      //#endregion
      //#region Errors Client
-     [tokens.errors.client.uniqueViolation]: 'Klijent sa ovom email adresom vec postoji!',
-     [tokens.errors.client.notNullViolation]: 'Obavezna polja ne smeju biti prazna',
+     [tokens.errors.client.uniqueViolation]: 'Klijent sa ovim emailom već postoji!',
      [tokens.errors.client.foreignKeyViolation]: 'Strani ključ nije validan',
-     [tokens.errors.client.dataTypeMismatch]: 'Tipovi podataka se ne poklapaju',
-     [tokens.errors.client.checkViolation]: 'Podaci ne zadovoljavaju zahteve',
-     [tokens.errors.client.unexpectedError]: 'Doslo je do neodređene greške',
+     [tokens.errors.client.notNullViolation]: 'Obavezna polja ne mogu biti prazna',
+     [tokens.errors.client.dataTypeMismatch]: 'Tipovi podataka se ne podudaraju',
+     [tokens.errors.client.checkViolation]: 'Provjera ne prolazi',
+     [tokens.errors.client.unexpectedError]: 'Neočekivana greška',
      //#endregion
 };

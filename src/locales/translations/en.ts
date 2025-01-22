@@ -196,10 +196,10 @@ export const en = {
   //#endregion
   //#region Errors Client
   [tokens.errors.client.uniqueViolation]: 'Client with this email already exists!',
+  [tokens.errors.client.foreignKeyViolation]: 'Foreign key violation',
   [tokens.errors.client.notNullViolation]: 'Required fields cannot be null',
-  [tokens.errors.client.foreignKeyViolation]: 'Invalid foreign key reference',
-  [tokens.errors.client.dataTypeMismatch]: 'Data type mismatch. Please check your input',
-  [tokens.errors.client.checkViolation]: 'Data does not meet the required constraints',
-  [tokens.errors.client.unexpectedError]: 'An unexpected error occurred',
+  [tokens.errors.client.dataTypeMismatch]: 'Data types do not match',
+  [tokens.errors.client.checkViolation]: 'Check violation',
+  [tokens.errors.client.unexpectedError]: 'Unexpected error',
   //#endregion
 };
