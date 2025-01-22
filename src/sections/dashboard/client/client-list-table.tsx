@@ -1,3 +1,5 @@
+'use client'
+
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import numeral from 'numeral';
 import PropTypes from 'prop-types';

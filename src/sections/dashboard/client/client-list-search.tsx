@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import { ChangeEvent, FormEvent, useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';

@@ -12,10 +12,12 @@ import Download01Icon from '@untitled-ui/icons-react/build/esm/Download01';
 
 import { paths } from 'src/paths';
 import { getAllClientsAction } from 'src/app/actions/client-actions/client-actions';
+import { ClientListSearch } from 'src/sections/dashboard/client/client-list-search';
+import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 
 const Page = async () => {
+
   const { data, error } = await getAllClientsAction()
-  console.log('data', data);
 
   if (!data || error || !data.length) {
     notFound();
@@ -85,13 +87,13 @@ const Page = async () => {
               </Button>
             </Stack>
           </Stack>
-          {/* <Card>
+          <Card>
             <ClientListSearch />
             <ClientListTable
               count={data.length}
               items={data}
             />
-          </Card> */}
+          </Card>
         </Stack>
       </Container>
     </Box>
