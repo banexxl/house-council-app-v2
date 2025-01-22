@@ -49,26 +49,20 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         // Simulate a server call
         const saveClientResponse = await saveClientAction(submissionValues)
         if (saveClientResponse.success) {
+          resetForm()
           toast.success(t('clients.clientSaved'))
         } else if (saveClientResponse.error) {
-
           saveClientResponse.error.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueViolation'))
             : saveClientResponse.error.code === '23503' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.foreignKeyViolation'))
               : saveClientResponse.error.code === '23502' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.notNullViolation'))
                 : saveClientResponse.error.code === '22P02' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.dataTypeMismatch'))
                   : saveClientResponse.error.code === '23514' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.checkViolation'))
                     : toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.unexpectedError'))
-
-
-
-
-
         }
       } catch (error) {
         toast.error(t('clients.clientNotSaved'), error.message)
       } finally {
         setSubmitting(false)
-        resetForm()
         avatarUploadRef.current?.clearImage()
         autocompleteRef_1.current?.clearField()
         autocompleteRef_2.current?.clearField()
