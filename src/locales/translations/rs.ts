@@ -23,6 +23,8 @@ export const rs = {
      [tokens.common.btnRemove]: 'Ukloni',
      [tokens.common.btnSearch]: 'Traži',
      [tokens.common.btnClear]: 'Obriši',
+     [tokens.common.btnImport]: 'Importuj',
+     [tokens.common.btnExport]: 'Eksportuj',
      [tokens.common.notes]: 'Napomene',
      //#endregion
      //#region Navigation

@@ -12,24 +12,24 @@ export const saveClientAction = async (client: Client): Promise<{ success: boole
           .insert(clientData);
 
      if (error) {
-          console.log('error', error);
-
           return { success: false, error: error };
      }
 
      return { success: true, data: data ?? undefined };
 }
 
-export const getAllClientsAction = async (): Promise<{ success: boolean, data?: Client[], error?: string }> => {
+export const getAllClientsAction = async (): Promise<{ getAllClientsActionSuccess: boolean, getAllClientsActionData?: Client[], getAllClientsActionError?: string }> => {
+     try {
+          const { data, error } = await supabase.from("tblClients").select(`
+        *,
+        tblClientStatuses (name),
+        tblClientTypes (name)
+      `)
 
-     const { data, error } = await supabase
-          .from('tblClients')
-          .select('*');
-     console.log('data', data);
+          if (error) throw error
 
-     if (error) {
-          return { success: false, error: error.message };
+          return { getAllClientsActionSuccess: true, getAllClientsActionData: data as Client[] }
+     } catch (error) {
+          return { getAllClientsActionSuccess: false, getAllClientsActionData: [], getAllClientsActionError: "Failed to fetch clients" }
      }
-
-     return { success: true, data: data ?? undefined };
 }

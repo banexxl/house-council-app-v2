@@ -1,7 +1,6 @@
 'use client'
 
 import type { ChangeEvent, FC, MouseEvent } from 'react';
-import numeral from 'numeral';
 import PropTypes from 'prop-types';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import Edit02Icon from '@untitled-ui/icons-react/build/esm/Edit02';
@@ -24,8 +23,9 @@ import Typography from '@mui/material/Typography';
 import { RouterLink } from 'src/components/router-link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Client } from 'src/types/client';
+import type { Client, ClientStatus } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
+import { useTranslation } from 'react-i18next';
 
 interface ClientListTableProps {
   count?: number;
@@ -42,6 +42,7 @@ interface ClientListTableProps {
 }
 
 export const ClientListTable: FC<ClientListTableProps> = (props) => {
+
   const {
     count = 0,
     items = [],
@@ -59,6 +60,7 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
   const selectedSome = selected.length > 0 && selected.length < items.length;
   const selectedAll = items.length > 0 && selected.length === items.length;
   const enableBulkActions = selected.length > 0;
+  const { t } = useTranslation();
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -95,13 +97,13 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
             color="inherit"
             size="small"
           >
-            Delete
+            {t('common.btnDelete')}
           </Button>
           <Button
             color="inherit"
             size="small"
           >
-            Edit
+            {t('common.btnEdit')}
           </Button>
         </Stack>
       )}
@@ -122,18 +124,20 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Orders</TableCell>
-              <TableCell>Spent</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>{t('clients.clientContactPerson')}/{t('clients.clientEmail')}</TableCell>
+              <TableCell>{t('clients.clientName')}</TableCell>
+              <TableCell>{t('clients.clientAddress1')}</TableCell>
+              <TableCell>{t('clients.clientAddress2')}</TableCell>
+              <TableCell>{t('clients.clientMobilePhone')}</TableCell>
+              <TableCell>{t('clients.clientPhone')}</TableCell>
+              <TableCell>{t('clients.clientType')}</TableCell>
+              <TableCell>{t('clients.clientStatus')}</TableCell>
+              <TableCell>{t('clients.clientIsVerified')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {items.map((client) => {
               const isSelected = selected.includes(client.id!);
-              // const location = `${client.city}, ${client.state}, ${client.country}`;
-              // const totalSpent = numeral(client.totalSpent).format(`${client.currency}0,0.00`);
 
               return (
                 <TableRow
@@ -176,7 +180,7 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                           href={paths.dashboard.clients.details}
                           variant="subtitle2"
                         >
-                          {client.name}
+                          {client.contact_person}
                         </Link>
                         <Typography
                           color="text.secondary"
@@ -187,11 +191,14 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                       </div>
                     </Stack>
                   </TableCell>
-                  {/* <TableCell>{location}</TableCell>
-                  <TableCell>{client.totalOrders}</TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2">{totalSpent}</Typography>
-                  </TableCell> */}
+                  <TableCell>{client.name}</TableCell>
+                  <TableCell>{client.address_1}</TableCell>
+                  <TableCell>{client.address_2}</TableCell>
+                  <TableCell>{client.mobile_phone}</TableCell>
+                  <TableCell>{client.phone}</TableCell>
+                  <TableCell>{client.type}</TableCell>
+                  <TableCell>{client.status}</TableCell>
+                  <TableCell>{client.is_verified}</TableCell>
                   <TableCell align="right">
                     <IconButton
                       component={RouterLink}

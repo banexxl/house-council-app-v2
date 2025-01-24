@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { Box } from '@mui/system'
 
 
-export const ClientHeader = () => {
+export const NewClientHeader = () => {
 
 
      const { t } = useTranslation()

@@ -23,6 +23,8 @@ export const de = {
   [tokens.common.btnRemove]: 'Entfernen',
   [tokens.common.btnSearch]: 'Suchen',
   [tokens.common.btnClear]: 'Löschen',
+  [tokens.common.btnImport]: 'Importieren',
+  [tokens.common.btnExport]: 'Exportieren',
   [tokens.common.notes]: 'Notizen',
   //#endregion
   //#region Navigation

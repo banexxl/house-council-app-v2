@@ -1,5 +1,3 @@
-import { client } from "src/api/clients/data";
-
 export const tokens = {
   common: {
     languageChanged: 'common.languageChanged',
@@ -23,6 +21,8 @@ export const tokens = {
     btnRemove: 'common.btnRemove',
     btnSearch: 'common.btnSearch',
     btnClear: 'common.btnClear',
+    btnImport: 'common.btnImport',
+    btnExport: 'common.btnExport',
     notes: 'common.notes',
   },
   nav: {
