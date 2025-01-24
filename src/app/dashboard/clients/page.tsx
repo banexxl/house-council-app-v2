@@ -12,6 +12,8 @@ import { ClientTableHeader } from 'src/components/clients/client-table-header';
 const Page = async () => {
 
   const { getAllClientsActionData } = await getAllClientsAction()
+  console.log(getAllClientsActionData);
+
 
   return (
     <Box

@@ -28,7 +28,14 @@ export const getAllClientsAction = async (): Promise<{ getAllClientsActionSucces
 
           if (error) throw error
 
-          return { getAllClientsActionSuccess: true, getAllClientsActionData: data as Client[] }
+          return {
+               getAllClientsActionSuccess: true, getAllClientsActionData: data.map(client => ({
+                    ...client,
+                    status: client.tblClientStatuses.name,
+                    type: client.tblClientTypes.name
+               })) as Client[]
+          }
+
      } catch (error) {
           return { getAllClientsActionSuccess: false, getAllClientsActionData: [], getAllClientsActionError: "Failed to fetch clients" }
      }
