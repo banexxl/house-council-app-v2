@@ -19,11 +19,13 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 import { RouterLink } from 'src/components/router-link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Client, ClientStatus } from 'src/types/client';
+import type { Client } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 import { useTranslation } from 'react-i18next';
 
@@ -198,7 +200,17 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                   <TableCell>{client.phone}</TableCell>
                   <TableCell>{client.type}</TableCell>
                   <TableCell>{client.status}</TableCell>
-                  <TableCell>{client.is_verified}</TableCell>
+                  <TableCell>
+                    {
+                      client.is_verified ?
+                        <SvgIcon>
+                          <CheckCircleIcon color='success' />
+                        </SvgIcon> :
+                        <SvgIcon>
+                          <CancelIcon color='error' />
+                        </SvgIcon>
+                    }
+                  </TableCell>
                   <TableCell align="right">
                     <IconButton
                       component={RouterLink}
