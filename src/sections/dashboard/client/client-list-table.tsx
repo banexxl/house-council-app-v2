@@ -126,12 +126,10 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                   }}
                 />
               </TableCell>
-              <TableCell>{t('clients.clientContactPerson')}/{t('clients.clientEmail')}</TableCell>
+              <TableCell >{t('clients.clientContactPerson')}/{t('clients.clientEmail')}</TableCell>
               <TableCell>{t('clients.clientName')}</TableCell>
               <TableCell>{t('clients.clientAddress1')}</TableCell>
-              <TableCell sx={{
-                width: '400px'
-              }}>{t('clients.clientAddress2')}</TableCell>
+              <TableCell >{t('clients.clientAddress2')}</TableCell>
               <TableCell>{t('clients.clientMobilePhone')}</TableCell>
               <TableCell>{t('clients.clientPhone')}</TableCell>
               <TableCell>{t('clients.clientType')}</TableCell>
@@ -195,10 +193,21 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                       </div>
                     </Stack>
                   </TableCell>
-                  <TableCell>{client.name}</TableCell>
-                  <TableCell>{client.address_1}</TableCell>
                   <TableCell sx={{
-                    width: '400px'
+                    width: '200px',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                  }}>{client.name}</TableCell>
+                  <TableCell sx={{
+                    width: '200px',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                  }}>{client.address_1}</TableCell>
+                  <TableCell sx={{
+                    width: '100px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}>{client.address_2}</TableCell>
                   <TableCell>{client.mobile_phone}</TableCell>
                   <TableCell>{client.phone}</TableCell>
@@ -230,7 +239,7 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
       />
-    </Box>
+    </Box >
   );
 };
 
