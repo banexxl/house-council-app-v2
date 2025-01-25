@@ -204,4 +204,8 @@ export const en = {
   [tokens.errors.client.checkViolation]: 'Check violation',
   [tokens.errors.client.unexpectedError]: 'Unexpected error',
   //#endregion
+  //#region Warnings
+  [tokens.warning.deleteWarningTitle]: 'Delete Warning',
+  [tokens.warning.deleteWarningMessage]: 'Are you sure you want to delete this entry?',
+  //#endregion
 };

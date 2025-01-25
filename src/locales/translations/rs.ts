@@ -205,4 +205,8 @@ export const rs = {
      [tokens.errors.client.checkViolation]: 'Provjera ne prolazi',
      [tokens.errors.client.unexpectedError]: 'Neočekivana greška',
      //#endregion
+     //#region Warnings
+     [tokens.warning.deleteWarningTitle]: 'Brisanje',
+     [tokens.warning.deleteWarningMessage]: 'Da li zelite da obrisete ovaj element?',
+     //#endregion
 };

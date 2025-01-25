@@ -204,4 +204,8 @@ export const de = {
   [tokens.errors.client.checkViolation]: 'Überprüfungsverletzung',
   [tokens.errors.client.unexpectedError]: 'Unerwarteter Fehler',
   //#endregion
+  //#region Warnings
+  [tokens.warning.deleteWarningTitle]: 'Löschen bestätigen',
+  [tokens.warning.deleteWarningMessage]: 'Möchten Sie diesen Eintrag wirklich löschen?',
+  //#endregion
 };

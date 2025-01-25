@@ -1,6 +1,6 @@
 'use client'
 
-import type { ChangeEvent, FC, MouseEvent } from 'react';
+import { useCallback, useMemo, useState, type ChangeEvent, type FC, type MouseEvent } from 'react';
 import PropTypes from 'prop-types';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import Edit02Icon from '@untitled-ui/icons-react/build/esm/Edit02';
@@ -28,41 +28,99 @@ import { paths } from 'src/paths';
 import type { Client } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 import { useTranslation } from 'react-i18next';
+import { useSelection } from 'src/hooks/use-selection';
+import { useDialog } from 'src/hooks/use-dialog';
+import { PopupModal } from 'src/components/modal-dialog';
 
 interface ClientListTableProps {
   count?: number;
   items?: Client[];
-  onDeselectAll?: () => void;
-  onDeselectOne?: (customerId: string) => void;
-  onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
-  onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-  onSelectAll?: () => void;
-  onSelectOne?: (customerId: string) => void;
-  page?: number;
-  rowsPerPage?: number;
-  selected?: string[];
 }
+
+interface DeleteClientsData {
+  clientIds: string[];
+}
+
+const useClientSearch = () => {
+
+  const [state, setState] = useState({
+    query: '',
+    page: 0,
+    rowsPerPage: 5,
+    sortBy: 'createdAt',
+    sortDir: 'desc',
+  })
+
+  const handleQueryChange = useCallback((filters: any) => {
+    setState((prevState) => ({
+      ...prevState,
+      filters,
+    }));
+  }, []);
+
+  const handlePageChange = useCallback((event: any, page: any) => {
+    setState((prevState) => ({
+      ...prevState,
+      page,
+    }));
+  }, []);
+
+  const handleRowsPerPageChange = useCallback((event: any) => {
+    setState((prevState) => ({
+      ...prevState,
+      page: 0,
+      rowsPerPage: parseInt(event.target.value, 10),
+    }));
+
+  }, []);
+
+  const handleSortChange = useCallback((sortDir: any) => {
+    setState((prevState) => ({
+      ...prevState,
+      sortDir,
+    }));
+  }, []);
+
+  return {
+    handleQueryChange,
+    handleSortChange,
+    handlePageChange,
+    handleRowsPerPageChange,
+    state,
+  };
+};
 
 export const ClientListTable: FC<ClientListTableProps> = (props) => {
 
   const {
     count = 0,
-    items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => { },
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
-    selected = [],
+    items = []
   } = props;
 
-  const selectedSome = selected.length > 0 && selected.length < items.length;
-  const selectedAll = items.length > 0 && selected.length === items.length;
-  const enableBulkActions = selected.length > 0;
+  const deleteClientsDialog = useDialog<DeleteClientsData>();
+  const clientSearch = useClientSearch();
+
+  const clientIds = useMemo(() => {
+    if (!Array.isArray(props.items)) {
+      return [];
+    }
+    return props.items.map((client: Client) => client.id);
+  }, [props.items]);
+
+  const handleDeleteClientsClick = useCallback((): void => {
+    deleteClientsDialog.handleOpen();
+  }, [deleteClientsDialog]);
+
+  const [clientStore, setClientStore] = useState<Client[]>(items);
+
+  const clientSelection = useSelection(clientIds);
+
+  const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
+  const selectedAll = items.length > 0 && clientSelection.selected.length === clientIds.length;
+  const enableBulkActions = clientSelection.selected.length > 0;
   const { t } = useTranslation();
+
+
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -89,24 +147,28 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
             indeterminate={selectedSome}
             onChange={(event) => {
               if (event.target.checked) {
-                onSelectAll?.();
+                clientSelection.handleSelectAll();
               } else {
-                onDeselectAll?.();
+                clientSelection.handleDeselectAll();
               }
             }}
           />
           <Button
             color="inherit"
             size="small"
+            onClick={handleDeleteClientsClick}
           >
             {t('common.btnDelete')}
           </Button>
-          <Button
-            color="inherit"
-            size="small"
-          >
-            {t('common.btnEdit')}
-          </Button>
+          {
+            clientSelection.selected.length === 1 &&
+            <Button
+              color="inherit"
+              size="small"
+            >
+              {t('common.btnEdit')}
+            </Button>
+          }
         </Stack>
       )}
       <Scrollbar>
@@ -119,9 +181,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                   indeterminate={selectedSome}
                   onChange={(event) => {
                     if (event.target.checked) {
-                      onSelectAll?.();
+                      clientSelection.handleSelectAll();
                     } else {
-                      onDeselectAll?.();
+                      clientSelection.handleDeselectAll();
                     }
                   }}
                 />
@@ -139,7 +201,7 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
           </TableHead>
           <TableBody>
             {items.map((client) => {
-              const isSelected = selected.includes(client.id!);
+              const isSelected = clientSelection.selected.includes(client.id!);
 
               return (
                 <TableRow
@@ -152,9 +214,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                       checked={isSelected}
                       onChange={(event: ChangeEvent<HTMLInputElement>): void => {
                         if (event.target.checked) {
-                          onSelectOne?.(client.id!);
+                          clientSelection.handleSelectOne(client.id!);
                         } else {
-                          onDeselectOne?.(client.id!);
+                          clientSelection.handleDeselectOne(client.id!);
                         }
                       }}
                       value={isSelected}
@@ -193,16 +255,23 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                       </div>
                     </Stack>
                   </TableCell>
-                  <TableCell sx={{
-                    width: '200px',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                  }}>{client.name}</TableCell>
-                  <TableCell sx={{
-                    width: '200px',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                  }}>{client.address_1}</TableCell>
+                  <TableCell
+                    sx={{
+                      width: '200px',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                    }}>
+                    {client.name}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: '300px',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                    }}>
+                    {client.address_1}
+                  </TableCell>
                   <TableCell sx={{
                     width: '100px',
                     overflow: 'hidden',
@@ -233,11 +302,20 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
       <TablePagination
         component="div"
         count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
+        onPageChange={clientSearch.handlePageChange}
+        onRowsPerPageChange={clientSearch.handleRowsPerPageChange}
+        page={clientSearch.state.page}
+        rowsPerPage={clientSearch.state.rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
+      />
+      <PopupModal
+        isOpen={deleteClientsDialog.open}
+        onClose={() => deleteClientsDialog.handleClose()}
+        onConfirm={() => deleteClientsDialog.handleClose()}
+        title={t('warning.deleteWarningTitle')}
+        confirmText={t('common.btnDelete')}
+        cancelText={t('common.btnClose')}
+        children={t('warning.deleteWarningMessage')}
       />
     </Box >
   );
@@ -245,14 +323,5 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
 
 ClientListTable.propTypes = {
   count: PropTypes.number,
-  items: PropTypes.array,
-  onDeselectAll: PropTypes.func,
-  onDeselectOne: PropTypes.func,
-  onPageChange: PropTypes.func,
-  onRowsPerPageChange: PropTypes.func,
-  onSelectAll: PropTypes.func,
-  onSelectOne: PropTypes.func,
-  page: PropTypes.number,
-  rowsPerPage: PropTypes.number,
-  selected: PropTypes.array,
+  items: PropTypes.array
 };

@@ -138,13 +138,6 @@ export const createComponents = ({ palette }: Config): Components => {
         },
       },
     },
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          borderBottomColor: palette.divider,
-        },
-      },
-    },
     MuiTableHead: {
       styleOverrides: {
         root: {

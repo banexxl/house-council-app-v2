@@ -193,6 +193,10 @@ export const tokens = {
     tenantCityRequired: 'tenants.tenantCityRequired',
     tenantCountryRequired: 'tenants.tenantCountryRequired',
   },
+  warning: {
+    deleteWarningTitle: 'warning.deleteWarningTitle',
+    deleteWarningMessage: 'warning.deleteWarningMessage',
+  },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',
     client: {

@@ -203,4 +203,8 @@ export const es = {
   [tokens.errors.client.checkViolation]: 'Violación de verificación',
   [tokens.errors.client.unexpectedError]: 'Error inesperado',
   //#endregion
+  //#region Warnings
+  [tokens.warning.deleteWarningTitle]: 'Eliminar',
+  [tokens.warning.deleteWarningMessage]: '¿Desea eliminar este elemento?',
+  //#endregion
 };
