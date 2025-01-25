@@ -207,6 +207,6 @@ export const rs = {
      //#endregion
      //#region Warnings
      [tokens.warning.deleteWarningTitle]: 'Brisanje',
-     [tokens.warning.deleteWarningMessage]: 'Da li zelite da obrisete ovaj element?',
+     [tokens.warning.deleteWarningMessage]: 'Da li želite da obrišete odabrano?',
      //#endregion
 };

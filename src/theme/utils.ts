@@ -1,7 +1,7 @@
 import type { PaletteColor } from '@mui/material/styles/createPalette';
 
 import type { ColorPreset } from '.';
-import { blue, green, indigo, purple } from './colors';
+import { blue, green, indigo, purple, teal, red } from './colors';
 
 export const getPrimary = (preset?: ColorPreset): PaletteColor => {
   switch (preset) {
@@ -13,9 +13,13 @@ export const getPrimary = (preset?: ColorPreset): PaletteColor => {
       return indigo;
     case 'purple':
       return purple;
+    case 'teal':
+      return teal;
+    case 'red':
+      return red;
     default:
       console.error(
-        'Invalid color preset, accepted values: "blue", "green", "indigo" or "purple"".'
+        'Invalid color preset, accepted values: "blue", "green", "indigo", "teal", "red" or "purple"".'
       );
       return blue;
   }

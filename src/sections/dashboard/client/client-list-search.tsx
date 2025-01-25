@@ -75,7 +75,7 @@ const sortOptions: SortOption[] = [
   },
 ];
 
-type SortDir = 'asc' | 'desc';
+export type SortDir = 'asc' | 'desc';
 
 interface ClientListSearchProps {
   onFiltersChange?: (filters: Filters) => void;

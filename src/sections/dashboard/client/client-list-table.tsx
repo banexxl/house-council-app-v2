@@ -1,14 +1,11 @@
 'use client'
 
-import { useCallback, useMemo, useState, type ChangeEvent, type FC, type MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type FC } from 'react';
 import PropTypes from 'prop-types';
-import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
-import Edit02Icon from '@untitled-ui/icons-react/build/esm/Edit02';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -31,6 +28,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelection } from 'src/hooks/use-selection';
 import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
+import { ClientListSearch, SortDir } from './client-list-search';
+import { applySort } from 'src/utils/apply-sort';
 
 interface ClientListTableProps {
   count?: number;
@@ -48,7 +47,7 @@ const useClientSearch = () => {
     page: 0,
     rowsPerPage: 5,
     sortBy: 'createdAt',
-    sortDir: 'desc',
+    sortDir: 'desc' as SortDir,
   })
 
   const handleQueryChange = useCallback((filters: any) => {
@@ -90,11 +89,11 @@ const useClientSearch = () => {
   };
 };
 
-export const ClientListTable: FC<ClientListTableProps> = (props) => {
+export const ClientListTable: FC<ClientListTableProps> = (props: any) => {
 
   const {
     count = 0,
-    items = []
+    items = [],
   } = props;
 
   const deleteClientsDialog = useDialog<DeleteClientsData>();
@@ -111,8 +110,6 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
     deleteClientsDialog.handleOpen();
   }, [deleteClientsDialog]);
 
-  const [clientStore, setClientStore] = useState<Client[]>(items);
-
   const clientSelection = useSelection(clientIds);
 
   const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
@@ -120,10 +117,26 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
   const enableBulkActions = clientSelection.selected.length > 0;
   const { t } = useTranslation();
 
-
+  const visibleRows = useMemo(
+    () =>
+      applySort(
+        items.filter((client: Client) =>
+          !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase())
+        ),
+        clientSearch.state.sortBy,
+        clientSearch.state.sortDir
+      ).slice(clientSearch.state.page * clientSearch.state.rowsPerPage, clientSearch.state.page * clientSearch.state.rowsPerPage + clientSearch.state.rowsPerPage),
+    [clientSearch.state.query, items, clientSearch.state.page, clientSearch.state.rowsPerPage, clientSearch.state.sortBy, clientSearch.state.sortDir],
+  );
 
   return (
     <Box sx={{ position: 'relative' }}>
+      <ClientListSearch
+        onFiltersChange={clientSearch.handleQueryChange}
+        onSortChange={clientSearch.handleSortChange}
+        sortBy={clientSearch.state.sortBy}
+        sortDir={clientSearch.state.sortDir}
+      />
       {enableBulkActions && (
         <Stack
           direction="row"
@@ -200,7 +213,7 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((client) => {
+            {visibleRows.map((client: any) => {
               const isSelected = clientSelection.selected.includes(client.id!);
 
               return (
@@ -307,6 +320,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
         page={clientSearch.state.page}
         rowsPerPage={clientSearch.state.rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
+        showFirstButton
+        showLastButton
+        labelRowsPerPage={t('common.rowsPerPage')}
       />
       <PopupModal
         isOpen={deleteClientsDialog.open}
@@ -316,7 +332,7 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
         confirmText={t('common.btnDelete')}
         cancelText={t('common.btnClose')}
         children={t('warning.deleteWarningMessage')}
-      />
+        type={'confirmation'} />
     </Box >
   );
 };
@@ -325,3 +341,4 @@ ClientListTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array
 };
+

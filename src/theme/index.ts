@@ -43,7 +43,7 @@ declare module '@mui/material/styles/createPalette' {
   }
 }
 
-export type ColorPreset = 'blue' | 'green' | 'indigo' | 'purple';
+export type ColorPreset = 'blue' | 'green' | 'indigo' | 'purple' | 'teal' | 'red';
 
 export type Contrast = 'normal' | 'high';
 
@@ -68,13 +68,13 @@ export const createTheme = (config: ThemeConfig): Theme => {
     // Options based on selected palette mode, color preset and contrast
     config.paletteMode === 'dark'
       ? createDarkOptions({
-          colorPreset: config.colorPreset,
-          contrast: config.contrast,
-        })
+        colorPreset: config.colorPreset,
+        contrast: config.contrast,
+      })
       : createLightOptions({
-          colorPreset: config.colorPreset,
-          contrast: config.contrast,
-        })
+        colorPreset: config.colorPreset,
+        contrast: config.contrast,
+      })
   );
 
   if (config.responsiveFontSizes) {
