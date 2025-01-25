@@ -14,7 +14,6 @@ const Page = async () => {
   const { getAllClientsActionData } = await getAllClientsAction()
   console.log(getAllClientsActionData);
 
-
   return (
     <Box
       component="main"

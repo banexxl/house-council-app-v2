@@ -48,15 +48,15 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
       try {
         // Simulate a server call
         const saveClientResponse = await saveClientAction(submissionValues)
-        if (saveClientResponse.success) {
+        if (saveClientResponse.saveClientActionSuccess) {
           resetForm()
           toast.success(t('clients.clientSaved'))
-        } else if (saveClientResponse.error) {
-          saveClientResponse.error.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueViolation'))
-            : saveClientResponse.error.code === '23503' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.foreignKeyViolation'))
-              : saveClientResponse.error.code === '23502' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.notNullViolation'))
-                : saveClientResponse.error.code === '22P02' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.dataTypeMismatch'))
-                  : saveClientResponse.error.code === '23514' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.checkViolation'))
+        } else if (saveClientResponse.saveClientActionError) {
+          saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueViolation'))
+            : saveClientResponse.saveClientActionError.code === '23503' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.foreignKeyViolation'))
+              : saveClientResponse.saveClientActionError.code === '23502' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.notNullViolation'))
+                : saveClientResponse.saveClientActionError.code === '22P02' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.dataTypeMismatch'))
+                  : saveClientResponse.saveClientActionError.code === '23514' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.checkViolation'))
                     : toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.unexpectedError'))
         }
       } catch (error) {

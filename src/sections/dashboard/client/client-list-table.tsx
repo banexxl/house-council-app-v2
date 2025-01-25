@@ -129,7 +129,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
               <TableCell>{t('clients.clientContactPerson')}/{t('clients.clientEmail')}</TableCell>
               <TableCell>{t('clients.clientName')}</TableCell>
               <TableCell>{t('clients.clientAddress1')}</TableCell>
-              <TableCell>{t('clients.clientAddress2')}</TableCell>
+              <TableCell sx={{
+                width: '400px'
+              }}>{t('clients.clientAddress2')}</TableCell>
               <TableCell>{t('clients.clientMobilePhone')}</TableCell>
               <TableCell>{t('clients.clientPhone')}</TableCell>
               <TableCell>{t('clients.clientType')}</TableCell>
@@ -195,7 +197,9 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                   </TableCell>
                   <TableCell>{client.name}</TableCell>
                   <TableCell>{client.address_1}</TableCell>
-                  <TableCell>{client.address_2}</TableCell>
+                  <TableCell sx={{
+                    width: '400px'
+                  }}>{client.address_2}</TableCell>
                   <TableCell>{client.mobile_phone}</TableCell>
                   <TableCell>{client.phone}</TableCell>
                   <TableCell>{client.type}</TableCell>
@@ -210,24 +214,6 @@ export const ClientListTable: FC<ClientListTableProps> = (props) => {
                           <CancelIcon color='error' />
                         </SvgIcon>
                     }
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      component={RouterLink}
-                      href={paths.dashboard.clients.new}
-                    >
-                      <SvgIcon>
-                        <Edit02Icon />
-                      </SvgIcon>
-                    </IconButton>
-                    <IconButton
-                      component={RouterLink}
-                      href={paths.dashboard.clients.details}
-                    >
-                      <SvgIcon>
-                        <ArrowRightIcon />
-                      </SvgIcon>
-                    </IconButton>
                   </TableCell>
                 </TableRow>
               );
