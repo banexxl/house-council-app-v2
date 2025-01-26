@@ -49,7 +49,7 @@ const tabs: TabOption[] = [
   },
 ];
 
-type SortValue = 'updated_at|desc' | 'updated_at|asc' | 'totalOrders|desc' | 'totalOrders|asc';
+export type SortValue = 'updated_at|desc' | 'updated_at|asc' | 'name|desc' | 'name|asc';
 
 interface SortOption {
   label: string;
@@ -66,12 +66,12 @@ const sortOptions: SortOption[] = [
     value: 'updated_at|asc',
   },
   {
-    label: 'Total orders (highest)',
-    value: 'totalOrders|desc',
+    label: 'Name (descending)',
+    value: 'name|desc',
   },
   {
-    label: 'Total orders (lowest)',
-    value: 'totalOrders|asc',
+    label: 'Name (ascending)',
+    value: 'name|asc',
   },
 ];
 
@@ -79,14 +79,13 @@ export type SortDir = 'asc' | 'desc';
 
 interface ClientListSearchProps {
   onFiltersChange?: (filters: Filters) => void;
-  onSortChange?: (sort: { sortBy: string; sortDir: SortDir }) => void;
+  onSortChange?: (sortBy: string, sortDir: SortDir) => void;
   sortBy?: string;
   sortDir?: SortDir;
 }
 
 export const ClientListSearch: FC<ClientListSearchProps> = (props) => {
   const { onFiltersChange, onSortChange, sortBy, sortDir } = props;
-  const queryRef = useRef<HTMLInputElement | null>(null);
   const [currentTab, setCurrentTab] = useState<TabValue>('all');
   const [filters, setFilters] = useState<Filters>({});
 
@@ -120,18 +119,14 @@ export const ClientListSearch: FC<ClientListSearchProps> = (props) => {
     event.preventDefault();
     setFilters((prevState) => ({
       ...prevState,
-      query: queryRef.current?.value,
+      query: (event.target as HTMLInputElement).value,
     }));
   }, []);
 
   const handleSortChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
       const [sortBy, sortDir] = event.target.value.split('|') as [string, SortDir];
-
-      onSortChange?.({
-        sortBy,
-        sortDir,
-      });
+      onSortChange?.(sortBy, sortDir);
     },
     [onSortChange]
   );
@@ -165,13 +160,11 @@ export const ClientListSearch: FC<ClientListSearchProps> = (props) => {
       >
         <Box
           component="form"
-          onSubmit={handleQueryChange}
           sx={{ flexGrow: 1 }}
         >
           <OutlinedInput
             defaultValue=""
             fullWidth
-            inputProps={{ ref: queryRef }}
             placeholder="Search clients"
             startAdornment={
               <InputAdornment position="start">
@@ -180,6 +173,7 @@ export const ClientListSearch: FC<ClientListSearchProps> = (props) => {
                 </SvgIcon>
               </InputAdornment>
             }
+            onChange={(event: any) => handleQueryChange(event)}
           />
         </Box>
         <TextField

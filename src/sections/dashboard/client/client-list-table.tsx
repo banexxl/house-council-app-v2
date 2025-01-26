@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelection } from 'src/hooks/use-selection';
 import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
-import { ClientListSearch, SortDir } from './client-list-search';
+import { ClientListSearch, SortDir, SortValue } from './client-list-search';
 import { applySort } from 'src/utils/apply-sort';
 
 interface ClientListTableProps {
@@ -46,14 +46,14 @@ const useClientSearch = () => {
     query: '',
     page: 0,
     rowsPerPage: 5,
-    sortBy: 'createdAt',
+    sortBy: 'updated_at' as SortValue,
     sortDir: 'desc' as SortDir,
   })
 
-  const handleQueryChange = useCallback((filters: any) => {
+  const handleQueryChange = useCallback((filters: Partial<typeof state>) => {
     setState((prevState) => ({
       ...prevState,
-      filters,
+      ...filters, // Spread the filters directly into the state
     }));
   }, []);
 
@@ -73,9 +73,10 @@ const useClientSearch = () => {
 
   }, []);
 
-  const handleSortChange = useCallback((sortDir: any) => {
-    setState((prevState) => ({
+  const handleSortChange = useCallback((sortBy: string, sortDir: SortDir) => {
+    setState((prevState: any) => ({
       ...prevState,
+      sortBy,
       sortDir,
     }));
   }, []);
@@ -96,9 +97,6 @@ export const ClientListTable: FC<ClientListTableProps> = (props: any) => {
     items = [],
   } = props;
 
-  const deleteClientsDialog = useDialog<DeleteClientsData>();
-  const clientSearch = useClientSearch();
-
   const clientIds = useMemo(() => {
     if (!Array.isArray(props.items)) {
       return [];
@@ -106,27 +104,32 @@ export const ClientListTable: FC<ClientListTableProps> = (props: any) => {
     return props.items.map((client: Client) => client.id);
   }, [props.items]);
 
-  const handleDeleteClientsClick = useCallback((): void => {
-    deleteClientsDialog.handleOpen();
-  }, [deleteClientsDialog]);
-
   const clientSelection = useSelection(clientIds);
 
   const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
   const selectedAll = items.length > 0 && clientSelection.selected.length === clientIds.length;
   const enableBulkActions = clientSelection.selected.length > 0;
+  const deleteClientsDialog = useDialog<DeleteClientsData>();
+  const clientSearch = useClientSearch();
+  console.log('clientSearch', clientSearch.state)
   const { t } = useTranslation();
 
-  const visibleRows = useMemo(
-    () =>
-      applySort(
-        items.filter((client: Client) =>
-          !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase())
-        ),
-        clientSearch.state.sortBy,
-        clientSearch.state.sortDir
-      ).slice(clientSearch.state.page * clientSearch.state.rowsPerPage, clientSearch.state.page * clientSearch.state.rowsPerPage + clientSearch.state.rowsPerPage),
+  const handleDeleteClientsClick = useCallback((): void => {
+    deleteClientsDialog.handleOpen();
+  }, [deleteClientsDialog]);
+
+  const visibleRows = useMemo(() =>
+
+    applySort(
+      items.filter((client: Client) =>
+        !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase())
+      ),
+      clientSearch.state.sortBy,
+      clientSearch.state.sortDir
+    ).slice(clientSearch.state.page * clientSearch.state.rowsPerPage, clientSearch.state.page * clientSearch.state.rowsPerPage + clientSearch.state.rowsPerPage),
+
     [clientSearch.state.query, items, clientSearch.state.page, clientSearch.state.rowsPerPage, clientSearch.state.sortBy, clientSearch.state.sortDir],
+
   );
 
   return (
