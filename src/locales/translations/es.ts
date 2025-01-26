@@ -4,6 +4,9 @@ export const es = {
   //#region Common
   [tokens.common.languageChanged]: 'Se ha cambiado el idioma',
   [tokens.common.title]: 'Consejo de Casa',
+  [tokens.common.all]: 'Todos',
+  [tokens.common.created_at]: 'Creado en',
+  [tokens.common.updated_at]: 'Actualizado en',
   [tokens.common.btnSave]: 'Guardar',
   [tokens.common.btnDelete]: 'Eliminar',
   [tokens.common.btnEdit]: 'Editar',

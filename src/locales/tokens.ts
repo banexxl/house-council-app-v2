@@ -2,6 +2,9 @@ export const tokens = {
   common: {
     languageChanged: 'common.languageChanged',
     title: 'common.title',
+    all: 'common.all',
+    created_at: 'common.createdAt',
+    updated_at: 'common.updatedAt',
     btnSave: 'common.btnSave',
     btnDelete: 'common.btnDelete',
     btnEdit: 'common.btnEdit',

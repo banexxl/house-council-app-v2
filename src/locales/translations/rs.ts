@@ -4,6 +4,9 @@ export const rs = {
      //#region Common
      [tokens.common.languageChanged]: 'Jezik promjenjen',
      [tokens.common.title]: 'Kućni savet',
+     [tokens.common.all]: 'Sve',
+     [tokens.common.created_at]: 'Kreirano',
+     [tokens.common.updated_at]: 'Ažurirano',
      [tokens.common.btnSave]: 'Sačuvaj',
      [tokens.common.btnDelete]: 'Obriši',
      [tokens.common.btnEdit]: 'Izmeni',

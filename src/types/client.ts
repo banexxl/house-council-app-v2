@@ -19,7 +19,6 @@ export interface Client {
   avatar?: string;
   ////////
   balance?: number;
-  has_active_subscription?: boolean;
   has_accepted_marketing?: boolean;
   has_accepted_terms_and_conditions?: boolean;
   is_potential?: boolean;
