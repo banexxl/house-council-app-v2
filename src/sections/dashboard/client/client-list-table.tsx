@@ -61,6 +61,8 @@ const useClientSearch = () => {
   }, []);
 
   const handleTabsChange = useCallback((value: string) => {
+    console.log('handleTabsChange', value);
+
     setState((prevState) => ({
       ...prevState,
       all: value === 'all',
@@ -113,6 +115,8 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
 
   const deleteClientsDialog = useDialog<DeleteClientsData>();
   const clientSearch = useClientSearch();
+  console.log('clientSearch', clientSearch.state);
+
   const { t } = useTranslation();
 
   const handleDeleteClientsClick = useCallback(() => {
@@ -120,14 +124,41 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
   }, [deleteClientsDialog]);
 
   const visibleRows = useMemo(() => {
-    const filtered = items.filter((client) =>
-      !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase())
-    );
+    // Apply filters based on state
+    const filtered = items.filter((client) => {
+      // Check query filter
+      const matchesQuery =
+        !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase());
+
+      // Check "all" filter (if "all" is true, no other filters apply)
+      if (clientSearch.state.all) {
+        return matchesQuery;
+      }
+
+      // Apply individual filters
+      const matchesAcceptedMarketing =
+        !clientSearch.state.has_accepted_marketing || client.has_accepted_marketing === clientSearch.state.has_accepted_marketing;
+
+      const matchesIsVerified =
+        !clientSearch.state.is_verified || client.is_verified === clientSearch.state.is_verified;
+
+      const matchesIsReturning =
+        !clientSearch.state.is_returning || client.is_returning === clientSearch.state.is_returning;
+
+      // Combine all filters
+      return matchesQuery && matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
+    });
+    console.log('filtered', filtered);
+    // Apply sorting and pagination
     return applySort(filtered, clientSearch.state.sortBy, clientSearch.state.sortDir).slice(
       clientSearch.state.page * clientSearch.state.rowsPerPage,
       clientSearch.state.page * clientSearch.state.rowsPerPage + clientSearch.state.rowsPerPage
     );
+
+
+
   }, [items, clientSearch.state]);
+
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -141,7 +172,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
           { label: t('common.all'), value: 'all' },
           { label: t('clients.clientIsVerified'), value: 'is_verified' },
           { label: t('clients.clientHasAcceptedMarketing'), value: 'has_accepted_marketing' },
-          { label: t('clients.clientIsPotential'), value: 'is_returning' },
+          { label: t('clients.clientIsReturning'), value: 'is_returning' },
         ]}
         sortOptions={[
           { label: t('clients.clientName'), value: 'name' },

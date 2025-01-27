@@ -1,4 +1,4 @@
-import React, { FC, useState, useCallback, ChangeEvent, FormEvent } from 'react';
+import React, { FC, useState, useCallback, ChangeEvent } from 'react';
 import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import { Box, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
@@ -39,7 +39,6 @@ interface FilterBarProps {
 
 }
 
-
 export const FilterBar: FC<FilterBarProps> = ({
   tabs,
   sortOptions,
@@ -53,14 +52,21 @@ export const FilterBar: FC<FilterBarProps> = ({
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [sort, setSort] = useState<string>(`${initialSortBy}|${initialSortDir}`);
 
-  const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string) => {
-    setCurrentTab(value);
-    setFilters((prev) => ({
-      ...prev,
-      currentTab: value,
-    }));
-    onFiltersChange?.({ ...filters, currentTab: value });
-  }, [filters, onFiltersChange]);
+  const handleTabsChange = useCallback(
+    (event: ChangeEvent<any>, value: string) => {
+      setCurrentTab(value);
+
+      // Update filters: set the selected tab to true and the rest to false
+      const updatedFilters = tabs.reduce<Record<string, boolean>>((acc, tab) => {
+        acc[tab.value] = tab.value === value; // Set only the matching tab to true
+        return acc;
+      }, {});
+
+      setFilters(updatedFilters);
+      onFiltersChange?.(updatedFilters); // Pass the updated filters to the callback
+    },
+    [tabs, onFiltersChange] // Include tabs in the dependency array
+  );
 
   const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
