@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
 import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/components/clients/uplod-image'
+import { transliterate } from 'src/utils/transliterate'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
@@ -158,7 +159,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
               <LocationAutocomplete
                 label={t('clients.clientAddress1')}
                 onAddressSelected={(e: any) => {
-                  formik.setFieldValue('address_1', e.matching_place_name);
+                  formik.setFieldValue('address_1', transliterate(e.matching_place_name));
                 }}
                 ref={autocompleteRef_1}
               />
@@ -167,7 +168,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
               <LocationAutocomplete
                 label={t('clients.clientAddress2')}
                 onAddressSelected={(e: any) => {
-                  formik.setFieldValue('address_2', e.matching_place_name);
+                  formik.setFieldValue('address_2', transliterate(e.matching_place_name));
                 }}
                 ref={autocompleteRef_2}
               />

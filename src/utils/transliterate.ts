@@ -1,4 +1,7 @@
 export const transliterate = (input: string): string => {
+
+     if (!input) return '';
+
      const cyrillicToLatinMap: Record<string, string> = {
           А: "A", Б: "B", В: "V", Г: "G", Д: "D", Ђ: "Đ", Е: "E", Ж: "Ž", З: "Z",
           И: "I", Ј: "J", К: "K", Л: "L", Љ: "Lj", М: "M", Н: "N", Њ: "Nj", О: "O",
