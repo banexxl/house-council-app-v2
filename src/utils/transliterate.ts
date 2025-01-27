@@ -1,4 +1,4 @@
-export const transliterate = (input: string): string => {
+export const transliterateCyrillicToLatin = (input: string): string => {
 
      if (!input) return '';
 
@@ -14,4 +14,12 @@ export const transliterate = (input: string): string => {
      };
 
      return input.split('').map((char: string) => cyrillicToLatinMap[char] || char).join('');
+}
+
+export const transliterateLatinToEnglish = (input: string): string => {
+     const latinToEnglishMap: Record<string, string> = {
+          Đ: "Dj", đ: "dj", Č: "C", č: "c", Ć: "C", ć: "c", Ž: "Z", ž: "z", Š: "S", š: "s",
+     };
+
+     return input.split('').map((char: string) => latinToEnglishMap[char] || char).join('');
 }

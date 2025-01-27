@@ -9,6 +9,7 @@ import {
      IconButton,
 } from "@mui/material";
 import { Clear as ClearIcon } from "@mui/icons-material";
+import { transliterateCyrillicToLatin } from "src/utils/transliterate";
 
 interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
@@ -63,7 +64,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
      };
 
      const handleSelect = (feature: any) => {
-          setInputValue(feature.place_name);
+          setInputValue(transliterateCyrillicToLatin(feature.place_name));
           setSuggestions([]);
           onAddressSelected(feature);
      };

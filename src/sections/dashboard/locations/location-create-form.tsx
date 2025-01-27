@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import LocationAutocomplete from './autocomplete';
 import { BuildingLocation } from 'src/types/location';
 import { insertLocation } from 'src/services/building-location-services';
-import { transliterate } from 'src/utils/transliterate';
+import { transliterateCyrillicToLatin } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
 import Marker from './map-marker';
 import { LoadingButton } from '@mui/lab';
@@ -61,7 +61,7 @@ const LocationCreateForm = () => {
      const handleSave = async (data: any) => {
           setLoading(true);
           const payload: BuildingLocation = {
-               streetAddress: transliterate(data.streetAddress),
+               streetAddress: transliterateCyrillicToLatin(data.streetAddress),
                city: data.city,
                region: data.region,
                country: data.country,
