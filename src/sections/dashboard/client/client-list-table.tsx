@@ -115,7 +115,6 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
 
   const deleteClientsDialog = useDialog<DeleteClientsData>();
   const clientSearch = useClientSearch();
-  console.log('clientSearch', clientSearch.state);
 
   const { t } = useTranslation();
 
@@ -148,7 +147,6 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
       // Combine all filters
       return matchesQuery && matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
     });
-    console.log('filtered', filtered);
     // Apply sorting and pagination
     return applySort(filtered, clientSearch.state.sortBy, clientSearch.state.sortDir).slice(
       clientSearch.state.page * clientSearch.state.rowsPerPage,
