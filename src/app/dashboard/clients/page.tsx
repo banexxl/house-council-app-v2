@@ -21,7 +21,7 @@ const Page = async () => {
     >
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <ClientTableHeader />
+          <ClientTableHeader allClients={getAllClientsActionData} />
           <Card>
             <ClientListTable
               count={getAllClientsActionData ? getAllClientsActionData.length : 0}

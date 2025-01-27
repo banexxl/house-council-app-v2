@@ -28,6 +28,8 @@ export const rs = {
      [tokens.common.btnClear]: 'Obriši',
      [tokens.common.btnImport]: 'Importuj',
      [tokens.common.btnExport]: 'Eksportuj',
+     [tokens.common.btnExportDocx]: 'Eksportuj kao DOCX',
+     [tokens.common.btnExportPdf]: 'Eksportuj kao PDF',
      [tokens.common.notes]: 'Napomene',
      //#endregion
      //#region Navigation

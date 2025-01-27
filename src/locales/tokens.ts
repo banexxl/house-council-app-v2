@@ -26,6 +26,8 @@ export const tokens = {
     btnClear: 'common.btnClear',
     btnImport: 'common.btnImport',
     btnExport: 'common.btnExport',
+    btnExportDocx: 'common.btnExportDocx',
+    btnExportPdf: 'common.btnExportPdf',
     notes: 'common.notes',
   },
   nav: {

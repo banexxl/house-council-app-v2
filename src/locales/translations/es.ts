@@ -28,6 +28,8 @@ export const es = {
   [tokens.common.btnClear]: 'Limpiar',
   [tokens.common.btnImport]: 'Importar',
   [tokens.common.btnExport]: 'Exportar',
+  [tokens.common.btnExportDocx]: 'Exportar a DOCX',
+  [tokens.common.btnExportPdf]: 'Exportar a PDF',
   [tokens.common.notes]: 'Notas',
   //#endregion
   //#region Navigation
