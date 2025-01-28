@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
@@ -7,6 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 
 import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
+import { AvatarUpload } from 'src/components/clients/uplod-image';
 
 interface ClientBasicDetailsProps {
   address_1?: string;
@@ -22,7 +25,13 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
   const { address_1, address_2, country, email, isVerified, phone, state, ...other } = props;
 
   return (
-    <Card {...other}>
+    <Card {...other} sx={{ width: '100%' }}>
+      <AvatarUpload
+        buttonDisabled={false}
+        onUploadSuccess={() => console.log('Image uploaded')}
+        folderName={'aa'}
+        sx={{ mt: 2, ml: 2 }}
+      />
       <CardHeader title="Basic Details" />
       <PropertyList>
         <PropertyListItem

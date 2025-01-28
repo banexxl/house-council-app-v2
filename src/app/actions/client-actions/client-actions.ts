@@ -60,3 +60,51 @@ export const getAllClientsAction = async (): Promise<{
      }
 };
 
+export const getClientByIdAction = async (
+     clientId: string,
+): Promise<{
+     getClientByIdActionSuccess: boolean
+     getClientByIdActionData?: Client
+     getClientByIdActionError?: string
+}> => {
+     try {
+
+          const { data, error } = await supabase
+               .from("tblClients")
+               .select(`
+        *,
+        tblClientStatuses (name),
+        tblClientTypes (name)
+      `)
+               .eq("id", clientId)
+               .single()
+
+          if (error) throw error
+
+          if (!data) {
+               throw new Error("Client not found")
+          }
+
+          // Transform the data to a plain object
+          const transformedData: Client = {
+               ...data,
+               status: data.tblClientStatuses?.name || "",
+               type: data.tblClientTypes?.name || "",
+          }
+
+          // Remove the nested objects
+          // delete transformedData.tblClientStatuses
+          // delete transformedData.tblClientTypes
+
+          return Object.create({
+               getClientByIdActionSuccess: true,
+               getClientByIdActionData: transformedData as Client,
+          })
+     } catch (error) {
+          console.error("Error fetching client:", error)
+          return {
+               getClientByIdActionSuccess: false,
+               getClientByIdActionError: "Failed to fetch client",
+          }
+     }
+}

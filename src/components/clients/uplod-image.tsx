@@ -37,6 +37,7 @@ type AvatarUploadProps = {
      buttonDisabled: boolean
      onUploadSuccess: (url: string) => void
      folderName: string
+     sx?: any
 }
 
 export type AvatarUploadRef = {
@@ -44,7 +45,7 @@ export type AvatarUploadRef = {
 }
 
 export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
-     ({ buttonDisabled, onUploadSuccess, folderName }, ref) => {
+     ({ buttonDisabled, onUploadSuccess, folderName, sx }, ref) => {
           const [avatarUrl, setAvatarUrl] = useState<string>("")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
@@ -106,6 +107,7 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          alignItems: "flex-start",
                          gap: 1,
                          mb: 2,
+                         ...sx,
                     }}
                >
                     <Tooltip title={t("clients.fillMandatoryFieldsFirst")}>
@@ -151,7 +153,10 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                               variant="outlined"
                               component="label"
                               size="small"
-                              sx={{ mt: 1 }}
+                              sx={{
+                                   mt: 1,
+                                   width: '100px',
+                              }}
                               onClick={() => fileInputRef.current?.click()}
                               disabled={buttonDisabled || loading}
                          >

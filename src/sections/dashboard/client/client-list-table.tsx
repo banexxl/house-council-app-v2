@@ -118,7 +118,6 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
   const clientSearch = useClientSearch();
 
   const { t } = useTranslation();
-  const router = useRouter();
 
   const handleDeleteClientsClick = useCallback(() => {
     deleteClientsDialog.handleOpen();
@@ -249,7 +248,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
             {visibleRows.map((client) => {
               const isSelected = clientSelection.selected.includes(client.id);
               return (
-                <TableRow hover key={client.id} selected={isSelected} onClick={() => router.push(paths.dashboard.clients.details + '/' + client.id)}>
+                <TableRow hover key={client.id} selected={isSelected}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={isSelected}
@@ -274,7 +273,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
                         <Link
                           color="inherit"
                           component="a"
-                          href="/dashboard/clients/details"
+                          href={paths.dashboard.clients.details + client.id}
                           variant="subtitle2"
                         >
                           {client.contact_person}

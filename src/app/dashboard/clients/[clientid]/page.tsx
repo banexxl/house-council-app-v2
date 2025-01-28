@@ -1,7 +1,5 @@
-'use client';
+'use server'
 
-import type { ChangeEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import ChevronDownIcon from '@untitled-ui/icons-react/build/esm/ChevronDown';
 import Edit02Icon from '@untitled-ui/icons-react/build/esm/Edit02';
@@ -19,10 +17,8 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-import { clientsApi } from 'src/api/clients';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-;
 
 import { paths } from 'src/paths';
 import { ClientBasicDetails } from 'src/sections/dashboard/client/client-basic-details';
@@ -34,39 +30,14 @@ import { ClientLogs } from 'src/sections/dashboard/client/client-logs';
 import type { Client } from 'src/types/client';
 import { ClientInvoice, ClientLog } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
+import { ClientDetailsHeader } from 'src/sections/dashboard/client/client-details-header';
+import { getClientByIdAction } from 'src/app/actions/client-actions/client-actions';
 
 const tabs = [
   { label: 'Details', value: 'details' },
   { label: 'Invoices', value: 'invoices' },
   { label: 'Logs', value: 'logs' },
 ];
-
-// const useClient = (): Client | null => {
-
-//   const [client, setClient] = useState<Client | null>(null);
-
-//   const handleClientGet = useCallback(async () => {
-//     try {
-//       const response = await clientsApi.getClient();
-
-//     
-//         setClient(response);
-//       }
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   }, []);
-
-//   useEffect(
-//     () => {
-//       handleClientGet();
-//     },
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//     []
-//   );
-
-//   return client;
-// };
 
 // const useInvoices = (): ClientInvoice[] => {
 
@@ -122,17 +93,13 @@ const tabs = [
 //   return logs;
 // };
 
-const Page = () => {
-  const [currentTab, setCurrentTab] = useState<string>('details');
-  // const client = useClient();
+const Page = async ({ params }: any) => {
+  const { clientid } = await params
+
+  const { getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError } = await getClientByIdAction(clientid) // Add 'await' here
+
   // const invoices = useInvoices();
   // const logs = useLogs();
-
-
-
-  const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
-    setCurrentTab(value);
-  }, []);
 
   // if (!client) {
   //   return null;
@@ -191,137 +158,42 @@ const Page = () => {
       >
         <Container maxWidth="xl">
           <Stack spacing={4}>
-            <Stack spacing={4}>
-              <div>
-                <Link
-                  color="text.primary"
-                  component={RouterLink}
-                  href={paths.dashboard.clients.index}
-                  sx={{
-                    alignItems: 'center',
-                    display: 'inline-flex',
-                  }}
-                  underline="hover"
-                >
-                  <SvgIcon sx={{ mr: 1 }}>
-                    <ArrowLeftIcon />
-                  </SvgIcon>
-                  <Typography variant="subtitle2">Clients</Typography>
-                </Link>
-              </div>
-              <Stack
-                alignItems="flex-start"
-                direction={{
-                  xs: 'column',
-                  md: 'row',
-                }}
-                justifyContent="space-between"
-                spacing={4}
+            <ClientDetailsHeader />
+            <Grid
+              container
+              spacing={4}
+            >
+              <Grid
+                xs={12}
+                lg={4}
               >
 
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={2}
-                >
-                  <Button
-                    color="inherit"
-                    component={RouterLink}
-                    endIcon={
-                      <SvgIcon>
-                        <Edit02Icon />
-                      </SvgIcon>
-                    }
-                    href={paths.dashboard.clients.new}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    endIcon={
-                      <SvgIcon>
-                        <ChevronDownIcon />
-                      </SvgIcon>
-                    }
-                    variant="contained"
-                  >
-                    Actions
-                  </Button>
-                </Stack>
-              </Stack>
-              <div>
-                <Tabs
-                  indicatorColor="primary"
-                  onChange={handleTabsChange}
-                  scrollButtons="auto"
-                  sx={{ mt: 3 }}
-                  textColor="primary"
-                  value={currentTab}
-                  variant="scrollable"
-                >
-                  {tabs.map((tab) => (
-                    <Tab
-                      key={tab.value}
-                      label={tab.label}
-                      value={tab.value}
+                {
+                  getClientByIdActionSuccess === true ?
+                    <ClientBasicDetails
+                      address_1={getClientByIdActionData?.address_1}
+                      address_2={getClientByIdActionData?.address_2}
+                      email={getClientByIdActionData!.email}
+                      isVerified={!!getClientByIdActionData?.is_verified}
+                      phone={getClientByIdActionData?.phone}
                     />
-                  ))}
-                </Tabs>
-                <Divider />
-              </div>
-            </Stack>
-            {currentTab === 'details' && (
-              <div>
-                <Grid
-                  container
-                  spacing={4}
-                >
-                  <Grid
-                    xs={12}
-                    lg={4}
-                  >
-                    {/* <ClientBasicDetails
-                      address_1={client.address_1}
-                      address_2={client.address_2}
-                      email={client.email}
-                      isVerified={!!client.is_verified}
-                      phone={client.phone}
-                    /> */}
-                  </Grid>
-                  {/* <Box sx={{ mt: 3, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Button
-                      variant="contained"
-                      component="label"
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      {t('clients.clientUploadAvatar')}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={handleLogoChange}
-                      />
-                    </Button>
-                    {logoPreview && (
-                      <Avatar
-                        src={logoPreview}
-                        alt="Client Logo"
-                        sx={{ width: 100, height: 100 }}
-                      />
-                    )}
-                  </Box> */}
-                  <Grid
-                    xs={12}
-                    lg={8}
-                  >
-                    <Stack spacing={4}>
-                      <ClientPayment />
-                      <ClientEmailsSummary />
-                      <ClientDataManagement />
-                    </Stack>
-                  </Grid>
-                </Grid>
-              </div>
-            )}
+                    :
+                    <Typography variant="h1">{getClientByIdActionError}</Typography>
+                }
+              </Grid>
+              <Grid
+                xs={12}
+                lg={8}
+              >
+                <Stack spacing={4}>
+                  <ClientPayment />
+                  <ClientEmailsSummary />
+                  <ClientDataManagement />
+                </Stack>
+              </Grid>
+            </Grid>
+
+
             {/* {currentTab === 'invoices' && <ClientInvoices invoices={invoices} />}
             {currentTab === 'logs' && <ClientLogs logs={logs} />} */}
           </Stack>
