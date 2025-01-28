@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type FC } from 'react';
+import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
 import PropTypes from 'prop-types';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -19,7 +19,6 @@ import Typography from '@mui/material/Typography';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 
-import { RouterLink } from 'src/components/router-link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
 import type { Client } from 'src/types/client';
@@ -30,6 +29,7 @@ import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './client-list-search';
+import { useRouter } from 'next/navigation';
 
 interface ClientListTableProps {
   count?: number;
@@ -41,6 +41,7 @@ interface DeleteClientsData {
 }
 
 const useClientSearch = () => {
+
   const [state, setState] = useState({
     all: false,
     has_accepted_marketing: false,
@@ -106,8 +107,8 @@ const useClientSearch = () => {
 };
 
 export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [] }) => {
-  const clientIds = useMemo(() => items.map((client) => client.id), [items]);
 
+  const clientIds = useMemo(() => items.map((client) => client.id), [items]);
   const clientSelection = useSelection(clientIds);
   const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
   const selectedAll = items.length > 0 && clientSelection.selected.length === clientIds.length;
@@ -117,6 +118,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
   const clientSearch = useClientSearch();
 
   const { t } = useTranslation();
+  const router = useRouter();
 
   const handleDeleteClientsClick = useCallback(() => {
     deleteClientsDialog.handleOpen();
@@ -156,7 +158,6 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
 
 
   }, [items, clientSearch.state]);
-
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -248,7 +249,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
             {visibleRows.map((client) => {
               const isSelected = clientSelection.selected.includes(client.id);
               return (
-                <TableRow hover key={client.id} selected={isSelected}>
+                <TableRow hover key={client.id} selected={isSelected} onClick={() => router.push(paths.dashboard.clients.details + '/' + client.id)}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={isSelected}

@@ -37,7 +37,7 @@ export const paths = {
     crypto: '/dashboard/crypto',
     clients: {
       index: '/dashboard/clients',
-      details: '/dashboard/client/',
+      details: '/dashboard/clients/',
       new: '/dashboard/clients/new',
     },
     ecommerce: '/dashboard/ecommerce',
