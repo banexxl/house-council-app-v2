@@ -14,15 +14,13 @@ import { AvatarUpload } from 'src/components/clients/uplod-image';
 interface ClientBasicDetailsProps {
   address_1?: string;
   address_2?: string;
-  country?: string;
   email: string;
   isVerified: boolean;
   phone?: string;
-  state?: string;
 }
 
 export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
-  const { address_1, address_2, country, email, isVerified, phone, state, ...other } = props;
+  const { address_1, address_2, email, isVerified, phone, ...other } = props;
 
   return (
     <Card {...other} sx={{ width: '100%' }}>
@@ -46,18 +44,8 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
         />
         <PropertyListItem
           divider
-          label="Country"
-          value={country}
-        />
-        <PropertyListItem
-          divider
-          label="State/Region"
-          value={state}
-        />
-        <PropertyListItem
-          divider
           label="Address 1"
-          value={state}
+          value={address_1}
         />
         <PropertyListItem
           divider
@@ -65,6 +53,11 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
           value={address_2}
         />
       </PropertyList>
+      <PropertyListItem
+        divider
+        label="Is Verified"
+        value={isVerified ? 'Yes' : 'No'}
+      />
       <CardActions>
         <Button
           color="inherit"
@@ -80,9 +73,7 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
 ClientBasicDetails.propTypes = {
   address_1: PropTypes.string,
   address_2: PropTypes.string,
-  country: PropTypes.string,
   email: PropTypes.string.isRequired,
   isVerified: PropTypes.bool.isRequired,
   phone: PropTypes.string,
-  state: PropTypes.string,
 };
