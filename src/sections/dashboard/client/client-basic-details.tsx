@@ -12,6 +12,7 @@ import { PropertyListItem } from 'src/components/property-list-item';
 import { AvatarUpload } from 'src/components/clients/uplod-image';
 
 interface ClientBasicDetailsProps {
+  name: string;
   address_1?: string;
   address_2?: string;
   email: string;
@@ -20,7 +21,7 @@ interface ClientBasicDetailsProps {
 }
 
 export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
-  const { address_1, address_2, email, isVerified, phone, ...other } = props;
+  const { name, address_1, address_2, email, isVerified, phone, ...other } = props;
 
   return (
     <Card {...other} sx={{ width: '100%' }}>
@@ -32,6 +33,11 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
       />
       <CardHeader title="Basic Details" />
       <PropertyList>
+        <PropertyListItem
+          divider
+          label="Name"
+          value={name}
+        />
         <PropertyListItem
           divider
           label="Email"

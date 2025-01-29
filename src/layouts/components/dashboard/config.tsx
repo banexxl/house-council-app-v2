@@ -82,15 +82,6 @@ export const useSections = () => {
                     <Users03Icon />
                   </SvgIcon>
                 )
-              },
-              {
-                title: t(tokens.nav.edit),
-                path: paths.dashboard.clients.details,
-                icon: (
-                  <SvgIcon fontSize="small">
-                    <Users03Icon />
-                  </SvgIcon>
-                )
               }
             ]
           },

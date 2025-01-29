@@ -171,6 +171,7 @@ const Page = async ({ params }: any) => {
                 {
                   getClientByIdActionSuccess === true ?
                     <ClientBasicDetails
+                      name={getClientByIdActionData!.name}
                       address_1={getClientByIdActionData?.address_1}
                       address_2={getClientByIdActionData?.address_2}
                       email={getClientByIdActionData!.email}
