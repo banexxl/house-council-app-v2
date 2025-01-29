@@ -9,6 +9,7 @@ import { Seo } from 'src/components/seo';
 import { initialValues, validationSchema } from './login-schema';
 import { login } from '../actions';
 import { useState } from 'react';
+import { LoadingButton } from '@mui/lab';
 
 const Page = () => {
 
@@ -74,15 +75,16 @@ const Page = () => {
               value={formik.values.email}
             />
           </Stack>
-          <Button
+          <LoadingButton
             fullWidth
             sx={{ mt: 3 }}
             size="large"
             type="submit"
             variant="contained"
+            loading={formik.isSubmitting}
           >
             Continue
-          </Button>
+          </LoadingButton>
         </form>
       </div>
     </>
