@@ -3,19 +3,40 @@
 import { supabase } from "src/libs/supabase/client"
 import { Client } from "src/types/client"
 
-export const saveClientAction = async (client: Client): Promise<{ saveClientActionSuccess: boolean, saveClientActionData?: Client, saveClientActionError?: any }> => {
-     const { id, ...clientData } = client;
+export const saveClientAction = async (
+     client: Client,
+): Promise<{
+     saveClientActionSuccess: boolean
+     saveClientActionData?: Client
+     saveClientActionError?: any
+}> => {
+     const { id, ...clientData } = client
 
-     // Save client
-     const { data, error } = await supabase
-          .from('tblClients')
-          .insert(clientData);
+     let result
 
-     if (error) {
-          return { saveClientActionSuccess: false, saveClientActionError: error };
+     if (id && id !== "") {
+          // Update existing client
+          result = await supabase.from("tblClients").update({ ...clientData, updated_at: new Date().toISOString() }).eq("id", id).select().single()
+
+     } else {
+          // Insert new client
+          result = await supabase.from("tblClients").insert(clientData).select().single()
      }
 
-     return { saveClientActionSuccess: true, saveClientActionData: data ?? undefined };
+     const { data, error } = result
+
+     if (error) {
+          return { saveClientActionSuccess: false, saveClientActionError: error }
+     }
+
+     if (!data) {
+          return { saveClientActionSuccess: false, saveClientActionError: "No data returned after operation" }
+     }
+
+     return {
+          saveClientActionSuccess: true,
+          saveClientActionData: data as Client,
+     }
 }
 
 export const getAllClientsAction = async (): Promise<{
@@ -60,6 +81,7 @@ export const getAllClientsAction = async (): Promise<{
      }
 };
 
+
 export const getClientByIdAction = async (
      clientId: string,
 ): Promise<{
@@ -68,14 +90,9 @@ export const getClientByIdAction = async (
      getClientByIdActionError?: string
 }> => {
      try {
-
           const { data, error } = await supabase
                .from("tblClients")
-               .select(`
-        *,
-        tblClientStatuses (name),
-        tblClientTypes (name)
-      `)
+               .select(`*`)
                .eq("id", clientId)
                .single()
 
@@ -85,21 +102,14 @@ export const getClientByIdAction = async (
                throw new Error("Client not found")
           }
 
-          // Transform the data to a plain object
-          const transformedData: Client = {
-               ...data,
-               status: data.tblClientStatuses?.name || "",
-               type: data.tblClientTypes?.name || "",
+          // Destructure the properties we want, including nested ones
+          const { tblClientStatuses, tblClientTypes, ...clientData } = data
+
+          return {
+               getClientByIdActionSuccess: true,
+               getClientByIdActionData: clientData,
           }
 
-          // Remove the nested objects
-          // delete transformedData.tblClientStatuses
-          // delete transformedData.tblClientTypes
-
-          return Object.create({
-               getClientByIdActionSuccess: true,
-               getClientByIdActionData: transformedData as Client,
-          })
      } catch (error) {
           console.error("Error fetching client:", error)
           return {

@@ -37,6 +37,7 @@ type AvatarUploadProps = {
      buttonDisabled: boolean
      onUploadSuccess: (url: string) => void
      folderName: string
+     initialValue?: string
      sx?: any
 }
 
@@ -45,11 +46,12 @@ export type AvatarUploadRef = {
 }
 
 export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
-     ({ buttonDisabled, onUploadSuccess, folderName, sx }, ref) => {
-          const [avatarUrl, setAvatarUrl] = useState<string>("")
+     ({ buttonDisabled, onUploadSuccess, folderName, initialValue, sx }, ref) => {
+          const [avatarUrl, setAvatarUrl] = useState<string>(initialValue !== undefined && initialValue !== "" ? initialValue : "")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()
+
 
           // Expose clearImage method to the parent
           useImperativeHandle(ref, () => ({
@@ -99,6 +101,7 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                     setLoading(false)
                }
           }
+          console.log('avatarUrl', avatarUrl);
 
           return (
                <Box

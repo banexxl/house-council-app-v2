@@ -14,13 +14,14 @@ import { transliterateCyrillicToLatin } from "src/utils/transliterate";
 interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
      label: string;
+     initialValue?: string
 }
 
 export interface AutocompleteRef {
      clearField: () => void; // Expose the clear method
 }
 
-const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label }, ref) => {
+const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label, initialValue }, ref) => {
 
      const [inputValue, setInputValue] = useState("");
      const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -80,7 +81,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
                     label={label}
                     variant="outlined"
                     fullWidth
-                    value={inputValue}
+                    value={initialValue !== '' ? initialValue : inputValue}
                     onChange={handleInputChange}
                     InputProps={{
                          endAdornment: (

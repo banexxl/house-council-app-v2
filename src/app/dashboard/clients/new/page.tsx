@@ -17,7 +17,7 @@ const Page = async () => {
 
   return (
     <>
-      <Seo title="Dashboard: Client Edit" />
+      <Seo title="Dashboard: Client New" />
       <Box
         component="main"
         sx={{

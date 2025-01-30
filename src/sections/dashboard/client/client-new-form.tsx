@@ -16,30 +16,39 @@ import MenuItem from '@mui/material/MenuItem'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
-import { clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
+import { Client, clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
 import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/components/clients/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
+import { useRouter } from 'next/navigation'
+import { LoadingButton } from '@mui/lab'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
-  clientStatuses: ClientStatus[]
+  clientStatuses: ClientStatus[],
+  clientData?: Client
 }
 
-export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses }) => {
+export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData }) => {
 
   const { t } = useTranslation()
   const avatarUploadRef = useRef<AvatarUploadRef>(null)
   const autocompleteRef_1 = useRef<AutocompleteRef>(null)
   const autocompleteRef_2 = useRef<AutocompleteRef>(null)
+  const router = useRouter()
 
   const formik = useFormik({
-    initialValues: clientInitialValues,
+    initialValues: {
+      ...clientInitialValues, // Default values for new clients
+      ...clientData, // Overwrite with existing client data if editing
+      type: clientData?.type || clientInitialValues.type || '', // Ensure type is valid
+      status: clientData?.status || clientInitialValues.status || '', // Ensure status is valid
+    },
     validationSchema: clientValidationSchema(t),
 
-    onSubmit: async (values, { setSubmitting, resetForm }) => {
+    onSubmit: async (values, { setSubmitting }) => {
       const submissionValues = {
         ...values,
         subscription_plan: values.subscription_plan === '' ? null : values.subscription_plan,
@@ -50,7 +59,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         // Simulate a server call
         const saveClientResponse = await saveClientAction(submissionValues)
         if (saveClientResponse.saveClientActionSuccess) {
-          resetForm()
+          router.push(paths.dashboard.clients.details + '/' + saveClientResponse.saveClientActionData?.id)
           toast.success(t('clients.clientSaved'))
         } else if (saveClientResponse.saveClientActionError) {
           saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueViolation'))
@@ -64,9 +73,6 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
         toast.error(t('clients.clientNotSaved'), error.message)
       } finally {
         setSubmitting(false)
-        avatarUploadRef.current?.clearImage()
-        autocompleteRef_1.current?.clearField()
-        autocompleteRef_2.current?.clearField()
       }
     },
   })
@@ -78,13 +84,14 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
 
         <CardContent sx={{ pt: 0 }}>
           {/* <Typography>
-            {JSON.stringify(formik.errors)}
+            {JSON.stringify(formik.values)}
           </Typography> */}
           <AvatarUpload
             buttonDisabled={Object.keys(formik.errors).length > 0 || !formik.dirty}
             ref={avatarUploadRef}
             onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
             folderName={formik.values.name}
+            initialValue={clientData?.id == '' ? '' : clientData?.avatar}
           />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
@@ -93,18 +100,16 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 fullWidth
                 label={t('clients.clientType')}
                 name="type"
-                value={formik.values.type}
+                disabled={formik.isSubmitting}
+                value={formik.values.type || ''}
                 onChange={formik.handleChange} // Use onChange for handling selection
                 error={!!(formik.touched.type && formik.errors.type)}
                 helperText={formik.touched.type && formik.errors.type}
               >
-                {clientTypes.map((option: ClientType) => (
-                  <MenuItem
-                    key={option.id} value={option.id}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    {option.name}
-                  </MenuItem >
+                {clientTypes.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name} {/* Display human-readable name */}
+                  </MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -114,6 +119,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 fullWidth
                 label={t('clients.clientStatus')}
                 name="status"
+                disabled={formik.isSubmitting}
                 value={formik.values.status}
                 onChange={formik.handleChange} // Use onChange for handling selection
                 error={!!(formik.touched.status && formik.errors.status)}
@@ -141,6 +147,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 onBlur={formik.handleBlur}
                 error={!!(formik.touched.name && formik.errors.name)}
                 helperText={formik.touched.name && formik.errors.name}
+                disabled={formik.isSubmitting}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -153,6 +160,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 onBlur={formik.handleBlur}
                 error={!!(formik.touched.contact_person && formik.errors.contact_person)}
                 helperText={formik.touched.contact_person && formik.errors.contact_person}
+                disabled={formik.isSubmitting}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -162,6 +170,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                   formik.setFieldValue('address_1', transliterateCyrillicToLatin(e.matching_place_name));
                 }}
                 ref={autocompleteRef_1}
+                initialValue={clientData?.id == '' ? '' : clientData?.address_1}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -171,6 +180,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                   formik.setFieldValue('address_2', transliterateCyrillicToLatin(e.matching_place_name));
                 }}
                 ref={autocompleteRef_2}
+                initialValue={clientData?.id == '' ? '' : clientData?.address_2}
               />
 
             </Grid>
@@ -184,6 +194,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.email}
+                disabled={formik.isSubmitting}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -196,6 +207,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 value={formik.values.phone}
                 error={!!(formik.touched.phone && formik.errors.phone)}
                 helperText={formik.touched.phone && formik.errors.phone}
+                disabled={formik.isSubmitting}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -208,6 +220,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 value={formik.values.mobile_phone}
                 error={!!(formik.touched.mobile_phone && formik.errors.mobile_phone)}
                 helperText={formik.touched.mobile_phone && formik.errors.mobile_phone}
+                disabled={formik.isSubmitting}
               />
             </Grid>
           </Grid>
@@ -228,6 +241,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 name="is_verified"
                 onChange={formik.handleChange}
                 value={formik.values.is_verified}
+                disabled={formik.isSubmitting}
               />
             </Stack>
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
@@ -245,6 +259,7 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
                 edge="start"
                 name="has_accepted_terms_and_conditions"
                 onChange={formik.handleChange}
+                disabled={formik.isSubmitting}
                 value={formik.values.has_accepted_terms_and_conditions}
               />
             </Stack>
@@ -256,13 +271,14 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
           spacing={3}
           sx={{ p: 3 }}
         >
-          <Button
+          <LoadingButton
             disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
             type="submit"
             variant="contained"
+            loading={formik.isSubmitting}
           >
             {t('clients.clientSave')}
-          </Button>
+          </LoadingButton>
           <Button
             color="inherit"
             component={RouterLink}
