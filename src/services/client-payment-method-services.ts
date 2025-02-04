@@ -55,7 +55,7 @@ export const deleteClientPaymentMethod = async (id: number): Promise<{ deleteCli
      return { deleteClientPaymentMethodSuccess: true };
 }
 
-export const fetchClientPaymentMethods = async () => {
+export const fetchClientPaymentMethods = async (): Promise<ClientPaymentMethod[]> => {
      const { data, error } = await supabase
           .from('tblClientPaymentMethods')
           .select('*');

@@ -12,3 +12,14 @@ export const saveClient = async (client: Client): Promise<{ success: boolean, da
      }
      return { success: true, data: data ?? undefined }
 }
+
+export const fetchAllClients = async (): Promise<Client[]> => {
+     const { data, error } = await supabase
+          .from('tblClients')
+          .select('*');
+     if (error) {
+          console.error('Error fetching clients:', error);
+          return [];
+     }
+     return data;
+}

@@ -5,8 +5,6 @@ import { Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-
-
 export const ClientBillingInformationTableHeader = () => {
 
      const { t } = useTranslation();

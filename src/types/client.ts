@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 import { ClientBillingInformation } from './client-billing-information';
 
 export interface Client {
-  id?: string;
+  id: string;
   created_at?: Date;
   updated_at?: Date;
   name: string;
@@ -88,6 +88,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
 
 // Add all iniitial values
 export const clientInitialValues: Client & ClientBillingInformation = {
+  id: '',
   name: '',
   email: '',
   address_1: '',

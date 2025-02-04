@@ -3,10 +3,15 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/client/billing-information/billing-information-table-header';
-import PaymentForm from 'src/sections/dashboard/client/billing-information/billing-information-forms';
+import ClientPaymentTypeInfo from 'src/sections/dashboard/client/billing-information/payment-methods';
+import { fetchClientPaymentMethods } from 'src/services/client-payment-method-services';
+import { fetchAllClients } from 'src/services/client-services';
 
 
 const Page = async () => {
+
+  const clientPaymentMethods = await fetchClientPaymentMethods()
+  const allClients = await fetchAllClients()
 
   return (
     <Box
@@ -20,7 +25,7 @@ const Page = async () => {
         <Stack spacing={4}>
           <ClientBillingInformationTableHeader />
           <Card>
-            <PaymentForm />
+            <ClientPaymentTypeInfo allClients={allClients} clientPaymentMethods={clientPaymentMethods} />
           </Card>
         </Stack>
       </Container>
