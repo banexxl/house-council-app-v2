@@ -5,6 +5,8 @@ export const es = {
   [tokens.common.languageChanged]: 'Se ha cambiado el idioma',
   [tokens.common.title]: 'Consejo de Casa',
   [tokens.common.all]: 'Todos',
+  [tokens.common.address]: 'Dirección',
+  [tokens.common.fullName]: 'Nombre completo',
   [tokens.common.created_at]: 'Creado en',
   [tokens.common.updated_at]: 'Actualizado en',
   [tokens.common.btnSave]: 'Guardar',
@@ -38,6 +40,7 @@ export const es = {
   [tokens.nav.adminDashboard]: 'Dashboard Administrador',
   [tokens.nav.analytics]: 'Analítica',
   [tokens.nav.auth]: 'Autenticación',
+  [tokens.nav.billingInformation]: 'Información de facturación',
   [tokens.nav.buildings]: 'Edificios',
   [tokens.nav.building]: 'Edificio',
   [tokens.nav.buildingAdd]: 'Agregar nuevo',
@@ -124,6 +127,7 @@ export const es = {
   [tokens.clients.clientCreate]: 'Crear Cliente',
   [tokens.clients.clientEdit]: 'Editar Cliente',
   [tokens.clients.clientDelete]: 'Borrar Cliente',
+  [tokens.clients.clientAddPaymentMethod]: 'Agregar Metodo de Pago',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Información Basica',
   [tokens.clients.clientFormAdvancedInfo]: 'Información Avanzada',
@@ -153,6 +157,8 @@ export const es = {
   [tokens.clients.clientTotalSpent]: 'Total Gastado',
   [tokens.clients.clientAvatar]: 'Avatar',
   [tokens.clients.clientUploadAvatar]: 'Subir Avatar',
+  [tokens.clients.clientPaymentMethods]: 'Metodos de Pago',
+  [tokens.clients.clientPaymentMethod]: 'Metodo de Pago',
   // Client validation
   [tokens.clients.clientNameRequired]: 'El nombre es obligatorio',
   [tokens.clients.clientEmailMustBeValid]: 'El correo debe ser valido',

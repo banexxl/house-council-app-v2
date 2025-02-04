@@ -5,6 +5,8 @@ export const en = {
   [tokens.common.languageChanged]: 'Language changed',
   [tokens.common.title]: 'House Council',
   [tokens.common.all]: 'All',
+  [tokens.common.address]: 'Address',
+  [tokens.common.fullName]: 'Full name',
   [tokens.common.created_at]: 'Created at',
   [tokens.common.updated_at]: 'Updated at',
   [tokens.common.btnSave]: 'Save',
@@ -39,6 +41,7 @@ export const en = {
   [tokens.nav.analytics]: 'Analytics',
   [tokens.nav.auth]: 'Auth',
   [tokens.nav.blog]: 'Blog',
+  [tokens.nav.billingInformation]: 'Billing information',
   [tokens.nav.buildings]: 'Buildings',
   [tokens.nav.building]: 'Building',
   [tokens.nav.buildingAdd]: 'Add new building',
@@ -124,6 +127,7 @@ export const en = {
   [tokens.clients.clientCreate]: 'Create Client',
   [tokens.clients.clientEdit]: 'Client Edit',
   [tokens.clients.clientDelete]: 'Client Delete',
+  [tokens.clients.clientAddPaymentMethod]: 'Add Payment Method',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Basic Information',
   [tokens.clients.clientFormAdvancedInfo]: 'Advanced Information',
@@ -153,6 +157,8 @@ export const en = {
   [tokens.clients.clientTotalOrders]: 'Total Orders',
   [tokens.clients.clientAvatar]: 'Avatar',
   [tokens.clients.clientUploadAvatar]: 'Upload Avatar',
+  [tokens.clients.clientPaymentMethods]: 'Payment Methods',
+  [tokens.clients.clientPaymentMethod]: 'Payment Method',
   // Client validation
   [tokens.clients.clientNameRequired]: 'Name is required',
   [tokens.clients.clientEmailMustBeValid]: 'Email must be valid',

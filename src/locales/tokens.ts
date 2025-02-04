@@ -3,6 +3,8 @@ export const tokens = {
     languageChanged: 'common.languageChanged',
     title: 'common.title',
     all: 'common.all',
+    fullName: 'common.fullName',
+    address: 'common.address',
     created_at: 'common.createdAt',
     updated_at: 'common.updatedAt',
     btnSave: 'common.btnSave',
@@ -37,6 +39,7 @@ export const tokens = {
     adminDashboard: 'nav.adminDashboard',
     analytics: 'nav.analytics',
     auth: 'nav.auth',
+    billingInformation: 'nav.billingInformation',
     buildings: 'nav.buildings',
     building: 'nav.building',
     buildingAdd: 'nav.buildingAdd',
@@ -124,6 +127,7 @@ export const tokens = {
     clientCreate: 'clients.clientCreate',
     clientEdit: 'clients.clientEdit',
     clientDelete: 'clients.clientDelete',
+    clientAddPaymentMethod: 'clients.clientAddPaymentMethod',
     // Client form
     clientFormBasicInfo: 'clients.clientFormBasicInfo',
     clientFormAdvancedInfo: 'clients.clientFormAdvancedInfo',
@@ -153,6 +157,8 @@ export const tokens = {
     clientUploadAvatar: 'clients.clientUploadAvatar',
     clientSubscriptionPlan: 'clients.clientSubscriptionPlan',
     clientBillingInformation: 'clients.clientBillingInformation',
+    clientPaymentMethods: 'clients.clientPaymentMethods',
+    clientPaymentMethod: 'clients.clientPaymentMethod',
     // Client validation
     clientNameRequired: 'clients.clientNameRequired',
     clientEmailMustBeValid: 'clients.clientEmailMustBeValid',

@@ -5,7 +5,7 @@ import Card from '@mui/material/Card';
 
 import { getAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
-import { ClientTableHeader } from 'src/components/clients/client-table-header';
+import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
 
 const Page = async () => {
 

@@ -18,8 +18,6 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { clientsApi } from 'src/api/clients';
-;
 import type { ClientEmail } from 'src/types/client';
 
 const emailOptions: string[] = ['Resend last invoice', 'Send password reset', 'Send verification'];
@@ -28,25 +26,25 @@ const useEmails = (): ClientEmail[] => {
 
   const [emails, setEmails] = useState<ClientEmail[]>([]);
 
-  const handleEmailsGet = useCallback(async () => {
-    try {
-      const response = await clientsApi.getEmails();
+  // const handleEmailsGet = useCallback(async () => {
+  //   try {
+  //     const response = await clientsApi.getEmails();
 
 
-      setEmails(response);
+  //     setEmails(response);
 
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }, []);
 
-  useEffect(
-    () => {
-      handleEmailsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  // useEffect(
+  //   () => {
+  //     handleEmailsGet();
+  //   },
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   []
+  // );
 
   return emails;
 };

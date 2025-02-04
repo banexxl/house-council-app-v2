@@ -39,6 +39,10 @@ export const paths = {
       index: '/dashboard/clients',
       details: '/dashboard/clients/',
       new: '/dashboard/clients/new',
+      billingInformation: {
+        index: '/dashboard/clients/billing-information',
+        add: '/dashboard/clients/billing-information/add',
+      },
     },
     ecommerce: '/dashboard/ecommerce',
     fileManager: '/dashboard/file-manager',

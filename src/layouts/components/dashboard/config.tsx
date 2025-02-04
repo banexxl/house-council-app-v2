@@ -29,7 +29,8 @@ import ShoppingCart01Icon from 'src/icons/untitled-ui/duocolor/shopping-cart-01'
 import Truck01Icon from 'src/icons/untitled-ui/duocolor/truck-01';
 import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
 import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
-import XSquareIcon from 'src/icons/untitled-ui/duocolor/x-square';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import AddCardIcon from '@mui/icons-material/AddCard';
 import { tokens } from 'src/locales/tokens';
 import { paths } from 'src/paths';
 
@@ -82,6 +83,24 @@ export const useSections = () => {
                     <Users03Icon />
                   </SvgIcon>
                 )
+              },
+              {
+                title: t(tokens.nav.billingInformation),
+                icon: (
+                  <SvgIcon fontSize="small">
+                    <Users03Icon />
+                  </SvgIcon>
+                ),
+                items: [
+                  {
+                    title: t(tokens.nav.list),
+                    path: paths.dashboard.clients.billingInformation.index,
+                  },
+                  {
+                    title: t(tokens.nav.create),
+                    path: paths.dashboard.clients.billingInformation.add,
+                  }
+                ]
               }
             ]
           },

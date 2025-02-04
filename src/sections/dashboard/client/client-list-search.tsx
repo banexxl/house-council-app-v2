@@ -150,7 +150,7 @@ FilterBar.propTypes = {
   onTabsChange: PropTypes.func,
   onFiltersChange: PropTypes.func,
   onSortChange: PropTypes.func,
-  initialSortBy: PropTypes.oneOf([
+  initialSortBy: PropTypes.oneOf<keyof Client>([
     'name',
     'email',
     'phone',
@@ -158,8 +158,6 @@ FilterBar.propTypes = {
     'contact_person',
     'type',
     'status',
-    'subscription_plan',
-    'billing_information',
     'notes',
     'address_2',
     'mobile_phone',

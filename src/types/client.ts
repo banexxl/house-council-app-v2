@@ -1,9 +1,10 @@
 import * as Yup from 'yup';
+import { ClientBillingInformation } from './client-billing-information';
 
 export interface Client {
   id?: string;
-  created_at?: number;
-  updated_at?: number;
+  created_at?: Date;
+  updated_at?: Date;
   name: string;
   email: string;
   phone?: string;
@@ -11,8 +12,6 @@ export interface Client {
   contact_person: string;
   type: string;
   status: string;
-  subscription_plan?: string | null;
-  billing_information?: string | null;
   notes?: string;
   address_2?: string;
   mobile_phone?: string;
@@ -42,7 +41,7 @@ export interface ClientType {
 
 export interface ClientLog {
   id: string;
-  created_at: number;
+  created_at: Date;
   description: string;
   ip: string;
   method: string;
@@ -53,7 +52,7 @@ export interface ClientLog {
 export interface ClientEmail {
   id: string;
   description: string;
-  created_at: number;
+  created_at: Date;
 }
 
 export interface ClientInvoice {
@@ -88,15 +87,13 @@ export const clientValidationSchema = (t: (key: string) => string) => {
 }
 
 // Add all iniitial values
-export const clientInitialValues: Client = {
+export const clientInitialValues: Client & ClientBillingInformation = {
   name: '',
   email: '',
   address_1: '',
   contact_person: '',
   type: '',
   status: '',
-  subscription_plan: null,
-  billing_information: null,
   address_2: '',
   phone: '',
   mobile_phone: '',
@@ -109,4 +106,9 @@ export const clientInitialValues: Client = {
   is_verified: false,
   total_spent: 0,
   total_orders: 0,
+  client_id: '',
+  payment_method_id: '',
+  billing_name: '',
+  billing_address: '',
+  billing_status: '',
 };

@@ -101,7 +101,6 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                     setLoading(false)
                }
           }
-          console.log('avatarUrl', avatarUrl);
 
           return (
                <Box

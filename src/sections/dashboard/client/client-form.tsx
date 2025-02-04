@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, type FC } from 'react'
+import { useRef, useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -20,18 +20,20 @@ import { Client, clientInitialValues, ClientStatus, ClientType, clientValidation
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
 import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
-import { AvatarUpload, AvatarUploadRef } from 'src/components/clients/uplod-image'
+import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
+import { ClientPaymentMethod } from 'src/types/payment-method'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
   clientStatuses: ClientStatus[],
+  clientPaymentMethods?: ClientPaymentMethod[],
   clientData?: Client
 }
 
-export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData }) => {
+export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData, clientPaymentMethods }) => {
 
   const { t } = useTranslation()
   const avatarUploadRef = useRef<AvatarUploadRef>(null)
@@ -51,8 +53,6 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
     onSubmit: async (values, { setSubmitting }) => {
       const submissionValues = {
         ...values,
-        subscription_plan: values.subscription_plan === '' ? null : values.subscription_plan,
-        billing_information: values.billing_information === '' ? null : values.billing_information,
       };
 
       try {
@@ -81,7 +81,6 @@ export const ClientNewForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatu
     <form onSubmit={formik.handleSubmit}>
       <Card>
         <CardHeader title={t('clients.clientFormBasicInfo')} />
-
         <CardContent sx={{ pt: 0 }}>
           {/* <Typography>
             {JSON.stringify(formik.values)}

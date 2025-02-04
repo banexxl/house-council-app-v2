@@ -29,7 +29,6 @@ import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './client-list-search';
-import { useRouter } from 'next/navigation';
 
 interface ClientListTableProps {
   count?: number;

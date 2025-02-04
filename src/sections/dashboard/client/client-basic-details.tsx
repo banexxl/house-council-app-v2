@@ -9,7 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 
 import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
-import { AvatarUpload } from 'src/components/clients/uplod-image';
+import { AvatarUpload } from 'src/sections/dashboard/client/uplod-image';
 
 interface ClientBasicDetailsProps {
   name: string;
