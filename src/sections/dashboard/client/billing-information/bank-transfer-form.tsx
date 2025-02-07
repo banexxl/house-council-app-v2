@@ -15,11 +15,11 @@ interface BankTransferFormProps {
 const BankTransferForm: React.FC<BankTransferFormProps> = ({ clients, onSubmit }) => {
      return (
           <Formik
-               initialValues={{ clientId: "", accountNumber: "", routingNumber: "", amount: "" }}
+               initialValues={{ client_id: "", accountNumber: "", routingNumber: "", amount: "" }}
                validationSchema={Yup.object({
-                    clientId: Yup.string().required("Client selection is required"),
-                    accountNumber: Yup.string().required("Account number is required"),
-                    routingNumber: Yup.string().required("Routing number is required"),
+                    client_id: Yup.string().required("Client selection is required"),
+                    account_number: Yup.string().required("Account number is required"),
+                    routing_number: Yup.string().required("Routing number is required"),
                     amount: Yup.number().required("Amount is required").positive("Amount must be positive"),
                })}
                onSubmit={onSubmit}
