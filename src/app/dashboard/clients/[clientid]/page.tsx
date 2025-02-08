@@ -10,14 +10,13 @@ import { ClientStatus, ClientType } from 'src/types/client'
 import { fetchClientStatuses } from 'src/services/client-statuses-services'
 import { getClientByIdAction } from 'src/app/actions/client-actions/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { readAllPaymentMethods } from 'src/services/base-entity-services'
-import { ClientPaymentMethod } from 'src/types/payment-method'
+import { readAllEntities, BaseEntity } from 'src/services/base-entity-services'
 
 const Page = async ({ params }: any) => {
 
   const clientTypes: ClientType[] = await fetchClientTypes()
   const clientStatuses: ClientStatus[] = await fetchClientStatuses()
-  const clientPaymentMethods: ClientPaymentMethod[] = await readAllPaymentMethods()
+  const clientPaymentMethods: BaseEntity[] = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
   const { clientid } = await params
 
   const { getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError } = await getClientByIdAction(clientid)

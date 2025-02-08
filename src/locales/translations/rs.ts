@@ -128,7 +128,7 @@ export const rs = {
      [tokens.clients.clientCreate]: 'Kreiraj klijenta',
      [tokens.clients.clientEdit]: 'Izmeni klijenta',
      [tokens.clients.clientDelete]: 'Brisanje klijenta',
-     [tokens.clients.clientAddPaymentMethod]: 'Dodaj metodu placanja',
+     [tokens.clients.clientAddPaymentMethod]: 'Dodaj metodu plaćanja',
      // Client form
      [tokens.clients.clientFormBasicInfo]: 'Osnovne informacije',
      [tokens.clients.clientFormAdvancedInfo]: 'Napredne informacije',

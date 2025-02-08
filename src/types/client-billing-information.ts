@@ -7,7 +7,7 @@ export type ClientBillingInformation = {
      card_number?: string;
      full_name: string;
      billing_address: string;
-     status: string;
+     billing_status: string;
      cvc: number;
      expiration_date: string;
 }

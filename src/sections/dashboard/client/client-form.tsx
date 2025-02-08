@@ -24,12 +24,12 @@ import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/upl
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
-import { ClientPaymentMethod } from 'src/types/payment-method'
+import { BaseEntity } from 'src/services/base-entity-services'
 
 interface ClientNewFormProps {
   clientTypes: ClientType[],
   clientStatuses: ClientStatus[],
-  clientPaymentMethods?: ClientPaymentMethod[],
+  clientPaymentMethods?: BaseEntity[],
   clientData?: Client
 }
 
