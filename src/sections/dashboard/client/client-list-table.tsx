@@ -295,7 +295,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
                   <TableCell>{client.mobile_phone}</TableCell>
                   <TableCell>{client.phone}</TableCell>
                   <TableCell>{client.type}</TableCell>
-                  <TableCell>{client.status}</TableCell>
+                  <TableCell>{client.client_status}</TableCell>
                   <TableCell>
                     {client.is_verified ? (
                       <SvgIcon>

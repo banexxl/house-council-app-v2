@@ -6,15 +6,16 @@ import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/clie
 import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billingInformation-form';
 import { getAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
+import { readClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';
 
 const Page = async ({ params }: any) => {
 
   const clientPaymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
   const billingInformationStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
-  const allClients = await getAllClientsAction()
   const { billingInformationId } = await params
-  console.log('billingInformationId', billingInformationId);
-
+  const { readClientBillingInformationSuccess, readClientBillingInformationData, readClientBillingInformationError } = await readClientBillingInformation(billingInformationId)
+  const billingInformationStatus = billingInformationStatuses.find((status) => status.id === readClientBillingInformationData?.billing_status)
+  const clientPaymentMethod = clientPaymentMethods.find((method) => method.id === readClientBillingInformationData?.payment_method_id)
 
   return (
     <Box
@@ -28,7 +29,7 @@ const Page = async ({ params }: any) => {
         <Stack spacing={4}>
           <ClientBillingInformationTableHeader />
           <Card>
-            <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} />
+            <ClientBillingInformationForm clientPaymentMethod={{ value: clientPaymentMethod?.id || "", name: clientPaymentMethod?.name || "" }} clientBillingInformationStatus={{ value: billingInformationStatus?.id || "", name: billingInformationStatus?.name || "" }} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} billingInformationData={readClientBillingInformationData} />
           </Card>
         </Stack>
       </Container>

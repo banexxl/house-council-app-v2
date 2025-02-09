@@ -11,7 +11,7 @@ export interface Client {
   address_1: string;
   contact_person: string;
   type: string;
-  status: string;
+  client_status: string;
   notes?: string;
   address_2?: string;
   mobile_phone?: string;
@@ -74,7 +74,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     type: Yup.string().max(255).required(t('clients.clientTypeRequired')),
     has_discount: Yup.bool(),
     is_verified: Yup.bool(),
-    status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
+    client_status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
     subscription_plan: Yup.string().max(255).nullable(),
     billing_information: Yup.string().max(255).nullable(),
     notes: Yup.string().max(255),
@@ -94,7 +94,7 @@ export const clientInitialValues: Client & ClientBillingInformation = {
   address_1: '',
   contact_person: '',
   type: '',
-  status: '',
+  client_status: '',
   address_2: '',
   phone: '',
   mobile_phone: '',
@@ -112,6 +112,6 @@ export const clientInitialValues: Client & ClientBillingInformation = {
   full_name: '',
   billing_address: '',
   billing_status: '',
-  cvc: 0,
-  expiration_date: ''
+  cvc: '',
+  expiration_date: new Date()
 };

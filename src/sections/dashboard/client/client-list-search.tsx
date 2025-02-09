@@ -157,7 +157,7 @@ FilterBar.propTypes = {
     'address_1',
     'contact_person',
     'type',
-    'status',
+    'client_status',
     'notes',
     'address_2',
     'mobile_phone',

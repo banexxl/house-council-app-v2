@@ -14,9 +14,11 @@ import { readClientStatuses } from 'src/app/actions/client-actions/client-status
 const Page = async () => {
 
   const clientTypes: ClientType[] = await fetchClientTypes()
-  const clientStatuses = await readClientStatuses()
-  const clientPaymentMethods: BaseEntity[] = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
+  console.log('clientTypes', clientTypes);
 
+  const clientStatuses = await readClientStatuses()
+
+  const clientPaymentMethods: BaseEntity[] = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
 
   return (
     <>

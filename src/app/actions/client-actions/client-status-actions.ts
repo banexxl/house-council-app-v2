@@ -1,9 +1,11 @@
+'use server'
+
 import { supabase } from "src/libs/supabase/client";
 import { ClientStatus } from "src/types/client";
 
 export const createClientStatus = async (clientStatus: ClientStatus): Promise<{ createClientStatusSuccess: boolean, createClientStatus?: ClientStatus, createClientStatusError?: any }> => {
      const { data, error } = await supabase
-          .from('tblClientStatus')
+          .from('tblClientStatuses')
           .insert(clientStatus);
 
      if (error) {
@@ -16,7 +18,7 @@ export const createClientStatus = async (clientStatus: ClientStatus): Promise<{ 
 export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess: boolean, readClientStatusesData: ClientStatus[], readClientStatusesError?: string }> => {
 
      const { data, error } = await supabase
-          .from('tblClientStatus')
+          .from('tblClientStatuses')
           .select('*');
 
      if (error) {
@@ -29,7 +31,7 @@ export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess:
 export const readClientStatus = async (id: number): Promise<{ readClientStatusSuccess: boolean, readClientStatus?: ClientStatus, readClientStatusError?: string }> => {
 
      const { data, error } = await supabase
-          .from('tblClientStatus')
+          .from('tblClientStatuses')
           .select('*')
           .eq('id', id)
           .single();
@@ -45,7 +47,7 @@ export const updateClientStatus = async (clientStatus: ClientStatus): Promise<{ 
      const { id, ...clientStatusData } = clientStatus;
 
      const { data, error } = await supabase
-          .from('tblClientStatus')
+          .from('tblClientStatuses')
           .update(clientStatusData)
           .match({ id });
 
@@ -58,7 +60,7 @@ export const updateClientStatus = async (clientStatus: ClientStatus): Promise<{ 
 
 export const deleteClientStatus = async (id: number): Promise<{ deleteClientStatusSuccess: boolean, deleteClientStatusError?: string }> => {
      const { error } = await supabase
-          .from('tblClientStatus')
+          .from('tblClientStatuses')
           .delete()
           .eq('id', id);
 

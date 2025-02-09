@@ -12,16 +12,17 @@ import { CreditCard } from "@mui/icons-material"
 import { Mastercard, Visa, Amex } from "react-payment-logos/dist/flat"
 import type { Client } from "src/types/client"
 import { LoadingButton } from "@mui/lab"
+import { ClientBillingInformation, clientBillingInformationInitialValues } from "src/types/client-billing-information"
 
 interface Card_numberFormProps {
      clients: Client[]
      onSubmit: (values: any) => void
      isSubmitting: boolean
+     billingInformationData?: ClientBillingInformation
 }
 
-export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, isSubmitting }) => {
+export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, isSubmitting, billingInformationData }) => {
      const [cardType, setCardType] = useState<string | null>(null)
-
      const detectCardType = (number: string) => {
           const visaPattern = /^4/
           const mastercardPattern = /^5[1-5]/
@@ -59,7 +60,11 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
      return (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
                <Formik
-                    initialValues={{ client_id: "", full_name: "", billing_address: "", card_number: "", expiration_date: null, cvc: "" }}
+                    initialValues={{
+                         ...clientBillingInformationInitialValues,
+                         ...billingInformationData,
+                         expiration_date: billingInformationData?.expiration_date ? new Date(billingInformationData.expiration_date) : new Date(),
+                    }}
                     validationSchema={Yup.object({
                          client_id: Yup.string().required("Client selection is required"),
                          full_name: Yup.string().required("Full name is required"),
@@ -158,7 +163,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                         textField: {
                                              fullWidth: true,
                                              error: touched.expiration_date && !!errors.expiration_date,
-                                             helperText: touched.expiration_date && errors.expiration_date,
+                                             // helperText: touched.expiration_date && errors.expiration_date,
                                              sx: { mb: 2 },
                                         },
                                    }}

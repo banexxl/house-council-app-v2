@@ -31,7 +31,7 @@ export const createClientBillingInformation = async (clientBillingInformation: C
      return { createClientBillingInformationSuccess: true, createClientBillingInformation: data ? data[0] : undefined };
 }
 
-export const readClientBillingInformation = async (id: number): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformation?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
+export const readClientBillingInformation = async (id: string): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformationData?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
 
      const { data, error } = await supabase
           .from('tblClientBillingInformation')
@@ -43,7 +43,7 @@ export const readClientBillingInformation = async (id: number): Promise<{ readCl
           return { readClientBillingInformationSuccess: false, readClientBillingInformationError: error.message };
      }
 
-     return { readClientBillingInformationSuccess: true, readClientBillingInformation: data ?? undefined };
+     return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
 
 export const updateClientBillingInformation = async (id: number, clientBillingInformation: ClientBillingInformation): Promise<{ updateClientBillingInformationSuccess: boolean, updateClientBillingInformation?: ClientBillingInformation, updateClientBillingInformationError?: any }> => {

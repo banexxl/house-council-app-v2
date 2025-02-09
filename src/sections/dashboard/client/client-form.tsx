@@ -46,7 +46,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
       ...clientInitialValues, // Default values for new clients
       ...clientData, // Overwrite with existing client data if editing
       type: clientData?.type || clientInitialValues.type || '', // Ensure type is valid
-      status: clientData?.status || clientInitialValues.status || '', // Ensure status is valid
+      client_status: clientData?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
     },
     validationSchema: clientValidationSchema(t),
 
@@ -119,10 +119,10 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 label={t('clients.clientStatus')}
                 name="status"
                 disabled={formik.isSubmitting}
-                value={formik.values.status}
+                value={formik.values.client_status}
                 onChange={formik.handleChange} // Use onChange for handling selection
-                error={!!(formik.touched.status && formik.errors.status)}
-                helperText={formik.touched.status && formik.errors.status}
+                error={!!(formik.touched.client_status && formik.errors.client_status)}
+                helperText={formik.touched.client_status && formik.errors.client_status}
               >
                 {clientStatuses.map((status: ClientStatus) => (
                   <MenuItem
