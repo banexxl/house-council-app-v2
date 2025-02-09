@@ -7,11 +7,14 @@ import { ClientBillingInformationForm } from 'src/sections/dashboard/client/bill
 import { getAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
 
-const Page = async () => {
+const Page = async ({ params }: any) => {
 
   const clientPaymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
   const billingInformationStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
   const allClients = await getAllClientsAction()
+  const { billingInformationId } = await params
+  console.log('billingInformationId', billingInformationId);
+
 
   return (
     <Box

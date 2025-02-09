@@ -9,9 +9,11 @@ import { CardNumberForm } from "./credit-card-form"
 import CashPaymentForm from "./cash-payment-form"
 import BankTransferForm from "./bank-transfer-form"
 import { useTranslation } from "react-i18next"
-import { createClientBillingInformation } from "src/services/client-billing-services"
-import { BaseEntity } from "src/services/base-entity-services"
+import { createClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions"
 import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
+import { paths } from "src/paths"
+import { BaseEntity } from "src/app/actions/base-entity-services"
 
 interface ClientBillingInformationFormProps {
      allClients: Client[]
@@ -22,6 +24,7 @@ interface ClientBillingInformationFormProps {
 export const ClientBillingInformationForm: React.FC<ClientBillingInformationFormProps> = ({ allClients, clientPaymentMethods, billingInformationStatuses }) => {
      const [paymentType, setPaymentType] = useState<{ value: string; name: string }>({ value: "", name: "" })
      const [isSubmitting, setIsSubmitting] = useState(false)
+     const router = useRouter()
      const [billingInformationStatus, setBillingInformationStatus] = useState<{ value: string; name: string }>({
           value: billingInformationStatuses?.[0]?.id || "",
           name: billingInformationStatuses?.[0]?.name || "",
@@ -43,6 +46,9 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                const response = await createClientBillingInformation(values, paymentTypeId, billingInformationStatusId);
                if (response.createClientBillingInformationSuccess) {
                     toast.success(t('clients.clientPaymentMethodAdded'));
+                    console.log('respnse', response);
+
+                    router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createClientBillingInformation?.id)
                } else {
                     toast.error(t('clients.clientPaymentMethodError'));
                }

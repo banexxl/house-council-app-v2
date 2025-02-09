@@ -4,18 +4,18 @@ import Stack from '@mui/material/Stack'
 
 import { Seo } from 'src/components/seo'
 import { NewClientHeader } from 'src/sections/dashboard/client/clients-header'
-import { fetchClientTypes } from 'src/services/client-types-services'
+import { fetchClientTypes } from 'src/app/actions/client-actions/client-types-actions'
 
 import { ClientStatus, ClientType } from 'src/types/client'
-import { fetchClientStatuses } from 'src/services/client-statuses-services'
 import { getClientByIdAction } from 'src/app/actions/client-actions/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { readAllEntities, BaseEntity } from 'src/services/base-entity-services'
+import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services'
+import { readClientStatuses } from 'src/app/actions/client-actions/client-status-actions'
 
 const Page = async ({ params }: any) => {
 
   const clientTypes: ClientType[] = await fetchClientTypes()
-  const clientStatuses: ClientStatus[] = await fetchClientStatuses()
+  const clientStatuses = await readClientStatuses()
   const clientPaymentMethods: BaseEntity[] = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
   const { clientid } = await params
 
@@ -34,7 +34,7 @@ const Page = async ({ params }: any) => {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <NewClientHeader />
-            <ClientForm clientTypes={clientTypes} clientStatuses={clientStatuses} clientData={getClientByIdActionData} clientPaymentMethods={clientPaymentMethods} />
+            <ClientForm clientTypes={clientTypes} clientStatuses={clientStatuses.readClientStatusesData?.length != 0 ? clientStatuses.readClientStatusesData! : []} clientData={getClientByIdActionData} clientPaymentMethods={clientPaymentMethods} />
           </Stack>
         </Container>
       </Box>

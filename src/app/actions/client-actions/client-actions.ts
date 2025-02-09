@@ -3,9 +3,7 @@
 import { supabase } from "src/libs/supabase/client"
 import { Client } from "src/types/client"
 
-export const saveClientAction = async (
-     client: Client,
-): Promise<{
+export const saveClientAction = async (client: Client): Promise<{
      saveClientActionSuccess: boolean
      saveClientActionData?: Client
      saveClientActionError?: any

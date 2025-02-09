@@ -13,17 +13,17 @@ export const createClientStatus = async (clientStatus: ClientStatus): Promise<{ 
      return { createClientStatusSuccess: true, createClientStatus: data ? data[0] : undefined };
 }
 
-export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess: boolean, readClientStatusesData?: ClientStatus[], readClientStatusesError?: string }> => {
+export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess: boolean, readClientStatusesData: ClientStatus[], readClientStatusesError?: string }> => {
 
      const { data, error } = await supabase
           .from('tblClientStatus')
           .select('*');
 
      if (error) {
-          return { readClientStatusesSuccess: false, readClientStatusesError: error.message };
+          return { readClientStatusesSuccess: false, readClientStatusesData: [], readClientStatusesError: error.message };
      }
 
-     return { readClientStatusesSuccess: true, readClientStatusesData: data ?? undefined };
+     return { readClientStatusesSuccess: true, readClientStatusesData: data ?? [] };
 }
 
 export const readClientStatus = async (id: number): Promise<{ readClientStatusSuccess: boolean, readClientStatus?: ClientStatus, readClientStatusError?: string }> => {

@@ -21,7 +21,8 @@ export const createClientBillingInformation = async (clientBillingInformation: C
                     payment_method_id: paymentMethodTypeId,
                     status: billingInformationStatusId
                }
-          );
+          )
+          .select() // this returns the inserted data if the operation is successful
 
      if (error) {
           return { createClientBillingInformationSuccess: false, createClientBillingInformationError: error };
