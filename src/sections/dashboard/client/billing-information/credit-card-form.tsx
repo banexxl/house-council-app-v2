@@ -11,13 +11,15 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { CreditCard } from "@mui/icons-material"
 import { Mastercard, Visa, Amex } from "react-payment-logos/dist/flat"
 import type { Client } from "src/types/client"
+import { LoadingButton } from "@mui/lab"
 
 interface Card_numberFormProps {
      clients: Client[]
      onSubmit: (values: any) => void
+     isSubmitting: boolean
 }
 
-export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit }) => {
+export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, isSubmitting }) => {
      const [cardType, setCardType] = useState<string | null>(null)
 
      const detectCardType = (number: string) => {
@@ -176,9 +178,9 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                    sx={{ mb: 2 }}
                               />
 
-                              <Button type="submit" variant="contained" color="primary" fullWidth>
+                              <LoadingButton type="submit" variant="contained" color="primary" fullWidth loading={isSubmitting}>
                                    Submit Credit Card Payment
-                              </Button>
+                              </LoadingButton>
                          </Form>
                     )}
                </Formik>

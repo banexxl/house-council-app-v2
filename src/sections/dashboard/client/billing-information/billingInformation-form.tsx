@@ -21,6 +21,7 @@ interface ClientBillingInformationFormProps {
 
 export const ClientBillingInformationForm: React.FC<ClientBillingInformationFormProps> = ({ allClients, clientPaymentMethods, billingInformationStatuses }) => {
      const [paymentType, setPaymentType] = useState<{ value: string; name: string }>({ value: "", name: "" })
+     const [isSubmitting, setIsSubmitting] = useState(false)
      const [billingInformationStatus, setBillingInformationStatus] = useState<{ value: string; name: string }>({
           value: billingInformationStatuses?.[0]?.id || "",
           name: billingInformationStatuses?.[0]?.name || "",
@@ -36,15 +37,20 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
           setBillingInformationStatus({ value: event.target.value, name: status?.name || "" })
      }
 
-     const handleSubmit = (values: any, paymentTypeId: string, billingInformationStatusId: string) => {
-          const createBillingInformationResponse = createClientBillingInformation(values, paymentTypeId, billingInformationStatusId)
-          createBillingInformationResponse.then((response) => {
+     const handleSubmit = async (values: any, paymentTypeId: string, billingInformationStatusId: string) => {
+          setIsSubmitting(true)
+          try {
+               const response = await createClientBillingInformation(values, paymentTypeId, billingInformationStatusId);
                if (response.createClientBillingInformationSuccess) {
-                    toast.success(t('clients.clientPaymentMethodAdded'))
+                    toast.success(t('clients.clientPaymentMethodAdded'));
                } else {
-                    toast.error(t('clients.clientPaymentMethodError'))
+                    toast.error(t('clients.clientPaymentMethodError'));
                }
-          })
+          } catch (error) {
+               toast.error(t('clients.clientPaymentMethodError'));
+          } finally {
+               setIsSubmitting(false)
+          }
      }
 
      const renderForm = () => {
@@ -54,7 +60,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                case "Wire Transfer":
                     return <WireTransferForm clients={allClients} onSubmit={(values) => handleSubmit(values, paymentType.value, billingInformationStatus.value)} />
                case "Credit Card":
-                    return <CardNumberForm clients={allClients} onSubmit={(values: any) => handleSubmit(values, paymentType.value, billingInformationStatus.value)} />
+                    return <CardNumberForm clients={allClients} onSubmit={(values: any) => handleSubmit(values, paymentType.value, billingInformationStatus.value)} isSubmitting={isSubmitting} />
                case "Bank Transfer":
                     return <BankTransferForm clients={allClients} onSubmit={(values) => handleSubmit(values, paymentType.value, billingInformationStatus.value)} />
                default:
