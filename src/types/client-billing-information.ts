@@ -6,7 +6,7 @@ export type ClientBillingInformation = {
      payment_method_id: string;
      full_name: string;
      billing_address: string;
-     billing_status: string;
+     billing_status_id: string;
      // card details
      card_number?: string;
      cvc?: string;
@@ -21,7 +21,7 @@ export const clientBillingInformationInitialValues: ClientBillingInformation = {
      payment_method_id: '',
      full_name: '',
      billing_address: '',
-     billing_status: '',
+     billing_status_id: '',
      card_number: '',
      cvc: '',
      expiration_date: new Date()

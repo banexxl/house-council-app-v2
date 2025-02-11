@@ -19,7 +19,7 @@ import toast from 'react-hot-toast'
 import { Client, clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
-import { saveClientAction } from 'src/app/actions/client-actions/client-actions'
+import { createClientAction } from 'src/app/actions/client-actions/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter } from 'next/navigation'
@@ -57,7 +57,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
 
       try {
         // Simulate a server call
-        const saveClientResponse = await saveClientAction(submissionValues)
+        const saveClientResponse = await createClientAction(submissionValues)
         if (saveClientResponse.saveClientActionSuccess) {
           router.push(paths.dashboard.clients.details + '/' + saveClientResponse.saveClientActionData?.id)
           toast.success(t('clients.clientSaved'))

@@ -21,19 +21,28 @@ interface Card_numberFormProps {
      billingInformationData?: ClientBillingInformation
 }
 
+const detectCardType = (number: string) => {
+     const visaPattern = /^4/
+     const mastercardPattern = /^5[1-5]/
+     const amexPattern = /^3[47]/
+
+     if (visaPattern.test(number)) return "visa"
+     if (mastercardPattern.test(number)) return "mastercard"
+     if (amexPattern.test(number)) return "amex"
+     return null
+}
+
+const formatCard_number = (number: string) => {
+     const digits = number.replace(/\D/g, "")
+     const groups = []
+     for (let i = 0; i < digits.length && i < 16; i += 4) {
+          groups.push(digits.slice(i, i + 4))
+     }
+     return groups.join(" ")
+}
+
 export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, isSubmitting, billingInformationData }) => {
      const [cardType, setCardType] = useState<string | null>(null)
-     const detectCardType = (number: string) => {
-          const visaPattern = /^4/
-          const mastercardPattern = /^5[1-5]/
-          const amexPattern = /^3[47]/
-
-          if (visaPattern.test(number)) return "visa"
-          if (mastercardPattern.test(number)) return "mastercard"
-          if (amexPattern.test(number)) return "amex"
-          return null
-     }
-
      const getCardIcon = () => {
           switch (cardType) {
                case "visa":
@@ -46,16 +55,6 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                     return <CreditCard />
           }
      }
-
-     const formatCard_number = (number: string) => {
-          const digits = number.replace(/\D/g, "")
-          const groups = []
-          for (let i = 0; i < digits.length && i < 16; i += 4) {
-               groups.push(digits.slice(i, i + 4))
-          }
-          return groups.join(" ")
-     }
-
 
      return (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -83,6 +82,9 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                >
                     {({ errors, touched, values, setFieldValue }) => (
                          <Form>
+                              <Typography>
+                                   {JSON.stringify(values)}
+                              </Typography>
                               <FormControl fullWidth margin="normal" required>
                                    <TextField
                                         select
@@ -94,7 +96,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                              setFieldValue("client_id", e.target.value)
                                         }}
-                                        value={values.client_id}
+                                        value={billingInformationData?.client_id !== '' ? billingInformationData?.client_id : values.client_id}
                                    >
                                         {clients.map((client) => (
                                              <MenuItem key={client.id} value={client.id}>

@@ -6,6 +6,9 @@ import { ClientBillingInformation } from "src/types/client-billing-information";
 export const createClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string)
      : Promise<{ createClientBillingInformationSuccess: boolean, createClientBillingInformation?: ClientBillingInformation, createClientBillingInformationError?: any }> => {
 
+     console.log('clientBillingInformation', clientBillingInformation);
+
+
      const { data, error } = await supabase
           .from('tblClientBillingInformation')
           .insert(
@@ -19,7 +22,7 @@ export const createClientBillingInformation = async (clientBillingInformation: C
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
                     payment_method_id: paymentMethodTypeId,
-                    status: billingInformationStatusId
+                    billing_status_id: billingInformationStatusId
                }
           )
           .select() // this returns the inserted data if the operation is successful

@@ -42,7 +42,6 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
           name: billingInformationStatuses?.[0]?.name || "",
           ...clientBillingInformationStatus
      });
-     console.log('paymentMethod', paymentMethod);
 
      const handlePaymentMethodChange = (event: SelectChangeEvent) => {
           const paymentMethod = clientPaymentMethods?.find((p) => p.id === event.target.value)

@@ -4,14 +4,14 @@ import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/client/billing-information/billing-information-table-header';
 import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billingInformation-form';
-import { getAllClientsAction } from 'src/app/actions/client-actions/client-actions';
+import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
 
 const Page = async () => {
 
   const clientPaymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
   const billingInformationStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
-  const allClients = await getAllClientsAction()
+  const allClients = await readAllClientsAction()
 
   return (
     <Box

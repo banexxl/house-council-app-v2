@@ -7,7 +7,7 @@ import { NewClientHeader } from 'src/sections/dashboard/client/clients-header'
 import { fetchClientTypes } from 'src/app/actions/client-actions/client-types-actions'
 
 import { ClientStatus, ClientType } from 'src/types/client'
-import { getClientByIdAction } from 'src/app/actions/client-actions/client-actions'
+import { readClientByIdAction } from 'src/app/actions/client-actions/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services'
 import { readClientStatuses } from 'src/app/actions/client-actions/client-status-actions'
@@ -19,7 +19,7 @@ const Page = async ({ params }: any) => {
   const clientPaymentMethods: BaseEntity[] = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
   const { clientid } = await params
 
-  const { getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError } = await getClientByIdAction(clientid)
+  const { getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError } = await readClientByIdAction(clientid)
 
   return (
     <>

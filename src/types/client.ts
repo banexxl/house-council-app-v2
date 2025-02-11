@@ -111,7 +111,7 @@ export const clientInitialValues: Client & ClientBillingInformation = {
   payment_method_id: '',
   full_name: '',
   billing_address: '',
-  billing_status: '',
+  billing_status_id: '',
   cvc: '',
   expiration_date: new Date()
 };
