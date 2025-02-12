@@ -128,6 +128,7 @@ export const tokens = {
     clientEdit: 'clients.clientEdit',
     clientDelete: 'clients.clientDelete',
     clientAddPaymentMethod: 'clients.clientAddPaymentMethod',
+    clientEditPaymentMethod: 'clients.clientEditPaymentMethod',
     // Client form
     clientFormBasicInfo: 'clients.clientFormBasicInfo',
     clientFormAdvancedInfo: 'clients.clientFormAdvancedInfo',

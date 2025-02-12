@@ -9,7 +9,7 @@ import { CardNumberForm } from "./credit-card-form"
 import CashPaymentForm from "./cash-payment-form"
 import BankTransferForm from "./bank-transfer-form"
 import { useTranslation } from "react-i18next"
-import { createClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions"
+import { createOrUpdateClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { paths } from "src/paths"
@@ -54,12 +54,14 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
      }
 
      const handleSubmit = async (values: any, paymentMethodId: string, billingInformationStatusId: string) => {
+
           setIsSubmitting(true)
+
           try {
-               const response = await createClientBillingInformation(values, paymentMethodId, billingInformationStatusId);
-               if (response.createClientBillingInformationSuccess) {
+               const response = await createOrUpdateClientBillingInformation(values, paymentMethodId, billingInformationStatusId, billingInformationData?.id);
+               if (response.createOrUpdateClientBillingInformationSuccess) {
                     toast.success(t('clients.clientPaymentMethodAdded'));
-                    router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createClientBillingInformation?.id)
+                    router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createOrUpdateClientBillingInformation?.id)
                } else {
                     toast.error(t('clients.clientPaymentMethodError'));
                }
@@ -88,9 +90,16 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
      return (
           <Card>
                <CardContent>
-                    <Typography variant="h4" gutterBottom>
-                         {t('clients.clientAddPaymentMethod')}
-                    </Typography>
+                    {
+                         billingInformationData && billingInformationData.id ?
+                              <Typography variant="h4" gutterBottom>
+                                   {t('clients.clientEditPaymentMethod')}
+                              </Typography>
+                              :
+                              <Typography variant="h4" gutterBottom>
+                                   {t('clients.clientAddPaymentMethod')}
+                              </Typography>
+                    }
                </CardContent>
                <CardContent>
                     <FormControl fullWidth margin="normal" required error={!billingInformationStatus.value && billingInformationStatuses!.length > 0}>

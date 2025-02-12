@@ -128,6 +128,7 @@ export const de = {
   [tokens.clients.clientEdit]: 'Kunde Bearbeiten',
   [tokens.clients.clientDelete]: 'Kunde Löschen',
   [tokens.clients.clientAddPaymentMethod]: 'Zahlungsart hinzufügen',
+  [tokens.clients.clientEditPaymentMethod]: 'Zahlungsart bearbeiten',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Grundlegende Informationen',
   [tokens.clients.clientFormAdvancedInfo]: 'Erweiterte Informationen',
