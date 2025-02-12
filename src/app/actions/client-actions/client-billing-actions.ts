@@ -81,3 +81,16 @@ export const deleteClientBillingInformation = async (id: number): Promise<{ dele
 
      return { deleteClientBillingInformationSuccess: true };
 }
+
+export const readAllClientBillingInformation = async (p0: string): Promise<{ readAllClientBillingInformationSuccess: boolean, readAllClientBillingInformationData?: ClientBillingInformation[], readAllClientBillingInformationError?: string }> => {
+
+     const { data, error } = await supabase
+          .from('tblClientBillingInformation')
+          .select('*');
+
+     if (error) {
+          return { readAllClientBillingInformationSuccess: false, readAllClientBillingInformationError: error.message };
+     }
+
+     return { readAllClientBillingInformationSuccess: true, readAllClientBillingInformationData: data ?? undefined };
+}
