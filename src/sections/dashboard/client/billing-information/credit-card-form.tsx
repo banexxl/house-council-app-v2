@@ -82,9 +82,6 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                >
                     {({ errors, touched, values, setFieldValue }) => (
                          <Form>
-                              <Typography>
-                                   {JSON.stringify(values)}
-                              </Typography>
                               <FormControl fullWidth margin="normal" required>
                                    <TextField
                                         select

@@ -30,7 +30,13 @@ const Page = async ({ params }: any) => {
         <Stack spacing={4}>
           <ClientBillingInformationTableHeader />
           <Card>
-            <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} clientPaymentMethod={{ value: clientPaymentMethod?.id || "", name: clientPaymentMethod?.name || "" }} clientBillingInformationStatus={{ value: billingInformationStatus?.id || "", name: billingInformationStatus?.name || "" }} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} billingInformationData={readClientBillingInformationData} />
+            <ClientBillingInformationForm
+              allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []}
+              clientPaymentMethod={{ value: clientPaymentMethod?.id || "", name: clientPaymentMethod?.name || "" }}
+              clientBillingInformationStatus={{ value: billingInformationStatus?.id!, name: billingInformationStatus?.name! }}
+              clientPaymentMethods={clientPaymentMethods}
+              billingInformationStatuses={billingInformationStatuses}
+              billingInformationData={readClientBillingInformationData} />
           </Card>
         </Stack>
       </Container>
