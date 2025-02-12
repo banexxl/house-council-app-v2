@@ -47,9 +47,6 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
 
      const { data, error } = result;
 
-     console.log('createOrUpdateClientBillingInformation', data, error);
-
-
      if (error) {
           return { createOrUpdateClientBillingInformationSuccess: false, createOrUpdateClientBillingInformationError: error };
      }
