@@ -1,6 +1,6 @@
 'use client'
 
-import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Link from '@mui/material/Link'
 import SvgIcon from '@mui/material/SvgIcon'
 import Typography from '@mui/material/Typography'
@@ -11,7 +11,6 @@ import { Box } from '@mui/system'
 
 
 export const NewClientHeader = () => {
-
 
      const { t } = useTranslation()
 
@@ -28,7 +27,7 @@ export const NewClientHeader = () => {
                     underline="hover"
                >
                     <SvgIcon sx={{ mr: 1 }}>
-                         <ArrowLeftIcon />
+                         <ArrowBackIcon />
                     </SvgIcon>
                     <Typography variant="subtitle2">{t('clients.clientsList')}</Typography>
                </Link>

@@ -14,7 +14,6 @@ import { readClientStatuses } from 'src/app/actions/client-actions/client-status
 const Page = async () => {
 
   const clientTypes: ClientType[] = await fetchClientTypes()
-  console.log('clientTypes', clientTypes);
 
   const clientStatuses = await readClientStatuses()
 

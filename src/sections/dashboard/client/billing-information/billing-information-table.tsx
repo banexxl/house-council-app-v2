@@ -11,6 +11,7 @@ import {
      TablePagination,
      Paper,
      Card,
+     Typography,
 } from "@mui/material";
 import { useCallback } from "react";
 import { ClientBillingInformation } from "src/types/client-billing-information";
@@ -61,7 +62,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                               </TableRow>
                          </TableHead>
                          <TableBody>
-                              {paginatedData && paginatedData.map((row) => (
+                              {paginatedData && paginatedData.length > 0 ? paginatedData.map((row) => (
                                    <TableRow
                                         key={row.id}
                                         component="a"
@@ -73,14 +74,27 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                         </TableCell>
                                         <TableCell>{row.full_name}</TableCell>
                                         <TableCell>{row.billing_address}</TableCell>
-                                        <TableCell>{row.card_number}</TableCell>
-                                        <TableCell>{row.cvc}</TableCell>
+                                        <TableCell>{row.card_number ? '•••• ' + row.card_number.slice(-4) : ''}</TableCell>
+                                        <TableCell
+                                             style={{
+                                                  backdropFilter: 'blur(5px)', // Standard property
+                                                  WebkitBackdropFilter: 'blur(5px)', // For Safari
+                                                  backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent background
+                                             }}
+                                        >
+                                             {row.cvc}
+                                        </TableCell>
                                         <TableCell>{row.expiration_date ? format(new Date(row.expiration_date), 'MM/yyyy') : ''}</TableCell>
                                         <TableCell>{row.payment_method_id}</TableCell>
                                         <TableCell>{row.billing_status_id}</TableCell>
                                         <TableCell>{new Date(row.updated_at!).toLocaleString()}</TableCell>
                                    </TableRow>
-                              ))}
+                              ))
+                                   :
+                                   <Typography>
+                                        No data
+                                   </Typography>
+                              }
                          </TableBody>
                     </Table>
                </TableContainer>

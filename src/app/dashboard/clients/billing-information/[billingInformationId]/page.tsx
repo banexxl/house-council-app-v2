@@ -3,7 +3,7 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/client/billing-information/billing-information-table-header';
-import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billingInformation-form';
+import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billing-information-form';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
 import { readClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';

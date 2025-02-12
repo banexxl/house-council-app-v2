@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent, Typography, Box, CardContent, Card } from "@mui/material"
+import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent, Typography, CardContent, Card } from "@mui/material"
 import { Client } from "src/types/client"
 import WireTransferForm from "./wire-transfer-form"
 import { CardNumberForm } from "./credit-card-form"
@@ -100,6 +100,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                                    {t('clients.clientAddPaymentMethod')}
                               </Typography>
                     }
+
                </CardContent>
                <CardContent>
                     <FormControl fullWidth margin="normal" required error={!billingInformationStatus.value && billingInformationStatuses!.length > 0}>
