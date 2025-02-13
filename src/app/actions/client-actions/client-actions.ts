@@ -3,13 +3,13 @@
 import { supabase } from "src/libs/supabase/client"
 import { Client } from "src/types/client"
 
-export const createClientAction = async (client: Client): Promise<{
+export const createOrUpdateClientAction = async (client: Client): Promise<{
      saveClientActionSuccess: boolean
      saveClientActionData?: Client
      saveClientActionError?: any
 }> => {
-     const { id, ...clientData } = client
 
+     const { id, ...clientData } = client
      let result
 
      if (id && id !== "") {

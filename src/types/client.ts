@@ -87,7 +87,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
 }
 
 // Add all iniitial values
-export const clientInitialValues: Client & ClientBillingInformation = {
+export const clientInitialValues: Client = {
   id: '',
   name: '',
   email: '',
@@ -107,11 +107,4 @@ export const clientInitialValues: Client & ClientBillingInformation = {
   is_verified: false,
   total_spent: 0,
   total_orders: 0,
-  client_id: '',
-  payment_method_id: '',
-  full_name: '',
-  billing_address: '',
-  billing_status_id: '',
-  cvc: '',
-  expiration_date: new Date()
 };

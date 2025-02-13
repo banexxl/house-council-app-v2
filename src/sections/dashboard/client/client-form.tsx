@@ -19,7 +19,7 @@ import toast from 'react-hot-toast'
 import { Client, clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
-import { createClientAction } from 'src/app/actions/client-actions/client-actions'
+import { createOrUpdateClientAction } from 'src/app/actions/client-actions/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter } from 'next/navigation'
@@ -57,7 +57,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
 
       try {
         // Simulate a server call
-        const saveClientResponse = await createClientAction(submissionValues)
+        const saveClientResponse = await createOrUpdateClientAction(submissionValues)
         if (saveClientResponse.saveClientActionSuccess) {
           router.push(paths.dashboard.clients.details + '/' + saveClientResponse.saveClientActionData?.id)
           toast.success(t('clients.clientSaved'))
@@ -117,7 +117,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 select
                 fullWidth
                 label={t('clients.clientStatus')}
-                name="status"
+                name="client_status"
                 disabled={formik.isSubmitting}
                 value={formik.values.client_status}
                 onChange={formik.handleChange} // Use onChange for handling selection

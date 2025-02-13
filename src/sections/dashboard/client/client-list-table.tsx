@@ -21,7 +21,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Client } from 'src/types/client';
+import type { Client, ClientStatus } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 import { useTranslation } from 'react-i18next';
 import { useSelection } from 'src/hooks/use-selection';
@@ -33,6 +33,7 @@ import { FilterBar } from './client-list-search';
 interface ClientListTableProps {
   count?: number;
   items?: Client[];
+  clientStatuses?: ClientStatus[];
 }
 
 interface DeleteClientsData {
@@ -61,8 +62,6 @@ const useClientSearch = () => {
   }, []);
 
   const handleTabsChange = useCallback((value: string) => {
-    console.log('handleTabsChange', value);
-
     setState((prevState) => ({
       ...prevState,
       all: value === 'all',
@@ -105,7 +104,7 @@ const useClientSearch = () => {
   };
 };
 
-export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [] }) => {
+export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [], clientStatuses }) => {
 
   const clientIds = useMemo(() => items.map((client) => client.id), [items]);
   const clientSelection = useSelection(clientIds);
@@ -126,8 +125,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
     // Apply filters based on state
     const filtered = items.filter((client) => {
       // Check query filter
-      const matchesQuery =
-        !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase());
+      const matchesQuery = !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase());
 
       // Check "all" filter (if "all" is true, no other filters apply)
       if (clientSearch.state.all) {
@@ -295,7 +293,9 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
                   <TableCell>{client.mobile_phone}</TableCell>
                   <TableCell>{client.phone}</TableCell>
                   <TableCell>{client.type}</TableCell>
-                  <TableCell>{client.client_status}</TableCell>
+                  <TableCell>
+                    {clientStatuses?.find((cs) => cs.id === client.client_status)?.name ?? ''}
+                  </TableCell>
                   <TableCell>
                     {client.is_verified ? (
                       <SvgIcon>
