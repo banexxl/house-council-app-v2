@@ -29,6 +29,7 @@ import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './client-list-search';
+import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
 
 interface ClientListTableProps {
   count?: number;
@@ -119,6 +120,14 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
 
   const handleDeleteClientsClick = useCallback(() => {
     deleteClientsDialog.handleOpen();
+  }, [deleteClientsDialog]);
+
+  const handleDeleteClientsConfirm = useCallback(async () => {
+    deleteClientsDialog.handleClose();
+    const deleteClientResponse = await deleteClientByIDsAction(clientSelection.selected);
+    if (deleteClientResponse.deleteClientByIDsActionSuccess) {
+      clientSelection.handleDeselectAll();
+    }
   }, [deleteClientsDialog]);
 
   const visibleRows = useMemo(() => {
@@ -313,8 +322,6 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
           </TableBody>
         </Table>
       </Scrollbar>
-
-
       <TablePagination
         component="div"
         count={count}
@@ -330,7 +337,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
       <PopupModal
         isOpen={deleteClientsDialog.open}
         onClose={() => deleteClientsDialog.handleClose()}
-        onConfirm={() => deleteClientsDialog.handleClose()}
+        onConfirm={handleDeleteClientsConfirm}
         title={t('warning.deleteWarningTitle')}
         confirmText={t('common.btnDelete')}
         cancelText={t('common.btnClose')}

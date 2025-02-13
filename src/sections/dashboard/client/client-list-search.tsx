@@ -1,8 +1,11 @@
+'use client';
+
 import React, { FC, useState, useCallback, ChangeEvent } from 'react';
 import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import { Box, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
 import { Client } from 'src/types/client';
+import { useTranslation } from 'react-i18next';
 
 export interface TabOption {
   label: string;
@@ -48,6 +51,7 @@ export const FilterBar: FC<FilterBarProps> = ({
   initialSortDir = 'asc',
 }) => {
 
+  const { t } = useTranslation();
   const [currentTab, setCurrentTab] = useState<string>(tabs[0]?.value || '');
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [sort, setSort] = useState<string>(`${initialSortBy}|${initialSortDir}`);
@@ -104,7 +108,7 @@ export const FilterBar: FC<FilterBarProps> = ({
       >
         <Box component="form" sx={{ flexGrow: 1 }}>
           <OutlinedInput
-            placeholder="Search"
+            placeholder={t('common.search')}
             fullWidth
             startAdornment={
               <InputAdornment position="start">
@@ -117,7 +121,7 @@ export const FilterBar: FC<FilterBarProps> = ({
           />
         </Box>
         <TextField
-          label="Sort By"
+          label={t('common.sortBy')}
           select
           SelectProps={{ native: true }}
           value={sort}

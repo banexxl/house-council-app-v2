@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type FC } from 'react'
+import { use, useRef, useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -22,7 +22,7 @@ import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete
 import { createOrUpdateClientAction } from 'src/app/actions/client-actions/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
 import { BaseEntity } from 'src/app/actions/base-entity-services'
 
@@ -40,6 +40,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const autocompleteRef_1 = useRef<AutocompleteRef>(null)
   const autocompleteRef_2 = useRef<AutocompleteRef>(null)
   const router = useRouter()
+  const currentRoute = usePathname()
 
   const formik = useFormik({
     initialValues: {
@@ -59,7 +60,10 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
         // Simulate a server call
         const saveClientResponse = await createOrUpdateClientAction(submissionValues)
         if (saveClientResponse.saveClientActionSuccess) {
-          router.push(paths.dashboard.clients.details + '/' + saveClientResponse.saveClientActionData?.id)
+          const clientId = saveClientResponse.saveClientActionData?.id;
+          if (!currentRoute.includes(clientId!)) {
+            router.push(paths.dashboard.clients.details + '/' + clientId);
+          }
           toast.success(t('clients.clientSaved'))
         } else if (saveClientResponse.saveClientActionError) {
           saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueViolation'))

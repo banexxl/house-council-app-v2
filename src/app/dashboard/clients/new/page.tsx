@@ -3,7 +3,7 @@ import Container from '@mui/material/Container'
 import Stack from '@mui/material/Stack'
 
 import { Seo } from 'src/components/seo'
-import { NewClientHeader } from 'src/sections/dashboard/client/clients-header'
+import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { fetchClientTypes } from 'src/app/actions/client-actions/client-types-actions'
 
 import { ClientStatus, ClientType } from 'src/types/client'
@@ -31,7 +31,7 @@ const Page = async () => {
       >
         <Container maxWidth="lg">
           <Stack spacing={4}>
-            <NewClientHeader />
+            <ClientFormHeader />
             <ClientForm clientTypes={clientTypes} clientStatuses={clientStatuses.readClientStatusesData.length != 0 ? clientStatuses.readClientStatusesData! : []} clientPaymentMethods={clientPaymentMethods} />
           </Stack>
         </Container>

@@ -8,9 +8,13 @@ import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@mui/system'
+import { Client } from 'src/types/client';
 
+type ClientFormHeaderProps = {
+     client?: Client
+}
 
-export const NewClientHeader = () => {
+export const ClientFormHeader = (props: ClientFormHeaderProps) => {
 
      const { t } = useTranslation()
 
@@ -32,7 +36,11 @@ export const NewClientHeader = () => {
                     <Typography variant="subtitle2">{t('clients.clientsList')}</Typography>
                </Link>
                <Typography variant="h4" sx={{ mt: 2 }}>
-                    {t('clients.clientCreate')}
+                    {
+                         props.client
+                              ? t('clients.clientEdit') + ': ' + props.client.name
+                              : t('clients.clientCreate')
+                    }
                </Typography>
           </Box>
      )

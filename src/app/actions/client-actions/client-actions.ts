@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from "next/cache"
 import { supabase } from "src/libs/supabase/client"
 import { Client } from "src/types/client"
 
@@ -15,13 +16,16 @@ export const createOrUpdateClientAction = async (client: Client): Promise<{
      if (id && id !== "") {
           // Update existing client
           result = await supabase.from("tblClients").update({ ...clientData, updated_at: new Date().toISOString() }).eq("id", id).select().single()
-
+          revalidatePath(`/dashboard/clients/${id}`)
      } else {
           // Insert new client
           result = await supabase.from("tblClients").insert(clientData).select().single()
      }
 
      const { data, error } = result
+     console.log('data', data);
+
+     console.log('error', error);
 
      if (error) {
           return { saveClientActionSuccess: false, saveClientActionError: error }
@@ -113,5 +117,20 @@ export const readClientByIdAction = async (
                getClientByIdActionSuccess: false,
                getClientByIdActionError: "Failed to fetch client",
           }
+     }
+}
+
+export const deleteClientByIDsAction = async (ids: string[]): Promise<{ deleteClientByIDsActionSuccess: boolean, deleteClientByIDsActionError?: string }> => {
+     try {
+          const { error } = await supabase.from('tblClients').delete().in('id', ids);
+          if (error) {
+               console.error('Error deleting clients:', error);
+               return { deleteClientByIDsActionSuccess: false, deleteClientByIDsActionError: error.message }
+          }
+          revalidatePath('/dashboard/clients');
+          return { deleteClientByIDsActionSuccess: true }
+     } catch (error) {
+          console.error('Error deleting clients:', error);
+          return { deleteClientByIDsActionSuccess: false, deleteClientByIDsActionError: error.message }
      }
 }
