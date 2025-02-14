@@ -35,6 +35,7 @@ interface ClientNewFormProps {
 
 export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData, clientPaymentMethods }) => {
 
+  const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
   const avatarUploadRef = useRef<AvatarUploadRef>(null)
   const autocompleteRef_1 = useRef<AutocompleteRef>(null)
@@ -45,9 +46,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const formik = useFormik({
     initialValues: {
       ...clientInitialValues, // Default values for new clients
-      ...clientData, // Overwrite with existing client data if editing
-      type: clientData?.type || clientInitialValues.type || '', // Ensure type is valid
-      client_status: clientData?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
+      ...initialValues, // Overwrite with existing client data if editing
+      type: initialValues?.type || clientInitialValues.type || '', // Ensure type is valid
+      client_status: initialValues?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
     },
     validationSchema: clientValidationSchema(t),
 
@@ -60,8 +61,10 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
         // Simulate a server call
         const saveClientResponse = await createOrUpdateClientAction(submissionValues)
         if (saveClientResponse.saveClientActionSuccess) {
+          setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
           const clientId = saveClientResponse.saveClientActionData?.id;
           if (!currentRoute.includes(clientId!)) {
+            setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
             router.push(paths.dashboard.clients.details + '/' + clientId);
           }
           toast.success(t('clients.clientSaved'))
@@ -94,7 +97,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
             ref={avatarUploadRef}
             onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
             folderName={formik.values.name}
-            initialValue={clientData?.id == '' ? '' : clientData?.avatar}
+            initialValue={initialValues?.id == '' ? '' : initialValues?.avatar}
           />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
@@ -173,7 +176,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                   formik.setFieldValue('address_1', transliterateCyrillicToLatin(e.matching_place_name));
                 }}
                 ref={autocompleteRef_1}
-                initialValue={clientData?.id == '' ? '' : clientData?.address_1}
+                initialValue={initialValues?.id == '' ? '' : initialValues?.address_1}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -183,7 +186,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                   formik.setFieldValue('address_2', transliterateCyrillicToLatin(e.matching_place_name));
                 }}
                 ref={autocompleteRef_2}
-                initialValue={clientData?.id == '' ? '' : clientData?.address_2}
+                initialValue={initialValues?.id == '' ? '' : initialValues?.address_2}
               />
 
             </Grid>
@@ -275,7 +278,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
           sx={{ p: 3 }}
         >
           <LoadingButton
-            disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+            disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
             type="submit"
             variant="contained"
             loading={formik.isSubmitting}
