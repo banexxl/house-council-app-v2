@@ -93,7 +93,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
             {JSON.stringify(formik.values)}
           </Typography> */}
           <AvatarUpload
-            buttonDisabled={Object.keys(formik.errors).length > 0 || !formik.dirty}
+            buttonDisabled={Object.keys(formik.touched).length === 0 || Object.keys(formik.errors).length > 0}
             ref={avatarUploadRef}
             onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
             folderName={formik.values.name}
