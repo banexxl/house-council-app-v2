@@ -32,7 +32,6 @@ import { FilterBar } from './client-list-search';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
 
 interface ClientListTableProps {
-  count?: number;
   items?: Client[];
   clientStatuses?: ClientStatus[];
 }
@@ -105,8 +104,9 @@ const useClientSearch = () => {
   };
 };
 
-export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [], clientStatuses }) => {
+export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientStatuses }) => {
 
+  const [count, setCount] = useState(items.length);
   const clientIds = useMemo(() => items.map((client) => client.id), [items]);
   const clientSelection = useSelection(clientIds);
   const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
@@ -150,10 +150,11 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
 
       const matchesIsReturning =
         !clientSearch.state.is_returning || client.is_returning === clientSearch.state.is_returning;
-
       // Combine all filters
       return matchesQuery && matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
     });
+
+    setCount(filtered.length);
     // Apply sorting and pagination
     return applySort(filtered, clientSearch.state.sortBy, clientSearch.state.sortDir).slice(
       clientSearch.state.page * clientSearch.state.rowsPerPage,
@@ -348,6 +349,5 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
 };
 
 ClientListTable.propTypes = {
-  count: PropTypes.number,
   items: PropTypes.array,
 };

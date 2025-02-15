@@ -26,7 +26,6 @@ const Page = async () => {
           <ClientTableHeader allClients={getAllClientsActionData} />
           <Card>
             <ClientListTable
-              count={getAllClientsActionData ? getAllClientsActionData.length : 0}
               items={getAllClientsActionData}
               clientStatuses={readClientStatusesData}
             />
