@@ -12,6 +12,7 @@ export const de = {
   [tokens.common.sortBy]: 'Sortieren nach',
   [tokens.common.rowsPerPage]: 'Zeilen pro Seite',
   [tokens.common.updated_at]: 'Aktualisiert am',
+  [tokens.common.emptyTableInfo]: 'Keine Daten vorhanden',
   [tokens.common.btnSave]: 'Speichern',
   [tokens.common.btnDelete]: 'Löschen',
   [tokens.common.btnEdit]: 'Bearbeiten',
@@ -163,6 +164,9 @@ export const de = {
   [tokens.clients.clientUploadAvatar]: 'Avatar hochladen',
   [tokens.clients.clientPaymentMethods]: 'Zahlungsmethoden',
   [tokens.clients.clientPaymentMethod]: 'Zahlungsmethode',
+  [tokens.clients.clientCardNumber]: 'Kartennummer',
+  [tokens.clients.clientCardExpirationDate]: 'Ablaufdatum',
+  [tokens.clients.clientBillingStatus]: 'Rechnungsstatus',
   // Client validation
   [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
   [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',
@@ -178,6 +182,7 @@ export const de = {
   [tokens.clients.clientBillingInformationRequired]: 'Rechnungsdaten sind erforderlich',
   [tokens.clients.clientFillMandatoryFieldsFirst]: 'Bitte füllen Sie alle erforderlichen Felder aus',
   [tokens.clients.clientSaveClientFirst]: 'Bitte erst Kunde speichern',
+  [tokens.clients.clientPaymentMethodSaved]: 'Zahlungsmethode gespeichert',
   // Client popup
   [tokens.clients.clientSave]: 'Speichern',
   [tokens.clients.clientSaved]: 'Kunde gespeichert',

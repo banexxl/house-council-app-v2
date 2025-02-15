@@ -12,6 +12,7 @@ export const es = {
   [tokens.common.search]: 'Buscar',
   [tokens.common.sortBy]: 'Ordenar por',
   [tokens.common.rowsPerPage]: 'Filas por página',
+  [tokens.common.emptyTableInfo]: 'No hay datos disponibles',
   [tokens.common.btnSave]: 'Guardar',
   [tokens.common.btnDelete]: 'Eliminar',
   [tokens.common.btnEdit]: 'Editar',
@@ -163,6 +164,9 @@ export const es = {
   [tokens.clients.clientUploadAvatar]: 'Subir Avatar',
   [tokens.clients.clientPaymentMethods]: 'Metodos de Pago',
   [tokens.clients.clientPaymentMethod]: 'Metodo de Pago',
+  [tokens.clients.clientCardNumber]: 'Numero de Tarjeta',
+  [tokens.clients.clientCardExpirationDate]: 'Fecha de Vencimiento',
+  [tokens.clients.clientBillingStatus]: 'Estado de Facturación',
   // Client validation
   [tokens.clients.clientNameRequired]: 'El nombre es obligatorio',
   [tokens.clients.clientEmailMustBeValid]: 'El correo debe ser valido',
@@ -178,6 +182,7 @@ export const es = {
   [tokens.clients.clientBillingInformationRequired]: 'La informacion de facturacion es obligatoria',
   [tokens.clients.clientFillMandatoryFieldsFirst]: 'Por favor, rellene todos los campos obligatorios',
   [tokens.clients.clientSaveClientFirst]: 'Por favor, guarde el cliente primero',
+  [tokens.clients.clientPaymentMethodSaved]: 'Metodo de pago guardado',
   // Client popup
   [tokens.clients.clientSave]: 'Guardar',
   [tokens.clients.clientSaved]: 'Cliente guardado',

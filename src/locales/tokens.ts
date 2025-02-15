@@ -10,6 +10,7 @@ export const tokens = {
     search: 'common.search',
     sortBy: 'common.sortBy',
     rowsPerPage: 'common.rowsPerPage',
+    emptyTableInfo: 'common.emptyTableInfo',
     btnSave: 'common.btnSave',
     btnDelete: 'common.btnDelete',
     btnEdit: 'common.btnEdit',
@@ -178,6 +179,10 @@ export const tokens = {
     clientBillingInformationRequired: 'clients.clientBillingInformationRequired',
     clientFillMandatoryFieldsFirst: 'clients.clientFillMandatoryFieldsFirst',
     clientSaveClientFirst: 'clients.clientSaveClientFirst',
+    clientCardNumber: 'clients.clientCardNumber',
+    clientCardExpirationDate: 'clients.clientCardExpirationDate',
+    clientBillingStatus: 'clients.clientBillingStatus',
+    clientPaymentMethodSaved: 'clients.clientPaymentMethodSaved',
     // Client popup
     clientSave: 'clients.clientSave',
     clientSaved: 'clients.clientSaved',

@@ -60,7 +60,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
           try {
                const response = await createOrUpdateClientBillingInformation(values, paymentMethodId, billingInformationStatusId, billingInformationData?.id);
                if (response.createOrUpdateClientBillingInformationSuccess) {
-                    toast.success(t('clients.clientPaymentMethodAdded'));
+                    toast.success(t('clients.clientPaymentMethodSaved'));
                     router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createOrUpdateClientBillingInformation?.id)
                } else {
                     toast.error(t('clients.clientPaymentMethodError'));

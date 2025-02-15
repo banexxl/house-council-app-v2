@@ -17,12 +17,15 @@ import { useCallback } from "react";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 import { format } from "date-fns";
 import { paths } from "src/paths";
+import { useTranslation } from "react-i18next";
 
 interface BillingInformationTableProps {
      data?: ClientBillingInformation[]
 }
 
 const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [] }) => {
+
+     const { t } = useTranslation();
      const [page, setPage] = useState(0);
      const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -50,15 +53,14 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                     <Table>
                          <TableHead>
                               <TableRow>
-                                   <TableCell>ID</TableCell>
-                                   <TableCell>Full Name</TableCell>
-                                   <TableCell>Billing Address</TableCell>
-                                   <TableCell>Card Number</TableCell>
+                                   <TableCell>{t('common.fullName')}</TableCell>
+                                   <TableCell>{t('common.address')}</TableCell>
+                                   <TableCell>{t('clients.clientCardNumber')}</TableCell>
                                    <TableCell>CVC</TableCell>
-                                   <TableCell>Expiration Date</TableCell>
-                                   <TableCell>Payment Method</TableCell>
-                                   <TableCell>Billing Status</TableCell>
-                                   <TableCell>Updated At</TableCell>
+                                   <TableCell>{t('clients.clientCardExpirationDate')}</TableCell>
+                                   <TableCell>{t('clients.clientPaymentMethod')}</TableCell>
+                                   <TableCell>{t('clients.clientBillingStatus')}</TableCell>
+                                   <TableCell>{t('common.updatedAt')}</TableCell>
                               </TableRow>
                          </TableHead>
                          <TableBody>
@@ -69,9 +71,6 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                         href={paths.dashboard.clients.billingInformation.details + '/' + row.id}
                                         sx={{ textDecoration: 'none', color: 'inherit' }}
                                    >
-                                        <TableCell>
-                                             {row?.id?.slice(-12) ?? ''}
-                                        </TableCell>
                                         <TableCell>{row.full_name}</TableCell>
                                         <TableCell>{row.billing_address}</TableCell>
                                         <TableCell>{row.card_number ? '•••• ' + row.card_number.slice(-4) : ''}</TableCell>
@@ -91,8 +90,8 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                    </TableRow>
                               ))
                                    :
-                                   <Typography>
-                                        No data
+                                   <Typography sx={{ m: '20px' }}>
+                                        {t('common.emptyTableInfo')}
                                    </Typography>
                               }
                          </TableBody>
@@ -106,6 +105,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage={t('common.rowsPerPage')}
                />
           </Card>
      );

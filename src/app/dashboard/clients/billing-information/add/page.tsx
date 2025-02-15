@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
-import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/client/billing-information/billing-information-table-header';
 import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billing-information-form';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
@@ -23,7 +22,6 @@ const Page = async () => {
     >
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <ClientBillingInformationTableHeader />
           <Card>
             <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} />
           </Card>

@@ -12,6 +12,7 @@ export const rs = {
      [tokens.common.search]: 'Traži',
      [tokens.common.sortBy]: 'Sortiraj po',
      [tokens.common.rowsPerPage]: 'Redova po stranici',
+     [tokens.common.emptyTableInfo]: 'Nema podataka',
      [tokens.common.btnSave]: 'Sačuvaj',
      [tokens.common.btnDelete]: 'Obriši',
      [tokens.common.btnEdit]: 'Izmeni',
@@ -164,6 +165,9 @@ export const rs = {
      [tokens.clients.clientUploadAvatar]: 'Učitaj Avatar',
      [tokens.clients.clientPaymentMethods]: 'Metode plaćanja',
      [tokens.clients.clientPaymentMethod]: 'Metoda plaćanja',
+     [tokens.clients.clientCardNumber]: 'Broj kartice',
+     [tokens.clients.clientCardExpirationDate]: 'Datum isteka',
+     [tokens.clients.clientBillingStatus]: 'Status računa',
      // Client validation
      [tokens.clients.clientNameRequired]: 'Ime je obavezno',
      [tokens.clients.clientEmailMustBeValid]: 'Email mora biti validan',
@@ -179,6 +183,7 @@ export const rs = {
      [tokens.clients.clientBillingInformationRequired]: 'Informacije o fakturiranju je obavezna',
      [tokens.clients.clientFillMandatoryFieldsFirst]: 'Molimo prvo popunite obavezna polja',
      [tokens.clients.clientSaveClientFirst]: 'Molimo prvo sačuvajte klijenta',
+     [tokens.clients.clientPaymentMethodSaved]: 'Metoda plaćanja je sačuvana',
      // Client popup
      [tokens.clients.clientSave]: 'Sačuvaj',
      [tokens.clients.clientSaved]: 'Klijent sačuvan',

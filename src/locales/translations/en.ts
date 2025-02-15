@@ -12,6 +12,7 @@ export const en = {
   [tokens.common.sortBy]: 'Sort by',
   [tokens.common.rowsPerPage]: 'Rows per page',
   [tokens.common.updated_at]: 'Updated at',
+  [tokens.common.emptyTableInfo]: 'No data available',
   [tokens.common.btnSave]: 'Save',
   [tokens.common.btnDelete]: 'Delete',
   [tokens.common.btnEdit]: 'Edit',
@@ -163,6 +164,9 @@ export const en = {
   [tokens.clients.clientUploadAvatar]: 'Upload Avatar',
   [tokens.clients.clientPaymentMethods]: 'Payment Methods',
   [tokens.clients.clientPaymentMethod]: 'Payment Method',
+  [tokens.clients.clientCardNumber]: 'Card Number',
+  [tokens.clients.clientCardExpirationDate]: 'Expiration Date',
+  [tokens.clients.clientBillingStatus]: 'Billing Status',
   // Client validation
   [tokens.clients.clientNameRequired]: 'Name is required',
   [tokens.clients.clientEmailMustBeValid]: 'Email must be valid',
@@ -178,6 +182,7 @@ export const en = {
   [tokens.clients.clientBillingInformationRequired]: 'Billing information is required',
   [tokens.clients.clientFillMandatoryFieldsFirst]: 'Please fill all mandatory fields first',
   [tokens.clients.clientSaveClientFirst]: 'Please save client first',
+  [tokens.clients.clientPaymentMethodSaved]: 'Payment method saved',
   // Client popup
   [tokens.clients.clientSave]: 'Save',
   [tokens.clients.clientSaved]: 'Client saved',

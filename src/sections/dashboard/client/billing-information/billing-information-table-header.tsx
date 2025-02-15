@@ -1,11 +1,10 @@
 'use client';
 
-import { Box, Link, Stack, SvgIcon, Typography } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Box, Button, Link, Stack, SvgIcon, Typography } from '@mui/material';
+import PlusIcon from '@mui/icons-material/Add';
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 
 export const ClientBillingInformationTableHeader = () => {
@@ -14,23 +13,22 @@ export const ClientBillingInformationTableHeader = () => {
 
      return (
           <Stack direction="row" justifyContent="space-between" spacing={4}>
+               <Typography variant="h4">{t('clients.clientPaymentMethods')}</Typography>
                <Stack spacing={1}>
                     <Box >
-                         <Link
-                              color="text.primary"
-                              component={RouterLink}
-                              href={paths.dashboard.clients.billingInformation.index}
-                              sx={{
-                                   alignItems: 'center',
-                                   display: 'inline-flex',
-                              }}
-                              underline="hover"
-                         >
-                              <SvgIcon sx={{ mr: 1 }}>
-                                   <ArrowBackIcon />
-                              </SvgIcon>
-                              <Typography variant="subtitle2">{t('clients.clientPaymentMethods')}</Typography>
-                         </Link>
+                         <Stack alignItems="center" direction="row" spacing={3}>
+                              <Button
+                                   href={paths.dashboard.clients.billingInformation.add}
+                                   startIcon={
+                                        <SvgIcon>
+                                             <PlusIcon />
+                                        </SvgIcon>
+                                   }
+                                   variant="contained"
+                              >
+                                   {t('common.btnCreate')}
+                              </Button>
+                         </Stack>
                     </Box>
                </Stack>
                <Stack alignItems="center" direction="row" spacing={3}>
