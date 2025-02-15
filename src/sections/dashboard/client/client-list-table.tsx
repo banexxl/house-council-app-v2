@@ -270,10 +270,10 @@ export const ClientListTable: FC<ClientListTableProps> = ({ count = 0, items = [
                   <TableCell>
                     <Stack alignItems="center" direction="row" spacing={1}>
                       <Avatar
-                        src={client.avatar}
+                        src={client.avatar === '' ? '' : client.avatar}
                         sx={{ height: 42, width: 42 }}
                       >
-                        {getInitials(client.name)}
+                        {client.avatar === '' ? getInitials(client.name) : null}
                       </Avatar>
                       <div>
                         <Link

@@ -97,7 +97,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
             ref={avatarUploadRef}
             onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
             folderName={formik.values.name}
-            initialValue={initialValues?.id == '' ? '' : initialValues?.avatar}
+            initialValue={clientData?.id == '' ? '' : clientData?.avatar}
           />
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
