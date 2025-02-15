@@ -176,7 +176,8 @@ export const de = {
   [tokens.clients.clientStatusRequired]: 'Status ist erforderlich',
   [tokens.clients.clientSubscriptionPlanRequired]: 'Abonnementplan ist erforderlich',
   [tokens.clients.clientBillingInformationRequired]: 'Rechnungsdaten sind erforderlich',
-  [tokens.clients.fillMandatoryFieldsFirst]: 'Bitte füllen Sie alle erforderlichen Felder aus',
+  [tokens.clients.clientFillMandatoryFieldsFirst]: 'Bitte füllen Sie alle erforderlichen Felder aus',
+  [tokens.clients.clientSaveClientFirst]: 'Bitte erst Kunde speichern',
   // Client popup
   [tokens.clients.clientSave]: 'Speichern',
   [tokens.clients.clientSaved]: 'Kunde gespeichert',

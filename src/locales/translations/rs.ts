@@ -177,7 +177,8 @@ export const rs = {
      [tokens.clients.clientStatusRequired]: 'Status je obavezan',
      [tokens.clients.clientSubscriptionPlanRequired]: 'Plan prijava je obavezan',
      [tokens.clients.clientBillingInformationRequired]: 'Informacije o fakturiranju je obavezna',
-     [tokens.clients.fillMandatoryFieldsFirst]: 'Molimo prvo popunite obavezna polja',
+     [tokens.clients.clientFillMandatoryFieldsFirst]: 'Molimo prvo popunite obavezna polja',
+     [tokens.clients.clientSaveClientFirst]: 'Molimo prvo sačuvajte klijenta',
      // Client popup
      [tokens.clients.clientSave]: 'Sačuvaj',
      [tokens.clients.clientSaved]: 'Klijent sačuvan',

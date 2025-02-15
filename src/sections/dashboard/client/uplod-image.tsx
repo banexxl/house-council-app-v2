@@ -112,7 +112,7 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          ...sx,
                     }}
                >
-                    <Tooltip title={t("clients.fillMandatoryFieldsFirst")}>
+                    <Tooltip title={t("clients.clientSaveClientFirst")}>
                          <Box
                               sx={{
                                    position: "relative",

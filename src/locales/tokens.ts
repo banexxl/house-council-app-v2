@@ -176,7 +176,8 @@ export const tokens = {
     clientStatusRequired: 'clients.clientStatusRequired',
     clientSubscriptionPlanRequired: 'clients.clientSubscriptionPlanRequired',
     clientBillingInformationRequired: 'clients.clientBillingInformationRequired',
-    fillMandatoryFieldsFirst: 'clients.fillMandatoryFieldsFirst',
+    clientFillMandatoryFieldsFirst: 'clients.clientFillMandatoryFieldsFirst',
+    clientSaveClientFirst: 'clients.clientSaveClientFirst',
     // Client popup
     clientSave: 'clients.clientSave',
     clientSaved: 'clients.clientSaved',
