@@ -227,7 +227,9 @@ export const es = {
   [tokens.errors.locationPermissionDenied]: 'Permiso de ubicación denegado!',
   //#endregion
   //#region Errors Client
-  [tokens.errors.client.uniqueViolation]: '¡Cliente con este correo electrónico ya existe!',
+  [tokens.errors.client.clientPaymentMethodError]: 'Error al guardar el metodo de pago',
+  [tokens.errors.client.uniqueEmailViolation]: '¡Cliente con este correo electrónico ya existe!',
+  [tokens.errors.client.uniqueCreditCardNumberViolation]: '¡Cliente con esta tarjeta de crédito ya existe!',
   [tokens.errors.client.foreignKeyViolation]: 'Violación de clave foránea',
   [tokens.errors.client.notNullViolation]: 'Violación de no nulo',
   [tokens.errors.client.dataTypeMismatch]: 'Violación de tipo de datos',

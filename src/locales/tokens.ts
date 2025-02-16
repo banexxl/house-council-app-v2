@@ -231,7 +231,9 @@ export const tokens = {
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',
     client: {
-      uniqueViolation: 'errors.client.uniqueViolation',
+      clientPaymentMethodError: 'errors.client.clientPaymentMethodError',
+      uniqueEmailViolation: 'errors.client.uniqueEmailViolation',
+      uniqueCreditCardNumberViolation: 'errors.client.uniqueCreditCardNumberViolation',
       foreignKeyViolation: 'errors.client.foreignKeyViolation',
       notNullViolation: 'errors.client.client.notNullViolation',
       dataTypeMismatch: 'errors.client.dataTypeMismatch',

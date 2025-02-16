@@ -228,7 +228,9 @@ export const de = {
   [tokens.errors.locationPermissionDenied]: 'Ort Berechtigung verweigert!',
   //#endregion
   //#region Errors Client
-  [tokens.errors.client.uniqueViolation]: 'Kunde mit dieser E-Mail existiert bereits!',
+  [tokens.errors.client.clientPaymentMethodError]: 'Zahlungsartfehler',
+  [tokens.errors.client.uniqueEmailViolation]: 'Kunde mit dieser E-Mail existiert bereits!',
+  [tokens.errors.client.uniqueCreditCardNumberViolation]: 'Kunde mit dieser Kreditkartennummer existiert bereits!',
   [tokens.errors.client.foreignKeyViolation]: 'Fremdschlüsselverletzung',
   [tokens.errors.client.notNullViolation]: 'Erforderliche Felder dürfen nicht null sein',
   [tokens.errors.client.dataTypeMismatch]: 'Datentypen stimmen nicht überein',

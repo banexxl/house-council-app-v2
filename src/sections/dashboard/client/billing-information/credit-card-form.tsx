@@ -165,7 +165,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                         textField: {
                                              fullWidth: true,
                                              error: touched.expiration_date && !!errors.expiration_date,
-                                             // helperText: touched.expiration_date && errors.expiration_date,
+                                             helperText: touched.expiration_date && errors.expiration_date ? String(errors.expiration_date) : undefined,
                                              sx: { mb: 2 },
                                         },
                                    }}

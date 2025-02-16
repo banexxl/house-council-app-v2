@@ -229,7 +229,9 @@ export const rs = {
      [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',
      //#endregion
      //#region Errors Client
-     [tokens.errors.client.uniqueViolation]: 'Klijent sa ovim emailom već postoji!',
+     [tokens.errors.client.clientPaymentMethodError]: 'Greška u metodi plaćanja',
+     [tokens.errors.client.uniqueEmailViolation]: 'Klijent sa ovim emailom već postoji!',
+     [tokens.errors.client.uniqueCreditCardNumberViolation]: 'Klijent sa ovim brojem kreditne kartice već postoji!',
      [tokens.errors.client.foreignKeyViolation]: 'Strani ključ nije validan',
      [tokens.errors.client.notNullViolation]: 'Obavezna polja ne mogu biti prazna',
      [tokens.errors.client.dataTypeMismatch]: 'Tipovi podataka se ne podudaraju',

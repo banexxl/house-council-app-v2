@@ -228,7 +228,9 @@ export const en = {
   [tokens.errors.locationPermissionDenied]: 'Location permission denied!',
   //#endregion
   //#region Errors Client
-  [tokens.errors.client.uniqueViolation]: 'Client with this email already exists!',
+  [tokens.errors.client.clientPaymentMethodError]: 'Payment method error',
+  [tokens.errors.client.uniqueEmailViolation]: 'Client with this email already exists!',
+  [tokens.errors.client.uniqueCreditCardNumberViolation]: 'Client with this credit card number already exists!',
   [tokens.errors.client.foreignKeyViolation]: 'Foreign key violation',
   [tokens.errors.client.notNullViolation]: 'Required fields cannot be null',
   [tokens.errors.client.dataTypeMismatch]: 'Data types do not match',

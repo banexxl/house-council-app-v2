@@ -69,7 +69,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
           }
           toast.success(t('clients.clientSaved'))
         } else if (saveClientResponse.saveClientActionError) {
-          saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueViolation'))
+          saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueEmailViolation'))
             : saveClientResponse.saveClientActionError.code === '23503' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.foreignKeyViolation'))
               : saveClientResponse.saveClientActionError.code === '23502' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.notNullViolation'))
                 : saveClientResponse.saveClientActionError.code === '22P02' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.dataTypeMismatch'))

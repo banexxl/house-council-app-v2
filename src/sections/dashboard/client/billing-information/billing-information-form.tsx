@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent, Typography, CardContent, Card } from "@mui/material"
+import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent, Typography, CardContent, Card, TextField } from "@mui/material"
 import { Client } from "src/types/client"
 import WireTransferForm from "./wire-transfer-form"
 import { CardNumberForm } from "./credit-card-form"
@@ -62,11 +62,11 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                if (response.createOrUpdateClientBillingInformationSuccess) {
                     toast.success(t('clients.clientPaymentMethodSaved'));
                     router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createOrUpdateClientBillingInformation?.id)
-               } else {
-                    toast.error(t('clients.clientPaymentMethodError'));
+               } else if (response.createOrUpdateClientBillingInformationError.code == '23505') {
+                    toast.error(t('errors.client.clientPaymentMethodError') + ': \n' + t('errors.client.uniqueCreditCardNumberViolation'));
                }
           } catch (error) {
-               toast.error(t('clients.clientPaymentMethodError'));
+               toast.error(t('errors.client.clientPaymentMethodError'));
           } finally {
                setIsSubmitting(false)
           }
@@ -100,16 +100,15 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                                    {t('clients.clientAddPaymentMethod')}
                               </Typography>
                     }
-
                </CardContent>
                <CardContent>
                     <FormControl fullWidth margin="normal" required error={!billingInformationStatus.value && billingInformationStatuses!.length > 0}>
-                         <InputLabel id="status-label">Status</InputLabel>
-                         <Select
+                         <TextField
+                              select
                               value={billingInformationStatus.value || billingInformationStatuses?.[0]?.id}
                               name="status"
-                              label={t('clients.clientPaymentMethodStatus')}
-                              onChange={handleBillingInformationStatusChange}
+                              label={t('clients.clientBillingStatus')}
+                              onChange={(e: any) => handleBillingInformationStatusChange(e)}
                               required
                          >
                               {
@@ -119,15 +118,15 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                                         </MenuItem>
                                    ))
                               }
-                         </Select>
+                         </TextField>
                     </FormControl>
                     <FormControl fullWidth margin="normal">
-                         <InputLabel id="payment-type-label">Payment Type</InputLabel>
-                         <Select
+                         <TextField
+                              select
                               value={clientPaymentMethods?.some(method => method.id === paymentMethod.value) ? paymentMethod.value : ''}
                               name="Payment type"
-                              label={t('clients.clientPaymentMethodType')}
-                              onChange={handlePaymentMethodChange}
+                              label={t('clients.clientPaymentMethod')}
+                              onChange={(e: any) => handlePaymentMethodChange(e)}
                               required
                          >
                               {
@@ -137,7 +136,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                                         </MenuItem>
                                    ))
                               }
-                         </Select>
+                         </TextField>
                     </FormControl>
                     {renderForm()}
                </CardContent>
