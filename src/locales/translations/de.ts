@@ -126,6 +126,7 @@ export const de = {
   [tokens.buildings.buildingEdit]: 'Gebäude Bearbeiten',
   //#endregion
   //#region Clients
+  [tokens.clients.client]: 'Kunde',
   [tokens.clients.clientsList]: 'Kundenliste',
   [tokens.clients.clientDetails]: 'Kunden Details',
   [tokens.clients.clientCreate]: 'Kunde Erstellen',
@@ -183,6 +184,15 @@ export const de = {
   [tokens.clients.clientFillMandatoryFieldsFirst]: 'Bitte füllen Sie alle erforderlichen Felder aus',
   [tokens.clients.clientSaveClientFirst]: 'Bitte erst Kunde speichern',
   [tokens.clients.clientPaymentMethodSaved]: 'Zahlungsmethode gespeichert',
+  [tokens.clients.clientPaymentMethodClientIdRequired]: 'Zahlungsmethode ist erforderlich',
+  [tokens.clients.clientPaymentMethodCardNumberRequired]: 'Kartennummer ist erforderlich',
+  [tokens.clients.clientPaymentMethodCardExpirationDateRequired]: 'Ablaufdatum ist erforderlich',
+  [tokens.clients.clientPaymentMethodCvcRequired]: 'CVC ist erforderlich',
+  [tokens.clients.clientPaymentMethodFullNameRequired]: 'Vollname ist erforderlich',
+  [tokens.clients.clientPaymentMethodAddressRequired]: 'Adresse ist erforderlich',
+  [tokens.clients.clientPaymentMethodCardNumber16DigitsRequired]: 'Kartennummer muss 16 Ziffern haben',
+  [tokens.clients.clientPaymentMethodCardExpirationDateFutureDateRequired]: 'Ablaufdatum muss in der Zukunft liegen',
+  [tokens.clients.clientPaymentMethodCvc3DigitsRequired]: 'CVC muss 3 Ziffern haben',
   // Client popup
   [tokens.clients.clientSave]: 'Speichern',
   [tokens.clients.clientSaved]: 'Kunde gespeichert',

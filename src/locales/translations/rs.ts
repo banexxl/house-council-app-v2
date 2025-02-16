@@ -127,6 +127,7 @@ export const rs = {
      [tokens.buildings.buildingEdit]: 'Izmeni zgradu',
      //#endregion
      //#region Clients
+     [tokens.clients.client]: 'Klijent',
      [tokens.clients.clientsList]: 'Pregled klijenata',
      [tokens.clients.clientDetails]: 'Detalji klijenta',
      [tokens.clients.clientCreate]: 'Kreiraj klijenta',
@@ -184,6 +185,15 @@ export const rs = {
      [tokens.clients.clientFillMandatoryFieldsFirst]: 'Molimo prvo popunite obavezna polja',
      [tokens.clients.clientSaveClientFirst]: 'Molimo prvo sačuvajte klijenta',
      [tokens.clients.clientPaymentMethodSaved]: 'Metoda plaćanja je sačuvana',
+     [tokens.clients.clientPaymentMethodClientIdRequired]: 'Klijent je obavezan',
+     [tokens.clients.clientPaymentMethodCardNumberRequired]: 'Broj kartice je obavezan',
+     [tokens.clients.clientPaymentMethodCardExpirationDateRequired]: 'Datum isteka je obavezan',
+     [tokens.clients.clientPaymentMethodCvcRequired]: 'CVC je obavezan',
+     [tokens.clients.clientPaymentMethodFullNameRequired]: 'Ime je obavezno',
+     [tokens.clients.clientPaymentMethodAddressRequired]: 'Adresa je obavezna',
+     [tokens.clients.clientPaymentMethodCardNumber16DigitsRequired]: 'Broj kartice mora imati 16 cifara',
+     [tokens.clients.clientPaymentMethodCardExpirationDateFutureDateRequired]: 'Datum isteka mora biti u budućnosti',
+     [tokens.clients.clientPaymentMethodCvc3DigitsRequired]: 'CVC mora imati 3 cifre',
      // Client popup
      [tokens.clients.clientSave]: 'Sačuvaj',
      [tokens.clients.clientSaved]: 'Klijent sačuvan',

@@ -126,6 +126,7 @@ export const en = {
   [tokens.buildings.buildingEdit]: 'Building Edit',
   //#endregion
   //#region Clients
+  [tokens.clients.client]: 'Client',
   [tokens.clients.clientsList]: 'Clients List',
   [tokens.clients.clientDetails]: 'Client Details',
   [tokens.clients.clientCreate]: 'Create Client',
@@ -183,6 +184,15 @@ export const en = {
   [tokens.clients.clientFillMandatoryFieldsFirst]: 'Please fill all mandatory fields first',
   [tokens.clients.clientSaveClientFirst]: 'Please save client first',
   [tokens.clients.clientPaymentMethodSaved]: 'Payment method saved',
+  [tokens.clients.clientPaymentMethodClientIdRequired]: 'Payment method is required',
+  [tokens.clients.clientPaymentMethodCardNumberRequired]: 'Card number is required',
+  [tokens.clients.clientPaymentMethodCardExpirationDateRequired]: 'Expiration date is required',
+  [tokens.clients.clientPaymentMethodCvcRequired]: 'CVC is required',
+  [tokens.clients.clientPaymentMethodFullNameRequired]: 'Full name is required',
+  [tokens.clients.clientPaymentMethodAddressRequired]: 'Address is required',
+  [tokens.clients.clientPaymentMethodCardNumber16DigitsRequired]: 'Card number must have 16 digits',
+  [tokens.clients.clientPaymentMethodCardExpirationDateFutureDateRequired]: 'Expiration date must be in the future',
+  [tokens.clients.clientPaymentMethodCvc3DigitsRequired]: 'CVC must have 3 digits',
   // Client popup
   [tokens.clients.clientSave]: 'Save',
   [tokens.clients.clientSaved]: 'Client saved',

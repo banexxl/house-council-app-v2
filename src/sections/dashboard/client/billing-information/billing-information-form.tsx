@@ -107,8 +107,8 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                          <InputLabel id="status-label">Status</InputLabel>
                          <Select
                               value={billingInformationStatus.value || billingInformationStatuses?.[0]?.id}
-                              name="Status"
-                              label="Status"
+                              name="status"
+                              label={t('clients.clientPaymentMethodStatus')}
                               onChange={handleBillingInformationStatusChange}
                               required
                          >
@@ -126,8 +126,9 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                          <Select
                               value={clientPaymentMethods?.some(method => method.id === paymentMethod.value) ? paymentMethod.value : ''}
                               name="Payment type"
-                              label="Payment Type"
+                              label={t('clients.clientPaymentMethodType')}
                               onChange={handlePaymentMethodChange}
+                              required
                          >
                               {
                                    clientPaymentMethods?.map((paymentMethod: BaseEntity) => (

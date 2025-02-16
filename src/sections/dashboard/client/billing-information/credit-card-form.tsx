@@ -13,6 +13,7 @@ import { Mastercard, Visa, Amex } from "react-payment-logos/dist/flat"
 import type { Client } from "src/types/client"
 import { LoadingButton } from "@mui/lab"
 import { ClientBillingInformation, clientBillingInformationInitialValues } from "src/types/client-billing-information"
+import { useTranslation } from "react-i18next"
 
 interface Card_numberFormProps {
      clients: Client[]
@@ -42,6 +43,8 @@ const formatCard_number = (number: string) => {
 }
 
 export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, isSubmitting, billingInformationData }) => {
+
+     const { t } = useTranslation()
      const [cardType, setCardType] = useState<string | null>(null)
      const getCardIcon = () => {
           switch (cardType) {
@@ -65,35 +68,35 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                          expiration_date: billingInformationData?.expiration_date ? new Date(billingInformationData.expiration_date) : new Date(),
                     }}
                     validationSchema={Yup.object({
-                         client_id: Yup.string().required("Client selection is required"),
-                         full_name: Yup.string().required("Full name is required"),
-                         billing_address: Yup.string().required("Billing address is required"),
+                         client_id: Yup.string().required(t('clients.clientPaymentMethodClientIdRequired')),
+                         full_name: Yup.string().required(t('clients.clientPaymentMethodFullNameRequired')),
+                         billing_address: Yup.string().required(t('clients.clientPaymentMethodAddressRequired')),
                          card_number: Yup.string()
-                              .required("Card number is required")
-                              .test("len", "Must be exactly 16 digits", (val) => val?.replace(/\s+/g, "").length === 16),
+                              .required(t('clients.clientPaymentMethodCardNumberRequired'))
+                              .test("len", t('clients.clientPaymentMethodCardNumber16DigitsRequired'), (val) => val?.replace(/\s+/g, "").length === 16),
                          expiration_date: Yup.date()
-                              .required("Expiration date is required")
-                              .min(new Date(), "Expiration date must be in the future"),
+                              .required(t('clients.clientPaymentMethodCardExpirationDateRequired'))
+                              .min(new Date(), t('clients.clientPaymentMethodCardExpirationDateFutureDateRequired')),
                          cvc: Yup.string()
-                              .required("CVC is required")
-                              .matches(/^\d{3}$/, "Must be exactly 3 digits"),
+                              .required(t('clients.clientPaymentMethodCvcRequired'))
+                              .matches(/^\d{3}$/, t('clients.clientPaymentMethodCvc3DigitsRequired')),
                     })}
                     onSubmit={onSubmit}
                >
-                    {({ errors, touched, values, setFieldValue }) => (
+                    {({ errors, touched, values, setFieldValue, isValid }) => (
                          <Form>
                               <FormControl fullWidth margin="normal" required>
                                    <TextField
                                         select
                                         id="client-select"
                                         name="client_id"
-                                        label="Client"
+                                        label={t('clients.client')}
                                         error={touched.client_id && !!errors.client_id}
                                         helperText={touched.client_id && errors.client_id}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                              setFieldValue("client_id", e.target.value)
                                         }}
-                                        value={billingInformationData?.client_id !== '' ? billingInformationData?.client_id : values.client_id}
+                                        value={clients.some(client => client.id === values.client_id) ? values.client_id : ""}
                                    >
                                         {clients.map((client) => (
                                              <MenuItem key={client.id} value={client.id}>
@@ -108,7 +111,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                    fullWidth
                                    margin="normal"
                                    name="full_name"
-                                   label="Full Name"
+                                   label={t('common.fullName')}
                                    error={touched.full_name && !!errors.full_name}
                                    helperText={touched.full_name && errors.full_name}
                                    value={values.full_name}
@@ -123,7 +126,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                    fullWidth
                                    margin="normal"
                                    name="billing_address"
-                                   label="Billing Address"
+                                   label={t('common.address')}
                                    error={touched.billing_address && !!errors.billing_address}
                                    helperText={touched.billing_address && errors.billing_address}
                                    value={values.billing_address}
@@ -136,7 +139,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                               <TextField
                                    fullWidth
                                    name="card_number"
-                                   label="Card Number"
+                                   label={t('clients.clientCardNumber')}
                                    error={touched.card_number && !!errors.card_number}
                                    helperText={touched.card_number && errors.card_number}
                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +155,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                               />
 
                               <DatePicker
-                                   label="Expiration Date"
+                                   label={t('clients.clientCardExpirationDate')}
                                    views={["year", "month"]}
                                    format="MM/yy"
                                    minDate={new Date()}
@@ -182,8 +185,15 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                    sx={{ mb: 2 }}
                               />
 
-                              <LoadingButton type="submit" variant="contained" color="primary" fullWidth loading={isSubmitting}>
-                                   Submit Credit Card Payment
+                              <LoadingButton
+                                   type="submit"
+                                   variant="contained"
+                                   color="primary"
+                                   fullWidth
+                                   loading={isSubmitting}
+                                   disabled={isValid ? false : true}
+                              >
+                                   {t('common.btnSave')}
                               </LoadingButton>
                          </Form>
                     )}

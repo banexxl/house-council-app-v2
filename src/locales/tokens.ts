@@ -126,6 +126,7 @@ export const tokens = {
     searchLocationLabel: 'locations.searchLocationLabel',
   },
   clients: {
+    client: 'clients.client',
     clientsList: 'clients.clientsList',
     clientDetails: 'clients.clientDetails',
     clientCreate: 'clients.clientCreate',
@@ -183,6 +184,15 @@ export const tokens = {
     clientCardExpirationDate: 'clients.clientCardExpirationDate',
     clientBillingStatus: 'clients.clientBillingStatus',
     clientPaymentMethodSaved: 'clients.clientPaymentMethodSaved',
+    clientPaymentMethodClientIdRequired: 'clients.clientPaymentMethodClientIdRequired',
+    clientPaymentMethodCardNumberRequired: 'clients.clientPaymentMethodCardNumberRequired',
+    clientPaymentMethodCardExpirationDateRequired: 'clients.clientPaymentMethodCardExpirationDateRequired',
+    clientPaymentMethodCvcRequired: 'clients.clientPaymentMethodCvcRequired',
+    clientPaymentMethodFullNameRequired: 'clients.clientPaymentMethodFullNameRequired',
+    clientPaymentMethodAddressRequired: 'clients.clientPaymentMethodAddressRequired',
+    clientPaymentMethodCardNumber16DigitsRequired: 'clients.clientPaymentMethodCardNumber16DigitsRequired',
+    clientPaymentMethodCardExpirationDateFutureDateRequired: 'clients.clientPaymentMethodCardExpirationDateFutureDateRequired',
+    clientPaymentMethodCvc3DigitsRequired: 'clients.clientPaymentMethodCvc3DigitsRequired',
     // Client popup
     clientSave: 'clients.clientSave',
     clientSaved: 'clients.clientSaved',

@@ -126,6 +126,7 @@ export const es = {
   [tokens.buildings.buildingEdit]: 'Editar Edificio',
   //#endregion
   //#region Clients
+  [tokens.clients.client]: 'Cliente',
   [tokens.clients.clientsList]: 'Listado de Clientes',
   [tokens.clients.clientDetails]: 'Detalles del Cliente',
   [tokens.clients.clientCreate]: 'Crear Cliente',
@@ -183,6 +184,15 @@ export const es = {
   [tokens.clients.clientFillMandatoryFieldsFirst]: 'Por favor, rellene todos los campos obligatorios',
   [tokens.clients.clientSaveClientFirst]: 'Por favor, guarde el cliente primero',
   [tokens.clients.clientPaymentMethodSaved]: 'Metodo de pago guardado',
+  [tokens.clients.clientPaymentMethodClientIdRequired]: 'El metodo de pago es obligatorio',
+  [tokens.clients.clientPaymentMethodCardNumberRequired]: 'El numero de tarjeta es obligatorio',
+  [tokens.clients.clientPaymentMethodCardExpirationDateRequired]: 'La fecha de vencimiento es obligatoria',
+  [tokens.clients.clientPaymentMethodCvcRequired]: 'El cvc es obligatorio',
+  [tokens.clients.clientPaymentMethodFullNameRequired]: 'El nombre completo es obligatorio',
+  [tokens.clients.clientPaymentMethodAddressRequired]: 'La direccion es obligatoria',
+  [tokens.clients.clientPaymentMethodCardNumber16DigitsRequired]: 'El numero de tarjeta debe tener 16 digitos',
+  [tokens.clients.clientPaymentMethodCardExpirationDateFutureDateRequired]: 'La fecha de vencimiento debe ser en el futuro',
+  [tokens.clients.clientPaymentMethodCvc3DigitsRequired]: 'El cvc debe tener 3 digitos',
   // Client popup
   [tokens.clients.clientSave]: 'Guardar',
   [tokens.clients.clientSaved]: 'Cliente guardado',
