@@ -28,7 +28,7 @@ import { useSelection } from 'src/hooks/use-selection';
 import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
-import { FilterBar } from './client-list-search';
+import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
 
 interface ClientListTableProps {

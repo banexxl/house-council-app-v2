@@ -4,7 +4,6 @@ import React, { FC, useState, useCallback, ChangeEvent } from 'react';
 import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import { Box, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
-import { Client } from 'src/types/client';
 import { useTranslation } from 'react-i18next';
 
 export interface TabOption {
@@ -19,57 +18,42 @@ export interface SortOption {
 
 export type SortDir = 'asc' | 'desc';
 
-
-interface FilterBarProps {
-
+interface FilterBarProps<T> {
   tabs: TabOption[];
-
   sortOptions: SortOption[];
-
-  onTabsChange?: (tab: string) => void
-
+  onTabsChange?: (tab: string) => void;
   onFiltersChange?: (filters: Record<string, any>) => void;
-
-  onSortChange?: (sortBy: keyof Client, sortDir: SortDir) => void;
-
-  initialSortBy?: keyof Client;
-
+  onSortChange?: (sortBy: keyof T, sortDir: SortDir) => void;
+  initialSortBy?: keyof T;
   initialSortDir?: SortDir;
-
-  sortBy?: keyof Client;
-
+  sortBy?: keyof T;
   sortDir?: SortDir;
-
 }
 
-export const FilterBar: FC<FilterBarProps> = ({
+export const FilterBar = <T,>({
   tabs,
   sortOptions,
   onFiltersChange,
   onSortChange,
-  initialSortBy = '',
+  initialSortBy,
   initialSortDir = 'asc',
-}) => {
-
+}: FilterBarProps<T>) => {
   const { t } = useTranslation();
   const [currentTab, setCurrentTab] = useState<string>(tabs[0]?.value || '');
   const [filters, setFilters] = useState<Record<string, any>>({});
-  const [sort, setSort] = useState<string>(`${initialSortBy}|${initialSortDir}`);
+  const [sort, setSort] = useState<string>(`${String(initialSortBy) || ''}|${initialSortDir}`);
 
   const handleTabsChange = useCallback(
     (event: ChangeEvent<any>, value: string) => {
       setCurrentTab(value);
-
-      // Update filters: set the selected tab to true and the rest to false
       const updatedFilters = tabs.reduce<Record<string, boolean>>((acc, tab) => {
-        acc[tab.value] = tab.value === value; // Set only the matching tab to true
+        acc[tab.value] = tab.value === value;
         return acc;
       }, {});
-
       setFilters(updatedFilters);
-      onFiltersChange?.(updatedFilters); // Pass the updated filters to the callback
+      onFiltersChange?.(updatedFilters);
     },
-    [tabs, onFiltersChange] // Include tabs in the dependency array
+    [tabs, onFiltersChange]
   );
 
   const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +65,7 @@ export const FilterBar: FC<FilterBarProps> = ({
   const handleSortChange = useCallback((event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
     const [sortBy, sortDir] = event.target.value.split('|') as [string, SortDir];
     setSort(event.target.value);
-    onSortChange?.(sortBy as keyof Client, sortDir);
+    onSortChange?.(sortBy as keyof T, sortDir);
   }, [onSortChange]);
 
   return (
@@ -154,26 +138,4 @@ FilterBar.propTypes = {
   onTabsChange: PropTypes.func,
   onFiltersChange: PropTypes.func,
   onSortChange: PropTypes.func,
-  initialSortBy: PropTypes.oneOf<keyof Client>([
-    'name',
-    'email',
-    'phone',
-    'address_1',
-    'contact_person',
-    'type',
-    'client_status',
-    'notes',
-    'address_2',
-    'mobile_phone',
-    'avatar',
-    'balance',
-    'has_accepted_marketing',
-    'has_accepted_terms_and_conditions',
-    'is_potential',
-    'is_returning',
-    'is_verified',
-    'total_spent',
-    'total_orders',
-  ]),
-  initialSortDir: PropTypes.oneOf<SortDir>(['asc', 'desc']),
 };
