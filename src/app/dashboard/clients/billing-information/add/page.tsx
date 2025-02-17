@@ -5,6 +5,7 @@ import Card from '@mui/material/Card';
 import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billing-information-form';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
+import { BillingInfoFormHeader } from 'src/sections/dashboard/client/billing-information/billing-information-form-header';
 
 const Page = async () => {
 
@@ -22,9 +23,8 @@ const Page = async () => {
     >
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <Card>
-            <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} />
-          </Card>
+          <BillingInfoFormHeader />
+          <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} />
         </Stack>
       </Container>
     </Box>

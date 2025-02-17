@@ -28,9 +28,12 @@ import { applySort } from "src/utils/apply-sort";
 import { Scrollbar } from "src/components/scrollbar";
 import { PopupModal } from "src/components/modal-dialog";
 import { deleteClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions";
+import { BaseEntity } from "src/app/actions/base-entity-services";
 
 interface BillingInformationTableProps {
      data?: ClientBillingInformation[]
+     paymentMethods?: BaseEntity[]
+     billingInfoStatuses?: BaseEntity[]
 }
 
 interface DeleteBillingInfoData {
@@ -87,7 +90,7 @@ const useBillingInfoSearch = () => {
      };
 };
 
-const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [] }) => {
+const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], paymentMethods, billingInfoStatuses }) => {
 
      const { t } = useTranslation();
      const [count, setCount] = useState(data.length);
@@ -263,19 +266,21 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                              </TableCell>
                                              <TableCell>{row.full_name}</TableCell>
                                              <TableCell>{row.billing_address}</TableCell>
-                                             <TableCell>{row.card_number ? '•••• ' + row.card_number.slice(-4) : ''}</TableCell>
-                                             <TableCell
-                                                  style={{
-                                                       backdropFilter: 'blur(5px)', // Standard property
-                                                       WebkitBackdropFilter: 'blur(5px)', // For Safari
-                                                       backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent background
-                                                  }}
-                                             >
-                                                  {row.cvc}
+                                             <TableCell>{row.card_number ? '****' + row.card_number.slice(-4) : ''}</TableCell>
+                                             <TableCell>
+                                                  ***
                                              </TableCell>
                                              <TableCell>{row.expiration_date ? format(new Date(row.expiration_date), 'MM/yyyy') : ''}</TableCell>
-                                             <TableCell>{row.payment_method_id}</TableCell>
-                                             <TableCell>{row.billing_status_id}</TableCell>
+                                             <TableCell>
+                                                  {
+                                                       paymentMethods!.find((method: any) => method.id === row.payment_method_id)?.name
+                                                  }
+                                             </TableCell>
+                                             <TableCell>
+                                                  {
+                                                       billingInfoStatuses!.find((status: any) => status.id === row.billing_status_id)?.name
+                                                  }
+                                             </TableCell>
                                              <TableCell>{new Date(row.updated_at!).toLocaleString()}</TableCell>
                                         </TableRow>
                                    )

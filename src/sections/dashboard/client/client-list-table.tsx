@@ -249,74 +249,81 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
             </TableRow>
           </TableHead>
           <TableBody>
-            {visibleRows.map((client) => {
-              const isSelected = clientSelection.selected.includes(client.id);
-              return (
-                <TableRow hover key={client.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          clientSelection.handleSelectOne(client.id);
-                        } else {
-                          clientSelection.handleDeselectOne(client.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Stack alignItems="center" direction="row" spacing={1}>
-                      <Avatar
-                        src={client.avatar === '' ? '' : client.avatar}
-                        sx={{ height: 42, width: 42 }}
-                      >
-                        {client.avatar === '' ? getInitials(client.name) : null}
-                      </Avatar>
-                      <div>
-                        <Link
-                          color="inherit"
-                          component="a"
-                          href={paths.dashboard.clients.details + client.id}
-                          variant="subtitle2"
-                        >
-                          {client.contact_person}
-                        </Link>
-                        <Typography color="text.secondary" variant="body2">
-                          {client.email}
-                        </Typography>
-                      </div>
-                    </Stack>
-                  </TableCell>
-                  <TableCell sx={{ width: '200px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                    {client.name}
-                  </TableCell>
-                  <TableCell sx={{ width: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {client.address_1}
-                  </TableCell>
-                  <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {client.address_2}
-                  </TableCell>
-                  <TableCell>{client.mobile_phone}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>{client.type}</TableCell>
-                  <TableCell>
-                    {clientStatuses?.find((cs) => cs.id === client.client_status)?.name ?? ''}
-                  </TableCell>
-                  <TableCell>
-                    {client.is_verified ? (
-                      <SvgIcon>
-                        <CheckCircleIcon color="success" />
-                      </SvgIcon>
-                    ) : (
-                      <SvgIcon>
-                        <CancelIcon color="error" />
-                      </SvgIcon>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {
+              items.length > 0 ?
+                visibleRows.map((client) => {
+                  const isSelected = clientSelection.selected.includes(client.id);
+                  return (
+                    <TableRow hover key={client.id} selected={isSelected}>
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={(event) => {
+                            if (event.target.checked) {
+                              clientSelection.handleSelectOne(client.id);
+                            } else {
+                              clientSelection.handleDeselectOne(client.id);
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Stack alignItems="center" direction="row" spacing={1}>
+                          <Avatar
+                            src={client.avatar === '' ? '' : client.avatar}
+                            sx={{ height: 42, width: 42 }}
+                          >
+                            {client.avatar === '' ? getInitials(client.name) : null}
+                          </Avatar>
+                          <div>
+                            <Link
+                              color="inherit"
+                              component="a"
+                              href={paths.dashboard.clients.details + client.id}
+                              variant="subtitle2"
+                            >
+                              {client.contact_person}
+                            </Link>
+                            <Typography color="text.secondary" variant="body2">
+                              {client.email}
+                            </Typography>
+                          </div>
+                        </Stack>
+                      </TableCell>
+                      <TableCell sx={{ width: '200px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        {client.name}
+                      </TableCell>
+                      <TableCell sx={{ width: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {client.address_1}
+                      </TableCell>
+                      <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {client.address_2}
+                      </TableCell>
+                      <TableCell>{client.mobile_phone}</TableCell>
+                      <TableCell>{client.phone}</TableCell>
+                      <TableCell>{client.type}</TableCell>
+                      <TableCell>
+                        {clientStatuses?.find((cs) => cs.id === client.client_status)?.name ?? ''}
+                      </TableCell>
+                      <TableCell>
+                        {client.is_verified ? (
+                          <SvgIcon>
+                            <CheckCircleIcon color="success" />
+                          </SvgIcon>
+                        ) : (
+                          <SvgIcon>
+                            <CancelIcon color="error" />
+                          </SvgIcon>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+                :
+                <Typography sx={{ m: '20px' }}>
+                  {t('common.emptyTableInfo')}
+                </Typography>
+            }
           </TableBody>
         </Table>
       </Scrollbar>

@@ -6,11 +6,16 @@ import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/clie
 import BillingInformationTable from 'src/sections/dashboard/client/billing-information/billing-information-table';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { readAllClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';
+import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
 
 
 const Page = async () => {
 
   const { readAllClientBillingInformationData: clientPaymentMethods } = await readAllClientBillingInformation("tblClientPaymentMethods");
+
+  const paymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
+
+  const billingInfoStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
 
   return (
     <Box
@@ -24,7 +29,7 @@ const Page = async () => {
         <Stack spacing={4}>
           <ClientBillingInformationTableHeader />
           <Card>
-            <BillingInformationTable data={clientPaymentMethods || []} />
+            <BillingInformationTable data={clientPaymentMethods || []} paymentMethods={paymentMethods} billingInfoStatuses={billingInfoStatuses} />
           </Card>
         </Stack>
       </Container>

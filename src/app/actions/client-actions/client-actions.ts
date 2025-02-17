@@ -23,9 +23,6 @@ export const createOrUpdateClientAction = async (client: Client): Promise<{
      }
 
      const { data, error } = result
-     console.log('data', data);
-
-     console.log('error', error);
 
      if (error) {
           return { saveClientActionSuccess: false, saveClientActionError: error }

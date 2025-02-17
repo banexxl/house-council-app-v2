@@ -6,6 +6,7 @@ import { ClientBillingInformationForm } from 'src/sections/dashboard/client/bill
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
 import { readClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';
+import { BillingInfoFormHeader } from 'src/sections/dashboard/client/billing-information/billing-information-form-header';
 
 const Page = async ({ params }: any) => {
 
@@ -27,15 +28,14 @@ const Page = async ({ params }: any) => {
     >
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <Card>
-            <ClientBillingInformationForm
-              allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []}
-              clientPaymentMethod={{ value: clientPaymentMethod?.id || "", name: clientPaymentMethod?.name || "" }}
-              clientBillingInformationStatus={{ value: billingInformationStatus?.id!, name: billingInformationStatus?.name! }}
-              clientPaymentMethods={clientPaymentMethods}
-              billingInformationStatuses={billingInformationStatuses}
-              billingInformationData={readClientBillingInformationData} />
-          </Card>
+          <BillingInfoFormHeader />
+          <ClientBillingInformationForm
+            allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []}
+            clientPaymentMethod={{ value: clientPaymentMethod?.id || "", name: clientPaymentMethod?.name || "" }}
+            clientBillingInformationStatus={{ value: billingInformationStatus?.id!, name: billingInformationStatus?.name! }}
+            clientPaymentMethods={clientPaymentMethods}
+            billingInformationStatuses={billingInformationStatuses}
+            billingInformationData={readClientBillingInformationData} />
         </Stack>
       </Container>
     </Box>

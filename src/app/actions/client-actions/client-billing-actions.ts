@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from "next/cache"
 import { supabase } from "src/libs/supabase/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 
@@ -46,12 +47,12 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      }
 
      const { data, error } = result;
-     console.log('error', error);
 
      if (error) {
           return { createOrUpdateClientBillingInformationSuccess: false, createOrUpdateClientBillingInformationError: error };
      }
 
+     revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.client_id}`);
      return { createOrUpdateClientBillingInformationSuccess: true, createOrUpdateClientBillingInformation: data };
 }
 
@@ -85,6 +86,7 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: error.message };
      }
 
+     revalidatePath('/dashboard/clients/billing-information');
      return { deleteClientBillingInformationSuccess: true };
 }
 

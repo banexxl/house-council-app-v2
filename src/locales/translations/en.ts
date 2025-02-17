@@ -134,6 +134,7 @@ export const en = {
   [tokens.clients.clientDelete]: 'Client Delete',
   [tokens.clients.clientAddPaymentMethod]: 'Add Payment Method',
   [tokens.clients.clientEditPaymentMethod]: 'Edit Payment Method',
+  [tokens.clients.billingInformationList]: 'Billing Information list',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Basic Information',
   [tokens.clients.clientFormAdvancedInfo]: 'Advanced Information',
