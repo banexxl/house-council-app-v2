@@ -160,9 +160,6 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
       clientSearch.state.page * clientSearch.state.rowsPerPage,
       clientSearch.state.page * clientSearch.state.rowsPerPage + clientSearch.state.rowsPerPage
     );
-
-
-
   }, [items, clientSearch.state]);
 
   return (
@@ -185,48 +182,48 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
           { label: t('clients.clientStatus'), value: 'status' },
           { label: t('common.updatedAt'), value: 'updated_at' },
         ]} />
-      {enableBulkActions && (
-        <Stack
-          direction="row"
-          spacing={2}
-          sx={{
-            alignItems: 'center',
-            backgroundColor: (theme) =>
-              theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            px: 2,
-            py: 0.5,
-            zIndex: 10,
-          }}
-        >
-          <Checkbox
-            checked={selectedAll}
-            indeterminate={selectedSome}
-            onChange={(event) => {
-              if (event.target.checked) {
-                clientSelection.handleSelectAll();
-              } else {
-                clientSelection.handleDeselectAll();
-              }
-            }}
-          />
-          <Button color="inherit" size="small" onClick={handleDeleteClientsClick}>
-            {t('common.btnDelete')}
-          </Button>
-          {clientSelection.selected.length === 1 && (
-            <Button color="inherit" size="small">
-              {t('common.btnEdit')}
-            </Button>
-          )}
-        </Stack>
-      )}
       <Scrollbar>
         <Table sx={{ minWidth: 700 }}>
           <TableHead>
             <TableRow>
+              {enableBulkActions && (
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: 'center',
+                    backgroundColor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    px: 2,
+                    py: 0.5,
+                    zIndex: 10,
+                  }}
+                >
+                  <Checkbox
+                    checked={selectedAll}
+                    indeterminate={selectedSome}
+                    onChange={(event) => {
+                      if (event.target.checked) {
+                        clientSelection.handleSelectAll();
+                      } else {
+                        clientSelection.handleDeselectAll();
+                      }
+                    }}
+                  />
+                  <Button color="inherit" size="small" onClick={handleDeleteClientsClick}>
+                    {t('common.btnDelete')}
+                  </Button>
+                  {clientSelection.selected.length === 1 && (
+                    <Button color="inherit" size="small">
+                      {t('common.btnEdit')}
+                    </Button>
+                  )}
+                </Stack>
+              )}
               <TableCell padding="checkbox">
                 <Checkbox
                   checked={selectedAll}

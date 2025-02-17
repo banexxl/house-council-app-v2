@@ -25,6 +25,9 @@ import { FilterBar } from "../table-filter";
 import { useSelection } from "src/hooks/use-selection";
 import { useDialog } from "src/hooks/use-dialog";
 import { applySort } from "src/utils/apply-sort";
+import { Scrollbar } from "src/components/scrollbar";
+import { PopupModal } from "src/components/modal-dialog";
+import { deleteClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions";
 
 interface BillingInformationTableProps {
      data?: ClientBillingInformation[]
@@ -89,10 +92,10 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
      const { t } = useTranslation();
      const [count, setCount] = useState(data.length);
      const billingInfoSearch: ReturnType<typeof useBillingInfoSearch> = useBillingInfoSearch();
-     const billingIfnoIds = useMemo(() => data.map((billingIfno) => billingIfno.id), [data]);
-     const billingInfoSelection = useSelection(billingIfnoIds);
-     const selectedSome = billingInfoSelection.selected.length > 0 && billingInfoSelection.selected.length < billingIfnoIds.length;
-     const selectedAll = data.length > 0 && billingInfoSelection.selected.length === billingIfnoIds.length;
+     const billingInfoIds = useMemo(() => data.map((billingIfno: ClientBillingInformation) => billingIfno.id), [data]);
+     const billingInfoSelection = useSelection(billingInfoIds);
+     const selectedSome = billingInfoSelection.selected.length > 0 && billingInfoSelection.selected.length < billingInfoIds.length;
+     const selectedAll = data.length > 0 && billingInfoSelection.selected.length === billingInfoIds.length;
      const enableBulkActions = billingInfoSelection.selected.length > 0;
 
      const deleteBillingInfoDialog = useDialog<DeleteBillingInfoData>();
@@ -111,6 +114,14 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
 
      const handleDeleteBillingInfoClick = useCallback(() => {
           deleteBillingInfoDialog.handleOpen();
+     }, [deleteBillingInfoDialog]);
+
+     const handleDeleteBillingInfoConfirm = useCallback(async () => {
+          deleteBillingInfoDialog.handleClose();
+          const deleteBillingInfoResponse = await deleteClientBillingInformation(billingInfoSelection.selected);
+          if (deleteBillingInfoResponse.deleteClientBillingInformationSuccess) {
+               billingInfoSelection.handleDeselectAll();
+          }
      }, [deleteBillingInfoDialog]);
 
      const visibleRows = useMemo(() => {
@@ -159,51 +170,65 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                          { label: t('clients.clientName'), value: 'full_name' },
                          { label: t('common.updatedAt'), value: 'updated_at' },
                     ]}
-                    tabs={[]}
+                    tabs={[
+                         { label: t('common.all'), value: 'all' },]
+                    }
                />
-
-               {enableBulkActions && (
-                    <Stack
-                         direction="row"
-                         spacing={2}
-                         sx={{
-                              alignItems: 'center',
-                              backgroundColor: (theme) =>
-                                   theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '100%',
-                              px: 2,
-                              py: 0.5,
-                              zIndex: 10,
-                         }}
-                    >
-                         <Checkbox
-                              checked={selectedAll}
-                              indeterminate={selectedSome}
-                              onChange={(event) => {
-                                   if (event.target.checked) {
-                                        billingInfoSelection.handleSelectAll();
-                                   } else {
-                                        billingInfoSelection.handleDeselectAll();
-                                   }
-                              }}
-                         />
-                         <Button color="inherit" size="small" onClick={handleDeleteBillingInfoClick}>
-                              {t('common.btnDelete')}
-                         </Button>
-                         {billingInfoSelection.selected.length === 1 && (
-                              <Button color="inherit" size="small">
-                                   {t('common.btnEdit')}
-                              </Button>
-                         )}
-                    </Stack>
-               )}
-               <TableContainer>
+               <Scrollbar>
                     <Table>
                          <TableHead>
                               <TableRow>
+                                   {enableBulkActions && (
+                                        <Stack
+                                             direction="row"
+                                             spacing={2}
+                                             sx={{
+                                                  alignItems: 'center',
+                                                  backgroundColor: (theme) =>
+                                                       theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
+                                                  position: 'absolute',
+                                                  top: 0,
+                                                  left: 0,
+                                                  width: '100%',
+                                                  px: 2,
+                                                  py: 0.5,
+                                                  zIndex: 10,
+                                             }}
+                                        >
+                                             <Checkbox
+                                                  checked={selectedAll}
+                                                  indeterminate={selectedSome}
+                                                  onChange={(event) => {
+                                                       if (event.target.checked) {
+                                                            billingInfoSelection.handleSelectAll();
+                                                       } else {
+                                                            billingInfoSelection.handleDeselectAll();
+                                                       }
+                                                  }}
+                                             />
+                                             <Button color="inherit" size="small" onClick={handleDeleteBillingInfoClick}>
+                                                  {t('common.btnDelete')}
+                                             </Button>
+                                             {billingInfoSelection.selected.length === 1 && (
+                                                  <Button color="inherit" size="small">
+                                                       {t('common.btnEdit')}
+                                                  </Button>
+                                             )}
+                                        </Stack>
+                                   )}
+                                   <TableCell padding="checkbox">
+                                        <Checkbox
+                                             checked={selectedAll}
+                                             indeterminate={selectedSome}
+                                             onChange={(event) => {
+                                                  if (event.target.checked) {
+                                                       billingInfoSelection.handleSelectAll();
+                                                  } else {
+                                                       billingInfoSelection.handleDeselectAll();
+                                                  }
+                                             }}
+                                        />
+                                   </TableCell>
                                    <TableCell>{t('common.fullName')}</TableCell>
                                    <TableCell>{t('common.address')}</TableCell>
                                    <TableCell>{t('clients.clientCardNumber')}</TableCell>
@@ -215,31 +240,46 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                               </TableRow>
                          </TableHead>
                          <TableBody>
-                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: any) => (
-                                   <TableRow
-                                        key={row.id}
-                                        component="a"
-                                        href={paths.dashboard.clients.billingInformation.details + '/' + row.id}
-                                        sx={{ textDecoration: 'none', color: 'inherit' }}
-                                   >
-                                        <TableCell>{row.full_name}</TableCell>
-                                        <TableCell>{row.billing_address}</TableCell>
-                                        <TableCell>{row.card_number ? '•••• ' + row.card_number.slice(-4) : ''}</TableCell>
-                                        <TableCell
-                                             style={{
-                                                  backdropFilter: 'blur(5px)', // Standard property
-                                                  WebkitBackdropFilter: 'blur(5px)', // For Safari
-                                                  backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent background
-                                             }}
+                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: any) => {
+                                   const isSelected = billingInfoSelection.selected.includes(row.id);
+                                   return (
+                                        <TableRow
+                                             key={row.id}
+                                             component="a"
+                                             // href={paths.dashboard.clients.billingInformation.details + '/' + row.id}
+                                             sx={{ textDecoration: 'none', color: 'inherit' }}
                                         >
-                                             {row.cvc}
-                                        </TableCell>
-                                        <TableCell>{row.expiration_date ? format(new Date(row.expiration_date), 'MM/yyyy') : ''}</TableCell>
-                                        <TableCell>{row.payment_method_id}</TableCell>
-                                        <TableCell>{row.billing_status_id}</TableCell>
-                                        <TableCell>{new Date(row.updated_at!).toLocaleString()}</TableCell>
-                                   </TableRow>
-                              ))
+                                             <TableCell padding="checkbox">
+                                                  <Checkbox
+                                                       checked={isSelected}
+                                                       onChange={(event) => {
+                                                            if (event.target.checked) {
+                                                                 billingInfoSelection.handleSelectOne(row.id);
+                                                            } else {
+                                                                 billingInfoSelection.handleDeselectOne(row.id);
+                                                            }
+                                                       }}
+                                                  />
+                                             </TableCell>
+                                             <TableCell>{row.full_name}</TableCell>
+                                             <TableCell>{row.billing_address}</TableCell>
+                                             <TableCell>{row.card_number ? '•••• ' + row.card_number.slice(-4) : ''}</TableCell>
+                                             <TableCell
+                                                  style={{
+                                                       backdropFilter: 'blur(5px)', // Standard property
+                                                       WebkitBackdropFilter: 'blur(5px)', // For Safari
+                                                       backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent background
+                                                  }}
+                                             >
+                                                  {row.cvc}
+                                             </TableCell>
+                                             <TableCell>{row.expiration_date ? format(new Date(row.expiration_date), 'MM/yyyy') : ''}</TableCell>
+                                             <TableCell>{row.payment_method_id}</TableCell>
+                                             <TableCell>{row.billing_status_id}</TableCell>
+                                             <TableCell>{new Date(row.updated_at!).toLocaleString()}</TableCell>
+                                        </TableRow>
+                                   )
+                              })
                                    :
                                    <Typography sx={{ m: '20px' }}>
                                         {t('common.emptyTableInfo')}
@@ -247,17 +287,26 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                               }
                          </TableBody>
                     </Table>
-               </TableContainer>
+               </Scrollbar>
                <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={data?.length || 0}
+                    count={count}
                     rowsPerPage={billingInfoSearch.state.rowsPerPage}
                     page={billingInfoSearch.state.page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     labelRowsPerPage={t('common.rowsPerPage')}
                />
+               <PopupModal
+                    isOpen={deleteBillingInfoDialog.open}
+                    onClose={() => deleteBillingInfoDialog.handleClose()}
+                    onConfirm={handleDeleteBillingInfoConfirm}
+                    title={t('warning.deleteWarningTitle')}
+                    confirmText={t('common.btnDelete')}
+                    cancelText={t('common.btnClose')}
+                    children={t('warning.deleteWarningMessage')}
+                    type={'confirmation'} />
           </Card>
      );
 };

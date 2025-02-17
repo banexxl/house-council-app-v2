@@ -70,11 +70,16 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
      return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
 
-export const deleteClientBillingInformation = async (id: number): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
+export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
+
+     if (ids?.length == 0) {
+          return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: "No IDs provided" };
+     }
+
      const { error } = await supabase
           .from('tblClientBillingInformation')
           .delete()
-          .eq('id', id);
+          .in('id', ids!);
 
      if (error) {
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: error.message };

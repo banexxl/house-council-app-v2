@@ -1,5 +1,5 @@
 export type ClientBillingInformation = {
-     id?: string;
+     id: string;
      created_at?: number;
      updated_at?: number;
      client_id: string;
