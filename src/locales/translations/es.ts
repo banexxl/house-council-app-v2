@@ -134,7 +134,10 @@ export const es = {
   [tokens.clients.clientDelete]: 'Borrar Cliente',
   [tokens.clients.clientAddPaymentMethod]: 'Agregar Metodo de Pago',
   [tokens.clients.clientEditPaymentMethod]: 'Editar Metodo de Pago',
-  [tokens.clients.billingInformationList]: 'Información de Facturación',
+  [tokens.clients.clientBillingInformationList]: 'Información de Facturación',
+  [tokens.clients.clientBillingInformationDetails]: 'Detalles de Información de Facturación',
+  [tokens.clients.clientBillingInformationCreate]: 'Crear Información de Facturación',
+  [tokens.clients.clientBillingInformationEdit]: 'Editar Información de Facturación',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Información Basica',
   [tokens.clients.clientFormAdvancedInfo]: 'Información Avanzada',

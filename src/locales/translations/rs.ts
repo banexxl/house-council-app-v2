@@ -135,7 +135,10 @@ export const rs = {
      [tokens.clients.clientDelete]: 'Brisanje klijenta',
      [tokens.clients.clientAddPaymentMethod]: 'Dodaj metodu plaćanja',
      [tokens.clients.clientEditPaymentMethod]: 'Izmeni metodu plaćanja',
-     [tokens.clients.billingInformationList]: 'Lista računa',
+     [tokens.clients.clientBillingInformationList]: 'Lista računa',
+     [tokens.clients.clientBillingInformationDetails]: 'Detalji računa',
+     [tokens.clients.clientBillingInformationCreate]: 'Kreiraj račun',
+     [tokens.clients.clientBillingInformationEdit]: 'Izmeni račun',
      // Client form
      [tokens.clients.clientFormBasicInfo]: 'Osnovne informacije',
      [tokens.clients.clientFormAdvancedInfo]: 'Napredne informacije',

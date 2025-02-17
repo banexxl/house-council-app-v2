@@ -134,7 +134,10 @@ export const tokens = {
     clientDelete: 'clients.clientDelete',
     clientAddPaymentMethod: 'clients.clientAddPaymentMethod',
     clientEditPaymentMethod: 'clients.clientEditPaymentMethod',
-    billingInformationList: 'clients.billingInformationList',
+    clientBillingInformationList: 'clients.clientBillingInformationList',
+    clientBillingInformationDetails: 'clients.clientBillingInformationDetails',
+    clientBillingInformationCreate: 'clients.clientBillingInformationCreate',
+    clientBillingInformationEdit: 'clients.clientBillingInformationEdit',
     // Client form
     clientFormBasicInfo: 'clients.clientFormBasicInfo',
     clientFormAdvancedInfo: 'clients.clientFormAdvancedInfo',

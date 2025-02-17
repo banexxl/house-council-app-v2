@@ -33,7 +33,7 @@ export const BillingInfoFormHeader = (props: BillingInfoFormHeaderProps) => {
                     <SvgIcon sx={{ mr: 1 }}>
                          <ArrowBackIcon />
                     </SvgIcon>
-                    <Typography variant="subtitle2">{t('clients.billingInformationList')}</Typography>
+                    <Typography variant="subtitle2">{t('clients.clientBillingInformationList')}</Typography>
                </Link>
           </Box>
      )

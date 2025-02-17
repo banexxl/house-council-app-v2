@@ -93,11 +93,11 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                     {
                          billingInformationData && billingInformationData.id ?
                               <Typography variant="h4" gutterBottom>
-                                   {t('clients.clientEditPaymentMethod')}
+                                   {t('clients.clientBillingInformationEdit')}
                               </Typography>
                               :
                               <Typography variant="h4" gutterBottom>
-                                   {t('clients.clientAddPaymentMethod')}
+                                   {t('clients.clientBillingInformationCreate')}
                               </Typography>
                     }
                </CardContent>

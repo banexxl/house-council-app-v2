@@ -29,11 +29,14 @@ import { Scrollbar } from "src/components/scrollbar";
 import { PopupModal } from "src/components/modal-dialog";
 import { deleteClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions";
 import { BaseEntity } from "src/app/actions/base-entity-services";
+import { Client } from "./client-select";
+import Link from "next/link";
 
 interface BillingInformationTableProps {
      data?: ClientBillingInformation[]
      paymentMethods?: BaseEntity[]
      billingInfoStatuses?: BaseEntity[]
+     clients?: Client[]
 }
 
 interface DeleteBillingInfoData {
@@ -90,7 +93,7 @@ const useBillingInfoSearch = () => {
      };
 };
 
-const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], paymentMethods, billingInfoStatuses }) => {
+const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], paymentMethods, billingInfoStatuses, clients }) => {
 
      const { t } = useTranslation();
      const [count, setCount] = useState(data.length);
@@ -232,6 +235,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                              }}
                                         />
                                    </TableCell>
+                                   <TableCell>{t('clients.client')}</TableCell>
                                    <TableCell>{t('common.fullName')}</TableCell>
                                    <TableCell>{t('common.address')}</TableCell>
                                    <TableCell>{t('clients.clientCardNumber')}</TableCell>
@@ -243,7 +247,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                               </TableRow>
                          </TableHead>
                          <TableBody>
-                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: any) => {
+                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: ClientBillingInformation) => {
                                    const isSelected = billingInfoSelection.selected.includes(row.id);
                                    return (
                                         <TableRow
@@ -263,6 +267,16 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                                             }
                                                        }}
                                                   />
+                                             </TableCell>
+                                             <TableCell>
+                                                  <Link
+                                                       href={paths.dashboard.clients.details + '/' + row.client_id}
+                                                       style={{ textDecoration: 'none', color: 'inherit' }}
+                                                  >
+                                                       {
+                                                            clients!.find((client: any) => client.id === row.client_id)?.name
+                                                       }
+                                                  </Link>
                                              </TableCell>
                                              <TableCell>{row.full_name}</TableCell>
                                              <TableCell>{row.billing_address}</TableCell>

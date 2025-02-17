@@ -13,7 +13,7 @@ export const ClientBillingInformationTableHeader = () => {
 
      return (
           <Stack direction="row" justifyContent="space-between" spacing={4}>
-               <Typography variant="h4">{t('clients.clientPaymentMethods')}</Typography>
+               <Typography variant="h4">{t('clients.clientBillingInformation')}</Typography>
                <Stack spacing={1}>
                     <Box >
                          <Stack alignItems="center" direction="row" spacing={3}>
@@ -30,8 +30,6 @@ export const ClientBillingInformationTableHeader = () => {
                               </Button>
                          </Stack>
                     </Box>
-               </Stack>
-               <Stack alignItems="center" direction="row" spacing={3}>
                </Stack>
           </Stack>
      );

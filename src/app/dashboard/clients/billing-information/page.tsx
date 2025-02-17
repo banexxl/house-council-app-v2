@@ -7,6 +7,7 @@ import BillingInformationTable from 'src/sections/dashboard/client/billing-infor
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { readAllClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
+import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 
 
 const Page = async () => {
@@ -16,6 +17,8 @@ const Page = async () => {
   const paymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
 
   const billingInfoStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
+
+  const { getAllClientsActionData: clients } = await readAllClientsAction();
 
   return (
     <Box
@@ -28,9 +31,12 @@ const Page = async () => {
       <Container maxWidth="xl">
         <Stack spacing={4}>
           <ClientBillingInformationTableHeader />
-          <Card>
-            <BillingInformationTable data={clientPaymentMethods || []} paymentMethods={paymentMethods} billingInfoStatuses={billingInfoStatuses} />
-          </Card>
+          <BillingInformationTable
+            data={clientPaymentMethods || []}
+            paymentMethods={paymentMethods}
+            billingInfoStatuses={billingInfoStatuses}
+            clients={clients || []}
+          />
         </Stack>
       </Container>
     </Box>
