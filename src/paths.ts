@@ -44,6 +44,10 @@ export const paths = {
         add: '/dashboard/clients/billing-information/add',
         details: '/dashboard/clients/billing-information/',
       },
+      clientSettings: {
+        index: '/dashboard/clients/client-settings',
+        add: '/dashboard/clients/client-settings/add',
+      }
     },
     ecommerce: '/dashboard/ecommerce',
     fileManager: '/dashboard/file-manager',

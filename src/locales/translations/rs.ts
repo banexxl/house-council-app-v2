@@ -37,6 +37,7 @@ export const rs = {
      [tokens.common.btnExportDocx]: 'Eksportuj kao DOCX',
      [tokens.common.btnExportPdf]: 'Eksportuj kao PDF',
      [tokens.common.notes]: 'Napomene',
+     [tokens.common.settings]: 'Podešavanje',
      //#endregion
      //#region Navigation
      [tokens.nav.academy]: 'Akademija',
@@ -57,6 +58,7 @@ export const rs = {
      [tokens.nav.chat]: 'Ćaskanje',
      [tokens.nav.checkout]: 'Plaćanje',
      [tokens.nav.clientDashboard]: 'Klijent',
+     [tokens.nav.clientSettings]: 'Klijentska podešavanja',
      [tokens.nav.tenants]: 'Stanari',
      [tokens.nav.contact]: 'Kontakt',
      [tokens.nav.course]: 'Kurs',

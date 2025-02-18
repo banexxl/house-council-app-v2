@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-import { ClientBillingInformation } from './client-billing-information';
 
 export interface Client {
   id: string;
@@ -25,18 +24,6 @@ export interface Client {
   is_verified?: boolean;
   total_spent?: number;
   total_orders?: number;
-}
-
-export type ClientStatus = {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export interface ClientType {
-  id: string;
-  name: string;
-  description: string;
 }
 
 export interface ClientLog {

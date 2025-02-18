@@ -4,16 +4,14 @@ import Stack from '@mui/material/Stack'
 
 import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
-import { fetchClientTypes } from 'src/app/actions/client-actions/client-types-actions'
-
-import { ClientStatus, ClientType } from 'src/types/client'
+import { readClientTypes } from 'src/app/actions/client-actions/client-types-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
 import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services'
 import { readClientStatuses } from 'src/app/actions/client-actions/client-status-actions'
 
 const Page = async () => {
 
-  const clientTypes: ClientType[] = await fetchClientTypes()
+  const { readClientTypesData: clientTypes } = await readClientTypes()
 
   const clientStatuses = await readClientStatuses()
 

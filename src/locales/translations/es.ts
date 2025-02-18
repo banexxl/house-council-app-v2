@@ -37,6 +37,7 @@ export const es = {
   [tokens.common.btnExportDocx]: 'Exportar a DOCX',
   [tokens.common.btnExportPdf]: 'Exportar a PDF',
   [tokens.common.notes]: 'Notas',
+  [tokens.common.settings]: 'Ajustes',
   //#endregion
   //#region Navigation
   [tokens.nav.academy]: 'Academia',
@@ -57,6 +58,7 @@ export const es = {
   [tokens.nav.chat]: 'Chat',
   [tokens.nav.checkout]: 'Pago',
   [tokens.nav.clientDashboard]: 'Dashboard Cliente',
+  [tokens.nav.clientSettings]: 'Ajustes Cliente',
   [tokens.nav.tenants]: 'Inquilinos',
   [tokens.nav.contact]: 'Contacto',
   [tokens.nav.course]: 'Curso',

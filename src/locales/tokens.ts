@@ -35,6 +35,7 @@ export const tokens = {
     btnExportDocx: 'common.btnExportDocx',
     btnExportPdf: 'common.btnExportPdf',
     notes: 'common.notes',
+    settings: 'common.settings',
   },
   nav: {
     home: 'nav.home',
@@ -53,6 +54,7 @@ export const tokens = {
     chat: 'nav.chat',
     checkout: 'nav.checkout',
     clientDashboard: 'nav.clientDashboard',
+    clientSettings: 'nav.clientSettings',
     tenants: 'nav.tenants',
     contact: 'nav.contact',
     course: 'nav.course',

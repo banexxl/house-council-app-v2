@@ -16,7 +16,7 @@ import MenuItem from '@mui/material/MenuItem'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
-import { Client, clientInitialValues, ClientStatus, ClientType, clientValidationSchema } from 'src/types/client'
+import { Client, clientInitialValues, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
 import { createOrUpdateClientAction } from 'src/app/actions/client-actions/client-actions'
@@ -27,8 +27,8 @@ import { LoadingButton } from '@mui/lab'
 import { BaseEntity } from 'src/app/actions/base-entity-services'
 
 interface ClientNewFormProps {
-  clientTypes: ClientType[],
-  clientStatuses: ClientStatus[],
+  clientTypes: BaseEntity[],
+  clientStatuses: BaseEntity[],
   clientPaymentMethods?: BaseEntity[],
   clientData?: Client
 }
@@ -131,7 +131,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 error={!!(formik.touched.client_status && formik.errors.client_status)}
                 helperText={formik.touched.client_status && formik.errors.client_status}
               >
-                {clientStatuses.map((status: ClientStatus) => (
+                {clientStatuses.map((status: BaseEntity) => (
                   <MenuItem
                     key={status.id} value={status.id}
                     sx={{ cursor: 'pointer' }}

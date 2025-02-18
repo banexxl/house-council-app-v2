@@ -1,12 +1,14 @@
 'use server'
 
 import { supabase } from "src/libs/supabase/client";
-import { ClientStatus } from "src/types/client";
+import { BaseEntity } from "../base-entity-services";
 
-export const createClientStatus = async (clientStatus: ClientStatus): Promise<{ createClientStatusSuccess: boolean, createClientStatus?: ClientStatus, createClientStatusError?: any }> => {
+export const createClientStatus = async (clientStatus: BaseEntity): Promise<{ createClientStatusSuccess: boolean, createClientStatus?: BaseEntity, createClientStatusError?: any }> => {
      const { data, error } = await supabase
           .from('tblClientStatuses')
-          .insert(clientStatus);
+          .insert(clientStatus)
+          .select()
+          .single();
 
      if (error) {
           return { createClientStatusSuccess: false, createClientStatusError: error };
@@ -15,7 +17,7 @@ export const createClientStatus = async (clientStatus: ClientStatus): Promise<{ 
      return { createClientStatusSuccess: true, createClientStatus: data ? data[0] : undefined };
 }
 
-export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess: boolean, readClientStatusesData: ClientStatus[], readClientStatusesError?: string }> => {
+export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess: boolean, readClientStatusesData: BaseEntity[], readClientStatusesError?: string }> => {
 
      const { data, error } = await supabase
           .from('tblClientStatuses')
@@ -28,7 +30,7 @@ export const readClientStatuses = async (): Promise<{ readClientStatusesSuccess:
      return { readClientStatusesSuccess: true, readClientStatusesData: data ?? [] };
 }
 
-export const readClientStatus = async (id: number): Promise<{ readClientStatusSuccess: boolean, readClientStatus?: ClientStatus, readClientStatusError?: string }> => {
+export const readClientStatus = async (id: number): Promise<{ readClientStatusSuccess: boolean, readClientStatus?: BaseEntity, readClientStatusError?: string }> => {
 
      const { data, error } = await supabase
           .from('tblClientStatuses')
@@ -43,7 +45,7 @@ export const readClientStatus = async (id: number): Promise<{ readClientStatusSu
      return { readClientStatusSuccess: true, readClientStatus: data ?? undefined };
 }
 
-export const updateClientStatus = async (clientStatus: ClientStatus): Promise<{ updateClientStatusSuccess: boolean, updateClientStatus?: ClientStatus, updateClientStatusError?: any }> => {
+export const updateClientStatus = async (clientStatus: BaseEntity): Promise<{ updateClientStatusSuccess: boolean, updateClientStatus?: BaseEntity, updateClientStatusError?: any }> => {
      const { id, ...clientStatusData } = clientStatus;
 
      const { data, error } = await supabase

@@ -31,6 +31,7 @@ import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
 import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AddCardIcon from '@mui/icons-material/AddCard';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { tokens } from 'src/locales/tokens';
 import { paths } from 'src/paths';
 
@@ -99,6 +100,20 @@ export const useSections = () => {
                   {
                     title: t(tokens.nav.create),
                     path: paths.dashboard.clients.billingInformation.add,
+                  }
+                ]
+              },
+              {
+                title: t(tokens.common.settings),
+                items: [
+                  {
+                    title: t(tokens.nav.clientSettings),
+                    path: paths.dashboard.clients.clientSettings.index,
+                    icon: (
+                      <SvgIcon fontSize="small">
+                        <SettingsIcon />
+                      </SvgIcon>
+                    )
                   }
                 ]
               }

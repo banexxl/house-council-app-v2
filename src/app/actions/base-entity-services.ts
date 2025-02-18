@@ -1,3 +1,5 @@
+'use server'
+
 import { supabase } from "src/libs/supabase/client";
 
 export interface BaseEntity {
@@ -18,7 +20,7 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
      return { success: true, createdEntity: data };
 };
 
-export const readEntity = async <T extends BaseEntity>(table: string, id: number): Promise<{ success: boolean, entity?: T, error?: string }> => {
+export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
 
      if (error) {
@@ -28,7 +30,7 @@ export const readEntity = async <T extends BaseEntity>(table: string, id: number
      return { success: true, entity: data };
 };
 
-export const updateEntity = async <T extends BaseEntity>(table: string, id: number, entity: Partial<T>): Promise<{ success: boolean, updatedEntity?: T, error?: any }> => {
+export const updateEntity = async <T extends BaseEntity>(table: string, id: string, entity: Partial<T>): Promise<{ success: boolean, updatedEntity?: T, error?: any }> => {
      const { data, error } = await supabase.from(table).update(entity).eq('id', id).select().single();
 
      if (error) {
@@ -38,7 +40,7 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: numb
      return { success: true, updatedEntity: data };
 };
 
-export const deleteEntity = async (table: string, id: number): Promise<{ success: boolean, error?: string }> => {
+export const deleteEntity = async (table: string, id: string): Promise<{ success: boolean, error?: string }> => {
      const { error } = await supabase.from(table).delete().eq('id', id);
 
      if (error) {

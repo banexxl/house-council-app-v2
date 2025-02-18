@@ -21,7 +21,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Client, ClientStatus } from 'src/types/client';
+import type { Client } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 import { useTranslation } from 'react-i18next';
 import { useSelection } from 'src/hooks/use-selection';
@@ -30,10 +30,11 @@ import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
+import { BaseEntity } from 'src/app/actions/base-entity-services';
 
 interface ClientListTableProps {
   items?: Client[];
-  clientStatuses?: ClientStatus[];
+  clientStatuses?: BaseEntity[];
 }
 
 interface DeleteClientsData {
