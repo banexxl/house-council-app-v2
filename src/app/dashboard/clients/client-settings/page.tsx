@@ -1,7 +1,7 @@
 'use server'
 
 import { Box, Container, Stack, Typography } from "@mui/material"
-import { deleteEntity, updateEntity } from "src/app/actions/base-entity-services"
+import { createEntity, deleteEntity, updateEntity } from "src/app/actions/base-entity-services"
 import { readClientBillingInformationStatuses } from "src/app/actions/client-actions/client-billing-info-statuses"
 import { readClientPaymentMethods } from "src/app/actions/client-actions/client-payment-methods"
 import { readClientStatuses } from "src/app/actions/client-actions/client-status-actions"
@@ -33,6 +33,7 @@ export default async function TableEditorPage() {
                               clientBillingInformationStatuses={readClientBillingInformationStatusesData}
                               updateEntity={updateEntity}
                               deleteEntity={deleteEntity}
+                              createEntity={createEntity}
                          />
                     </Stack>
                </Container>

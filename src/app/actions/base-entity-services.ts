@@ -11,14 +11,41 @@ export interface BaseEntity {
      description?: string;
 }
 
-export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean, createdEntity?: T, error?: any }> => {
+export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean; createdEntity?: T; error?: any }> => {
+     if (!table.trim()) {
+          return { success: false, error: 'clients.clientSettingsNoTableError' };
+     }
+
+     if (!entity || Object.keys(entity).length === 0) {
+          return { success: false, error: 'clients.clientSettingsNoEntityError' };
+     }
+
+     if (entity.name.trim() === '') {
+          return { success: false, error: 'clients.clientSettingsNoNameError' };
+     }
+
+     // Check if name already exists, ignoring case
+     const { data: existingEntity, error: readError } = await supabase
+          .from(table)
+          .select('id')
+          .ilike('name', entity.name.trim())
+          .single();
+
+     // If an existing entity is found, return an error
+     if (existingEntity) {
+          return { success: false, error: 'clients.clientSettingsAlreadyExists' };
+     }
+
+     // Proceed with insertion since no existing entity was found
      const { data, error } = await supabase.from(table).insert(entity).select().single();
 
      if (error) {
           return { success: false, error };
      }
 
+     revalidatePath('/dashboard/clients/client-settings');
      return { success: true, createdEntity: data };
+
 };
 
 export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
@@ -50,6 +77,7 @@ export const deleteEntity = async (table: string, id: string): Promise<{ success
           return { success: false, error: error.message };
      }
 
+     revalidatePath('/dashboard/clients/client-settings');
      return { success: true };
 };
 
