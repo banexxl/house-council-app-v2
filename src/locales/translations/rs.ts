@@ -36,6 +36,10 @@ export const rs = {
      [tokens.common.btnExport]: 'Eksportuj',
      [tokens.common.btnExportDocx]: 'Eksportuj kao DOCX',
      [tokens.common.btnExportPdf]: 'Eksportuj kao PDF',
+     [tokens.common.lblName]: 'Naziv',
+     [tokens.common.lblDescription]: 'Opis',
+     [tokens.common.lblStatus]: 'Status',
+     [tokens.common.lblActions]: 'Akcije',
      [tokens.common.notes]: 'Napomene',
      [tokens.common.settings]: 'Podešavanje',
      //#endregion
@@ -141,6 +145,11 @@ export const rs = {
      [tokens.clients.clientBillingInformationDetails]: 'Detalji računa',
      [tokens.clients.clientBillingInformationCreate]: 'Kreiraj račun',
      [tokens.clients.clientBillingInformationEdit]: 'Izmeni račun',
+     [tokens.clients.clientTypesTableName]: 'Tipovi klijenata',
+     [tokens.clients.clientPaymentMethodsTableName]: 'Metode plaćanja',
+     [tokens.clients.clientBillingInformationStatusesTableName]: 'Statusi računa',
+     [tokens.clients.clientStatusesTableName]: 'Statusi klijenata',
+     [tokens.clients.clientComponentSettings]: 'Podešavanja klijenta',
      // Client form
      [tokens.clients.clientFormBasicInfo]: 'Osnovne informacije',
      [tokens.clients.clientFormAdvancedInfo]: 'Napredne informacije',

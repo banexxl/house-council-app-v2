@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from "next/cache";
 import { supabase } from "src/libs/supabase/client";
 
 export interface BaseEntity {
@@ -31,12 +32,14 @@ export const readEntity = async <T extends BaseEntity>(table: string, id: string
 };
 
 export const updateEntity = async <T extends BaseEntity>(table: string, id: string, entity: Partial<T>): Promise<{ success: boolean, updatedEntity?: T, error?: any }> => {
+
      const { data, error } = await supabase.from(table).update(entity).eq('id', id).select().single();
 
      if (error) {
           return { success: false, error };
      }
 
+     revalidatePath('/dashboard/clients/client-settings');
      return { success: true, updatedEntity: data };
 };
 
@@ -51,7 +54,7 @@ export const deleteEntity = async (table: string, id: string): Promise<{ success
 };
 
 export const readAllEntities = async <T extends BaseEntity>(table: string): Promise<T[]> => {
-     const { data, error } = await supabase.from(table).select('*');
+     const { data, error } = await supabase.from(table).select('*').order('updated_at', { ascending: false });
 
      if (error) {
           console.error(`Error fetching entities from ${table}:`, error);

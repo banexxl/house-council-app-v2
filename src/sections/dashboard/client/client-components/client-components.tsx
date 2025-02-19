@@ -22,6 +22,7 @@ import {
      SelectChangeEvent,
 } from "@mui/material"
 import { BaseEntity } from "src/app/actions/base-entity-services"
+import { useTranslation } from "react-i18next"
 
 interface GenericTableEditorProps {
      clientStatuses: BaseEntity[]
@@ -48,9 +49,11 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
      updateEntity,
      deleteEntity,
 }) => {
+
      const [selectedTable, setSelectedTable] = useState<string>("")
      const [editingRow, setEditingRow] = useState<BaseEntity | null>(null)
      const editRowRef = useRef<HTMLTableRowElement>(null)
+     const { t } = useTranslation()
 
      useEffect(() => {
           function handleClickOutside(event: MouseEvent) {
@@ -67,30 +70,28 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
 
      const tables = [
           {
-               name: "clientStatuses",
-               displayName: "Client Statuses",
+               name: "tblClientStatuses",
+               displayName: 'clients.clientStatusesTableName',
                data: clientStatuses
           },
           {
-               name: "clientTypes",
-               displayName: "Client Types",
+               name: "tblClientTypes",
+               displayName: 'clients.clientTypesTableName',
                data: clientTypes
           },
           {
-               name: "clientPaymentMethods",
-               displayName: "Client Payment Methods",
+               name: "tblClientPaymentMethods",
+               displayName: 'clients.clientPaymentMethodsTableName',
                data: clientPaymentMethods
           },
           {
-               name: "clientBillingInformationStatuses",
-               displayName: "Billing Information Statuses",
+               name: "tblClientBillingInformationStatuses",
+               displayName: 'clients.clientBillingInformationStatusesTableName',
                data: clientBillingInformationStatuses,
           },
      ]
 
      const handleTableChange = (event: SelectChangeEvent<string>) => {
-          console.log('handleTableChange', event.target.value);
-
           setSelectedTable(event.target.value as string)
           setEditingRow(null)
      }
@@ -127,13 +128,20 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
           }
      }
 
-     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-          console.log(e.target.name, e.target.value);
-
+     const handlePropertyNameInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           if (editingRow) {
                setEditingRow({
                     ...editingRow,
-                    [e.target.name]: e.target.value,
+                    name: e.target.textContent ? e.target.textContent : "",
+               })
+          }
+     }
+
+     const handlePropertyDescriptionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          if (editingRow) {
+               setEditingRow({
+                    ...editingRow,
+                    description: e.target.textContent ? e.target.textContent : "",
                })
           }
      }
@@ -142,16 +150,12 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
 
      return (
           <Card >
-               <CardHeader title="Generic Table Editor" />
+               <CardHeader title={t('clients.clientComponentSettings')} />
                <CardContent>
-                    <Select value={selectedTable} onChange={handleTableChange} fullWidth sx={{ mb: 2 }} renderValue={() => (
-                         <Typography variant="body2" color="text.secondary">
-                              {tables.find((table) => table.name === selectedTable)?.displayName}
-                         </Typography>
-                    )}>
+                    <Select value={selectedTable} onChange={(e: any) => handleTableChange(e)} fullWidth sx={{ mb: 2 }} >
                          {tables.map((table) => (
                               <MenuItem key={table.name} value={table.name}>
-                                   {table.displayName}
+                                   {t(table.displayName)}
                               </MenuItem>
                          ))}
                     </Select>
@@ -160,38 +164,60 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                               <Table>
                                    <TableHead>
                                         <TableRow>
-                                             <TableCell>Name</TableCell>
-                                             <TableCell>Description</TableCell>
-                                             <TableCell>Actions</TableCell>
+                                             <TableCell>{t('common.lblName')}</TableCell>
+                                             <TableCell>{t('common.lblDescription')}</TableCell>
+                                             <TableCell align="center">{t('common.lblActions')}</TableCell>
                                         </TableRow>
                                    </TableHead>
                                    <TableBody>
-                                        {currentTable.data.map((row) => (
-                                             <TableRow key={row.id} ref={editingRow && editingRow.id === row.id ? editRowRef : null}>
-                                                  <TableCell>
-                                                       {editingRow && editingRow.id === row.id ? (
-                                                            <TextField sx={{ width: '100%' }} name="name" value={editingRow.name} onChange={handleInputChange} />
-                                                       ) : (
-                                                            row.name
-                                                       )}
-                                                  </TableCell>
-                                                  <TableCell>
-                                                       {editingRow && editingRow.id === row.id ? (
-                                                            <TextField sx={{ width: '100%' }} name="description" value={editingRow.description} onChange={handleInputChange} />
-                                                       ) : (
-                                                            row.description
-                                                       )}
-                                                  </TableCell>
-                                                  <TableCell>
-                                                       {editingRow && editingRow.id === row.id ? (
-                                                            <Button onClick={handleSave}>Save</Button>
-                                                       ) : (
-                                                            <Button onClick={() => handleEdit(row)}>Edit</Button>
-                                                       )}
-                                                       <Button onClick={() => handleDelete(row.id!)}>Delete</Button>
-                                                  </TableCell>
-                                             </TableRow>
-                                        ))}
+                                        {currentTable.data
+                                             .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''))
+                                             .map((row: BaseEntity) => (
+                                                  <TableRow key={row.id} ref={editingRow && editingRow.id === row.id ? editRowRef : null}>
+                                                       <TableCell>
+                                                            <div
+                                                                 contentEditable={!!editingRow && editingRow.id === row.id}
+                                                                 onInput={(e: any) => handlePropertyNameInputChange(e)}
+                                                                 suppressContentEditableWarning={true}
+                                                                 style={{
+                                                                      width: "100%",
+                                                                      minHeight: "1.5em",
+                                                                      padding: "4px",
+                                                                      border: editingRow && editingRow.id === row.id ? "1px solid #ccc" : "none",
+                                                                      borderRadius: "4px",
+                                                                      outline: "none",
+                                                                 }}
+                                                            >
+                                                                 {row.name}
+                                                            </div>
+                                                       </TableCell>
+                                                       <TableCell>
+                                                            <div
+                                                                 contentEditable={!!editingRow && editingRow.id === row.id}
+                                                                 onInput={(e: any) => handlePropertyDescriptionInputChange(e)}
+                                                                 suppressContentEditableWarning={true}
+                                                                 style={{
+                                                                      width: "100%",
+                                                                      minHeight: "1.5em",
+                                                                      padding: "4px",
+                                                                      border: editingRow && editingRow.id === row.id ? "1px solid #ccc" : "none",
+                                                                      borderRadius: "4px",
+                                                                      outline: "none",
+                                                                 }}
+                                                            >
+                                                                 {row.description}
+                                                            </div>
+                                                       </TableCell>
+                                                       <TableCell align="right">
+                                                            {editingRow && editingRow.id === row.id ? (
+                                                                 <Button onClick={handleSave}>{t('common.btnSave')}</Button>
+                                                            ) : (
+                                                                 <Button onClick={() => handleEdit(row)}>{t('common.btnEdit')}</Button>
+                                                            )}
+                                                            <Button onClick={() => handleDelete(row.id!)}>{t('common.btnDelete')}</Button>
+                                                       </TableCell>
+                                                  </TableRow>
+                                             ))}
                                    </TableBody>
                               </Table>
                          </TableContainer>

@@ -15,6 +15,7 @@ export default async function TableEditorPage() {
      const { readClientBillingInformationStatusesData } = await readClientBillingInformationStatuses()
      const { readClientPaymentMethodsData } = await readClientPaymentMethods()
 
+
      return (
           <Box
                component="main"
@@ -25,7 +26,6 @@ export default async function TableEditorPage() {
           >
                <Container maxWidth="lg">
                     <Stack spacing={4}>
-                         <Typography variant="h4" gutterBottom >Table Editor</Typography>
                          <GenericTableEditor
                               clientStatuses={readClientStatusesData}
                               clientTypes={readClientTypesData}

@@ -36,6 +36,10 @@ export const de = {
   [tokens.common.btnExport]: 'Exportieren',
   [tokens.common.btnExportDocx]: 'Exportieren als DOCX',
   [tokens.common.btnExportPdf]: 'Exportieren als PDF',
+  [tokens.common.lblName]: 'Name',
+  [tokens.common.lblDescription]: 'Beschreibung',
+  [tokens.common.lblStatus]: 'Status',
+  [tokens.common.lblActions]: 'Aktionen',
   [tokens.common.notes]: 'Notizen',
   [tokens.common.settings]: 'Einstellungen',
   //#endregion
@@ -140,6 +144,11 @@ export const de = {
   [tokens.clients.clientBillingInformationDetails]: 'Rechnungsdaten Details',
   [tokens.clients.clientBillingInformationCreate]: 'Rechnungsdaten Erstellen',
   [tokens.clients.clientBillingInformationEdit]: 'Rechnungsdaten Bearbeiten',
+  [tokens.clients.clientTypesTableName]: 'Kundentypen',
+  [tokens.clients.clientPaymentMethodsTableName]: 'Zahlungsmethoden',
+  [tokens.clients.clientBillingInformationStatusesTableName]: 'Rechnungsstatus',
+  [tokens.clients.clientStatusesTableName]: 'Kundenstatus',
+  [tokens.clients.clientComponentSettings]: 'Kundenkomponenteneinstellungen',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Grundlegende Informationen',
   [tokens.clients.clientFormAdvancedInfo]: 'Erweiterte Informationen',
