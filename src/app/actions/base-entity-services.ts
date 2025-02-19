@@ -60,6 +60,29 @@ export const readEntity = async <T extends BaseEntity>(table: string, id: string
 
 export const updateEntity = async <T extends BaseEntity>(table: string, id: string, entity: Partial<T>): Promise<{ success: boolean, updatedEntity?: T, error?: any }> => {
 
+     if (!table.trim()) {
+          return { success: false, error: 'clients.clientSettingsNoTableError' };
+     }
+
+     if (!entity || Object.keys(entity).length === 0) {
+          return { success: false, error: 'clients.clientSettingsNoEntityError' };
+     }
+
+     if (entity.name!.trim() === '') {
+          return { success: false, error: 'clients.clientSettingsNoNameError' };
+     }
+     // Check if name already exists, ignoring case
+     const { data: existingEntity, error: readError } = await supabase
+          .from(table)
+          .select('id')
+          .ilike('name', entity.name!.trim())
+          .single();
+
+     // If an existing entity is found, return an error
+     if (existingEntity) {
+          return { success: false, error: 'clients.clientSettingsAlreadyExists' };
+     }
+
      const { data, error } = await supabase.from(table).update(entity).eq('id', id).select().single();
 
      if (error) {

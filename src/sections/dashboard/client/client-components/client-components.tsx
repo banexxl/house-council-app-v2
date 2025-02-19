@@ -125,7 +125,11 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                          setEditingRow(null)
                          toast.success(t('clients.clientSettingsSaveSuccess'))
                     } else {
-                         toast.error(t('clients.clientSettingsSaveError'))
+                         result.error == 'clients.clientSettingsNoTableError' ? toast.error(t('clients.clientSettingsNoTableError'))
+                              : result.error == 'clients.clientSettingsNoEntityError' ? toast.error(t('clients.clientSettingsNoEntityError'))
+                                   : result.error == 'clients.clientSettingsNoNameError' ? toast.error(t('clients.clientSettingsNoNameError'))
+                                        : result.error == 'clients.clientSettingsAlreadyExists' ? toast.error(t('clients.clientSettingsAlreadyExists'))
+                                             : toast.error(t('clients.clientSettingsNewError'))
                     }
                } catch (error) {
                     toast.error(t('clients.clientSettingsSaveError'))
