@@ -71,11 +71,13 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
      if (entity.name!.trim() === '') {
           return { success: false, error: 'clients.clientSettingsNoNameError' };
      }
-     // Check if name already exists, ignoring case
+
+     // Check if name already exists, ignoring case, but ignore current entry
      const { data: existingEntity, error: readError } = await supabase
           .from(table)
           .select('id')
           .ilike('name', entity.name!.trim())
+          .neq('id', id)
           .single();
 
      // If an existing entity is found, return an error

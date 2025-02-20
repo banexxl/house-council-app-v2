@@ -149,7 +149,12 @@ export const de = {
   [tokens.clients.clientPaymentMethodsTableName]: 'Zahlungsmethoden',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Rechnungsstatus',
   [tokens.clients.clientStatusesTableName]: 'Kundenstatus',
+  [tokens.clients.featureStatusesTableName]: 'Funktionsstatus',
+  [tokens.clients.invoiceStatusesTableName]: 'Rechnungsstatus',
+  [tokens.clients.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
+  [tokens.clients.buildingStatusesTableName]: 'Gebäudestatus',
   [tokens.clients.clientComponentSettings]: 'Kundenkomponenteneinstellungen',
+  [tokens.clients.clientComponentSettingsShortDescription]: 'Diese Tabelle wird verwendet, um Kunden-Einstellungen zu verwalten, indem neue Einträge hinzugefügt und bestehende aktualisiert werden können.',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Grundlegende Informationen',
   [tokens.clients.clientFormAdvancedInfo]: 'Erweiterte Informationen',

@@ -1,19 +1,30 @@
 'use server'
 
 import { Box, Container, Stack, Typography } from "@mui/material"
-import { createEntity, deleteEntity, updateEntity } from "src/app/actions/base-entity-services"
-import { readClientBillingInformationStatuses } from "src/app/actions/client-actions/client-billing-info-statuses"
-import { readClientPaymentMethods } from "src/app/actions/client-actions/client-payment-methods"
-import { readClientStatuses } from "src/app/actions/client-actions/client-status-actions"
-import { readClientTypes } from "src/app/actions/client-actions/client-types-actions"
+import { createEntity, deleteEntity, updateEntity, readAllEntities, BaseEntity } from "src/app/actions/base-entity-services"
 import GenericTableEditor from "src/sections/dashboard/client/client-components/client-components"
 
 export default async function TableEditorPage() {
 
-     const { readClientStatusesData } = await readClientStatuses()
-     const { readClientTypesData } = await readClientTypes()
-     const { readClientBillingInformationStatusesData } = await readClientBillingInformationStatuses()
-     const { readClientPaymentMethodsData } = await readClientPaymentMethods()
+     const [
+          readClientStatusesData,
+          readClientTypesData,
+          readClientBillingInformationStatusesData,
+          readClientPaymentMethodsData,
+          readFeatureStatusesData,
+          readInvoiceStatusesData,
+          readSubscriptionPlanStatusesData,
+          readBuildingStatusesData,
+     ] = await Promise.all([
+          readAllEntities<BaseEntity>("tblClientStatuses"),
+          readAllEntities<BaseEntity>("tblClientTypes"),
+          readAllEntities<BaseEntity>("tblClientBillingInformationStatuses"),
+          readAllEntities<BaseEntity>("tblClientPaymentMethods"),
+          readAllEntities<BaseEntity>("tblFeatureStatuses"),
+          readAllEntities<BaseEntity>("tblInvoiceStatuses"),
+          readAllEntities<BaseEntity>("tblSubscriptionPlanStatuses"),
+          readAllEntities<BaseEntity>("tblBuildingStatuses"),
+     ]);
 
 
      return (
@@ -31,6 +42,10 @@ export default async function TableEditorPage() {
                               clientTypes={readClientTypesData}
                               clientPaymentMethods={readClientPaymentMethodsData}
                               clientBillingInformationStatuses={readClientBillingInformationStatusesData}
+                              featureStatuses={readFeatureStatusesData}
+                              invoiceStatuses={readInvoiceStatusesData}
+                              subscriptionPlanStatuses={readSubscriptionPlanStatusesData}
+                              buildingStatuses={readBuildingStatusesData}
                               updateEntity={updateEntity}
                               deleteEntity={deleteEntity}
                               createEntity={createEntity}

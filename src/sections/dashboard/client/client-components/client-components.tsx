@@ -30,6 +30,10 @@ interface GenericTableEditorProps {
      clientTypes: BaseEntity[]
      clientPaymentMethods: BaseEntity[]
      clientBillingInformationStatuses: BaseEntity[]
+     featureStatuses: BaseEntity[]
+     invoiceStatuses: BaseEntity[]
+     subscriptionPlanStatuses: BaseEntity[]
+     buildingStatuses: BaseEntity[]
      updateEntity: <T extends BaseEntity>(
           table: string,
           id: string,
@@ -55,6 +59,10 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
      clientTypes,
      clientPaymentMethods,
      clientBillingInformationStatuses,
+     featureStatuses,
+     invoiceStatuses,
+     subscriptionPlanStatuses,
+     buildingStatuses,
      updateEntity,
      deleteEntity,
      createEntity,
@@ -100,6 +108,26 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                name: "tblClientBillingInformationStatuses",
                displayName: "clients.clientBillingInformationStatusesTableName",
                data: clientBillingInformationStatuses,
+          },
+          {
+               name: "tblFeatureStatuses",
+               displayName: "clients.featureStatusesTableName",
+               data: featureStatuses,
+          },
+          {
+               name: "tblInvoiceStatuses",
+               displayName: "clients.invoiceStatusesTableName",
+               data: invoiceStatuses,
+          },
+          {
+               name: "tblSubscriptionPlanStatuses",
+               displayName: "clients.subscriptionPlanStatusesTableName",
+               data: subscriptionPlanStatuses,
+          },
+          {
+               name: "tblBuildingStatuses",
+               displayName: "clients.buildingStatusesTableName",
+               data: buildingStatuses,
           },
      ]
 
@@ -217,7 +245,7 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
 
      return (
           <Card>
-               <CardHeader title={t("clients.clientComponentSettings")} />
+               <CardHeader subheader={t("clients.clientComponentSettingsShortDescription")} title={t("clients.clientComponentSettings")} titleTypographyProps={{ variant: "h5" }} />
                <CardContent>
                     <Select value={selectedTable} onChange={(e: any) => handleTableChange(e)} fullWidth sx={{ mb: 2 }}>
                          {tables.map((table) => (

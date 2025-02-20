@@ -149,7 +149,12 @@ export const es = {
   [tokens.clients.clientStatusesTableName]: 'Estados de Cliente',
   [tokens.clients.clientPaymentMethodsTableName]: 'Metodos de Pago',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Estados de Información de Facturación',
+  [tokens.clients.featureStatusesTableName]: 'Característicasstatus',
+  [tokens.clients.invoiceStatusesTableName]: 'Estados de Factura',
+  [tokens.clients.subscriptionPlanStatusesTableName]: 'Estados de Plan de Suscripción',
+  [tokens.clients.buildingStatusesTableName]: 'Estados de Edificio',
   [tokens.clients.clientComponentSettings]: 'Ajustes de Componentes de Cliente',
+  [tokens.clients.clientComponentSettingsShortDescription]: 'Esta tabla se utiliza para administrar los ajustes de los clientes, permitiendo agregar y actualizar nuevos registros según sea necesario.',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Información Basica',
   [tokens.clients.clientFormAdvancedInfo]: 'Información Avanzada',

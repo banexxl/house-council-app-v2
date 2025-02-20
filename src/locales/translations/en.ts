@@ -149,7 +149,12 @@ export const en = {
   [tokens.clients.clientStatusesTableName]: 'Client Statuses',
   [tokens.clients.clientPaymentMethodsTableName]: 'Client Payment Methods',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Client Billing Information Statuses',
+  [tokens.clients.featureStatusesTableName]: 'Feature Statuses',
+  [tokens.clients.invoiceStatusesTableName]: 'Invoice Statuses',
+  [tokens.clients.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
+  [tokens.clients.buildingStatusesTableName]: 'Building Statuses',
   [tokens.clients.clientComponentSettings]: 'Client Component Settings',
+  [tokens.clients.clientComponentSettingsShortDescription]: 'This table is used for managing client settings, allowing new entries to be added and updated as needed.',
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Basic Information',
   [tokens.clients.clientFormAdvancedInfo]: 'Advanced Information',

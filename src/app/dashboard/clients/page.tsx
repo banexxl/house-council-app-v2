@@ -6,12 +6,12 @@ import Card from '@mui/material/Card';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
-import { readClientStatuses } from 'src/app/actions/client-actions/client-status-actions';
+import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
 
 const Page = async () => {
 
   const { getAllClientsActionData } = await readAllClientsAction()
-  const { readClientStatusesData } = await readClientStatuses()
+  const clientStatuses = await readAllEntities<BaseEntity>("tblClientStatuses")
 
   return (
     <Box
@@ -27,7 +27,7 @@ const Page = async () => {
           <Card>
             <ClientListTable
               items={getAllClientsActionData}
-              clientStatuses={readClientStatusesData}
+              clientStatuses={clientStatuses}
             />
           </Card>
         </Stack>

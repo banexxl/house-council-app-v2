@@ -150,7 +150,12 @@ export const rs = {
      [tokens.clients.clientPaymentMethodsTableName]: 'Metode plaćanja',
      [tokens.clients.clientBillingInformationStatusesTableName]: 'Statusi računa',
      [tokens.clients.clientStatusesTableName]: 'Statusi klijenata',
+     [tokens.clients.featureStatusesTableName]: 'Statusi Implementiranih Funkcionalnosti',
+     [tokens.clients.invoiceStatusesTableName]: 'Statusi Faktura',
+     [tokens.clients.subscriptionPlanStatusesTableName]: 'Statusi Pretplate',
+     [tokens.clients.buildingStatusesTableName]: 'Statusi Zgrada',
      [tokens.clients.clientComponentSettings]: 'Podešavanja klijenta',
+     [tokens.clients.clientComponentSettingsShortDescription]: 'Ova tabela se koristi za upravljanje podešavanja klijenata, omogućavajući dodavanje novih unosa i ažuriranje postojećih po potrebi.',
      // Client form
      [tokens.clients.clientFormBasicInfo]: 'Osnovne informacije',
      [tokens.clients.clientFormAdvancedInfo]: 'Napredne informacije',
