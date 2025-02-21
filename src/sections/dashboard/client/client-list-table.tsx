@@ -31,6 +31,8 @@ import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity } from 'src/app/actions/base-entity-services';
+import router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface ClientListTableProps {
   items?: Client[];
@@ -113,6 +115,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
   const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
   const selectedAll = items.length > 0 && clientSelection.selected.length === clientIds.length;
   const enableBulkActions = clientSelection.selected.length > 0;
+  const router = useRouter();
 
   const deleteClientsDialog = useDialog<DeleteClientsData>();
   const clientSearch = useClientSearch();
@@ -219,7 +222,10 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
                     {t('common.btnDelete')}
                   </Button>
                   {clientSelection.selected.length === 1 && (
-                    <Button color="inherit" size="small">
+                    <Button
+                      onClick={() => router.push(paths.dashboard.clients.details + '/' + clientSelection.selected[0])}
+                      color="inherit"
+                      size="small">
                       {t('common.btnEdit')}
                     </Button>
                   )}
