@@ -7,10 +7,6 @@ import { ClientBillingInformation } from "src/types/client-billing-information";
 export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
      : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformation?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
 
-     console.log('clientBillingInformation.cash_amount', clientBillingInformation.cash_amount);
-     console.log(typeof (clientBillingInformation.cash_amount));
-
-
      let result;
 
      if (billingInformationId && billingInformationId !== "") {
@@ -26,6 +22,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     expiration_date: clientBillingInformation.expiration_date,
                     payment_method_id: paymentMethodTypeId,
                     billing_status_id: billingInformationStatusId,
+                    /////////////////////////////
                     cash_amount: Number(clientBillingInformation.cash_amount)
                })
                .eq('id', billingInformationId)

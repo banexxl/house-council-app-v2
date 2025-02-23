@@ -146,6 +146,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                               label={t('clients.clientPaymentMethod')}
                               onChange={(e: any) => handlePaymentMethodChange(e)}
                               required
+                              disabled={billingInformationData && billingInformationData.id ? true : false}
                          >
                               {
                                    clientPaymentMethods?.map((paymentMethod: BaseEntity) => (
