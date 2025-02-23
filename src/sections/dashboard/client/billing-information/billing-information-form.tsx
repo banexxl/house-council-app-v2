@@ -106,7 +106,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
      }
 
      return (
-          <Card>
+          <Card sx={{ maxWidth: 600 }}>
                <CardContent>
                     {
                          billingInformationData && billingInformationData.id ?
