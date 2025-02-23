@@ -27,7 +27,6 @@ interface ClientBillingInformationFormProps {
 
 export const ClientBillingInformationForm: React.FC<ClientBillingInformationFormProps> = ({ allClients, clientPaymentMethods, billingInformationStatuses, billingInformationData, clientBillingInformationStatus, clientPaymentMethod }) => {
 
-     const [isSubmitting, setIsSubmitting] = useState(false)
      const router = useRouter()
      const { t } = useTranslation()
 
@@ -55,33 +54,52 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
 
      const handleSubmit = async (values: any, paymentMethodId: string, billingInformationStatusId: string) => {
 
-          setIsSubmitting(true)
-
           try {
                const response = await createOrUpdateClientBillingInformation(values, paymentMethodId, billingInformationStatusId, billingInformationData?.id);
-               if (response.createOrUpdateClientBillingInformationSuccess) {
-                    toast.success(t('clients.clientPaymentMethodSaved'));
-                    router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createOrUpdateClientBillingInformation?.id)
-               } else if (response.createOrUpdateClientBillingInformationError.code == '23505') {
-                    toast.error(t('errors.client.clientPaymentMethodError') + ': \n' + t('errors.client.uniqueCreditCardNumberViolation'));
-               }
+
+               response.createOrUpdateClientBillingInformationSuccess
+                    ? (
+                         toast.success(t('clients.clientPaymentMethodSaved')),
+                         router.push(paths.dashboard.clients.billingInformation.details + '/' + response.createOrUpdateClientBillingInformation?.id)
+                    )
+                    : response.createOrUpdateClientBillingInformationError.code === '23505'
+                         ? toast.error(t('errors.client.clientPaymentMethodError') + ': \n' + t('errors.client.uniqueCreditCardNumberViolation'))
+                         : response.createOrUpdateClientBillingInformationError.code === '22P02'
+                              ? toast.error(t('errors.client.clientPaymentMethodError') + ': \n' + t('errors.client.dataTypeMismatch'))
+                              : null;
+
           } catch (error) {
                toast.error(t('errors.client.clientPaymentMethodError'));
           } finally {
-               setIsSubmitting(false)
+               console.log('finally');
+
           }
      }
 
      const renderForm = () => {
           switch (clientPaymentMethod && clientPaymentMethod?.value !== '' ? clientPaymentMethod!.name : paymentMethod.name) {
                case "Cash":
-                    return <CashPaymentForm clients={allClients ? allClients : []} onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)} />
+                    return <CashPaymentForm
+                         clients={allClients ? allClients : []}
+                         onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                         billingInformationData={billingInformationData}
+                    />
                case "Wire Transfer":
-                    return <WireTransferForm clients={allClients ? allClients : []} onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)} />
+                    return <WireTransferForm
+                         clients={allClients ? allClients : []}
+                         onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                    />
                case "Credit Card":
-                    return <CardNumberForm clients={allClients ? allClients : []} onSubmit={(values: any) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)} isSubmitting={isSubmitting} billingInformationData={billingInformationData} />
+                    return <CardNumberForm
+                         clients={allClients ? allClients : []}
+                         onSubmit={(values: any) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                         billingInformationData={billingInformationData}
+                    />
                case "Bank Transfer":
-                    return <BankTransferForm clients={allClients ? allClients : []} onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)} />
+                    return <BankTransferForm
+                         clients={allClients ? allClients : []}
+                         onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                    />
                default:
                     return null
           }

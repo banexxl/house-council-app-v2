@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next"
 interface Card_numberFormProps {
      clients: Client[]
      onSubmit: (values: any) => void
-     isSubmitting: boolean
      billingInformationData?: ClientBillingInformation
 }
 
@@ -42,7 +41,7 @@ const formatCard_number = (number: string) => {
      return groups.join(" ")
 }
 
-export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, isSubmitting, billingInformationData }) => {
+export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubmit, billingInformationData }) => {
 
      const { t } = useTranslation()
      const [cardType, setCardType] = useState<string | null>(null)
@@ -77,13 +76,16 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                          expiration_date: Yup.date()
                               .required(t('clients.clientPaymentMethodCardExpirationDateRequired'))
                               .min(new Date(), t('clients.clientPaymentMethodCardExpirationDateFutureDateRequired')),
-                         cvc: Yup.string()
+                         cvc: Yup.number()
                               .required(t('clients.clientPaymentMethodCvcRequired'))
-                              .matches(/^\d{3}$/, t('clients.clientPaymentMethodCvc3DigitsRequired')),
+                              .typeError(t('clients.clientPaymentMethodCvcNumberRequired'))
+                              .min(0, t('clients.clientPaymentMethodCvcMinimumValueRequired'))
+                              .max(999, t('clients.clientPaymentMethodCvcMaximumValueRequired'))
+                              .integer(t('clients.clientPaymentMethodCvcIntegerRequired')),
                     })}
                     onSubmit={onSubmit}
                >
-                    {({ errors, touched, values, setFieldValue, isValid }) => (
+                    {({ errors, touched, values, setFieldValue, isValid, isSubmitting }) => (
                          <Form>
                               <FormControl fullWidth margin="normal" required>
                                    <TextField
@@ -182,6 +184,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                         setFieldValue("cvc", value)
                                    }}
                                    value={values.cvc}
+                                   type='number'
                                    sx={{ mb: 2 }}
                               />
 

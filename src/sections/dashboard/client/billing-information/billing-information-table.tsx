@@ -31,6 +31,7 @@ import { deleteClientBillingInformation } from "src/app/actions/client-actions/c
 import { BaseEntity } from "src/app/actions/base-entity-services";
 import { Client } from "./client-select";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface BillingInformationTableProps {
      data?: ClientBillingInformation[]
@@ -103,6 +104,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
      const selectedSome = billingInfoSelection.selected.length > 0 && billingInfoSelection.selected.length < billingInfoIds.length;
      const selectedAll = data.length > 0 && billingInfoSelection.selected.length === billingInfoIds.length;
      const enableBulkActions = billingInfoSelection.selected.length > 0;
+     const router = useRouter();
 
      const deleteBillingInfoDialog = useDialog<DeleteBillingInfoData>();
 
@@ -216,7 +218,13 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                                   {t('common.btnDelete')}
                                              </Button>
                                              {billingInfoSelection.selected.length === 1 && (
-                                                  <Button color="inherit" size="small">
+                                                  <Button
+                                                       color="inherit"
+                                                       size="small"
+                                                       onClick={() => {
+                                                            router.push(paths.dashboard.clients.billingInformation.details + '/' + billingInfoSelection.selected[0]);
+                                                       }}
+                                                  >
                                                        {t('common.btnEdit')}
                                                   </Button>
                                              )}
