@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
-import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
+import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions';
 
 const Page = async () => {
 

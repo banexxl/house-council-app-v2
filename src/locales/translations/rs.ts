@@ -150,7 +150,6 @@ export const rs = {
      [tokens.clients.clientPaymentMethodsTableName]: 'Metode plaćanja',
      [tokens.clients.clientBillingInformationStatusesTableName]: 'Statusi računa',
      [tokens.clients.clientStatusesTableName]: 'Statusi klijenata',
-     [tokens.clients.featureStatusesTableName]: 'Statusi Implementiranih Funkcionalnosti',
      [tokens.clients.invoiceStatusesTableName]: 'Statusi Faktura',
      [tokens.clients.subscriptionPlanStatusesTableName]: 'Statusi Pretplate',
      [tokens.clients.buildingStatusesTableName]: 'Statusi Zgrada',

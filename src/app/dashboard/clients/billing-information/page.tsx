@@ -6,7 +6,7 @@ import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/clie
 import BillingInformationTable from 'src/sections/dashboard/client/billing-information/billing-information-table';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { readAllClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';
-import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services';
+import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
 
 

@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack'
 import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-services'
+import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions'
 
 const Page = async () => {
 
@@ -32,7 +32,10 @@ const Page = async () => {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientFormHeader />
-            <ClientForm clientTypes={clientTypes} clientStatuses={clientStatuses.length != 0 ? clientStatuses! : []} clientPaymentMethods={clientPaymentMethods} />
+            <ClientForm
+              clientTypes={clientTypes}
+              clientStatuses={clientStatuses.length != 0 ? clientStatuses! : []}
+              clientPaymentMethods={clientPaymentMethods} />
           </Stack>
         </Container>
       </Box>

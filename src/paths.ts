@@ -81,6 +81,11 @@ export const paths = {
       profile: '/dashboard/social/profile',
       feed: '/dashboard/social/feed',
     },
+    subscriptions: {
+      index: '/dashboard/subscriptions',
+      new: '/dashboard/subscriptions/new',
+      subscription: '/dashboard/subscription/',
+    },
     tenants: {
       index: '/dashboard/tenants',
       tenant: '/dashboard/tenants/:tenantId',

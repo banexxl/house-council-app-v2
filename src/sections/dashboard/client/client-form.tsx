@@ -24,7 +24,7 @@ import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/upl
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
-import { BaseEntity } from 'src/app/actions/base-entity-services'
+import { BaseEntity } from 'src/app/actions/base-entity-actions'
 
 interface ClientNewFormProps {
   clientTypes: BaseEntity[],

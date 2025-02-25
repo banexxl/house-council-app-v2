@@ -149,7 +149,6 @@ export const en = {
   [tokens.clients.clientStatusesTableName]: 'Client Statuses',
   [tokens.clients.clientPaymentMethodsTableName]: 'Client Payment Methods',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Client Billing Information Statuses',
-  [tokens.clients.featureStatusesTableName]: 'Feature Statuses',
   [tokens.clients.invoiceStatusesTableName]: 'Invoice Statuses',
   [tokens.clients.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
   [tokens.clients.buildingStatusesTableName]: 'Building Statuses',

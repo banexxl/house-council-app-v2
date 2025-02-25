@@ -13,7 +13,7 @@ import { createOrUpdateClientBillingInformation } from "src/app/actions/client-a
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { paths } from "src/paths"
-import { BaseEntity } from "src/app/actions/base-entity-services"
+import { BaseEntity } from "src/app/actions/base-entity-actions"
 import { ClientBillingInformation } from "src/types/client-billing-information"
 
 interface ClientBillingInformationFormProps {

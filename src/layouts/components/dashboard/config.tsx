@@ -125,7 +125,17 @@ export const useSections = () => {
               <SvgIcon fontSize="small">
                 <ReceiptCheckIcon />
               </SvgIcon>
-            )
+            ),
+            items: [
+              {
+                title: t(tokens.nav.list),
+                path: paths.dashboard.subscriptions.index,
+              },
+              {
+                title: t(tokens.nav.create),
+                path: paths.dashboard.subscriptions.new,
+              }
+            ]
           }
         ]
       },

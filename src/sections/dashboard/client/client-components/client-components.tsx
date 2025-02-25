@@ -19,7 +19,7 @@ import {
      type SelectChangeEvent,
      Box,
 } from "@mui/material"
-import type { BaseEntity } from "src/app/actions/base-entity-services"
+import type { BaseEntity } from "src/app/actions/base-entity-actions"
 import { useTranslation } from "react-i18next"
 import { useDialog } from "src/hooks/use-dialog"
 import { PopupModal } from "src/components/modal-dialog"
@@ -30,7 +30,6 @@ interface GenericTableEditorProps {
      clientTypes: BaseEntity[]
      clientPaymentMethods: BaseEntity[]
      clientBillingInformationStatuses: BaseEntity[]
-     featureStatuses: BaseEntity[]
      invoiceStatuses: BaseEntity[]
      subscriptionPlanStatuses: BaseEntity[]
      buildingStatuses: BaseEntity[]
@@ -59,7 +58,6 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
      clientTypes,
      clientPaymentMethods,
      clientBillingInformationStatuses,
-     featureStatuses,
      invoiceStatuses,
      subscriptionPlanStatuses,
      buildingStatuses,
@@ -108,11 +106,6 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                name: "tblClientBillingInformationStatuses",
                displayName: "clients.clientBillingInformationStatusesTableName",
                data: clientBillingInformationStatuses,
-          },
-          {
-               name: "tblFeatureStatuses",
-               displayName: "clients.featureStatusesTableName",
-               data: featureStatuses,
           },
           {
                name: "tblInvoiceStatuses",

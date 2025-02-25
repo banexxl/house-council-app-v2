@@ -30,8 +30,7 @@ import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
-import { BaseEntity } from 'src/app/actions/base-entity-services';
-import router from 'next/router';
+import { BaseEntity } from 'src/app/actions/base-entity-actions';
 import { useRouter } from 'next/navigation';
 
 interface ClientListTableProps {
