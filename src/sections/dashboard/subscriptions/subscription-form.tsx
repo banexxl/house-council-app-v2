@@ -228,7 +228,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  }}
                                                             />
                                                        }
-                                                       label={`${feature.name} ($${feature.base_price.toFixed(2)})/month`}
+                                                       label={`${feature.name} ($${feature.base_price.toFixed(2)}/month)`}
                                                   />
                                              );
                                         })}
