@@ -37,5 +37,5 @@ export const subscriptionPlanValidationSchema = Yup.object({
      yearly_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      is_discounted: Yup.boolean(),
      discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
-     base_price: Yup.number().min(0, "Must be positive"),
+     base_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
 })

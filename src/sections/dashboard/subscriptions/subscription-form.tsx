@@ -10,6 +10,7 @@ import { LoadingButton } from "@mui/lab"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { useRouter } from "next/navigation"
+import { parse } from "path"
 
 interface SubscriptionEditorProps {
      subscriptionStatuses: BaseEntity[]
@@ -31,7 +32,6 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           },
           validationSchema: Yup.object().shape({
                ...subscriptionPlanValidationSchema.fields,
-               base_price: Yup.number().min(0, "Must be positive").required("Required"),
           }),
           onSubmit: async (values: SubscriptionPlan) => {
 
@@ -70,27 +70,28 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      })
 
      const calculatePrice = () => {
-          let totalPrice = formik.values.base_price
+          let totalPrice = Number(formik.values.base_price) || 0; // Ensure base_price is a valid number
 
           // Add prices of selected features
           formik.values.features?.forEach((featureId) => {
-               const feature = features.find((f) => f.id === featureId)
+               const feature = features.find((f) => f.id === featureId);
                if (feature) {
-                    totalPrice += feature.base_price
+                    totalPrice += feature.base_price;
                }
-          })
+          });
 
           if (formik.values.is_discounted) {
-               totalPrice *= 1 - formik.values.discount_percentage / 100
+               totalPrice *= 1 - (formik.values.discount_percentage || 0) / 100;
           }
 
           if (formik.values.can_bill_yearly) {
-               totalPrice *= 12 // Calculate yearly price
-               totalPrice *= 1 - formik.values.yearly_discount_percentage / 100 // Apply yearly discount
+               totalPrice *= 12; // Calculate yearly price
+               totalPrice *= 1 - (formik.values.yearly_discount_percentage || 0) / 100; // Apply yearly discount
           }
 
-          return totalPrice
-     }
+          return totalPrice;
+     };
+
 
      return (
           <form onSubmit={formik.handleSubmit}>
@@ -149,11 +150,38 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         label="Base Price"
                                         type="number"
                                         value={formik.values.base_price}
-                                        onChange={formik.handleChange}
+                                        onChange={(event) => {
+                                             const value = event.target.value;
+
+                                             // Allow empty string so the user can delete and retype
+                                             if (value === "") {
+                                                  formik.setFieldValue("base_price", "");
+                                                  return;
+                                             }
+
+                                             // Ensure only valid decimal numbers are allowed
+                                             if (!isNaN(Number(value))) {
+                                                  formik.setFieldValue("base_price", value);
+                                             }
+                                        }}
                                         error={formik.touched.base_price && Boolean(formik.errors.base_price)}
                                         helperText={formik.touched.base_price && formik.errors.base_price}
                                         margin="normal"
-                                        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                                        InputProps={{ inputProps: { min: 0, max: 1000000, step: "0.01" } }}
+                                        onBlur={() => {
+                                             let value = formik.values.base_price;
+
+                                             // If the field is empty, set it to 0
+                                             if (value === parseFloat("") || value === null || value === undefined) {
+                                                  value = 0;
+                                             } else {
+                                                  // Convert to float and ensure two decimal places
+                                                  value = Math.max(0, Math.min(1000000, value));
+                                                  value = parseFloat(value.toFixed(2));
+                                             }
+
+                                             formik.setFieldValue("base_price", value);
+                                        }}
                                    />
                               </CardContent>
                          </Card>
@@ -200,7 +228,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  }}
                                                             />
                                                        }
-                                                       label={`${feature.name} ($${feature.base_price.toFixed(2)})`}
+                                                       label={`${feature.name} ($${feature.base_price.toFixed(2)})/month`}
                                                   />
                                              );
                                         })}
@@ -237,11 +265,40 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              label="Yearly Discount Percentage"
                                              type="number"
                                              value={formik.values.yearly_discount_percentage}
-                                             onChange={formik.handleChange}
+                                             onChange={(event) => {
+                                                  let value = event.target.value;
+
+                                                  // Allow empty input temporarily so users can delete and retype
+                                                  if (value === "") {
+                                                       formik.setFieldValue("yearly_discount_percentage", "");
+                                                       return;
+                                                  }
+
+                                                  // Convert to a number and ensure it's within the range 0-100
+                                                  let numberValue = Number(value);
+
+                                                  if (isNaN(numberValue) || numberValue < 0 || numberValue > 100) {
+                                                       numberValue = 0; // Set to 0 if it's invalid
+                                                  }
+
+                                                  formik.setFieldValue("yearly_discount_percentage", numberValue);
+                                             }}
                                              error={formik.touched.yearly_discount_percentage && Boolean(formik.errors.yearly_discount_percentage)}
                                              helperText={formik.touched.yearly_discount_percentage && formik.errors.yearly_discount_percentage}
                                              margin="normal"
                                              InputProps={{ inputProps: { min: 0, max: 100 } }}
+                                             onBlur={() => {
+                                                  let value = formik.values.yearly_discount_percentage;
+
+                                                  // If input is empty, set it to 0
+                                                  if (value === null || value === undefined) {
+                                                       value = 0;
+                                                  } else {
+                                                       value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
+                                                  }
+
+                                                  formik.setFieldValue("yearly_discount_percentage", value);
+                                             }}
                                         />
                                    )}
                                    <FormControlLabel
@@ -268,12 +325,42 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              label="Discount Percentage"
                                              type="number"
                                              value={formik.values.discount_percentage}
-                                             onChange={formik.handleChange}
+                                             onChange={(event) => {
+                                                  let value = event.target.value;
+
+                                                  // Allow empty input temporarily so users can delete and retype
+                                                  if (value === "") {
+                                                       formik.setFieldValue("discount_percentage", "");
+                                                       return;
+                                                  }
+
+                                                  // Convert to a number and ensure it's within the range 0-100
+                                                  let numberValue = Number(value);
+
+                                                  if (isNaN(numberValue) || numberValue < 0 || numberValue > 100) {
+                                                       numberValue = 0; // Set to 0 if it's invalid
+                                                  }
+
+                                                  formik.setFieldValue("discount_percentage", numberValue);
+                                             }}
                                              error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
                                              helperText={formik.touched.discount_percentage && formik.errors.discount_percentage}
                                              margin="normal"
                                              InputProps={{ inputProps: { min: 0, max: 100 } }}
+                                             onBlur={() => {
+                                                  let value = formik.values.discount_percentage;
+
+                                                  // If input is empty, set it to 0
+                                                  if (value === null || value === undefined) {
+                                                       value = 0;
+                                                  } else {
+                                                       value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
+                                                  }
+
+                                                  formik.setFieldValue("discount_percentage", value);
+                                             }}
                                         />
+
                                    )}
                                    <Typography variant="h5" className="mt-4">
                                         Total Price: ${calculatePrice().toFixed(2)}
@@ -283,7 +370,13 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                          </Card>
                     </Grid>
                     <Grid item xs={12}>
-                         <LoadingButton loading={formik.isSubmitting} type="submit" variant="contained" color="primary">
+                         <LoadingButton
+                              loading={formik.isSubmitting}
+                              type="submit"
+                              variant="contained"
+                              color="primary"
+                              disabled={!formik.isValid || formik.isSubmitting || !formik.dirty}
+                         >
                               Save Subscription
                          </LoadingButton>
                     </Grid>
