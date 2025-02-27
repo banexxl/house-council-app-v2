@@ -152,6 +152,7 @@ export const rs = {
      [tokens.clients.clientStatusesTableName]: 'Statusi klijenata',
      [tokens.clients.invoiceStatusesTableName]: 'Statusi Faktura',
      [tokens.clients.subscriptionPlanStatusesTableName]: 'Statusi Pretplate',
+     [tokens.clients.featuresTableName]: 'Opcije',
      [tokens.clients.buildingStatusesTableName]: 'Statusi Zgrada',
      [tokens.clients.clientComponentSettings]: 'Podešavanja klijenta',
      [tokens.clients.clientComponentSettingsShortDescription]: 'Ova tabela se koristi za upravljanje podešavanja klijenata, omogućavajući dodavanje novih unosa i ažuriranje postojećih po potrebi.',

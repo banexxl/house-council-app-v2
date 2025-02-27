@@ -151,6 +151,7 @@ export const en = {
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Client Billing Information Statuses',
   [tokens.clients.invoiceStatusesTableName]: 'Invoice Statuses',
   [tokens.clients.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
+  [tokens.clients.featuresTableName]: 'Features',
   [tokens.clients.buildingStatusesTableName]: 'Building Statuses',
   [tokens.clients.clientComponentSettings]: 'Client Component Settings',
   [tokens.clients.clientComponentSettingsShortDescription]: 'This table is used for managing client settings, allowing new entries to be added and updated as needed.',

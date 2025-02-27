@@ -151,6 +151,7 @@ export const de = {
   [tokens.clients.clientStatusesTableName]: 'Kundenstatus',
   [tokens.clients.invoiceStatusesTableName]: 'Rechnungsstatus',
   [tokens.clients.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
+  [tokens.clients.featuresTableName]: 'Funktionen',
   [tokens.clients.buildingStatusesTableName]: 'Gebäudestatus',
   [tokens.clients.clientComponentSettings]: 'Kundenkomponenteneinstellungen',
   [tokens.clients.clientComponentSettingsShortDescription]: 'Diese Tabelle wird verwendet, um Kunden-Einstellungen zu verwalten, indem neue Einträge hinzugefügt und bestehende aktualisiert werden können.',

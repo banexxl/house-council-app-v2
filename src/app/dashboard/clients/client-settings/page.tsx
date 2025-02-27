@@ -14,6 +14,7 @@ export default async function TableEditorPage() {
           readInvoiceStatusesData,
           readSubscriptionPlanStatusesData,
           readBuildingStatusesData,
+          readFeaturesData,
      ] = await Promise.all([
           readAllEntities<BaseEntity>("tblClientStatuses"),
           readAllEntities<BaseEntity>("tblClientTypes"),
@@ -22,6 +23,7 @@ export default async function TableEditorPage() {
           readAllEntities<BaseEntity>("tblInvoiceStatuses"),
           readAllEntities<BaseEntity>("tblSubscriptionPlanStatuses"),
           readAllEntities<BaseEntity>("tblBuildingStatuses"),
+          readAllEntities<BaseEntity>("tblFeatures"),
      ]);
 
 
@@ -42,6 +44,7 @@ export default async function TableEditorPage() {
                               clientBillingInformationStatuses={readClientBillingInformationStatusesData}
                               invoiceStatuses={readInvoiceStatusesData}
                               subscriptionPlanStatuses={readSubscriptionPlanStatusesData}
+                              features={readFeaturesData as BaseEntity[] & { base_price: number }[]}
                               buildingStatuses={readBuildingStatusesData}
                               updateEntity={updateEntity}
                               deleteEntity={deleteEntity}

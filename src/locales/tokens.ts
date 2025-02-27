@@ -153,6 +153,7 @@ export const tokens = {
     clientBillingInformationStatusesTableName: 'clients.clientBillingInformationStatusesTableName',
     invoiceStatusesTableName: 'clients.invoiceStatusesTableName',
     subscriptionPlanStatusesTableName: 'clients.subscriptionPlanStatusesTableName',
+    featuresTableName: 'clients.featuresTableName',
     buildingStatusesTableName: 'clients.buildingStatusesTableName',
     // Client form
     clientFormBasicInfo: 'clients.clientFormBasicInfo',

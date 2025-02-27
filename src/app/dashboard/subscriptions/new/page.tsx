@@ -5,7 +5,7 @@ import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscriptio
 
 export default async function SubscriptionEditorPage() {
 
-     const features = await readAllEntities<BaseEntity>('tblFeatures');
+     const features = await readAllEntities<BaseEntity & { base_price: number }>('tblFeatures');
      const subscriptionStatuses = await readAllEntities<BaseEntity>('tblSubscriptionPlanStatuses');
 
      return (

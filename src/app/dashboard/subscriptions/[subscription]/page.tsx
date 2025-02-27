@@ -1,13 +1,17 @@
-import { Box, Card, Container, Stack, Typography } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import { BaseEntity, readAllEntities } from "src/app/actions/base-entity-actions";
-import { createSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions";
+import { readSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions";
 import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";
 
 
-export default async function SubscriptionEditorPage() {
+export default async function SubscriptionEditorPage({ params }: any) {
 
-     const features = await readAllEntities<BaseEntity>('tblFeatures');
+     const features = await readAllEntities<BaseEntity & { base_price: number }>('tblFeatures')
      const subscriptionStatuses = await readAllEntities<BaseEntity>('tblSubscriptionPlanStatuses');
+
+     const { subscription } = await params;
+
+     const { readSubscriptionPlanSuccess, subscriptionPlan, readSubscriptionPlanError } = await readSubscriptionPlan(subscription);
 
      return (
           <Box
@@ -23,7 +27,7 @@ export default async function SubscriptionEditorPage() {
                          <SubscriptionEditor
                               features={features || []}
                               subscriptionStatuses={subscriptionStatuses || []}
-                              createSubscriptionPlan={createSubscriptionPlan}
+                              subscriptionPlanData={subscriptionPlan}
                          />
                     </Stack>
                </Container>

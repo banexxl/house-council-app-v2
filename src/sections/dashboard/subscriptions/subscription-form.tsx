@@ -2,49 +2,83 @@
 
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { Card, CardContent, TextField, Button, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel } from "@mui/material"
-import { BaseEntity } from "src/app/actions/base-entity-actions"
-import { SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
-import { createSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions"
+import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, } from "@mui/material"
+import type { BaseEntity } from "src/app/actions/base-entity-actions"
+import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
+import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions"
 import { LoadingButton } from "@mui/lab"
 import toast from "react-hot-toast"
+import { useTranslation } from "react-i18next"
+import { useRouter } from "next/navigation"
 
 interface SubscriptionEditorProps {
      subscriptionStatuses: BaseEntity[]
-     features: BaseEntity[]
+     features: (BaseEntity & { base_price: number })[]
      subscriptionPlanData?: SubscriptionPlan
 }
 
-export default function SubscriptionEditor({ subscriptionStatuses, features, subscriptionPlanData }: SubscriptionEditorProps) {
+export default function SubscriptionEditor({ subscriptionStatuses, features, subscriptionPlanData, }: SubscriptionEditorProps) {
+
+     const { t } = useTranslation()
+     const router = useRouter()
 
      const formik = useFormik({
           initialValues: {
                ...subscriptionPlanInitialValues,
-               ...subscriptionPlanData
+               ...subscriptionPlanData,
+               base_price: subscriptionPlanData?.base_price || 0,
+               features: subscriptionPlanData?.features?.map((f: any) => f.id) || [],
           },
-          validationSchema: subscriptionPlanValidationSchema,
+          validationSchema: Yup.object().shape({
+               ...subscriptionPlanValidationSchema.fields,
+               base_price: Yup.number().min(0, "Must be positive").required("Required"),
+          }),
           onSubmit: async (values: SubscriptionPlan) => {
-               try {
-                    const createOrEditSubscriptionPlanResponse = subscriptionPlanData
-                         ? await createSubscriptionPlan({ ...values, id: subscriptionPlanData.id })
-                         : await createSubscriptionPlan(values);
 
-                    if (createOrEditSubscriptionPlanResponse.createSubscriptionPlanSuccess) {
-                         toast.success('Subscription plan saved successfully!');
-                         formik.setSubmitting(false);
+               try {
+                    let response;
+
+                    if (values.id !== '') {
+                         // Update existing subscription plan
+                         response = await updateSubscriptionPlan({ ...values, id: subscriptionPlanData!.id });
+                         if (response.updateSubscriptionPlanSuccess) {
+                              toast.success("Subscription plan updated successfully!");
+                              router.push(`/dashboard/subscriptions/${subscriptionPlanData!.id}`);
+                         } else {
+                              toast.error("Failed to update subscription plan.");
+                         }
                     } else {
-                         toast.error('Failed to save subscription plan.');
-                         formik.setSubmitting(false);
+                         // Create new subscription plan
+                         response = await createSubscriptionPlan({ ...values });
+
+                         if (response.createSubscriptionPlanSuccess) {
+                              toast.success("Subscription plan created successfully!");
+                              router.push(`/dashboard/subscriptions/${response.createdSubscriptionPlan?.id}`);
+                         } else {
+                              toast.error("Failed to create subscription plan.");
+                         }
                     }
-               } catch (error) {
-                    toast.error('An unexpected error occurred.');
+
                     formik.setSubmitting(false);
+               } catch (error) {
+                    toast.error("An error occurred while saving the subscription plan.");
+                    formik.setSubmitting(false);
+                    console.error(error);
                }
+
           },
      })
 
      const calculatePrice = () => {
-          let totalPrice = 0
+          let totalPrice = formik.values.base_price
+
+          // Add prices of selected features
+          formik.values.features?.forEach((featureId) => {
+               const feature = features.find((f) => f.id === featureId)
+               if (feature) {
+                    totalPrice += feature.base_price
+               }
+          })
 
           if (formik.values.is_discounted) {
                totalPrice *= 1 - formik.values.discount_percentage / 100
@@ -108,6 +142,68 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              ))}
                                         </Select>
                                    </FormControl>
+                                   <TextField
+                                        fullWidth
+                                        id="base_price"
+                                        name="base_price"
+                                        label="Base Price"
+                                        type="number"
+                                        value={formik.values.base_price}
+                                        onChange={formik.handleChange}
+                                        error={formik.touched.base_price && Boolean(formik.errors.base_price)}
+                                        helperText={formik.touched.base_price && formik.errors.base_price}
+                                        margin="normal"
+                                        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                                   />
+                              </CardContent>
+                         </Card>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                         <Card>
+                              <CardContent>
+                                   <Stack direction="row" spacing={5} alignItems="center">
+                                        <Typography variant="h6" gutterBottom>
+                                             Features
+                                        </Typography>
+                                        <Button
+                                             onClick={() => {
+                                                  if (formik.values.features?.length === features.length) {
+                                                       formik.setFieldValue("features", []);
+                                                  } else {
+                                                       formik.setFieldValue("features", features.map((feature: any) => feature.id));
+                                                  }
+                                             }}
+                                        >
+                                             {formik.values.features?.length === features.length ? "Deselect All" : "Select All"}
+                                        </Button>
+                                   </Stack>
+                                   {features?.length > 0 &&
+                                        features.map((feature: any) => {
+                                             const featureId = feature.id!;
+                                             // Determine if the feature is checked using only Formik state
+                                             const isChecked = formik.values.features?.includes(featureId);
+
+                                             return (
+                                                  <FormControlLabel
+                                                       key={featureId}
+                                                       control={
+                                                            <Checkbox
+                                                                 id={`feature-${featureId}`}
+                                                                 name="features"
+                                                                 checked={isChecked}
+                                                                 onChange={(e) => {
+                                                                      const updatedFeatures = e.target.checked
+                                                                           ? [...formik.values.features!, featureId]
+                                                                           : formik.values.features!.filter((f) => f !== featureId);
+
+                                                                      formik.setFieldValue("features", updatedFeatures);
+                                                                 }}
+                                                            />
+                                                       }
+                                                       label={`${feature.name} ($${feature.base_price.toFixed(2)})`}
+                                                  />
+                                             );
+                                        })}
                               </CardContent>
                          </Card>
                     </Grid>
@@ -123,7 +219,12 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   id="can_bill_yearly"
                                                   name="can_bill_yearly"
                                                   checked={formik.values.can_bill_yearly}
-                                                  onChange={formik.handleChange}
+                                                  onChange={(event) => {
+                                                       formik.handleChange(event);
+                                                       if (!event.target.checked) {
+                                                            formik.setFieldValue("yearly_discount_percentage", 0);
+                                                       }
+                                                  }}
                                              />
                                         }
                                         label="Yearly Billing"
@@ -149,7 +250,12 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   id="is_discounted"
                                                   name="is_discounted"
                                                   checked={formik.values.is_discounted}
-                                                  onChange={formik.handleChange}
+                                                  onChange={(event) => {
+                                                       formik.handleChange(event);
+                                                       if (!event.target.checked) {
+                                                            formik.setFieldValue("discount_percentage", 0);
+                                                       }
+                                                  }}
                                              />
                                         }
                                         label="Apply Additional Discount"
@@ -159,7 +265,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              fullWidth
                                              id="discount_percentage"
                                              name="discount_percentage"
-                                             label="discount_percentage"
+                                             label="Discount Percentage"
                                              type="number"
                                              value={formik.values.discount_percentage}
                                              onChange={formik.handleChange}
@@ -176,40 +282,8 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                               </CardContent>
                          </Card>
                     </Grid>
-                    {
-                         subscriptionPlanData && subscriptionPlanData.id !== '' && (
-                              <Grid item xs={12} md={6}>
-                                   <Card>
-                                        <CardContent>
-                                             <Typography variant="h6" gutterBottom>
-                                                  Features
-                                             </Typography>
-                                             {features.map((feature: BaseEntity) => (
-                                                  <FormControlLabel
-                                                       key={feature.id}
-                                                       control={
-                                                            <Switch
-                                                                 id={`feature-${feature.id}`}
-                                                                 name={'feature-id'}
-                                                                 checked={formik.values.features!.includes(feature.id!)}
-                                                                 onChange={formik.handleChange}
-                                                            />
-                                                       }
-                                                       label={feature.name}
-                                                  />
-                                             ))}
-                                        </CardContent>
-                                   </Card>
-                              </Grid>
-                         )
-                    }
                     <Grid item xs={12}>
-                         <LoadingButton
-                              loading={formik.isSubmitting}
-                              type='submit'
-                              variant="contained"
-                              color="primary"
-                         >
+                         <LoadingButton loading={formik.isSubmitting} type="submit" variant="contained" color="primary">
                               Save Subscription
                          </LoadingButton>
                     </Grid>
