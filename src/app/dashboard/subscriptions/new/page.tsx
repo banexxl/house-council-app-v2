@@ -18,7 +18,6 @@ export default async function SubscriptionEditorPage() {
           >
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <Typography variant="h4" sx={{ ontWeight: 'bold', mb: 6 }}>Subscription Editor</Typography>
                          <SubscriptionEditor
                               features={features || []}
                               subscriptionStatuses={subscriptionStatuses || []}

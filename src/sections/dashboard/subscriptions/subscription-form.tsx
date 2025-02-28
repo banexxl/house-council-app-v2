@@ -11,6 +11,7 @@ import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { useRouter } from "next/navigation"
 import { parse } from "path"
+import { SubscriptionFormHeader } from "./subscription-form-header"
 
 interface SubscriptionEditorProps {
      subscriptionStatuses: BaseEntity[]
@@ -95,13 +96,11 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
      return (
           <form onSubmit={formik.handleSubmit}>
+               <SubscriptionFormHeader subscriptionPlan={subscriptionPlanData} />
                <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                          <Card>
                               <CardContent>
-                                   <Typography variant="h6" gutterBottom>
-                                        Subscription Details
-                                   </Typography>
                                    <TextField
                                         fullWidth
                                         id="name"
