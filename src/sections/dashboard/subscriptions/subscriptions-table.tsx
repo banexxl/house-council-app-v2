@@ -21,28 +21,25 @@ import CancelIcon from '@mui/icons-material/Cancel';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Client } from 'src/types/client';
-import { getInitials } from 'src/utils/get-initials';
 import { useTranslation } from 'react-i18next';
 import { useSelection } from 'src/hooks/use-selection';
 import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
-import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
-import { BaseEntity } from 'src/app/actions/base-entity-actions';
 import { useRouter } from 'next/navigation';
 import { FilterBar } from '../client/table-filter';
+import { SubscriptionPlan } from 'src/types/subscription-plan';
+import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plans/subscription-plan-actions';
 
-interface ClientListTableProps {
-     items?: Client[];
-     clientStatuses?: BaseEntity[];
+interface SubscriptionPlanListTableProps {
+     subscriptionPlans?: SubscriptionPlan[];
 }
 
-interface DeleteClientsData {
-     clientIds: string[];
+interface DeleteSubscriptionPlanData {
+     subscriptionPlanIds: string[];
 }
 
-const useClientSearch = () => {
+const useSubscriptionPlanSearch = () => {
 
      const [state, setState] = useState({
           all: false,
@@ -52,7 +49,7 @@ const useClientSearch = () => {
           query: '',
           page: 0,
           rowsPerPage: 5,
-          sortBy: 'updated_at' as keyof Client,
+          sortBy: 'updated_at' as keyof SubscriptionPlan,
           sortDir: 'desc' as 'asc' | 'desc',
      });
 
@@ -88,7 +85,7 @@ const useClientSearch = () => {
           }));
      }, []);
 
-     const handleSortChange = useCallback((sortBy: keyof Client, sortDir: 'asc' | 'desc') => {
+     const handleSortChange = useCallback((sortBy: keyof SubscriptionPlan, sortDir: 'asc' | 'desc') => {
           setState((prevState) => ({
                ...prevState,
                sortBy,
@@ -106,73 +103,74 @@ const useClientSearch = () => {
      };
 };
 
-export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], clientStatuses }) => {
+export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscriptionPlans = [] }) => {
+     console.log('subscriptionPlans', subscriptionPlans);
 
-     const [count, setCount] = useState(items.length);
-     const clientIds = useMemo(() => items.map((client) => client.id), [items]);
-     const clientSelection = useSelection(clientIds);
-     const selectedSome = clientSelection.selected.length > 0 && clientSelection.selected.length < clientIds.length;
-     const selectedAll = items.length > 0 && clientSelection.selected.length === clientIds.length;
-     const enableBulkActions = clientSelection.selected.length > 0;
+     const [count, setCount] = useState(subscriptionPlans.length);
+     const subscriptionPlanIds = useMemo(() => subscriptionPlans.map((subscriptionPlan: SubscriptionPlan) => subscriptionPlan.id), [subscriptionPlans]);
+     const subscriptionPlanSelection = useSelection(subscriptionPlanIds);
+     const selectedSome = subscriptionPlanSelection.selected.length > 0 && subscriptionPlanSelection.selected.length < subscriptionPlanIds.length;
+     const selectedAll = subscriptionPlans.length > 0 && subscriptionPlanSelection.selected.length === subscriptionPlanIds.length;
+     const enableBulkActions = subscriptionPlanSelection.selected.length > 0;
      const router = useRouter();
 
-     const deleteClientsDialog = useDialog<DeleteClientsData>();
-     const clientSearch = useClientSearch();
+     const deleteSubscriptionPlansDialog = useDialog<DeleteSubscriptionPlanData>();
+     const subscriptionPlanSearch = useSubscriptionPlanSearch();
 
      const { t } = useTranslation();
 
-     const handleDeleteClientsClick = useCallback(() => {
-          deleteClientsDialog.handleOpen();
-     }, [deleteClientsDialog]);
+     const handleDeleteSubscriptionPlansClick = useCallback(() => {
+          deleteSubscriptionPlansDialog.handleOpen();
+     }, [deleteSubscriptionPlansDialog]);
 
-     const handleDeleteClientsConfirm = useCallback(async () => {
-          deleteClientsDialog.handleClose();
-          const deleteClientResponse = await deleteClientByIDsAction(clientSelection.selected);
-          if (deleteClientResponse.deleteClientByIDsActionSuccess) {
-               clientSelection.handleDeselectAll();
+     const handleDeleteSubscriptionPlansConfirm = useCallback(async () => {
+          deleteSubscriptionPlansDialog.handleClose();
+          const deleteSubscriptionPlanResponse = await deleteSubscriptionPlansByIds(subscriptionPlanSelection.selected.filter((id): id is string => id !== undefined));
+          if (deleteSubscriptionPlanResponse.deleteSubscriptionPlansSuccess) {
+               subscriptionPlanSelection.handleDeselectAll();
           }
-     }, [deleteClientsDialog]);
+     }, [deleteSubscriptionPlansDialog]);
 
      const visibleRows = useMemo(() => {
           // Apply filters based on state
-          const filtered = items.filter((client) => {
+          const filtered = subscriptionPlans.filter((subscriptionPlan: SubscriptionPlan) => {
                // Check query filter
-               const matchesQuery = !clientSearch.state.query || client.name.toLowerCase().includes(clientSearch.state.query.toLowerCase());
+               const matchesQuery = !subscriptionPlanSearch.state.query || subscriptionPlan.name.toLowerCase().includes(subscriptionPlanSearch.state.query.toLowerCase());
 
                // Check "all" filter (if "all" is true, no other filters apply)
-               if (clientSearch.state.all) {
+               if (subscriptionPlanSearch.state.all) {
                     return matchesQuery;
                }
 
-               // Apply individual filters
-               const matchesAcceptedMarketing =
-                    !clientSearch.state.has_accepted_marketing || client.has_accepted_marketing === clientSearch.state.has_accepted_marketing;
+               // // Apply individual filters
+               // const matchesAcceptedMarketing =
+               //      !subscriptionPlanSearch.state.has_accepted_marketing || subscriptionPlan.has_accepted_marketing === subscriptionPlanSearch.state.has_accepted_marketing;
 
-               const matchesIsVerified =
-                    !clientSearch.state.is_verified || client.is_verified === clientSearch.state.is_verified;
+               // const matchesIsVerified =
+               //      !subscriptionPlanSearch.state.is_verified || subscriptionPlan.is_verified === subscriptionPlanSearch.state.is_verified;
 
-               const matchesIsReturning =
-                    !clientSearch.state.is_returning || client.is_returning === clientSearch.state.is_returning;
-               // Combine all filters
-               return matchesQuery && matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
+               // const matchesIsReturning =
+               //      !subscriptionPlanSearch.state.is_returning || subscriptionPlan.is_returning === subscriptionPlanSearch.state.is_returning;
+               // // Combine all filters
+               return matchesQuery //&& matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
           });
 
           setCount(filtered.length);
           // Apply sorting and pagination
-          return applySort(filtered, clientSearch.state.sortBy, clientSearch.state.sortDir).slice(
-               clientSearch.state.page * clientSearch.state.rowsPerPage,
-               clientSearch.state.page * clientSearch.state.rowsPerPage + clientSearch.state.rowsPerPage
+          return applySort(filtered, subscriptionPlanSearch.state.sortBy, subscriptionPlanSearch.state.sortDir).slice(
+               subscriptionPlanSearch.state.page * subscriptionPlanSearch.state.rowsPerPage,
+               subscriptionPlanSearch.state.page * subscriptionPlanSearch.state.rowsPerPage + subscriptionPlanSearch.state.rowsPerPage
           );
-     }, [items, clientSearch.state]);
+     }, [subscriptionPlans, subscriptionPlanSearch.state]);
 
      return (
           <Box sx={{ position: 'relative' }}>
                <FilterBar
-                    onTabsChange={clientSearch.handleTabsChange}
-                    onFiltersChange={clientSearch.handleQueryChange}
-                    onSortChange={clientSearch.handleSortChange}
-                    sortBy={clientSearch.state.sortBy}
-                    sortDir={clientSearch.state.sortDir}
+                    onTabsChange={subscriptionPlanSearch.handleTabsChange}
+                    onFiltersChange={subscriptionPlanSearch.handleQueryChange}
+                    onSortChange={subscriptionPlanSearch.handleSortChange}
+                    sortBy={subscriptionPlanSearch.state.sortBy}
+                    sortDir={subscriptionPlanSearch.state.sortDir}
                     tabs={[
                          { label: t('common.all'), value: 'all' },
                          { label: t('clients.clientIsVerified'), value: 'is_verified' },
@@ -211,18 +209,18 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
                                                   indeterminate={selectedSome}
                                                   onChange={(event) => {
                                                        if (event.target.checked) {
-                                                            clientSelection.handleSelectAll();
+                                                            subscriptionPlanSelection.handleSelectAll();
                                                        } else {
-                                                            clientSelection.handleDeselectAll();
+                                                            subscriptionPlanSelection.handleDeselectAll();
                                                        }
                                                   }}
                                              />
-                                             <Button color="inherit" size="small" onClick={handleDeleteClientsClick}>
+                                             <Button color="inherit" size="small" onClick={handleDeleteSubscriptionPlansClick}>
                                                   {t('common.btnDelete')}
                                              </Button>
-                                             {clientSelection.selected.length === 1 && (
+                                             {subscriptionPlanSelection.selected.length === 1 && (
                                                   <Button
-                                                       onClick={() => router.push(paths.dashboard.clients.details + '/' + clientSelection.selected[0])}
+                                                       onClick={() => router.push(paths.dashboard.clients.details + '/' + subscriptionPlanSelection.selected[0])}
                                                        color="inherit"
                                                        size="small">
                                                        {t('common.btnEdit')}
@@ -236,9 +234,9 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
                                              indeterminate={selectedSome}
                                              onChange={(event) => {
                                                   if (event.target.checked) {
-                                                       clientSelection.handleSelectAll();
+                                                       subscriptionPlanSelection.handleSelectAll();
                                                   } else {
-                                                       clientSelection.handleDeselectAll();
+                                                       subscriptionPlanSelection.handleDeselectAll();
                                                   }
                                              }}
                                         />
@@ -256,9 +254,9 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
                          </TableHead>
                          <TableBody>
                               {
-                                   items.length > 0 ?
+                                   subscriptionPlans.length > 0 ?
                                         visibleRows.map((client) => {
-                                             const isSelected = clientSelection.selected.includes(client.id);
+                                             const isSelected = subscriptionPlanSelection.selected.includes(client.id);
                                              return (
                                                   <TableRow hover key={client.id} selected={isSelected}>
                                                        <TableCell padding="checkbox">
@@ -266,14 +264,14 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
                                                                  checked={isSelected}
                                                                  onChange={(event) => {
                                                                       if (event.target.checked) {
-                                                                           clientSelection.handleSelectOne(client.id);
+                                                                           subscriptionPlanSelection.handleSelectOne(client.id);
                                                                       } else {
-                                                                           clientSelection.handleDeselectOne(client.id);
+                                                                           subscriptionPlanSelection.handleDeselectOne(client.id);
                                                                       }
                                                                  }}
                                                             />
                                                        </TableCell>
-                                                       <TableCell>
+                                                       {/* <TableCell>
                                                             <Stack alignItems="center" direction="row" spacing={1}>
                                                                  <Avatar
                                                                       src={client.avatar === '' ? '' : client.avatar}
@@ -321,7 +319,7 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
                                                                       <CancelIcon color="error" />
                                                                  </SvgIcon>
                                                             )}
-                                                       </TableCell>
+                                                       </TableCell> */}
                                                   </TableRow>
                                              );
                                         })
@@ -336,19 +334,19 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
                <TablePagination
                     component="div"
                     count={count}
-                    onPageChange={clientSearch.handlePageChange}
-                    onRowsPerPageChange={clientSearch.handleRowsPerPageChange}
-                    page={clientSearch.state.page}
-                    rowsPerPage={clientSearch.state.rowsPerPage}
+                    onPageChange={subscriptionPlanSearch.handlePageChange}
+                    onRowsPerPageChange={subscriptionPlanSearch.handleRowsPerPageChange}
+                    page={subscriptionPlanSearch.state.page}
+                    rowsPerPage={subscriptionPlanSearch.state.rowsPerPage}
                     rowsPerPageOptions={[5, 10, 25]}
                     showFirstButton
                     showLastButton
                     labelRowsPerPage={t('common.rowsPerPage')}
                />
                <PopupModal
-                    isOpen={deleteClientsDialog.open}
-                    onClose={() => deleteClientsDialog.handleClose()}
-                    onConfirm={handleDeleteClientsConfirm}
+                    isOpen={deleteSubscriptionPlansDialog.open}
+                    onClose={() => deleteSubscriptionPlansDialog.handleClose()}
+                    onConfirm={handleDeleteSubscriptionPlansConfirm}
                     title={t('warning.deleteWarningTitle')}
                     confirmText={t('common.btnDelete')}
                     cancelText={t('common.btnClose')}
@@ -359,5 +357,5 @@ export const SubscriptionTable: FC<ClientListTableProps> = ({ items = [], client
 };
 
 SubscriptionTable.propTypes = {
-     items: PropTypes.array,
+     subscriptionPlans: PropTypes.array,
 };

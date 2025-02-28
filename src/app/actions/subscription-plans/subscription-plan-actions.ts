@@ -50,7 +50,6 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
      return { createSubscriptionPlanSuccess: true, createdSubscriptionPlan: { ...data, features: subscriptionPlan.features } };
 };
 
-
 export const updateSubscriptionPlan = async (
      subscriptionPlan: SubscriptionPlan
 ): Promise<{
@@ -175,4 +174,32 @@ export const deleteSubscriptionPlan = async (id: string): Promise<{ deleteSubscr
           return { deleteSubscriptionPlanSuccess: false, deleteSubscriptionPlanError: planDeleteError };
      }
      return { deleteSubscriptionPlanSuccess: true };
+};
+
+export const readAllSubscriptionPlans = async (): Promise<{
+     readAllSubscriptionPlansSuccess: boolean; subscriptionPlanData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
+}> => {
+     const { data: subscriptionPlans, error: planError } = await supabase
+          .from("tblSubscriptionPlans")
+          .select(`
+      *,
+      tblSubscriptionPlans_Features (
+        feature_id,
+        tblFeatures (*)
+      )
+    `);
+
+     if (planError) {
+          return { readAllSubscriptionPlansSuccess: false, readAllSubscriptionPlansError: planError.message };
+     }
+
+     return { readAllSubscriptionPlansSuccess: true, subscriptionPlanData: subscriptionPlans };  // Return the subscription plans
+};
+
+export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ deleteSubscriptionPlansSuccess: boolean, deleteSubscriptionPlansError?: any }> => {
+     const { error } = await supabase.from("tblSubscriptionPlans").delete().in("id", ids);     // Delete the subscription plans
+     if (error) {
+          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };    // Return an error if there is one
+     }
+     return { deleteSubscriptionPlansSuccess: true };    // Return success
 };

@@ -1,4 +1,4 @@
-import { Box, Container, Stack, Typography } from "@mui/material";
+import { Box, Container, Stack } from "@mui/material";
 import { BaseEntity, readAllEntities } from "src/app/actions/base-entity-actions";
 import { readSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions";
 import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";

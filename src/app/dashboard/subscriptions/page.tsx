@@ -1,8 +1,11 @@
 import { Box, Card, Container, Stack, Typography } from "@mui/material";
+import { readAllSubscriptionPlans } from "src/app/actions/subscription-plans/subscription-plan-actions";
 import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
 
 
-const Page = async () => {
+export default async function Page() {
+
+     const subscriptionPlans = await readAllSubscriptionPlans();
 
      return (
           <Box
@@ -15,12 +18,10 @@ const Page = async () => {
                <Container maxWidth="xl">
                     <Stack spacing={4}>
                          <Typography variant="h4" sx={{ ontWeight: 'bold', mb: 6 }}>Subscription Editor</Typography>
-                         <SubscriptionTable />
+                         <SubscriptionTable subscriptionPlans={subscriptionPlans.subscriptionPlanData} />
                     </Stack>
                </Container>
           </Box>
      )
 }
-
-export default Page;
 
