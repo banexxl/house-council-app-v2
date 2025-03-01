@@ -28,7 +28,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           initialValues: {
                ...subscriptionPlanInitialValues,
                ...subscriptionPlanData,
-               base_price: subscriptionPlanData?.base_price || 0,
+               base_price_per_month: subscriptionPlanData?.base_price_per_month || 0,
                features: subscriptionPlanData?.features?.map((f: any) => f.id) || [],
           },
           validationSchema: Yup.object().shape({
@@ -71,7 +71,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      })
 
      const calculatePrice = () => {
-          let totalPrice = Number(formik.values.base_price) || 0; // Ensure base_price is a valid number
+          let totalPrice = Number(formik.values.base_price_per_month) || 0; // Ensure base_price is a valid number
 
           // Add prices of selected features
           formik.values.features?.forEach((featureId) => {
@@ -148,7 +148,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         name="base_price"
                                         label="Base Price"
                                         type="number"
-                                        value={formik.values.base_price}
+                                        value={formik.values.base_price_per_month}
                                         onChange={(event) => {
                                              const value = event.target.value;
 
@@ -163,12 +163,12 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   formik.setFieldValue("base_price", value);
                                              }
                                         }}
-                                        error={formik.touched.base_price && Boolean(formik.errors.base_price)}
-                                        helperText={formik.touched.base_price && formik.errors.base_price}
+                                        error={formik.touched.base_price_per_month && Boolean(formik.errors.base_price_per_month)}
+                                        helperText={formik.touched.base_price_per_month && formik.errors.base_price_per_month}
                                         margin="normal"
                                         InputProps={{ inputProps: { min: 0, max: 1000000, step: "0.01" } }}
                                         onBlur={() => {
-                                             let value = formik.values.base_price;
+                                             let value = formik.values.base_price_per_month;
 
                                              // If the field is empty, set it to 0
                                              if (value === parseFloat("") || value === null || value === undefined) {
