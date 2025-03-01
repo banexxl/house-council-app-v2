@@ -150,10 +150,6 @@ export const de = {
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Rechnungsstatus',
   [tokens.clients.clientStatusesTableName]: 'Kundenstatus',
   [tokens.clients.invoiceStatusesTableName]: 'Rechnungsstatus',
-  [tokens.clients.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
-  [tokens.clients.subscriptionPlanEdit]: 'Abonnementplan bearbeiten',
-  [tokens.clients.subscriptionPlanCreate]: 'Abonnementplan erstellen',
-  [tokens.clients.subscriptionPlanList]: 'Abonnementplanliste',
   [tokens.clients.featuresTableName]: 'Funktionen',
   [tokens.clients.buildingStatusesTableName]: 'Gebäudestatus',
   [tokens.clients.clientComponentSettings]: 'Kundenkomponenteneinstellungen',
@@ -275,5 +271,25 @@ export const de = {
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Löschen bestätigen',
   [tokens.warning.deleteWarningMessage]: 'Möchten Sie diesen Eintrag wirklich löschen?',
+  //#endregion
+  //#region Subscription Plans
+  [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Abonnementplan Erstellen',
+  [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Abonnementplan Bearbeiten',
+  [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Abonnementplan Löschen',
+  [tokens.subscriptionPlans.subscriptionPlanDetails]: 'Abonnementplan Details',
+  [tokens.subscriptionPlans.subscriptionPlanList]: 'Abonnementplanliste',
+  [tokens.subscriptionPlans.subscriptionPlanName]: 'Name',
+  [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Beschreibung',
+  [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Basispreis',
+  [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Gesamtpreis',
+  [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Währung',
+  [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Funktionen',
+  [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Status',
+  [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
+  [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Funktion',
+  [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Jahresabrechnung',
+  [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Jahresrabatt',
+  [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Rabatt',
+  [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Rabattpreis',
   //#endregion
 };

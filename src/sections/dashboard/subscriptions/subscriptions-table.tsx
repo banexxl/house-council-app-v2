@@ -30,9 +30,11 @@ import { useRouter } from 'next/navigation';
 import { FilterBar } from '../client/table-filter';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plans/subscription-plan-actions';
+import { BaseEntity } from 'src/app/actions/base-entity-actions';
 
 interface SubscriptionPlanListTableProps {
      subscriptionPlans?: SubscriptionPlan[];
+     subscriptionPlanStatuses?: BaseEntity[];
 }
 
 interface DeleteSubscriptionPlanData {
@@ -103,8 +105,7 @@ const useSubscriptionPlanSearch = () => {
      };
 };
 
-export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscriptionPlans = [] }) => {
-     console.log('subscriptionPlans', subscriptionPlans);
+export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscriptionPlans = [], subscriptionPlanStatuses }) => {
 
      const [count, setCount] = useState(subscriptionPlans.length);
      const subscriptionPlanIds = useMemo(() => subscriptionPlans.map((subscriptionPlan: SubscriptionPlan) => subscriptionPlan.id), [subscriptionPlans]);
@@ -162,6 +163,9 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                subscriptionPlanSearch.state.page * subscriptionPlanSearch.state.rowsPerPage + subscriptionPlanSearch.state.rowsPerPage
           );
      }, [subscriptionPlans, subscriptionPlanSearch.state]);
+
+     console.log('subscriptionPlans', subscriptionPlans);
+
 
      return (
           <Box sx={{ position: 'relative' }}>
@@ -241,76 +245,49 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                              }}
                                         />
                                    </TableCell>
-                                   <TableCell>{t('clients.clientContactPerson')}/{t('clients.clientEmail')}</TableCell>
-                                   <TableCell>{t('clients.clientName')}</TableCell>
-                                   <TableCell>{t('clients.clientAddress1')}</TableCell>
-                                   <TableCell>{t('clients.clientAddress2')}</TableCell>
-                                   <TableCell>{t('clients.clientMobilePhone')}</TableCell>
-                                   <TableCell>{t('clients.clientPhone')}</TableCell>
-                                   <TableCell>{t('clients.clientType')}</TableCell>
-                                   <TableCell>{t('clients.clientStatus')}</TableCell>
-                                   <TableCell>{t('clients.clientIsVerified')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanName')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanStatus')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanBasePrice')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanTotalPrice')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanCanBillYearly')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanYearlyDiscount')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanIsDiscounted')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanDiscountedPrice')}</TableCell>
                               </TableRow>
                          </TableHead>
                          <TableBody>
                               {
                                    subscriptionPlans.length > 0 ?
-                                        visibleRows.map((client) => {
-                                             const isSelected = subscriptionPlanSelection.selected.includes(client.id);
+                                        visibleRows.map((subscriptionPlan: SubscriptionPlan) => {
+                                             const isSelected = subscriptionPlanSelection.selected.includes(subscriptionPlan.id);
                                              return (
-                                                  <TableRow hover key={client.id} selected={isSelected}>
+                                                  <TableRow hover key={subscriptionPlan.id} selected={isSelected}>
                                                        <TableCell padding="checkbox">
                                                             <Checkbox
                                                                  checked={isSelected}
                                                                  onChange={(event) => {
                                                                       if (event.target.checked) {
-                                                                           subscriptionPlanSelection.handleSelectOne(client.id);
+                                                                           subscriptionPlanSelection.handleSelectOne(subscriptionPlan.id);
                                                                       } else {
-                                                                           subscriptionPlanSelection.handleDeselectOne(client.id);
+                                                                           subscriptionPlanSelection.handleDeselectOne(subscriptionPlan.id);
                                                                       }
                                                                  }}
                                                             />
                                                        </TableCell>
-                                                       {/* <TableCell>
-                                                            <Stack alignItems="center" direction="row" spacing={1}>
-                                                                 <Avatar
-                                                                      src={client.avatar === '' ? '' : client.avatar}
-                                                                      sx={{ height: 42, width: 42 }}
-                                                                 >
-                                                                      {client.avatar === '' ? getInitials(client.name) : null}
-                                                                 </Avatar>
-                                                                 <div>
-                                                                      <Link
-                                                                           color="inherit"
-                                                                           component="a"
-                                                                           href={paths.dashboard.clients.details + client.id}
-                                                                           variant="subtitle2"
-                                                                      >
-                                                                           {client.contact_person}
-                                                                      </Link>
-                                                                      <Typography color="text.secondary" variant="body2">
-                                                                           {client.email}
-                                                                      </Typography>
-                                                                 </div>
-                                                            </Stack>
-                                                       </TableCell>
                                                        <TableCell sx={{ width: '200px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                                                            {client.name}
+                                                            {subscriptionPlan.name}
                                                        </TableCell>
                                                        <TableCell sx={{ width: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {client.address_1}
+                                                            {
+                                                                 subscriptionPlanStatuses?.find((cs) => cs.id === subscriptionPlan.status_id)?.name ?? ''
+                                                            }
                                                        </TableCell>
                                                        <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {client.address_2}
+                                                            {subscriptionPlan.base_price_per_month}
                                                        </TableCell>
-                                                       <TableCell>{client.mobile_phone}</TableCell>
-                                                       <TableCell>{client.phone}</TableCell>
-                                                       <TableCell>{client.type}</TableCell>
+                                                       <TableCell>{subscriptionPlan.total_price}</TableCell>
                                                        <TableCell>
-                                                            {clientStatuses?.find((cs) => cs.id === client.client_status)?.name ?? ''}
-                                                       </TableCell>
-                                                       <TableCell>
-                                                            {client.is_verified ? (
+                                                            {subscriptionPlan.can_bill_yearly ? (
                                                                  <SvgIcon>
                                                                       <CheckCircleIcon color="success" />
                                                                  </SvgIcon>
@@ -319,7 +296,20 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                                       <CancelIcon color="error" />
                                                                  </SvgIcon>
                                                             )}
-                                                       </TableCell> */}
+                                                       </TableCell>
+                                                       <TableCell>{subscriptionPlan.yearly_discount_percentage}</TableCell>
+                                                       <TableCell>
+                                                            {subscriptionPlan.is_discounted ? (
+                                                                 <SvgIcon>
+                                                                      <CheckCircleIcon color="success" />
+                                                                 </SvgIcon>
+                                                            ) : (
+                                                                 <SvgIcon>
+                                                                      <CancelIcon color="error" />
+                                                                 </SvgIcon>
+                                                            )}
+                                                       </TableCell>
+                                                       <TableCell>{subscriptionPlan.discount_percentage}</TableCell>
                                                   </TableRow>
                                              );
                                         })

@@ -150,10 +150,6 @@ export const es = {
   [tokens.clients.clientPaymentMethodsTableName]: 'Metodos de Pago',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Estados de Información de Facturación',
   [tokens.clients.invoiceStatusesTableName]: 'Estados de Factura',
-  [tokens.clients.subscriptionPlanStatusesTableName]: 'Estados de Plan de Suscripción',
-  [tokens.clients.subscriptionPlanEdit]: 'Editar Plan de Suscripción',
-  [tokens.clients.subscriptionPlanCreate]: 'Crear Plan de Suscripción',
-  [tokens.clients.subscriptionPlanList]: 'Listado de Planes de Suscripción',
   [tokens.clients.featuresTableName]: 'Características',
   [tokens.clients.buildingStatusesTableName]: 'Estados de Edificio',
   [tokens.clients.clientComponentSettings]: 'Ajustes de Componentes de Cliente',
@@ -274,5 +270,25 @@ export const es = {
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Eliminar',
   [tokens.warning.deleteWarningMessage]: '¿Desea eliminar este elemento?',
+  //#endregion
+  //#region Subscription Plans
+  [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Crear Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Editar Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Eliminar Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanList]: 'Lista de Planes de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanDetails]: 'Detalles del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanName]: 'Nombre del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Descripción del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Precio Base del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Precio Total del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Moneda del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Características del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Característica del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Estado del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Estados del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Puede Facturar Anualmente',
+  [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Descuento Anual',
+  [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Descuento',
+  [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Precio con Descuento',
   //#endregion
 };

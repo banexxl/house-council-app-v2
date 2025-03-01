@@ -150,10 +150,6 @@ export const en = {
   [tokens.clients.clientPaymentMethodsTableName]: 'Client Payment Methods',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Client Billing Information Statuses',
   [tokens.clients.invoiceStatusesTableName]: 'Invoice Statuses',
-  [tokens.clients.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
-  [tokens.clients.subscriptionPlanEdit]: 'Subscription Plan Edit',
-  [tokens.clients.subscriptionPlanCreate]: 'Subscription Plan Create',
-  [tokens.clients.subscriptionPlanList]: 'Subscription Plan List',
   [tokens.clients.featuresTableName]: 'Features',
   [tokens.clients.buildingStatusesTableName]: 'Building Statuses',
   [tokens.clients.clientComponentSettings]: 'Client Component Settings',
@@ -275,5 +271,25 @@ export const en = {
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Delete Warning',
   [tokens.warning.deleteWarningMessage]: 'Are you sure you want to delete this entry?',
+  //#endregion
+  //#region Subscription Plans
+  [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Create Subscription Plan',
+  [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Subscription Plan Edit',
+  [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Subscription Plan Delete',
+  [tokens.subscriptionPlans.subscriptionPlanList]: 'Subscription Plan List',
+  [tokens.subscriptionPlans.subscriptionPlanDetails]: 'Subscription Plan Details',
+  [tokens.subscriptionPlans.subscriptionPlanName]: 'Name',
+  [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Description',
+  [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Base Price',
+  [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Total Price',
+  [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Currency',
+  [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Features',
+  [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Feature',
+  [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Feature Status',
+  [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
+  [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Can Bill Yearly',
+  [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Yearly Discount',
+  [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Discounted',
+  [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Discounted Price',
   //#endregion
 };

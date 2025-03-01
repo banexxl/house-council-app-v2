@@ -151,10 +151,6 @@ export const rs = {
      [tokens.clients.clientBillingInformationStatusesTableName]: 'Statusi računa',
      [tokens.clients.clientStatusesTableName]: 'Statusi klijenata',
      [tokens.clients.invoiceStatusesTableName]: 'Statusi Faktura',
-     [tokens.clients.subscriptionPlanStatusesTableName]: 'Statusi Pretplate',
-     [tokens.clients.subscriptionPlanEdit]: 'Izmeni Pretplatu',
-     [tokens.clients.subscriptionPlanCreate]: 'Kreiraj Pretplatu',
-     [tokens.clients.subscriptionPlanList]: 'Lista Pretplata',
      [tokens.clients.featuresTableName]: 'Opcije',
      [tokens.clients.buildingStatusesTableName]: 'Statusi Zgrada',
      [tokens.clients.clientComponentSettings]: 'Podešavanja klijenta',
@@ -276,5 +272,25 @@ export const rs = {
      //#region Warnings
      [tokens.warning.deleteWarningTitle]: 'Brisanje',
      [tokens.warning.deleteWarningMessage]: 'Da li želite da obrišete odabrano?',
+     //#endregion
+     //#region Subscription Plans
+     [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Kreiraj plan pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Izmeni plan pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Obriši plan pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanList]: 'Lista planova pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanDetails]: 'Detalji pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanName]: 'Naziv pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Opis pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Osnovna cena pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Ukupna cena pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Valuta pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Opcije pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Opcija pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Status pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Statusi pretplate',
+     [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Godišnje fakturisanje',
+     [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Godišnji popust',
+     [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Popust',
+     [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Cena sa popustom',
      //#endregion
 };
