@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import { Box, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { LoadingButton } from '@mui/lab';
 
 export interface TabOption {
   label: string;
@@ -28,6 +29,7 @@ interface FilterBarProps<T> {
   initialSortDir?: SortDir;
   sortBy?: keyof T;
   sortDir?: SortDir;
+  btnAddUrl?: string;
 }
 
 export const FilterBar = <T,>({
@@ -37,11 +39,13 @@ export const FilterBar = <T,>({
   onSortChange,
   initialSortBy,
   initialSortDir = 'asc',
+  btnAddUrl
 }: FilterBarProps<T>) => {
   const { t } = useTranslation();
   const [currentTab, setCurrentTab] = useState<string>(tabs[0]?.value || '');
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [sort, setSort] = useState<string>(`${String(initialSortBy) || ''}|${initialSortDir}`);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleTabsChange = useCallback(
     (event: ChangeEvent<any>, value: string) => {
@@ -70,19 +74,24 @@ export const FilterBar = <T,>({
 
   return (
     <>
-      <Tabs
-        value={currentTab}
-        onChange={handleTabsChange}
-        indicatorColor="primary"
-        textColor="primary"
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{ px: 3 }}
-      >
-        {tabs.map((tab) => (
-          <Tab key={tab.value} label={tab.label} value={tab.value} />
-        ))}
-      </Tabs>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
+        <Tabs
+          value={currentTab}
+          onChange={handleTabsChange}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ px: 3 }}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.value} label={tab.label} value={tab.value} />
+          ))}
+        </Tabs>
+        <LoadingButton variant="contained" loading={loading} onClick={() => setLoading(true)} href={btnAddUrl}>
+          {t('common.btnAdd')}
+        </LoadingButton>
+      </Box>
       <Divider />
       <Stack
         direction="row"

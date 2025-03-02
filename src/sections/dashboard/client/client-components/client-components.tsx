@@ -116,7 +116,7 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
           },
           {
                name: "tblSubscriptionPlanStatuses",
-               displayName: "clients.subscriptionPlanStatusesTableName",
+               displayName: "subscriptionPlans.subscriptionPlanStatusesTableName",
                data: subscriptionPlanStatuses,
           },
           {

@@ -33,13 +33,13 @@ export const SubscriptionFormHeader = (props: ClientFormHeaderProps) => {
                     <SvgIcon sx={{ mr: 1 }}>
                          <ArrowBackIcon />
                     </SvgIcon>
-                    <Typography variant="subtitle2">{t('clients.subscriptionPlanList')}</Typography>
+                    <Typography variant="subtitle2">{t('subscriptionPlans.subscriptionPlanList')}</Typography>
                </Link>
                <Typography variant="h4" sx={{ mb: 2 }}>
                     {
                          props.subscriptionPlan
-                              ? t('clients.subscriptionPlanEdit') + ': ' + props.subscriptionPlan.name
-                              : t('clients.subscriptionPlanCreate')
+                              ? t('subscriptionPlans.subscriptionPlanEdit') + ': ' + props.subscriptionPlan.name
+                              : t('subscriptionPlans.subscriptionPlanCreate')
                     }
                </Typography>
           </Box>

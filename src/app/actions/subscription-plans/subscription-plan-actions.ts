@@ -16,7 +16,8 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           .insert({ ...subscriptionPlan, features: undefined })
           .select()
           .single();
-
+     console.log(data);
+     console.log(error);
      if (error) {
           return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: error };
      }
@@ -201,5 +202,7 @@ export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ del
      if (error) {
           return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };    // Return an error if there is one
      }
+
+     revalidatePath("/dashboard/subscriptions");
      return { deleteSubscriptionPlansSuccess: true };    // Return success
 };

@@ -10,7 +10,6 @@ import { LoadingButton } from "@mui/lab"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { useRouter } from "next/navigation"
-import { parse } from "path"
 import { SubscriptionFormHeader } from "./subscription-form-header"
 
 interface SubscriptionEditorProps {
@@ -35,11 +34,10 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
-
                try {
                     let response;
 
-                    if (values.id !== '') {
+                    if (values.id && values.id !== '') {
                          // Update existing subscription plan
                          response = await updateSubscriptionPlan({ ...values, id: subscriptionPlanData!.id });
                          if (response.updateSubscriptionPlanSuccess) {
@@ -51,7 +49,6 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                     } else {
                          // Create new subscription plan
                          response = await createSubscriptionPlan({ ...values });
-
                          if (response.createSubscriptionPlanSuccess) {
                               toast.success("Subscription plan created successfully!");
                               router.push(`/dashboard/subscriptions/${response.createdSubscriptionPlan?.id}`);
@@ -75,9 +72,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
           // Add prices of selected features
           formik.values.features?.forEach((featureId) => {
-               const feature = features.find((f) => f.id === featureId);
+               const feature = features.find((f) => f.id === featureId) as (BaseEntity & { base_price_per_month: number }) | undefined;
                if (feature) {
-                    totalPrice += feature.base_price;
+                    totalPrice += feature.base_price_per_month;
                }
           });
 
@@ -227,7 +224,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  }}
                                                             />
                                                        }
-                                                       label={`${feature.name} ($${feature.base_price.toFixed(2)}/month)`}
+                                                       label={`${feature.name} ($${feature.base_price_per_month.toFixed(2)}/month)`}
                                                   />
                                              );
                                         })}

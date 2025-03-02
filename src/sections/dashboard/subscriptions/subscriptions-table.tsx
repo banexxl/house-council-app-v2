@@ -45,9 +45,8 @@ const useSubscriptionPlanSearch = () => {
 
      const [state, setState] = useState({
           all: false,
-          has_accepted_marketing: false,
-          is_verified: false,
-          is_returning: false,
+          can_bill_yearly: false,
+          is_discounted: false,
           query: '',
           page: 0,
           rowsPerPage: 5,
@@ -66,9 +65,8 @@ const useSubscriptionPlanSearch = () => {
           setState((prevState) => ({
                ...prevState,
                all: value === 'all',
-               has_accepted_marketing: value === 'has_accepted_marketing',
-               is_verified: value === 'is_verified',
-               is_returning: value === 'is_returning',
+               can_bill_yearly: value === 'can_bill_yearly',
+               is_discounted: value === 'is_discounted',
           }));
      }, []);
 
@@ -144,16 +142,14 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                }
 
                // // Apply individual filters
-               // const matchesAcceptedMarketing =
-               //      !subscriptionPlanSearch.state.has_accepted_marketing || subscriptionPlan.has_accepted_marketing === subscriptionPlanSearch.state.has_accepted_marketing;
+               const matchesCanBillYearly =
+                    !subscriptionPlanSearch.state.can_bill_yearly || subscriptionPlan.can_bill_yearly === subscriptionPlanSearch.state.can_bill_yearly;
 
-               // const matchesIsVerified =
-               //      !subscriptionPlanSearch.state.is_verified || subscriptionPlan.is_verified === subscriptionPlanSearch.state.is_verified;
+               const matchesIsDiscounted =
+                    !subscriptionPlanSearch.state.is_discounted || subscriptionPlan.is_discounted === subscriptionPlanSearch.state.is_discounted;
 
-               // const matchesIsReturning =
-               //      !subscriptionPlanSearch.state.is_returning || subscriptionPlan.is_returning === subscriptionPlanSearch.state.is_returning;
                // // Combine all filters
-               return matchesQuery //&& matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
+               return matchesQuery && matchesCanBillYearly && matchesIsDiscounted;
           });
 
           setCount(filtered.length);
@@ -163,9 +159,6 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                subscriptionPlanSearch.state.page * subscriptionPlanSearch.state.rowsPerPage + subscriptionPlanSearch.state.rowsPerPage
           );
      }, [subscriptionPlans, subscriptionPlanSearch.state]);
-
-     console.log('subscriptionPlans', subscriptionPlans);
-
 
      return (
           <Box sx={{ position: 'relative' }}>
@@ -177,16 +170,17 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                     sortDir={subscriptionPlanSearch.state.sortDir}
                     tabs={[
                          { label: t('common.all'), value: 'all' },
-                         { label: t('clients.clientIsVerified'), value: 'is_verified' },
-                         { label: t('clients.clientHasAcceptedMarketing'), value: 'has_accepted_marketing' },
-                         { label: t('clients.clientIsReturning'), value: 'is_returning' },
+                         { label: t('subscriptionPlans.subscriptionPlanCanBillYearly'), value: 'can_bill_yearly' },
+                         { label: t('subscriptionPlans.subscriptionPlanIsDiscounted'), value: 'is_discounted' },
                     ]}
                     sortOptions={[
-                         { label: t('clients.clientName'), value: 'name' },
-                         { label: t('clients.clientType'), value: 'type' },
-                         { label: t('clients.clientStatus'), value: 'status' },
-                         { label: t('common.updatedAt'), value: 'updated_at' },
-                    ]} />
+                         { label: t('subscriptionPlans.subscriptionPlanName'), value: 'name' },
+                         { label: t('common.updatedAt'), value: 'updatedAt' },
+                         { label: t('subscriptionPlans.subscriptionPlanTotalPrice'), value: 'price' },
+                         { label: t('subscriptionPlans.subscriptionPlanBasePrice'), value: 'base_price' },
+                    ]}
+                    btnAddUrl={paths.dashboard.subscriptions.new}
+               />
                <Scrollbar>
                     <Table sx={{ minWidth: 700 }}>
                          <TableHead>
