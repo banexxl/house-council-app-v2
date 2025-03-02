@@ -13,7 +13,7 @@ export type SubscriptionPlan = {
      discount_percentage: number;
      features?: string[];
      base_price_per_month: number;
-     total_price: number;
+     total_price_per_month: number;
 };
 
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
@@ -28,7 +28,7 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      discount_percentage: 0,
      features: [],
      base_price_per_month: 0,
-     total_price: 0
+     total_price_per_month: 0
 };
 
 export const subscriptionPlanValidationSchema = Yup.object({
@@ -40,5 +40,5 @@ export const subscriptionPlanValidationSchema = Yup.object({
      is_discounted: Yup.boolean(),
      discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      base_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
-     total_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less")
+     total_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less")
 })

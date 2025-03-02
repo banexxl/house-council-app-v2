@@ -25,6 +25,7 @@ import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
 import { BaseEntity } from 'src/app/actions/base-entity-actions'
+import { isUUIDv4 } from 'src/utils/uuid'
 
 interface ClientNewFormProps {
   clientTypes: BaseEntity[],
@@ -42,6 +43,10 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const autocompleteRef_2 = useRef<AutocompleteRef>(null)
   const router = useRouter()
   const currentRoute = usePathname()
+
+  if (!isUUIDv4(clientData?.id)) {
+    router.push('/errors/404')
+  }
 
   const formik = useFormik({
     initialValues: {

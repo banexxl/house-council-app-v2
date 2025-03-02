@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 import { paths } from "src/paths"
 import { BaseEntity } from "src/app/actions/base-entity-actions"
 import { ClientBillingInformation } from "src/types/client-billing-information"
+import { isUUIDv4 } from "src/utils/uuid"
 
 interface ClientBillingInformationFormProps {
      allClients?: Client[]
@@ -29,6 +30,10 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
 
      const router = useRouter()
      const { t } = useTranslation()
+
+     if (!isUUIDv4(billingInformationData?.id)) {
+          router.push('/errors/404')
+     }
 
      const [paymentMethod, setPaymentMethod] = useState<{ value?: string; name?: string }>({
           value: "",

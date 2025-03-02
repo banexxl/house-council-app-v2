@@ -11,11 +11,12 @@ import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 
 import { paths } from 'src/paths';
+import { useRouter } from 'next/navigation';
 
 const Page = () => {
+
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
-
-
+  const router = useRouter()
 
   return (
     <>
@@ -70,10 +71,9 @@ const Page = () => {
             }}
           >
             <Button
-              component={RouterLink}
-              href={paths.index}
+              onClick={() => router.push(paths.dashboard.index)}
             >
-              Back to Home
+              Back
             </Button>
           </Box>
         </Container>

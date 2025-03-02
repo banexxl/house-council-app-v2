@@ -11,6 +11,7 @@ import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { useRouter } from "next/navigation"
 import { SubscriptionFormHeader } from "./subscription-form-header"
+import { isUUIDv4 } from "src/utils/uuid"
 
 interface SubscriptionEditorProps {
      subscriptionStatuses: BaseEntity[]
@@ -23,6 +24,10 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      const { t } = useTranslation()
      const router = useRouter()
 
+     if (!isUUIDv4(subscriptionPlanData?.id)) {
+          router.push('/errors/404')
+     }
+
      const formik = useFormik({
           initialValues: {
                ...subscriptionPlanInitialValues,
@@ -34,6 +39,8 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
+               console.log('values', values);
+
                try {
                     let response;
 
@@ -98,7 +105,6 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                totalPrice *= 12; // Calculate yearly price
                totalPrice *= 1 - (formik.values.yearly_discount_percentage || 0) / 100; // Apply yearly discount
           }
-
           return totalPrice;
      };
 
@@ -169,7 +175,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
                                              // Ensure only valid decimal numbers are allowed
                                              if (!isNaN(Number(value))) {
-                                                  formik.setFieldValue("base_price_per_month", value);
+                                                  formik.setFieldValue("base_price_per_month", value).then(() => {
+                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  })
                                              }
                                         }}
                                         error={formik.touched.base_price_per_month && Boolean(formik.errors.base_price_per_month)}
@@ -188,7 +196,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   value = parseFloat(value.toFixed(2));
                                              }
 
-                                             formik.setFieldValue("base_price_per_month", value);
+                                             formik.setFieldValue("base_price_per_month", value).then(() => {
+                                                  formik.setFieldValue('total_price_per_month', calculatePrice());
+                                             })
                                         }}
                                    />
                               </CardContent>
@@ -278,7 +288,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
                                                   // Allow empty input temporarily so users can delete and retype
                                                   if (value === "") {
-                                                       formik.setFieldValue("yearly_discount_percentage", "");
+                                                       formik.setFieldValue("yearly_discount_percentage", "")
                                                        return;
                                                   }
 
@@ -289,7 +299,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        numberValue = 0; // Set to 0 if it's invalid
                                                   }
 
-                                                  formik.setFieldValue("yearly_discount_percentage", numberValue);
+                                                  formik.setFieldValue("yearly_discount_percentage", numberValue).then(() => {
+                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  })
                                              }}
                                              error={formik.touched.yearly_discount_percentage && Boolean(formik.errors.yearly_discount_percentage)}
                                              helperText={formik.touched.yearly_discount_percentage && formik.errors.yearly_discount_percentage}
@@ -305,7 +317,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
                                                   }
 
-                                                  formik.setFieldValue("yearly_discount_percentage", value);
+                                                  formik.setFieldValue("yearly_discount_percentage", value).then(() => {
+                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  })
                                              }}
                                         />
                                    )}
@@ -349,7 +363,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        numberValue = 0; // Set to 0 if it's invalid
                                                   }
 
-                                                  formik.setFieldValue("discount_percentage", numberValue);
+                                                  formik.setFieldValue("discount_percentage", numberValue).then(() => {
+                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  })
                                              }}
                                              error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
                                              helperText={formik.touched.discount_percentage && formik.errors.discount_percentage}
@@ -365,7 +381,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
                                                   }
 
-                                                  formik.setFieldValue("discount_percentage", value);
+                                                  formik.setFieldValue("discount_percentage", value).then(() => {
+                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  })
                                              }}
                                         />
 

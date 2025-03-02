@@ -84,7 +84,7 @@ export const paths = {
     subscriptions: {
       index: '/dashboard/subscriptions',
       new: '/dashboard/subscriptions/new',
-      subscription: '/dashboard/subscription/',
+      subscription: '/dashboard/subscriptions/',
     },
     tenants: {
       index: '/dashboard/tenants',

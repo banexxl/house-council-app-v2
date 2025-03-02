@@ -221,7 +221,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                              </Button>
                                              {subscriptionPlanSelection.selected.length === 1 && (
                                                   <Button
-                                                       onClick={() => router.push(paths.dashboard.clients.details + '/' + subscriptionPlanSelection.selected[0])}
+                                                       onClick={() => router.push(paths.dashboard.subscriptions.subscription + '/' + subscriptionPlanSelection.selected[0])}
                                                        color="inherit"
                                                        size="small">
                                                        {t('common.btnEdit')}
@@ -282,7 +282,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                        <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                             {subscriptionPlan.base_price_per_month}
                                                        </TableCell>
-                                                       <TableCell>{subscriptionPlan.total_price}</TableCell>
+                                                       <TableCell>{subscriptionPlan.total_price_per_month}</TableCell>
                                                        <TableCell>
                                                             {subscriptionPlan.can_bill_yearly ? (
                                                                  <SvgIcon>
