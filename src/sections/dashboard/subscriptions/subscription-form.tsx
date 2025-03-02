@@ -14,7 +14,7 @@ import { SubscriptionFormHeader } from "./subscription-form-header"
 
 interface SubscriptionEditorProps {
      subscriptionStatuses: BaseEntity[]
-     features: (BaseEntity & { base_price: number })[]
+     features: (BaseEntity & { base_price_per_month: number })[]
      subscriptionPlanData?: SubscriptionPlan
 }
 
@@ -67,8 +67,20 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           },
      })
 
+     /**
+      * Calculates the total price of a subscription plan based on its base price and selected features.
+      * It applies discounts if applicable and adjusts for yearly billing.
+      *
+      * - Adds the base price per month of the subscription plan.
+      * - Includes the base price of each selected feature.
+      * - Applies a discount if the subscription is marked as discounted.
+      * - Calculates the yearly price and applies a yearly discount if the subscription can be billed yearly.
+      *
+      * @returns {number} The calculated total price of the subscription plan.
+      */
+
      const calculatePrice = () => {
-          let totalPrice = Number(formik.values.base_price_per_month) || 0; // Ensure base_price is a valid number
+          let totalPrice = Number(formik.values.base_price_per_month) || 0; // Ensure base_price_per_month is a valid number
 
           // Add prices of selected features
           formik.values.features?.forEach((featureId) => {
@@ -141,8 +153,8 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                    </FormControl>
                                    <TextField
                                         fullWidth
-                                        id="base_price"
-                                        name="base_price"
+                                        id="base_price_per_month"
+                                        name="base_price_per_month"
                                         label="Base Price"
                                         type="number"
                                         value={formik.values.base_price_per_month}
@@ -151,13 +163,13 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
                                              // Allow empty string so the user can delete and retype
                                              if (value === "") {
-                                                  formik.setFieldValue("base_price", "");
+                                                  formik.setFieldValue("base_price_per_month", "");
                                                   return;
                                              }
 
                                              // Ensure only valid decimal numbers are allowed
                                              if (!isNaN(Number(value))) {
-                                                  formik.setFieldValue("base_price", value);
+                                                  formik.setFieldValue("base_price_per_month", value);
                                              }
                                         }}
                                         error={formik.touched.base_price_per_month && Boolean(formik.errors.base_price_per_month)}
@@ -176,7 +188,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   value = parseFloat(value.toFixed(2));
                                              }
 
-                                             formik.setFieldValue("base_price", value);
+                                             formik.setFieldValue("base_price_per_month", value);
                                         }}
                                    />
                               </CardContent>

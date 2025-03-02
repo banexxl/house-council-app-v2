@@ -44,7 +44,7 @@ export default async function TableEditorPage() {
                               clientBillingInformationStatuses={readClientBillingInformationStatusesData}
                               invoiceStatuses={readInvoiceStatusesData}
                               subscriptionPlanStatuses={readSubscriptionPlanStatusesData}
-                              features={readFeaturesData as BaseEntity[] & { base_price: number }[]}
+                              features={readFeaturesData as BaseEntity[] & { base_price_per_month: number }[]}
                               buildingStatuses={readBuildingStatusesData}
                               updateEntity={updateEntity}
                               deleteEntity={deleteEntity}

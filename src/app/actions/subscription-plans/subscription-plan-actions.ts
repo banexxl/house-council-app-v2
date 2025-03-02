@@ -4,6 +4,15 @@ import { revalidatePath } from "next/cache";
 import { supabase } from "src/libs/supabase/client";
 import { SubscriptionPlan } from "src/types/subscription-plan";
 
+/**
+ * Creates a new subscription plan in the database.
+ * @param {SubscriptionPlan} subscriptionPlan The subscription plan to create.
+ * @returns {Promise<{createSubscriptionPlanSuccess: boolean, createdSubscriptionPlan?: SubscriptionPlan, createSubscriptionPlanError?: any}>}
+ * A promise that resolves to an object with the following properties:
+ * - `createSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was created successfully.
+ * - `createdSubscriptionPlan`: The created subscription plan, if successful.
+ * - `createSubscriptionPlanError`: The error that occurred, if any.
+ */
 export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):
      Promise<{
           createSubscriptionPlanSuccess: boolean;
@@ -47,10 +56,19 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           }
      }
 
-     revalidatePath(`/dashboard/subscriptions/${data.id}`);
      return { createSubscriptionPlanSuccess: true, createdSubscriptionPlan: { ...data, features: subscriptionPlan.features } };
 };
 
+/**
+ * Updates an existing subscription plan in the database.
+ * @param {SubscriptionPlan} subscriptionPlan The subscription plan to update.
+ * @returns {Promise<{updateSubscriptionPlanSuccess: boolean, updatedSubscriptionPlan?: SubscriptionPlan, updateSubscriptionPlanError?: any}>}
+ * A promise that resolves to an object with the following properties:
+ * - `updateSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was updated successfully.
+ * - `updatedSubscriptionPlan`: The updated subscription plan, if successful.
+ * - `updateSubscriptionPlanError`: The error that occurred, if any.
+ * If the subscription plan is updated successfully the path is revalidated
+ */
 export const updateSubscriptionPlan = async (
      subscriptionPlan: SubscriptionPlan
 ): Promise<{
@@ -121,6 +139,15 @@ export const updateSubscriptionPlan = async (
      return { updateSubscriptionPlanSuccess: true, updatedSubscriptionPlan: { ...data, features: subscriptionPlan.features } };
 };
 
+/**
+ * Reads a subscription plan from the database.
+ * @param {string} id The id of the subscription plan to read.
+ * @returns {Promise<{readSubscriptionPlanSuccess: boolean, subscriptionPlan?: SubscriptionPlan, readSubscriptionPlanError?: string}>}
+ * A promise that resolves to an object with the following properties:
+ * - `readSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was read successfully.
+ * - `subscriptionPlan`: The subscription plan that was read, if successful.
+ * - `readSubscriptionPlanError`: The error that occurred, if any.
+ */
 export const readSubscriptionPlan = async (id: string): Promise<{
      readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
 }> => {
@@ -153,29 +180,14 @@ export const readSubscriptionPlan = async (id: string): Promise<{
      };
 };
 
-export const deleteSubscriptionPlan = async (id: string): Promise<{ deleteSubscriptionPlanSuccess: boolean, deleteSubscriptionPlanError?: any }> => {
-
-     // Delete fromm tblSubscriptionPlans_Features first
-     const { error: featureDeleteError } = await supabase
-          .from("tblSubscriptionPlans_Features")
-          .delete()
-          .match({ subscription_plan_id: id });
-
-     if (featureDeleteError) {
-          return { deleteSubscriptionPlanSuccess: false, deleteSubscriptionPlanError: featureDeleteError };
-     }
-
-     // Then delete from tblSubscriptionPlans
-     const { error: planDeleteError } = await supabase
-          .from("tblSubscriptionPlans")
-          .delete()
-          .match({ id });
-
-     if (planDeleteError) {
-          return { deleteSubscriptionPlanSuccess: false, deleteSubscriptionPlanError: planDeleteError };
-     }
-     return { deleteSubscriptionPlanSuccess: true };
-};
+/**
+ * Reads all subscription plans from the database.
+ * @returns {Promise<{readAllSubscriptionPlansSuccess: boolean, subscriptionPlanData?: SubscriptionPlan[], readAllSubscriptionPlansError?: string}>}
+ * A promise that resolves to an object with the following properties:
+ * - `readAllSubscriptionPlansSuccess`: A boolean indicating whether the subscription plans were read successfully.
+ * - `subscriptionPlanData`: An array of subscription plans, if successful.
+ * - `readAllSubscriptionPlansError`: The error message, if any occurred during the reading process.
+ */
 
 export const readAllSubscriptionPlans = async (): Promise<{
      readAllSubscriptionPlansSuccess: boolean; subscriptionPlanData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
@@ -196,13 +208,22 @@ export const readAllSubscriptionPlans = async (): Promise<{
 
      return { readAllSubscriptionPlansSuccess: true, subscriptionPlanData: subscriptionPlans };  // Return the subscription plans
 };
-
 export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ deleteSubscriptionPlansSuccess: boolean, deleteSubscriptionPlansError?: any }> => {
-     const { error } = await supabase.from("tblSubscriptionPlans").delete().in("id", ids);     // Delete the subscription plans
+     // Delete related entries from the connection table first
+     const { error: relationError } = await supabase.from("tblSubscriptionPlans_Features").delete().in("subscription_plan_id", ids);
+
+     if (relationError) {
+          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: relationError };
+     }
+
+     // Now delete the subscription plans
+     const { error } = await supabase.from("tblSubscriptionPlans").delete().in("id", ids);
+     console.log('error', error);
+
      if (error) {
-          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };    // Return an error if there is one
+          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };
      }
 
      revalidatePath("/dashboard/subscriptions");
-     return { deleteSubscriptionPlansSuccess: true };    // Return success
+     return { deleteSubscriptionPlansSuccess: true };
 };

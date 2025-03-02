@@ -19,7 +19,6 @@ export default async function Page() {
           >
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <Typography variant="h4" sx={{ ontWeight: 'bold', mb: 6 }}>Subscription Editor</Typography>
                          <SubscriptionTable subscriptionPlans={subscriptionPlans.subscriptionPlanData} subscriptionPlanStatuses={subscriptionPlanStatuses} />
                     </Stack>
                </Container>

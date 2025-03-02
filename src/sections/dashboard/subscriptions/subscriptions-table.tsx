@@ -31,6 +31,7 @@ import { FilterBar } from '../client/table-filter';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plans/subscription-plan-actions';
 import { BaseEntity } from 'src/app/actions/base-entity-actions';
+import toast from 'react-hot-toast';
 
 interface SubscriptionPlanListTableProps {
      subscriptionPlans?: SubscriptionPlan[];
@@ -126,6 +127,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
           deleteSubscriptionPlansDialog.handleClose();
           const deleteSubscriptionPlanResponse = await deleteSubscriptionPlansByIds(subscriptionPlanSelection.selected.filter((id): id is string => id !== undefined));
           if (deleteSubscriptionPlanResponse.deleteSubscriptionPlansSuccess) {
+               toast.success(t('common.deleteSuccess'));
                subscriptionPlanSelection.handleDeselectAll();
           }
      }, [deleteSubscriptionPlansDialog]);
@@ -162,6 +164,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
 
      return (
           <Box sx={{ position: 'relative' }}>
+               <Typography variant="h5">{t('subscriptionPlans.subscriptionPlanList')}</Typography>
                <FilterBar
                     onTabsChange={subscriptionPlanSearch.handleTabsChange}
                     onFiltersChange={subscriptionPlanSearch.handleQueryChange}
@@ -177,7 +180,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                          { label: t('subscriptionPlans.subscriptionPlanName'), value: 'name' },
                          { label: t('common.updatedAt'), value: 'updatedAt' },
                          { label: t('subscriptionPlans.subscriptionPlanTotalPrice'), value: 'price' },
-                         { label: t('subscriptionPlans.subscriptionPlanBasePrice'), value: 'base_price' },
+                         { label: t('subscriptionPlans.subscriptionPlanBasePrice'), value: 'base_price_per_month' },
                     ]}
                     btnAddUrl={paths.dashboard.subscriptions.new}
                />

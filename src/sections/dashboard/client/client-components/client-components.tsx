@@ -32,7 +32,7 @@ interface GenericTableEditorProps {
      clientBillingInformationStatuses: BaseEntity[]
      invoiceStatuses: BaseEntity[]
      subscriptionPlanStatuses: BaseEntity[]
-     features: BaseEntity[] & { base_price: number }[]
+     features: BaseEntity[] & { base_price_per_month: number }[]
      buildingStatuses: BaseEntity[]
      updateEntity: <T extends BaseEntity>(
           table: string,
