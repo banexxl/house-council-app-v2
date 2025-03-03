@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useRef, useState, type FC } from 'react'
+import { useEffect, useRef, useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -44,7 +44,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const router = useRouter()
   const currentRoute = usePathname()
 
-  if (!isUUIDv4(clientData?.id)) {
+  if (!isUUIDv4(initialValues?.id) && !currentRoute.includes(paths.dashboard.clients.new)) {
     notFound()
   }
 
