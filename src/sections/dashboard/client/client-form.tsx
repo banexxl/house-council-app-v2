@@ -22,7 +22,7 @@ import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete
 import { createOrUpdateClientAction } from 'src/app/actions/client-actions/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, notFound } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
 import { BaseEntity } from 'src/app/actions/base-entity-actions'
 import { isUUIDv4 } from 'src/utils/uuid'
@@ -45,7 +45,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const currentRoute = usePathname()
 
   if (!isUUIDv4(clientData?.id)) {
-    router.push('/errors/404')
+    notFound()
   }
 
   const formik = useFormik({

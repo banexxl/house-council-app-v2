@@ -9,7 +9,7 @@ import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/
 import { LoadingButton } from "@mui/lab"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
-import { useRouter } from "next/navigation"
+import { notFound, useRouter } from "next/navigation"
 import { SubscriptionFormHeader } from "./subscription-form-header"
 import { isUUIDv4 } from "src/utils/uuid"
 
@@ -24,9 +24,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      const { t } = useTranslation()
      const router = useRouter()
 
-     if (!isUUIDv4(subscriptionPlanData?.id)) {
-          router.push('/errors/404')
-     }
+     // if (isUUIDv4(subscriptionPlanData?.id)) {
+     //      notFound()
+     // }
 
      const formik = useFormik({
           initialValues: {
@@ -120,7 +120,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         fullWidth
                                         id="name"
                                         name="name"
-                                        label="Subscription Name"
+                                        label={t("subscriptionPlans.subscriptionPlanName")}
                                         value={formik.values.name}
                                         onChange={formik.handleChange}
                                         error={formik.touched.name && Boolean(formik.errors.name)}
@@ -131,7 +131,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         fullWidth
                                         id="description"
                                         name="description"
-                                        label="Description"
+                                        label={t("subscriptionPlans.subscriptionPlanDescription")}
                                         value={formik.values.description}
                                         onChange={formik.handleChange}
                                         error={formik.touched.description && Boolean(formik.errors.description)}
@@ -141,14 +141,14 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         rows={4}
                                    />
                                    <FormControl fullWidth margin="normal">
-                                        <InputLabel id="status-label">Status</InputLabel>
+                                        <InputLabel id="status-label">{t("subscriptionPlans.subscriptionPlanStatus")}</InputLabel>
                                         <Select
                                              labelId="status-label"
                                              id="status_id"
                                              name="status_id"
                                              value={formik.values.status_id}
                                              onChange={formik.handleChange}
-                                             label="Status"
+                                             label={t("subscriptionPlans.subscriptionPlanStatus")}
                                         >
                                              {subscriptionStatuses.map((status: BaseEntity) => (
                                                   <MenuItem key={status.id} value={status.id}>
@@ -161,7 +161,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         fullWidth
                                         id="base_price_per_month"
                                         name="base_price_per_month"
-                                        label="Base Price"
+                                        label={t("subscriptionPlans.subscriptionPlanBasePrice")}
                                         type="number"
                                         value={formik.values.base_price_per_month}
                                         onChange={(event) => {
@@ -220,7 +220,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }
                                              }}
                                         >
-                                             {formik.values.features?.length === features.length ? "Deselect All" : "Select All"}
+                                             {formik.values.features?.length === features.length ? t("common.deselectAll") : t("common.selectAll")}
                                         </Button>
                                    </Stack>
                                    {features?.length > 0 &&
@@ -257,7 +257,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                          <Card>
                               <CardContent>
                                    <Typography variant="h6" gutterBottom>
-                                        Pricing Options
+                                        {t("subscriptionPlans.subscriptionPlanPricingOptions")}
                                    </Typography>
                                    <FormControlLabel
                                         control={
@@ -273,14 +273,14 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }}
                                              />
                                         }
-                                        label="Yearly Billing"
+                                        label={t("subscriptionPlans.subscriptionPlanYearlyBilling")}
                                    />
                                    {formik.values.can_bill_yearly && (
                                         <TextField
                                              fullWidth
                                              id="yearly_discount_percentage"
                                              name="yearly_discount_percentage"
-                                             label="Yearly Discount Percentage"
+                                             label={t("subscriptionPlans.subscriptionPlanYearlyDiscount")}
                                              type="number"
                                              value={formik.values.yearly_discount_percentage}
                                              onChange={(event) => {
@@ -337,14 +337,14 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }}
                                              />
                                         }
-                                        label="Apply Additional Discount"
+                                        label={t("subscriptionPlans.subscriptionPlanIsDiscounted")}
                                    />
                                    {formik.values.is_discounted && (
                                         <TextField
                                              fullWidth
                                              id="discount_percentage"
                                              name="discount_percentage"
-                                             label="Discount Percentage"
+                                             label={t("subscriptionPlans.subscriptionPlanDiscount")}
                                              type="number"
                                              value={formik.values.discount_percentage}
                                              onChange={(event) => {
@@ -390,7 +390,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                    )}
                                    <Typography variant="h5" className="mt-4">
                                         Total Price: ${calculatePrice().toFixed(2)}
-                                        {formik.values.can_bill_yearly ? " per year" : " per month"}
+                                        {formik.values.can_bill_yearly ? " " + t("subscriptionPlans.subscriptionPlanYearly") : " " + t("subscriptionPlans.subscriptionPlanMonthly")}
                                    </Typography>
                               </CardContent>
                          </Card>
@@ -403,7 +403,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                               color="primary"
                               disabled={!formik.isValid || formik.isSubmitting || !formik.dirty}
                          >
-                              Save Subscription
+                              {t("common.btnSave")}
                          </LoadingButton>
                     </Grid>
                </Grid>

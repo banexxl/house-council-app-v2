@@ -5,6 +5,8 @@ export const en = {
   [tokens.common.languageChanged]: 'Language changed',
   [tokens.common.title]: 'House Council',
   [tokens.common.all]: 'All',
+  [tokens.common.selectAll]: 'Select all',
+  [tokens.common.deselectAll]: 'Deselect all',
   [tokens.common.address]: 'Address',
   [tokens.common.fullName]: 'Full name',
   [tokens.common.created_at]: 'Created at',
@@ -37,6 +39,7 @@ export const en = {
   [tokens.common.btnExport]: 'Export',
   [tokens.common.btnExportDocx]: 'Export to DOCX',
   [tokens.common.btnExportPdf]: 'Export to PDF',
+  [tokens.common.btnBackHome]: 'Back to home',
   [tokens.common.lblName]: 'Name',
   [tokens.common.lblDescription]: 'Description',
   [tokens.common.lblStatus]: 'Status',
@@ -301,15 +304,45 @@ export const en = {
   [tokens.subscriptionPlans.subscriptionPlanName]: 'Name',
   [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Description',
   [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Base Price',
+  [tokens.subscriptionPlans.subscriptionPlanPricingOptions]: 'Pricing Options',
   [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Total Price',
   [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Currency',
   [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Features',
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Feature',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Feature Status',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
-  [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Can Bill Yearly',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Yearly Discount',
+  [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Yearly Billing',
   [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Discounted',
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Discounted Price',
+  [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Monthly',
+  [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Yearly',
+  //#endregion
+  //#region Page Errors
+  [tokens.errors.page.notFound]: 'Page not found',
+  [tokens.errors.page.notFoundDescription]: 'The page you are looking for does not exist',
+  [tokens.errors.page.notFoundDescriptionShort]: 'Page not found',
+  //#endregion
+  //#region Server Errors
+  [tokens.errors.server.serverError]: 'Server error',
+  [tokens.errors.server.serverErrorDescription]: 'An error occurred on the server',
+  [tokens.errors.server.serverErrorDescriptionShort]: 'Server error',
+  //#endregion
+  //#region Authentification Errors
+  [tokens.errors.authentification.loginError]: 'Login error',
+  [tokens.errors.authentification.loginErrorDescription]: 'Username or password is incorrect',
+  [tokens.errors.authentification.loginErrorDescriptionShort]: 'Login error',
+  [tokens.errors.authentification.logoutError]: 'Logout error',
+  [tokens.errors.authentification.logoutErrorDescription]: 'An error occurred while logging out',
+  [tokens.errors.authentification.logoutErrorDescriptionShort]: 'Logout error',
+  [tokens.errors.authentification.registerError]: 'Register error',
+  [tokens.errors.authentification.registerErrorDescription]: 'An error occurred while registering',
+  [tokens.errors.authentification.registerErrorDescriptionShort]: 'Register error',
+  [tokens.errors.authentification.forgotPasswordError]: 'Forgot password error',
+  //#endregion
+  //#region Authorization Errors
+  [tokens.errors.authorization.authorizationError]: 'Authorization error',
+  [tokens.errors.authorization.authorizationErrorDescription]: 'You do not have permission to access this page',
+  [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Authorization error',
   //#endregion
 };

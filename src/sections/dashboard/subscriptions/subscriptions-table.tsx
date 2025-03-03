@@ -94,6 +94,7 @@ const useSubscriptionPlanSearch = () => {
           }));
      }, []);
 
+
      return {
           handleTabsChange,
           handleQueryChange,
@@ -221,7 +222,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                              </Button>
                                              {subscriptionPlanSelection.selected.length === 1 && (
                                                   <Button
-                                                       onClick={() => router.push(paths.dashboard.subscriptions.subscription + '/' + subscriptionPlanSelection.selected[0])}
+                                                       onClick={() => router.push(paths.dashboard.subscriptions.index + '/' + subscriptionPlanSelection.selected[0])}
                                                        color="inherit"
                                                        size="small">
                                                        {t('common.btnEdit')}

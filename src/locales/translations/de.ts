@@ -5,6 +5,8 @@ export const de = {
   [tokens.common.languageChanged]: 'Sprache geändert',
   [tokens.common.title]: 'Hausrat',
   [tokens.common.all]: 'Alle',
+  [tokens.common.selectAll]: 'Alle auswählen',
+  [tokens.common.deselectAll]: 'Alle abwhlen',
   [tokens.common.address]: 'Adresse',
   [tokens.common.fullName]: 'Voller Name',
   [tokens.common.created_at]: 'Erstellt am',
@@ -37,6 +39,7 @@ export const de = {
   [tokens.common.btnExport]: 'Exportieren',
   [tokens.common.btnExportDocx]: 'Exportieren als DOCX',
   [tokens.common.btnExportPdf]: 'Exportieren als PDF',
+  [tokens.common.btnBackHome]: 'Zur Startseite',
   [tokens.common.lblName]: 'Name',
   [tokens.common.lblDescription]: 'Beschreibung',
   [tokens.common.lblStatus]: 'Status',
@@ -301,15 +304,46 @@ export const de = {
   [tokens.subscriptionPlans.subscriptionPlanName]: 'Name',
   [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Beschreibung',
   [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Basispreis',
+  [tokens.subscriptionPlans.subscriptionPlanPricingOptions]: 'Preisoptionen',
   [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Gesamtpreis',
   [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Währung',
   [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Funktionen',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Status',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Funktion',
-  [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Jahresabrechnung',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Jahresrabatt',
+  [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Jahresabrechnung',
   [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Rabatt',
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Rabattpreis',
+  [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Monatlich',
+  [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Jahres',
+  //#endregion
+  //#region Page Errors
+  //#region Page Errors
+  [tokens.errors.page.notFound]: 'Seite nicht gefunden',
+  [tokens.errors.page.notFoundDescription]: 'Die von Ihnen angeforderte Seite existiert nicht. Bitte überprüfen Sie die URL.',
+  [tokens.errors.page.notFoundDescriptionShort]: 'Seite nicht gefunden',
+  //#endregion
+  //#region Server Errors
+  [tokens.errors.server.serverError]: 'Server Fehler',
+  [tokens.errors.server.serverErrorDescription]: 'Ein Fehler auf dem Server ist aufgetreten. Bitte versuchen Sie es später erneut.',
+  [tokens.errors.server.serverErrorDescriptionShort]: 'Server Fehler',
+  //#endregion
+  //#region Authentification Errors
+  [tokens.errors.authentification.loginError]: 'Anmeldefehler',
+  [tokens.errors.authentification.loginErrorDescription]: 'Benutzername oder Passwort falsch',
+  [tokens.errors.authentification.loginErrorDescriptionShort]: 'Anmeldefehler',
+  [tokens.errors.authentification.logoutError]: 'Abmeldefehler',
+  [tokens.errors.authentification.logoutErrorDescription]: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+  [tokens.errors.authentification.logoutErrorDescriptionShort]: 'Abmeldefehler',
+  [tokens.errors.authentification.registerError]: 'Registrierungsfehler',
+  [tokens.errors.authentification.registerErrorDescription]: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+  [tokens.errors.authentification.registerErrorDescriptionShort]: 'Registrierungsfehler',
+  [tokens.errors.authentification.forgotPasswordError]: 'Passwort vergessen Fehler',
+  //#endregion
+  //#region Authorization Errors
+  [tokens.errors.authorization.authorizationError]: 'Autorisierungsfehler',
+  [tokens.errors.authorization.authorizationErrorDescription]: 'Sie haben keine Berechtigung diese Seite zu besuchen.',
+  [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Autorisierungsfehler',
   //#endregion
 };

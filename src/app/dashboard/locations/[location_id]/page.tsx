@@ -1,6 +1,5 @@
 import { Box } from '@mui/system'
 import { createClient } from '@supabase/supabase-js'
-import { notFound } from 'next/navigation'
 
 const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,

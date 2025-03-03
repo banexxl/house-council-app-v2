@@ -11,16 +11,21 @@ import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 
 import { paths } from 'src/paths';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import { LoadingButton } from '@mui/lab';
+import { useState } from 'react';
 
-const Page = () => {
+export default function Error() {
 
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
+  const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
   const router = useRouter()
 
   return (
     <>
-      <Seo title="Error: Not Found" />
+      <Seo title={t('errors.server.serverError')} />
       <Box
         component="main"
         sx={{
@@ -39,9 +44,9 @@ const Page = () => {
             }}
           >
             <Box
-              alt="Not found"
+              alt={t('errors.server.serverError')}
               component="img"
-              src="/assets/errors/error-404.png"
+              src="/assets/errors/error-500.png"
               sx={{
                 height: 'auto',
                 maxWidth: '100%',
@@ -53,15 +58,14 @@ const Page = () => {
             align="center"
             variant={mdUp ? 'h1' : 'h4'}
           >
-            404: The page you are looking for isn’t here
+            500: {t('errors.server.serverErrorDescriptionShort')}
           </Typography>
           <Typography
             align="center"
             color="text.secondary"
             sx={{ mt: 0.5 }}
           >
-            You either tried some shady route or you came here by mistake. Whichever it is, try
-            using the navigation.
+            {t('errors.server.serverErrorDescription')}
           </Typography>
           <Box
             sx={{
@@ -70,16 +74,18 @@ const Page = () => {
               mt: 6,
             }}
           >
-            <Button
-              onClick={() => router.push(paths.dashboard.index)}
+            <LoadingButton
+              onClick={() => {
+                router.push(paths.index)
+                setLoading(true)
+              }}
+              loading={loading}
             >
-              Back
-            </Button>
+              {t('common.btnBackHome')}
+            </LoadingButton>
           </Box>
         </Container>
       </Box>
     </>
   );
 };
-
-export default Page;

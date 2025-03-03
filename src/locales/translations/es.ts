@@ -5,6 +5,8 @@ export const es = {
   [tokens.common.languageChanged]: 'Se ha cambiado el idioma',
   [tokens.common.title]: 'Consejo de Casa',
   [tokens.common.all]: 'Todos',
+  [tokens.common.selectAll]: 'Seleccionar todo',
+  [tokens.common.deselectAll]: 'Deseleccionar todo',
   [tokens.common.address]: 'Dirección',
   [tokens.common.fullName]: 'Nombre completo',
   [tokens.common.created_at]: 'Creado en',
@@ -37,6 +39,7 @@ export const es = {
   [tokens.common.btnExport]: 'Exportar',
   [tokens.common.btnExportDocx]: 'Exportar a DOCX',
   [tokens.common.btnExportPdf]: 'Exportar a PDF',
+  [tokens.common.btnBackHome]: 'Volver a la casa',
   [tokens.common.lblName]: 'Nombre',
   [tokens.common.lblDescription]: 'Descripción',
   [tokens.common.lblStatus]: 'Estado',
@@ -300,15 +303,45 @@ export const es = {
   [tokens.subscriptionPlans.subscriptionPlanName]: 'Nombre del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanDescription]: 'Descripción del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanBasePrice]: 'Precio Base del Plan de Suscripción',
+  [tokens.subscriptionPlans.subscriptionPlanPricingOptions]: 'Opcciones de Precio del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanTotalPrice]: 'Precio Total del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Moneda del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Características del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Característica del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Estado del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Estados del Plan de Suscripción',
-  [tokens.subscriptionPlans.subscriptionPlanCanBillYearly]: 'Puede Facturar Anualmente',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Descuento Anual',
+  [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Facturación Anual',
   [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Descuento',
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Precio con Descuento',
+  [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Mensual',
+  [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Anual',
+  //#endregion
+  //#region Page Errors
+  [tokens.errors.page.notFound]: 'Página no encontrada',
+  [tokens.errors.page.notFoundDescription]: 'La página que está buscando no existe',
+  [tokens.errors.page.notFoundDescriptionShort]: 'Página no encontrada',
+  //#endregion
+  //#region Server Errors
+  [tokens.errors.server.serverError]: 'Error del servidor',
+  [tokens.errors.server.serverErrorDescription]: 'Ha ocurrido un error en el servidor. Por favor, inténtelo de nuevo más tarde.',
+  [tokens.errors.server.serverErrorDescriptionShort]: 'Error del servidor',
+  //#endregion
+  //#region Authentification Errors
+  [tokens.errors.authentification.loginError]: 'Error al iniciar sesión',
+  [tokens.errors.authentification.loginErrorDescription]: 'El nombre de usuario o la contraseña son incorrectos',
+  [tokens.errors.authentification.loginErrorDescriptionShort]: 'Error al iniciar sesión',
+  [tokens.errors.authentification.logoutError]: 'Error al cerrar sesión',
+  [tokens.errors.authentification.logoutErrorDescription]: 'Ha ocurrido un error al cerrar sesión. Por favor, inténtelo de nuevo más tarde.',
+  [tokens.errors.authentification.logoutErrorDescriptionShort]: 'Error al cerrar sesión',
+  [tokens.errors.authentification.registerError]: 'Error al registrarse',
+  [tokens.errors.authentification.registerErrorDescription]: 'Ha ocurrido un error al registrarse. Por favor, inténtelo de nuevo más tarde.',
+  [tokens.errors.authentification.registerErrorDescriptionShort]: 'Error al registrarse',
+  [tokens.errors.authentification.forgotPasswordError]: 'Error al recuperar la contraseña',
+  //#endregion
+  //#region Authorization Errors
+  [tokens.errors.authorization.authorizationError]: 'Error de autorización',
+  [tokens.errors.authorization.authorizationErrorDescription]: 'No tiene permiso para acceder a esta página',
+  [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Error de autorización',
   //#endregion
 };
