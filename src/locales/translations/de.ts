@@ -314,6 +314,7 @@ export const de = {
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Jahresrabatt',
   [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Jahresabrechnung',
   [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Rabatt',
+  [tokens.subscriptionPlans.subscriptionPlanDiscountPercentage]: 'Rabattsatz',
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Rabattpreis',
   [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Monatlich',
   [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Jahres',

@@ -344,7 +344,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              fullWidth
                                              id="discount_percentage"
                                              name="discount_percentage"
-                                             label={t("subscriptionPlans.subscriptionPlanDiscount")}
+                                             label={t("subscriptionPlans.subscriptionPlanDiscountPercentage")}
                                              type="number"
                                              value={formik.values.discount_percentage}
                                              onChange={(event) => {

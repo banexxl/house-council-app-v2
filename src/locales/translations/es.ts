@@ -313,6 +313,7 @@ export const es = {
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Descuento Anual',
   [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Facturación Anual',
   [tokens.subscriptionPlans.subscriptionPlanIsDiscounted]: 'Descuento',
+  [tokens.subscriptionPlans.subscriptionPlanDiscountPercentage]: 'Porcentaje de Descuento',
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Precio con Descuento',
   [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Mensual',
   [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Anual',

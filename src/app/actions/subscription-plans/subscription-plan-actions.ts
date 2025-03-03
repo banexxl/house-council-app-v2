@@ -136,6 +136,7 @@ export const updateSubscriptionPlan = async (
      }
 
      revalidatePath(`/dashboard/subscriptions/${data.id}`);
+     revalidatePath("/dashboard/subscriptions");
      return { updateSubscriptionPlanSuccess: true, updatedSubscriptionPlan: { ...data, features: subscriptionPlan.features } };
 };
 

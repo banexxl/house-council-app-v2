@@ -273,6 +273,7 @@ export const tokens = {
     subscriptionPlanYearlyDiscount: 'subscriptionPlans.subscriptionPlanYearlyDiscount',
     subscriptionPlanYearlyBilling: 'subscriptionPlans.subscriptionPlanYearlyBilling',
     subscriptionPlanIsDiscounted: 'subscriptionPlans.subscriptionPlanIsDiscounted',
+    subscriptionPlanDiscountPercentage: 'subscriptionPlans.subscriptionPlanDiscountPercentage',
     subscriptionPlanDiscountedPrice: 'subscriptionPlans.subscriptionPlanDiscountedPrice',
     subscriptionPlanPricePerMonth: 'subscriptionPlans.subscriptionPlanPricePerMonth',
     subscriptionPlanMonthly: 'subscriptionPlans.subscriptionPlanMonthly',

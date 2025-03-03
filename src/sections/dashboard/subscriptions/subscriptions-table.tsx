@@ -174,7 +174,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                     sortDir={subscriptionPlanSearch.state.sortDir}
                     tabs={[
                          { label: t('common.all'), value: 'all' },
-                         { label: t('subscriptionPlans.subscriptionPlanCanBillYearly'), value: 'can_bill_yearly' },
+                         { label: t('subscriptionPlans.subscriptionPlanYearlyBilling'), value: 'can_bill_yearly' },
                          { label: t('subscriptionPlans.subscriptionPlanIsDiscounted'), value: 'is_discounted' },
                     ]}
                     sortOptions={[
@@ -246,11 +246,11 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                    <TableCell>{t('subscriptionPlans.subscriptionPlanName')}</TableCell>
                                    <TableCell>{t('subscriptionPlans.subscriptionPlanStatus')}</TableCell>
                                    <TableCell>{t('subscriptionPlans.subscriptionPlanBasePrice')}</TableCell>
-                                   <TableCell>{t('subscriptionPlans.subscriptionPlanTotalPrice')}</TableCell>
-                                   <TableCell>{t('subscriptionPlans.subscriptionPlanCanBillYearly')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanYearlyBilling')}</TableCell>
                                    <TableCell>{t('subscriptionPlans.subscriptionPlanYearlyDiscount')}</TableCell>
                                    <TableCell>{t('subscriptionPlans.subscriptionPlanIsDiscounted')}</TableCell>
-                                   <TableCell>{t('subscriptionPlans.subscriptionPlanDiscountedPrice')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanDiscountPercentage')}</TableCell>
+                                   <TableCell>{t('subscriptionPlans.subscriptionPlanTotalPrice')}</TableCell>
                               </TableRow>
                          </TableHead>
                          <TableBody>
@@ -283,7 +283,6 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                        <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                             {subscriptionPlan.base_price_per_month}
                                                        </TableCell>
-                                                       <TableCell>{subscriptionPlan.total_price_per_month}</TableCell>
                                                        <TableCell>
                                                             {subscriptionPlan.can_bill_yearly ? (
                                                                  <SvgIcon>
@@ -308,6 +307,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                             )}
                                                        </TableCell>
                                                        <TableCell>{subscriptionPlan.discount_percentage}</TableCell>
+                                                       <TableCell>{subscriptionPlan.total_price_per_month}</TableCell>
                                                   </TableRow>
                                              );
                                         })
