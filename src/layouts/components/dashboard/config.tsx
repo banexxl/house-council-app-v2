@@ -99,7 +99,7 @@ export const useSections = () => {
                   },
                   {
                     title: t(tokens.nav.create),
-                    path: paths.dashboard.clients.billingInformation.add,
+                    path: paths.dashboard.clients.billingInformation.new,
                   }
                 ]
               },
@@ -218,7 +218,7 @@ export const useSections = () => {
               },
               {
                 title: t(tokens.nav.buildingAdd),
-                path: paths.dashboard.buildings.add,
+                path: paths.dashboard.buildings.new,
               },
             ],
           },
@@ -241,7 +241,7 @@ export const useSections = () => {
               },
               {
                 title: t(tokens.nav.locationAdd),
-                path: paths.dashboard.locations.add,
+                path: paths.dashboard.locations.new,
               },
             ]
           },

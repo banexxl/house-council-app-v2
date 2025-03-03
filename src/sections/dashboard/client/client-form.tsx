@@ -44,7 +44,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const router = useRouter()
   const currentRoute = usePathname()
 
-  if (!isUUIDv4(initialValues?.id) && !currentRoute.includes(paths.dashboard.clients.new)) {
+  if (!isUUIDv4(initialValues?.id) && !currentRoute.includes('new')) {
     notFound()
   }
 

@@ -20,12 +20,12 @@ export const paths = {
     buildings: {
       index: '/dashboard/buildings',
       building: '/dashboard/buildings/:buildingId',
-      add: '/dashboard/buildings/add',
+      new: '/dashboard/buildings/new',
     },
     locations: {
       index: '/dashboard/locations',
       location: '/dashboard/locations/:locationId',
-      add: '/dashboard/locations/add',
+      new: '/dashboard/locations/new',
     },
     blog: {
       index: '/dashboard/blog',
@@ -41,12 +41,12 @@ export const paths = {
       new: '/dashboard/clients/new',
       billingInformation: {
         index: '/dashboard/clients/billing-information',
-        add: '/dashboard/clients/billing-information/add',
+        new: '/dashboard/clients/billing-information/new',
         details: '/dashboard/clients/billing-information/',
       },
       clientSettings: {
         index: '/dashboard/clients/client-settings',
-        add: '/dashboard/clients/client-settings/add',
+        new: '/dashboard/clients/client-settings/new',
       }
     },
     ecommerce: '/dashboard/ecommerce',

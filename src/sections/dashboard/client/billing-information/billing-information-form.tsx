@@ -11,7 +11,7 @@ import BankTransferForm from "./bank-transfer-form"
 import { useTranslation } from "react-i18next"
 import { createOrUpdateClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions"
 import toast from "react-hot-toast"
-import { notFound, useRouter } from "next/navigation"
+import { notFound, usePathname, useRouter } from "next/navigation"
 import { paths } from "src/paths"
 import { BaseEntity } from "src/app/actions/base-entity-actions"
 import { ClientBillingInformation } from "src/types/client-billing-information"
@@ -30,8 +30,9 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
 
      const router = useRouter()
      const { t } = useTranslation()
+     const currentRoute = usePathname()
 
-     if (!isUUIDv4(billingInformationData?.id)) {
+     if (!isUUIDv4(billingInformationData?.id) && !currentRoute.includes('new')) {
           notFound()
      }
 
