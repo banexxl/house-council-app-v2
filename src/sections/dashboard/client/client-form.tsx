@@ -44,9 +44,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const router = useRouter()
   const currentRoute = usePathname()
 
-  if (!isUUIDv4(initialValues?.id) && !currentRoute.includes('new')) {
-    notFound()
-  }
+  // if (!isUUIDv4(initialValues?.id) && !currentRoute.includes('new')) {
+  //   notFound()
+  // }
 
   const formik = useFormik({
     initialValues: {

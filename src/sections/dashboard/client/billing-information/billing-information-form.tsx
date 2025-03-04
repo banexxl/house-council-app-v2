@@ -32,9 +32,9 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
      const { t } = useTranslation()
      const currentRoute = usePathname()
 
-     if (!isUUIDv4(billingInformationData?.id) && !currentRoute.includes('new')) {
-          notFound()
-     }
+     // if (!isUUIDv4(billingInformationData?.id) && !currentRoute.includes('new')) {
+     //      notFound()
+     // }
 
      const [paymentMethod, setPaymentMethod] = useState<{ value?: string; name?: string }>({
           value: "",

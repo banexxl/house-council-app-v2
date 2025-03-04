@@ -236,10 +236,6 @@ export const useSections = () => {
                 path: paths.dashboard.locations.index,
               },
               {
-                title: t(tokens.nav.location),
-                path: paths.dashboard.locations.location,
-              },
-              {
                 title: t(tokens.nav.locationAdd),
                 path: paths.dashboard.locations.new,
               },

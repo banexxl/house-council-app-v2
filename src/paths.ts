@@ -24,7 +24,6 @@ export const paths = {
     },
     locations: {
       index: '/dashboard/locations',
-      location: '/dashboard/locations/:locationId',
       new: '/dashboard/locations/new',
     },
     blog: {
