@@ -2,16 +2,12 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
-
-import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
-import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
-import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
-import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions';
+import { getAllLocationsFromClient } from 'src/app/actions/location-actions/location-services';
+import { LocationsTable } from 'src/sections/dashboard/locations/locations-table';
 
 const Page = async () => {
 
-  const { getAllClientsActionData } = await readAllClientsAction()
-  const clientStatuses = await readAllEntities<BaseEntity>("tblClientStatuses")
+  const { data } = await getAllLocationsFromClient()
 
   return (
     <Box
@@ -23,11 +19,9 @@ const Page = async () => {
     >
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <ClientTableHeader allClients={getAllClientsActionData} />
           <Card>
-            <ClientListTable
-              items={getAllClientsActionData}
-              clientStatuses={clientStatuses}
+            <LocationsTable
+              items={data}
             />
           </Card>
         </Stack>

@@ -7,7 +7,7 @@ import mapboxgl from 'mapbox-gl';
 import { useTranslation } from 'react-i18next';
 import LocationAutocomplete from './autocomplete';
 import { BuildingLocation } from 'src/types/location';
-import { insertLocation } from 'src/app/actions/building-actions/building-location-services';
+import { insertLocationAction } from 'src/app/actions/location-actions/location-services';
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
 import Marker from './map-marker';
@@ -72,7 +72,7 @@ const LocationCreateForm = () => {
           };
 
           try {
-               const response = await insertLocation(payload);
+               const response = await insertLocationAction(payload);
 
                if (response.success) {
                     toast.success(t('locations.locationSaved'), {
