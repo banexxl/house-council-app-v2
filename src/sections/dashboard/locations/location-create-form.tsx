@@ -31,15 +31,15 @@ const LocationCreateForm = () => {
                region: '',
                city: '',
                postcode: 0,
-               streetAddress: '',
-               streetNumber: '',
+               street_address: '',
+               street_number: '',
                latitude: 0,
                longitude: 0,
           },
      });
      const [markerData, setMarkerData] = useState<{ lat: number; lng: number; address: string; image: string } | null>(null)
 
-     const addressSelected = !!watch('country') && !!watch('city') && !!watch('streetAddress');
+     const addressSelected = !!watch('country') && !!watch('city') && !!watch('street_address');
 
      useEffect(() => {
           if (mapRef.current) {
@@ -61,11 +61,11 @@ const LocationCreateForm = () => {
      const handleSave = async (data: any) => {
           setLoading(true);
           const payload: BuildingLocation = {
-               streetAddress: transliterateCyrillicToLatin(data.streetAddress),
+               street_address: transliterateCyrillicToLatin(data.street_address),
                city: data.city,
                region: data.region,
                country: data.country,
-               streetNumber: data.streetNumber,
+               street_number: data.street_number,
                latitude: data.latitude,
                longitude: data.longitude,
                post_code: parseInt(data.postcode),
@@ -102,8 +102,8 @@ const LocationCreateForm = () => {
           setValue('region', '');
           setValue('city', '');
           setValue('postcode', 0);
-          setValue('streetAddress', '');
-          setValue('streetNumber', '');
+          setValue('street_address', '');
+          setValue('street_number', '');
           setValue('latitude', 0);
           setValue('longitude', 0);
      }
@@ -115,16 +115,16 @@ const LocationCreateForm = () => {
           const region = context.find((ctx: any) => ctx.id.includes('region'))?.text || '';
           const city = context.find((ctx: any) => ctx.id.includes('place'))?.text || '';
           const postcode = context.find((ctx: any) => ctx.id.includes('postcode'))?.text || '';
-          const streetAddress = text || '';
-          const streetNumber = address || '';
+          const street_address = text || '';
+          const street_number = address || '';
 
           // Update form values
           setValue('country', country);
           setValue('region', region);
           setValue('city', city);
           setValue('postcode', postcode);
-          setValue('streetAddress', streetAddress);
-          setValue('streetNumber', streetNumber);
+          setValue('street_address', street_address);
+          setValue('street_number', street_number);
           setValue('latitude', center[1]);
           setValue('longitude', center[0]);
 
@@ -137,7 +137,7 @@ const LocationCreateForm = () => {
           setMarkerData({
                lat: center[1],
                lng: center[0],
-               address: `${streetAddress} ${streetNumber}, ${city}, ${country}`,
+               address: `${street_address} ${street_number}, ${city}, ${country}`,
                image: 'https://via.placeholder.com/300x140', // Replace with actual image URL
           });
      };
@@ -223,7 +223,7 @@ const LocationCreateForm = () => {
                                         )}
                                    />
                                    <Controller
-                                        name="streetAddress"
+                                        name="street_address"
                                         control={control}
                                         render={({ field }) => (
                                              <TextField
@@ -236,12 +236,12 @@ const LocationCreateForm = () => {
                                         )}
                                    />
                                    <Controller
-                                        name="streetNumber"
+                                        name="street_number"
                                         control={control}
                                         render={({ field }) => (
                                              <TextField
                                                   {...field}
-                                                  label={t('locations.locationStreetNumber')}
+                                                  label={t('locations.locationStreet_number')}
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled

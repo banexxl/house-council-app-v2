@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache';
 import { supabase } from 'src/libs/supabase/client'
 import { BuildingLocation } from 'src/types/location'
 
@@ -66,6 +67,7 @@ export const deleteLocationsByIDsAction = async (ids: (string | undefined)[]) =>
           if (error) {
                return { success: false, error: error };
           } else {
+               revalidatePath('/dashboard/locations');
                return { success: true };
           }
      } catch (error) {

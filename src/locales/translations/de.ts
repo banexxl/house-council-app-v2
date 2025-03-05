@@ -143,6 +143,8 @@ export const de = {
   [tokens.locations.locationPostalCode]: 'Postleitzahl',
   [tokens.locations.locationSaved]: 'Ort gespeichert',
   [tokens.locations.locationNotSaved]: 'Ort nicht gespeichert',
+  [tokens.locations.locationDeletedSuccessfully]: 'Ort erfolgreich gelöscht',
+  [tokens.locations.locationNotDeleted]: 'Ort nicht gelöscht',
   [tokens.locations.locationAddress]: 'Adresse',
   [tokens.locations.locationPopupTitle]: 'Der Stift wird platziert bei',
   [tokens.locations.locationAlreadyExists]: 'Ort bereits vorhanden!',

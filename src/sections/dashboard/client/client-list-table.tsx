@@ -32,6 +32,7 @@ import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
 import { BaseEntity } from 'src/app/actions/base-entity-actions';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface ClientListTableProps {
   items?: Client[];
@@ -129,6 +130,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
     deleteClientsDialog.handleClose();
     const deleteClientResponse = await deleteClientByIDsAction(clientSelection.selected);
     if (deleteClientResponse.deleteClientByIDsActionSuccess) {
+      toast.success(t('clients.clientSettingsDeleteSuccess'));
       clientSelection.handleDeselectAll();
     }
   }, [deleteClientsDialog]);

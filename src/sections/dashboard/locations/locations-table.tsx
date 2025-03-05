@@ -30,6 +30,7 @@ import { useRouter } from 'next/navigation';
 import { BuildingLocation } from 'src/types/location';
 import { deleteLocationsByIDsAction } from 'src/app/actions/location-actions/location-services';
 import { FilterBar } from '../client/table-filter';
+import toast from 'react-hot-toast';
 
 interface LocationsTableProps {
   items?: BuildingLocation[];
@@ -126,7 +127,10 @@ export const LocationsTable: FC<LocationsTableProps> = ({ items = [] }) => {
     deleteLocationsDialog.handleClose();
     const deleteLocationResponse = await deleteLocationsByIDsAction(locationSelection.selected);
     if (deleteLocationResponse.success) {
+      toast.success(t('locations.locationDeletedSuccessfully'));
       locationSelection.handleDeselectAll();
+    } else {
+      toast.error(t('locations.locationNotDeleted'));
     }
   }, [deleteLocationsDialog]);
 
@@ -181,7 +185,9 @@ export const LocationsTable: FC<LocationsTableProps> = ({ items = [] }) => {
           { label: t('locations.locationCity'), value: 'city' },
           { label: t('locations.locationCountry'), value: 'country' },
           { label: t('common.updatedAt'), value: 'updated_at' },
-        ]} />
+        ]}
+        btnAddUrl={paths.dashboard.locations.new}
+      />
       <Scrollbar>
         <Table sx={{ minWidth: 700 }}>
           <TableHead>

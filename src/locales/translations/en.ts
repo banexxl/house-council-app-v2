@@ -143,6 +143,8 @@ export const en = {
   [tokens.locations.locationPostalCode]: 'Postal Code',
   [tokens.locations.locationSaved]: 'Location saved',
   [tokens.locations.locationNotSaved]: 'Location not saved',
+  [tokens.locations.locationDeletedSuccessfully]: 'Location deleted successfully',
+  [tokens.locations.locationNotDeleted]: 'Location not deleted',
   [tokens.locations.locationAddress]: 'Address',
   [tokens.locations.locationPopupTitle]: 'Pin is placed on',
   [tokens.locations.locationAlreadyExists]: 'Location has been taken!',

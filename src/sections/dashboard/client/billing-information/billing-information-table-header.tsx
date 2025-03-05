@@ -18,7 +18,7 @@ export const ClientBillingInformationTableHeader = () => {
                     <Box >
                          <Stack alignItems="center" direction="row" spacing={3}>
                               <Button
-                                   href={paths.dashboard.clients.billingInformation.add}
+                                   href={paths.dashboard.clients.billingInformation.new}
                                    startIcon={
                                         <SvgIcon>
                                              <PlusIcon />

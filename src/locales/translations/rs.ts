@@ -145,6 +145,8 @@ export const rs = {
      [tokens.locations.locationPostalCode]: 'Poštanski broj',
      [tokens.locations.locationSaved]: 'Lokacija sačuvana',
      [tokens.locations.locationNotSaved]: 'Greška prilikom čuvanja lokacije',
+     [tokens.locations.locationDeletedSuccessfully]: 'Lokacija uspešno izbrisana',
+     [tokens.locations.locationNotDeleted]: 'Greška prilikom brisanja lokacije',
      [tokens.locations.locationAddress]: 'Adresa',
      [tokens.locations.locationPopupTitle]: 'Pin je postavljen na',
      [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
