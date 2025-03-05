@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+     console.log('usao u callback sa requestom', request);
 
      const cookieStore = await cookies();
      const supabase = createServerClient(
