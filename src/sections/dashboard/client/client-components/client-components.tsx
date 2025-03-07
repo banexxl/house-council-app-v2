@@ -28,6 +28,7 @@ import toast from "react-hot-toast"
 interface GenericTableEditorProps {
      clientStatuses: BaseEntity[]
      clientTypes: BaseEntity[]
+     clientRoles: BaseEntity[]
      clientPaymentMethods: BaseEntity[]
      clientBillingInformationStatuses: BaseEntity[]
      invoiceStatuses: BaseEntity[]
@@ -57,6 +58,7 @@ interface DeleteEntityData {
 const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
      clientStatuses,
      clientTypes,
+     clientRoles,
      clientPaymentMethods,
      clientBillingInformationStatuses,
      invoiceStatuses,
@@ -98,6 +100,11 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                name: "tblClientTypes",
                displayName: "clients.clientTypesTableName",
                data: clientTypes,
+          },
+          {
+               name: "tblClientRoles",
+               displayName: "clients.clientRolesTableName",
+               data: clientRoles,
           },
           {
                name: "tblClientPaymentMethods",

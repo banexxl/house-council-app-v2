@@ -10,10 +10,11 @@ import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions
 
 const Page = async ({ params }: any) => {
 
-  const [clientTypes, clientStatuses, clientPaymentMethods] = await Promise.all([
+  const [clientTypes, clientStatuses, clientPaymentMethods, clientRoles] = await Promise.all([
     readAllEntities<BaseEntity>("tblClientTypes"),
     readAllEntities<BaseEntity>("tblClientStatuses"),
     readAllEntities<BaseEntity>("tblClientPaymentMethods"),
+    readAllEntities<BaseEntity>("tblClientRoles"),
   ])
   const { clientid } = await params
 
@@ -32,7 +33,13 @@ const Page = async ({ params }: any) => {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientFormHeader client={getClientByIdActionData} />
-            <ClientForm clientTypes={clientTypes} clientStatuses={clientStatuses?.length != 0 ? clientStatuses! : []} clientData={getClientByIdActionData} clientPaymentMethods={clientPaymentMethods} />
+            <ClientForm
+              clientTypes={clientTypes}
+              clientStatuses={clientStatuses?.length != 0 ? clientStatuses! : []}
+              clientData={getClientByIdActionData}
+              clientPaymentMethods={clientPaymentMethods}
+              clientRoles={clientRoles}
+            />
           </Stack>
         </Container>
       </Box>

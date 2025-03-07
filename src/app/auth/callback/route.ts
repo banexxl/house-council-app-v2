@@ -25,6 +25,9 @@ export async function GET(request: Request) {
           }
      );
 
+     console.log('cookieStore', cookieStore);
+
+
      const requestUrl = new URL(request.url);
      // Extract the "code" and "error" parameters
      const code = requestUrl.searchParams.get('code');

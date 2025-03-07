@@ -25,16 +25,16 @@ import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname, notFound } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
 import { BaseEntity } from 'src/app/actions/base-entity-actions'
-import { isUUIDv4 } from 'src/utils/uuid'
 
 interface ClientNewFormProps {
   clientTypes: BaseEntity[],
   clientStatuses: BaseEntity[],
   clientPaymentMethods?: BaseEntity[],
+  clientRoles: BaseEntity[],
   clientData?: Client
 }
 
-export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData, clientPaymentMethods }) => {
+export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData, clientPaymentMethods, clientRoles }) => {
 
   const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
@@ -104,7 +104,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
             folderName={formik.values.name}
             initialValue={clientData?.id == '' ? '' : clientData?.avatar}
           />
-          <Grid container spacing={3}>
+          <Divider sx={{ my: 3 }} >{t('clients.clientFormSettings')}</Divider>
+          <Grid container spacing={3} sx={{ mb: 2 }}>
             <Grid xs={12} md={6}>
               <TextField
                 select
@@ -146,7 +147,27 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 ))}
               </TextField>
             </Grid>
+            <Grid xs={12} md={6}>
+              <TextField
+                select
+                fullWidth
+                label={t('clients.clientRole')}
+                name="role_id"
+                disabled={formik.isSubmitting}
+                value={formik.values.role_id || ''}
+                onChange={formik.handleChange} // Use onChange for handling selection
+                error={!!(formik.touched.role_id && formik.errors.role_id)}
+                helperText={formik.touched.role_id && formik.errors.role_id}
+              >
+                {clientRoles.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name} {/* Display human-readable name */}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
           </Grid>
+          <Divider sx={{ my: 3 }} >{t('clients.clientFormBasicInfo')}</Divider>
           <Grid container spacing={3}>
             <Grid xs={12} md={6}>
               <TextField
@@ -235,6 +256,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
               />
             </Grid>
           </Grid>
+          <Divider sx={{ my: 3 }} >{t('clients.clientFormAdvancedInfo')}</Divider>
           <Stack divider={<Divider />} spacing={3} sx={{ mt: 3 }}>
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
               <Stack spacing={1}>

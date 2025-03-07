@@ -9,6 +9,7 @@ export default async function TableEditorPage() {
      const [
           readClientStatusesData,
           readClientTypesData,
+          clientRolesData,
           readClientBillingInformationStatusesData,
           readClientPaymentMethodsData,
           readInvoiceStatusesData,
@@ -18,6 +19,7 @@ export default async function TableEditorPage() {
      ] = await Promise.all([
           readAllEntities<BaseEntity>("tblClientStatuses"),
           readAllEntities<BaseEntity>("tblClientTypes"),
+          readAllEntities<BaseEntity>("tblClientRoles"),
           readAllEntities<BaseEntity>("tblClientBillingInformationStatuses"),
           readAllEntities<BaseEntity>("tblClientPaymentMethods"),
           readAllEntities<BaseEntity>("tblInvoiceStatuses"),
@@ -40,6 +42,7 @@ export default async function TableEditorPage() {
                          <GenericTableEditor
                               clientStatuses={readClientStatusesData}
                               clientTypes={readClientTypesData}
+                              clientRoles={clientRolesData}
                               clientPaymentMethods={readClientPaymentMethodsData}
                               clientBillingInformationStatuses={readClientBillingInformationStatusesData}
                               invoiceStatuses={readInvoiceStatusesData}

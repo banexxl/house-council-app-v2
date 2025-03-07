@@ -175,6 +175,7 @@ export const tokens = {
     clientComponentSettingsShortDescription: 'clients.clientComponentSettingsShortDescription',
     clientStatusesTableName: 'clients.clientStatusesTableName',
     clientTypesTableName: 'clients.clientTypesTableName',
+    clientRolesTableName: 'clients.clientRolesTableName',
     clientPaymentMethodsTableName: 'clients.clientPaymentMethodsTableName',
     clientBillingInformationStatusesTableName: 'clients.clientBillingInformationStatusesTableName',
     invoiceStatusesTableName: 'clients.invoiceStatusesTableName',
@@ -183,8 +184,10 @@ export const tokens = {
     // Client form
     clientFormBasicInfo: 'clients.clientFormBasicInfo',
     clientFormAdvancedInfo: 'clients.clientFormAdvancedInfo',
+    clientFormSettings: 'clients.clientFormSettings',
     clientType: 'clients.clientType',
     clientStatus: 'clients.clientStatus',
+    clientRole: 'clients.clientRole',
     clientName: 'clients.clientName',
     clientContactPerson: 'clients.clientContactPerson',
     clientEmail: 'clients.clientEmail',

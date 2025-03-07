@@ -11,6 +11,7 @@ export interface Client {
   contact_person: string;
   type: string;
   client_status: string;
+  role_id: string;
   notes?: string;
   address_2?: string;
   mobile_phone?: string;
@@ -62,6 +63,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     has_discount: Yup.bool(),
     is_verified: Yup.bool(),
     client_status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
+    role_id: Yup.string().max(36).required(t('clients.clientRoleRequired')),
     subscription_plan: Yup.string().max(255).nullable(),
     billing_information: Yup.string().max(255).nullable(),
     notes: Yup.string().max(255),
@@ -82,6 +84,7 @@ export const clientInitialValues: Client = {
   contact_person: '',
   type: '',
   client_status: '',
+  role_id: '',
   address_2: '',
   phone: '',
   mobile_phone: '',

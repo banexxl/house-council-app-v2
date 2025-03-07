@@ -171,6 +171,7 @@ export const en = {
   [tokens.clients.clientBillingInformationCreate]: 'Create Billing Information',
   [tokens.clients.clientBillingInformationEdit]: 'Edit Billing Information',
   [tokens.clients.clientTypesTableName]: 'Client Types',
+  [tokens.clients.clientRolesTableName]: 'Client Roles',
   [tokens.clients.clientStatusesTableName]: 'Client Statuses',
   [tokens.clients.clientPaymentMethodsTableName]: 'Client Payment Methods',
   [tokens.clients.clientBillingInformationStatusesTableName]: 'Client Billing Information Statuses',
@@ -182,8 +183,10 @@ export const en = {
   // Client form
   [tokens.clients.clientFormBasicInfo]: 'Basic Information',
   [tokens.clients.clientFormAdvancedInfo]: 'Advanced Information',
+  [tokens.clients.clientFormSettings]: 'Settings',
   [tokens.clients.clientType]: 'Client Type',
   [tokens.clients.clientStatus]: 'Status',
+  [tokens.clients.clientRole]: 'Role',
   [tokens.clients.clientName]: 'Name',
   [tokens.clients.clientContactPerson]: 'Contact Person',
   [tokens.clients.clientEmail]: 'Email',

@@ -173,6 +173,7 @@ export const rs = {
      [tokens.clients.clientBillingInformationCreate]: 'Kreiraj račun',
      [tokens.clients.clientBillingInformationEdit]: 'Izmeni račun',
      [tokens.clients.clientTypesTableName]: 'Tipovi klijenata',
+     [tokens.clients.clientRolesTableName]: 'Uloge klijenata',
      [tokens.clients.clientPaymentMethodsTableName]: 'Metode plaćanja',
      [tokens.clients.clientBillingInformationStatusesTableName]: 'Statusi računa',
      [tokens.clients.clientStatusesTableName]: 'Statusi klijenata',
@@ -184,8 +185,10 @@ export const rs = {
      // Client form
      [tokens.clients.clientFormBasicInfo]: 'Osnovne informacije',
      [tokens.clients.clientFormAdvancedInfo]: 'Napredne informacije',
+     [tokens.clients.clientFormSettings]: 'Podešavanja',
      [tokens.clients.clientType]: 'Tip klijenta',
      [tokens.clients.clientStatus]: 'Status',
+     [tokens.clients.clientRole]: 'Rola klijenta',
      [tokens.clients.clientName]: 'Naziv',
      [tokens.clients.clientContactPerson]: 'Kontakt osoba',
      [tokens.clients.clientEmail]: 'Email',

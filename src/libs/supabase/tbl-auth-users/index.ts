@@ -1,13 +1,21 @@
 import { supabase } from "../client";
 
 export const checkUserExists = async (email: string) => {
-     const { data, error } = await supabase.auth.admin.listUsers()
+
+     const { data, error } = await supabase
+          .from("tblClients")
+          .select("email")
+          .eq("email", email)
+     console.log('data', data);
+
      if (error) {
+          console.log('usao u error', error);
+
           console.error('Error checking user existence:', error.message);
           return false; // Return false if there's an error
      }
 
-     if (data.users.length === 1 && data.users[0].email === email) {
+     if (data.length === 1 && data[0].email === email) {
           return true; // Return true if the user exists
      }
 };

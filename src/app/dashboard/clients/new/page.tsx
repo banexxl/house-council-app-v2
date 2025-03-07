@@ -13,10 +13,12 @@ const Page = async () => {
     clientTypes,
     clientStatuses,
     clientPaymentMethods,
+    clientRoles,
   ] = await Promise.all([
     readAllEntities<BaseEntity>("tblClientTypes"),
     readAllEntities<BaseEntity>("tblClientStatuses"),
     readAllEntities<BaseEntity>("tblClientPaymentMethods"),
+    readAllEntities<BaseEntity>("tblClientRoles"),
   ])
 
   return (
@@ -35,7 +37,9 @@ const Page = async () => {
             <ClientForm
               clientTypes={clientTypes}
               clientStatuses={clientStatuses.length != 0 ? clientStatuses! : []}
-              clientPaymentMethods={clientPaymentMethods} />
+              clientPaymentMethods={clientPaymentMethods}
+              clientRoles={clientRoles}
+            />
           </Stack>
         </Container>
       </Box>
