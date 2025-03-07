@@ -35,15 +35,27 @@ export async function GET(request: Request) {
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
 
+     console.log('code', code);
+     console.log('error', error);
+     console.log('errorCode', errorCode);
+     console.log('errorDescription', errorDescription);
+
+
      if (error) {
           // Redirect to error page with absolute URL
           const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode}&error_description=${encodeURIComponent(errorDescription || '')}`;
+          console.log('errorPageUrl', errorPageUrl);
+
           return NextResponse.redirect(errorPageUrl)
      }
 
      if (code) {
+          console.log('usao u code sa code', code);
+
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
           if (error) {
+               console.log('error', error);
+
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${error.message}`);
           }
      }

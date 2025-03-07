@@ -19,13 +19,12 @@ const errorMessages: Record<string, string> = {
      unknown_error: 'An unknown error occurred. Please try again later.',
 };
 
-const Page = async () => {
+const Page = () => {
+
      const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
      const searchParams = useSearchParams();
      const errorCode = searchParams.get('error_code') || 'access_denied'; // Default to access_denied
      const errorMessage = errorMessages[errorCode] || 'An unexpected error occurred.';
-
-
 
      return (
           <>

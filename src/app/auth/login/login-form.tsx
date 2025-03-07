@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useFormik } from "formik"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { LoadingButton } from "@mui/lab"
 import Button from "@mui/material/Button"
 import Stack from "@mui/material/Stack"
@@ -16,11 +16,15 @@ import Box from "@mui/material/Box"
 import { initialValues, validationSchema } from "./login-schema"
 import toast from "react-hot-toast"
 import { loginWithGoogle, magicLinkLogin } from "../actions"
+import { NextRequest } from "next/server"
+import { useSessionUpdater } from "src/utils/client-session-update"
 
 const LoginForm = () => {
      const [message, setMessage] = useState<string | null>("")
      const [loginError, setLoginError] = useState<boolean>(false)
      const [authMethod, setAuthMethod] = useState<"magic-link" | "google">("magic-link")
+
+     useSessionUpdater()
 
      const onSubmit = async (values: typeof initialValues) => {
           const result = await magicLinkLogin(values.email)
@@ -124,7 +128,7 @@ const LoginForm = () => {
                                    type="submit"
                                    variant="contained"
                                    loading={formik.isSubmitting}
-                                   disabled={!formik.isValid}
+                                   disabled={!(formik.isValid && formik.dirty) || formik.errors.email == ''}
                               >
                                    Send Magic Link
                               </LoadingButton>
