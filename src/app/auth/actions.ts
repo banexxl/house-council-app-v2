@@ -66,28 +66,31 @@ export async function logout() {
      redirect('/auth/login');
 }
 
-export const loginWithGoogle = async () => {
-
+export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
      const supabase = await useServerSideSupabaseClient();
 
-     const { data, error } = await supabase.auth.signInWithOAuth({
+     // Initiate Google OAuth flow.
+     const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
           provider: 'google',
+          // Optionally, set a redirect URL after sign in:
           options: {
-               redirectTo: `${process.env.BASE_URL}/auth/callback/`
+               redirectTo: `${process.env.BASE_URL}/auth/callback`
+          },
+     });
+     console.log('Google authData', authData);
+     console.log('Google authError', authError);
+
+     if (!authError == null) {
+          console.error('Error during Google sign in:', authError);
+          return { success: false, error: authError };
+     } else {
+          if (authData.url) {
+               redirect(authData.url);
+          } else {
+               return { success: false, error: { message: 'Redirect URL is null.' } };
           }
-     })
-
-     if (error) {
-          return { error: error.message }; // Handle other errors
      }
-
-     if (data.url) {
-          redirect(data.url);
-     }
-
-     return { success: true }
-
-}
+};
 
 export const signInWithEmailAndPassword = async (email: string, password: string) => {
      const supabase = await useServerSideSupabaseClient();
