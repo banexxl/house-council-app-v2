@@ -6,6 +6,7 @@ export interface Client {
   updated_at?: Date;
   name: string;
   email: string;
+  password: string;
   phone?: string;
   address_1: string;
   contact_person: string;
@@ -20,6 +21,7 @@ export interface Client {
   balance?: number;
   has_accepted_marketing?: boolean;
   has_accepted_terms_and_conditions?: boolean;
+  has_accepted_privacy_policy?: boolean;
   is_potential?: boolean;
   is_returning?: boolean;
   is_verified?: boolean;
@@ -55,6 +57,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     name: Yup.string().max(255).required(t('clients.clientNameRequired')),
     contact_person: Yup.string().max(255).required(t('clients.clientContactPersonRequired')),
     email: Yup.string().email(t('clients.clientEmailMustBeValid')).max(255).required(t('clients.clientEmailRequired')),
+    password: Yup.string().max(255).required(t('clients.clientPasswordRequired')),
     phone: Yup.string().max(15),
     mobile_phone: Yup.string().max(15).required(t('clients.clientMobilePhoneRequired')),
     address_1: Yup.string().max(255),
@@ -70,6 +73,7 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     avatar: Yup.string().max(255),
     has_accepted_marketing: Yup.bool(),
     has_accepted_terms_and_conditions: Yup.bool(),
+    has_accepted_privacy_policy: Yup.bool(),
     is_potential: Yup.bool(),
     is_returning: Yup.bool()
   })
@@ -80,6 +84,7 @@ export const clientInitialValues: Client = {
   id: '',
   name: '',
   email: '',
+  password: '',
   address_1: '',
   contact_person: '',
   type: '',
@@ -92,6 +97,7 @@ export const clientInitialValues: Client = {
   balance: 0,
   has_accepted_marketing: false,
   has_accepted_terms_and_conditions: false,
+  has_accepted_privacy_policy: false,
   is_potential: false,
   is_returning: false,
   is_verified: false,

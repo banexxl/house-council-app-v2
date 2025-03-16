@@ -107,12 +107,12 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                data: clientRoles,
           },
           {
-               name: "tblClientPaymentMethods",
+               name: "tblPaymentMethods",
                displayName: "clients.clientPaymentMethodsTableName",
                data: clientPaymentMethods,
           },
           {
-               name: "tblClientBillingInformationStatuses",
+               name: "tblBillingInformationStatuses",
                displayName: "clients.clientBillingInformationStatusesTableName",
                data: clientBillingInformationStatuses,
           },

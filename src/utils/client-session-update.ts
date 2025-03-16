@@ -1,34 +1,42 @@
-'use client'
+"use client";
 
-import { useEffect } from "react";
-
+import { useEffect, useRef } from "react";
 
 export const useSessionUpdater = () => {
+     const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token-code-verifier";
+
+     // Helper function to get the value of a specific cookie
+     const getCookieValue = (name: string) => {
+          const match = document.cookie
+               .split("; ")
+               .find((row) => row.startsWith(`${name}=`));
+          return match ? match.split("=")[1] : null;
+     };
+
+     const prevCookieValue = useRef<string | null>(getCookieValue(COOKIE_NAME));
 
      useEffect(() => {
-          const handleSessionUpdate = () => {
-               window.location.reload();
-          };
+          const checkCookieChange = () => {
+               const currentCookieValue = getCookieValue(COOKIE_NAME);
 
-          const handleFocus = () => {
-               console.log("Window is focused - reloading page");
-               handleSessionUpdate();
-          };
+               // Ensure the cookie was previously set and has now changed
+               if (prevCookieValue.current !== null && currentCookieValue !== prevCookieValue.current) {
+                    console.log(`Cookie "${COOKIE_NAME}" modified - reloading page`);
+                    prevCookieValue.current = currentCookieValue;
+                    window.location.reload();
+               }
 
-          const handleVisibilityChange = () => {
-               if (document.visibilityState === "visible") {
-                    console.log("Tab is visible - reloading page");
-                    handleSessionUpdate();
+               // Update the ref to track changes (but not trigger reload on first set)
+               if (prevCookieValue.current === null) {
+                    prevCookieValue.current = currentCookieValue;
                }
           };
 
-          window.addEventListener("focus", handleFocus);
-          document.addEventListener("visibilitychange", handleVisibilityChange);
+          // Start interval to check for cookie changes
+          const cookieInterval = setInterval(checkCookieChange, 1000);
 
           return () => {
-               window.removeEventListener("focus", handleFocus);
-               document.removeEventListener("visibilitychange", handleVisibilityChange);
+               clearInterval(cookieInterval);
           };
      }, []);
 };
-

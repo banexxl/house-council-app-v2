@@ -13,7 +13,7 @@ const Page = async ({ params }: any) => {
   const [clientTypes, clientStatuses, clientPaymentMethods, clientRoles] = await Promise.all([
     readAllEntities<BaseEntity>("tblClientTypes"),
     readAllEntities<BaseEntity>("tblClientStatuses"),
-    readAllEntities<BaseEntity>("tblClientPaymentMethods"),
+    readAllEntities<BaseEntity>("tblPaymentMethods"),
     readAllEntities<BaseEntity>("tblClientRoles"),
   ])
   const { clientid } = await params

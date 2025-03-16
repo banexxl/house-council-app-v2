@@ -12,7 +12,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      if (billingInformationId && billingInformationId !== "") {
           // Update existing client billing information
           result = await supabase
-               .from('tblClientBillingInformation')
+               .from('tblBillingInformation')
                .update({
                     updated_at: new Date().toISOString(),
                     full_name: clientBillingInformation.full_name,
@@ -31,7 +31,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      } else {
           // Insert new client billing information
           result = await supabase
-               .from('tblClientBillingInformation')
+               .from('tblBillingInformation')
                .insert({
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
@@ -62,7 +62,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
 export const readClientBillingInformation = async (id: string): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformationData?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
 
      const { data, error } = await supabase
-          .from('tblClientBillingInformation')
+          .from('tblBillingInformation')
           .select('*')
           .eq('id', id)
           .single();
@@ -81,7 +81,7 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
      }
 
      const { error } = await supabase
-          .from('tblClientBillingInformation')
+          .from('tblBillingInformation')
           .delete()
           .in('id', ids!);
 
@@ -96,7 +96,7 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
 export const readAllClientBillingInformation = async (p0: string): Promise<{ readAllClientBillingInformationSuccess: boolean, readAllClientBillingInformationData?: ClientBillingInformation[], readAllClientBillingInformationError?: string }> => {
 
      const { data, error } = await supabase
-          .from('tblClientBillingInformation')
+          .from('tblBillingInformation')
           .select('*');
 
      if (error) {

@@ -25,6 +25,7 @@ import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname, notFound } from 'next/navigation'
 import { LoadingButton } from '@mui/lab'
 import { BaseEntity } from 'src/app/actions/base-entity-actions'
+import { hashPassword } from 'src/utils/bcrypt'
 
 interface ClientNewFormProps {
   clientTypes: BaseEntity[],
@@ -58,11 +59,24 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
     validationSchema: clientValidationSchema(t),
 
     onSubmit: async (values, { setSubmitting }) => {
-      const submissionValues = {
-        ...values,
-      };
 
       try {
+        let hashedPassword = values.password;
+
+        // Check if the password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
+        const isAlreadyHashed = hashedPassword.startsWith("$2a$") ||
+          hashedPassword.startsWith("$2b$") ||
+          hashedPassword.startsWith("$2y$");
+
+        if (!isAlreadyHashed && hashedPassword) {
+          hashedPassword = await hashPassword(hashedPassword);
+        }
+
+        const submissionValues = {
+          ...values,
+          password: hashedPassword, // Keep existing hash or store new one
+        };
+
         // Simulate a server call
         const saveClientResponse = await createOrUpdateClientAction(submissionValues)
         if (saveClientResponse.saveClientActionSuccess) {
@@ -232,6 +246,21 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
             <Grid xs={12} md={6}>
               <TextField
                 fullWidth
+                label={t('clients.clientPassword')}
+                name="password"
+                type="password"
+                error={!!(formik.touched.password && formik.errors.password)}
+                helperText={formik.touched.password && formik.errors.password}
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.password}
+                disabled={formik.isSubmitting}
+              />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
                 label={t('clients.clientPhone')}
                 name="phone"
                 onBlur={formik.handleBlur}
@@ -294,6 +323,15 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 onChange={formik.handleChange}
                 disabled={formik.isSubmitting}
                 value={formik.values.has_accepted_terms_and_conditions}
+              />
+              <Switch
+                checked={formik.values.has_accepted_privacy_policy}
+                color="primary"
+                edge="start"
+                name="has_accepted_privacy_policy"
+                onChange={formik.handleChange}
+                disabled={formik.isSubmitting}
+                value={formik.values.has_accepted_privacy_policy}
               />
             </Stack>
           </Stack>

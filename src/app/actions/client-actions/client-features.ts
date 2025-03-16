@@ -4,7 +4,7 @@ import { BaseEntity } from "../base-entity-actions"
 export const readClientFeatures = async (): Promise<{ readClientFeaturesSuccess: boolean, readClientFeaturesData: BaseEntity[], readClientFeaturesError?: string }> => {
      // Fetch client features
      const { data, error } = await supabase
-          .from('tblClientFeatures')
+          .from('tblClient_Features')
           .select('id, name, description')
 
 
@@ -16,17 +16,15 @@ export const readClientFeatures = async (): Promise<{ readClientFeaturesSuccess:
      return { readClientFeaturesSuccess: true, readClientFeaturesData: data ?? [] }
 }
 
-/*************  ✨ Codeium Command ⭐  *************/
 /**
  * Creates a client feature in the database.
  *
  * @param {BaseEntity} clientFeature The client feature to create.
  * @returns {Promise<{ createClientFeatureSuccess: boolean, createClientFeature?: BaseEntity, createClientFeatureError?: string }>} A promise that resolves to an object with a boolean indicating success, the created client feature if successful, and the error message if not successful.
  */
-/******  ada7ebbe-bc86-4a47-bb17-3463545207ba  *******/
 export const createClientFeature = async (clientFeature: BaseEntity): Promise<{ createClientFeatureSuccess: boolean, createClientFeature?: BaseEntity, createClientFeatureError?: string }> => {
      const { data, error } = await supabase
-          .from('tblClientFeatures')
+          .from('tblClient_Features')
           .insert(clientFeature)
           .select()
           .single()
@@ -42,7 +40,7 @@ export const updateClientFeature = async (clientFeature: BaseEntity): Promise<{ 
      const { id, ...clientFeatureData } = clientFeature
 
      const { data, error } = await supabase
-          .from('tblClientFeatures')
+          .from('tblClient_Features')
           .update(clientFeatureData)
           .match({ id })
           .select()
@@ -57,7 +55,7 @@ export const updateClientFeature = async (clientFeature: BaseEntity): Promise<{ 
 
 export const deleteClientFeature = async (id: number): Promise<{ deleteClientFeatureSuccess: boolean, deleteClientFeatureError?: string }> => {
      const { error } = await supabase
-          .from('tblClientFeatures')
+          .from('tblClient_Features')
           .delete()
           .eq('id', id)
 

@@ -131,3 +131,14 @@ export const deleteClientByIDsAction = async (ids: string[]): Promise<{ deleteCl
           return { deleteClientByIDsActionSuccess: false, deleteClientByIDsActionError: error.message }
      }
 }
+
+export const readClientByEmailAction = async (email: string): Promise<{ getClientByEmailActionSuccess: boolean, getClientByEmailActionData?: Client }> => {
+     try {
+          const { data, error } = await supabase.from('tblClients').select().eq('email', email).single()
+          if (error) throw error
+          return { getClientByEmailActionSuccess: true, getClientByEmailActionData: data }
+     } catch (error) {
+          console.error('Error fetching client by email:', error)
+          return { getClientByEmailActionSuccess: false }
+     }
+}

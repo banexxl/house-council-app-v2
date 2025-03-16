@@ -9,8 +9,8 @@ import { BillingInfoFormHeader } from 'src/sections/dashboard/client/billing-inf
 
 const Page = async () => {
 
-  const clientPaymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
-  const billingInformationStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
+  const clientPaymentMethods = await readAllEntities<BaseEntity>("tblPaymentMethods")
+  const billingInformationStatuses = await readAllEntities<BaseEntity>("tblBillingInformationStatuses")
   const allClients = await readAllClientsAction()
 
   return (

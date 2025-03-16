@@ -12,11 +12,11 @@ import { readAllClientsAction } from 'src/app/actions/client-actions/client-acti
 
 const Page = async () => {
 
-  const { readAllClientBillingInformationData: clientPaymentMethods } = await readAllClientBillingInformation("tblClientPaymentMethods");
+  const { readAllClientBillingInformationData: clientPaymentMethods } = await readAllClientBillingInformation("tblPaymentMethods");
 
-  const paymentMethods = await readAllEntities<BaseEntity>("tblClientPaymentMethods")
+  const paymentMethods = await readAllEntities<BaseEntity>("tblPaymentMethods")
 
-  const billingInfoStatuses = await readAllEntities<BaseEntity>("tblClientBillingInformationStatuses")
+  const billingInfoStatuses = await readAllEntities<BaseEntity>("tblBillingInformationStatuses")
 
   const { getAllClientsActionData: clients } = await readAllClientsAction();
 

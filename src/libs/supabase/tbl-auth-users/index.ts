@@ -6,11 +6,8 @@ export const checkUserExists = async (email: string) => {
           .from("tblClients")
           .select("email")
           .eq("email", email)
-     console.log('data', data);
 
      if (error) {
-          console.log('usao u error', error);
-
           console.error('Error checking user existence:', error.message);
           return false; // Return false if there's an error
      }
