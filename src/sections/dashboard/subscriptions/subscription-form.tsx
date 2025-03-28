@@ -24,9 +24,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      const { t } = useTranslation()
      const router = useRouter()
 
-     // if (isUUIDv4(subscriptionPlanData?.id)) {
-     //      notFound()
-     // }
+     if (!isUUIDv4(subscriptionPlanData?.id)) {
+          notFound()
+     }
 
      const formik = useFormik({
           initialValues: {
