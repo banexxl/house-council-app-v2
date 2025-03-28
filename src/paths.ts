@@ -91,5 +91,5 @@ export const paths = {
       new: '/dashboard/tenants/new',
     }
   },
-  docs: 'https://material-kit-pro-react-docs.devias.io',
+  docs: 'https://v0-house-council-site.vercel.app/docs',
 };
