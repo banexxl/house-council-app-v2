@@ -9,12 +9,11 @@ import Tabs from "@mui/material/Tabs"
 import Tab from "@mui/material/Tab"
 import Divider from "@mui/material/Divider"
 import { useSessionUpdater } from "src/utils/client-session-update"
-import { MagicLinkForm } from "./magic-link-form"
 import { PasswordForm } from "./password-form"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { handleGoogleSignIn } from "../actions"
-import { CircularProgress } from "@mui/material"
+import { Box, CircularProgress } from "@mui/material"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -60,17 +59,17 @@ const GoogleMultiColorIcon = (props: any) => (
 );
 
 const LoginForm = () => {
-     const [authMethod, setAuthMethod] = useState<"magic-link" | "password" | "google">("magic-link")
+     const [authMethod, setAuthMethod] = useState<"password" | "google">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
      useSessionUpdater()
 
-     const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "magic-link" | "password" | "google") => {
+     const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google") => {
           setAuthMethod(newValue)
      }
 
      return (
-          <div>
+          <div style={{ height: "400px" }}>
                <Stack sx={{ mb: 4 }} spacing={1}>
                     <Typography variant="h5">Log in</Typography>
                     <Typography color="text.secondary" variant="body2">
@@ -78,86 +77,68 @@ const LoginForm = () => {
                     </Typography>
                </Stack>
                <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
-                    <Tab value="magic-link" label="Magic Link" />
                     <Tab value="password" label="Password" />
                     <Tab value="google" label="Google" />
                </Tabs>
 
-               {authMethod === "magic-link" && <MagicLinkForm />}
                {authMethod === "password" && <PasswordForm />}
                {authMethod === "google" && (
-                    <Button
-                         fullWidth
-                         variant="outlined"
-                         startIcon={<GoogleMultiColorIcon />}
-                         sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              backgroundColor: "white",
-                              border: "1px solid #dcdcdc",
-                              color: "rgba(0, 0, 0, 0.54)",
-                              textTransform: "none",
-                              fontWeight: 500,
-                              fontSize: "0.875rem",
-                              py: 1,
-                              borderRadius: 1,
-                              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                              "&:hover": {
-                                   backgroundColor: "#f7f7f7",
-                                   borderColor: "#dcdcdc",
-                              },
-                         }}
-                         onClick={async () => {
-                              setGoogleSignInLoading(true)
-                              const { success, error } = await handleGoogleSignIn()
-                              if (success) {
-                                   setGoogleSignInLoading(false)
-                                   router.push('/dashboard')
-                              }
-                              if (error) {
-                                   setGoogleSignInLoading(false)
-                                   toast.error(error.message ? error.message : error.hint ? error.hint : error.details)
-                              }
-                         }}
-                    >
-                         {googleSignInLoading ? (
-                              <CircularProgress size={20} sx={{ color: "rgba(0, 0, 0, 0.54)" }} />
-                         ) : (
-                              <Typography variant="body2">
-                                   Continue with Google
-                              </Typography>
-                         )}
-                    </Button>
+                    <Box>
+                         <Typography
+                              color="text.secondary"
+                              variant="body2"
+                              sx={{ mb: 3, textAlign: 'center' }}
+                         >
+                              Sign in with your Google account
+                         </Typography>
+                         <Button
+                              fullWidth
+                              variant="outlined"
+                              startIcon={<GoogleMultiColorIcon />}
+                              sx={{
+                                   display: "flex",
+                                   alignItems: "center",
+                                   justifyContent: "center",
+                                   backgroundColor: "white",
+                                   border: "1px solid #dcdcdc",
+                                   color: "rgba(0, 0, 0, 0.54)",
+                                   textTransform: "none",
+                                   fontWeight: 500,
+                                   fontSize: "0.875rem",
+                                   py: 1,
+                                   borderRadius: 1,
+                                   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                                   "&:hover": {
+                                        backgroundColor: "#f7f7f7",
+                                        borderColor: "#dcdcdc",
+                                   },
+                              }}
+                              onClick={async () => {
+                                   setGoogleSignInLoading(true)
+                                   const { success, error } = await handleGoogleSignIn()
+                                   if (success) {
+                                        setGoogleSignInLoading(false)
+                                        router.push('/dashboard')
+                                   }
+                                   if (error) {
+                                        setGoogleSignInLoading(false)
+                                        toast.error(error.message ? error.message : error.hint ? error.hint : error.details)
+                                   }
+                              }}
+                         >
+                              {googleSignInLoading ? (
+                                   <CircularProgress size={20} sx={{ color: "rgba(0, 0, 0, 0.54)" }} />
+                              ) : (
+                                   <Typography variant="body2">
+                                        Continue with Google
+                                   </Typography>
+                              )}
+                         </Button>
+                    </Box>
                )}
-
-               <Divider sx={{ my: 3 }}>
-                    <Typography variant="body2" color="text.secondary">
-                         OR
-                    </Typography>
-               </Divider>
-
-               <Button
-                    fullWidth
-                    onClick={() => {
-                         if (authMethod === "magic-link") {
-                              setAuthMethod("password");
-                         } else if (authMethod === "password") {
-                              setAuthMethod("google");
-                         } else {
-                              setAuthMethod("magic-link");
-                         }
-                    }}
-                    sx={{ textTransform: "none" }}
-               >
-                    {authMethod === "magic-link"
-                         ? "Sign in with password instead"
-                         : authMethod === "password"
-                              ? "Sign in with Google instead"
-                              : "Sign in with Magic Link instead"}
-               </Button>
           </div>
      )
 }
 
 export default LoginForm
+
