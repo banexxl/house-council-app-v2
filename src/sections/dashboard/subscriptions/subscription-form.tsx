@@ -101,7 +101,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                totalPrice *= 1 - (formik.values.discount_percentage || 0) / 100;
           }
 
-          if (formik.values.can_bill_yearly) {
+          if (formik.values.is_billed_yearly) {
                totalPrice *= 12; // Calculate yearly price
                totalPrice *= 1 - (formik.values.yearly_discount_percentage || 0) / 100; // Apply yearly discount
           }
@@ -262,9 +262,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                    <FormControlLabel
                                         control={
                                              <Switch
-                                                  id="can_bill_yearly"
-                                                  name="can_bill_yearly"
-                                                  checked={formik.values.can_bill_yearly}
+                                                  id="is_billed_yearly"
+                                                  name="is_billed_yearly"
+                                                  checked={formik.values.is_billed_yearly}
                                                   onChange={(event) => {
                                                        formik.handleChange(event);
                                                        if (!event.target.checked) {
@@ -275,7 +275,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         }
                                         label={t("subscriptionPlans.subscriptionPlanYearlyBilling")}
                                    />
-                                   {formik.values.can_bill_yearly && (
+                                   {formik.values.is_billed_yearly && (
                                         <TextField
                                              fullWidth
                                              id="yearly_discount_percentage"
@@ -390,7 +390,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                    )}
                                    <Typography variant="h5" className="mt-4">
                                         Total Price: ${calculatePrice().toFixed(2)}
-                                        {formik.values.can_bill_yearly ? " " + t("subscriptionPlans.subscriptionPlanYearly") : " " + t("subscriptionPlans.subscriptionPlanMonthly")}
+                                        {formik.values.is_billed_yearly ? " " + t("subscriptionPlans.subscriptionPlanYearly") : " " + t("subscriptionPlans.subscriptionPlanMonthly")}
                                    </Typography>
                               </CardContent>
                          </Card>

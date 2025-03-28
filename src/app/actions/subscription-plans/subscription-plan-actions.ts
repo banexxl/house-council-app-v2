@@ -83,6 +83,8 @@ export const updateSubscriptionPlan = async (
           .eq("id", subscriptionPlan.id)
           .select()
           .single();
+     console.log('updateSubscriptionPlanData', data);
+     console.log('updateSubscriptionPlanError', error);
 
      if (error) {
           return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: error };

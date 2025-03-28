@@ -46,7 +46,7 @@ const useSubscriptionPlanSearch = () => {
 
      const [state, setState] = useState({
           all: false,
-          can_bill_yearly: false,
+          is_billed_yearly: false,
           is_discounted: false,
           query: '',
           page: 0,
@@ -66,7 +66,7 @@ const useSubscriptionPlanSearch = () => {
           setState((prevState) => ({
                ...prevState,
                all: value === 'all',
-               can_bill_yearly: value === 'can_bill_yearly',
+               is_billed_yearly: value === 'is_billed_yearly',
                is_discounted: value === 'is_discounted',
           }));
      }, []);
@@ -146,7 +146,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
 
                // // Apply individual filters
                const matchesCanBillYearly =
-                    !subscriptionPlanSearch.state.can_bill_yearly || subscriptionPlan.can_bill_yearly === subscriptionPlanSearch.state.can_bill_yearly;
+                    !subscriptionPlanSearch.state.is_billed_yearly || subscriptionPlan.is_billed_yearly === subscriptionPlanSearch.state.is_billed_yearly;
 
                const matchesIsDiscounted =
                     !subscriptionPlanSearch.state.is_discounted || subscriptionPlan.is_discounted === subscriptionPlanSearch.state.is_discounted;
@@ -174,7 +174,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                     sortDir={subscriptionPlanSearch.state.sortDir}
                     tabs={[
                          { label: t('common.all'), value: 'all' },
-                         { label: t('subscriptionPlans.subscriptionPlanYearlyBilling'), value: 'can_bill_yearly' },
+                         { label: t('subscriptionPlans.subscriptionPlanYearlyBilling'), value: 'is_billed_yearly' },
                          { label: t('subscriptionPlans.subscriptionPlanIsDiscounted'), value: 'is_discounted' },
                     ]}
                     sortOptions={[
@@ -284,7 +284,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                             {subscriptionPlan.base_price_per_month}
                                                        </TableCell>
                                                        <TableCell>
-                                                            {subscriptionPlan.can_bill_yearly ? (
+                                                            {subscriptionPlan.is_billed_yearly ? (
                                                                  <SvgIcon>
                                                                       <CheckCircleIcon color="success" />
                                                                  </SvgIcon>
