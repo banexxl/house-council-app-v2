@@ -64,9 +64,9 @@ const LoginForm = () => {
      // const router = useRouter()
      useSessionUpdater()
 
-     const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google") => {
-          setAuthMethod(newValue)
-     }
+     // const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google") => {
+     //      setAuthMethod(newValue)
+     // }
 
      return (
           <div style={{ height: "400px" }}>
@@ -76,10 +76,10 @@ const LoginForm = () => {
                          Choose your preferred login method
                     </Typography>
                </Stack>
-               <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
+               {/* <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
                     <Tab value="password" label="Password" />
                     <Tab value="google" label="Google" />
-               </Tabs>
+               </Tabs> */}
 
                {authMethod === "password" && <PasswordForm />}
                {/* {authMethod === "google" && (
