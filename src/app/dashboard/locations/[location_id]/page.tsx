@@ -1,7 +1,7 @@
 import { Box } from '@mui/system'
-import { createClient } from '@supabase/supabase-js'
+import { useServerSideSupabaseServiceRoleClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
+const supabase = useServerSideSupabaseServiceRoleClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
      process.env.SUPABASE_SERVICE_ROLE_KEY!
 )

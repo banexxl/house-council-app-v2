@@ -115,9 +115,6 @@ export const signInWithEmailAndPassword = async (email: string, password: string
           email,
           password, // Note: Supabase expects a password here, but you're already verifying it manually
      });
-     console.log('aaaaaaaaaaa', data);
-     console.log('aaaaaaaaaaa', error);
-
 
      if (error) {
           return { error: error.message };
