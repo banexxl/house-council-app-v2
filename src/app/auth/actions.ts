@@ -6,6 +6,20 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { readClientByEmailAction } from '../actions/client-actions/client-actions';
 import { verifyPassword } from 'src/utils/bcrypt';
+import { logServerAction } from 'src/libs/supabase/server-logging';
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/ss-supabase-service-role-client';
+
+export type SignInFormValues = {
+     email: string;
+     password: string;
+};
+
+export type ErrorType = {
+     code: string;
+     details: string;
+     hint?: string;
+     message?: string;
+}
 
 export const useServerSideSupabaseClient = async () => {
      // Use the server-side Supabase client
@@ -92,33 +106,94 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
      }
 };
 
-export const signInWithEmailAndPassword = async (email: string, password: string) => {
-     const supabase = await useServerSideSupabaseClient();
+export const signInWithEmailAndPassword = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
-     // Fetch the user from your database (including hashed password)
-     const { getClientByEmailActionSuccess, getClientByEmailActionData: user } = await readClientByEmailAction(email);
-     if (!user || !user.password) {
-          return { error: "Invalid email or password!" };
+     const start = Date.now();
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     const { data, error } = await supabase
+          .from('tblClients')
+          .select('email')
+          .eq('email', values.email)
+          .single();
+
+     if (data) {
+          await logServerAction({
+               user_id: null,
+               action: 'Signing in with email and password - user found in tblClients',
+               payload: JSON.stringify(values),
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          })
      }
-     console.log('usao u signInWithEmailAndPassword', user);
-
-     // Compare the provided password with the stored hash
-     const isPasswordValid = await verifyPassword(password, user.password);
-     console.log('isPasswordValid', isPasswordValid);
-
-     if (!isPasswordValid) {
-          return { error: "Invalid email or password!" };
-     }
-
-     // If the password is correct, sign in the user via Supabase authentication
-     const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password, // Note: Supabase expects a password here, but you're already verifying it manually
-     });
 
      if (error) {
-          return { error: error.message };
+          switch (error.code) {
+               case 'PGRST116':
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password failed',
+                         payload: JSON.stringify(values),
+                         status: 'fail',
+                         error: error.message,
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    })
+                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Email not found' } };
+               case 'PGRS003':
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password failed',
+                         payload: JSON.stringify(values),
+                         status: 'fail',
+                         error: error.message,
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    })
+                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Password is incorrect' } };
+               default:
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password failed',
+                         payload: JSON.stringify(values),
+                         status: 'fail',
+                         error: error.message,
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    })
+                    return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
+          }
      }
 
-     return { success: true, user: data.user };
-};
+     const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+     });
+
+     if (signInError) {
+          await logServerAction({
+               user_id: null,
+               action: 'User with valid password found in tblClients but signing in with email and password failed',
+               payload: JSON.stringify(values),
+               status: 'fail',
+               error: signInError.message,
+               duration_ms: Date.now() - start,
+               type: 'db'
+          })
+          return { success: false, error: { code: signInError.code!, details: signInError.message } };
+     }
+
+     await logServerAction({
+          user_id: signInSession.user.id,
+          action: 'Signed in with email and password',
+          payload: JSON.stringify(values),
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - start,
+          type: 'auth'
+     })
+     return { success: true };
+}

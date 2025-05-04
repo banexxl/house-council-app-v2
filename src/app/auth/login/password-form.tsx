@@ -20,12 +20,12 @@ export const PasswordForm = () => {
 
           const hashedPassword = await hashPassword(values.password);
 
-          const { success, error } = await signInWithEmailAndPassword(values.email, hashedPassword)
+          const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: hashedPassword })
 
           if (error) {
                setLoginError(true)
                toast.error("Failed to authenticate with password")
-               setMessage(error)
+               setMessage(error.message ? error.message : '')
           } else if (success) {
                setLoginError(false)
                toast.success("Successfully signed in")
