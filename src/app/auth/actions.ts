@@ -80,31 +80,29 @@ export async function logout() {
      redirect('/auth/login');
 }
 
-export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
-     const supabase = await useServerSideSupabaseClient();
+// export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
+//      const supabase = await useServerSideSupabaseClient();
 
-     // Initiate Google OAuth flow.
-     const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          // Optionally, set a redirect URL after sign in:
-          options: {
-               redirectTo: `${process.env.BASE_URL}/auth/callback`
-          },
-     });
-     console.log('Google authData', authData);
-     console.log('Google authError', authError);
+//      // Initiate Google OAuth flow.
+//      const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
+//           provider: 'google',
+//           // Optionally, set a redirect URL after sign in:
+//           options: {
+//                redirectTo: `${process.env.BASE_URL}/auth/callback`
+//           },
+//      });
 
-     if (!authError == null) {
-          console.error('Error during Google sign in:', authError);
-          return { success: false, error: authError };
-     } else {
-          if (authData.url) {
-               redirect(authData.url);
-          } else {
-               return { success: false, error: { message: 'Redirect URL is null.' } };
-          }
-     }
-};
+//      if (!authError == null) {
+//           console.error('Error during Google sign in:', authError);
+//           return { success: false, error: authError };
+//      } else {
+//           if (authData.url) {
+//                redirect(authData.url);
+//           } else {
+//                return { success: false, error: { message: 'Redirect URL is null.' } };
+//           }
+//      }
+// };
 
 export const signInWithEmailAndPassword = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
