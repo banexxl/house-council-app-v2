@@ -11,16 +11,18 @@ import { initialValuesEmailAndPassword, validationSchemaEmailAndPassword } from 
 import toast from "react-hot-toast"
 import { signInWithEmailAndPassword } from "../actions"
 import { hashPassword } from "src/utils/bcrypt"
+import { useRouter } from "next/navigation"
 
 export const PasswordForm = () => {
      const [message, setMessage] = useState<string | null>("")
      const [loginError, setLoginError] = useState<boolean>(false)
+     const router = useRouter();
 
      const onSubmit = async (values: typeof initialValuesEmailAndPassword) => {
 
           const hashedPassword = await hashPassword(values.password);
 
-          const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: hashedPassword })
+          const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: values.password })
 
           if (error) {
                setLoginError(true)
@@ -29,6 +31,7 @@ export const PasswordForm = () => {
           } else if (success) {
                setLoginError(false)
                toast.success("Successfully signed in")
+               router.push("/dashboard")
                formik.resetForm() // Reset the form after successful submission
           }
      }

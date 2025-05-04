@@ -105,6 +105,7 @@ export async function logout() {
 // };
 
 export const signInWithEmailAndPassword = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
+     console.log('values', values);
 
      const start = Date.now();
 
