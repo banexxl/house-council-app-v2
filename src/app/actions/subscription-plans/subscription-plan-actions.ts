@@ -25,8 +25,7 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           .insert({ ...subscriptionPlan, features: undefined })
           .select()
           .single();
-     console.log(data);
-     console.log(error);
+
      if (error) {
           return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: error };
      }
@@ -48,7 +47,6 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
                .insert(featureEntries);
 
           if (featureInsertError) {
-               console.error("Error inserting into tblSubscriptionPlans_Features:", featureInsertError);
                return {
                     createSubscriptionPlanSuccess: false,
                     createSubscriptionPlanError: featureInsertError
@@ -83,8 +81,6 @@ export const updateSubscriptionPlan = async (
           .eq("id", subscriptionPlan.id)
           .select()
           .single();
-     console.log('updateSubscriptionPlanData', data);
-     console.log('updateSubscriptionPlanError', error);
 
      if (error) {
           return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: error };
@@ -111,7 +107,6 @@ export const updateSubscriptionPlan = async (
                .match({ subscription_plan_id: data.id });
 
           if (featureDeleteError) {
-               console.error("Error removing feature entries from tblSubscriptionPlans_Features:", featureDeleteError);
                return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureDeleteError };
           }
 
@@ -121,7 +116,6 @@ export const updateSubscriptionPlan = async (
                .insert(featureEntries);
 
           if (featureInsertError) {
-               console.error("Error inserting into tblSubscriptionPlans_Features:", featureInsertError);
                return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureInsertError };
           }
 
@@ -132,7 +126,6 @@ export const updateSubscriptionPlan = async (
                .match({ subscription_plan_id: data.id });
 
           if (featureDeleteError) {
-               console.error("Error removing feature entries from tblSubscriptionPlans_Features:", featureDeleteError);
                return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureDeleteError };
           }
      }
@@ -221,7 +214,6 @@ export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ del
 
      // Now delete the subscription plans
      const { error } = await supabase.from("tblSubscriptionPlans").delete().in("id", ids);
-     console.log('error', error);
 
      if (error) {
           return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };
