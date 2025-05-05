@@ -224,7 +224,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         </Button>
                                    </Stack>
                                    {features?.length > 0 &&
-                                        features.map((feature: any) => {
+                                        features.map((feature: BaseEntity & FeatureExtension) => {
                                              const featureId = feature.id!;
                                              // Determine if the feature is checked using only Formik state
                                              const isChecked = formik.values.features?.includes(featureId);
@@ -246,7 +246,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  }}
                                                             />
                                                        }
-                                                       label={`${feature.name} ($${feature.base_price_per_month.toFixed(2)}/month)`}
+                                                       label={`${feature.name} ($${feature.price_per_month.toFixed(2)}/month)`}
                                                   />
                                              );
                                         })}
