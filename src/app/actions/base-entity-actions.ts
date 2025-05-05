@@ -100,7 +100,10 @@ export const deleteEntity = async (table: string, id: string): Promise<{ success
 };
 
 export const readAllEntities = async <T extends BaseEntity>(table: string): Promise<T[]> => {
-     const { data, error } = await supabase.from(table).select('*').order('updated_at', { ascending: false });
+     const { data, error } = await supabase
+          .from(table)
+          .select('*')
+          .order('name', { ascending: true });
 
      if (error) {
           console.error(`Error fetching entities from ${table}:`, error);
