@@ -1,4 +1,5 @@
 import { Box, Container, Stack } from "@mui/material";
+import { notFound } from "next/navigation";
 import { readAllEntities } from "src/app/actions/base-entity-actions";
 import { readSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions";
 import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";
@@ -12,7 +13,12 @@ export default async function SubscriptionEditorPage({ params }: any) {
 
      const { subscription } = await params;
 
+
      const { readSubscriptionPlanSuccess, subscriptionPlan, readSubscriptionPlanError } = await readSubscriptionPlan(subscription);
+
+     if (!subscriptionPlan) {
+          notFound();
+     }
 
      return (
           <Box

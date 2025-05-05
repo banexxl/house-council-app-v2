@@ -24,7 +24,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      const { t } = useTranslation()
      const router = useRouter()
 
-     if (!isUUIDv4(subscriptionPlanData?.id)) {
+     if (subscriptionPlanData?.id && !isUUIDv4(subscriptionPlanData?.id)) {
           notFound()
      }
 

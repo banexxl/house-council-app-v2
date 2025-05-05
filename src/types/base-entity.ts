@@ -9,6 +9,5 @@ export interface BaseEntity {
 
 export type FeatureExtension = {
      price_per_month: number
-     currency: string
      slug: string
 }
