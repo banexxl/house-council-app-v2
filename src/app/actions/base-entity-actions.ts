@@ -2,14 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { supabase } from "src/libs/supabase/client";
-
-export interface BaseEntity {
-     id?: string;
-     created_at?: string;
-     updated_at?: string;
-     name: string;
-     description?: string;
-}
+import { BaseEntity } from "src/types/base-entity";
 
 export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean; createdEntity?: T; error?: any }> => {
      if (!table.trim()) {

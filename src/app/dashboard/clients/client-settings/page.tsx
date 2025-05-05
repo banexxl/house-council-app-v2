@@ -1,8 +1,9 @@
 'use server'
 
 import { Box, Container, Stack } from "@mui/material"
-import { createEntity, deleteEntity, updateEntity, readAllEntities, BaseEntity } from "src/app/actions/base-entity-actions"
+import { createEntity, deleteEntity, updateEntity, readAllEntities } from "src/app/actions/base-entity-actions"
 import GenericTableEditor from "src/sections/dashboard/client/client-components/client-components"
+import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 
 export default async function TableEditorPage() {
 
@@ -47,7 +48,7 @@ export default async function TableEditorPage() {
                               clientBillingInformationStatuses={readClientBillingInformationStatusesData}
                               invoiceStatuses={readInvoiceStatusesData}
                               subscriptionPlanStatuses={readSubscriptionPlanStatusesData}
-                              features={readFeaturesData as BaseEntity[] & { base_price_per_month: number }[]}
+                              features={readFeaturesData as (BaseEntity & FeatureExtension)[]}
                               buildingStatuses={readBuildingStatusesData}
                               updateEntity={updateEntity}
                               deleteEntity={deleteEntity}

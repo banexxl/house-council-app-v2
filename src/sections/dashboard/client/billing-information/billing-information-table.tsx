@@ -28,10 +28,10 @@ import { applySort } from "src/utils/apply-sort";
 import { Scrollbar } from "src/components/scrollbar";
 import { PopupModal } from "src/components/modal-dialog";
 import { deleteClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions";
-import { BaseEntity } from "src/app/actions/base-entity-actions";
 import { Client } from "./client-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BaseEntity } from "src/types/base-entity";
 
 interface BillingInformationTableProps {
      data?: ClientBillingInformation[]

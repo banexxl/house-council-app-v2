@@ -5,7 +5,8 @@ import Stack from '@mui/material/Stack'
 import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions'
+import { readAllEntities } from 'src/app/actions/base-entity-actions'
+import { BaseEntity } from 'src/types/base-entity'
 
 const Page = async () => {
 

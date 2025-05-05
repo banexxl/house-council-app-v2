@@ -4,8 +4,9 @@ import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { ClientBillingInformationForm } from 'src/sections/dashboard/client/billing-information/billing-information-form';
 import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
-import { BaseEntity, readAllEntities } from 'src/app/actions/base-entity-actions';
+import { readAllEntities } from 'src/app/actions/base-entity-actions';
 import { BillingInfoFormHeader } from 'src/sections/dashboard/client/billing-information/billing-information-form-header';
+import { BaseEntity } from 'src/types/base-entity';
 
 const Page = async () => {
 

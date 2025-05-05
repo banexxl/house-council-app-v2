@@ -30,9 +30,9 @@ import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
-import { BaseEntity } from 'src/app/actions/base-entity-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { BaseEntity } from 'src/types/base-entity';
 
 interface ClientListTableProps {
   items?: Client[];

@@ -3,7 +3,6 @@
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, } from "@mui/material"
-import type { BaseEntity } from "src/app/actions/base-entity-actions"
 import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
 import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions"
 import { LoadingButton } from "@mui/lab"
@@ -12,10 +11,11 @@ import { useTranslation } from "react-i18next"
 import { notFound, useRouter } from "next/navigation"
 import { SubscriptionFormHeader } from "./subscription-form-header"
 import { isUUIDv4 } from "src/utils/uuid"
+import { BaseEntity, FeatureExtension } from "src/types/base-entity"
 
 interface SubscriptionEditorProps {
      subscriptionStatuses: BaseEntity[]
-     features: (BaseEntity & { base_price_per_month: number })[]
+     features: (BaseEntity & FeatureExtension)[]
      subscriptionPlanData?: SubscriptionPlan
 }
 
@@ -91,9 +91,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
           // Add prices of selected features
           formik.values.features?.forEach((featureId) => {
-               const feature = features.find((f) => f.id === featureId) as (BaseEntity & { base_price_per_month: number }) | undefined;
+               const feature = features.find((f) => f.id === featureId) as (BaseEntity & FeatureExtension) | undefined;
                if (feature) {
-                    totalPrice += feature.base_price_per_month;
+                    totalPrice += feature.price_per_month;
                }
           });
 
@@ -176,7 +176,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              // Ensure only valid decimal numbers are allowed
                                              if (!isNaN(Number(value))) {
                                                   formik.setFieldValue("base_price_per_month", value).then(() => {
-                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                       formik.setFieldValue('total_base_price_per_month', calculatePrice());
                                                   })
                                              }
                                         }}
@@ -197,7 +197,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              }
 
                                              formik.setFieldValue("base_price_per_month", value).then(() => {
-                                                  formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  formik.setFieldValue('total_base_price_per_month', calculatePrice());
                                              })
                                         }}
                                    />
@@ -300,7 +300,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }
 
                                                   formik.setFieldValue("yearly_discount_percentage", numberValue).then(() => {
-                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                       formik.setFieldValue('total_base_price_per_month', calculatePrice());
                                                   })
                                              }}
                                              error={formik.touched.yearly_discount_percentage && Boolean(formik.errors.yearly_discount_percentage)}
@@ -318,7 +318,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }
 
                                                   formik.setFieldValue("yearly_discount_percentage", value).then(() => {
-                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                       formik.setFieldValue('total_base_price_per_month', calculatePrice());
                                                   })
                                              }}
                                         />
@@ -364,7 +364,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }
 
                                                   formik.setFieldValue("discount_percentage", numberValue).then(() => {
-                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                       formik.setFieldValue('total_base_price_per_month', calculatePrice());
                                                   })
                                              }}
                                              error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
@@ -382,7 +382,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }
 
                                                   formik.setFieldValue("discount_percentage", value).then(() => {
-                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                       formik.setFieldValue('total_base_price_per_month', calculatePrice());
                                                   })
                                              }}
                                         />

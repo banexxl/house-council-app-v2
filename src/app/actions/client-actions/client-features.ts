@@ -1,5 +1,5 @@
 import { supabase } from "src/libs/supabase/client"
-import { BaseEntity } from "../base-entity-actions"
+import { BaseEntity } from "src/types/base-entity"
 
 export const readClientFeatures = async (): Promise<{ readClientFeaturesSuccess: boolean, readClientFeaturesData: BaseEntity[], readClientFeaturesError?: string }> => {
      // Fetch client features

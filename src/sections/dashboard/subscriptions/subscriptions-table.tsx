@@ -30,8 +30,8 @@ import { useRouter } from 'next/navigation';
 import { FilterBar } from '../client/table-filter';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plans/subscription-plan-actions';
-import { BaseEntity } from 'src/app/actions/base-entity-actions';
 import toast from 'react-hot-toast';
+import { BaseEntity } from 'src/types/base-entity';
 
 interface SubscriptionPlanListTableProps {
      subscriptionPlans?: SubscriptionPlan[];

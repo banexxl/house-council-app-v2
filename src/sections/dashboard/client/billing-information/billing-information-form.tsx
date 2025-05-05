@@ -11,11 +11,10 @@ import BankTransferForm from "./bank-transfer-form"
 import { useTranslation } from "react-i18next"
 import { createOrUpdateClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions"
 import toast from "react-hot-toast"
-import { notFound, usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { paths } from "src/paths"
-import { BaseEntity } from "src/app/actions/base-entity-actions"
 import { ClientBillingInformation } from "src/types/client-billing-information"
-import { isUUIDv4 } from "src/utils/uuid"
+import { BaseEntity } from "src/types/base-entity"
 
 interface ClientBillingInformationFormProps {
      allClients?: Client[]

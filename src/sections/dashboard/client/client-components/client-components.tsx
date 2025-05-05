@@ -19,11 +19,11 @@ import {
      type SelectChangeEvent,
      Box,
 } from "@mui/material"
-import type { BaseEntity } from "src/app/actions/base-entity-actions"
 import { useTranslation } from "react-i18next"
 import { useDialog } from "src/hooks/use-dialog"
 import { PopupModal } from "src/components/modal-dialog"
 import toast from "react-hot-toast"
+import { BaseEntity, FeatureExtension } from "src/types/base-entity"
 
 interface GenericTableEditorProps {
      clientStatuses: BaseEntity[]
@@ -33,7 +33,7 @@ interface GenericTableEditorProps {
      clientBillingInformationStatuses: BaseEntity[]
      invoiceStatuses: BaseEntity[]
      subscriptionPlanStatuses: BaseEntity[]
-     features: BaseEntity[] & { base_price_per_month: number }[]
+     features: (BaseEntity & FeatureExtension)[]
      buildingStatuses: BaseEntity[]
      updateEntity: <T extends BaseEntity>(
           table: string,
