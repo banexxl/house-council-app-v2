@@ -42,8 +42,6 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
-               console.log('values', values);
-
                try {
                     let response;
 
