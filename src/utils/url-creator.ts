@@ -1,4 +1,4 @@
-export const sanitizeString = (value: string) => {
+export const generateSlug = (value: string) => {
      const serbianLatinToEnglish: { [key: string]: string } = {
           'č': 'c', 'ć': 'c', 'ž': 'z', 'š': 's', 'đ': 'dj',
           'Č': 'c', 'Ć': 'c', 'Ž': 'z', 'Š': 's', 'Đ': 'dj'

@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { supabase } from "src/libs/supabase/client";
 import { BaseEntity } from "src/types/base-entity";
+import { generateSlug } from "src/utils/url-creator";
 
 export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean; createdEntity?: T; error?: any }> => {
+
      if (!table.trim()) {
           return { success: false, error: 'clients.clientSettingsNoTableError' };
      }
@@ -30,7 +32,11 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
      }
 
      // Proceed with insertion since no existing entity was found
-     const { data, error } = await supabase.from(table).insert(entity).select().single();
+     let insertData = { ...entity };
+     if (table === 'tblFeatures') {
+          insertData = { ...insertData, slug: generateSlug(entity.name) };
+     }
+     const { data, error } = await supabase.from(table).insert(insertData).select().single();
 
      if (error) {
           return { success: false, error };
@@ -78,7 +84,14 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
           return { success: false, error: 'clients.clientSettingsAlreadyExists' };
      }
 
-     const { data, error } = await supabase.from(table).update(entity).eq('id', id).select().single();
+     const { data, error } = await supabase.from(table)
+          .update({
+               ...entity,
+               ...(table === 'tblFeatures' && entity.name && { slug: generateSlug(entity.name.trim()) }),
+          })
+          .eq('id', id)
+          .select()
+          .single();
 
      if (error) {
           return { success: false, error };

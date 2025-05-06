@@ -11,3 +11,5 @@ export type FeatureExtension = {
      price_per_month: number
      slug: string
 }
+
+export type Feature = BaseEntity & FeatureExtension;
