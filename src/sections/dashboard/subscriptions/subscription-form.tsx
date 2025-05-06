@@ -77,26 +77,14 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           },
      })
 
-     /**
-      * Calculates the total price of a subscription plan based on its base price and selected features.
-      * It applies discounts if applicable and adjusts for yearly billing.
-      *
-      * - Adds the base price per month of the subscription plan.
-      * - Includes the base price of each selected feature.
-      * - Applies a discount if the subscription is marked as discounted.
-      * - Calculates the yearly price and applies a yearly discount if the subscription can be billed yearly.
-      *
-      * @returns {number} The calculated total price of the subscription plan.
-      */
-
      const calculatePrice = () => {
-          let totalPrice = Number(formik.values.base_price_per_month) || 0; // Ensure base_price_per_month is a valid number
+          let totalPrice = Number(formik.values.base_price_per_month) || 0;
 
-          // Add prices of selected features
+          // Use local state featurePrices instead of features array
           formik.values.features?.forEach((featureId) => {
-               const feature = features.find((f) => f.id === featureId) as (BaseEntity & FeatureExtension) | undefined;
-               if (feature) {
-                    totalPrice += feature.price_per_month;
+               const featurePrice = featurePrices[featureId];
+               if (!isNaN(featurePrice)) {
+                    totalPrice += featurePrice;
                }
           });
 
@@ -105,21 +93,13 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           }
 
           if (formik.values.is_billed_yearly) {
-               totalPrice *= 12; // Calculate yearly price
-               totalPrice *= 1 - (formik.values.yearly_discount_percentage || 0) / 100; // Apply yearly discount
+               totalPrice *= 12;
+               totalPrice *= 1 - (formik.values.yearly_discount_percentage || 0) / 100;
           }
-          return totalPrice;
+
+          return parseFloat(totalPrice.toFixed(2));
      };
 
-     const handleSaveFeaturePrice = async (featureId: string, price: number) => {
-          const { success, error, updatedFeature } = await updateFeature(featureId, { price_per_month: price })
-
-          if (success) {
-               toast.success("Feature price updated successfully!");
-          } else {
-               toast.error("Failed to update feature price.");
-          }
-     };
 
      const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
           Object.fromEntries(features.map((f) => [f.id!, f.price_per_month]))
@@ -130,8 +110,27 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      };
 
      const handleFeaturePriceSave = async (featureId: string) => {
+
           const price = featurePrices[featureId];
-          await handleSaveFeaturePrice(featureId, price);
+          const { success } = await updateFeature(featureId, { price_per_month: price });
+
+          if (success) {
+               toast.success("Feature price updated successfully!");
+
+               // Now update subscription plan total price in DB
+               const newTotal = calculatePrice();
+
+               await updateSubscriptionPlan({
+                    ...formik.values,
+                    id: subscriptionPlanData!.id,
+                    total_price_per_month: newTotal
+               });
+
+               // Optionally update formik value to reflect that save is complete
+               formik.setFieldValue("total_price_per_month", newTotal);
+          } else {
+               toast.error("Failed to update feature price.");
+          }
      };
 
      return (
@@ -373,7 +372,6 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                          </Stack >
                     </Grid>
 
-
                     <Grid item xs={12} md={6}>
                          <Card>
                               <CardContent>
@@ -446,7 +444,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  size="small"
                                                                  startIcon={<SaveIcon />}
                                                                  onClick={() => handleFeaturePriceSave(featureId)}
-                                                                 disabled={!isChecked}
+                                                                 disabled={!isChecked || price === feature.price_per_month}
                                                             >
                                                                  Save
                                                             </LoadingButton>
