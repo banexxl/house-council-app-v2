@@ -37,6 +37,6 @@ export const updateFeature = async (id: string, feature: Partial<Feature>): Prom
           return { success: false, error };
      }
 
-     revalidatePath('/dashboard/subscriptions');
+     revalidatePath('/dashboard/subscriptions/');
      return { success: true, updatedFeature: data };
 };
