@@ -35,18 +35,18 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           initialValues: {
                ...subscriptionPlanInitialValues,
                ...subscriptionPlanData,
-               base_price_per_month: subscriptionPlanData?.base_price_per_month || 0,
+               base_price: subscriptionPlanData?.base_price || 0,
                features: subscriptionPlanData?.features?.map((f: any) => f.id) || [],
           },
           validationSchema: Yup.object().shape({
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
-               const total_price_per_month = getCalculatedTotalPrice(values, featurePrices);
+               const total_price = getCalculatedTotalPrice(values, featurePrices);
 
                const payload = {
                     ...values,
-                    total_price_per_month,
+                    total_price,
                };
 
                try {
@@ -76,7 +76,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           }
      })
      const getCalculatedTotalPrice = (values: SubscriptionPlan, prices: Record<string, number>) => {
-          let totalPrice = Number(values.base_price_per_month) || 0;
+          let totalPrice = Number(values.base_price) || 0;
 
           values.features?.forEach((featureId) => {
                const featurePrice = prices[featureId];
@@ -120,7 +120,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                await updateSubscriptionPlan({
                     ...formik.values,
                     id: subscriptionPlanData!.id,
-                    total_price_per_month: newTotal,
+                    total_price: newTotal,
                });
           } else {
                toast.error("Failed to update feature price.");
@@ -180,33 +180,33 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         </FormControl>
                                         <TextField
                                              fullWidth
-                                             id="base_price_per_month"
-                                             name="base_price_per_month"
+                                             id="base_price"
+                                             name="base_price"
                                              label={t("subscriptionPlans.subscriptionPlanBasePrice")}
                                              type="number"
-                                             value={formik.values.base_price_per_month}
+                                             value={formik.values.base_price}
                                              onChange={(event) => {
                                                   const value = event.target.value;
 
                                                   // Allow empty string so the user can delete and retype
                                                   if (value === "") {
-                                                       formik.setFieldValue("base_price_per_month", "");
+                                                       formik.setFieldValue("base_price", "");
                                                        return;
                                                   }
 
                                                   // Ensure only valid decimal numbers are allowed
                                                   if (!isNaN(Number(value))) {
-                                                       formik.setFieldValue("base_price_per_month", value).then(() => {
-                                                            formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                       formik.setFieldValue("base_price", value).then(() => {
+                                                            formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }
                                              }}
-                                             error={formik.touched.base_price_per_month && Boolean(formik.errors.base_price_per_month)}
-                                             helperText={formik.touched.base_price_per_month && formik.errors.base_price_per_month}
+                                             error={formik.touched.base_price && Boolean(formik.errors.base_price)}
+                                             helperText={formik.touched.base_price && formik.errors.base_price}
                                              margin="normal"
                                              InputProps={{ inputProps: { min: 0, max: 1000000, step: "0.01" } }}
                                              onBlur={() => {
-                                                  let value = formik.values.base_price_per_month;
+                                                  let value = formik.values.base_price;
 
                                                   // If the field is empty, set it to 0
                                                   if (value === parseFloat("") || value === null || value === undefined) {
@@ -217,8 +217,8 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        value = parseFloat(value.toFixed(2));
                                                   }
 
-                                                  formik.setFieldValue("base_price_per_month", value).then(() => {
-                                                       formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                  formik.setFieldValue("base_price", value).then(() => {
+                                                       formik.setFieldValue('total_price', calculatePrice());
                                                   })
                                              }}
                                         />
@@ -270,7 +270,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("yearly_discount_percentage", numberValue).then(() => {
-                                                            formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                            formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }}
                                                   error={formik.touched.yearly_discount_percentage && Boolean(formik.errors.yearly_discount_percentage)}
@@ -288,7 +288,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("yearly_discount_percentage", value).then(() => {
-                                                            formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                            formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }}
                                              />
@@ -334,7 +334,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("discount_percentage", numberValue).then(() => {
-                                                            formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                            formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }}
                                                   error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
@@ -352,7 +352,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("discount_percentage", value).then(() => {
-                                                            formik.setFieldValue('total_price_per_month', calculatePrice());
+                                                            formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }}
                                              />

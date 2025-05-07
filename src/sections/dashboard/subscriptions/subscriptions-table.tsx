@@ -181,7 +181,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                          { label: t('subscriptionPlans.subscriptionPlanName'), value: 'name' },
                          { label: t('common.updatedAt'), value: 'updatedAt' },
                          { label: t('subscriptionPlans.subscriptionPlanTotalPrice'), value: 'price' },
-                         { label: t('subscriptionPlans.subscriptionPlanBasePrice'), value: 'base_price_per_month' },
+                         { label: t('subscriptionPlans.subscriptionPlanBasePrice'), value: 'base_price' },
                     ]}
                     btnAddUrl={paths.dashboard.subscriptions.new}
                />
@@ -281,7 +281,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                             }
                                                        </TableCell>
                                                        <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {subscriptionPlan.base_price_per_month}
+                                                            {subscriptionPlan.base_price}
                                                        </TableCell>
                                                        <TableCell>
                                                             {subscriptionPlan.is_billed_yearly ? (
@@ -307,7 +307,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                             )}
                                                        </TableCell>
                                                        <TableCell>{subscriptionPlan.discount_percentage}</TableCell>
-                                                       <TableCell>{subscriptionPlan.total_price_per_month}</TableCell>
+                                                       <TableCell>{subscriptionPlan.total_price}</TableCell>
                                                   </TableRow>
                                              );
                                         })
