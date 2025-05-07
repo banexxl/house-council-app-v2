@@ -42,23 +42,25 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
-               console.log('values', values);
+               const total_price_per_month = getCalculatedTotalPrice(values, featurePrices);
+
+               const payload = {
+                    ...values,
+                    total_price_per_month,
+               };
 
                try {
                     let response;
-
                     if (values.id && values.id !== '') {
-                         // Update existing subscription plan
-                         response = await updateSubscriptionPlan({ ...values, id: subscriptionPlanData!.id });
+                         response = await updateSubscriptionPlan({ ...payload, id: subscriptionPlanData!.id });
                          if (response.updateSubscriptionPlanSuccess) {
                               toast.success("Subscription plan updated successfully!");
-                              // router.push(`/dashboard/subscriptions/${subscriptionPlanData!.id}`);
+                              formik.resetForm({ values: { ...formik.values } });
                          } else {
                               toast.error("Failed to update subscription plan.");
                          }
                     } else {
-                         // Create new subscription plan
-                         response = await createSubscriptionPlan({ ...values });
+                         response = await createSubscriptionPlan(payload);
                          if (response.createSubscriptionPlanSuccess) {
                               toast.success("Subscription plan created successfully!");
                               router.push(`/dashboard/subscriptions/${response.createdSubscriptionPlan?.id}`);
@@ -66,39 +68,36 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                               toast.error("Failed to create subscription plan.");
                          }
                     }
-
-                    formik.setSubmitting(false);
                } catch (error) {
                     toast.error("An error occurred while saving the subscription plan.");
+               } finally {
                     formik.setSubmitting(false);
-                    console.error(error);
                }
-
-          },
+          }
      })
+     const getCalculatedTotalPrice = (values: SubscriptionPlan, prices: Record<string, number>) => {
+          let totalPrice = Number(values.base_price_per_month) || 0;
 
-     const calculatePrice = () => {
-          let totalPrice = Number(formik.values.base_price_per_month) || 0;
-
-          // Use local state featurePrices instead of features array
-          formik.values.features?.forEach((featureId) => {
-               const featurePrice = featurePrices[featureId];
+          values.features?.forEach((featureId) => {
+               const featurePrice = prices[featureId];
                if (!isNaN(featurePrice)) {
                     totalPrice += featurePrice;
                }
           });
 
-          if (formik.values.is_discounted) {
-               totalPrice *= 1 - (formik.values.discount_percentage || 0) / 100;
+          if (values.is_discounted) {
+               totalPrice *= 1 - (values.discount_percentage || 0) / 100;
           }
 
-          if (formik.values.is_billed_yearly) {
+          if (values.is_billed_yearly) {
                totalPrice *= 12;
-               totalPrice *= 1 - (formik.values.yearly_discount_percentage || 0) / 100;
+               totalPrice *= 1 - (values.yearly_discount_percentage || 0) / 100;
           }
 
           return parseFloat(totalPrice.toFixed(2));
      };
+
+     const calculatePrice = () => getCalculatedTotalPrice(formik.values, featurePrices);
 
 
      const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
@@ -110,28 +109,24 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
      };
 
      const handleFeaturePriceSave = async (featureId: string) => {
-
           const price = featurePrices[featureId];
           const { success } = await updateFeature(featureId, { price_per_month: price });
 
           if (success) {
                toast.success("Feature price updated successfully!");
 
-               // Now update subscription plan total price in DB
-               const newTotal = calculatePrice();
+               const newTotal = getCalculatedTotalPrice(formik.values, featurePrices);
 
                await updateSubscriptionPlan({
                     ...formik.values,
                     id: subscriptionPlanData!.id,
-                    total_price_per_month: newTotal
+                    total_price_per_month: newTotal,
                });
-
-               // Optionally update formik value to reflect that save is complete
-               formik.setFieldValue("total_price_per_month", newTotal);
           } else {
                toast.error("Failed to update feature price.");
           }
      };
+
 
      return (
           <form onSubmit={formik.handleSubmit}>
