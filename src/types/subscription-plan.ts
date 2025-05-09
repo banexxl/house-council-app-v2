@@ -8,7 +8,7 @@ export type SubscriptionPlan = {
      description: string;
      status_id: string;
      is_billed_annually: boolean;
-     yearly_discount_percentage: number;
+     annual_discount_percentage: number;
      is_discounted: boolean;
      discount_percentage: number;
      features?: string[];
@@ -23,7 +23,7 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      description: '',
      status_id: '',
      is_billed_annually: false,
-     yearly_discount_percentage: 0,
+     annual_discount_percentage: 0,
      is_discounted: false,
      discount_percentage: 0,
      features: [],
@@ -36,7 +36,7 @@ export const subscriptionPlanValidationSchema = Yup.object({
      description: Yup.string(),
      status_id: Yup.string().required("Required"),
      is_billed_annually: Yup.boolean(),
-     yearly_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
+     annual_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      is_discounted: Yup.boolean(),
      discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      base_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),

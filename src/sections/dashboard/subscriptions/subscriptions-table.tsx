@@ -294,7 +294,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                                  </SvgIcon>
                                                             )}
                                                        </TableCell>
-                                                       <TableCell>{subscriptionPlan.yearly_discount_percentage}</TableCell>
+                                                       <TableCell>{subscriptionPlan.annual_discount_percentage}</TableCell>
                                                        <TableCell>
                                                             {subscriptionPlan.is_discounted ? (
                                                                  <SvgIcon>

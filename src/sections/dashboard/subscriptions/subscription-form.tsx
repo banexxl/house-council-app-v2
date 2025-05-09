@@ -91,7 +91,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
           if (values.is_billed_annually) {
                totalPrice *= 12;
-               totalPrice *= 1 - (values.yearly_discount_percentage || 0) / 100;
+               totalPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
           }
 
           return parseFloat(totalPrice.toFixed(2));
@@ -238,7 +238,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        onChange={(event) => {
                                                             formik.handleChange(event);
                                                             if (!event.target.checked) {
-                                                                 formik.setFieldValue("yearly_discount_percentage", 0);
+                                                                 formik.setFieldValue("annual_discount_percentage", 0);
                                                             }
                                                        }}
                                                   />
@@ -248,17 +248,17 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                         {formik.values.is_billed_annually && (
                                              <TextField
                                                   fullWidth
-                                                  id="yearly_discount_percentage"
-                                                  name="yearly_discount_percentage"
+                                                  id="annual_discount_percentage"
+                                                  name="annual_discount_percentage"
                                                   label={t("subscriptionPlans.subscriptionPlanYearlyDiscount")}
                                                   type="number"
-                                                  value={formik.values.yearly_discount_percentage}
+                                                  value={formik.values.annual_discount_percentage}
                                                   onChange={(event) => {
                                                        let value = event.target.value;
 
                                                        // Allow empty input temporarily so users can delete and retype
                                                        if (value === "") {
-                                                            formik.setFieldValue("yearly_discount_percentage", "")
+                                                            formik.setFieldValue("annual_discount_percentage", "")
                                                             return;
                                                        }
 
@@ -269,16 +269,16 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                             numberValue = 0; // Set to 0 if it's invalid
                                                        }
 
-                                                       formik.setFieldValue("yearly_discount_percentage", numberValue).then(() => {
+                                                       formik.setFieldValue("annual_discount_percentage", numberValue).then(() => {
                                                             formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }}
-                                                  error={formik.touched.yearly_discount_percentage && Boolean(formik.errors.yearly_discount_percentage)}
-                                                  helperText={formik.touched.yearly_discount_percentage && formik.errors.yearly_discount_percentage}
+                                                  error={formik.touched.annual_discount_percentage && Boolean(formik.errors.annual_discount_percentage)}
+                                                  helperText={formik.touched.annual_discount_percentage && formik.errors.annual_discount_percentage}
                                                   margin="normal"
                                                   InputProps={{ inputProps: { min: 0, max: 100 } }}
                                                   onBlur={() => {
-                                                       let value = formik.values.yearly_discount_percentage;
+                                                       let value = formik.values.annual_discount_percentage;
 
                                                        // If input is empty, set it to 0
                                                        if (value === null || value === undefined) {
@@ -287,7 +287,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                             value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
                                                        }
 
-                                                       formik.setFieldValue("yearly_discount_percentage", value).then(() => {
+                                                       formik.setFieldValue("annual_discount_percentage", value).then(() => {
                                                             formik.setFieldValue('total_price', calculatePrice());
                                                        })
                                                   }}
