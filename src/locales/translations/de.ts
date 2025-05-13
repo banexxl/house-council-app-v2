@@ -314,6 +314,7 @@ export const de = {
   [tokens.subscriptionPlans.subscriptionPlanCurrency]: 'Währung',
   [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Funktionen',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Status',
+  [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments]: 'Maximale Anzahl der Wohnungen',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Funktion',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Jahresrabatt',

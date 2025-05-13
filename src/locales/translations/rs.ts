@@ -317,6 +317,7 @@ export const rs = {
      [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Opcije pretplate',
      [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Opcija pretplate',
      [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Status pretplate',
+     [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments]: 'Maksimalan broj stanova',
      [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Statusi pretplate',
      [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Godišnji popust',
      [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Godišnje fakturisanje',

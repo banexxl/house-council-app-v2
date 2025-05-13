@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { supabase } from "src/libs/supabase/client";
+import { logServerAction } from "src/libs/supabase/server-logging";
 import { SubscriptionPlan } from "src/types/subscription-plan";
 
 /**
@@ -75,6 +76,8 @@ export const updateSubscriptionPlan = async (
      updateSubscriptionPlanError?: any;
 }> => {
 
+     const start = Date.now();
+
      const { data, error } = await supabase
           .from("tblSubscriptionPlans")
           .update({ ...subscriptionPlan, features: undefined })
@@ -82,7 +85,28 @@ export const updateSubscriptionPlan = async (
           .select()
           .single();
 
+     if (data) {
+          await logServerAction({
+               user_id: null,
+               action: 'Updating tblSubscriptionPlans successfull - ' + subscriptionPlan.id,
+               payload: JSON.stringify(subscriptionPlan),
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+               type: 'db'
+          })
+     }
+
      if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Updating tblSubscriptionPlans failed - ' + subscriptionPlan.id,
+               payload: JSON.stringify(subscriptionPlan),
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - start,
+               type: 'db'
+          })
           return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: error };
      }
 
@@ -107,6 +131,15 @@ export const updateSubscriptionPlan = async (
                .match({ subscription_plan_id: data.id });
 
           if (featureDeleteError) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Updating tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
+                    payload: JSON.stringify(subscriptionPlan),
+                    status: 'fail',
+                    error: featureDeleteError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'db'
+               })
                return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureDeleteError };
           }
 
@@ -116,6 +149,15 @@ export const updateSubscriptionPlan = async (
                .insert(featureEntries);
 
           if (featureInsertError) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Inserting into tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
+                    payload: JSON.stringify(subscriptionPlan),
+                    status: 'fail',
+                    error: featureInsertError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'db'
+               })
                return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureInsertError };
           }
 
@@ -126,6 +168,15 @@ export const updateSubscriptionPlan = async (
                .match({ subscription_plan_id: data.id });
 
           if (featureDeleteError) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Deleting from tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
+                    payload: JSON.stringify(subscriptionPlan),
+                    status: 'fail',
+                    error: featureDeleteError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'db'
+               })
                return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureDeleteError };
           }
      }

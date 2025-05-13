@@ -274,6 +274,7 @@ export const tokens = {
     subscriptionPlanTotalPrice: 'subscriptionPlans.subscriptionPlanTotalPrice',
     subscriptionPlanCurrency: 'subscriptionPlans.subscriptionPlanCurrency',
     subscriptionPlanStatus: 'subscriptionPlans.subscriptionPlanStatus',
+    susbcriptionPlanMaxNumberOfAppartments: 'subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments',
     subscriptionPlanFeatures: 'subscriptionPlans.subscriptionPlanFeatures',
     subscriptionPlanFeature: 'subscriptionPlans.subscriptionPlanFeature',
     subscriptionPlanYearlyDiscount: 'subscriptionPlans.subscriptionPlanYearlyDiscount',

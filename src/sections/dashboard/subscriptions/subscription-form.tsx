@@ -147,6 +147,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              error={formik.touched.name && Boolean(formik.errors.name)}
                                              helperText={formik.touched.name && formik.errors.name}
                                              margin="normal"
+                                             onBlur={formik.handleBlur}
                                         />
                                         <TextField
                                              fullWidth
@@ -157,6 +158,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              onChange={formik.handleChange}
                                              error={formik.touched.description && Boolean(formik.errors.description)}
                                              helperText={formik.touched.description && formik.errors.description}
+                                             onBlur={formik.handleBlur}
                                              margin="normal"
                                              multiline
                                              rows={4}
@@ -178,6 +180,20 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   ))}
                                              </Select>
                                         </FormControl>
+                                        <TextField
+                                             fullWidth
+                                             id="max_number_of_apartments"
+                                             name="max_number_of_apartments"
+                                             label={t("subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments")}
+                                             type="number"
+                                             value={formik.values.max_number_of_apartments}
+                                             onChange={formik.handleChange}
+                                             error={formik.touched.max_number_of_apartments && Boolean(formik.errors.max_number_of_apartments)}
+                                             helperText={formik.touched.max_number_of_apartments && formik.errors.max_number_of_apartments}
+                                             margin="normal"
+                                             InputProps={{ inputProps: { min: 0, max: 1000000, step: "1" } }}
+                                             onBlur={formik.handleBlur}
+                                        />
                                         <TextField
                                              fullWidth
                                              id="base_price"
