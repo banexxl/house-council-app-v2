@@ -31,6 +31,7 @@ export const TenantSwitch: FC<TenantSwitchProps> = (props) => {
         direction="row"
         spacing={2}
         {...props}
+        sx={{}}
       >
         <Box sx={{ flexGrow: 1 }}>
           <Typography

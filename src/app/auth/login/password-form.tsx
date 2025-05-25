@@ -2,7 +2,6 @@
 
 import { useFormik } from "formik"
 import { useState } from "react"
-import { LoadingButton } from "@mui/lab"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
@@ -12,6 +11,7 @@ import toast from "react-hot-toast"
 import { signInWithEmailAndPassword } from "../actions"
 import { hashPassword } from "src/utils/bcrypt"
 import { useRouter } from "next/navigation"
+import { Button } from "@mui/material"
 
 export const PasswordForm = () => {
      const [message, setMessage] = useState<string | null>("")
@@ -79,7 +79,7 @@ export const PasswordForm = () => {
                               value={formik.values.password}
                          />
                     </Stack>
-                    <LoadingButton
+                    <Button
                          fullWidth
                          sx={{ mt: 3 }}
                          size="large"
@@ -89,7 +89,7 @@ export const PasswordForm = () => {
                          disabled={!(formik.isValid && formik.dirty) || formik.errors.email == ""}
                     >
                          Sign in
-                    </LoadingButton>
+                    </Button>
                </form>
           </Box>
      )

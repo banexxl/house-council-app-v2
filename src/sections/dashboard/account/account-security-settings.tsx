@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Table from '@mui/material/Table';
@@ -50,15 +50,12 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
             spacing={3}
           >
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <Typography variant="h6">Change password</Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={12}
-              md={8}
+              size={{ xs: 12, sm: 12, md: 8 }}
             >
               <Stack
                 alignItems="center"
@@ -93,8 +90,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
             spacing={4}
           >
             <Grid
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <Card
                 sx={{ height: '100%' }}
@@ -161,8 +157,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
               </Card>
             </Grid>
             <Grid
-              sm={6}
-              xs={12}
+              size={{ xs: 12, sm: 6 }}
             >
               <Card
                 sx={{ height: '100%' }}

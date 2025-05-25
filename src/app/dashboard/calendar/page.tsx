@@ -23,7 +23,7 @@ import { CalendarEventDialog } from 'src/sections/dashboard/calendar/calendar-ev
 import { CalendarToolbar } from 'src/sections/dashboard/calendar/calendar-toolbar';
 import { CalendarContainer } from 'src/sections/dashboard/calendar/calendar-container';
 import { useDispatch, useSelector } from 'src/store';
-import { thunks } from 'src/thunks/calendar';
+// import { thunks } from 'src/thunks/calendar';
 import type { CalendarEvent, CalendarView } from 'src/types/calendar';
 
 interface CreateDialogData {
@@ -37,24 +37,24 @@ interface UpdateDialogData {
   eventId?: string;
 }
 
-const useEvents = (): CalendarEvent[] => {
-  const dispatch = useDispatch();
-  const events = useSelector((state) => state.calendar.events);
+// const useEvents = (): CalendarEvent[] => {
+//   const dispatch = useDispatch();
+//   const events = useSelector((state) => state.calendar.events);
 
-  const handleEventsGet = useCallback((): void => {
-    dispatch(thunks.getEvents());
-  }, [dispatch]);
+//   const handleEventsGet = useCallback((): void => {
+//     dispatch(thunks.getEvents());
+//   }, [dispatch]);
 
-  useEffect(
-    () => {
-      handleEventsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+//   useEffect(
+//     () => {
+//       handleEventsGet();
+//     },
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//     []
+//   );
 
-  return events;
-};
+//   return events;
+// };
 
 const useCurrentEvent = (
   events: CalendarEvent[],
@@ -72,13 +72,13 @@ const useCurrentEvent = (
 const Page = () => {
   const dispatch = useDispatch();
   const calendarRef = useRef<Calendar | null>(null);
-  const events = useEvents();
+  // const events = useEvents();
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
   const [date, setDate] = useState<Date>(new Date());
   const [view, setView] = useState<CalendarView>(mdUp ? 'timeGridDay' : 'dayGridMonth');
   const createDialog = useDialog<CreateDialogData>();
   const updateDialog = useDialog<UpdateDialogData>();
-  const updatingEvent = useCurrentEvent(events, updateDialog.data);
+  // const updatingEvent = useCurrentEvent(events, updateDialog.data);
 
 
 
@@ -184,16 +184,16 @@ const Page = () => {
       const { event } = arg;
 
       try {
-        await dispatch(
-          thunks.updateEvent({
-            eventId: event.id,
-            update: {
-              allDay: event.allDay,
-              start: event.start?.getTime(),
-              end: event.end?.getTime(),
-            },
-          })
-        );
+        // await dispatch(
+        //   thunks.updateEvent({
+        //     eventId: event.id,
+        //     update: {
+        //       allDay: event.allDay,
+        //       start: event.start?.getTime(),
+        //       end: event.end?.getTime(),
+        //     },
+        //   })
+        // );
       } catch (err) {
         console.error(err);
       }
@@ -206,16 +206,16 @@ const Page = () => {
       const { event } = arg;
 
       try {
-        await dispatch(
-          thunks.updateEvent({
-            eventId: event.id,
-            update: {
-              allDay: event.allDay,
-              start: event.start?.getTime(),
-              end: event.end?.getTime(),
-            },
-          })
-        );
+        // await dispatch(
+        //   thunks.updateEvent({
+        //     eventId: event.id,
+        //     update: {
+        //       allDay: event.allDay,
+        //       start: event.start?.getTime(),
+        //       end: event.end?.getTime(),
+        //     },
+        //   })
+        // );
       } catch (err) {
         console.error(err);
       }
@@ -246,7 +246,7 @@ const Page = () => {
             />
             <Card>
               <CalendarContainer>
-                <Calendar
+                {/* <Calendar
                   allDayMaintainDuration
                   dayMaxEventRows={3}
                   droppable
@@ -273,7 +273,7 @@ const Page = () => {
                   select={handleRangeSelect}
                   selectable
                   weekends
-                />
+                /> */}
               </CalendarContainer>
             </Card>
           </Stack>
@@ -286,14 +286,14 @@ const Page = () => {
         open={createDialog.open}
         range={createDialog.data?.range}
       />
-      <CalendarEventDialog
+      {/* <CalendarEventDialog
         action="update"
         event={updatingEvent}
         onClose={updateDialog.handleClose}
         onDeleteComplete={updateDialog.handleClose}
         onEditComplete={updateDialog.handleClose}
         open={updateDialog.open}
-      />
+      /> */}
     </>
   );
 };

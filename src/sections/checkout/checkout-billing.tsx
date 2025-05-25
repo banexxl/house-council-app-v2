@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
@@ -85,8 +85,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
             spacing={3}
           >
             <Grid
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <TextField
                 fullWidth
@@ -97,8 +96,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <TextField
                 fullWidth
@@ -109,8 +107,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <TextField
                 fullWidth
@@ -121,8 +118,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <TextField
                 fullWidth
@@ -133,8 +129,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={3}
+              size={{ xs: 12, sm: 3 }}
             >
               <TextField
                 fullWidth
@@ -145,8 +140,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={3}
+              size={{ xs: 12, sm: 3 }}
             >
               <TextField
                 fullWidth
@@ -242,8 +236,7 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
               spacing={3}
             >
               <Grid
-                xs={12}
-                sm={6}
+                size={{ xs: 12, sm: 6 }}
               >
                 <TextField
                   fullWidth
@@ -253,44 +246,47 @@ export const CheckoutBilling: FC<CheckoutBillingProps> = (props) => {
                   value={billing.cardOwner}
                 />
               </Grid>
-              <Grid sm={6} />
               <Grid
-                xs={12}
-                sm={6}
+                size={{ sm: 6 }}
               >
-                <TextField
-                  fullWidth
-                  label="Card Number"
-                  name="cardNumber"
-                  onChange={onChange}
-                  value={billing.cardNumber}
-                />
-              </Grid>
-              <Grid sm={6} />
-              <Grid
-                xs={12}
-                sm={3}
-              >
-                <TextField
-                  fullWidth
-                  label="Expire Date"
-                  name="cardExpirationDate"
-                  onChange={onChange}
-                  placeholder="MM/YY"
-                  value={billing.cardExpirationDate}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                sm={3}
-              >
-                <TextField
-                  fullWidth
-                  label="Security Code"
-                  name="cardSecurityCode"
-                  onChange={onChange}
-                  value={billing.cardSecurityCode}
-                />
+                <Grid
+                  size={{ xs: 12, sm: 6 }}
+                >
+                  <TextField
+                    fullWidth
+                    label="Card Number"
+                    name="cardNumber"
+                    onChange={onChange}
+                    value={billing.cardNumber}
+                  />
+                </Grid>
+                <Grid
+                  size={{ sm: 6 }}
+                >
+                  <Grid
+                    size={{ xs: 12, sm: 3 }}
+                  >
+                    <TextField
+                      fullWidth
+                      label="Expire Date"
+                      name="cardExpirationDate"
+                      onChange={onChange}
+                      placeholder="MM/YY"
+                      value={billing.cardExpirationDate}
+                    />
+                  </Grid>
+                  <Grid
+                    size={{ xs: 12, sm: 3 }}
+                  >
+                    <TextField
+                      fullWidth
+                      label="Security Code"
+                      name="cardSecurityCode"
+                      onChange={onChange}
+                      value={billing.cardSecurityCode}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           </div>

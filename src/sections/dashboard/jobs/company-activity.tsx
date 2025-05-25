@@ -7,12 +7,12 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Timeline from '@mui/lab/Timeline';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import TimelineDot from '@mui/lab/TimelineDot';
-import TimelineItem from '@mui/lab/TimelineItem';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
+// import Timeline from '@mui/lab/Timeline';
+// import TimelineConnector from '@mui/lab/TimelineConnector';
+// import TimelineContent from '@mui/lab/TimelineContent';
+// import TimelineDot from '@mui/lab/TimelineDot';
+// import TimelineItem from '@mui/lab/TimelineItem';
+// import TimelineSeparator from '@mui/lab/TimelineSeparator';
 
 import type { Activity } from 'src/types/job';
 import { getInitials } from 'src/utils/get-initials';
@@ -122,7 +122,7 @@ export const CompanyActivity: FC<CompanyActivityProps> = (props) => {
       <div>
         <Typography variant="h6">Activity</Typography>
       </div>
-      <Stack spacing={3}>
+      {/* <Stack spacing={3}>
         <Timeline
           sx={{
             p: 0,
@@ -175,7 +175,7 @@ export const CompanyActivity: FC<CompanyActivityProps> = (props) => {
         >
           <Button color="inherit">Load more</Button>
         </Box>
-      </Stack>
+      </Stack> */}
     </Stack>
   );
 };

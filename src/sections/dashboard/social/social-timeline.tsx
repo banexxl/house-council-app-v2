@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 
 import type { Post, Profile } from 'src/types/social';
@@ -24,8 +24,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
         spacing={4}
       >
         <Grid
-          lg={4}
-          xs={12}
+          size={{ xs: 12, lg: 4 }}
         >
           <SocialAbout
             currentCity={profile.currentCity}
@@ -40,8 +39,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
           />
         </Grid>
         <Grid
-          lg={8}
-          xs={12}
+          size={{ xs: 12, lg: 8 }}
         >
           <Stack spacing={3}>
             <SocialPostAdd />

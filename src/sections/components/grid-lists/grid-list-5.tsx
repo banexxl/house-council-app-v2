@@ -9,7 +9,7 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
@@ -76,8 +76,7 @@ export const GridList5: FC = () => (
         return (
           <Grid
             key={post.id}
-            md={6}
-            xs={12}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Card sx={{ height: '100%' }}>
               <CardHeader

@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -140,8 +140,7 @@ const Page = () => {
             {posts.map((post) => (
               <Grid
                 key={post.title}
-                xs={12}
-                md={6}
+                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
               >
                 <PostCard
                   authorAvatar={post.author.avatar}
@@ -191,7 +190,7 @@ const Page = () => {
             <PostNewsletter />
           </Box>
         </Container>
-      </Box>
+      </Box >
     </>
   );
 };

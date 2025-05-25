@@ -4,7 +4,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -151,9 +151,7 @@ export const HomeReviews: FC = () => (
           {reviews.map((review, index) => (
             <Grid
               key={index}
-              xs={12}
-              md={6}
-              lg={4}
+              size={{ xs: 12, md: 6, lg: 4 }}
             >
               <Card sx={{ height: '100%' }}>
                 <CardContent

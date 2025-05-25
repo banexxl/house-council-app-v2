@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 
@@ -84,8 +84,7 @@ export const GridList1: FC = () => (
       {posts.map((post) => (
         <Grid
           key={post.id}
-          xs={12}
-          md={4}
+          size={{ xs: 12, sm: 6, md: 4 }}
         >
           <Card
             sx={{

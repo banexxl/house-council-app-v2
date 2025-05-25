@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Switch from '@mui/material/Switch';
@@ -37,14 +37,12 @@ export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = (props) =
             spacing={3}
           >
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <Typography variant="h6">Basic details</Typography>
             </Grid>
             <Grid
-              xs={12}
-              md={8}
+              size={{ xs: 12, lg: 8 }}
             >
               <Stack spacing={3}>
                 <Stack
@@ -180,15 +178,12 @@ export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = (props) =
             spacing={3}
           >
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <Typography variant="h6">Public profile</Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={12}
-              md={8}
+              size={{ xs: 12, sm: 12, md: 8 }}
             >
               <Stack
                 divider={<Divider />}
@@ -242,14 +237,12 @@ export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = (props) =
             spacing={3}
           >
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <Typography variant="h6">Delete Account</Typography>
             </Grid>
             <Grid
-              xs={12}
-              md={8}
+              size={{ xs: 12, lg: 8 }}
             >
               <Stack
                 alignItems="flex-start"

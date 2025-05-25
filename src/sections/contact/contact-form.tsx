@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -25,8 +25,7 @@ export const ContactForm: FC = () => {
         spacing={3}
       >
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <FormControl fullWidth>
             <FormLabel
@@ -44,8 +43,7 @@ export const ContactForm: FC = () => {
           </FormControl>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <FormControl fullWidth>
             <FormLabel
@@ -63,8 +61,7 @@ export const ContactForm: FC = () => {
           </FormControl>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <FormControl fullWidth>
             <FormLabel
@@ -83,8 +80,7 @@ export const ContactForm: FC = () => {
           </FormControl>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <FormControl fullWidth>
             <FormLabel
@@ -103,8 +99,7 @@ export const ContactForm: FC = () => {
           </FormControl>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <FormControl fullWidth>
             <FormLabel
@@ -126,8 +121,7 @@ export const ContactForm: FC = () => {
           </FormControl>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <FormControl fullWidth>
             <FormLabel
@@ -147,7 +141,7 @@ export const ContactForm: FC = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid xs={12}>
+        <Grid size={12}>
           <FormControl fullWidth>
             <FormLabel
               sx={{
@@ -167,7 +161,7 @@ export const ContactForm: FC = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid xs={12}>
+        <Grid size={12}>
           <FormControl fullWidth>
             <FormLabel
               sx={{

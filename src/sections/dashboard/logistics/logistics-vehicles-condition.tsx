@@ -5,7 +5,7 @@ import { alpha } from '@mui/system/colorManipulator';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Typography from '@mui/material/Typography';
 import type { Theme } from '@mui/material/styles/createTheme';
 import { useTheme } from '@mui/material/styles';
@@ -123,8 +123,7 @@ export const LogisticsVehiclesCondition: FC<LogisticsVehiclesConditionProps> = (
             return (
               <Grid
                 key={category.title}
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <Box
                   sx={{

@@ -25,6 +25,25 @@ export const neutral: ColorRange = {
   900: '#111927',
 };
 
+export const orange = withAlphas({
+  lightest: '#FFF5EB',
+  light: '#FED7AA',
+  main: '#F79622', // your orange
+  dark: '#B45309',
+  darkest: '#78350F',
+  contrastText: '#FFFFFF',
+});
+
+export const secondary = withAlphas({
+  lightest: '#FBEFEF',
+  light: '#D4BABA',
+  main: '#4A1005', // your deep brown
+  dark: '#2C0500',
+  darkest: '#190100',
+  contrastText: '#FFFFFF',
+});
+
+
 export const blue = withAlphas({
   lightest: '#F5F8FF',
   light: '#EBEFFF',
@@ -98,12 +117,12 @@ export const info = withAlphas({
 });
 
 export const warning = withAlphas({
-  lightest: '#FFFAEB',
-  light: '#FEF0C7',
-  main: '#F79009',
-  dark: '#B54708',
-  darkest: '#7A2E0E',
-  contrastText: '#FFFFFF',
+  lightest: '#FFF4E5',
+  light: '#FFD59E',
+  main: '#FFA726',
+  dark: '#F57C00',
+  darkest: '#E65100',
+  contrastText: '#000000',
 });
 
 export const error = withAlphas({

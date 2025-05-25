@@ -270,8 +270,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                           >
                             <Grid
                               item
-                              md={6}
-                              xs={12}
+                              size={{ xs: 12, md: 6 }}
                             >
                               <Typography variant="h6">Basic details</Typography>
                               <Divider sx={{ my: 2 }} />
@@ -281,8 +280,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                               >
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={building.name}
@@ -293,8 +291,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                 </Grid>
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={building.sku}
@@ -306,8 +303,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                 </Grid>
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={building.category}
@@ -327,8 +323,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                 </Grid>
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={building.id}
@@ -342,8 +337,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                             </Grid>
                             <Grid
                               item
-                              md={6}
-                              xs={12}
+                              size={{ xs: 12, md: 6 }}
                             >
                               <Typography variant="h6">Pricing and stocks</Typography>
                               <Divider sx={{ my: 2 }} />
@@ -353,8 +347,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                               >
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={building.price}
@@ -373,8 +366,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                 </Grid>
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={building.price}
@@ -391,8 +383,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = (props) => {
                                 </Grid>
                                 <Grid
                                   item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                   sx={{
                                     alignItems: 'center',
                                     display: 'flex',

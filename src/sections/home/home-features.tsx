@@ -4,7 +4,7 @@ import LinkExternal01Icon from '@untitled-ui/icons-react/build/esm/LinkExternal0
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -104,8 +104,7 @@ export const HomeFeatures: FC = () => {
           spacing={3}
         >
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Stack spacing={1}>
               {features.map((feature, index) => {
@@ -177,8 +176,7 @@ export const HomeFeatures: FC = () => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Box
               sx={{

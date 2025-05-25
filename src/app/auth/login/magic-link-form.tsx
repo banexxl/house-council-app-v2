@@ -2,7 +2,7 @@
 
 import { useFormik } from "formik"
 import { useState } from "react"
-import { LoadingButton } from "@mui/lab"
+
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
@@ -10,6 +10,7 @@ import Box from "@mui/material/Box"
 import { initialValuesEmailOnly, validationSchemaEmailOnly } from "./login-schema"
 import toast from "react-hot-toast"
 import { magicLinkLogin } from "../actions"
+import { Button } from "@mui/material"
 
 export const MagicLinkForm = () => {
      const [message, setMessage] = useState<string | null>("")
@@ -79,7 +80,7 @@ export const MagicLinkForm = () => {
                               value={formik.values.email}
                          />
                     </Stack>
-                    <LoadingButton
+                    <Button
                          fullWidth
                          sx={{ mt: 3 }}
                          size="large"
@@ -89,7 +90,7 @@ export const MagicLinkForm = () => {
                          disabled={!(formik.isValid && formik.dirty) || formik.errors.email == ""}
                     >
                          Send Magic Link
-                    </LoadingButton>
+                    </Button>
                </form>
           </Box>
      )

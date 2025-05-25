@@ -1,11 +1,10 @@
 'use client'; // Ovaj mora biti use client zbog usesettings
 
-import { addDays, subDays, subHours, subMinutes } from 'date-fns';
+// import { addDays, subDays, subHours, subMinutes } from 'date-fns';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -24,6 +23,7 @@ import { OverviewHelp } from 'src/sections/dashboard/overview/overview-help';
 import { OverviewJobs } from 'src/sections/dashboard/overview/overview-jobs';
 import { OverviewOpenTickets } from 'src/sections/dashboard/overview/overview-open-tickets';
 import { OverviewTips } from 'src/sections/dashboard/overview/overview-tips';
+import { Grid } from '@mui/material';
 
 const now = new Date();
 
@@ -45,13 +45,9 @@ const Page = () => {
         <Container maxWidth={settings.stretch ? false : 'xl'}>
           <Grid
             container
-            disableEqualOverflow
-            spacing={{
-              xs: 3,
-              lg: 4,
-            }}
+            spacing={{ xs: 3, lg: 4, }}
           >
-            <Grid xs={12}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -79,34 +75,19 @@ const Page = () => {
                 </div>
               </Stack>
             </Grid>
-            <Grid
-              xs={12}
-              md={4}
-            >
+            <Grid size={{ xs: 12, md: 4 }}>
               <OverviewDoneTasks amount={31} />
             </Grid>
-            <Grid
-              xs={12}
-              md={4}
-            >
+            <Grid size={{ xs: 12, md: 4 }}>
               <OverviewPendingIssues amount={12} />
             </Grid>
-            <Grid
-              xs={12}
-              md={4}
-            >
+            <Grid size={{ xs: 12, md: 4 }}>
               <OverviewOpenTickets amount={5} />
             </Grid>
-            <Grid
-              xs={12}
-              md={7}
-            >
+            <Grid size={{ xs: 12, md: 7 }}>
               <OverviewBanner />
             </Grid>
-            <Grid
-              xs={12}
-              md={5}
-            >
+            <Grid size={{ xs: 12, md: 5 }}>
               <OverviewTips
                 sx={{ height: '100%' }}
                 tips={[
@@ -126,10 +107,7 @@ const Page = () => {
                 ]}
               />
             </Grid>
-            <Grid
-              xs={12}
-              md={7}
-            >
+            <Grid size={{ xs: 12, md: 7 }}>
               <OverviewSubscriptionUsage
                 chartSeries={[
                   {
@@ -143,10 +121,7 @@ const Page = () => {
                 ]}
               />
             </Grid>
-            <Grid
-              xs={12}
-              md={5}
-            >
+            {/* <Grid size={{ xs: 12, md: 5 }}>
               <OverviewInbox
                 messages={[
                   {
@@ -192,10 +167,7 @@ const Page = () => {
                 ]}
               />
             </Grid>
-            <Grid
-              xs={12}
-              md={7}
-            >
+            <Grid size={{ xs: 12, md: 7 }}>
               <OverviewTransactions
                 transactions={[
                   {
@@ -237,10 +209,7 @@ const Page = () => {
                 ]}
               />
             </Grid>
-            <Grid
-              xs={12}
-              md={5}
-            >
+            <Grid size={{ xs: 12, md: 5 }}>
               <OverviewEvents
                 events={[
                   {
@@ -270,12 +239,12 @@ const Page = () => {
                 ]}
               />
             </Grid>
-            <Grid xs={6}>
+            <Grid size={{ xs: 6 }}>
               <OverviewJobs />
             </Grid>
-            <Grid xs={6}>
+            <Grid size={{ xs: 6 }}>
               <OverviewHelp />
-            </Grid>
+            </Grid> */}
           </Grid>
         </Container>
       </Box>

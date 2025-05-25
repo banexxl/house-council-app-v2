@@ -6,7 +6,7 @@ import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -77,8 +77,7 @@ const Page = () => {
             }}
           >
             <Grid
-              xs={12}
-              sm={7}
+              size={{ xs: 12, sm: 7 }}
             >
               <Typography
                 color="inherit"
@@ -105,7 +104,7 @@ const Page = () => {
               </Button>
             </Grid>
             <Grid
-              sm={5}
+              size={{ xs: 12, sm: 5 }}
               sx={{
                 display: {
                   xs: 'none',

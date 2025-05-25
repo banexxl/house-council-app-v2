@@ -10,12 +10,12 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
-import Timeline from '@mui/lab/Timeline';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import TimelineDot from '@mui/lab/TimelineDot';
-import TimelineItem from '@mui/lab/TimelineItem';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
+// import Timeline from '@mui/lab/Timeline';
+// import TimelineConnector from '@mui/lab/TimelineConnector';
+// import TimelineContent from '@mui/lab/TimelineContent';
+// import TimelineDot from '@mui/lab/TimelineDot';
+// import TimelineItem from '@mui/lab/TimelineItem';
+// import TimelineSeparator from '@mui/lab/TimelineSeparator';
 
 import type { OrderLog } from 'src/types/order';
 
@@ -30,7 +30,7 @@ export const OrderLogs: FC<OrderLogsProps> = (props) => {
     <Card {...other}>
       <CardHeader title="Logs" />
       <CardContent sx={{ pt: 0 }}>
-        <Timeline
+        {/* <Timeline
           sx={{
             m: 0,
             p: 0,
@@ -77,7 +77,7 @@ export const OrderLogs: FC<OrderLogsProps> = (props) => {
               </TimelineItem>
             );
           })}
-        </Timeline>
+        </Timeline> */}
         <Box
           sx={{
             display: 'flex',

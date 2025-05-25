@@ -6,7 +6,7 @@ import Upload01Icon from '@untitled-ui/icons-react/build/esm/Upload01';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -209,7 +209,7 @@ const Page = () => {
               lg: 4,
             }}
           >
-            <Grid xs={12}>
+            <Grid size={12}>
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -238,8 +238,7 @@ const Page = () => {
               </Stack>
             </Grid>
             <Grid
-              xs={12}
-              md={8}
+              size={{ xs: 12, lg: 8 }}
             >
               <Stack
                 spacing={{
@@ -270,8 +269,7 @@ const Page = () => {
               </Stack>
             </Grid>
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <StorageStats />
             </Grid>

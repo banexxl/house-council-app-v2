@@ -4,7 +4,7 @@ import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -43,7 +43,7 @@ const Page = () => {
               lg: 4,
             }}
           >
-            <Grid xs={12}>
+            <Grid size={12}>
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -72,32 +72,27 @@ const Page = () => {
               </Stack>
             </Grid>
             <Grid
-              xs={12}
-              md={3}
+              size={{ xs: 12, md: 3 }}
             >
               <LogisticsRouteVehicles amount={38} />
             </Grid>
             <Grid
-              xs={12}
-              md={3}
+              size={{ xs: 12, md: 3 }}
             >
               <LogisticsErrorVehicles amount={2} />
             </Grid>
             <Grid
-              xs={12}
-              md={3}
+              size={{ xs: 12, md: 3 }}
             >
               <LogisticsDeviatedVehicles amount={1} />
             </Grid>
             <Grid
-              xs={12}
-              md={3}
+              size={{ xs: 12, md: 3 }}
             >
               <LogisticsLateVehicles amount={2} />
             </Grid>
             <Grid
-              xs={12}
-              lg={6}
+              size={{ xs: 12, lg: 6 }}
             >
               <LogisticsVehiclesOverview
                 chartSeries={[38, 50, 12]}
@@ -105,8 +100,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              lg={6}
+              size={{ xs: 12, lg: 6 }}
             >
               <LogisticsVehiclesCondition
                 bad={12}
@@ -114,7 +108,7 @@ const Page = () => {
                 good={24}
               />
             </Grid>
-            <Grid xs={12}>
+            <Grid size={12}>
               <LogisticsVehiclesList
                 vehicles={[
                   {

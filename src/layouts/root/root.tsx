@@ -6,8 +6,8 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import 'src/locales/i18n';
 
@@ -54,64 +54,64 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   return (
     <NextAppDirEmotionCacheProvider options={{ key: 'css' }}>
       <ReduxProvider store={store}>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <SettingsProvider
-            onReset={handleSettingsReset}
-            onUpdate={handleSettingsUpdate}
-            settings={initialSettings}
-          >
+        {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+        <SettingsProvider
+          onReset={handleSettingsReset}
+          onUpdate={handleSettingsUpdate}
+          settings={initialSettings}
+        >
 
-            <SettingsConsumer>
-              {(settings) => {
-                const theme = createTheme({
-                  colorPreset: settings.colorPreset,
-                  contrast: settings.contrast,
-                  direction: settings.direction,
-                  paletteMode: settings.paletteMode,
-                  responsiveFontSizes: settings.responsiveFontSizes,
-                });
+          <SettingsConsumer>
+            {(settings) => {
+              const theme = createTheme({
+                colorPreset: settings.colorPreset,
+                contrast: settings.contrast,
+                direction: settings.direction,
+                paletteMode: settings.paletteMode,
+                responsiveFontSizes: settings.responsiveFontSizes,
+              });
 
-                return (
-                  <ThemeProvider theme={theme}>
-                    <Head>
-                      <meta
-                        name="color-scheme"
-                        content={settings.paletteMode}
-                      />
-                      <meta
-                        name="theme-color"
-                        content={theme.palette.neutral[900]}
-                      />
-                    </Head>
-                    <RTL direction={settings.direction}>
-                      <CssBaseline />
-                      {children}
-                      <SettingsButton onClick={settings.handleDrawerOpen} />
-                      <SettingsDrawer
-                        canReset={settings.isCustom}
-                        onClose={settings.handleDrawerClose}
-                        onReset={settings.handleReset}
-                        onUpdate={settings.handleUpdate}
-                        open={settings.openDrawer}
-                        values={{
-                          colorPreset: settings.colorPreset,
-                          contrast: settings.contrast,
-                          direction: settings.direction,
-                          paletteMode: settings.paletteMode,
-                          responsiveFontSizes: settings.responsiveFontSizes,
-                          stretch: settings.stretch,
-                          layout: settings.layout,
-                          navColor: settings.navColor,
-                        }}
-                      />
-                      <Toaster />
-                    </RTL>
-                  </ThemeProvider>
-                );
-              }}
-            </SettingsConsumer>
-          </SettingsProvider>
-        </LocalizationProvider>
+              return (
+                <ThemeProvider theme={theme}>
+                  <Head>
+                    <meta
+                      name="color-scheme"
+                      content={settings.paletteMode}
+                    />
+                    <meta
+                      name="theme-color"
+                      content={theme.palette.neutral[900]}
+                    />
+                  </Head>
+                  <RTL direction={settings.direction}>
+                    <CssBaseline />
+                    {children}
+                    <SettingsButton onClick={settings.handleDrawerOpen} />
+                    <SettingsDrawer
+                      canReset={settings.isCustom}
+                      onClose={settings.handleDrawerClose}
+                      onReset={settings.handleReset}
+                      onUpdate={settings.handleUpdate}
+                      open={settings.openDrawer}
+                      values={{
+                        colorPreset: settings.colorPreset,
+                        contrast: settings.contrast,
+                        direction: settings.direction,
+                        paletteMode: settings.paletteMode,
+                        responsiveFontSizes: settings.responsiveFontSizes,
+                        stretch: settings.stretch,
+                        layout: settings.layout,
+                        navColor: settings.navColor,
+                      }}
+                    />
+                    <Toaster />
+                  </RTL>
+                </ThemeProvider>
+              );
+            }}
+          </SettingsConsumer>
+        </SettingsProvider>
+        {/* </LocalizationProvider> */}
       </ReduxProvider>
 
     </NextAppDirEmotionCacheProvider>

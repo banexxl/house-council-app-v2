@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import TextField from '@mui/material/TextField';
 
 export const Form11: FC = () => (
@@ -14,8 +14,7 @@ export const Form11: FC = () => (
         spacing={3}
       >
         <Grid
-          xs={12}
-          md={6}
+          size={{ xs: 12, md: 6 }}
         >
           <TextField
             fullWidth
@@ -25,8 +24,7 @@ export const Form11: FC = () => (
           />
         </Grid>
         <Grid
-          xs={12}
-          md={6}
+          size={{ xs: 12, md: 6 }}
         >
           <TextField
             fullWidth
@@ -35,7 +33,7 @@ export const Form11: FC = () => (
             type="number"
           />
         </Grid>
-        <Grid xs={12}>
+        <Grid size={12}>
           <div>
             <FormControlLabel
               control={<Checkbox name="isTaxable" />}

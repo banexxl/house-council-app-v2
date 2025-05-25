@@ -13,9 +13,8 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 
-import { invoicesApi } from 'src/api/invoices';
+// import { invoicesApi } from 'src/api/invoices';
 import { Seo } from 'src/components/seo';
-;
 
 import { InvoiceListContainer } from 'src/sections/dashboard/invoice/invoice-list-container';
 import { InvoiceListSidebar } from 'src/sections/dashboard/invoice/invoice-list-sidebar';
@@ -87,46 +86,46 @@ interface InvoicesStoreState {
   invoicesCount: number;
 }
 
-const useInvoicesStore = (searchState: InvoicesSearchState) => {
+// const useInvoicesStore = (searchState: InvoicesSearchState) => {
 
-  const [state, setState] = useState<InvoicesStoreState>({
-    invoices: [],
-    invoicesCount: 0,
-  });
+//   const [state, setState] = useState<InvoicesStoreState>({
+//     invoices: [],
+//     invoicesCount: 0,
+//   });
 
-  const handleInvoicesGet = useCallback(async () => {
-    try {
-      const response = await invoicesApi.getInvoices(searchState);
+//   const handleInvoicesGet = useCallback(async () => {
+//     try {
+//       const response = await invoicesApi.getInvoices(searchState);
 
 
-      setState({
-        invoices: response.data,
-        invoicesCount: response.count,
-      });
+//       setState({
+//         invoices: response.data,
+//         invoicesCount: response.count,
+//       });
 
-    } catch (err) {
-      console.error(err);
-    }
-  }, [searchState]);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }, [searchState]);
 
-  useEffect(
-    () => {
-      handleInvoicesGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchState]
-  );
+//   useEffect(
+//     () => {
+//       handleInvoicesGet();
+//     },
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//     [searchState]
+//   );
 
-  return {
-    ...state,
-  };
-};
+//   return {
+//     ...state,
+//   };
+// };
 
 const Page = () => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
   const invoicesSearch = useInvoicesSearch();
-  const invoicesStore = useInvoicesStore(invoicesSearch.state);
+  // const invoicesStore = useInvoicesStore(invoicesSearch.state);
   const [group, setGroup] = useState<boolean>(true);
   const [openSidebar, setOpenSidebar] = useState<boolean>(lgUp);
 
@@ -217,7 +216,7 @@ const Page = () => {
                 </Stack>
               </Stack>
               <InvoiceListSummary />
-              <InvoiceListTable
+              {/* <InvoiceListTable
                 count={invoicesStore.invoicesCount}
                 group={group}
                 items={invoicesStore.invoices}
@@ -225,7 +224,7 @@ const Page = () => {
                 onRowsPerPageChange={invoicesSearch.handleRowsPerPageChange}
                 page={invoicesSearch.state.page}
                 rowsPerPage={invoicesSearch.state.rowsPerPage}
-              />
+              /> */}
             </Stack>
           </InvoiceListContainer>
         </Box>

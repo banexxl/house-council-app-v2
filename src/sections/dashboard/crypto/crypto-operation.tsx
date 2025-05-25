@@ -45,7 +45,7 @@ export const CryptoOperation: FC<CryptoOperationProps> = (props) => {
   }, [op]);
 
   return (
-    <Card {...props}>
+    <Card {...props} sx={{}}>
       <CardHeader
         title="Operation"
         action={

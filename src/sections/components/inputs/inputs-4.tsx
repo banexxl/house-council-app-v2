@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import TextField from '@mui/material/TextField';
 
 export const Inputs4: FC = () => (
@@ -11,8 +11,7 @@ export const Inputs4: FC = () => (
         spacing={4}
       >
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <TextField
             fullWidth
@@ -20,8 +19,7 @@ export const Inputs4: FC = () => (
           />
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <TextField
             fullWidth
@@ -30,15 +28,14 @@ export const Inputs4: FC = () => (
             type="email"
           />
         </Grid>
-        <Grid xs={12}>
+        <Grid size={12}>
           <TextField
             fullWidth
             label="Phone number"
           />
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <TextField
             fullWidth
@@ -46,8 +43,7 @@ export const Inputs4: FC = () => (
           />
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
+          size={{ xs: 12, sm: 6 }}
         >
           <TextField
             fullWidth

@@ -6,7 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -61,8 +61,7 @@ export const GridList4: FC = () => (
       {applicants.map((applicant) => (
         <Grid
           key={applicant.id}
-          md={4}
-          xs={12}
+          size={{ xs: 12, md: 4 }}
         >
           <Card sx={{ height: '100%' }}>
             <CardMedia

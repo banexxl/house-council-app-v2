@@ -4,7 +4,7 @@ import Markdown from 'react-markdown';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import Link from '@mui/material/Link';
@@ -144,8 +144,7 @@ export const CompanyOverview: FC<CompanyOverviewProps> = (props) => {
           {members.map((member) => (
             <Grid
               key={member.id}
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <CompanyMember member={member} />
             </Grid>

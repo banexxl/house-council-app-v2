@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
@@ -20,8 +20,7 @@ export const PostNewsletter: FC = () => {
         spacing={3}
       >
         <Grid
-          xs={12}
-          md={6}
+          size={{ xs: 12, md: 6 }}
           sx={{
             order: {
               xs: 1,
@@ -57,8 +56,7 @@ export const PostNewsletter: FC = () => {
           </Button>
         </Grid>
         <Grid
-          xs={12}
-          md={6}
+          size={{ xs: 12, md: 6 }}
           sx={{
             display: 'flex',
             justifyContent: 'center',

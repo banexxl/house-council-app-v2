@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
@@ -15,15 +15,12 @@ export const AccountNotificationsSettings: FC = () => (
         spacing={3}
       >
         <Grid
-          xs={12}
-          md={4}
+          size={{ xs: 12, md: 4 }}
         >
           <Typography variant="h6">Email</Typography>
         </Grid>
         <Grid
-          xs={12}
-          sm={12}
-          md={8}
+          size={{ xs: 12, md: 8 }}
         >
           <Stack
             divider={<Divider />}
@@ -72,15 +69,12 @@ export const AccountNotificationsSettings: FC = () => (
         spacing={3}
       >
         <Grid
-          xs={12}
-          md={4}
+          size={{ xs: 12, md: 4 }}
         >
           <Typography variant="h6">Phone notifications</Typography>
         </Grid>
         <Grid
-          xs={12}
-          sm={12}
-          md={8}
+          size={{ xs: 12, md: 8 }}
         >
           <Stack
             divider={<Divider />}

@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -30,9 +30,7 @@ export const QuickStats4: FC = () => (
         }}
       >
         <Grid
-          xs={12}
-          sm={6}
-          md={3}
+          size={{ xs: 12, md: 3, sm: 6 }}
         >
           <Stack
             alignItems="center"
@@ -57,9 +55,7 @@ export const QuickStats4: FC = () => (
           </Stack>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
-          md={3}
+          size={{ xs: 12, md: 3, sm: 6 }}
         >
           <Stack
             alignItems="center"
@@ -84,9 +80,7 @@ export const QuickStats4: FC = () => (
           </Stack>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
-          md={3}
+          size={{ xs: 12, md: 3, sm: 6 }}
         >
           <Stack
             alignItems="center"
@@ -111,9 +105,7 @@ export const QuickStats4: FC = () => (
           </Stack>
         </Grid>
         <Grid
-          xs={12}
-          sm={6}
-          md={3}
+          size={{ xs: 12, md: 3, sm: 6 }}
         >
           <Stack
             alignItems="center"

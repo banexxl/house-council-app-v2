@@ -10,7 +10,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -93,8 +93,7 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                 return (
                   <Grid
                     key={plan.id}
-                    xs={12}
-                    sm={4}
+                    size={{ xs: 12, sm: 4 }}
                   >
                     <Card
                       onClick={() => setSelectedPlan(plan.id)}

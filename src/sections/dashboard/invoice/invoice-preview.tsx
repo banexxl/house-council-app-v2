@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import numeral from 'numeral';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -75,8 +75,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           justifyContent="space-between"
         >
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography variant="body2">
               Street King William, 123
@@ -87,8 +86,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
             </Typography>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography variant="body2">
               Company No. 4675933
@@ -98,8 +96,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
             </Typography>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography
               align="right"
@@ -118,8 +115,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           justifyContent="space-between"
         >
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography
               gutterBottom
@@ -130,8 +126,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
             <Typography variant="body2">{dueDate}</Typography>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography
               gutterBottom
@@ -142,8 +137,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
             <Typography variant="body2">{issueDate}</Typography>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography
               gutterBottom

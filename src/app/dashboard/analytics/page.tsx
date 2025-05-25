@@ -5,7 +5,6 @@ import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -18,6 +17,7 @@ import { AnalyticsMostVisited } from 'src/sections/dashboard/analytics/analytics
 import { AnalyticsSocialSources } from 'src/sections/dashboard/analytics/analytics-social-sources';
 import { AnalyticsTrafficSources } from 'src/sections/dashboard/analytics/analytics-traffic-sources';
 import { AnalyticsVisitsByCountry } from 'src/sections/dashboard/analytics/analytics-visits-by-country';
+import { Grid } from '@mui/material';
 
 const Page = () => {
   const settings = useSettings();
@@ -42,7 +42,7 @@ const Page = () => {
               lg: 4,
             }}
           >
-            <Grid xs={12}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -70,8 +70,7 @@ const Page = () => {
               </Stack>
             </Grid>
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, md: 4 }}
             >
               <AnalyticsStats
                 action={
@@ -97,8 +96,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, md: 4 }}
             >
               <AnalyticsStats
                 action={
@@ -124,8 +122,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, md: 4 }}
             >
               <AnalyticsStats
                 action={
@@ -151,8 +148,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              lg={8}
+              size={{ xs: 12, lg: 4 }}
             >
               <AnalyticsTrafficSources
                 chartSeries={[
@@ -168,8 +164,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              lg={4}
+              size={{ xs: 12, lg: 8 }}
             >
               <AnalyticsVisitsByCountry
                 visits={[
@@ -213,8 +208,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              lg={8}
+              size={{ xs: 12, lg: 4 }}
             >
               <AnalyticsMostVisited
                 pages={[
@@ -258,8 +252,7 @@ const Page = () => {
               />
             </Grid>
             <Grid
-              xs={12}
-              lg={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <AnalyticsSocialSources
                 chartSeries={[10, 10, 20]}
@@ -268,7 +261,7 @@ const Page = () => {
             </Grid>
           </Grid>
         </Container>
-      </Box>
+      </Box >
     </>
   );
 };

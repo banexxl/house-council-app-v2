@@ -7,7 +7,7 @@ import CardHeader from '@mui/material/CardHeader';
 import Checkbox from '@mui/material/Checkbox';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Typography from '@mui/material/Typography';
 
 export const Form3: FC = () => (
@@ -21,10 +21,9 @@ export const Form3: FC = () => (
           spacing={6}
           wrap="wrap"
         >
+
           <Grid
-            xs={12}
-            sm={6}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography
               gutterBottom
@@ -75,9 +74,7 @@ export const Form3: FC = () => (
             </div>
           </Grid>
           <Grid
-            xs={12}
-            sm={6}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Typography
               gutterBottom

@@ -9,7 +9,7 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
@@ -67,8 +67,7 @@ export const GridList3: FC = () => {
           return (
             <Grid
               key={file.id}
-              md={4}
-              xs={12}
+              size={{ xs: 12, sm: 6, md: 4 }}
             >
               <Card>
                 {isImage ? (
@@ -139,6 +138,6 @@ export const GridList3: FC = () => {
           );
         })}
       </Grid>
-    </Box>
+    </Box >
   );
 };

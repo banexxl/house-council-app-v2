@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
@@ -128,14 +128,12 @@ const Page = () => {
                   spacing={3}
                 >
                   <Grid
-                    xs={12}
-                    md={4}
+                    size={{ xs: 12, md: 4 }}
                   >
                     <Typography variant="h6">Basic details</Typography>
                   </Grid>
                   <Grid
-                    xs={12}
-                    md={8}
+                    size={{ xs: 12, md: 8 }}
                   >
                     <Stack spacing={3}>
                       <TextField
@@ -159,14 +157,12 @@ const Page = () => {
                   spacing={3}
                 >
                   <Grid
-                    xs={12}
-                    md={4}
+                    size={{ xs: 12, md: 4 }}
                   >
                     <Typography variant="h6">Post cover</Typography>
                   </Grid>
                   <Grid
-                    xs={12}
-                    md={8}
+                    size={{ xs: 12, md: 8 }}
                   >
                     <Stack spacing={3}>
                       {cover ? (
@@ -240,14 +236,12 @@ const Page = () => {
                   spacing={3}
                 >
                   <Grid
-                    xs={12}
-                    md={4}
+                    size={{ xs: 12, md: 4 }}
                   >
                     <Typography variant="h6">Content</Typography>
                   </Grid>
                   <Grid
-                    xs={12}
-                    md={8}
+                    size={{ xs: 12, md: 8 }}
                   >
                     <QuillEditor
                       placeholder="Write something"
@@ -263,14 +257,12 @@ const Page = () => {
                   spacing={3}
                 >
                   <Grid
-                    xs={12}
-                    md={4}
+                    size={{ xs: 12, md: 4 }}
                   >
                     <Typography variant="h6">Meta</Typography>
                   </Grid>
                   <Grid
-                    xs={12}
-                    lg={8}
+                    size={{ xs: 12, lg: 8 }}
                   >
                     <Stack spacing={3}>
                       <TextField

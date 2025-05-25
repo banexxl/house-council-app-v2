@@ -4,7 +4,7 @@ import FolderIcon from '@untitled-ui/icons-react/build/esm/Folder';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -24,9 +24,7 @@ export const QuickStats2: FC = () => (
       spacing={3}
     >
       <Grid
-        xs={12}
-        md={6}
-        lg={3}
+        size={{ xs: 12, md: 6, lg: 3 }}
       >
         <Card>
           <Stack
@@ -70,9 +68,7 @@ export const QuickStats2: FC = () => (
         </Card>
       </Grid>
       <Grid
-        xs={12}
-        md={6}
-        lg={3}
+        size={{ xs: 12, md: 6, lg: 3 }}
       >
         <Card>
           <Stack
@@ -116,9 +112,7 @@ export const QuickStats2: FC = () => (
         </Card>
       </Grid>
       <Grid
-        xs={12}
-        md={6}
-        lg={3}
+        size={{ xs: 12, md: 6, lg: 3 }}
       >
         <Card>
           <Stack
@@ -148,9 +142,7 @@ export const QuickStats2: FC = () => (
         </Card>
       </Grid>
       <Grid
-        xs={12}
-        md={6}
-        lg={3}
+        size={{ xs: 12, md: 6, }}
       >
         <Card
           sx={{

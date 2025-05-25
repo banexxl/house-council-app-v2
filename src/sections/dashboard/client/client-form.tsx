@@ -7,7 +7,7 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Divider from '@mui/material/Divider'
-import Grid from '@mui/material/Unstable_Grid2'
+import { Grid } from '@mui/material';
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
@@ -23,7 +23,6 @@ import { createOrUpdateClientAction } from 'src/app/actions/client-actions/clien
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname, notFound } from 'next/navigation'
-import { LoadingButton } from '@mui/lab'
 import { hashPassword } from 'src/utils/bcrypt'
 import { BaseEntity } from 'src/types/base-entity'
 
@@ -120,7 +119,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
           />
           <Divider sx={{ my: 3 }} >{t('clients.clientFormSettings')}</Divider>
           <Grid container spacing={3} sx={{ mb: 2 }}>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 select
                 fullWidth
@@ -139,7 +140,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 ))}
               </TextField>
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 select
                 fullWidth
@@ -161,7 +164,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 ))}
               </TextField>
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 select
                 fullWidth
@@ -183,7 +188,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
           </Grid>
           <Divider sx={{ my: 3 }} >{t('clients.clientFormBasicInfo')}</Divider>
           <Grid container spacing={3}>
-            <Grid xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label={t('clients.clientName')}
@@ -196,7 +201,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 disabled={formik.isSubmitting}
               />
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 fullWidth
                 label={t('clients.clientContactPerson')}
@@ -209,7 +216,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 disabled={formik.isSubmitting}
               />
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <LocationAutocomplete
                 label={t('clients.clientAddress1')}
                 onAddressSelected={(e: any) => {
@@ -219,7 +228,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 initialValue={initialValues?.id == '' ? '' : initialValues?.address_1}
               />
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <LocationAutocomplete
                 label={t('clients.clientAddress2')}
                 onAddressSelected={(e: any) => {
@@ -230,7 +241,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
               />
 
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 fullWidth
                 label={t('clients.clientEmail')}
@@ -243,7 +256,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 disabled={formik.isSubmitting}
               />
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 fullWidth
                 label={t('clients.clientPassword')}
@@ -258,7 +273,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
               />
             </Grid>
 
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 fullWidth
                 label={t('clients.clientPhone')}
@@ -271,7 +288,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 disabled={formik.isSubmitting}
               />
             </Grid>
-            <Grid xs={12} md={6}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+            >
               <TextField
                 fullWidth
                 label={t('clients.clientMobilePhone')}
@@ -342,14 +361,14 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
           spacing={3}
           sx={{ p: 3 }}
         >
-          <LoadingButton
+          <Button
             disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
             type="submit"
             variant="contained"
             loading={formik.isSubmitting}
           >
             {t('clients.clientSave')}
-          </LoadingButton>
+          </Button>
           <Button
             color="inherit"
             component={RouterLink}

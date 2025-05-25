@@ -12,7 +12,7 @@ import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { LoadingButton } from '@mui/lab';
+
 import { useState } from 'react';
 
 export default function NotFound() {
@@ -73,7 +73,7 @@ export default function NotFound() {
               mt: 6,
             }}
           >
-            <LoadingButton
+            <Button
               onClick={() => {
                 router.push(paths.index)
                 setLoading(true)
@@ -81,7 +81,7 @@ export default function NotFound() {
               loading={loading}
             >
               {t('common.btnBackHome')}
-            </LoadingButton>
+            </Button>
           </Box>
         </Container>
       </Box>

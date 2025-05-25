@@ -11,7 +11,7 @@ import { insertLocationAction } from 'src/app/actions/location-actions/location-
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
 import Marker from './map-marker';
-import { LoadingButton } from '@mui/lab';
+
 import SaveIcon from '@mui/icons-material/Save';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 
@@ -259,7 +259,7 @@ const LocationCreateForm = () => {
                                    >
                                         {t('common.btnClear')}
                                    </Button>
-                                   <LoadingButton
+                                   <Button
                                         variant="contained"
                                         color="primary"
                                         type="submit"
@@ -269,7 +269,7 @@ const LocationCreateForm = () => {
                                         loadingPosition='end'
                                    >
                                         {t('common.btnSave')}
-                                   </LoadingButton>
+                                   </Button>
                               </Box>
                          </Stack>
                     </form>

@@ -58,6 +58,9 @@ export const SeverityPill: FC<SeverityPillProps> = (props) => {
     <SeverityPillRoot
       ownerState={ownerState}
       {...other}
+      sx={{
+        color: (theme) => theme.palette[ownerState.color].dark,
+      }}
     >
       {children}
     </SeverityPillRoot>

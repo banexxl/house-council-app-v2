@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Typography from '@mui/material/Typography';
@@ -14,8 +14,7 @@ export const Form7: FC = () => (
         spacing={3}
       >
         <Grid
-          xs={12}
-          lg={6}
+          size={{ xs: 12, lg: 6 }}
         >
           <Typography
             sx={{ mb: 1 }}
@@ -30,8 +29,7 @@ export const Form7: FC = () => (
           />
         </Grid>
         <Grid
-          xs={12}
-          lg={6}
+          size={{ xs: 12, lg: 6 }}
         >
           <Typography
             sx={{ mb: 1 }}
@@ -45,8 +43,7 @@ export const Form7: FC = () => (
           />
         </Grid>
         <Grid
-          xs={12}
-          lg={6}
+          size={{ xs: 12, lg: 6 }}
         >
           <Typography
             sx={{ mb: 1 }}
@@ -61,8 +58,7 @@ export const Form7: FC = () => (
           />
         </Grid>
         <Grid
-          xs={12}
-          lg={6}
+          size={{ xs: 12, lg: 6 }}
         >
           <Typography
             sx={{ mb: 1 }}
@@ -77,7 +73,7 @@ export const Form7: FC = () => (
             type="tel"
           />
         </Grid>
-        <Grid xs={12}>
+        <Grid size={12}>
           <Typography
             sx={{ mb: 1 }}
             variant="subtitle2"

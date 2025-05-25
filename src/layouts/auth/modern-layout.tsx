@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-
+import Image from 'next/image';
 import { Logo } from 'src/components/logo';
 import { LogoSamsung } from 'src/components/logos/logo-samsung';
 import { LogoVisma } from 'src/components/logos/logo-visma';
@@ -13,18 +13,21 @@ import { LogoAccenture } from 'src/components/logos/logo-accenture';
 import { LogoAtt } from 'src/components/logos/logo-att';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
+import { useTheme } from '@mui/material';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export const Layout: FC<LayoutProps> = (props) => {
+
   const { children } = props;
+
+  const theme = useTheme();
 
   return (
     <Box
       sx={{
-        backgroundColor: 'background.default',
         display: 'flex',
         flex: '1 1 auto',
         flexDirection: {
@@ -35,11 +38,9 @@ export const Layout: FC<LayoutProps> = (props) => {
     >
       <Box
         sx={{
+          position: 'relative',
           alignItems: 'center',
           backgroundColor: 'neutral.800',
-          backgroundImage: 'url("/assets/gradient-bg.svg")',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
           color: 'common.white',
           display: 'flex',
           flex: {
@@ -51,50 +52,54 @@ export const Layout: FC<LayoutProps> = (props) => {
             xs: 4,
             md: 8,
           },
+          overflow: 'hidden',
         }}
       >
-        <Box maxWidth="md">
-          <Typography
-            sx={{ mb: 1 }}
-            variant="h4"
-          >
-            Welcome to House Council App
-          </Typography>
-          <Typography
-            color="text.secondary"
-            sx={{ mb: 4 }}
-          >
-            A professional kit that comes with ready-to-use MUI components developed with one common
-            goal in mind, help you build faster & beautiful applications.
-          </Typography>
-          <Typography
-            variant="subtitle2"
-            sx={{ mb: 2 }}
-          >
-            Join 6,000+ forward-thinking companies:
-          </Typography>
-          <Stack
-            alignItems="center"
-            direction="row"
-            flexWrap="wrap"
-            gap={4}
-            sx={{
-              color: 'text.primary',
-              '& > *': {
-                color: 'neutral.400',
-                flex: '0 0 auto',
-              },
-            }}
-          >
-            <LogoSamsung />
-            <LogoVisma />
-            <LogoBolt />
-            <LogoAws />
-            <LogoAccenture />
-            <LogoAtt />
-          </Stack>
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+          }}
+        >
+          <Image
+            src="/assets/background-images/background-image-3.png"
+            alt="Background"
+            fill
+            priority
+            style={{ objectFit: 'cover', objectPosition: 'center' }}
+          />
         </Box>
+
+        <Box
+          sx={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1,
+            p: 2,
+            textAlign: 'center',
+          }}
+        >
+          <Typography sx={{ mb: 1 }} variant="h4" color={theme.palette.primary.darkest}>
+            Welcome to Nest Link App
+          </Typography>
+          <Typography
+            color={theme.palette.primary.darkest}
+            sx={{ mt: 4, width: '80%' }}
+          >
+            A modern platform that connects tenants and supervisors,
+            bringing transparency and simplicity to building management and maintenance.
+          </Typography>
+        </Box>
+
       </Box>
+
       <Box
         sx={{
           backgroundColor: 'background.paper',
@@ -139,8 +144,8 @@ export const Layout: FC<LayoutProps> = (props) => {
               </Box>
               <Box
                 sx={{
-                  color: 'text.primary',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  color: 'text.secondary',
+                  // fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 14,
                   fontWeight: 800,
                   letterSpacing: '0.3px',
@@ -150,7 +155,7 @@ export const Layout: FC<LayoutProps> = (props) => {
                   },
                 }}
               >
-                Devias Kit <span>PRO</span>
+                NestLink <span>APP</span>
               </Box>
             </Stack>
           </Box>

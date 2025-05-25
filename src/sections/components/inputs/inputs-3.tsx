@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
@@ -12,8 +12,7 @@ export const Inputs3: FC = () => (
       spacing={3}
     >
       <Grid
-        xs={12}
-        md={6}
+        size={{ xs: 12, md: 6 }}
       >
         <Stack spacing={1}>
           <Typography variant="subtitle2">Email Verified</Typography>
@@ -27,8 +26,7 @@ export const Inputs3: FC = () => (
         </Stack>
       </Grid>
       <Grid
-        xs={12}
-        md={6}
+        size={{ xs: 12, md: 6 }}
       >
         <Stack spacing={1}>
           <Typography variant="subtitle2">Email</Typography>

@@ -30,10 +30,8 @@ export const CompanyTeam: FC<CompanyTeamProps> = (props) => {
         >
           {members.map((member) => (
             <Grid
-              item
               key={member.id}
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <CompanyMember member={member} />
             </Grid>

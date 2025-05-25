@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -34,8 +34,7 @@ export const EcommerceStats: FC<EcommerceStatsProps> = (props) => {
           spacing={3}
         >
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack
               alignItems="center"
@@ -73,8 +72,7 @@ export const EcommerceStats: FC<EcommerceStatsProps> = (props) => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack
               alignItems="center"
@@ -112,8 +110,7 @@ export const EcommerceStats: FC<EcommerceStatsProps> = (props) => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack
               alignItems="center"

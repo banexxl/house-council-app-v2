@@ -8,7 +8,6 @@ import Lock01Icon from '@untitled-ui/icons-react/build/esm/Lock01';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
 import Link from '@mui/material/Link';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
@@ -21,6 +20,7 @@ import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
 import { CheckoutBilling } from 'src/sections/checkout/checkout-billing';
 import { CheckoutSummary } from 'src/sections/checkout/checkout-summary';
+import { Grid } from '@mui/material';
 
 interface Billing {
   address: string;
@@ -149,8 +149,7 @@ const Page = () => {
                 spacing={6}
               >
                 <Grid
-                  md={7}
-                  xs={12}
+                  size={{ md: 7, xs: 12 }}
                 >
                   <CheckoutBilling
                     billing={billing}
@@ -158,8 +157,7 @@ const Page = () => {
                   />
                 </Grid>
                 <Grid
-                  md={5}
-                  xs={12}
+                  size={{ md: 5, xs: 12 }}
                 >
                   <CheckoutSummary
                     onQuantityChange={handleQuantityChange}
@@ -203,7 +201,7 @@ const Page = () => {
             </Box>
           </form>
         </Container>
-      </Box>
+      </Box >
     </>
   );
 };

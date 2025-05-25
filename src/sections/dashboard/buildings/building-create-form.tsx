@@ -9,7 +9,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
@@ -139,14 +139,12 @@ export const BuildingCreateForm: FC = (props) => {
               spacing={3}
             >
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <Typography variant="h6">Basic details</Typography>
               </Grid>
               <Grid
-                xs={12}
-                md={8}
+                size={{ xs: 12, sm: 6, md: 8 }}
               >
                 <Stack spacing={3}>
                   <TextField
@@ -190,8 +188,7 @@ export const BuildingCreateForm: FC = (props) => {
               spacing={3}
             >
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <Stack spacing={1}>
                   <Typography variant="h6">Images</Typography>
@@ -204,8 +201,7 @@ export const BuildingCreateForm: FC = (props) => {
                 </Stack>
               </Grid>
               <Grid
-                xs={12}
-                md={8}
+                size={{ xs: 12, sm: 6, md: 8 }}
               >
                 <FileDropzone
                   accept={{ 'image/*': [] }}
@@ -226,14 +222,12 @@ export const BuildingCreateForm: FC = (props) => {
               spacing={3}
             >
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <Typography variant="h6">Pricing</Typography>
               </Grid>
               <Grid
-                xs={12}
-                md={8}
+                size={{ xs: 12, sm: 6, md: 8 }}
               >
                 <Stack spacing={3}>
                   <TextField
@@ -274,14 +268,12 @@ export const BuildingCreateForm: FC = (props) => {
               spacing={3}
             >
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <Typography variant="h6">Category</Typography>
               </Grid>
               <Grid
-                xs={12}
-                md={8}
+                size={{ xs: 12, sm: 6, md: 8 }}
               >
                 <Stack spacing={3}>
                   <TextField

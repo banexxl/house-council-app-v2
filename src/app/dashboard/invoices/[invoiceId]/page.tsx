@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { invoicesApi } from 'src/api/invoices';
+// import { invoicesApi } from 'src/api/invoices';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
@@ -26,42 +26,42 @@ import { InvoicePreview } from 'src/sections/dashboard/invoice/invoice-preview';
 import type { Invoice } from 'src/types/invoice';
 import { getInitials } from 'src/utils/get-initials';
 
-const useInvoice = (): Invoice | null => {
+// const useInvoice = (): Invoice | null => {
 
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
+//   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
-  const handleInvoiceGet = useCallback(async () => {
-    try {
-      const response = await invoicesApi.getInvoice();
+//   const handleInvoiceGet = useCallback(async () => {
+//     try {
+//       const response = await invoicesApi.getInvoice();
 
 
-      setInvoice(response);
+//       setInvoice(response);
 
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }, []);
 
-  useEffect(
-    () => {
-      handleInvoiceGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+//   useEffect(
+//     () => {
+//       handleInvoiceGet();
+//     },
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//     []
+//   );
 
-  return invoice;
-};
+//   return invoice;
+// };
 
 const Page = () => {
-  const invoice = useInvoice();
+  // const invoice = useInvoice();
   const dialog = useDialog();
 
 
 
-  if (!invoice) {
-    return null;
-  }
+  // if (!invoice) {
+  //   return null;
+  // }
 
   return (
     <>
@@ -113,15 +113,15 @@ const Page = () => {
                       width: 42,
                     }}
                   >
-                    {getInitials(invoice.client.name)}
+                    {/* {getInitials(invoice.client.name)} */}
                   </Avatar>
                   <div>
-                    <Typography variant="h4">{invoice.number}</Typography>
+                    {/* <Typography variant="h4">{invoice.number}</Typography> */}
                     <Typography
                       color="text.secondary"
                       variant="body2"
                     >
-                      {invoice.client.name}
+                      {/* {invoice.client.name} */}
                     </Typography>
                   </div>
                 </Stack>
@@ -136,7 +136,7 @@ const Page = () => {
                   >
                     Preview
                   </Button>
-                  <PDFDownloadLink
+                  {/* <PDFDownloadLink
                     document={<InvoicePdfDocument invoice={invoice} />}
                     fileName="invoice"
                     style={{ textDecoration: 'none' }}
@@ -147,19 +147,19 @@ const Page = () => {
                     >
                       Download
                     </Button>
-                  </PDFDownloadLink>
+                  </PDFDownloadLink> */}
                 </Stack>
               </Stack>
             </Stack>
-            <InvoicePreview invoice={invoice} />
+            {/* <InvoicePreview invoice={invoice} /> */}
           </Stack>
         </Container>
       </Box>
-      <InvoicePdfDialog
+      {/* <InvoicePdfDialog
         invoice={invoice}
         onClose={dialog.handleClose}
         open={dialog.open}
-      />
+      /> */}
     </>
   );
 };

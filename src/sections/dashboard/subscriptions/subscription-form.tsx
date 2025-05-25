@@ -6,7 +6,6 @@ import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, Input
 import SaveIcon from "@mui/icons-material/Save"
 import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
 import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions"
-import { LoadingButton } from "@mui/lab"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { notFound, useRouter } from "next/navigation"
@@ -132,7 +131,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           <form onSubmit={formik.handleSubmit}>
                <SubscriptionFormHeader subscriptionPlan={subscriptionPlanData} />
                <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                          <Stack spacing={3}>
 
                               <Card>
@@ -383,7 +382,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                          </Stack >
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                          <Card>
                               <CardContent>
                                    <Stack direction="row" spacing={5} alignItems="center">
@@ -450,7 +449,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  sx={{ width: 80 }} // smaller text box
                                                                  disabled={!isChecked}
                                                             />
-                                                            <LoadingButton
+                                                            <Button
                                                                  variant="contained"
                                                                  size="small"
                                                                  startIcon={<SaveIcon />}
@@ -458,7 +457,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                                  disabled={!isChecked || price === feature.price_per_month}
                                                             >
                                                                  Save
-                                                            </LoadingButton>
+                                                            </Button>
                                                        </Stack>
                                                   </Box>
 
@@ -469,8 +468,8 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                               </CardContent>
                          </Card>
                     </Grid>
-                    <Grid item xs={12} >
-                         <LoadingButton
+                    <Grid size={{ xs: 12, md: 6 }}>
+                         <Button
                               loading={formik.isSubmitting}
                               type="submit"
                               variant="contained"
@@ -478,7 +477,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                               disabled={!formik.isValid || formik.isSubmitting || !formik.dirty}
                          >
                               {t("common.btnSave")}
-                         </LoadingButton>
+                         </Button>
                     </Grid>
                </Grid >
           </form >

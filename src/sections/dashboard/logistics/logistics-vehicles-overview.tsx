@@ -4,7 +4,7 @@ import type { ApexOptions } from 'apexcharts';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Stack from '@mui/material/Stack';
@@ -78,8 +78,7 @@ export const LogisticsVehiclesOverview: FC<LogisticsVehiclesOverviewProps> = (pr
           spacing={3}
         >
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Chart
               height={300}
@@ -89,8 +88,7 @@ export const LogisticsVehiclesOverview: FC<LogisticsVehiclesOverviewProps> = (pr
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Stack spacing={3}>
               <div>

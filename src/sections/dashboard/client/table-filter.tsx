@@ -3,9 +3,9 @@
 import React, { FC, useState, useCallback, ChangeEvent } from 'react';
 import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
-import { Box, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
+import { Box, Button, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { LoadingButton } from '@mui/lab';
+
 
 export interface TabOption {
   label: string;
@@ -88,9 +88,9 @@ export const FilterBar = <T,>({
             <Tab key={tab.value} label={tab.label} value={tab.value} />
           ))}
         </Tabs>
-        <LoadingButton variant="contained" loading={loading} onClick={() => setLoading(true)} href={btnAddUrl}>
+        <Button variant="contained" loading={loading} onClick={() => setLoading(true)} href={btnAddUrl}>
           {t('common.btnAdd')}
-        </LoadingButton>
+        </Button>
       </Box>
       <Divider />
       <Stack

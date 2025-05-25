@@ -7,7 +7,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
@@ -45,8 +45,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
           spacing={3}
         >
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack spacing={1}>
               <Typography variant="h6">Invite members</Typography>
@@ -59,8 +58,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={8}
+            size={{ xs: 12, sm: 6, md: 8 }}
           >
             <Stack
               alignItems="center"

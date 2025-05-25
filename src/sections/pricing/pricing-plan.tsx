@@ -33,7 +33,6 @@ export const PricingPlan: FC<PricingPlanProps> = (props) => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        ...sx,
       }}
       {...other}
     >

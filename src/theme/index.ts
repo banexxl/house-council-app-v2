@@ -43,7 +43,7 @@ declare module '@mui/material/styles/createPalette' {
   }
 }
 
-export type ColorPreset = 'blue' | 'green' | 'indigo' | 'purple' | 'teal' | 'red';
+export type ColorPreset = 'orange' | 'blue' | 'green' | 'indigo' | 'purple' | 'teal' | 'red';
 
 export type Contrast = 'normal' | 'high';
 

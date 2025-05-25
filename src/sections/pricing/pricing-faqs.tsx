@@ -8,7 +8,7 @@ import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -99,8 +99,7 @@ export const PricingFaqs: FC = (props) => {
           spacing={4}
         >
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Stack spacing={2}>
               <Typography variant="h3">Everything you need to know</Typography>
@@ -113,8 +112,7 @@ export const PricingFaqs: FC = (props) => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Stack spacing={4}>
               {faqs.map((faq, index) => (

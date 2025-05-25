@@ -4,7 +4,6 @@ import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -17,6 +16,7 @@ import { AcademyFind } from 'src/sections/dashboard/academy/academy-find';
 import { CourseCard } from 'src/sections/dashboard/academy/course-card';
 import { CourseSearch } from 'src/sections/dashboard/academy/course-search';
 import type { Course } from 'src/types/academy';
+import { Grid } from '@mui/material';
 
 const useCourses = (): Course[] => {
   return [
@@ -92,7 +92,7 @@ const Page = () => {
                 lg: 4,
               }}
             >
-              <Grid xs={12}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <Typography variant="h6">Welcome back, Anika</Typography>
                 <Typography
                   color="text.secondary"
@@ -103,8 +103,7 @@ const Page = () => {
                 </Typography>
               </Grid>
               <Grid
-                xs={12}
-                md={9}
+                size={{ xs: 12, md: 6 }}
               >
                 <AcademyDailyProgress
                   timeCurrent={20}
@@ -112,12 +111,11 @@ const Page = () => {
                 />
               </Grid>
               <Grid
-                xs={12}
-                md={3}
+                size={{ xs: 12, md: 3 }}
               >
                 <AcademyFind />
               </Grid>
-              <Grid xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Stack
                   alignItems="flex-start"
                   direction="row"
@@ -140,8 +138,7 @@ const Page = () => {
               {courses.map((course) => (
                 <Grid
                   key={course.id}
-                  xs={12}
-                  md={4}
+                  size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                 >
                   <CourseCard course={course} />
                 </Grid>
@@ -149,7 +146,7 @@ const Page = () => {
             </Grid>
           </Container>
         </Box>
-      </Box>
+      </Box >
     </>
   );
 };

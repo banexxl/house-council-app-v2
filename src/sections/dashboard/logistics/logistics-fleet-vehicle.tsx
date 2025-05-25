@@ -11,12 +11,12 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
-import Timeline from '@mui/lab/Timeline';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import TimelineDot from '@mui/lab/TimelineDot';
-import TimelineItem, { timelineItemClasses } from '@mui/lab/TimelineItem';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
+// import Timeline from '@mui/lab/Timeline';
+// import TimelineConnector from '@mui/lab/TimelineConnector';
+// import TimelineContent from '@mui/lab/TimelineContent';
+// import TimelineDot from '@mui/lab/TimelineDot';
+// import TimelineItem, { timelineItemClasses } from '@mui/lab/TimelineItem';
+// import TimelineSeparator from '@mui/lab/TimelineSeparator';
 
 import type { Vehicle } from 'src/types/logistics';
 
@@ -93,7 +93,7 @@ export const LogisticsFleetVehicle: FC<LogisticsFleetVehicleProps> = (props) => 
               </Typography>
             </Stack>
           </Stack>
-          <Timeline
+          {/* <Timeline
             position="right"
             sx={{
               px: 3,
@@ -153,7 +153,7 @@ export const LogisticsFleetVehicle: FC<LogisticsFleetVehicleProps> = (props) => 
                 </div>
               </TimelineContent>
             </TimelineItem>
-          </Timeline>
+          </Timeline> */}
         </Box>
       </Collapse>
     </Stack>

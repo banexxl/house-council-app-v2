@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Rating from '@mui/material/Rating';
@@ -124,8 +124,7 @@ export const GridList2: FC = () => (
         return (
           <Grid
             key={project.id}
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Card>
               <Box sx={{ p: 2 }}>

@@ -10,7 +10,7 @@ import { backdropClasses } from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -111,8 +111,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
             spacing={3}
           >
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -122,14 +121,12 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               {item.author && <Avatar src={item.author.avatar || undefined} />}
             </Grid>
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -139,14 +136,12 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               <Typography variant="body2">{size}</Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -156,14 +151,12 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               <Typography variant="body2">{created_at}</Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -173,14 +166,12 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               <Typography variant="body2">{updated_at}</Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -190,8 +181,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               <ItemTags
                 tags={item.tags}
@@ -199,8 +189,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -210,8 +199,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               <ItemShared
                 isPublic={item.isPublic}
@@ -219,8 +207,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               />
             </Grid>
             <Grid
-              xs={12}
-              sm={4}
+              size={{ xs: 12, sm: 4 }}
             >
               <Typography
                 color="text.secondary"
@@ -230,8 +217,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </Typography>
             </Grid>
             <Grid
-              xs={12}
-              sm={8}
+              size={{ xs: 12, md: 3, sm: 8 }}
             >
               <IconButton onClick={() => onDelete?.(item.id)}>
                 <SvgIcon fontSize="small">

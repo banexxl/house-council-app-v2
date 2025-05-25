@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
@@ -67,8 +67,7 @@ const Page = () => {
               spacing={4}
             >
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <PricingPlan
                   cta="Start Free Trial"
@@ -86,8 +85,7 @@ const Page = () => {
                 />
               </Grid>
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <PricingPlan
                   cta="Start Free Trial"
@@ -111,8 +109,7 @@ const Page = () => {
                 />
               </Grid>
               <Grid
-                xs={12}
-                md={4}
+                size={{ xs: 12, md: 4 }}
               >
                 <PricingPlan
                   cta="Contact Us"

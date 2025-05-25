@@ -1,105 +1,105 @@
-import { endOfDay, startOfDay } from 'date-fns';
+// import { endOfDay, startOfDay } from 'date-fns';
 
-import type { Invoice } from 'src/types/invoice';
-import { applyPagination } from 'src/utils/apply-pagination';
-import { deepCopy } from 'src/utils/deep-copy';
+// import type { Invoice } from 'src/types/invoice';
+// import { applyPagination } from 'src/utils/apply-pagination';
+// import { deepCopy } from 'src/utils/deep-copy';
 
-import { invoice, invoices } from './data';
+// import { invoice, invoices } from './data';
 
-type GetInvoicesRequest = {
-  filters?: {
-    clients?: string[];
-    endDate?: Date;
-    query?: string;
-    startDate?: Date;
-    status?: string;
-  };
-  page?: number;
-  rowsPerPage?: number;
-};
+// type GetInvoicesRequest = {
+//   filters?: {
+//     clients?: string[];
+//     endDate?: Date;
+//     query?: string;
+//     startDate?: Date;
+//     status?: string;
+//   };
+//   page?: number;
+//   rowsPerPage?: number;
+// };
 
-type GetInvoicesResponse = Promise<{
-  data: Invoice[];
-  count: number;
-}>;
+// type GetInvoicesResponse = Promise<{
+//   data: Invoice[];
+//   count: number;
+// }>;
 
-type GetInvoiceRequest = object;
+// type GetInvoiceRequest = object;
 
-type GetInvoiceResponse = Promise<Invoice>;
+// type GetInvoiceResponse = Promise<Invoice>;
 
-class InvoicesApi {
-  getInvoices(request: GetInvoicesRequest = {}): GetInvoicesResponse {
-    const { filters, page, rowsPerPage } = request;
+// class InvoicesApi {
+//   getInvoices(request: GetInvoicesRequest = {}): GetInvoicesResponse {
+//     const { filters, page, rowsPerPage } = request;
 
-    let data = deepCopy(invoices) as Invoice[];
-    let count = data.length;
+//     let data = deepCopy(invoices) as Invoice[];
+//     let count = data.length;
 
-    if (typeof filters !== 'undefined') {
-      data = data.filter((invoice) => {
-        if (typeof filters.query !== 'undefined' && filters.query !== '') {
-          const matched = invoice.number.toLowerCase().includes(filters.query.toLowerCase());
+//     if (typeof filters !== 'undefined') {
+//       data = data.filter((invoice) => {
+//         if (typeof filters.query !== 'undefined' && filters.query !== '') {
+//           const matched = invoice.number.toLowerCase().includes(filters.query.toLowerCase());
 
-          if (!matched) {
-            return false;
-          }
-        }
+//           if (!matched) {
+//             return false;
+//           }
+//         }
 
-        if (typeof filters.startDate !== 'undefined') {
-          if (typeof invoice.issueDate === 'undefined') {
-            return false;
-          }
+//         if (typeof filters.startDate !== 'undefined') {
+//           if (typeof invoice.issueDate === 'undefined') {
+//             return false;
+//           }
 
-          const matched = endOfDay(invoice.issueDate) >= startOfDay(filters.startDate);
+//           const matched = endOfDay(invoice.issueDate) >= startOfDay(filters.startDate);
 
-          if (!matched) {
-            return false;
-          }
-        }
+//           if (!matched) {
+//             return false;
+//           }
+//         }
 
-        if (typeof filters.endDate !== 'undefined') {
-          if (typeof invoice.issueDate === 'undefined') {
-            return false;
-          }
+//         if (typeof filters.endDate !== 'undefined') {
+//           if (typeof invoice.issueDate === 'undefined') {
+//             return false;
+//           }
 
-          const matched = startOfDay(invoice.issueDate) <= endOfDay(filters.endDate);
+//           const matched = startOfDay(invoice.issueDate) <= endOfDay(filters.endDate);
 
-          if (!matched) {
-            return false;
-          }
-        }
+//           if (!matched) {
+//             return false;
+//           }
+//         }
 
-        if (typeof filters.clients !== 'undefined' && filters.clients.length > 0) {
-          const matched = filters.clients.includes(invoice.client.name);
+//         if (typeof filters.clients !== 'undefined' && filters.clients.length > 0) {
+//           const matched = filters.clients.includes(invoice.client.name);
 
-          if (!matched) {
-            return false;
-          }
-        }
+//           if (!matched) {
+//             return false;
+//           }
+//         }
 
-        if (typeof filters.status !== 'undefined') {
-          if (invoice.status !== filters.status) {
-            return false;
-          }
-        }
+//         if (typeof filters.status !== 'undefined') {
+//           if (invoice.status !== filters.status) {
+//             return false;
+//           }
+//         }
 
-        return true;
-      });
-      count = data.length;
-    }
+//         return true;
+//       });
+//       count = data.length;
+//     }
 
-    if (typeof page !== 'undefined' && typeof rowsPerPage !== 'undefined') {
-      data = applyPagination(data, page, rowsPerPage);
-    }
+//     if (typeof page !== 'undefined' && typeof rowsPerPage !== 'undefined') {
+//       data = applyPagination(data, page, rowsPerPage);
+//     }
 
-    return Promise.resolve({
-      data,
-      count,
-    });
-  }
+//     return Promise.resolve({
+//       data,
+//       count,
+//     });
+//   }
 
-  getInvoice(request?: GetInvoiceRequest): GetInvoiceResponse {
-    return Promise.resolve(deepCopy(invoice));
-  }
-}
+//   getInvoice(request?: GetInvoiceRequest): GetInvoiceResponse {
+//     return Promise.resolve(deepCopy(invoice));
+//   }
+// }
 
-export const invoicesApi = new InvoicesApi();
+// export const invoicesApi = new InvoicesApi();

@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
@@ -104,8 +104,7 @@ export const AnalyticsSocialSources: FC<AnalyticsSocialSourcesProps> = (props) =
           {chartSeries.map((item, index) => (
             <Grid
               key={index}
-              xs={12}
-              sm={6}
+              size={{ xs: 12, sm: 6 }}
             >
               <Stack
                 alignItems="center"

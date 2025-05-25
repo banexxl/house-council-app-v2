@@ -107,7 +107,7 @@ export const CryptoWallet: FC<CryptoWalletProps> = (props) => {
   const rateIcon = rate < 0 ? <ChevronDownIcon /> : <ChevronUpIcon />;
 
   return (
-    <Card sx={sx}>
+    <Card sx={{}}>
       <CardHeader
         action={
           <IconButton>

@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Input from '@mui/material/Input';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -58,8 +58,7 @@ export const SocialConnections: FC<SocialConnectionsProps> = (props) => {
           {connections.map((connection) => (
             <Grid
               key={connection.id}
-              xs={12}
-              md={6}
+              size={{ xs: 12, md: 6 }}
             >
               <SocialConnection connection={connection} />
             </Grid>

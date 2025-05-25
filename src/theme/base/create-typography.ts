@@ -1,6 +1,6 @@
-import type { TypographyOptions } from '@mui/material/styles/createTypography';
+import type { TypographyVariantsOptions } from '@mui/material/styles/createTypography';
 
-export const createTypography = (): TypographyOptions => {
+export const createTypography = (): TypographyVariantsOptions => {
   return {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',

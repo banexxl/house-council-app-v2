@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import type { ApexOptions } from 'apexcharts';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
@@ -115,8 +115,7 @@ export const QuickStats5: FC = () => {
           }}
         >
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack
               alignItems="center"
@@ -143,8 +142,7 @@ export const QuickStats5: FC = () => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack
               alignItems="center"
@@ -171,8 +169,7 @@ export const QuickStats5: FC = () => {
             </Stack>
           </Grid>
           <Grid
-            xs={12}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
           >
             <Stack
               alignItems="center"

@@ -93,7 +93,7 @@ export const createComponents = (): Components => {
             />
           </svg>
         ),
-        color: 'primary',
+        color: "primary",
         icon: (
           <svg
             fill="none"
@@ -182,6 +182,7 @@ export const createComponents = (): Components => {
       styleOverrides: {
         sizeSmall: {
           padding: 4,
+          color: muiTheme.palette.warning.main
         },
       },
     },

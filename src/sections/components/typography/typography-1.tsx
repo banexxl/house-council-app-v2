@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -8,8 +8,7 @@ export const Typography1: FC = () => (
   <Box sx={{ p: 3 }}>
     <Grid container>
       <Grid
-        xs={12}
-        md={6}
+        size={{ xs: 12, md: 6 }}
       >
         <Stack spacing={3}>
           <Typography variant="h1">H1</Typography>

@@ -6,7 +6,7 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -39,8 +39,7 @@ export const Form5: FC = () => (
           spacing={4}
         >
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <TextField
               fullWidth
@@ -49,8 +48,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <TextField
               fullWidth
@@ -62,8 +60,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <TextField
               fullWidth
@@ -72,8 +69,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <LocationAutocomplete
               getOptionLabel={(option: Option) => option.text}
@@ -89,8 +85,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <TextField
               fullWidth
@@ -99,8 +94,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <TextField
               fullWidth
@@ -109,8 +103,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Typography
               gutterBottom
@@ -130,8 +123,7 @@ export const Form5: FC = () => (
             />
           </Grid>
           <Grid
-            xs={12}
-            md={6}
+            size={{ xs: 12, md: 6 }}
           >
             <Typography
               gutterBottom

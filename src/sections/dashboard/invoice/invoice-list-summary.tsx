@@ -5,7 +5,7 @@ import ReceiptIcon from '@untitled-ui/icons-react/build/esm/Receipt';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -16,9 +16,7 @@ export const InvoiceListSummary: FC = () => (
       spacing={3}
     >
       <Grid
-        xs={12}
-        md={6}
-        lg={4}
+        size={{ xs: 12, md: 6, lg: 4 }}
       >
         <Card>
           <CardContent>
@@ -55,9 +53,7 @@ export const InvoiceListSummary: FC = () => (
         </Card>
       </Grid>
       <Grid
-        xs={12}
-        md={6}
-        lg={4}
+        size={{ xs: 12, md: 6, lg: 4 }}
       >
         <Card>
           <CardContent>
@@ -96,9 +92,7 @@ export const InvoiceListSummary: FC = () => (
         </Card>
       </Grid>
       <Grid
-        xs={12}
-        md={6}
-        lg={4}
+        size={{ xs: 12, md: 6, lg: 4 }}
       >
         <Card>
           <CardContent>

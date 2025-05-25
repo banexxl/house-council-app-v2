@@ -7,13 +7,13 @@ import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import Tabs from "@mui/material/Tabs"
 import Tab from "@mui/material/Tab"
-// import Divider from "@mui/material/Divider"
+import Divider from "@mui/material/Divider"
 import { useSessionUpdater } from "src/utils/client-session-update"
 import { PasswordForm } from "./password-form"
-// import toast from "react-hot-toast"
-// import { useRouter } from "next/navigation"
-// import { handleGoogleSignIn } from "../actions"
-// import { Box, CircularProgress } from "@mui/material"
+import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
+import { handleGoogleSignIn } from "../actions"
+import { Box, Button, CircularProgress } from "@mui/material"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -60,13 +60,13 @@ const GoogleMultiColorIcon = (props: any) => (
 
 const LoginForm = () => {
      const [authMethod, setAuthMethod] = useState<"password" | "google">("password")
-     // const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
-     // const router = useRouter()
+     const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
+     const router = useRouter()
      useSessionUpdater()
 
-     // const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google") => {
-     //      setAuthMethod(newValue)
-     // }
+     const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google") => {
+          setAuthMethod(newValue)
+     }
 
      return (
           <div style={{ height: "400px" }}>
@@ -76,13 +76,13 @@ const LoginForm = () => {
                          Choose your preferred login method
                     </Typography>
                </Stack>
-               {/* <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
+               <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
                     <Tab value="password" label="Password" />
                     <Tab value="google" label="Google" />
-               </Tabs> */}
+               </Tabs>
 
                {authMethod === "password" && <PasswordForm />}
-               {/* {authMethod === "google" && (
+               {authMethod === "google" && (
                     <Box>
                          <Typography
                               color="text.secondary"
@@ -135,7 +135,7 @@ const LoginForm = () => {
                               )}
                          </Button>
                     </Box>
-               )} */}
+               )}
           </div>
      )
 }

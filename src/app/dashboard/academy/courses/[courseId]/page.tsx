@@ -3,7 +3,6 @@
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -16,6 +15,7 @@ import { paths } from 'src/paths';
 import { CourseSummary } from 'src/sections/dashboard/academy/course-summary';
 import { CourseChapter } from 'src/sections/dashboard/academy/course-chapter';
 import type { Course } from 'src/types/academy';
+import { Grid } from '@mui/material';
 
 const useCourse = (): Course => {
   return {
@@ -96,8 +96,7 @@ const Page = () => {
             spacing={4}
           >
             <Grid
-              xs={12}
-              md={4}
+              size={{ xs: 12, md: 4 }}
             >
               <Stack spacing={3}>
                 <div>
@@ -124,8 +123,7 @@ const Page = () => {
               </Stack>
             </Grid>
             <Grid
-              xs={12}
-              md={8}
+              size={{ xs: 12, md: 8 }}
             >
               {chapter && <CourseChapter chapter={chapter} />}
             </Grid>

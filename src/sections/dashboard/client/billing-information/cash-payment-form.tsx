@@ -6,7 +6,7 @@ import * as Yup from "yup"
 import { TextField, Button, FormControl, MenuItem } from "@mui/material"
 import { Client } from "src/types/client"
 import { useTranslation } from "react-i18next"
-import { LoadingButton } from "@mui/lab"
+
 import { ClientBillingInformation, clientBillingInformationInitialValues } from "src/types/client-billing-information"
 
 interface CashPaymentFormProps {
@@ -64,7 +64,7 @@ const CashPaymentForm: React.FC<CashPaymentFormProps> = ({ clients, onSubmit, bi
                               helperText={touched.cash_amount && errors.cash_amount}
                               margin="normal"
                          />
-                         <LoadingButton
+                         <Button
                               type="submit"
                               variant="contained"
                               color="primary"
@@ -73,7 +73,7 @@ const CashPaymentForm: React.FC<CashPaymentFormProps> = ({ clients, onSubmit, bi
                               disabled={isValid ? false : true}
                          >
                               {t('common.btnSave')}
-                         </LoadingButton>
+                         </Button>
                     </Form>
                )}
           </Formik>

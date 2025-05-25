@@ -10,7 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -97,7 +97,7 @@ const Page = () => {
             container
             spacing={4}
           >
-            <Grid xs={12}>
+            <Grid size={{ xs: 12, lg: 4 }}>
               <div>
                 <Link
                   color="text.primary"
@@ -117,8 +117,7 @@ const Page = () => {
               </div>
             </Grid>
             <Grid
-              xs={12}
-              lg={8}
+              size={{ xs: 12, lg: 8 }}
             >
               <Card>
                 <CardHeader
@@ -178,8 +177,7 @@ const Page = () => {
               </Card>
             </Grid>
             <Grid
-              xs={12}
-              lg={4}
+              size={{ xs: 12, lg: 4 }}
             >
               <CompanySummary company={company} />
             </Grid>

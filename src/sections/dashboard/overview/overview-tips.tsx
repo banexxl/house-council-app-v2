@@ -30,7 +30,7 @@ export const OverviewTips: FC<OverviewTipsProps> = (props) => {
   const { sx, tips } = props;
 
   return (
-    <Card sx={sx}>
+    <Card sx={{}}>
       <CardContent
         sx={{
           display: 'flex',

@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 import { useDispatch } from 'src/store';
-import { thunks } from 'src/thunks/calendar';
+// import { thunks } from 'src/thunks/calendar';
 import type { CalendarEvent } from 'src/types/calendar';
 
 interface Values {
@@ -124,15 +124,15 @@ export const CalendarEventDialog: FC<CalendarEventDialogProps> = (props) => {
         };
 
         if (action === 'update') {
-          await dispatch(
-            thunks.updateEvent({
-              eventId: event!.id,
-              update: data,
-            })
-          );
+          // await dispatch(
+          //   thunks.updateEvent({
+          //     eventId: event!.id,
+          //     update: data,
+          //   })
+          // );
           toast.success('Event updated');
         } else {
-          await dispatch(thunks.createEvent(data));
+          // await dispatch(thunks.createEvent(data));
           toast.success('Event added');
         }
 
@@ -181,11 +181,11 @@ export const CalendarEventDialog: FC<CalendarEventDialogProps> = (props) => {
     }
 
     try {
-      await dispatch(
-        thunks.deleteEvent({
-          eventId: event.id!,
-        })
-      );
+      // await dispatch(
+      //   thunks.deleteEvent({
+      //     eventId: event.id!,
+      //   })
+      // );
       onDeleteComplete?.();
     } catch (err) {
       console.error(err);

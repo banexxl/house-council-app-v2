@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Grid } from '@mui/material';;
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
@@ -62,8 +62,7 @@ export const Form13: FC = () => (
               spacing={3}
             >
               <Grid
-                xs={12}
-                sm={6}
+                size={{ xs: 12, sm: 6 }}
               >
                 <TextField
                   fullWidth
@@ -72,8 +71,7 @@ export const Form13: FC = () => (
                 />
               </Grid>
               <Grid
-                xs={12}
-                sm={6}
+                size={{ xs: 12, sm: 6 }}
               >
                 <TextField
                   fullWidth
@@ -82,8 +80,7 @@ export const Form13: FC = () => (
                 />
               </Grid>
               <Grid
-                xs={12}
-                sm={6}
+                size={{ xs: 12, sm: 6 }}
               >
                 <TextField
                   fullWidth
@@ -92,8 +89,7 @@ export const Form13: FC = () => (
                 />
               </Grid>
               <Grid
-                xs={12}
-                sm={6}
+                size={{ xs: 12, sm: 6 }}
               >
                 <TextField
                   fullWidth
@@ -102,8 +98,7 @@ export const Form13: FC = () => (
                 />
               </Grid>
               <Grid
-                xs={12}
-                sm={3}
+                size={{ xs: 12, sm: 3 }}
               >
                 <TextField
                   fullWidth
@@ -112,8 +107,7 @@ export const Form13: FC = () => (
                 />
               </Grid>
               <Grid
-                xs={12}
-                sm={3}
+                size={{ xs: 12, sm: 3 }}
               >
                 <TextField
                   fullWidth
@@ -205,8 +199,7 @@ export const Form13: FC = () => (
                 spacing={3}
               >
                 <Grid
-                  xs={12}
-                  sm={6}
+                  size={{ xs: 12, sm: 6 }}
                 >
                   <TextField
                     fullWidth
@@ -215,12 +208,10 @@ export const Form13: FC = () => (
                   />
                 </Grid>
                 <Grid
-                  xs={12}
-                  sm={6}
+                  size={{ xs: 12, sm: 6 }}
                 />
                 <Grid
-                  xs={12}
-                  sm={6}
+                  size={{ xs: 12, sm: 6 }}
                 >
                   <TextField
                     fullWidth
@@ -229,12 +220,10 @@ export const Form13: FC = () => (
                   />
                 </Grid>
                 <Grid
-                  xs={12}
-                  sm={6}
+                  size={{ xs: 12, sm: 6 }}
                 />
                 <Grid
-                  xs={12}
-                  sm={3}
+                  size={{ xs: 12, sm: 3 }}
                 >
                   <TextField
                     fullWidth
@@ -244,8 +233,7 @@ export const Form13: FC = () => (
                   />
                 </Grid>
                 <Grid
-                  xs={12}
-                  sm={3}
+                  size={{ xs: 12, sm: 3 }}
                 >
                   <TextField
                     fullWidth

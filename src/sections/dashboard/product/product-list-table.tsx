@@ -77,7 +77,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
@@ -269,9 +269,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                             spacing={3}
                           >
                             <Grid
-                              item
-                              md={6}
-                              xs={12}
+                              size={{ xs: 12, md: 6 }}
                             >
                               <Typography variant="h6">Basic details</Typography>
                               <Divider sx={{ my: 2 }} />
@@ -280,9 +278,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                 spacing={3}
                               >
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={product.name}
@@ -292,9 +288,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   />
                                 </Grid>
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={product.sku}
@@ -305,9 +299,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   />
                                 </Grid>
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={product.category}
@@ -326,9 +318,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   </TextField>
                                 </Grid>
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={product.id}
@@ -341,9 +331,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                               </Grid>
                             </Grid>
                             <Grid
-                              item
-                              md={6}
-                              xs={12}
+                              size={{ xs: 12, md: 6 }}
                             >
                               <Typography variant="h6">Pricing and stocks</Typography>
                               <Divider sx={{ my: 2 }} />
@@ -352,9 +340,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                 spacing={3}
                               >
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={product.price}
@@ -372,9 +358,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   />
                                 </Grid>
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                 >
                                   <TextField
                                     defaultValue={product.price}
@@ -390,9 +374,7 @@ export const ProductListTable: FC<ProductListTableProps> = (props) => {
                                   />
                                 </Grid>
                                 <Grid
-                                  item
-                                  md={6}
-                                  xs={12}
+                                  size={{ xs: 12, md: 6 }}
                                   sx={{
                                     alignItems: 'center',
                                     display: 'flex',

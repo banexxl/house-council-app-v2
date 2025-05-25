@@ -5,15 +5,6 @@ import { supabase } from "src/libs/supabase/client";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { SubscriptionPlan } from "src/types/subscription-plan";
 
-/**
- * Creates a new subscription plan in the database.
- * @param {SubscriptionPlan} subscriptionPlan The subscription plan to create.
- * @returns {Promise<{createSubscriptionPlanSuccess: boolean, createdSubscriptionPlan?: SubscriptionPlan, createSubscriptionPlanError?: any}>}
- * A promise that resolves to an object with the following properties:
- * - `createSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was created successfully.
- * - `createdSubscriptionPlan`: The created subscription plan, if successful.
- * - `createSubscriptionPlanError`: The error that occurred, if any.
- */
 export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):
      Promise<{
           createSubscriptionPlanSuccess: boolean;

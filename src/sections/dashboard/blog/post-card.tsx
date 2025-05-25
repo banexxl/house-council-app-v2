@@ -44,7 +44,7 @@ export const PostCard: FC<PostCardProps> = (props) => {
   const formattedPublishedAt = format(publishedAt, 'MMM d, yyyy');
 
   return (
-    <Card {...other}>
+    <Card {...other} sx={{}}>
       <CardMedia
         component={RouterLink}
         href={paths.dashboard.blog.postDetails}
