@@ -1,11 +1,9 @@
 'use server';
 
-import { checkUserExists } from 'src/libs/supabase/tbl-auth-users';
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { readClientByEmailAction } from '../actions/client-actions/client-actions';
-import { verifyPassword } from 'src/utils/bcrypt';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/ss-supabase-service-role-client';
 
@@ -19,6 +17,58 @@ export type ErrorType = {
      details: string;
      hint?: string;
      message?: string;
+}
+
+export const checkIfUserExists = async (email: string): Promise<boolean> => {
+     const supabase = await useServerSideSupabaseClient();
+     const { data, error } = await supabase
+          .from('tblClients')
+          .select('email')
+          .eq('email', email)
+          .single();
+
+     if (data) {
+          logServerAction({
+               user_id: null,
+               action: 'NLA - Checking if user exists',
+               payload: { email },
+               status: 'success',
+               error: '',
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
+     }
+
+     if (error) {
+
+          logServerAction({
+               user_id: null,
+               action: 'NLA - Checking if user exists failed',
+               payload: { email },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
+
+          return false;
+     }
+
+     // If data is returned, the user exists
+     if (!data) {
+          logServerAction({
+               user_id: null,
+               action: 'NLA - Checking if user exists returned no data',
+               payload: { email },
+               status: 'fail',
+               error: 'User does not exist',
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
+          return false;
+     }
+
+     return !!data;
 }
 
 export const useServerSideSupabaseClient = async () => {
@@ -50,9 +100,18 @@ export async function magicLinkLogin(email: string) {
 
      const supabase = await useServerSideSupabaseClient();
      // Check if the user exists
-     const userExists = await checkUserExists(email);
+     const userExists = await checkIfUserExists(email);
 
      if (!userExists) {
+          await logServerAction({
+               user_id: null,
+               action: 'NLA - Magic link login attempt for non-existing user',
+               payload: { email },
+               status: 'fail',
+               error: 'User does not exist. Please sign up first.',
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
           return { error: 'User does not exist. Please sign up first.' };
      }
 
@@ -65,9 +124,41 @@ export async function magicLinkLogin(email: string) {
           },
      });
 
+     if (data) {
+          await logServerAction({
+               user_id: null,
+               action: 'NLA - Magic link sent',
+               payload: { email },
+               status: 'success',
+               error: '',
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          });
+     }
+
      if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'NLA - Magic link login failed',
+               payload: { email },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
           return { error: error.message }; // Handle other errors
      }
+
+     // If the magic link is sent successfully, return a success message
+     await logServerAction({
+          user_id: null,
+          action: 'NLA - Magic link sent successfully',
+          payload: { email },
+          status: 'success',
+          error: '',
+          duration_ms: 0, // Duration can be calculated if needed
+          type: 'auth'
+     })
 
      return { success: 'Check your email for the login link!' };
 }
@@ -76,11 +167,25 @@ export async function logout() {
 
      const supabase = await useServerSideSupabaseClient();
 
-     await supabase.auth.signOut();
+     const { error } = await supabase.auth.signOut();
+
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'NLA - Logout failed',
+               payload: {},
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
+          return { success: false, error: error.message };
+     }
      redirect('/auth/login');
 }
 
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
+
      const supabase = await useServerSideSupabaseClient();
 
      // Initiate Google OAuth flow.
@@ -89,11 +194,10 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           // Optionally, set a redirect URL after sign in:
           options: {
                redirectTo: `${process.env.BASE_URL}/auth/callback`
-          },
+          }
      });
 
      if (!authError == null) {
-          console.error('Error during Google sign in:', authError);
           return { success: false, error: authError };
      } else {
           if (authData.url) {

@@ -13,7 +13,8 @@ import { PasswordForm } from "./password-form"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { handleGoogleSignIn } from "../actions"
-import { Box, Button, CircularProgress } from "@mui/material"
+import { Box, Button, CircularProgress, TextField } from "@mui/material"
+import { MagicLinkForm } from "./magic-link-form"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -59,12 +60,12 @@ const GoogleMultiColorIcon = (props: any) => (
 );
 
 const LoginForm = () => {
-     const [authMethod, setAuthMethod] = useState<"password" | "google">("password")
+     const [authMethod, setAuthMethod] = useState<"password" | "google" | "magic_link">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
      useSessionUpdater()
 
-     const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google") => {
+     const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google" | "magic_link") => {
           setAuthMethod(newValue)
      }
 
@@ -79,6 +80,7 @@ const LoginForm = () => {
                <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
                     <Tab value="password" label="Password" />
                     <Tab value="google" label="Google" />
+                    <Tab value="magic_link" label="Magic Link" />
                </Tabs>
 
                {authMethod === "password" && <PasswordForm />}
@@ -136,6 +138,8 @@ const LoginForm = () => {
                          </Button>
                     </Box>
                )}
+               {authMethod === "magic_link" && <MagicLinkForm />}
+
           </div>
      )
 }
