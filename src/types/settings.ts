@@ -18,7 +18,7 @@ export interface Settings {
 }
 
 export const initialAppSettings: Settings = {
-  colorPreset: 'indigo',
+  colorPreset: 'orange',
   contrast: 'normal',
   direction: 'ltr',
   layout: 'vertical',

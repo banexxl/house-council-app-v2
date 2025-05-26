@@ -21,8 +21,8 @@ export const getPrimary = (preset?: ColorPreset): PaletteColor => {
       return red;
     default:
       console.error(
-        'Invalid color preset, accepted values: "blue", "green", "indigo", "teal", "red" or "purple"".'
+        'Invalid color preset, accepted values: "orange", "blue", "green", "indigo", "teal", "red" or "purple"".'
       );
-      return blue;
+      return orange;
   }
 };

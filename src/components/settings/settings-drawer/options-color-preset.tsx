@@ -109,5 +109,5 @@ export const OptionsColorPreset: FC<OptionsColorPresetProps> = (props) => {
 
 OptionsColorPreset.propTypes = {
   onChange: PropTypes.func,
-  value: PropTypes.oneOf(['blue', 'green', 'indigo', 'purple', 'teal', 'red']),
+  value: PropTypes.oneOf(['blue', 'green', 'indigo', 'purple', 'teal', 'red', 'orange']),
 };
