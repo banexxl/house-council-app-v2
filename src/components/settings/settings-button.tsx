@@ -15,7 +15,7 @@ export const SettingsButton: FC<SettingsButtonProps> = (props) => {
   const pathname = usePathname();
 
   // Disable the button if on the specified URL
-  const isDisabled = pathname === '/dashboard/locations/add';
+  const isDisabled = pathname === '/dashboard/locations/add' || pathname === '/auth/login';
 
   return (
     <Tooltip title="Settings">
@@ -39,6 +39,7 @@ export const SettingsButton: FC<SettingsButtonProps> = (props) => {
             p: '10px',
             cursor: isDisabled ? 'not-allowed' : 'pointer',
             pointerEvents: isDisabled ? 'none' : 'auto',
+            display: pathname === '/dashboard/locations/add' || pathname === '/auth/login' ? 'none' : 'flex',
           }}
           disabled={isDisabled}
           onClick={!isDisabled ? props.onClick : undefined}
