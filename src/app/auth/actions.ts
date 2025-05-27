@@ -245,7 +245,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                          duration_ms: Date.now() - start,
                          type: 'auth'
                     })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Email not found' } };
+                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Invalid credentials' } };
                case 'PGRS003':
                     await logServerAction({
                          user_id: null,
@@ -256,7 +256,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                          duration_ms: Date.now() - start,
                          type: 'auth'
                     })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Password is incorrect' } };
+                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Invalid credentials' } };
                default:
                     await logServerAction({
                          user_id: null,
