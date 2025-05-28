@@ -41,11 +41,12 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
-               const total_price = getCalculatedTotalPrice(values, featurePrices);
+               const { monthly_total_price, total_price_with_discounts } = getCalculatedPrices(values, featurePrices);
 
                const payload = {
                     ...values,
-                    total_price,
+                    monthly_total_price,
+                    total_price_with_discounts,
                };
 
                try {
@@ -73,31 +74,44 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                     formik.setSubmitting(false);
                }
           }
+
      })
-     const getCalculatedTotalPrice = (values: SubscriptionPlan, prices: Record<string, number>) => {
-          let totalPrice = Number(values.base_price) || 0;
+     const getCalculatedPrices = (values: SubscriptionPlan, prices: Record<string, number>) => {
+          let baseTotal = Number(values.base_price) || 0;
 
           values.features?.forEach((featureId) => {
                const featurePrice = prices[featureId];
                if (!isNaN(featurePrice)) {
-                    totalPrice += featurePrice;
+                    baseTotal += featurePrice;
                }
           });
 
+          const monthly_total_price = parseFloat(baseTotal.toFixed(2));
+
+          let discountedPrice = monthly_total_price;
+
           if (values.is_discounted) {
-               totalPrice *= 1 - (values.discount_percentage || 0) / 100;
+               discountedPrice *= 1 - (values.discount_percentage || 0) / 100;
           }
 
           if (values.is_billed_annually) {
-               totalPrice *= 12;
-               totalPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
+               discountedPrice *= 12;
+               discountedPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
           }
 
-          return parseFloat(totalPrice.toFixed(2));
+          const total_price_with_discounts = parseFloat(discountedPrice.toFixed(2));
+
+          return { monthly_total_price, total_price_with_discounts };
      };
 
-     const calculatePrice = () => getCalculatedTotalPrice(formik.values, featurePrices);
 
+     const calculatePrices = () => getCalculatedPrices(formik.values, featurePrices);
+
+     const updateCalculatedPrices = () => {
+          const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+          formik.setFieldValue('monthly_total_price', monthly_total_price);
+          formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
+     };
 
      const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
           Object.fromEntries(features.map((f) => [f.id!, f.price_per_month]))
@@ -114,12 +128,13 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           if (success) {
                toast.success("Feature price updated successfully!");
 
-               const newTotal = getCalculatedTotalPrice(formik.values, featurePrices);
+               const { monthly_total_price, total_price_with_discounts } = getCalculatedPrices(formik.values, featurePrices);
 
                await updateSubscriptionPlan({
                     ...formik.values,
                     id: subscriptionPlanData!.id,
-                    total_price: newTotal,
+                    monthly_total_price: monthly_total_price,
+                    total_price_with_discounts: total_price_with_discounts,
                });
           } else {
                toast.error("Failed to update feature price.");
@@ -212,7 +227,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   // Ensure only valid decimal numbers are allowed
                                                   if (!isNaN(Number(value))) {
                                                        formik.setFieldValue("base_price", value).then(() => {
-                                                            formik.setFieldValue('total_price', calculatePrice());
+                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
+                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
                                                        })
                                                   }
                                              }}
@@ -233,7 +250,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                   }
 
                                                   formik.setFieldValue("base_price", value).then(() => {
-                                                       formik.setFieldValue('total_price', calculatePrice());
+                                                       const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+                                                       formik.setFieldValue('monthly_total_price', monthly_total_price);
+                                                       formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
                                                   })
                                              }}
                                         />
@@ -285,7 +304,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("annual_discount_percentage", numberValue).then(() => {
-                                                            formik.setFieldValue('total_price', calculatePrice());
+                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
+                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
                                                        })
                                                   }}
                                                   error={formik.touched.annual_discount_percentage && Boolean(formik.errors.annual_discount_percentage)}
@@ -303,7 +324,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("annual_discount_percentage", value).then(() => {
-                                                            formik.setFieldValue('total_price', calculatePrice());
+                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
+                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
                                                        })
                                                   }}
                                              />
@@ -349,7 +372,9 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("discount_percentage", numberValue).then(() => {
-                                                            formik.setFieldValue('total_price', calculatePrice());
+                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
+                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
                                                        })
                                                   }}
                                                   error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
@@ -367,15 +392,18 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                                        }
 
                                                        formik.setFieldValue("discount_percentage", value).then(() => {
-                                                            formik.setFieldValue('total_price', calculatePrice());
+                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
+                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
                                                        })
                                                   }}
                                              />
 
                                         )}
                                         <Typography variant="h5" className="mt-4">
-                                             Total Price: ${calculatePrice().toFixed(2)}
-                                             {formik.values.is_billed_annually ? " " + t("subscriptionPlans.subscriptionPlanYearly") : " " + t("subscriptionPlans.subscriptionPlanMonthly")}
+                                             Monthly Price: ${calculatePrices().monthly_total_price.toFixed(2)}<br />
+                                             Total with Discounts: ${calculatePrices().total_price_with_discounts.toFixed(2)}{" "}
+                                             {formik.values.is_billed_annually ? t("subscriptionPlans.subscriptionPlanYearly") : t("subscriptionPlans.subscriptionPlanMonthly")}
                                         </Typography>
                                    </CardContent>
                               </Card>

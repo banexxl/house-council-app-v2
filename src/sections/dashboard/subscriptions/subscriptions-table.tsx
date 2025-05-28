@@ -307,7 +307,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                             )}
                                                        </TableCell>
                                                        <TableCell>{subscriptionPlan.discount_percentage}</TableCell>
-                                                       <TableCell>{subscriptionPlan.total_price}</TableCell>
+                                                       <TableCell>{subscriptionPlan.monthly_total_price}</TableCell>
                                                   </TableRow>
                                              );
                                         })
