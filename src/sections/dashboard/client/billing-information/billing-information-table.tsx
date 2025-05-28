@@ -182,6 +182,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                     tabs={[
                          { label: t('common.all'), value: 'all' },]
                     }
+                    btnAddUrl={paths.dashboard.clients.billingInformation.new}
                />
                <Scrollbar>
                     <Table>
