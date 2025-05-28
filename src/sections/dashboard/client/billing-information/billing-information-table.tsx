@@ -28,13 +28,13 @@ import { applySort } from "src/utils/apply-sort";
 import { Scrollbar } from "src/components/scrollbar";
 import { PopupModal } from "src/components/modal-dialog";
 import { deleteClientBillingInformation } from "src/app/actions/client-actions/client-billing-actions";
-import { Client } from "./client-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BaseEntity } from "src/types/base-entity";
+import { Client } from "src/types/client";
 
 interface BillingInformationTableProps {
-     data?: ClientBillingInformation[]
+     data?: (ClientBillingInformation & { client: Client })[]
      paymentMethods?: BaseEntity[]
      billingInfoStatuses?: BaseEntity[]
      clients?: Client[]
@@ -95,6 +95,7 @@ const useBillingInfoSearch = () => {
 };
 
 const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], paymentMethods, billingInfoStatuses, clients }) => {
+     console.log("BillingInformationTable data:", data);
 
      const { t } = useTranslation();
      const [count, setCount] = useState(data.length);
@@ -255,7 +256,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                               </TableRow>
                          </TableHead>
                          <TableBody>
-                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: ClientBillingInformation) => {
+                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: ClientBillingInformation & { client: Client }) => {
                                    const isSelected = billingInfoSelection.selected.includes(row.id);
                                    return (
                                         <TableRow
@@ -286,7 +287,7 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                                        }
                                                   </Link>
                                              </TableCell>
-                                             <TableCell>{row.full_name}</TableCell>
+                                             <TableCell>{row.client.contact_person}</TableCell>
                                              <TableCell>{row.billing_address}</TableCell>
                                              <TableCell>{row.card_number ? '****' + row.card_number.slice(-4) : ''}</TableCell>
                                              <TableCell>

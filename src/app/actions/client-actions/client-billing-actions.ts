@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { supabase } from "src/libs/supabase/client";
+import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 
 export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
@@ -93,15 +94,27 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
      return { deleteClientBillingInformationSuccess: true };
 }
 
-export const readAllClientBillingInformation = async (p0: string): Promise<{ readAllClientBillingInformationSuccess: boolean, readAllClientBillingInformationData?: ClientBillingInformation[], readAllClientBillingInformationError?: string }> => {
-
+export const readAllClientBillingInformation = async (): Promise<{
+     readAllClientBillingInformationSuccess: boolean;
+     readAllClientBillingInformationData?: (ClientBillingInformation & { client: Client })[];
+     readAllClientBillingInformationError?: string;
+}> => {
      const { data, error } = await supabase
-          .from('tblBillingInformation')
-          .select('*');
+          .from("tblBillingInformation")
+          .select(`
+         *,
+         client:client_id (*)
+       `);
 
      if (error) {
-          return { readAllClientBillingInformationSuccess: false, readAllClientBillingInformationError: error.message };
+          return {
+               readAllClientBillingInformationSuccess: false,
+               readAllClientBillingInformationError: error.message,
+          };
      }
 
-     return { readAllClientBillingInformationSuccess: true, readAllClientBillingInformationData: data ?? undefined };
-}
+     return {
+          readAllClientBillingInformationSuccess: true,
+          readAllClientBillingInformationData: data as (ClientBillingInformation & { client: Client })[],
+     };
+};
