@@ -42,7 +42,7 @@ const Page = () => {
               lg: 4,
             }}
           >
-            <Grid size={{ xs: 12, md: 8 }}>
+            <Grid size={{ xs: 12, md: 12 }}>
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -50,22 +50,6 @@ const Page = () => {
               >
                 <Stack spacing={1}>
                   <Typography variant="h4">Analytics</Typography>
-                </Stack>
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={2}
-                >
-                  <Button
-                    startIcon={
-                      <SvgIcon>
-                        <PlusIcon />
-                      </SvgIcon>
-                    }
-                    variant="contained"
-                  >
-                    New Dashboard
-                  </Button>
                 </Stack>
               </Stack>
             </Grid>
