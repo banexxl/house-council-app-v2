@@ -152,54 +152,6 @@ export const useSections = () => {
             ),
           },
           {
-            title: t(tokens.nav.analytics),
-            path: paths.dashboard.analytics,
-            icon: (
-              <SvgIcon fontSize="small">
-                <BarChartSquare02Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.ecommerce),
-            path: paths.dashboard.ecommerce,
-            icon: (
-              <SvgIcon fontSize="small">
-                <LineChartUp04Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.crypto),
-            path: paths.dashboard.crypto,
-            icon: (
-              <SvgIcon fontSize="small">
-                <CurrencyBitcoinCircleIcon />
-              </SvgIcon>
-            ),
-            label: (
-              <Chip
-                color="primary"
-                label="New"
-                size="small"
-              />
-            ),
-          },
-          {
-            title: t(tokens.nav.account),
-            path: paths.dashboard.account,
-            icon: (
-              <SvgIcon fontSize="small">
-                <HomeSmileIcon />
-              </SvgIcon>
-            ),
-          },
-        ],
-      },
-      {
-        subheader: t(tokens.nav.tenants),
-        items: [
-          {
             title: t(tokens.nav.buildings),
             path: paths.dashboard.buildings.index,
             icon: (
@@ -264,6 +216,54 @@ export const useSections = () => {
               },
             ],
           },
+          {
+            title: t(tokens.nav.analytics),
+            path: paths.dashboard.analytics,
+            icon: (
+              <SvgIcon fontSize="small">
+                <BarChartSquare02Icon />
+              </SvgIcon>
+            ),
+          },
+          {
+            title: t(tokens.nav.ecommerce),
+            path: paths.dashboard.ecommerce,
+            icon: (
+              <SvgIcon fontSize="small">
+                <LineChartUp04Icon />
+              </SvgIcon>
+            ),
+          },
+          {
+            title: t(tokens.nav.crypto),
+            path: paths.dashboard.crypto,
+            icon: (
+              <SvgIcon fontSize="small">
+                <CurrencyBitcoinCircleIcon />
+              </SvgIcon>
+            ),
+            label: (
+              <Chip
+                color="primary"
+                label="New"
+                size="small"
+              />
+            ),
+          },
+          {
+            title: t(tokens.nav.account),
+            path: paths.dashboard.account,
+            icon: (
+              <SvgIcon fontSize="small">
+                <HomeSmileIcon />
+              </SvgIcon>
+            ),
+          },
+        ],
+      },
+      {
+        subheader: t(tokens.nav.tenants),
+        items: [
           {
             title: t(tokens.nav.productList),
             path: paths.dashboard.products.index,
