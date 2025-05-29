@@ -56,23 +56,6 @@ const Page = () => {
                 <div>
                   <Typography variant="h4">Overview</Typography>
                 </div>
-                <div>
-                  <Stack
-                    direction="row"
-                    spacing={4}
-                  >
-                    <Button
-                      startIcon={
-                        <SvgIcon>
-                          <PlusIcon />
-                        </SvgIcon>
-                      }
-                      variant="contained"
-                    >
-                      New Dashboard
-                    </Button>
-                  </Stack>
-                </div>
               </Stack>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
