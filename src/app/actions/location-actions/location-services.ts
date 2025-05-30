@@ -258,9 +258,6 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
                id: '',
           })
           return { success: false, error };
-     } finally {
-          revalidatePath('/dashboard/locations/new');
-          revalidatePath('/dashboard/locations');
      }
 }
 
