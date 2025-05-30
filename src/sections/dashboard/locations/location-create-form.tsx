@@ -23,6 +23,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
      const { t } = useTranslation();
      const [location, setLocation] = useState({ latitude: 44.817619, longitude: 20.457273 }); // Default to Belgrade
      const [markerData, setMarkerData] = useState<BuildingLocation[]>(locationsData);
+     const [mapRefreshKey, setMapRefreshKey] = useState(0);
 
      useEffect(() => {
           if (locationsData.length > 0) {
@@ -89,6 +90,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                handleClear();
                setLoading(false);
           }
+          setMapRefreshKey(prev => prev + 1);
      };
 
      const handleClear = () => {
@@ -128,7 +130,8 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                setLocation({ longitude: center[0], latitude: center[1] });
           }
 
-          setMarkerData([
+          setMarkerData((prev) => [
+               ...prev,
                {
                     latitude: center[1],
                     longitude: center[0],
@@ -140,8 +143,8 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                     post_code: postcode,
                     location_id: id,
                },
-          ])
-
+          ]);
+          setMapRefreshKey(prev => prev + 1);
      };
 
      return (
@@ -281,6 +284,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                     center={location}
                     markers={markerData}
                     zoom={14}
+                    refreshKey={mapRefreshKey}
                />
           </Card>
      );

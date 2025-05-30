@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Box, Typography, Card, CardContent, CardMedia } from '@mui/material';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
@@ -10,79 +10,61 @@ interface MarkerProps {
      lat: number;
      lng: number;
      full_address: string;
-     // image: string;
      map: mapboxgl.Map;
 }
 
 const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, map }) => {
-     console.log('full_address', full_address);
-
      const { t } = useTranslation();
-
      const markerEl = useRef<HTMLDivElement>(null);
-     const markerRef = useRef<mapboxgl.Marker | null>(null);
      const popupEl = useRef<HTMLDivElement>(null);
-     const { colorPreset } = useContext(SettingsContext); // Access colorPreset from the context
-     const primary = getPrimary(colorPreset); // Dynamically get the primary color
+     const markerRef = useRef<mapboxgl.Marker | null>(null);
+     const { colorPreset } = useContext(SettingsContext);
+     const primary = getPrimary(colorPreset);
 
-     // Initialize the marker
      useEffect(() => {
-          const marker = new mapboxgl.Marker({
-               element: markerEl.current!,
-               anchor: 'top',
-               draggable: false,
-          })
-               .setLngLat([lng, lat])
-               .addTo(map);
+          // Wait for markerEl to exist
+          if (!markerEl.current) return;
 
-          markerRef.current = marker;
+          // Wrap creation in requestAnimationFrame to ensure DOM mount
+          const frame = requestAnimationFrame(() => {
+               if (!markerEl.current) return;
 
-          return () => {
-               marker.remove();
-          };
-     }, [map]);
-
-     // Update marker position when `lat` or `lng` changes
-     useEffect(() => {
-          const marker = markerRef.current;
-          if (marker) {
-               marker.setLngLat([lng, lat]);
-          }
-     }, [lat, lng]);
-
-     // Initialize and handle popup
-     useEffect(() => {
-
-          if (!popupEl.current) {
-               return;
-          }
-
-          const popup = new mapboxgl.Popup({
-               closeButton: false,
-               closeOnClick: true,
-               closeOnMove: true,
-               anchor: 'right',
-               maxWidth: '300px',
-               offset: [-20, 0],
-          })
-               .setDOMContent(popupEl.current!)
-               .on('open', () => {
-                    markerEl.current?.style.setProperty('color', primary.darkest!); // Set active color
+               const marker = new mapboxgl.Marker({
+                    element: markerEl.current,
+                    anchor: 'top',
+                    draggable: false,
                })
-               .on('close', () => {
-                    markerEl.current?.style.setProperty('color', primary.main); // Reset color
-               });
+                    .setLngLat([lng, lat])
+                    .addTo(map);
 
-          const marker = markerRef.current;
-          if (marker) {
-               marker.setPopup(popup);
-          }
+               markerRef.current = marker;
+
+               if (popupEl.current) {
+                    const popup = new mapboxgl.Popup({
+                         closeButton: false,
+                         closeOnClick: true,
+                         closeOnMove: true,
+                         anchor: 'right',
+                         maxWidth: '300px',
+                         offset: [-20, 0],
+                    })
+                         .setDOMContent(popupEl.current)
+                         .on('open', () => {
+                              markerEl.current?.style.setProperty('color', primary.darkest!);
+                         })
+                         .on('close', () => {
+                              markerEl.current?.style.setProperty('color', primary.main);
+                         });
+
+                    marker.setPopup(popup);
+               }
+          });
 
           return () => {
-               popup.remove();
+               cancelAnimationFrame(frame);
+               markerRef.current?.remove();
           };
-     }, []);
-
+     }, [lat, lng, map, primary]);
 
      return (
           <Box>
@@ -101,11 +83,11 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, map 
                          <CardMedia
                               component="img"
                               height="200"
-                              image={'/assets/no-image.png'}
+                              image="/assets/no-image.png"
                               alt={full_address}
                          />
                          <CardContent>
-                              <Typography gutterBottom variant="h6" component="div">
+                              <Typography gutterBottom variant="h6">
                                    {t('locations.locationPopupTitle')}:
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
