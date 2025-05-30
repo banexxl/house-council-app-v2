@@ -35,7 +35,6 @@ export const logServerAction = async ({
 }: ServerLog) => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     console.log('Server logging action started!');
      const { error: logInsertError } = await supabase.from('tblServerLogs').insert({
           user_id,
           action,
@@ -45,6 +44,4 @@ export const logServerAction = async ({
           duration_ms,
           type
      })
-     console.log('Error from logServerAction', logInsertError);
-
 }

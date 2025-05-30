@@ -11,7 +11,7 @@ import { transliterateCyrillicToLatin } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
 import SaveIcon from '@mui/icons-material/Save';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
-import { MapComponent, MarkerData } from './map-box';
+import { MapComponent } from './map-box';
 
 type LocationCreateFormProps = {
      mapBoxAccessToken?: string;
@@ -22,7 +22,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
 
      const { t } = useTranslation();
      const [location, setLocation] = useState({ latitude: 44.817619, longitude: 20.457273 }); // Default to Belgrade
-     const [markerData, setMarkerData] = useState<MarkerData[]>(locationsData);
+     const [markerData, setMarkerData] = useState<BuildingLocation[]>(locationsData);
      const [loading, setLoading] = useState<boolean>(false);
 
      const { control, handleSubmit, setValue, watch } = useForm({
@@ -126,12 +126,19 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                {
                     latitude: center[1],
                     longitude: center[0],
-                    street_address: `${street_address} ${street_number}, ${city}, ${country}`,
-                    image: 'https://via.placeholder.com/300x140', // Replace with actual image URL
+                    street_address: street_address,
+                    street_number: street_number,
+                    country: country,
+                    city: city,
+                    region: region,
+                    post_code: postcode,
+                    location_id: id,
                },
           ])
 
      };
+
+
 
      return (
           <Card
@@ -265,31 +272,10 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                          </Stack>
                     </form>
                </Box>
-               {/* <Box
-                    id="map"
-                    ref={mapContainerRef}
-                    sx={{
-                         height: '600px',
-                         width: '700px',
-                         border: '1px solid #ccc',
-                         borderRadius: '14px',
-                    }}
-               >
-                    {mapRef.current && markerData && (
-                         <Marker
-                              lat={markerData.lat}
-                              lng={markerData.lng}
-                              address={markerData.address}
-                              // image={markerData.image}
-                              map={mapRef.current}
-                         />
-                    )}
-               </Box> */}
                <MapComponent
                     mapBoxAccessToken={mapBoxAccessToken}
                     center={location}
                     markers={markerData}
-                    onMapClick={onAddressSelected}
                     zoom={14}
                />
           </Card>

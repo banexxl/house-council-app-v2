@@ -9,12 +9,13 @@ import { getPrimary } from 'src/theme/utils';
 interface MarkerProps {
      lat: number;
      lng: number;
-     address: string;
+     full_address: string;
      // image: string;
      map: mapboxgl.Map;
 }
 
-const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) => {
+const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, map }) => {
+     console.log('full_address', full_address);
 
      const { t } = useTranslation();
 
@@ -29,7 +30,7 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
           const marker = new mapboxgl.Marker({
                element: markerEl.current!,
                anchor: 'top',
-               draggable: true,
+               draggable: false,
           })
                .setLngLat([lng, lat])
                .addTo(map);
@@ -101,14 +102,14 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, address, map }) =>
                               component="img"
                               height="200"
                               image={'/assets/no-image.png'}
-                              alt={address}
+                              alt={full_address}
                          />
                          <CardContent>
                               <Typography gutterBottom variant="h6" component="div">
                                    {t('locations.locationPopupTitle')}:
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                   {address}
+                                   {full_address}
                               </Typography>
                          </CardContent>
                     </Card>
