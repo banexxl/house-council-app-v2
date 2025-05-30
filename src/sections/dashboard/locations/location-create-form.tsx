@@ -1,28 +1,28 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-import mapboxgl from 'mapbox-gl';
 import { useTranslation } from 'react-i18next';
 import LocationAutocomplete from './autocomplete';
 import { BuildingLocation } from 'src/types/location';
 import { insertLocationAction } from 'src/app/actions/location-actions/location-services';
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
-import Marker from './map-marker';
-
 import SaveIcon from '@mui/icons-material/Save';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
+import { MapComponent, MarkerData } from './map-box';
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!;
+type LocationCreateFormProps = {
+     mapBoxAccessToken?: string;
+     locationsData: BuildingLocation[] | [];
+}
 
-const LocationCreateForm = () => {
+const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreateFormProps) => {
 
      const { t } = useTranslation();
-     const [location, setLocation] = useState({ lng: 20.457273, lat: 44.817619 }); // Default to Belgrade
-     const mapContainerRef = useRef<HTMLDivElement>(null);
-     const mapRef = useRef<mapboxgl.Map | null>(null);
+     const [location, setLocation] = useState({ latitude: 44.817619, longitude: 20.457273 }); // Default to Belgrade
+     const [markerData, setMarkerData] = useState<MarkerData[]>(locationsData);
      const [loading, setLoading] = useState<boolean>(false);
 
      const { control, handleSubmit, setValue, watch } = useForm({
@@ -38,26 +38,8 @@ const LocationCreateForm = () => {
                longitude: 0,
           },
      });
-     const [markerData, setMarkerData] = useState<{ lat: number; lng: number; address: string; image: string } | null>(null)
 
      const addressSelected = !!watch('country') && !!watch('city') && !!watch('street_address');
-
-     useEffect(() => {
-          if (mapRef.current) {
-               mapRef.current.flyTo({ center: [location.lng, location.lat], zoom: 19 });
-          } else {
-               // This happens on page reload
-               mapRef.current = new mapboxgl.Map({
-                    container: mapContainerRef.current!,
-                    style: 'mapbox://styles/mapbox/streets-v12',
-                    center: [location.lng, location.lat],
-                    zoom: 8,
-               });
-          }
-          // return () => {
-          //      mapRef.current?.remove();
-          // };
-     }, [location, markerData]);
 
      const handleSave = async (data: any) => {
           setLoading(true);
@@ -137,16 +119,18 @@ const LocationCreateForm = () => {
 
           // Update map location
           if (center) {
-               setLocation({ lng: center[0], lat: center[1] });
+               setLocation({ longitude: center[0], latitude: center[1] });
           }
 
-          // Set marker data
-          setMarkerData({
-               lat: center[1],
-               lng: center[0],
-               address: `${street_address} ${street_number}, ${city}, ${country}`,
-               image: 'https://via.placeholder.com/300x140', // Replace with actual image URL
-          });
+          setMarkerData([
+               {
+                    latitude: center[1],
+                    longitude: center[0],
+                    street_address: `${street_address} ${street_number}, ${city}, ${country}`,
+                    image: 'https://via.placeholder.com/300x140', // Replace with actual image URL
+               },
+          ])
+
      };
 
      return (
@@ -281,7 +265,7 @@ const LocationCreateForm = () => {
                          </Stack>
                     </form>
                </Box>
-               <Box
+               {/* <Box
                     id="map"
                     ref={mapContainerRef}
                     sx={{
@@ -300,7 +284,14 @@ const LocationCreateForm = () => {
                               map={mapRef.current}
                          />
                     )}
-               </Box>
+               </Box> */}
+               <MapComponent
+                    mapBoxAccessToken={mapBoxAccessToken}
+                    center={location}
+                    markers={markerData}
+                    onMapClick={onAddressSelected}
+                    zoom={14}
+               />
           </Card>
      );
 };

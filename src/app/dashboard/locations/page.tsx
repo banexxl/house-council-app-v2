@@ -4,12 +4,12 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
-import { getAllLocationsFromClient } from 'src/app/actions/location-actions/location-services';
+import { getAllAddedLocations } from 'src/app/actions/location-actions/location-services';
 import { LocationsTable } from 'src/sections/dashboard/locations/locations-table';
 
 const Page = async () => {
 
-  const { data } = await getAllLocationsFromClient()
+  const { data } = await getAllAddedLocations()
 
   return (
     <Box

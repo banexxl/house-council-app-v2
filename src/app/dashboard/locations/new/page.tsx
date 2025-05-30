@@ -1,60 +1,15 @@
-'use client';
+'use server';
 
-import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useTranslation } from 'react-i18next';
+import { getAllAddedLocations } from "src/app/actions/location-actions/location-services";
+import NewLocation from "./new-location";
 
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
-import { RouterLink } from 'src/components/router-link';
-import { paths } from 'src/paths';
-import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
+const Page = async () => {
 
-const Page = () => {
-
-     const { t } = useTranslation();
+     const mapBoxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY;
+     const { data } = await getAllAddedLocations()
 
      return (
-          <Box
-               component="main"
-               sx={{
-                    flexGrow: 1,
-                    py: 8,
-               }}
-          >
-               <Container maxWidth="xl">
-                    <Stack spacing={3}>
-                         <Stack spacing={1}>
-                              <Typography variant="h4">{t('locations.locationCreate')}</Typography>
-                              <Breadcrumbs separator={<BreadcrumbsSeparator />}>
-                                   <Link
-                                        color="text.primary"
-                                        component={RouterLink}
-                                        href={paths.dashboard.index}
-                                        variant="subtitle2"
-                                   >
-                                        {t('nav.dashboard')}
-                                   </Link>
-                                   <Link
-                                        color="text.primary"
-                                        component={RouterLink}
-                                        href={paths.dashboard.locations.index}
-                                        variant="subtitle2"
-                                   >
-                                        {t('nav.locations')}
-                                   </Link>
-                                   <Typography color="text.secondary" variant="subtitle2">
-                                        {t('locations.locationCreate')}
-                                   </Typography>
-                              </Breadcrumbs>
-                         </Stack>
-                         <LocationCreateForm />
-                    </Stack>
-               </Container>
-          </Box>
+          <NewLocation mapBoxAccessToken={mapBoxAccessToken} locationsData={data || []} />
      );
 };
 
