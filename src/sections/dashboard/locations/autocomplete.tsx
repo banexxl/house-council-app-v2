@@ -7,6 +7,8 @@ import {
      ListItemText,
      Box,
      IconButton,
+     InputAdornment,
+     OutlinedInput,
 } from "@mui/material";
 import { Clear as ClearIcon } from "@mui/icons-material";
 import { transliterateCyrillicToLatin } from "src/utils/transliterate";
@@ -23,7 +25,7 @@ export interface AutocompleteRef {
 
 const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label, initialValue }, ref) => {
 
-     const [inputValue, setInputValue] = useState("");
+     const [inputValue, setInputValue] = useState(initialValue || "");
      const [suggestions, setSuggestions] = useState<any[]>([]);
      const [loading, setLoading] = useState(false);
 
@@ -50,6 +52,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
                );
                const data = await response.json();
                const features = data.features || [];
+
                setSuggestions(features);
           } catch (error) {
                console.error("Error fetching suggestions:", error);
@@ -81,44 +84,52 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
                     label={label}
                     variant="outlined"
                     fullWidth
-                    value={initialValue !== '' ? initialValue : inputValue}
+                    value={inputValue}
                     onChange={handleInputChange}
-                    InputProps={{
-                         endAdornment: (
-                              <>
-                                   {loading && <span>Loading...</span>}
-                                   {inputValue && (
-                                        <IconButton onClick={handleClear}>
-                                             <ClearIcon />
-                                        </IconButton>
-                                   )}
-                              </>
-                         ),
+                    slots={{
+                         input: OutlinedInput, // ✅ use MUI input, not raw HTML input
+                    }}
+                    slotProps={{
+                         input: {
+                              endAdornment: (
+                                   <InputAdornment position="end">
+                                        {loading && <span>Loading...</span>}
+                                        {inputValue && (
+                                             <IconButton onClick={handleClear}>
+                                                  <ClearIcon />
+                                             </IconButton>
+                                        )}
+                                   </InputAdornment>
+                              ),
+                         },
                     }}
                />
-               {suggestions.length > 0 && (
-                    <List
-                         sx={{
-                              position: "absolute",
-                              top: "100%",
-                              left: 0,
-                              width: "100%",
-                              bgcolor: "background.paper",
-                              zIndex: 10,
-                              border: "1px solid #ccc",
-                              borderRadius: 1,
-                         }}
-                    >
-                         {suggestions.map((suggestion, index) => (
-                              <ListItem key={index} disablePadding>
-                                   <ListItemButton onClick={() => handleSelect(suggestion)}>
-                                        <ListItemText primary={suggestion.place_name} />
-                                   </ListItemButton>
-                              </ListItem>
-                         ))}
-                    </List>
-               )}
-          </Box>
+
+               {
+                    suggestions.length > 0 && (
+                         <List
+                              sx={{
+                                   position: "absolute",
+                                   top: "100%",
+                                   left: 0,
+                                   width: "100%",
+                                   bgcolor: "background.paper",
+                                   zIndex: 10,
+                                   border: "1px solid #ccc",
+                                   borderRadius: 1,
+                              }}
+                         >
+                              {suggestions.map((suggestion, index) => (
+                                   <ListItem key={index} disablePadding>
+                                        <ListItemButton onClick={() => handleSelect(suggestion)}>
+                                             <ListItemText primary={suggestion.place_name} />
+                                        </ListItemButton>
+                                   </ListItem>
+                              ))}
+                         </List>
+                    )
+               }
+          </Box >
      );
 }
 );

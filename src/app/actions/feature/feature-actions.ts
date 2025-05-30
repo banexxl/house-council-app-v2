@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "src/libs/supabase/client";
+import { supabase } from "src/libs/supabase/sb-client";
 import { Feature } from "src/types/base-entity";
 
 export const updateFeature = async (id: string, feature: Partial<Feature>): Promise<{ success: boolean; updatedFeature?: Feature; error?: any }> => {

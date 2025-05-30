@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache"
-import { supabase } from "src/libs/supabase/client"
+import { supabase } from "src/libs/supabase/sb-client"
 import { Client } from "src/types/client"
 
 export const createOrUpdateClientAction = async (client: Client): Promise<{

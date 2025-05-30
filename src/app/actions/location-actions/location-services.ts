@@ -1,32 +1,55 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { supabase } from 'src/libs/supabase/client'
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { BuildingLocation } from 'src/types/location'
 
-export const insertLocationAction = async (values: BuildingLocation) => {
+type ErrorResponse = {
+     code: string;
+     details: string | null;
+     hint: string | null;
+     message: string;
+}
+
+export const insertLocationAction = async (values: BuildingLocation): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
 
      try {
-          // Check if a location with the same address, city, street number, and region already exists
-          const { data: existingLocations, error: fetchError } = await supabase
+          // Check if a location with the same location
+          const { data: existingLocation, error: fetchError } = await supabase
                .from('tblBuildingLocations')
                .select('id')
-               .eq('street_address', values.street_address)
-               .eq('city', values.city)
-               .eq('street_number', values.street_number)
-               .eq('region', values.region);
+               .eq('location_id', values.location_id)
 
           if (fetchError) {
-               console.error('Error checking existing location:', fetchError);
                return { success: false, error: fetchError };
           }
 
-          if (existingLocations && existingLocations.length > 0) {
-               return { success: false, message: 'Location already exists with the same address, city, street number, and region.' };
+          // location_id from mapbox is not unique, so if the searched location has the same location)id, we will check if it has the same address, city, street number
+          // If an existing location is found, check if it has the same address, city, street number (this is very unlikely to happen)
+          if (existingLocation && existingLocation.length > 0) {
+               //Check in db if the existing location also contains the same address, city, street number
+               const { data: duplicateLocation, error: duplicateError } = await supabase
+                    .from('tblBuildingLocations')
+                    .select('id')
+                    .eq('location_id', values.location_id)
+                    .eq('street_address', values.street_address)
+                    .eq('city', values.city)
+                    .eq('street_number', values.street_number)
+
+               if (duplicateError) {
+                    return { success: false, error: duplicateError };
+               }
+
+               if (duplicateLocation && duplicateLocation.length > 0) {
+                    return { success: false, error: { code: '23505', details: null, hint: null, message: 'Location already exists' } };
+               }
           }
 
           const { data, error } = await supabase.from('tblBuildingLocations').insert([
                {
+                    location_id: values.location_id,
                     street_address: values.street_address,
                     city: values.city,
                     region: values.region,
@@ -42,7 +65,7 @@ export const insertLocationAction = async (values: BuildingLocation) => {
           if (error) {
                return { success: false, error: error };
           } else {
-               return { success: true, data };
+               return { success: true, data: data![0] };
           }
      } catch (error) {
           console.error('Error saving location:', error);
@@ -51,6 +74,9 @@ export const insertLocationAction = async (values: BuildingLocation) => {
 }
 
 export const deleteLocationsByIDsAction = async (ids: (string | undefined)[]) => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
+
      if (!ids) {
           return { success: false, error: 'No location IDs provided' };
      }
@@ -77,6 +103,9 @@ export const deleteLocationsByIDsAction = async (ids: (string | undefined)[]) =>
 }
 
 export const getAllLocationsFromClient = async () => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
+
      try {
           const { data, error } = await supabase.from('tblBuildingLocations').select('*')
           if (error) {

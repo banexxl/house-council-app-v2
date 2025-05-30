@@ -27,6 +27,7 @@ const LocationCreateForm = () => {
 
      const { control, handleSubmit, setValue, watch } = useForm({
           defaultValues: {
+               location_id: '',
                country: '',
                region: '',
                city: '',
@@ -61,6 +62,7 @@ const LocationCreateForm = () => {
      const handleSave = async (data: any) => {
           setLoading(true);
           const payload: BuildingLocation = {
+               location_id: data.location_id,
                street_address: transliterateCyrillicToLatin(data.street_address),
                city: data.city,
                region: data.region,
@@ -72,25 +74,29 @@ const LocationCreateForm = () => {
           };
 
           try {
-               const response = await insertLocationAction(payload);
+               const { error } = await insertLocationAction(payload);
 
-               if (response.success) {
-                    toast.success(t('locations.locationSaved'), {
-                         duration: 3000,
-                    })
-               } else if (!response.success && response.message == "Location already exists with the same address, city, street number, and region.") {
-                    toast.error(t('locations.locationAlreadyExists'), {
-                         duration: 3000,
-                    })
+               if (!error) {
+                    toast.success(t('locations.locationSaved'), { duration: 3000 });
                } else {
-                    toast.error(t('locations.locationNotSaved'), {
-                         duration: 3000,
-                    })
+                    const prefix = t('locations.locationNotSaved') + ':\n';
+                    error.code === '23505'
+                         ? toast.error(prefix + t('errors.location.uniqueConstraint'))
+                         : error.code === '23503'
+                              ? toast.error(prefix + t('errors.location.foreignKeyViolation'))
+                              : error.code === '23502'
+                                   ? toast.error(prefix + t('errors.location.notNullViolation'))
+                                   : error.code === '22P02'
+                                        ? toast.error(prefix + t('errors.location.dataTypeMismatch'))
+                                        : error.code === '23514'
+                                             ? toast.error(prefix + t('errors.location.checkViolation'))
+                                             : toast.error(prefix + t('errors.location.unexpectedError'));
                }
-          } catch (error) {
-               toast.error(t('locations.locationNotSaved'), {
+          } catch (err) {
+               console.error(err);
+               toast.error(t('locations.locationNotSaved') + ':\n' + t('errors.location.unexpectedError'), {
                     duration: 3000,
-               })
+               });
           } finally {
                handleClear();
                setLoading(false);
@@ -109,7 +115,7 @@ const LocationCreateForm = () => {
      }
      const onAddressSelected = (event: any) => {
           // Extract values from the event object
-          const { context, address, text, center } = event;
+          const { id, context, address, text, center } = event;
 
           const country = context.find((ctx: any) => ctx.id.includes('country'))?.text || '';
           const region = context.find((ctx: any) => ctx.id.includes('region'))?.text || '';
@@ -119,6 +125,7 @@ const LocationCreateForm = () => {
           const street_number = address || '';
 
           // Update form values
+          setValue('location_id', id);
           setValue('country', country);
           setValue('region', region);
           setValue('city', city);
@@ -241,7 +248,7 @@ const LocationCreateForm = () => {
                                         render={({ field }) => (
                                              <TextField
                                                   {...field}
-                                                  label={t('locations.locationStreet_number')}
+                                                  label={t('locations.locationStreetNumber')}
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled

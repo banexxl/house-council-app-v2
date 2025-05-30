@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "src/libs/supabase/client";
+import { supabase } from "src/libs/supabase/sb-client";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { SubscriptionPlan } from "src/types/subscription-plan";
 

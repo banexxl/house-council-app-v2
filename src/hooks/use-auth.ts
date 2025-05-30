@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from 'src/libs/supabase/client';
+import { supabase } from 'src/libs/supabase/sb-client';
 
 export const useAuth = async () => {
 

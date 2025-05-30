@@ -15,7 +15,7 @@ export const SettingsButton: FC<SettingsButtonProps> = (props) => {
   const pathname = usePathname();
 
   // Disable the button if on the specified URL
-  const isDisabled = pathname === '/dashboard/locations/add' || pathname === '/auth/login';
+  const isDisabled = pathname === '/dashboard/locations/new' || pathname === '/auth/login';
 
   return (
     <Tooltip title="Settings">

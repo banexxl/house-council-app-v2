@@ -1,5 +1,6 @@
 export interface BuildingLocation {
      id?: string; // UUID
+     location_id: string; // Foreign key to tblLocations
      created_at?: Date; // Timestamp of creation
      updated_at?: Date; // Timestamp of last update
      street_address: string; // Optional street address

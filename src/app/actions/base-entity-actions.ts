@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "src/libs/supabase/client";
+import { supabase } from "src/libs/supabase/sb-client";
 import { BaseEntity } from "src/types/base-entity";
 import { generateSlug } from "src/utils/url-creator";
 
