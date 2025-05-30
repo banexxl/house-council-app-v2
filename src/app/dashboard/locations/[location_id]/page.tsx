@@ -1,5 +1,4 @@
 import { Box } from '@mui/system'
-import { createClient } from '@supabase/supabase-js'
 
 const Page = async () => {
      // const { data: location } = await supabase
