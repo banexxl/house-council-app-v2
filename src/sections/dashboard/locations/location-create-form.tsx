@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,13 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
      const { t } = useTranslation();
      const [location, setLocation] = useState({ latitude: 44.817619, longitude: 20.457273 }); // Default to Belgrade
      const [markerData, setMarkerData] = useState<BuildingLocation[]>(locationsData);
+
+     useEffect(() => {
+          if (locationsData.length > 0) {
+               setMarkerData(locationsData);
+          }
+     }, [locationsData]);
+
      const [loading, setLoading] = useState<boolean>(false);
 
      const { control, handleSubmit, setValue, watch } = useForm({
@@ -75,7 +82,6 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                                              : toast.error(prefix + t('errors.location.unexpectedError'));
                }
           } catch (err) {
-               console.error(err);
                toast.error(t('locations.locationNotSaved') + ':\n' + t('errors.location.unexpectedError'), {
                     duration: 3000,
                });
@@ -137,8 +143,6 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
           ])
 
      };
-
-
 
      return (
           <Card

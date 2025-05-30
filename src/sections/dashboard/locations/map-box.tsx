@@ -21,8 +21,6 @@ export const MapComponent = ({
      const mapContainerRef = useRef<HTMLDivElement>(null);
      const mapRef = useRef<mapboxgl.Map | null>(null);
      const [mapReady, setMapReady] = useState(false);
-     console.log('markers', markers);
-
      mapboxgl.accessToken = mapBoxAccessToken || '';
 
      // Initialize map

@@ -6,8 +6,9 @@ import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
+import { getAllAddedLocations } from 'src/app/actions/location-actions/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
@@ -16,12 +17,20 @@ import { BuildingLocation } from 'src/types/location';
 
 type NewLoctionProps = {
      mapBoxAccessToken?: string;
-     locationsData: BuildingLocation[] | []
 }
 
-const NewLocation = ({ mapBoxAccessToken, locationsData }: NewLoctionProps) => {
+const NewLocation = ({ mapBoxAccessToken }: NewLoctionProps) => {
 
      const { t } = useTranslation();
+     const [locationsData, setLocationsData] = useState<BuildingLocation[]>([]);
+
+     useEffect(() => {
+          getAllAddedLocations().then((res) => {
+               if (res.success && res.data) {
+                    setLocationsData(res.data.length > 0 ? res.data : []);
+               }
+          });
+     }, []);
 
      return (
           <Box
