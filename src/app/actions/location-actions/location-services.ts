@@ -261,3 +261,65 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
      }
 }
 
+export const deleteLocationByID = async (id: string | undefined): Promise<{ success: boolean; error?: ErrorResponse }> => {
+     console.log('id', id);
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
+
+     if (!id) {
+          await logServerAction({
+               action: 'deleteLocationByID',
+               duration_ms: 0,
+               error: 'No location ID provided',
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: '',
+          })
+          return { success: false, error: { code: '400', details: null, hint: null, message: 'No location ID provided' } };
+     }
+     try {
+          const { error } = await supabase.from('tblBuildingLocations').delete().eq('id', id);
+          console.log(error);
+
+          if (error) {
+               await logServerAction({
+                    action: 'deleteLocationByID',
+                    duration_ms: 0,
+                    error: error.message,
+                    payload: { id },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: false, error: error };
+          } else {
+               await logServerAction({
+                    action: 'deleteLocationByID',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { id },
+                    status: 'success',
+                    type: 'db',
+                    user_id: null,
+                    id: id,
+               })
+               return { success: true };
+          }
+     } catch (error) {
+          await logServerAction({
+               action: 'deleteLocationByID',
+               duration_ms: 0,
+               error: (error as Error).message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: '',
+          })
+          return { success: false, error };
+     }
+}
+

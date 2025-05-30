@@ -149,6 +149,7 @@ export const es = {
   [tokens.locations.locationNotSavedDataTypeMismatch]: 'Incompatibilidad de tipo de datos',
   [tokens.locations.locationNotSavedCheckViolation]: 'Violación de verificación',
   [tokens.locations.locationNotSavedUnexpectedError]: 'Error inesperado',
+  [tokens.locations.locationDeleteConfirmation]: '¿Está seguro de que desea eliminar esta ubicación?',
   [tokens.locations.locationDeletedSuccessfully]: 'Ubicación eliminada correctamente',
   [tokens.locations.locationNotDeleted]: 'Ubicación no eliminada',
   [tokens.locations.locationAddress]: 'Dirección',

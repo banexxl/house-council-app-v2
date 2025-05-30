@@ -68,6 +68,7 @@ export const MapComponent = ({
                               lat={marker.latitude}
                               lng={marker.longitude}
                               full_address={`${marker.city}, ${marker.street_address} ${marker.street_number}`}
+                              location_id={marker.id!}
                               map={mapRef.current!}
                          />
                     ))}

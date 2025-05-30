@@ -157,6 +157,7 @@ export const tokens = {
     locationNotSavedCheckViolation: 'errors.location.checkViolation',
     locationNotSavedUnexpectedError: 'errors.location.unexpectedError',
     locationSuccessfullySaved: 'locations.locationSuccessfullySaved',
+    locationDeleteConfirmation: 'locations.locationDeleteConfirmation',
     locationDeletedSuccessfully: 'locations.locationDeletedSuccessfully',
     locationNotDeleted: 'locations.locationNotDeleted',
     locationAddress: 'locations.locationAddress',

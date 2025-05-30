@@ -149,6 +149,7 @@ export const en = {
   [tokens.locations.locationNotSavedDataTypeMismatch]: 'Data type mismatch',
   [tokens.locations.locationNotSavedCheckViolation]: 'Check violation',
   [tokens.locations.locationNotSavedUnexpectedError]: 'Unexpected error',
+  [tokens.locations.locationDeleteConfirmation]: 'Are you sure you want to delete this location?',
   [tokens.locations.locationDeletedSuccessfully]: 'Location deleted successfully',
   [tokens.locations.locationNotDeleted]: 'Location not deleted',
   [tokens.locations.locationAddress]: 'Address',

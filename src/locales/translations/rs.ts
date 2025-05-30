@@ -151,6 +151,7 @@ export const rs = {
      [tokens.locations.locationNotSavedDataTypeMismatch]: 'Podaci nedostaju ili nisu validni',
      [tokens.locations.locationNotSavedCheckViolation]: 'Povreda provere',
      [tokens.locations.locationNotSavedUnexpectedError]: 'Neočekivana greška',
+     [tokens.locations.locationDeleteConfirmation]: 'Da li ste sigurni da želite da obrišete ovu lokaciju?',
      [tokens.locations.locationDeletedSuccessfully]: 'Lokacija uspešno izbrisana',
      [tokens.locations.locationNotDeleted]: 'Greška prilikom brisanja lokacije',
      [tokens.locations.locationAddress]: 'Adresa',

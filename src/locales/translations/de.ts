@@ -149,6 +149,7 @@ export const de = {
   [tokens.locations.locationNotSavedDataTypeMismatch]: 'Typenverletzung',
   [tokens.locations.locationNotSavedCheckViolation]: 'Überprüfungsverletzung',
   [tokens.locations.locationNotSavedUnexpectedError]: 'Unerwarteter Fehler',
+  [tokens.locations.locationDeleteConfirmation]: 'Möchten Sie diesen Ort wirklich löschen?',
   [tokens.locations.locationDeletedSuccessfully]: 'Ort erfolgreich gelöscht',
   [tokens.locations.locationNotDeleted]: 'Ort nicht gelöscht',
   [tokens.locations.locationAddress]: 'Adresse',

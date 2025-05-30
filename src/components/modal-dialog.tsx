@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -23,6 +23,7 @@ interface PopupModalProps {
      confirmText?: string;
      cancelText?: string;
      type: ModalType;
+     loading?: boolean;
 }
 
 const iconStyle: SxProps<Theme> = {
@@ -49,8 +50,11 @@ export function PopupModal({
      children,
      confirmText = 'OK',
      cancelText = 'Cancel',
-     type
+     type,
 }: PopupModalProps) {
+
+     const [loading, setLoading] = useState(false);
+
      return (
           <Dialog
                open={isOpen}
@@ -76,9 +80,18 @@ export function PopupModal({
                               </Button>
                          )}
                          <Button
-                              onClick={type === 'confirmation' ? onConfirm : onClose}
+                              onClick={async () => {
+                                   if (type === 'confirmation' && onConfirm) {
+                                        setLoading(true);
+                                        await onConfirm();
+                                        setLoading(false);
+                                   } else {
+                                        onClose();
+                                   }
+                              }}
                               color="primary"
                               variant="contained"
+                              loading={loading}
                          >
                               {type === 'confirmation' ? confirmText : 'Close'}
                          </Button>
