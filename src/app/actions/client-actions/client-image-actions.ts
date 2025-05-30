@@ -53,8 +53,6 @@ export async function uploadFile(formData: FormData): Promise<{ success: boolean
 
      try {
           const uploadedFile = await s3.upload(params).promise();
-          console.log('uploadedFile', uploadedFile);
-
           return { success: true, message: 'File uploaded successfully', awsUrl: uploadedFile.Location };
      } catch (error) {
           return { success: false, message: 'Failed to upload file: ' + error };

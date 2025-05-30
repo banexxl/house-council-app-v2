@@ -262,7 +262,6 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
 }
 
 export const deleteLocationByID = async (id: string | undefined): Promise<{ success: boolean; error?: ErrorResponse }> => {
-     console.log('id', id);
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
@@ -281,7 +280,6 @@ export const deleteLocationByID = async (id: string | undefined): Promise<{ succ
      }
      try {
           const { error } = await supabase.from('tblBuildingLocations').delete().eq('id', id);
-          console.log(error);
 
           if (error) {
                await logServerAction({

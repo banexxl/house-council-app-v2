@@ -40,8 +40,6 @@ export async function GET(request: Request) {
      if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
           if (error) {
-               console.log('error', error);
-
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${error.message}`);
           }
      }
@@ -52,8 +50,6 @@ export async function GET(request: Request) {
           console.error('Error retrieving session:', sessionError);
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
      }
-     console.log('sessionData', sessionData);
-
      if (!sessionData.session) {
           console.error('No session available after sign in.');
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=No session found.`);
@@ -61,8 +57,6 @@ export async function GET(request: Request) {
 
      // Extract the user's email from the session
      const userEmail = sessionData.session.user.email;
-     console.log('Authenticated user email:', userEmail);
-
      // Check if the user's email exists in tblClients.
      const { data, error: clientError } = await supabase
           .from('tblClients')
@@ -83,7 +77,6 @@ export async function GET(request: Request) {
      if (!data || data.length === 0) {
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-          console.log('Email not registered. Consider triggering a sign-up process.');
 
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
@@ -94,17 +87,12 @@ export async function GET(request: Request) {
      if (data.length > 1) {
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-          console.log('data', data);
-          console.log('error', error);
-          console.log('Duplicate email found in tblClients. Please contact support.');
 
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`);
      }
-
-     console.log('Email found in tblClients. Sign in successful.');
 
      // Redirect to dashboard with absolute URL
      const dashboardUrl = `${requestUrl.origin}/dashboard`;

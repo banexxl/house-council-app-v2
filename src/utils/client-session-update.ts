@@ -21,7 +21,6 @@ export const useSessionUpdater = () => {
 
                // Ensure the cookie was previously set and has now changed
                if (prevCookieValue.current !== null && currentCookieValue !== prevCookieValue.current) {
-                    console.log(`Cookie "${COOKIE_NAME}" modified - reloading page`);
                     prevCookieValue.current = currentCookieValue;
                     window.location.reload();
                }

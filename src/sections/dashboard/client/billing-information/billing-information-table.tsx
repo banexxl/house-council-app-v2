@@ -95,8 +95,6 @@ const useBillingInfoSearch = () => {
 };
 
 const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], paymentMethods, billingInfoStatuses, clients }) => {
-     console.log("BillingInformationTable data:", data);
-
      const { t } = useTranslation();
      const [count, setCount] = useState(data.length);
      const billingInfoSearch: ReturnType<typeof useBillingInfoSearch> = useBillingInfoSearch();

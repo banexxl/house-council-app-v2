@@ -75,9 +75,6 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
 
           } catch (error) {
                toast.error(t('errors.client.clientPaymentMethodError'));
-          } finally {
-               console.log('finally');
-
           }
      }
 
