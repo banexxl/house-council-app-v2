@@ -28,7 +28,7 @@ import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { useRouter } from 'next/navigation';
 import { BuildingLocation } from 'src/types/location';
-import { deleteLocationsByIDsAction } from 'src/app/actions/location-actions/location-services';
+import { deleteLocationsByIDsAction } from 'src/app/actions/location/location-services';
 import { FilterBar } from '../client/table-filter';
 import toast from 'react-hot-toast';
 

@@ -3,7 +3,7 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 
-import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
+import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
 import { readAllEntities } from 'src/app/actions/base-entity-actions';

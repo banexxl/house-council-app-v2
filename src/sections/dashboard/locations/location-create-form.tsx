@@ -6,7 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import LocationAutocomplete from './autocomplete';
 import { BuildingLocation } from 'src/types/location';
-import { insertLocationAction } from 'src/app/actions/location-actions/location-services';
+import { insertLocationAction } from 'src/app/actions/location/location-services';
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate';
 import toast from 'react-hot-toast';
 import SaveIcon from '@mui/icons-material/Save';

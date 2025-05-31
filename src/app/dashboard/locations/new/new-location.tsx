@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { getAllAddedLocations } from 'src/app/actions/location-actions/location-services';
+import { getAllAddedLocations } from 'src/app/actions/location/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';

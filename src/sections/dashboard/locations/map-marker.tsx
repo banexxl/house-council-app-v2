@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
 import { SettingsContext } from 'src/contexts/settings/settings-context';
 import { getPrimary } from 'src/theme/utils';
-import { deleteLocationByID } from 'src/app/actions/location-actions/location-services';
+import { deleteLocationByID } from 'src/app/actions/location/location-services';
 import { PopupModal } from 'src/components/modal-dialog';
 import toast from 'react-hot-toast';
 

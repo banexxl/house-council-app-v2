@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { readClientByEmailAction } from '../actions/client-actions/client-actions';
+import { readClientByEmailAction } from '../actions/client/client-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/ss-supabase-service-role-client';
 

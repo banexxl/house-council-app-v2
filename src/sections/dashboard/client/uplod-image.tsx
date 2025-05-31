@@ -17,7 +17,7 @@ import {
      Tooltip,
 } from "@mui/material"
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
-import { uploadFile } from "src/app/actions/client-actions/client-image-actions"
+import { uploadFile } from "src/app/actions/client/client-image-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 

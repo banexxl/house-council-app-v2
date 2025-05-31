@@ -3,9 +3,9 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/client/billing-information/billing-information-table-header';
 import BillingInformationTable from 'src/sections/dashboard/client/billing-information/billing-information-table';
-import { readAllClientBillingInformation } from 'src/app/actions/client-actions/client-billing-actions';
+import { readAllClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
 import { readAllEntities } from 'src/app/actions/base-entity-actions';
-import { readAllClientsAction } from 'src/app/actions/client-actions/client-actions';
+import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { BaseEntity } from 'src/types/base-entity';
 
 

@@ -29,7 +29,7 @@ import { useDialog } from 'src/hooks/use-dialog';
 import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { FilterBar } from './table-filter';
-import { deleteClientByIDsAction } from 'src/app/actions/client-actions/client-actions';
+import { deleteClientByIDsAction } from 'src/app/actions/client/client-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { BaseEntity } from 'src/types/base-entity';
