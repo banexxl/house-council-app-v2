@@ -176,13 +176,13 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords }: 
                const getByType = (type: string) =>
                     context.find((c: any) => c.id.startsWith(type))?.text || '';
 
-               const country = getByType('country');               // e.g., Serbia
-               const region = getByType('region');                 // e.g., South Bačka District
-               const postcode = getByType('postcode');             // e.g., 21102
-               const city = getByType('place') || getByType('locality'); // e.g., Novi Sad
+               const country = getByType('country');
+               const region = getByType('region');
+               const postcode = getByType('postcode');
+               const city = getByType('place') || getByType('locality');
 
-               const address = feature.address || '';              // e.g., 1
-               const street = feature.text || '';                  // e.g., Милоша Црњанског
+               const address = feature.address || '';
+               const street = feature.text || '';
 
                const street_address = street;
                const street_number = address;
