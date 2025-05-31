@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache"
-import { supabase } from "src/libs/supabase/sb-client"
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client"
 import { Client } from "src/types/client"
 
 export const createOrUpdateClientAction = async (client: Client): Promise<{
@@ -10,6 +10,7 @@ export const createOrUpdateClientAction = async (client: Client): Promise<{
      saveClientActionError?: any
 }> => {
 
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      const { id, ...clientData } = client
      let result
 
@@ -43,6 +44,9 @@ export const readAllClientsAction = async (): Promise<{
      getAllClientsActionData?: Client[];
      getAllClientsActionError?: string;
 }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      try {
           const { data, error } = await supabase
                .from("tblClients")
@@ -87,6 +91,9 @@ export const readClientByIdAction = async (
      getClientByIdActionData?: Client
      getClientByIdActionError?: string
 }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      try {
           const { data, error } = await supabase
                .from("tblClients")
@@ -117,7 +124,13 @@ export const readClientByIdAction = async (
      }
 }
 
-export const deleteClientByIDsAction = async (ids: string[]): Promise<{ deleteClientByIDsActionSuccess: boolean, deleteClientByIDsActionError?: string }> => {
+export const deleteClientByIDsAction = async (ids: string[]): Promise<{
+     deleteClientByIDsActionSuccess: boolean,
+     deleteClientByIDsActionError?: string
+}> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      try {
           const { error } = await supabase.from('tblClients').delete().in('id', ids);
           if (error) {
@@ -132,7 +145,13 @@ export const deleteClientByIDsAction = async (ids: string[]): Promise<{ deleteCl
      }
 }
 
-export const readClientByEmailAction = async (email: string): Promise<{ getClientByEmailActionSuccess: boolean, getClientByEmailActionData?: Client }> => {
+export const readClientByEmailAction = async (email: string): Promise<{
+     getClientByEmailActionSuccess: boolean,
+     getClientByEmailActionData?: Client
+}> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      try {
           const { data, error } = await supabase.from('tblClients').select().eq('email', email).single()
           if (error) throw error

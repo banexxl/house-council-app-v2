@@ -1,21 +1,55 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "src/libs/supabase/sb-client";
+import { logServerAction } from "src/libs/supabase/server-logging";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client";
 import { BaseEntity } from "src/types/base-entity";
 import { generateSlug } from "src/utils/url-creator";
 
 export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean; createdEntity?: T; error?: any }> => {
 
+     const duration_ms = Date.now();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      if (!table.trim()) {
+          await logServerAction({
+               action: 'create-entity',
+               duration_ms: Date.now() - duration_ms,
+               error: 'clients.clientSettingsNoTableError',
+               payload: { table, entity },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          })
           return { success: false, error: 'clients.clientSettingsNoTableError' };
      }
 
      if (!entity || Object.keys(entity).length === 0) {
+          await logServerAction({
+               action: 'create-entity',
+               duration_ms: Date.now() - duration_ms,
+               error: 'clients.clientSettingsNoEntityError',
+               payload: { table, entity },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          })
           return { success: false, error: 'clients.clientSettingsNoEntityError' };
      }
 
      if (entity.name.trim() === '') {
+          await logServerAction({
+               action: 'create-entity',
+               duration_ms: Date.now() - duration_ms,
+               error: 'clients.clientSettingsNoNameError',
+               payload: { table, entity },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          })
           return { success: false, error: 'clients.clientSettingsNoNameError' };
      }
 
@@ -28,6 +62,16 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
 
      // If an existing entity is found, return an error
      if (existingEntity) {
+          await logServerAction({
+               action: 'create-entity',
+               duration_ms: Date.now() - duration_ms,
+               error: 'clients.clientSettingsAlreadyExists',
+               payload: { table, entity },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          })
           return { success: false, error: 'clients.clientSettingsAlreadyExists' };
      }
 
@@ -39,26 +83,66 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
      const { data, error } = await supabase.from(table).insert(insertData).select().single();
 
      if (error) {
+          await logServerAction({
+               action: 'create-entity',
+               duration_ms: Date.now() - duration_ms,
+               error: error.message,
+               payload: { table, entity },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          })
           return { success: false, error };
      }
 
+     await logServerAction({
+          action: 'create-entity',
+          duration_ms: Date.now() - duration_ms,
+          error: '',
+          payload: { table, entity },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     })
      revalidatePath('/dashboard/clients/client-settings');
      return { success: true, createdEntity: data };
 
 };
-
 export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
-
      if (error) {
+          await logServerAction({
+               action: 'read-entity',
+               duration_ms: Date.now(),
+               error: error.message,
+               payload: { table, id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
           return { success: false, error: error.message };
      }
+
+     await logServerAction({
+          action: 'read-entity',
+          duration_ms: Date.now(),
+          error: '',
+          payload: { table, id },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     });
 
      return { success: true, entity: data };
 };
 
 export const updateEntity = async <T extends BaseEntity>(table: string, id: string, entity: Partial<T>): Promise<{ success: boolean, updatedEntity?: T, error?: any }> => {
-
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      if (!table.trim()) {
           return { success: false, error: 'clients.clientSettingsNoTableError' };
      }
@@ -71,7 +155,6 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
           return { success: false, error: 'clients.clientSettingsNoNameError' };
      }
 
-     // Check if name already exists, ignoring case, but ignore current entry
      const { data: existingEntity, error: readError } = await supabase
           .from(table)
           .select('id')
@@ -79,7 +162,6 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
           .neq('id', id)
           .single();
 
-     // If an existing entity is found, return an error
      if (existingEntity) {
           return { success: false, error: 'clients.clientSettingsAlreadyExists' };
      }
@@ -94,34 +176,102 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
           .single();
 
      if (error) {
+          await logServerAction({
+               action: 'update-entity',
+               duration_ms: Date.now(),
+               error: error.message,
+               payload: { table, id, entity },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
           return { success: false, error };
      }
+
+     await logServerAction({
+          action: 'update-entity',
+          duration_ms: Date.now(),
+          error: '',
+          payload: { table, id, entity },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     });
 
      revalidatePath('/dashboard/clients/client-settings');
      return { success: true, updatedEntity: data };
 };
 
 export const deleteEntity = async (table: string, id: string): Promise<{ success: boolean, error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { error } = await supabase.from(table).delete().eq('id', id);
 
      if (error) {
+          await logServerAction({
+               action: 'delete-entity',
+               duration_ms: Date.now(),
+               error: error.message,
+               payload: { table, id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
           return { success: false, error: error.message };
      }
+
+     await logServerAction({
+          action: 'delete-entity',
+          duration_ms: Date.now(),
+          error: '',
+          payload: { table, id },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     });
 
      revalidatePath('/dashboard/clients/client-settings');
      return { success: true };
 };
 
 export const readAllEntities = async <T extends BaseEntity>(table: string): Promise<T[]> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { data, error } = await supabase
           .from(table)
           .select('*')
           .order('name', { ascending: true });
 
      if (error) {
-          console.error(`Error fetching entities from ${table}:`, error);
+          await logServerAction({
+               action: 'read-all-entities',
+               duration_ms: Date.now(),
+               error: error.message,
+               payload: { table },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
           return [];
      }
 
+     await logServerAction({
+          action: 'read-all-entities',
+          duration_ms: Date.now(),
+          error: '',
+          payload: { table },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     });
+
      return data;
 };
+
