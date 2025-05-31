@@ -17,6 +17,20 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
      const startTime = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
+     if (!values || !values.street_address || !values.city || !values.country || !values.street_number) {
+          await logServerAction({
+               action: 'insertLocationAction',
+               duration_ms: Date.now() - startTime,
+               error: 'Invalid location data provided',
+               payload: values,
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: values.id || '',
+          })
+          return { success: false, error: { code: '22P02', details: null, hint: null, message: 'Invalid location data provided' } };
+     }
+
      try {
           // Check if a location with the same location
           const { data: existingLocation, error: fetchError } = await supabase
@@ -279,7 +293,7 @@ export const deleteLocationByID = async (id: string | undefined): Promise<{ succ
           return { success: false, error: { code: '400', details: null, hint: null, message: 'No location ID provided' } };
      }
      try {
-          const { error } = await supabase.from('tblBuildingLocations').delete().eq('id', id);
+          const { error } = await supabase.from('tblBuildingLocations').delete().eq('location_id', id);
 
           if (error) {
                await logServerAction({

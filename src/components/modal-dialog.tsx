@@ -57,6 +57,7 @@ export function PopupModal({
 
      return (
           <Dialog
+               id='popup-dialog'
                open={isOpen}
                onClose={onClose}
                aria-labelledby="popup-dialog-title"

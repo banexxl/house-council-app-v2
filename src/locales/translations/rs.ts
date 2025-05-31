@@ -129,6 +129,9 @@ export const rs = {
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      //#endregion
      //#region Locations
+     [tokens.locations.geoLocationAvailable]: 'Lokacija dostupna',
+     [tokens.locations.geoLocationNotAvailable]: 'Lokacija nije dostupna',
+     [tokens.locations.locationSelected]: 'Lokacija izabrana',
      [tokens.locations.locationsTitle]: 'Pregled lokacija',
      [tokens.locations.locationList]: 'Lista lokacija',
      [tokens.locations.locationDetails]: 'Detalji lokacije',

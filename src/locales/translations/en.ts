@@ -127,6 +127,9 @@ export const en = {
   [tokens.nav.verifyCode]: 'Verify Code',
   //#endregion
   //#region Locations
+  [tokens.locations.geoLocationAvailable]: 'Geolocation available',
+  [tokens.locations.geoLocationNotAvailable]: 'Geolocation not available',
+  [tokens.locations.locationSelected]: 'Location selected',
   [tokens.locations.locationsTitle]: 'Locations',
   [tokens.locations.locationList]: 'Location List',
   [tokens.locations.locationDetails]: 'Location Details',

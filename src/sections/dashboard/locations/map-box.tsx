@@ -11,6 +11,7 @@ interface MapComponentProps {
      markers?: BuildingLocation[];
      zoom?: number;
      refreshKey?: number;
+     onMapClick?: (coords: { latitude: number; longitude: number }, address: string) => void;
 }
 
 export const MapComponent = ({
@@ -19,6 +20,7 @@ export const MapComponent = ({
      markers = [],
      zoom = 12,
      refreshKey,
+     onMapClick,
 }: MapComponentProps) => {
      const mapContainerRef = useRef<HTMLDivElement | null>(null);
      const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -42,10 +44,36 @@ export const MapComponent = ({
                zoom,
           });
 
+          map.flyTo({
+               center: [center.longitude, center.latitude],
+               zoom,
+               essential: true, // this animation is considered essential with respect to prefers-reduced-motion
+          })
+
           mapRef.current = map;
 
           map.on('load', () => {
                setMapReady(true);
+          });
+
+          map.on('click', async (e) => {
+               const { lng, lat } = e.lngLat;
+
+               try {
+                    const res = await fetch(
+                         `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapBoxAccessToken}`
+                    );
+
+                    if (!res.ok) throw new Error('Failed to reverse geocode');
+                    const data = await res.json();
+
+                    const place = data.features?.[0];
+                    if (place && onMapClick) {
+                         onMapClick({ latitude: lat, longitude: lng }, place.place_name);
+                    }
+               } catch (err) {
+                    console.error('Error reverse geocoding:', err);
+               }
           });
 
           return () => {
@@ -68,7 +96,7 @@ export const MapComponent = ({
                               lat={marker.latitude}
                               lng={marker.longitude}
                               full_address={`${marker.city}, ${marker.street_address} ${marker.street_number}`}
-                              location_id={marker.id!}
+                              location_id={marker.location_id!}
                               map={mapRef.current!}
                          />
                     ))}

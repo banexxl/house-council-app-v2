@@ -6,7 +6,9 @@ import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useGeolocated } from 'react-geolocated';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { getAllAddedLocations } from 'src/app/actions/location-actions/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
@@ -23,6 +25,26 @@ const NewLocation = ({ mapBoxAccessToken }: NewLoctionProps) => {
 
      const { t } = useTranslation();
      const [locationsData, setLocationsData] = useState<BuildingLocation[]>([]);
+     const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+     const { coords, isGeolocationEnabled } = useGeolocated({
+          positionOptions: {
+               enableHighAccuracy: false,
+          },
+          userDecisionTimeout: 5000,
+          onSuccess: (position) => {
+               if (position.coords) {
+                    toast.success(t('locations.geoLocationAvailable'));
+                    setClientCoords({
+                         latitude: position.coords.latitude || 47.502994,
+                         longitude: position.coords.longitude || 19.044443,
+                    });
+               }
+          },
+          onError: () => {
+               toast.error(t('locations.geoLocationNotAvailable'));
+          },
+     });
 
      useEffect(() => {
           getAllAddedLocations().then((res) => {
@@ -31,6 +53,15 @@ const NewLocation = ({ mapBoxAccessToken }: NewLoctionProps) => {
                }
           });
      }, []);
+
+     useEffect(() => {
+          if (coords) {
+               setClientCoords({
+                    latitude: coords?.latitude || 47.502994,
+                    longitude: coords?.longitude || 19.044443,
+               });
+          }
+     }, [coords, isGeolocationEnabled, t]);
 
      return (
           <Box
@@ -66,7 +97,11 @@ const NewLocation = ({ mapBoxAccessToken }: NewLoctionProps) => {
                                    </Typography>
                               </Breadcrumbs>
                          </Stack>
-                         <LocationCreateForm mapBoxAccessToken={mapBoxAccessToken} locationsData={locationsData} />
+                         <LocationCreateForm
+                              mapBoxAccessToken={mapBoxAccessToken}
+                              locationsData={locationsData}
+                              clientCoords={clientCoords}
+                         />
                     </Stack>
                </Container>
           </Box>

@@ -16,12 +16,14 @@ import { MapComponent } from './map-box';
 type LocationCreateFormProps = {
      mapBoxAccessToken?: string;
      locationsData: BuildingLocation[] | [];
+     clientCoords?: { latitude: number; longitude: number } | null;
+     isGeolocationEnabled?: boolean;
 }
 
-const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreateFormProps) => {
+const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords }: LocationCreateFormProps) => {
 
      const { t } = useTranslation();
-     const [location, setLocation] = useState({ latitude: 44.817619, longitude: 20.457273 }); // Default to Belgrade
+     const [location, setLocation] = useState({ latitude: clientCoords?.latitude, longitude: clientCoords?.longitude }); // Default to Belgrade
      const [markerData, setMarkerData] = useState<BuildingLocation[]>(locationsData);
      const [mapRefreshKey, setMapRefreshKey] = useState(0);
 
@@ -67,6 +69,13 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                const { error } = await insertLocationAction(payload);
 
                if (!error) {
+                    setMarkerData((prev) => [
+                         ...prev,
+                         {
+                              ...payload,
+                              id: data.location_id,
+                         },
+                    ]);
                     toast.success(t('locations.locationSaved'), { duration: 3000 });
                } else {
                     const prefix = t('locations.locationNotSaved') + ':\n';
@@ -92,7 +101,6 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
           }
           setMapRefreshKey(prev => prev + 1);
      };
-
      const handleClear = () => {
           setValue('country', '');
           setValue('region', '');
@@ -146,6 +154,59 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
           ]);
           setMapRefreshKey(prev => prev + 1);
      };
+
+     const handleMapClick = async (coords: { latitude: number; longitude: number }) => {
+          const { latitude, longitude } = coords;
+
+          try {
+               const res = await fetch(
+                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapBoxAccessToken}`
+               );
+
+               if (!res.ok) throw new Error('Failed to reverse geocode');
+               const data = await res.json();
+               const feature = data.features?.[0];
+               if (!feature) {
+                    toast.error(t('locations.invalidAddressFormat'));
+                    return;
+               }
+
+               // Find components
+               const context = feature.context || [];
+               const getByType = (type: string) =>
+                    context.find((c: any) => c.id.startsWith(type))?.text || '';
+
+               const country = getByType('country');               // e.g., Serbia
+               const region = getByType('region');                 // e.g., South Bačka District
+               const postcode = getByType('postcode');             // e.g., 21102
+               const city = getByType('place') || getByType('locality'); // e.g., Novi Sad
+
+               const address = feature.address || '';              // e.g., 1
+               const street = feature.text || '';                  // e.g., Милоша Црњанског
+
+               const street_address = street;
+               const street_number = address;
+
+               setLocation(coords);
+
+               setValue('location_id', feature.id);
+               setValue('latitude', latitude);
+               setValue('longitude', longitude);
+               setValue('street_address', street_address);
+               setValue('street_number', street_number);
+               setValue('country', country);
+               setValue('region', region);
+               setValue('city', city);
+               setValue('postcode', postcode ? parseInt(postcode) : 0);
+
+               toast.success(`${t('locations.locationSelected')}: ${feature.place_name}`);
+          } catch (err) {
+               console.error('Reverse geocoding error:', err);
+               toast.error(t('locations.locationNotFound'));
+          }
+     };
+
+
 
      return (
           <Card
@@ -281,10 +342,15 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData }: LocationCreate
                </Box>
                <MapComponent
                     mapBoxAccessToken={mapBoxAccessToken}
-                    center={location}
+                    center={
+                         location && typeof location.longitude === 'number' && typeof location.latitude === 'number'
+                              ? { longitude: location.longitude, latitude: location.latitude }
+                              : { longitude: 19.044443, latitude: 47.502994 }
+                    }
                     markers={markerData}
-                    zoom={14}
+                    zoom={17}
                     refreshKey={mapRefreshKey}
+                    onMapClick={handleMapClick}
                />
           </Card>
      );

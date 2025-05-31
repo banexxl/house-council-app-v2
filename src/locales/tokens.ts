@@ -134,6 +134,9 @@ export const tokens = {
     buildingEdit: 'buildings.buildingEdit',
   },
   locations: {
+    geoLocationAvailable: 'locations.geoLocationAvailable',
+    geoLocationNotAvailable: 'locations.geoLocationNotAvailable',
+    locationSelected: 'locations.locationSelected',
     locationsTitle: 'locations.locationsTitle',
     locationList: 'locations.locationList',
     locationDetails: 'locations.locationDetails',
