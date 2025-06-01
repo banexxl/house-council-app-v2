@@ -1,10 +1,13 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "src/libs/supabase/sb-client";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client";
 import { Feature } from "src/types/base-entity";
 
 export const updateFeature = async (id: string, feature: Partial<Feature>): Promise<{ success: boolean; updatedFeature?: Feature; error?: any }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      if (!feature || Object.keys(feature).length === 0) {
           return { success: false, error: 'clients.clientSettingsNoEntityError' };
      }

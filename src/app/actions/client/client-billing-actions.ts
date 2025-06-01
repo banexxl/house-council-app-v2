@@ -1,13 +1,14 @@
 'use server';
 
 import { revalidatePath } from "next/cache"
-import { supabase } from "src/libs/supabase/sb-client";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client";
 import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 
 export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
      : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformation?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
 
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      let result;
 
      if (billingInformationId && billingInformationId !== "") {
@@ -62,6 +63,8 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
 
 export const readClientBillingInformation = async (id: string): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformationData?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
 
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { data, error } = await supabase
           .from('tblBillingInformation')
           .select('*')
@@ -76,6 +79,8 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
 }
 
 export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      if (ids?.length == 0) {
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: "No IDs provided" };
@@ -99,6 +104,9 @@ export const readAllClientBillingInformation = async (): Promise<{
      readAllClientBillingInformationData?: (ClientBillingInformation & { client: Client })[];
      readAllClientBillingInformationError?: string;
 }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { data, error } = await supabase
           .from("tblBillingInformation")
           .select(`
