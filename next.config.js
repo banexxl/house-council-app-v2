@@ -2,7 +2,16 @@
 const config = {
   reactStrictMode: false,
   images: {
-    domains: ['firebasestorage.googleapis.com', 'house-council.s3.amazonaws.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'house-council.s3.amazonaws.com',
+      },
+    ],
   },
   experimental: {
     serverActions: {
@@ -12,3 +21,4 @@ const config = {
 };
 
 module.exports = config;
+
