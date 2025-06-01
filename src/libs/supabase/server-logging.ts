@@ -1,4 +1,4 @@
-import { useServerSideSupabaseServiceRoleClient } from "./ss-supabase-service-role-client";
+import { useServerSideSupabaseServiceRoleClient } from "./sb-server";
 
 export type LogType =
      | 'api'
