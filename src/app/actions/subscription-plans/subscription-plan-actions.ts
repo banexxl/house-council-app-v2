@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { SubscriptionPlan } from "src/types/subscription-plan";
 
 export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):

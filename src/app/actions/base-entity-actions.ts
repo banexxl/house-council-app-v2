@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { BaseEntity } from "src/types/base-entity";
 import { generateSlug } from "src/utils/url-creator";
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from "next/cache"
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/ss-supabase-service-role-client";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 
