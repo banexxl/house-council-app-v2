@@ -1,11 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { readClientByEmailAction } from '../actions/client/client-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/ss-supabase-service-role-client';
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 
 export type SignInFormValues = {
      email: string;
@@ -20,7 +18,9 @@ export type ErrorType = {
 }
 
 export const checkIfUserExists = async (email: string): Promise<boolean> => {
-     const supabase = await useServerSideSupabaseClient();
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { data, error } = await supabase
           .from('tblClients')
           .select('email')
@@ -71,34 +71,9 @@ export const checkIfUserExists = async (email: string): Promise<boolean> => {
      return !!data;
 }
 
-export const useServerSideSupabaseClient = async () => {
-     // Use the server-side Supabase client
-     const cookieStore = await cookies();
-     const supabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-               cookies: {
-                    getAll: () => cookieStore.getAll(),
-                    setAll: (cookiesToSet) => {
-                         cookiesToSet.forEach(({ name, value, options }) => {
-                              try {
-                                   cookieStore.set(name, value, options);
-                              } catch {
-                                   // Handle cases where setting cookies in server actions isn't supported
-                              }
-                         });
-                    },
-               },
-          }
-     );
-
-     return supabase
-}
-
 export async function magicLinkLogin(email: string) {
 
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      // Check if the user exists
      const userExists = await checkIfUserExists(email);
 
@@ -165,7 +140,7 @@ export async function magicLinkLogin(email: string) {
 
 export async function logout() {
 
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { error } = await supabase.auth.signOut();
 
@@ -186,7 +161,7 @@ export async function logout() {
 
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
 
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      // Initiate Google OAuth flow.
      const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
