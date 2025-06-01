@@ -68,19 +68,6 @@ export const ClientTableHeader = (props: ClientTableHeaderProps) => {
                          </Button>
                     </Stack>
                </Stack>
-               <Stack alignItems="center" direction="row" spacing={3}>
-                    <Button
-                         href={paths.dashboard.clients.new}
-                         startIcon={
-                              <SvgIcon>
-                                   <PlusIcon />
-                              </SvgIcon>
-                         }
-                         variant="contained"
-                    >
-                         {t('common.btnCreate')}
-                    </Button>
-               </Stack>
           </Stack>
      );
 };

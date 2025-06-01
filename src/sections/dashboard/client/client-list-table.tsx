@@ -186,7 +186,9 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
           { label: t('clients.clientType'), value: 'type' },
           { label: t('clients.clientStatus'), value: 'status' },
           { label: t('common.updatedAt'), value: 'updated_at' },
-        ]} />
+        ]}
+        btnAddUrl='/dashboard/clients/new'
+      />
       <Scrollbar>
         <Table sx={{ minWidth: 700 }}>
           <TableHead>

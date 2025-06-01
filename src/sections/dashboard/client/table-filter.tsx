@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import { Box, Button, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 
 
 export interface TabOption {
@@ -41,6 +42,8 @@ export const FilterBar = <T,>({
   initialSortDir = 'asc',
   btnAddUrl
 }: FilterBarProps<T>) => {
+
+  const router = useRouter();
   const { t } = useTranslation();
   const [currentTab, setCurrentTab] = useState<string>(tabs[0]?.value || '');
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -88,7 +91,14 @@ export const FilterBar = <T,>({
             <Tab key={tab.value} label={tab.label} value={tab.value} />
           ))}
         </Tabs>
-        <Button variant="contained" loading={loading} onClick={() => setLoading(true)} href={btnAddUrl}>
+        <Button
+          variant="contained"
+          loading={loading}
+          onClick={() => {
+            router.push(btnAddUrl!);
+            setLoading(true)
+          }}
+        >
           {t('common.btnAdd')}
         </Button>
       </Box>
