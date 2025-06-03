@@ -10,7 +10,7 @@ export type UserSessionCombined = {
      error?: string
 }
 
-export const useAuth = async (): Promise<UserSessionCombined> => {
+export const getServerAuth = async (): Promise<UserSessionCombined> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data: userSession, error } = await supabase.auth.getUser();
