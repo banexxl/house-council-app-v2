@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChangeEvent, MouseEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
@@ -13,12 +13,9 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { productsApi } from 'src/api/products';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
-
-
 import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
@@ -53,23 +50,22 @@ const useBuildingsSearch = () => {
     setState((prevState) => ({
       ...prevState,
       filters,
+      page: 0, // reset to first page on filter change
     }));
   }, []);
 
-  const handlePageChange = useCallback(
-    (event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
-      setState((prevState) => ({
-        ...prevState,
-        page,
-      }));
-    },
-    []
-  );
+  const handlePageChange = useCallback((_event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
+    setState((prevState) => ({
+      ...prevState,
+      page,
+    }));
+  }, []);
 
   const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setState((prevState) => ({
       ...prevState,
       rowsPerPage: parseInt(event.target.value, 10),
+      page: 0,
     }));
   }, []);
 
@@ -81,124 +77,72 @@ const useBuildingsSearch = () => {
   };
 };
 
-interface BuildingsStoreState {
-  products: Building[];
-  productsCount: number;
-}
-
-const useBuildingsStore = (searchState: BuildingsSearchState) => {
-
-  const [state, setState] = useState<BuildingsStoreState>({
-    products: [],
-    productsCount: 0,
-  });
-
-  // const handleBuildingsGet = useCallback(async () => {
-  //   try {
-  //     const response = await productsApi.getBuildings(searchState);
-
-  //   
-  //       setState({
-  //         products: response.data,
-  //         productsCount: response.count,
-  //       });
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }, [searchState]);
-
-  // useEffect(
-  //   () => {
-  //     handleBuildingsGet();
-  //   },
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   [searchState]
-  // );
-
-  return {
-    ...state,
-  };
+type BuildingTableProps = {
+  clientBuildings: Building[];
 };
 
-const Buildings = () => {
-  const productsSearch = useBuildingsSearch();
-  const productsStore = useBuildingsStore(productsSearch.state);
+const Buildings = ({ clientBuildings }: BuildingTableProps) => {
+  const buildingSearch = useBuildingsSearch();
 
+  // Optional: filter logic here, if needed
+  const filteredBuildings = useMemo(() => {
+    const { name } = buildingSearch.state.filters;
 
+    return clientBuildings.filter((building) =>
+      name ? building.building_location?.street_address.toLowerCase().includes(name.toLowerCase()) : true
+    );
+  }, [clientBuildings, buildingSearch.state.filters]);
+
+  const paginatedBuildings = useMemo(() => {
+    const start = buildingSearch.state.page * buildingSearch.state.rowsPerPage;
+    const end = start + buildingSearch.state.rowsPerPage;
+    return filteredBuildings.slice(start, end);
+  }, [filteredBuildings, buildingSearch.state.page, buildingSearch.state.rowsPerPage]);
 
   return (
     <>
       <Seo title="Dashboard: Building List" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
+      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
         <Container maxWidth="xl">
           <Stack spacing={4}>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              spacing={4}
-            >
+            <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
                 <Typography variant="h4">Buildings</Typography>
                 <Breadcrumbs separator={<BreadcrumbsSeparator />}>
-                  <Link
-                    color="text.primary"
-                    component={RouterLink}
-                    href={paths.dashboard.index}
-                    variant="subtitle2"
-                  >
+                  <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
                     Dashboard
                   </Link>
-                  <Link
-                    color="text.primary"
-                    component={RouterLink}
-                    href={paths.dashboard.products.index}
-                    variant="subtitle2"
-                  >
+                  <Link color="text.primary" component={RouterLink} href={paths.dashboard.products.index} variant="subtitle2">
                     Buildings
                   </Link>
-                  <Typography
-                    color="text.secondary"
-                    variant="subtitle2"
-                  >
+                  <Typography color="text.secondary" variant="subtitle2">
                     List
                   </Typography>
                 </Breadcrumbs>
               </Stack>
-              <Stack
-                alignItems="center"
-                direction="row"
-                spacing={3}
+              <Button
+                component={RouterLink}
+                href={paths.dashboard.products.create}
+                startIcon={
+                  <SvgIcon>
+                    <PlusIcon />
+                  </SvgIcon>
+                }
+                variant="contained"
               >
-                <Button
-                  component={RouterLink}
-                  href={paths.dashboard.products.create}
-                  startIcon={
-                    <SvgIcon>
-                      <PlusIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Add
-                </Button>
-              </Stack>
+                Add
+              </Button>
             </Stack>
+
             <Card>
-              <BuildingListSearch onFiltersChange={productsSearch.handleFiltersChange} />
+              <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} />
               <BuildingListTable
-                onPageChange={productsSearch.handlePageChange}
-                onRowsPerPageChange={productsSearch.handleRowsPerPageChange}
-                page={productsSearch.state.page}
-                items={productsStore.products}
-                count={productsStore.productsCount}
-                rowsPerPage={productsSearch.state.rowsPerPage}
+                items={paginatedBuildings}
+                count={filteredBuildings.length}
+                page={buildingSearch.state.page}
+                rowsPerPage={buildingSearch.state.rowsPerPage}
+                onPageChange={buildingSearch.handlePageChange}
+                onRowsPerPageChange={buildingSearch.handleRowsPerPageChange}
               />
             </Card>
           </Stack>

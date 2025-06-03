@@ -5,13 +5,8 @@ import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-ser
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 
-// Standard return types
-export type BuildingData<T> =
-     | { success: true; data: T }
-     | { success: false; error: string };
-
 // GET all buildings
-export async function getAllBuildingsFromClient(client_id: string): Promise<BuildingData<Building[]>> {
+export async function getAllBuildingsFromClient(client_id: string): Promise<{ success: boolean, error?: string, data?: Building[] }> {
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
@@ -48,7 +43,7 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<Buil
 }
 
 // GET single building by ID
-export async function getBuildingById(id: string): Promise<BuildingData<Building>> {
+export async function getBuildingById(id: string): Promise<{ success: boolean, error?: string, data?: Building }> {
 
      const isValidUUIDv4 = isUUID(id);
 
@@ -108,7 +103,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
 }
 
 // UPDATE a building
-export async function updateBuilding(id: string, updates: Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>): Promise<BuildingData<Building>> {
+export async function updateBuilding(id: string, updates: Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>): Promise<{ success: boolean, error?: string, data?: Building }> {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
@@ -124,7 +119,7 @@ export async function updateBuilding(id: string, updates: Partial<Omit<Building,
 }
 
 // DELETE a building
-export async function deleteBuilding(id: string): Promise<BuildingData<null>> {
+export async function deleteBuilding(id: string): Promise<{ success: boolean, error?: string, data?: null }> {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
