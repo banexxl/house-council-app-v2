@@ -18,7 +18,6 @@ export const paths = {
     blank: '/dashboard/blank',
     buildings: {
       index: '/dashboard/buildings',
-      building: '/dashboard/buildings/:buildingId',
       new: '/dashboard/buildings/new',
     },
     locations: {

@@ -165,10 +165,6 @@ export const useSections = () => {
                 path: paths.dashboard.buildings.index,
               },
               {
-                title: t(tokens.nav.building),
-                path: paths.dashboard.buildings.building,
-              },
-              {
                 title: t(tokens.nav.buildingAdd),
                 path: paths.dashboard.buildings.new,
               },

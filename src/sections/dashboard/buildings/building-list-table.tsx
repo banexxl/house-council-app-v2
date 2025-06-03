@@ -31,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from 'src/types/building';
+import { Card } from '@mui/material';
 
 interface BuildingListTableProps {
   count?: number;
@@ -150,31 +151,35 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                   {isCurrent && (
                     <TableRow>
                       <TableCell colSpan={6}>
-                        <CardContent>
-                          <Grid container spacing={3}>xs={12} md={6}
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <Typography variant="h6">Basic Details</Typography>
-                              <Divider sx={{ my: 2 }} />
-                              <Grid container spacing={2}>
-                                <Grid size={{ xs: 12, md: 6 }}>
-                                  <TextField fullWidth label="Name" defaultValue={building.building_location?.street_address} />
-                                </Grid>
-                                <Grid size={{ xs: 12, md: 6 }}>
-                                  <TextField fullWidth label="City" defaultValue={building.building_location?.city} />
-                                </Grid>
-                                <Grid size={{ xs: 12, md: 6 }}>
-                                  <TextField fullWidth label="Street Address" defaultValue={building.building_location?.street_address} />
-                                </Grid>
-                                <Grid size={{ xs: 12, md: 6 }}>
-                                  <TextField fullWidth label="Street Number" defaultValue={building.building_location?.street_number} />
-                                </Grid>
-                                <Grid size={{ xs: 12, md: 6 }}>
-                                  <TextField fullWidth label="Post Code" defaultValue={building.building_location?.post_code} />
+                        <Card>
+
+                          <CardContent>
+                            <Grid container spacing={3}>
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <Typography variant="h6">Basic Details</Typography>
+                                <Divider sx={{ my: 2 }} />
+                                <Grid container spacing={2}>
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField fullWidth label="Name" defaultValue={building.building_location?.street_address} />
+                                  </Grid>
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField fullWidth label="City" defaultValue={building.building_location?.city} />
+                                  </Grid>
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField fullWidth label="Street Address" defaultValue={building.building_location?.street_address} />
+                                  </Grid>
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField fullWidth label="Street Number" defaultValue={building.building_location?.street_number} />
+                                  </Grid>
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField fullWidth label="Post Code" defaultValue={building.building_location?.post_code} />
+                                  </Grid>
                                 </Grid>
                               </Grid>
                             </Grid>
-                          </Grid>
-                        </CardContent>
+                          </CardContent>
+
+                        </Card>
                         <Divider />
                         <Stack
                           direction="row"

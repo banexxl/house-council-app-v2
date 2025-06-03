@@ -122,7 +122,7 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
               </Stack>
               <Button
                 component={RouterLink}
-                href={paths.dashboard.products.create}
+                href={paths.dashboard.buildings.new}
                 startIcon={
                   <SvgIcon>
                     <PlusIcon />
