@@ -12,15 +12,17 @@ import toast from 'react-hot-toast';
 import SaveIcon from '@mui/icons-material/Save';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import { MapComponent } from './map-box';
+import { UserSessionCombined } from 'src/hooks/use-auth';
 
 type LocationCreateFormProps = {
      mapBoxAccessToken?: string;
      locationsData: BuildingLocation[] | [];
      clientCoords?: { latitude: number; longitude: number } | null;
      isGeolocationEnabled?: boolean;
+     userSession?: UserSessionCombined
 }
 
-const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords }: LocationCreateFormProps) => {
+const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, userSession }: LocationCreateFormProps) => {
 
      const { t } = useTranslation();
      const [location, setLocation] = useState({ latitude: clientCoords?.latitude, longitude: clientCoords?.longitude }); // Default to Belgrade
@@ -63,6 +65,8 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords }: 
                latitude: data.latitude,
                longitude: data.longitude,
                post_code: parseInt(data.postcode),
+               client_id: userSession?.client?.id!,
+               building_id: null
           };
 
           try {
@@ -150,6 +154,8 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords }: 
                     region: region,
                     post_code: postcode,
                     location_id: id,
+                    client_id: userSession?.client?.id!,
+                    building_id: null
                },
           ]);
           setMapRefreshKey(prev => prev + 1);
@@ -201,7 +207,6 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords }: 
 
                toast.success(`${t('locations.locationSelected')}: ${feature.place_name}`);
           } catch (err) {
-               console.error('Reverse geocoding error:', err);
                toast.error(t('locations.locationNotFound'));
           }
      };

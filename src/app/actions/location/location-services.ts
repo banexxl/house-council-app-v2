@@ -17,7 +17,14 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
      const startTime = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
-     if (!values || !values.street_address || !values.city || !values.country || !values.street_number) {
+     if (
+          !values ||
+          values.location_id.trim() === '' ||
+          values.street_address.trim() === '' ||
+          values.city.trim() === '' ||
+          values.country.trim() === '' ||
+          values.street_number.trim() === '' ||
+          values.client_id.trim() === '') {
           await logServerAction({
                action: 'insertLocationAction',
                duration_ms: Date.now() - startTime,
@@ -37,6 +44,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
                .from('tblBuildingLocations')
                .select('id')
                .eq('location_id', values.location_id)
+
 
           if (fetchError) {
                await logServerAction({
@@ -97,6 +105,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
                .from('tblBuildingLocations')
                .insert(
                     {
+                         client_id: values.client_id,
                          location_id: values.location_id,
                          street_address: values.street_address,
                          city: values.city,

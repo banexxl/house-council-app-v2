@@ -1,0 +1,48 @@
+'use client'
+
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Link from '@mui/material/Link'
+import SvgIcon from '@mui/material/SvgIcon'
+import Typography from '@mui/material/Typography'
+import { RouterLink } from 'src/components/router-link'
+import { paths } from 'src/paths'
+import { useTranslation } from 'react-i18next'
+import { Box } from '@mui/system'
+import { Building } from 'src/types/building';
+
+type BuildingFormHeaderProps = {
+     building?: Building
+}
+
+export const BuildingFormHeader = (props: BuildingFormHeaderProps) => {
+
+     const { t } = useTranslation()
+
+     return (
+          <Box >
+               <Link
+                    color="text.primary"
+                    component={RouterLink}
+                    href={paths.dashboard.buildings.index}
+                    sx={{
+                         alignItems: 'center',
+                         display: 'inline-flex',
+                    }}
+                    underline="hover"
+               >
+                    <SvgIcon sx={{ mr: 1 }}>
+                         <ArrowBackIcon />
+                    </SvgIcon>
+                    <Typography variant="subtitle2">{t('buildings.buildingList')}</Typography>
+               </Link>
+               <Typography variant="h4" sx={{ mt: 2 }}>
+                    {
+                         props.building
+                              ? t('buildings.buildingEdit') + ': ' + props.building.building_location?.street_address
+                              : t('buildings.buildingCreate')
+                    }
+               </Typography>
+          </Box>
+     )
+}
+

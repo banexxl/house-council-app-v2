@@ -11,8 +11,10 @@ import { BaseEntity } from 'src/types/base-entity';
 
 const Page = async () => {
 
-  const { getAllClientsActionData } = await readAllClientsAction()
-  const clientStatuses = await readAllEntities<BaseEntity>("tblClientStatuses")
+  const [{ getAllClientsActionData }, clientStatuses] = await Promise.all([
+    readAllClientsAction(),
+    readAllEntities<BaseEntity>("tblClientStatuses"),
+  ]);
 
   return (
     <Box

@@ -3,14 +3,15 @@
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { Building } from "src/types/building";
+import { validate as isUUID } from 'uuid';
 
 // Standard return types
-type Result<T> =
+export type BuildingData<T> =
      | { success: true; data: T }
      | { success: false; error: string };
 
 // GET all buildings
-export async function getAllBuildingsFromClient(client_id: string): Promise<Result<Building[]>> {
+export async function getAllBuildingsFromClient(client_id: string): Promise<BuildingData<Building[]>> {
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
@@ -47,9 +48,16 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<Resu
 }
 
 // GET single building by ID
-export async function getBuildingById(id: string): Promise<Result<Building>> {
+export async function getBuildingById(id: string): Promise<BuildingData<Building>> {
 
+     const isValidUUIDv4 = isUUID(id);
+
+     if (!isValidUUIDv4) {
+          return { success: false, error: 'Invalid UUID' };
+     }
+     const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
+
 
      const { data, error } = await supabase
           .from('tblBuildings')
@@ -57,12 +65,35 @@ export async function getBuildingById(id: string): Promise<Result<Building>> {
           .eq('id', id)
           .single();
 
-     if (error) return { success: false, error: error.message };
+     if (error) {
+          await logServerAction({
+               action: 'getBuildingById',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          })
+          return { success: false, error: error.message };
+     }
+
+     await logServerAction({
+          action: 'getBuildingById',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     })
      return { success: true, data: data as Building };
 }
 
 // CREATE a new building
-export async function createBuilding(payload: Omit<Building, 'id' | 'created_at' | 'updated_at'>): Promise<Result<Building>> {
+export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ success: boolean, error?: string, data?: Building | null }> {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
@@ -77,7 +108,7 @@ export async function createBuilding(payload: Omit<Building, 'id' | 'created_at'
 }
 
 // UPDATE a building
-export async function updateBuilding(id: string, updates: Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>): Promise<Result<Building>> {
+export async function updateBuilding(id: string, updates: Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>): Promise<BuildingData<Building>> {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
@@ -93,7 +124,7 @@ export async function updateBuilding(id: string, updates: Partial<Omit<Building,
 }
 
 // DELETE a building
-export async function deleteBuilding(id: string): Promise<Result<null>> {
+export async function deleteBuilding(id: string): Promise<BuildingData<null>> {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 

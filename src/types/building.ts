@@ -1,8 +1,8 @@
-import { BaseEntity } from "./base-entity";
 import { BuildingLocation } from "./location";
+import * as Yup from 'yup';
 
 export interface Building {
-     id: string;
+     id?: string;
      created_at: Date
      updated_at: Date
      is_recently_built: boolean;
@@ -13,12 +13,43 @@ export interface Building {
      has_electric_heating: boolean;
      has_solar_power: boolean;
      has_bicycle_room: boolean;
-     has_pre_heating: boolean;
+     has_pre_heated_water: boolean;
      has_elevator: boolean;
      stories_high: number;
-     building_location: BuildingLocation;
-     building_status_id: BaseEntity;
+     building_location: BuildingLocation | null;
+     building_status: string;
      number_of_apartments: number;
      client_id: string;
-     cover_image: string;
+     cover_image?: string;
 }
+
+export const buildingInitialValues: Building = {
+     id: undefined,
+     is_recently_built: false,
+     description: '',
+     has_parking_lot: false,
+     has_gas_heating: false,
+     has_central_heating: false,
+     has_electric_heating: false,
+     has_solar_power: false,
+     has_bicycle_room: false,
+     has_pre_heated_water: false,
+     has_elevator: false,
+     stories_high: 0,
+     number_of_apartments: 0,
+     client_id: '',
+     cover_image: '',
+     building_status: '',
+     created_at: new Date(),
+     updated_at: new Date(),
+     building_location: null
+};
+
+export const buildingValidationSchema = Yup.object({
+     building_location: Yup.string().required('Required'),
+     description: Yup.string().max(5000),
+     stories_high: Yup.number().min(1).required(),
+     number_of_apartments: Yup.number().min(0).required(),
+     building_status: Yup.string().required('Required'),
+     cover_image: Yup.string().url()
+});

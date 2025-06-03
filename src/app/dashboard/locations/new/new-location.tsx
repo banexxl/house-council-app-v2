@@ -13,15 +13,17 @@ import { useTranslation } from 'react-i18next';
 import { getAllAddedLocations } from 'src/app/actions/location/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
+import { UserSessionCombined } from 'src/hooks/use-auth';
 import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 import { BuildingLocation } from 'src/types/location';
 
 type NewLoctionProps = {
      mapBoxAccessToken?: string;
+     userSession?: UserSessionCombined;
 }
 
-const NewLocation = ({ mapBoxAccessToken }: NewLoctionProps) => {
+const NewLocation = ({ mapBoxAccessToken, userSession }: NewLoctionProps) => {
 
      const { t } = useTranslation();
      const [locationsData, setLocationsData] = useState<BuildingLocation[]>([]);
@@ -101,6 +103,7 @@ const NewLocation = ({ mapBoxAccessToken }: NewLoctionProps) => {
                               mapBoxAccessToken={mapBoxAccessToken}
                               locationsData={locationsData}
                               clientCoords={clientCoords}
+                              userSession={userSession}
                          />
                     </Stack>
                </Container>

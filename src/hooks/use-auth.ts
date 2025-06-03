@@ -1,33 +1,23 @@
-import { useEffect, useState } from 'react';
-import { supabase } from 'src/libs/supabase/sb-client';
+import { User } from '@supabase/supabase-js';
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { Client } from 'src/types/client';
 
-export const useAuth = async () => {
+export type UserSessionCombined = {
+     client: Client | null;
+     session: User | null;
+     error?: string
+}
 
-     const [user, setUser] = useState<any>(null);
-     const [loading, setLoading] = useState(true);
+export const useAuth = async (): Promise<UserSessionCombined> => {
 
-     useEffect(() => {
-          const fetchSession = async () => {
-               const { data: { session }, error } = await supabase.auth.getSession();
-               if (error) {
-                    console.error('Error fetching session:', error);
-               } else {
-                    setUser(session?.user ?? null);
-               }
-               setLoading(false);
-          };
-
-          fetchSession();
-
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-               setUser(session?.user);
-          });
-
-          return () => {
-               subscription.unsubscribe();
-          };
-     }, []);
-
-
-     return { user, loading };
-};
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data: userSession, error } = await supabase.auth.getUser();
+     if (error) {
+          return { client: null, session: null, error: error.message };
+     }
+     const { data: user, error: userError } = await supabase.from('tblClients').select().eq('email', userSession.user.email).single();
+     if (userError) {
+          return { client: null, session: null, error: userError.message };
+     }
+     return { client: user, session: userSession.user };
+}
