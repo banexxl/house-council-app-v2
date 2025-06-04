@@ -21,13 +21,15 @@ import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { buildingInitialValues, buildingValidationSchema, type Building } from 'src/types/building';
 import type { File } from 'src/components/file-dropzone';
-import { createBuilding } from 'src/app/actions/building/building-actions';
+import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { BaseEntity } from 'src/types/base-entity';
 import { UserSessionCombined } from 'src/hooks/use-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
+import { PopupModal } from 'src/components/modal-dialog';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -43,6 +45,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const formik = useFormik({
     initialValues: buildingData ? buildingData : buildingInitialValues,
@@ -50,24 +53,45 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
     onSubmit: async (values, helpers) => {
       setLoading(true);
       try {
-        const { success, data, error } = await createBuilding({ ...values, client_id: userSession.client?.id! });
-        if (!success) {
-          toast.error(error!);
-          setLoading(false);
-          return
-        }
+        if (buildingData && buildingData.id) {
+          // ✏️ EDIT MODE
+          const { success, error } = await updateBuilding(buildingData.id, {
+            ...values,
+            client_id: userSession.client?.id!
+          });
 
-        router.push(paths.dashboard.buildings.index + '/' + data?.id);
+          if (!success) {
+            toast.error(error!);
+            setLoading(false);
+            return;
+          }
+
+          toast.success('Building updated');
+          router.push(paths.dashboard.buildings.index);
+        } else {
+          // ➕ CREATE MODE
+          const { success, data, error } = await createBuilding({
+            ...values,
+            client_id: userSession.client?.id!
+          });
+
+          if (!success) {
+            toast.error(error!);
+            setLoading(false);
+            return;
+          }
+
+          toast.success('Building created');
+          router.push(paths.dashboard.buildings.index + '/' + data?.id);
+        }
         setLoading(false);
-        toast.success('Building created');
-        // router.push(paths.dashboard.buildings.index);
       } catch (err: any) {
         setLoading(false);
         toast.error(err.message);
-        helpers.setStatus(err.message);
         helpers.setSubmitting(false);
       }
-    },
+    }
+
   });
 
   const handleFilesDrop = useCallback((newFiles: File[]): void => {
@@ -129,11 +153,43 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
     ),
   };
 
+  const handleDeleteBuilding = async (buildingId: string) => {
+
+    try {
+      const { success, data, error } = await deleteBuilding(buildingId);
+      if (!success) {
+        toast.error(error!);
+        return
+      }
+      toast.success('Building deleted');
+      router.push(paths.dashboard.buildings.index);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }
+
+  const handleUpdateBuilding = async (buildingId: string) => {
+    try {
+      const { success, data, error } = await updateBuilding(buildingId, formik.values);
+      if (!success) {
+        toast.error(error!);
+        return
+      }
+      toast.success('Building updated');
+      router.push(paths.dashboard.buildings.index);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack spacing={4}>
         <Card>
           <CardContent>
+            <Typography>
+              {JSON.stringify(formik.errors)}
+            </Typography>
             <Typography variant="h6" sx={{ mb: 2 }}>Search Address</Typography>
             <CustomAutocomplete<BuildingLocation>
               data={locationDataWithNoBuildingId}
@@ -148,6 +204,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
                 </Box>
               )}
               getOptionLabel={(item) => `${item.city} — ${item.street_address} ${item.street_number}`}
+              disabled={!!buildingData}
             />
           </CardContent>
         </Card>
@@ -261,30 +318,55 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           </CardContent>
         </Card>
 
-        <Stack direction="row" justifyContent="flex-end" spacing={2}>
-          <Button color="inherit" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          {
-            buildingData ?
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={!formik.isValid || !formik.dirty}
-                loading={loading}>
-                Update
-              </Button>
-              :
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={!formik.isValid || !formik.dirty}
-                loading={loading}>
-                Create
-              </Button>
-          }
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
+          {/* Left: Delete button (only if editing) */}
+          {buildingData ? (
+            <Button
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              sx={{
+                color: 'text.main',
+                backgroundColor: 'error.main',
+                '&:hover': {
+                  backgroundColor: 'error.dark',
+                },
+              }}
+              onClick={() => {
+                setOpen(true);
+              }}
+            >
+              Delete
+            </Button>
+          ) : (
+            <Box /> // Empty box to keep layout aligned if no Delete
+          )}
+
+          {/* Right: Cancel + Create/Update */}
+          <Stack direction="row" spacing={2}>
+            <Button color="inherit" onClick={() => router.back()}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!formik.isValid || !formik.dirty}
+              loading={loading}
+            >
+              {buildingData ? 'Update' : 'Create'}
+            </Button>
+          </Stack>
         </Stack>
+
       </Stack>
+      <PopupModal
+        isOpen={open}
+        onClose={() => {
+
+          setOpen(false)
+        }}
+        onConfirm={() => handleDeleteBuilding(buildingData?.id!)}
+        title={'Are you sure you want to delete this building?'}
+        type={'confirmation'} />
     </form >
   );
 };

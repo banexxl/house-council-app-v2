@@ -46,7 +46,16 @@ export const buildingInitialValues: Building = {
 };
 
 export const buildingValidationSchema = Yup.object({
-     building_location: Yup.string().required('Required'),
+     building_location: Yup.object({
+          street_address: Yup.string().required('Required'),
+          city: Yup.string().required('Required'),
+          region: Yup.string().required('Required'),
+          country: Yup.string().required('Required'),
+          street_number: Yup.string().required('Required'),
+          post_code: Yup.number().required('Required'),
+          latitude: Yup.number().required('Required'),
+          longitude: Yup.number().required('Required')
+     }),
      description: Yup.string().max(5000),
      stories_high: Yup.number().min(1).required(),
      number_of_apartments: Yup.number().min(0).required(),

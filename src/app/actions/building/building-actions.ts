@@ -119,6 +119,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
 
 // CREATE a new building
 export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ success: boolean, error?: string, data?: Building | null }> {
+
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -216,14 +217,20 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
 }
 
 // UPDATE a building
-export async function updateBuilding(id: string, updates: Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>): Promise<{ success: boolean, error?: string, data?: Building }> {
+export async function updateBuilding(id: string, updates: Partial<Building>): Promise<{ success: boolean, error?: string, data?: Building }> {
+
+     const buildingUpdate = {
+          ...updates,
+          building_location: updates.building_location ? updates.building_location.id : undefined,
+     };
+     console.log('buildingUpdate', buildingUpdate);
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
      const { data, error } = await supabase
           .from('tblBuildings')
-          .update(updates)
+          .update(buildingUpdate)
           .eq('id', id)
           .select()
           .single();
@@ -255,11 +262,80 @@ export async function updateBuilding(id: string, updates: Partial<Omit<Building,
 
 // DELETE a building
 export async function deleteBuilding(id: string): Promise<{ success: boolean, error?: string, data?: null }> {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     // Step 1: Check for location with this building_id
+     const { data: location, error: locationError } = await supabase
+          .from('tblBuildingLocations')
+          .select('id')
+          .eq('building_id', id)
+          .single();
 
-     const { error } = await supabase.from('tblBuildings').delete().eq('id', id);
+     if (locationError && locationError.code !== 'PGRST116') {
+          // PGRST116 = no rows found — acceptable; any other error = fail
+          await logServerAction({
+               action: 'deleteBuilding',
+               duration_ms: Date.now() - time,
+               error: locationError.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+          });
+          return { success: false, error: 'Failed to check building location' };
+     }
 
-     if (error) return { success: false, error: error.message };
+     // Step 2: Delete location if found
+     if (location?.id) {
+          const { error: deleteLocationError } = await supabase
+               .from('tblBuildingLocations')
+               .delete()
+               .eq('id', location.id);
+
+          if (deleteLocationError) {
+               await logServerAction({
+                    action: 'deleteBuilding',
+                    duration_ms: Date.now() - time,
+                    error: deleteLocationError.message,
+                    payload: { id },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               });
+               return { success: false, error: 'Failed to delete linked building location' };
+          }
+     }
+
+     // Step 3: Delete the building
+     const { error: deleteBuildingError } = await supabase
+          .from('tblBuildings')
+          .delete()
+          .eq('id', id);
+
+     if (deleteBuildingError) {
+          await logServerAction({
+               action: 'deleteBuilding',
+               duration_ms: Date.now() - time,
+               error: deleteBuildingError.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+          });
+          return { success: false, error: deleteBuildingError.message };
+     }
+
+     await logServerAction({
+          action: 'deleteBuilding',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+     });
+
      return { success: true, data: null };
 }
+

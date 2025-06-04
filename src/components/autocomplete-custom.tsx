@@ -9,6 +9,7 @@ interface CustomAutocompleteProps<T> {
      getOptionLabel?: (item: T) => string;
      onValueChange?: (id: string) => void;
      selectedItem?: T;
+     disabled?: boolean
 }
 
 export function CustomAutocomplete<T extends Record<string, any>>({
@@ -18,7 +19,8 @@ export function CustomAutocomplete<T extends Record<string, any>>({
      renderOption,
      getOptionLabel,
      onValueChange,
-     selectedItem
+     selectedItem,
+     disabled
 }: CustomAutocompleteProps<T>) {
 
      const [inputValue, setInputValue] = useState(() => {
@@ -64,6 +66,7 @@ export function CustomAutocomplete<T extends Record<string, any>>({
                               setOpen(true);
                          }}
                          onFocus={() => setOpen(true)}
+                         disabled={disabled}
                     />
                     {open && filteredData.length > 0 && (
                          <Portal>
