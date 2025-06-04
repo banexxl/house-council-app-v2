@@ -223,8 +223,6 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
           ...updates,
           building_location: updates.building_location ? updates.building_location.id : undefined,
      };
-     console.log('buildingUpdate', buildingUpdate);
-
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
 

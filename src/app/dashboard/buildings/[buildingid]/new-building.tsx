@@ -187,9 +187,6 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       <Stack spacing={4}>
         <Card>
           <CardContent>
-            <Typography>
-              {JSON.stringify(formik.errors)}
-            </Typography>
             <Typography variant="h6" sx={{ mb: 2 }}>Search Address</Typography>
             <CustomAutocomplete<BuildingLocation>
               data={locationDataWithNoBuildingId}
