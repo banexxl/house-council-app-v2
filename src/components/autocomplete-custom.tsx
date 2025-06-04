@@ -18,7 +18,7 @@ export function CustomAutocomplete<T extends Record<string, any>>({
      getOptionLabel,
      onValueChange
 }: CustomAutocompleteProps<T>) {
-     const [inputValue, setInputValue] = useState('');
+     const [inputValue, setInputValue] = useState(data ? data[0][searchKey]?.toString() || '' : '');
      const [open, setOpen] = useState(false);
      const anchorRef = useRef<HTMLDivElement>(null);
      const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);

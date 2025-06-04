@@ -140,6 +140,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
               onValueChange={(id) => formik.setFieldValue('building_location', id)}
               renderOption={(item) => (
                 <Box>
+                  <Typography variant="body2">{item.country}</Typography>
                   <strong>{item.city}</strong> — {item.street_address} {item.street_number}
                 </Box>
               )}
