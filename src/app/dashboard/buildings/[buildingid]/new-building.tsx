@@ -23,14 +23,14 @@ import ElevatorIcon from '@mui/icons-material/Elevator';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import { buildingInitialValues, buildingValidationSchema, type Building } from 'src/types/building';
 import type { File } from 'src/components/file-dropzone';
-import { BuildingData, createBuilding } from 'src/app/actions/building/building-actions';
+import { createBuilding } from 'src/app/actions/building/building-actions';
 import { BaseEntity } from 'src/types/base-entity';
 import { UserSessionCombined } from 'src/hooks/use-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 
 type BuildingCreateFormProps = {
-  buildingData: BuildingData<Building>
+  buildingData?: Building
   buildingStatuses: BaseEntity[]
   userSession: UserSessionCombined
   locationData: BuildingLocation[]
@@ -44,7 +44,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
-    initialValues: buildingData.success ? buildingData.data : buildingInitialValues,
+    initialValues: buildingData ? buildingData : buildingInitialValues,
     validationSchema: buildingValidationSchema,
     onSubmit: async (values, helpers) => {
       setLoading(true);

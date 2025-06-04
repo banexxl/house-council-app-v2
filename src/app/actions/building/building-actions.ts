@@ -56,7 +56,22 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
 
      const { data, error } = await supabase
           .from('tblBuildings')
-          .select('*')
+          .select(`
+               *,
+               building_location:tblBuildingLocations (
+                 id,
+                 street_address,
+                 street_number,
+                 city,
+                 region,
+                 country,
+                 post_code,
+                 latitude,
+                 longitude,
+                 created_at,
+                 updated_at
+               )
+             `)
           .eq('id', id)
           .single();
 

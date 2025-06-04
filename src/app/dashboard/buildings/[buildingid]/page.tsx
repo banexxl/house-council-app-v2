@@ -1,6 +1,5 @@
 import { getBuildingById } from "src/app/actions/building/building-actions";
 import { readAllEntities } from "src/app/actions/base-entity-actions";
-import { NextPage } from 'next';
 import { BaseEntity } from "src/types/base-entity";
 import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
@@ -39,7 +38,7 @@ export default async function Page({ params }: {
         <Stack spacing={4}>
           <BuildingFormHeader building={buildingData.success ? buildingData.data : undefined} />
           <BuildingCreateForm
-            buildingData={buildingData}
+            buildingData={buildingData.success ? buildingData.data : undefined}
             buildingStatuses={buildingStatuses}
             userSession={userSession}
             locationData={locationData.success ? locationData.data ?? [] : []}
