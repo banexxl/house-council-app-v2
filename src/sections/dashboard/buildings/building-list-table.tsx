@@ -50,6 +50,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
   page = 0,
   rowsPerPage = 0,
 }) => {
+
+  console.log('items', items);
+
   const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
 
   const handleToggle = useCallback((id: string) => {

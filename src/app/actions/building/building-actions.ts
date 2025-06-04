@@ -13,8 +13,25 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<{ su
 
      const { data, error } = await supabase
           .from('tblBuildings')
-          .select('*')
+          .select(`
+               *,
+               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                 id,
+                 street_address,
+                 street_number,
+                 city,
+                 region,
+                 country,
+                 post_code,
+                 latitude,
+                 longitude,
+                 created_at,
+                 updated_at
+               )
+             `)
           .eq('client_id', client_id);
+     console.log('data', data);
+     console.log('error', error);
 
      if (error) {
           await logServerAction({
@@ -58,7 +75,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
           .from('tblBuildings')
           .select(`
                *,
-               building_location:tblBuildingLocations (
+               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
                  id,
                  street_address,
                  street_number,
@@ -74,6 +91,8 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
              `)
           .eq('id', id)
           .single();
+     console.log('data', data);
+     console.log('error', error);
 
      if (error) {
           await logServerAction({
