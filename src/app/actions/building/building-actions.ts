@@ -30,8 +30,6 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<{ su
                )
              `)
           .eq('client_id', client_id);
-     console.log('data', data);
-     console.log('error', error);
 
      if (error) {
           await logServerAction({
@@ -91,8 +89,6 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
              `)
           .eq('id', id)
           .single();
-     console.log('data', data);
-     console.log('error', error);
 
      if (error) {
           await logServerAction({
@@ -123,22 +119,106 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
 
 // CREATE a new building
 export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ success: boolean, error?: string, data?: Building | null }> {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
-
-     const { data, error } = await supabase
+     const { data: buildingData, error: insertError } = await supabase
           .from('tblBuildings')
           .insert(payload)
           .select()
           .single();
 
-     if (error) return { success: false, error: error.message };
-     return { success: true, data: data as Building };
+     if (insertError) {
+          await logServerAction({
+               action: 'createBuilding',
+               duration_ms: Date.now() - time,
+               error: insertError.message,
+               payload,
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
+          return { success: false, error: insertError.message };
+     }
+
+     // 👉 Step 1: Check if location already has a building
+     const { data: existingLocation, error: fetchError } = await supabase
+          .from('tblBuildingLocations')
+          .select('building_id')
+          .eq('id', payload.building_location)
+          .single();
+
+     if (fetchError) {
+          // Optional: clean up inserted building if location fetch fails
+          await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
+          await logServerAction({
+               action: 'createBuilding',
+               duration_ms: Date.now() - time,
+               error: fetchError.message,
+               payload,
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
+          return { success: false, error: 'Failed to verify building location' };
+     }
+
+     if (existingLocation?.building_id) {
+          // ❌ Already assigned, delete inserted building
+          await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
+          await logServerAction({
+               action: 'createBuilding',
+               duration_ms: Date.now() - time,
+               error: 'Location is already assigned to another building',
+               payload,
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
+          return { success: false, error: 'Location is already assigned to another building' };
+     }
+
+     // ✅ Step 2: Safe to update the location
+     const { status: updateStatus, count, error: updateError } = await supabase
+          .from('tblBuildingLocations')
+          .update({ building_id: buildingData.id })
+          .match({ id: payload.building_location });
+
+     if (updateError) {
+          await logServerAction({
+               action: 'createBuilding',
+               duration_ms: Date.now() - time,
+               error: updateError.message,
+               payload,
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+               id: '',
+          });
+          return { success: false, error: updateError.message };
+     }
+
+     await logServerAction({
+          action: 'createBuilding',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: `Updated ${updateStatus} building location: ${buildingData.id}`,
+          status: 'success',
+          type: 'db',
+          user_id: '',
+          id: '',
+     });
+
+     return { success: true, data: buildingData as Building };
 }
 
 // UPDATE a building
 export async function updateBuilding(id: string, updates: Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>): Promise<{ success: boolean, error?: string, data?: Building }> {
 
+     const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
      const { data, error } = await supabase
@@ -148,7 +228,28 @@ export async function updateBuilding(id: string, updates: Partial<Omit<Building,
           .select()
           .single();
 
-     if (error) return { success: false, error: error.message };
+     if (error) {
+          await logServerAction({
+               action: 'updateBuilding',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id, updates },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+          })
+          return { success: false, error: error.message };
+     }
+
+     await logServerAction({
+          action: 'updateBuilding',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id, updates },
+          status: 'success',
+          type: 'db',
+          user_id: '',
+     })
      return { success: true, data: data as Building };
 }
 

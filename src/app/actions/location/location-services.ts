@@ -344,3 +344,50 @@ export const deleteLocationByID = async (id: string | undefined): Promise<{ succ
      }
 }
 
+export const getAllAddedLocationsWithoutBuildingId = async (): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
+
+     try {
+          const { data, error } = await supabase.from('tblBuildingLocations').select('*').is('building_id', null)
+
+          if (error) {
+               await logServerAction({
+                    action: 'getAllLocationsWithoutBuildingId',
+                    duration_ms: 0,
+                    error: error.message,
+                    payload: {},
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: false, error: error };
+          } else {
+               await logServerAction({
+                    action: 'getAllLocationsWithoutBuildingId',
+                    duration_ms: 0,
+                    error: '',
+                    payload: {},
+                    status: 'success',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: true, data };
+          }
+     } catch (error) {
+          await logServerAction({
+               action: 'getAllLocationsWithoutBuildingId',
+               duration_ms: 0,
+               error: (error as Error).message,
+               payload: {},
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: '',
+          })
+          return { success: false, error };
+     }
+}
+

@@ -8,6 +8,7 @@ interface CustomAutocompleteProps<T> {
      renderOption?: (item: T) => React.ReactNode;
      getOptionLabel?: (item: T) => string;
      onValueChange?: (id: string) => void;
+     selectedItem?: T;
 }
 
 export function CustomAutocomplete<T extends Record<string, any>>({
@@ -16,9 +17,15 @@ export function CustomAutocomplete<T extends Record<string, any>>({
      label = 'Search...',
      renderOption,
      getOptionLabel,
-     onValueChange
+     onValueChange,
+     selectedItem
 }: CustomAutocompleteProps<T>) {
-     const [inputValue, setInputValue] = useState(data ? data[0][searchKey]?.toString() || '' : '');
+
+     const [inputValue, setInputValue] = useState(() => {
+          if (!selectedItem) return '';
+          return getOptionLabel?.(selectedItem) ?? selectedItem[searchKey]?.toString() ?? '';
+     });
+
      const [open, setOpen] = useState(false);
      const anchorRef = useRef<HTMLDivElement>(null);
      const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
@@ -31,17 +38,13 @@ export function CustomAutocomplete<T extends Record<string, any>>({
           const lower = inputValue.toLowerCase();
           return data
                .filter(item => item[searchKey]?.toString().toLowerCase().includes(lower))
-               .slice(0, 5);
+          // .slice(0, 5);
      }, [data, inputValue, searchKey]);
 
      const handleSelect = (item: T) => {
-          if (getOptionLabel) {
-               setInputValue(getOptionLabel(item));
-          } else {
-               setInputValue(item[searchKey]?.toString() || '');
-          }
+          const label = getOptionLabel?.(item) ?? item[searchKey]?.toString() ?? '';
+          setInputValue(label);
 
-          // 👇 NEW
           if (onValueChange && item.id) {
                onValueChange(item.id);
           }

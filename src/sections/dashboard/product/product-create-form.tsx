@@ -101,7 +101,6 @@ export const ProductCreateForm: FC = (props) => {
         toast.success('Product created');
         router.push(paths.dashboard.products.index);
       } catch (err) {
-        console.error(err);
         toast.error('Something went wrong!');
         helpers.setStatus({ success: false });
         helpers.setErrors({ submit: err.message });

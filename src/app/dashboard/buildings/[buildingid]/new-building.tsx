@@ -39,6 +39,7 @@ type BuildingCreateFormProps = {
 
 export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationData, userSession }: BuildingCreateFormProps) => {
 
+  const locationDataWithNoBuildingId = locationData.filter((location) => !location.building_id);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,19 +50,20 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
     onSubmit: async (values, helpers) => {
       setLoading(true);
       try {
-        const { success } = await createBuilding({ ...values, client_id: userSession.client?.id! });
+        const { success, data, error } = await createBuilding({ ...values, client_id: userSession.client?.id! });
         if (!success) {
-          toast.error('Something went wrong!');
+          toast.error(error!);
           setLoading(false);
           return
         }
 
+        router.push(paths.dashboard.buildings.index + '/' + data?.id);
         setLoading(false);
         toast.success('Building created');
         // router.push(paths.dashboard.buildings.index);
       } catch (err: any) {
         setLoading(false);
-        toast.error('Something went wrong!');
+        toast.error(err.message);
         helpers.setStatus(err.message);
         helpers.setSubmitting(false);
       }
@@ -134,7 +136,8 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>Search Address</Typography>
             <CustomAutocomplete<BuildingLocation>
-              data={locationData}
+              data={locationDataWithNoBuildingId}
+              selectedItem={formik.values.building_location?.id ? locationData.find(item => item.id === formik.values.building_location?.id) : undefined}
               searchKey="street_address"
               label="Search Address"
               onValueChange={(id) => formik.setFieldValue('building_location', id)}
@@ -262,13 +265,24 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           <Button color="inherit" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={!formik.isValid || !formik.dirty}
-            loading={loading}>
-            Create
-          </Button>
+          {
+            buildingData ?
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!formik.isValid || !formik.dirty}
+                loading={loading}>
+                Update
+              </Button>
+              :
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!formik.isValid || !formik.dirty}
+                loading={loading}>
+                Create
+              </Button>
+          }
         </Stack>
       </Stack>
     </form >
