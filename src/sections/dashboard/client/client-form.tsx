@@ -105,7 +105,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card>
-        <CardHeader title={t('clients.clientFormBasicInfo')} />
+        <CardHeader title={t('common.formBasicInfo')} />
         <CardContent sx={{ pt: 0 }}>
           {/* <Typography>
             {JSON.stringify(formik.values)}
@@ -186,7 +186,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
               </TextField>
             </Grid>
           </Grid>
-          <Divider sx={{ my: 3 }} >{t('clients.clientFormBasicInfo')}</Divider>
+          <Divider sx={{ my: 3 }} >{t('common.formBasicInfo')}</Divider>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
@@ -304,7 +304,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
               />
             </Grid>
           </Grid>
-          <Divider sx={{ my: 3 }} >{t('clients.clientFormAdvancedInfo')}</Divider>
+          <Divider sx={{ my: 3 }} >{t('common.formAdvancedInfo')}</Divider>
           <Stack divider={<Divider />} spacing={3} sx={{ mt: 3 }}>
             <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
               <Stack spacing={1}>

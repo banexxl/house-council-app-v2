@@ -15,7 +15,7 @@ interface CustomAutocompleteProps<T> {
 export function CustomAutocomplete<T extends Record<string, any>>({
      data,
      searchKey,
-     label = 'Search...',
+     label = '',
      renderOption,
      getOptionLabel,
      onValueChange,

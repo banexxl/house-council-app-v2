@@ -30,6 +30,8 @@ import { UserSessionCombined } from 'src/hooks/use-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
+import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -46,6 +48,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   const formik = useFormik({
     initialValues: buildingData ? buildingData : buildingInitialValues,
@@ -168,31 +171,17 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
     }
   }
 
-  const handleUpdateBuilding = async (buildingId: string) => {
-    try {
-      const { success, data, error } = await updateBuilding(buildingId, formik.values);
-      if (!success) {
-        toast.error(error!);
-        return
-      }
-      toast.success('Building updated');
-      router.push(paths.dashboard.buildings.index);
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  }
-
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack spacing={4}>
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Search Address</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('locations.searchLocationLabel')}</Typography>
             <CustomAutocomplete<BuildingLocation>
               data={locationDataWithNoBuildingId}
               selectedItem={formik.values.building_location?.id ? locationData.find(item => item.id === formik.values.building_location?.id) : undefined}
               searchKey="street_address"
-              label="Search Address"
+              label={t('locations.searchLocationLabel')}
               onValueChange={(id) => formik.setFieldValue('building_location', locationData.find(item => item.id === id))}
               renderOption={(item) => (
                 <Box>
@@ -208,12 +197,12 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
         <Card>
           <CardContent>
-            <Typography variant="h6">Basic Info</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.formBasicInfo')}</Typography>
             <TextField
               fullWidth
               multiline
               rows={4}
-              label="Description"
+              label={t('common.lblDescription')}
               name="description"
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -227,7 +216,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
         <Card>
           <CardContent>
-            <Typography variant="h6">Features</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.formAdvancedInfo')}</Typography>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               {Object.keys(featureIcons).map((key) => (
                 <Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -252,14 +241,13 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           </CardContent>
         </Card>
 
-
         <Card>
           <CardContent>
-            <Typography variant="h6">Building Stats</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('buildings.buildingStats')}</Typography>
             <Stack spacing={3} sx={{ mt: 2 }}>
               <TextField
                 type="number"
-                label="Stories High"
+                label={t('buildings.buildingStories')}
                 name="stories_high"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -267,14 +255,14 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
               />
               <TextField
                 type="number"
-                label="Number of Apartments"
+                label={t('buildings.numberOfApartments')}
                 name="number_of_apartments"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.number_of_apartments}
               />
               <TextField
-                label="Building Status"
+                label={t('common.lblStatus')}
                 name="building_status"
                 select
                 fullWidth
@@ -300,7 +288,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Cover Image</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.lblCoverImage')}</Typography>
             <FileDropzone
               accept={{ 'image/*': [] }}
               caption="(SVG, JPG, PNG or GIF up to 900x400)"

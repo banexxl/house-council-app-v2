@@ -19,6 +19,7 @@ import Typography from '@mui/material/Typography';
 
 import { FileIcon } from 'src/components/file-icon';
 import { bytesToSize } from 'src/utils/bytes-to-size';
+import { useTranslation } from 'react-i18next';
 
 export type File = FileWithPath;
 
@@ -33,7 +34,7 @@ interface FileDropzoneProps extends DropzoneOptions {
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
   const { caption, files = [], onRemove, onRemoveAll, onUpload, ...other } = props;
   const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
-
+  const { t } = useTranslation()
   const hasAnyFiles = files.length > 0;
 
   return (
@@ -87,7 +88,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
               }}
               variant="h6"
             >
-              <span>Click to upload</span> or drag and drop
+              <span>{t('common.actionClickToUploadOrDragAndDrop')}</span>
             </Typography>
             {caption && (
               <Typography
@@ -153,7 +154,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
               size="small"
               type="button"
             >
-              Remove All
+              {t('common.btnRemoveAll')}
             </Button>
             <Button
               onClick={onUpload}
@@ -161,7 +162,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
               type="button"
               variant="contained"
             >
-              Upload
+              {t('common.btnUpload')}
             </Button>
           </Stack>
         </Box>
