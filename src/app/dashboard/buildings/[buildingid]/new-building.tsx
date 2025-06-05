@@ -193,7 +193,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
               selectedItem={formik.values.building_location?.id ? locationData.find(item => item.id === formik.values.building_location?.id) : undefined}
               searchKey="street_address"
               label="Search Address"
-              onValueChange={(id) => formik.setFieldValue('building_location', id)}
+              onValueChange={(id) => formik.setFieldValue('building_location', locationData.find(item => item.id === id))}
               renderOption={(item) => (
                 <Box>
                   <Typography variant="body2">{item.country}</Typography>

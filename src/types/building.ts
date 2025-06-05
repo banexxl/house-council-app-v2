@@ -49,7 +49,6 @@ export const buildingValidationSchema = Yup.object({
      building_location: Yup.object({
           street_address: Yup.string().required('Required'),
           city: Yup.string().required('Required'),
-          region: Yup.string().required('Required'),
           country: Yup.string().required('Required'),
           street_number: Yup.string().required('Required'),
           post_code: Yup.number().required('Required'),

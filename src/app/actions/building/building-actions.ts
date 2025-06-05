@@ -122,10 +122,11 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     const payloadData = { ...payload, building_location: payload.building_location?.id };
 
      const { data: buildingData, error: insertError } = await supabase
           .from('tblBuildings')
-          .insert(payload)
+          .insert(payloadData)
           .select()
           .single();
 
@@ -134,7 +135,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: insertError.message,
-               payload,
+               payload: payloadData,
                status: 'fail',
                type: 'db',
                user_id: '',
@@ -147,7 +148,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
      const { data: existingLocation, error: fetchError } = await supabase
           .from('tblBuildingLocations')
           .select('building_id')
-          .eq('id', payload.building_location)
+          .eq('id', payloadData.building_location)
           .single();
 
      if (fetchError) {
@@ -157,7 +158,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: fetchError.message,
-               payload,
+               payload: payloadData,
                status: 'fail',
                type: 'db',
                user_id: '',
@@ -168,12 +169,12 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
 
      if (existingLocation?.building_id) {
           // ❌ Already assigned, delete inserted building
-          await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
+          const { count, error } = await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
           await logServerAction({
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: 'Location is already assigned to another building',
-               payload,
+               payload: payloadData,
                status: 'fail',
                type: 'db',
                user_id: '',
@@ -186,14 +187,14 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
      const { status: updateStatus, count, error: updateError } = await supabase
           .from('tblBuildingLocations')
           .update({ building_id: buildingData.id })
-          .match({ id: payload.building_location });
+          .match({ id: payloadData.building_location });
 
      if (updateError) {
           await logServerAction({
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: updateError.message,
-               payload,
+               payload: `Updated ${updateStatus} building location: ${buildingData.id}`,
                status: 'fail',
                type: 'db',
                user_id: '',
