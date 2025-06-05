@@ -320,7 +320,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
                 setOpen(true);
               }}
             >
-              Delete
+              {t('common.btnDelete')}
             </Button>
           ) : (
             <Box /> // Empty box to keep layout aligned if no Delete
@@ -329,7 +329,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           {/* Right: Cancel + Create/Update */}
           <Stack direction="row" spacing={2}>
             <Button color="inherit" onClick={() => router.back()}>
-              Cancel
+              {t('common.btnCancel')}
             </Button>
             <Button
               type="submit"
@@ -337,7 +337,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
               disabled={!formik.isValid || !formik.dirty}
               loading={loading}
             >
-              {buildingData ? 'Update' : 'Create'}
+              {buildingData ? t('common.btnUpdate') : t('common.btnCreate')}
             </Button>
           </Stack>
         </Stack>
