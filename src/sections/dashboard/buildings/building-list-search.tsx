@@ -12,17 +12,18 @@ import Typography from '@mui/material/Typography';
 
 import { MultiSelect } from 'src/components/multi-select';
 import { useUpdateEffect } from 'src/hooks/use-update-effect';
+import { useTranslation } from 'react-i18next';
 
 interface Filters {
   name?: string;
-  category: string[];
-  status: string[];
-  inStock?: boolean;
+  amenities: string[];
+  statuses: string[];
+  specifications: string[];
 }
 
 interface SearchChip {
   label: string;
-  field: 'name' | 'category' | 'status' | 'inStock';
+  field: 'name' | 'amenities' | 'statuses' | 'specifications';
   value: unknown;
   displayValue?: unknown;
 }
@@ -32,56 +33,31 @@ interface Option {
   value: string;
 }
 
-const categoryOptions: Option[] = [
-  {
-    label: 'Healthcare',
-    value: 'healthcare',
-  },
-  {
-    label: 'Makeup',
-    value: 'makeup',
-  },
-  {
-    label: 'Dress',
-    value: 'dress',
-  },
-  {
-    label: 'Skincare',
-    value: 'skincare',
-  },
-  {
-    label: 'Jewelry',
-    value: 'jewelry',
-  },
-  {
-    label: 'Blouse',
-    value: 'blouse',
-  },
-];
-
 const statusOptions: Option[] = [
-  {
-    label: 'Published',
-    value: 'published',
-  },
-  {
-    label: 'Draft',
-    value: 'draft',
-  },
+  { label: 'Vacant', value: 'vacant' },
+  { label: 'Partially Leased', value: 'partially_leased' },
+  { label: 'Renovation', value: 'renovation' },
+  { label: 'Under Construction', value: 'under_construction' },
+  { label: 'Active', value: 'active' },
+  { label: 'Temporary', value: 'temporary' },
+  { label: 'Historical', value: 'historical' },
+  { label: 'Condemned', value: 'condemned' },
+  { label: 'For Sale', value: 'for_sale' },
+  { label: 'Leased', value: 'leased' },
+  { label: 'Planned', value: 'planned' },
+  { label: 'Demolished', value: 'demolished' },
+  { label: 'Restricted Access', value: 'restricted_access' },
+  { label: 'Inactive', value: 'inactive' },
+  { label: 'Under Inspection', value: 'under_inspection' },
 ];
-
-const stockOptions: Option[] = [
+const specificationOptions: Option[] = [
   {
-    label: 'All',
-    value: 'all',
+    label: 'Number of apartments',
+    value: 'number_of_apartments',
   },
   {
-    label: 'Available',
-    value: 'available',
-  },
-  {
-    label: 'Out of Stock',
-    value: 'outOfStock',
+    label: 'Stories high',
+    value: 'stories_high',
   },
 ];
 
@@ -93,13 +69,54 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
   const { onFiltersChange, ...other } = props;
   const queryRef = useRef<HTMLInputElement | null>(null);
   const [chips, setChips] = useState<SearchChip[]>([]);
+  const { t } = useTranslation();
+
+
+  const amenityOptions: Option[] = [
+    {
+      label: t('common.lblHasParkingLot'),
+      value: 'has_parking_lot',
+    },
+    {
+      label: t('common.lblHasGasHeating'),
+      value: 'has_gas_heating',
+    },
+    {
+      label: t('common.lblHasCentralHeating'),
+      value: 'has_central_heating',
+    },
+    {
+      label: t('common.lblHasSolarPower'),
+      value: 'has_solar_power',
+    },
+    {
+      label: t('common.lblHasElectricHeating'),
+      value: 'has_electric_heating',
+    },
+    {
+      label: t('common.lblHasBicycleRoom'),
+      value: 'has_bicycle_room',
+    },
+    {
+      label: t('common.lblHasPreHeatedWater'),
+      value: 'has_pre_heated_water',
+    },
+    {
+      label: t('common.lblHasElevator'),
+      value: 'has_elevator',
+    },
+    {
+      label: t('common.lblRecentlyBuilt'),
+      value: 'is_recently_built',
+    }
+  ];
 
   const handleChipsUpdate = useCallback(() => {
     const filters: Filters = {
       name: undefined,
-      category: [],
-      status: [],
-      inStock: undefined,
+      amenities: [],
+      statuses: [],
+      specifications: [],
     };
 
     chips.forEach((chip) => {
@@ -109,15 +126,15 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           // so we can set up it directly
           filters.name = chip.value as string;
           break;
-        case 'category':
-          filters.category.push(chip.value as string);
+        case 'amenities':
+          filters.amenities.push(chip.value as string);
           break;
-        case 'status':
-          filters.status.push(chip.value as string);
+        case 'statuses':
+          filters.statuses.push(chip.value as string);
           break;
-        case 'inStock':
+        case 'specifications':
           // The value can be "available" or "outOfStock" and we transform it to a boolean
-          filters.inStock = chip.value === 'available';
+          filters.specifications.push(chip.value as string);
           break;
         default:
           break;
@@ -185,13 +202,13 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
     }
   }, []);
 
-  const handleCategoryChange = useCallback((values: string[]): void => {
+  const handleAmenityChange = useCallback((values: string[]): void => {
     setChips((prevChips) => {
       const valuesFound: string[] = [];
 
       // First cleanup the previous chips
       const newChips = prevChips.filter((chip) => {
-        if (chip.field !== 'category') {
+        if (chip.field !== 'amenities') {
           return true;
         }
 
@@ -211,11 +228,11 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
       values.forEach((value) => {
         if (!valuesFound.includes(value)) {
-          const option = categoryOptions.find((option) => option.value === value);
+          const option = amenityOptions.find((option) => option.value === value);
 
           newChips.push({
-            label: 'Category',
-            field: 'category',
+            label: 'Amenity',
+            field: 'amenities',
             value,
             displayValue: option!.label,
           });
@@ -232,7 +249,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
       // First cleanup the previous chips
       const newChips = prevChips.filter((chip) => {
-        if (chip.field !== 'status') {
+        if (chip.field !== 'statuses') {
           return true;
         }
 
@@ -255,8 +272,8 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           const option = statusOptions.find((option) => option.value === value);
 
           newChips.push({
-            label: 'Status',
-            field: 'status',
+            label: 'Statuses',
+            field: 'statuses',
             value,
             displayValue: option!.label,
           });
@@ -267,65 +284,62 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
     });
   }, []);
 
-  const handleStockChange = useCallback((values: string[]): void => {
-    // Stock can only have one value, even if displayed as multi-select, so we select the first one.
-    // This example allows you to select one value or "All", which is not included in the
-    // rest of multi-selects.
-
+  const handleSpecificationChange = useCallback((values: string[]): void => {
     setChips((prevChips) => {
-      // First cleanup the previous chips
-      const newChips = prevChips.filter((chip) => chip.field !== 'inStock');
-      const latestValue = values[values.length - 1];
+      const valuesFound: string[] = [];
 
-      switch (latestValue) {
-        case 'available':
-          newChips.push({
-            label: 'Stock',
-            field: 'inStock',
-            value: 'available',
-            displayValue: 'Available',
-          });
-          break;
-        case 'outOfStock':
-          newChips.push({
-            label: 'Stock',
-            field: 'inStock',
-            value: 'outOfStock',
-            displayValue: 'Out of Stock',
-          });
-          break;
-        default:
-          // Should be "all", so we do not add this filter
-          break;
+      // First cleanup the previous chips
+      const newChips = prevChips.filter((chip) => {
+        if (chip.field !== 'specifications') {
+          return true;
+        }
+
+        const found = values.includes(chip.value as string);
+
+        if (found) {
+          valuesFound.push(chip.value as string);
+        }
+
+        return found;
+      });
+
+      // Nothing changed
+      if (values.length === valuesFound.length) {
+        return newChips;
       }
+
+      values.forEach((value) => {
+        if (!valuesFound.includes(value)) {
+          const option = specificationOptions.find((option) => option.value === value);
+
+          newChips.push({
+            label: 'Specifications',
+            field: 'specifications',
+            value,
+            displayValue: option!.label,
+          });
+        }
+      });
 
       return newChips;
     });
   }, []);
 
   // We memoize this part to prevent re-render issues
-  const categoryValues = useMemo(
-    () => chips.filter((chip) => chip.field === 'category').map((chip) => chip.value) as string[],
+  const amenityValues = useMemo(
+    () => chips.filter((chip) => chip.field === 'amenities').map((chip) => chip.value) as string[],
     [chips]
   );
 
   const statusValues = useMemo(
-    () => chips.filter((chip) => chip.field === 'status').map((chip) => chip.value) as string[],
+    () => chips.filter((chip) => chip.field === 'statuses').map((chip) => chip.value) as string[],
     [chips]
   );
 
-  const stockValues = useMemo(() => {
-    const values = chips
-      .filter((chip) => chip.field === 'inStock')
-      .map((chip) => chip.value) as string[];
-
-    // Since we do not display the "all" as chip, we add it to the multi-select as a selected value
-    if (values.length === 0) {
-      values.unshift('all');
-    }
-
-    return values;
-  }, [chips]);
+  const specificationValues = useMemo(
+    () => chips.filter((chip) => chip.field === 'specifications').map((chip) => chip.value) as string[],
+    [chips]
+  )
 
   const showChips = chips.length > 0;
 
@@ -347,7 +361,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           disableUnderline
           fullWidth
           inputProps={{ ref: queryRef }}
-          placeholder="Search by building name"
+          placeholder={t('common.filterSearchByName')}
           sx={{ flexGrow: 1 }}
         />
       </Stack>
@@ -373,9 +387,9 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                     },
                   }}
                 >
-                  {/* <>
+                  <>
                     <span>{chip.label}</span>: {chip.displayValue || chip.value}
-                  </> */}
+                  </>
                 </Box>
               }
               onDelete={(): void => handleChipDelete(chip)}
@@ -389,7 +403,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
             color="text.secondary"
             variant="subtitle2"
           >
-            No filters applied
+            {t('common.tableFilterNoFilterSelected')}
           </Typography>
         </Box>
       )}
@@ -402,22 +416,22 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
         sx={{ p: 1 }}
       >
         <MultiSelect
-          label="Category"
-          onChange={handleCategoryChange}
-          options={categoryOptions}
-          value={categoryValues}
+          label={t('common.tableFilterAmenities')}
+          onChange={handleAmenityChange}
+          options={amenityOptions}
+          value={amenityValues}
         />
         <MultiSelect
-          label="Status"
+          label={t('common.tableFilterStatus')}
           onChange={handleStatusChange}
           options={statusOptions}
           value={statusValues}
         />
         <MultiSelect
-          label="Stock"
-          onChange={handleStockChange}
-          options={stockOptions}
-          value={stockValues}
+          label={t('common.tableFilterSpecification')}
+          onChange={handleSpecificationChange}
+          options={specificationOptions}
+          value={specificationValues}
         />
       </Stack>
     </div>

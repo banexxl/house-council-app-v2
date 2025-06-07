@@ -2,12 +2,13 @@ import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { Fragment, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
-
+import type { SeverityPillColor } from 'src/components/severity-pill';
 import ChevronDownIcon from '@untitled-ui/icons-react/build/esm/ChevronDown';
 import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import DotsHorizontalIcon from '@untitled-ui/icons-react/build/esm/DotsHorizontal';
 import Image01Icon from '@untitled-ui/icons-react/build/esm/Image01';
-
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CardContent from '@mui/material/CardContent';
@@ -17,7 +18,6 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
 import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -31,7 +31,9 @@ import Typography from '@mui/material/Typography';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from 'src/types/building';
-import { Card } from '@mui/material';
+import { Card, SvgIcon } from '@mui/material';
+import { BaseEntity } from 'src/types/base-entity';
+import { useTranslation } from 'react-i18next';
 
 interface BuildingListTableProps {
   count?: number;
@@ -40,6 +42,7 @@ interface BuildingListTableProps {
   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   page?: number;
   rowsPerPage?: number;
+  buildingStatuses: BaseEntity[]
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = ({
@@ -49,8 +52,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
   onRowsPerPageChange,
   page = 0,
   rowsPerPage = 0,
+  buildingStatuses
 }) => {
 
+  const { t } = useTranslation();
   const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
 
   const handleToggle = useCallback((id: string) => {
@@ -70,6 +75,10 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
     toast.error('Building cannot be deleted');
   }, []);
 
+  const colorSwitcher = (value: boolean): SeverityPillColor => {
+    return value ? 'success' : 'error';
+  }
+
   return (
     <div>
       <Scrollbar>
@@ -77,16 +86,34 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
           <TableHead>
             <TableRow>
               <TableCell />
-              <TableCell>Name</TableCell>
-              <TableCell>City</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>{t('common.lblName')}</TableCell>
+              <TableCell>{t('common.lblCity')}</TableCell>
+              <TableCell>{t('common.lblAddress')}</TableCell>
+              <TableCell>{t('common.lblStatus')}</TableCell>
+              <TableCell>{t('common.lblHasBicycleRoom')}</TableCell>
+              <TableCell>{t('common.lblHasParkingLot')}</TableCell>
+              <TableCell>{t('common.lblHasElevator')}</TableCell>
+              <TableCell>{t('common.lblHasGasHeating')}</TableCell>
+              <TableCell>{t('common.lblHasCentralHeating')}</TableCell>
+              <TableCell>{t('common.lblRecentlyBuilt')}</TableCell>
+              <TableCell>{t('common.lblHasElectricHeating')}</TableCell>
+              <TableCell>{t('common.lblHasSolarPower')}</TableCell>
+              <TableCell>{t('common.lblHasPreHeatedWater')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {items.map((building) => {
               const isCurrent = building.id === currentBuilding;
+              const bicycleRoomColor = colorSwitcher(building.has_bicycle_room);
+              const parkingColor = colorSwitcher(building.has_parking_lot);
+              const elevatorColor = colorSwitcher(building.has_elevator);
+              const gasHeatingColor = colorSwitcher(building.has_gas_heating);
+              const centralHeatingColor = colorSwitcher(building.has_central_heating);
+              const recentlyBuiltColor = colorSwitcher(building.is_is_recently_built);
+              const electricHeatingColor = colorSwitcher(building.has_electric_heating);
+              const solarPowerColor = colorSwitcher(building.has_solar_power);
+              const preHeatedWaterColor = colorSwitcher(building.has_pre_heated_water);
+
 
               return (
                 <Fragment key={building.id}>
@@ -136,17 +163,158 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                     <TableCell>{building.building_location?.city}</TableCell>
                     <TableCell>{building.building_location?.street_address} {building.building_location?.street_number}</TableCell>
                     <TableCell>
-                      <SeverityPill color={building.building_status === 'active' ? 'success' : 'warning'}>
-                        {building.building_status}
+                      <SeverityPill
+                        color={
+                          // Map status name to SeverityPillColor
+                          (
+                            buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.name === 'Active'
+                              ? 'success'
+                              : buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.name === 'Inactive'
+                                ? 'error'
+                                : 'warning'
+                          ) as SeverityPillColor
+                        }
+                      >
+                        {
+                          buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.name ||
+                          building.building_status
+                        }
                       </SeverityPill>
                     </TableCell>
-                    <TableCell align="right">
-                      <IconButton>
-                        <SvgIcon>
-                          <DotsHorizontalIcon />
-                        </SvgIcon>
-                      </IconButton>
+                    <TableCell align="left">
+                      <SeverityPill color={bicycleRoomColor}>
+                        {building.has_bicycle_room ? (
+                          <SvgIcon>
+                            <CheckCircleIcon />
+                          </SvgIcon>
+                        ) : (
+                          <SvgIcon>
+                            <CancelIcon />
+                          </SvgIcon>
+                        )}
+                      </SeverityPill>
                     </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={parkingColor}>
+                        {
+                          building.has_parking_lot ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={elevatorColor}>
+                        {
+                          building.has_elevator ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={gasHeatingColor}>
+                        {
+                          building.has_gas_heating ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={centralHeatingColor}>
+                        {
+                          building.has_central_heating ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={recentlyBuiltColor}>
+                        {
+                          building.is_is_recently_built ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={electricHeatingColor}>
+                        {
+                          building.has_electric_heating ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={solarPowerColor}>
+                        {
+                          building.has_solar_power ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+                    <TableCell align="left">
+                      <SeverityPill color={preHeatedWaterColor}>
+                        {
+                          building.has_pre_heated_water ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
+                          ) : (
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
+                          )
+                        }
+                      </SeverityPill>
+                    </TableCell>
+
                   </TableRow>
 
                   {isCurrent && (

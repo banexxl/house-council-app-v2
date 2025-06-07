@@ -5,7 +5,7 @@ export interface Building {
      id?: string;
      created_at: Date
      updated_at: Date
-     is_recently_built: boolean;
+     is_is_recently_built: boolean;
      description: string;
      has_parking_lot: boolean;
      has_gas_heating: boolean;
@@ -25,7 +25,7 @@ export interface Building {
 
 export const buildingInitialValues: Building = {
      id: undefined,
-     is_recently_built: false,
+     is_is_recently_built: false,
      description: '',
      has_parking_lot: false,
      has_gas_heating: false,

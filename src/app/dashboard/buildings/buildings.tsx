@@ -20,12 +20,14 @@ import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
 import type { Building } from 'src/types/building';
+import { useTranslation } from 'react-i18next';
+import { BaseEntity } from 'src/types/base-entity';
 
 interface Filters {
   name?: string;
-  category: string[];
-  status: string[];
-  inStock?: boolean;
+  amenities: string[];
+  statuses: string[];
+  specifications: string[];
 }
 
 interface BuildingsSearchState {
@@ -35,12 +37,13 @@ interface BuildingsSearchState {
 }
 
 const useBuildingsSearch = () => {
+
   const [state, setState] = useState<BuildingsSearchState>({
     filters: {
       name: undefined,
-      category: [],
-      status: [],
-      inStock: undefined,
+      amenities: [],
+      statuses: [],
+      specifications: [],
     },
     page: 0,
     rowsPerPage: 5,
@@ -79,19 +82,42 @@ const useBuildingsSearch = () => {
 
 type BuildingTableProps = {
   clientBuildings: Building[];
+  buildingStatuses: BaseEntity[]
 };
 
-const Buildings = ({ clientBuildings }: BuildingTableProps) => {
+const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) => {
+
+  const { t } = useTranslation();
   const buildingSearch = useBuildingsSearch();
 
+  const [addBuildingLoading, setAddBuildingLoading] = useState(false);
   // Optional: filter logic here, if needed
   const filteredBuildings = useMemo(() => {
-    const { name } = buildingSearch.state.filters;
+    const { name, amenities, statuses, specifications } = buildingSearch.state.filters;
 
-    return clientBuildings.filter((building) =>
-      name ? building.building_location?.street_address.toLowerCase().includes(name.toLowerCase()) : true
-    );
+    return clientBuildings.filter((building) => {
+      const location = building.building_location;
+
+      const matchesName = name
+        ? location?.street_address.toLowerCase().includes(name.toLowerCase())
+        : true;
+
+      const matchesAmenities = amenities.length
+        ? amenities.every((amenity) => building[amenity as keyof Building])
+        : true;
+
+      const matchesStatuses = statuses.length
+        ? statuses.includes(building.building_status)
+        : true;
+
+      const matchesSpecifications = specifications.length
+        ? specifications.every((spec) => building[spec as keyof Building])
+        : true;
+
+      return matchesName && matchesAmenities && matchesStatuses && matchesSpecifications;
+    });
   }, [clientBuildings, buildingSearch.state.filters]);
+
 
   const paginatedBuildings = useMemo(() => {
     const start = buildingSearch.state.page * buildingSearch.state.rowsPerPage;
@@ -100,55 +126,55 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
   }, [filteredBuildings, buildingSearch.state.page, buildingSearch.state.rowsPerPage]);
 
   return (
-    <>
-      <Seo title="Dashboard: Building List" />
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
-        <Container maxWidth="xl">
-          <Stack spacing={4}>
-            <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Buildings</Typography>
-                <Breadcrumbs separator={<BreadcrumbsSeparator />}>
-                  <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
-                    Dashboard
-                  </Link>
-                  <Link color="text.primary" component={RouterLink} href={paths.dashboard.products.index} variant="subtitle2">
-                    Buildings
-                  </Link>
-                  <Typography color="text.secondary" variant="subtitle2">
-                    List
-                  </Typography>
-                </Breadcrumbs>
-              </Stack>
-              <Button
-                component={RouterLink}
-                href={paths.dashboard.buildings.new}
-                startIcon={
-                  <SvgIcon>
-                    <PlusIcon />
-                  </SvgIcon>
-                }
-                variant="contained"
-              >
-                Add
-              </Button>
-            </Stack>
 
-            <Card>
-              <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} />
-              <BuildingListTable
-                items={paginatedBuildings}
-                count={filteredBuildings.length}
-                page={buildingSearch.state.page}
-                rowsPerPage={buildingSearch.state.rowsPerPage}
-                onPageChange={buildingSearch.handlePageChange}
-                onRowsPerPageChange={buildingSearch.handleRowsPerPageChange}
-              />
-            </Card>
+    <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Container maxWidth="xl">
+        <Stack spacing={4}>
+          <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <Stack spacing={1}>
+              <Typography variant="h4">{t('buildings.buildingList')}</Typography>
+              <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+                <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
+                  {t('nav.adminDashboard')}
+                </Link>
+                <Typography color="text.secondary" variant="subtitle2">
+                  {t('buildings.buildingList')}
+                </Typography>
+              </Breadcrumbs>
+            </Stack>
+            <Button
+              sx={{ height: 40 }}
+              component={RouterLink}
+              href={paths.dashboard.buildings.new}
+              onClick={() => setAddBuildingLoading(true)}
+              startIcon={
+                <SvgIcon>
+                  <PlusIcon />
+                </SvgIcon>
+              }
+              variant="contained"
+              loading={addBuildingLoading}
+            >
+              {t('common.btnCreate')}
+            </Button>
           </Stack>
-        </Container>
-      </Box>
-    </>
+
+          <Card>
+            <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} />
+            <BuildingListTable
+              items={paginatedBuildings}
+              count={filteredBuildings.length}
+              page={buildingSearch.state.page}
+              rowsPerPage={buildingSearch.state.rowsPerPage}
+              onPageChange={buildingSearch.handlePageChange}
+              onRowsPerPageChange={buildingSearch.handleRowsPerPageChange}
+              buildingStatuses={buildingStatuses}
+            />
+          </Card>
+        </Stack>
+      </Container>
+    </Box>
+
   );
 };
 

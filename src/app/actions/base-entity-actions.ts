@@ -110,6 +110,7 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
      return { success: true, createdEntity: data };
 
 };
+
 export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();

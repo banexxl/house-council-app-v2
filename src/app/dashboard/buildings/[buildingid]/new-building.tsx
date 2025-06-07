@@ -149,7 +149,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
         <ElevatorIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
-    is_recently_built: (
+    is_is_recently_built: (
       <Tooltip title="Recently Built">
         <HomeWorkIcon sx={{ mr: 1 }} />
       </Tooltip>
@@ -174,6 +174,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack spacing={4}>
+
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>{t('locations.searchLocationLabel')}</Typography>
