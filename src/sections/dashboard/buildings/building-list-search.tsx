@@ -13,56 +13,58 @@ import Typography from '@mui/material/Typography';
 import { MultiSelect } from 'src/components/multi-select';
 import { useUpdateEffect } from 'src/hooks/use-update-effect';
 import { useTranslation } from 'react-i18next';
+import { BaseEntity } from 'src/types/base-entity';
 
 interface Filters {
   name?: string;
   amenities: string[];
   statuses: string[];
-  specifications: string[];
 }
 
 interface SearchChip {
   label: string;
-  field: 'name' | 'amenities' | 'statuses' | 'specifications';
+  field: 'name' | 'amenities' | 'statuses';
   value: unknown;
   displayValue?: unknown;
 }
 
 interface Option {
-  label: string;
-  value: string;
+  resource_string: string;
 }
 
-const statusOptions: Option[] = [
-  { label: 'Vacant', value: 'vacant' },
-  { label: 'Partially Leased', value: 'partially_leased' },
-  { label: 'Renovation', value: 'renovation' },
-  { label: 'Under Construction', value: 'under_construction' },
-  { label: 'Active', value: 'active' },
-  { label: 'Temporary', value: 'temporary' },
-  { label: 'Historical', value: 'historical' },
-  { label: 'Condemned', value: 'condemned' },
-  { label: 'For Sale', value: 'for_sale' },
-  { label: 'Leased', value: 'leased' },
-  { label: 'Planned', value: 'planned' },
-  { label: 'Demolished', value: 'demolished' },
-  { label: 'Restricted Access', value: 'restricted_access' },
-  { label: 'Inactive', value: 'inactive' },
-  { label: 'Under Inspection', value: 'under_inspection' },
-];
-const specificationOptions: Option[] = [
+const amenityOptions: Option[] = [
   {
-    label: 'Number of apartments',
-    value: 'number_of_apartments',
+    resource_string: 'common.lblHasParkingLot',
   },
   {
-    label: 'Stories high',
-    value: 'stories_high',
+    resource_string: 'common.lblHasGasHeating',
   },
+  {
+    resource_string: 'common.lblHasCentralHeating',
+  },
+  {
+    resource_string: 'common.lblHasSolarPower',
+  },
+  {
+    resource_string: 'common.lblHasElectricHeating',
+  },
+  {
+    resource_string: 'common.lblHasBicycleRoom',
+  },
+  {
+    resource_string: 'common.lblHasPreHeatedWater',
+  },
+  {
+    resource_string: 'common.lblHasElevator',
+  },
+  {
+    resource_string: 'common.lblRecentlyBuilt',
+  }
 ];
 
 interface BuildingListSearchProps {
   onFiltersChange?: (filters: Filters) => void;
+  buildingStatuses: (BaseEntity & { resource_string: string })[]
 }
 
 export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
@@ -71,52 +73,11 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
   const [chips, setChips] = useState<SearchChip[]>([]);
   const { t } = useTranslation();
 
-
-  const amenityOptions: Option[] = [
-    {
-      label: t('common.lblHasParkingLot'),
-      value: 'has_parking_lot',
-    },
-    {
-      label: t('common.lblHasGasHeating'),
-      value: 'has_gas_heating',
-    },
-    {
-      label: t('common.lblHasCentralHeating'),
-      value: 'has_central_heating',
-    },
-    {
-      label: t('common.lblHasSolarPower'),
-      value: 'has_solar_power',
-    },
-    {
-      label: t('common.lblHasElectricHeating'),
-      value: 'has_electric_heating',
-    },
-    {
-      label: t('common.lblHasBicycleRoom'),
-      value: 'has_bicycle_room',
-    },
-    {
-      label: t('common.lblHasPreHeatedWater'),
-      value: 'has_pre_heated_water',
-    },
-    {
-      label: t('common.lblHasElevator'),
-      value: 'has_elevator',
-    },
-    {
-      label: t('common.lblRecentlyBuilt'),
-      value: 'is_recently_built',
-    }
-  ];
-
   const handleChipsUpdate = useCallback(() => {
     const filters: Filters = {
       name: undefined,
       amenities: [],
       statuses: [],
-      specifications: [],
     };
 
     chips.forEach((chip) => {
@@ -131,10 +92,6 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           break;
         case 'statuses':
           filters.statuses.push(chip.value as string);
-          break;
-        case 'specifications':
-          // The value can be "available" or "outOfStock" and we transform it to a boolean
-          filters.specifications.push(chip.value as string);
           break;
         default:
           break;
@@ -228,13 +185,13 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
       values.forEach((value) => {
         if (!valuesFound.includes(value)) {
-          const option = amenityOptions.find((option) => option.value === value);
+          const option = amenityOptions.find((option) => option.resource_string === value);
 
           newChips.push({
             label: 'Amenity',
             field: 'amenities',
             value,
-            displayValue: option!.label,
+            displayValue: option!.resource_string,
           });
         }
       });
@@ -269,54 +226,13 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
       values.forEach((value) => {
         if (!valuesFound.includes(value)) {
-          const option = statusOptions.find((option) => option.value === value);
+          const option = props.buildingStatuses.find((option) => option.resource_string === value);
 
           newChips.push({
             label: 'Statuses',
             field: 'statuses',
             value,
-            displayValue: option!.label,
-          });
-        }
-      });
-
-      return newChips;
-    });
-  }, []);
-
-  const handleSpecificationChange = useCallback((values: string[]): void => {
-    setChips((prevChips) => {
-      const valuesFound: string[] = [];
-
-      // First cleanup the previous chips
-      const newChips = prevChips.filter((chip) => {
-        if (chip.field !== 'specifications') {
-          return true;
-        }
-
-        const found = values.includes(chip.value as string);
-
-        if (found) {
-          valuesFound.push(chip.value as string);
-        }
-
-        return found;
-      });
-
-      // Nothing changed
-      if (values.length === valuesFound.length) {
-        return newChips;
-      }
-
-      values.forEach((value) => {
-        if (!valuesFound.includes(value)) {
-          const option = specificationOptions.find((option) => option.value === value);
-
-          newChips.push({
-            label: 'Specifications',
-            field: 'specifications',
-            value,
-            displayValue: option!.label,
+            displayValue: option!.name,
           });
         }
       });
@@ -335,11 +251,6 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
     () => chips.filter((chip) => chip.field === 'statuses').map((chip) => chip.value) as string[],
     [chips]
   );
-
-  const specificationValues = useMemo(
-    () => chips.filter((chip) => chip.field === 'specifications').map((chip) => chip.value) as string[],
-    [chips]
-  )
 
   const showChips = chips.length > 0;
 
@@ -424,14 +335,8 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
         <MultiSelect
           label={t('common.tableFilterStatus')}
           onChange={handleStatusChange}
-          options={statusOptions}
+          options={props.buildingStatuses}
           value={statusValues}
-        />
-        <MultiSelect
-          label={t('common.tableFilterSpecification')}
-          onChange={handleSpecificationChange}
-          options={specificationOptions}
-          value={specificationValues}
         />
       </Stack>
     </div>

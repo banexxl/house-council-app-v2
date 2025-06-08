@@ -11,7 +11,7 @@ export default async function Page() {
   const userSession = await getServerAuth()
   const [{ success, data, error }, buildingStatuses] = await Promise.all([
     getAllBuildingsFromClient(userSession.client?.id!),
-    readAllEntities<BaseEntity>("tblBuildingStatuses"),
+    readAllEntities<BaseEntity & { resource_string: string }>("tblBuildingStatuses"),
   ]);
 
   return (

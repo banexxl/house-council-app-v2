@@ -10,20 +10,22 @@ import MenuItem from '@mui/material/MenuItem';
 import SvgIcon from '@mui/material/SvgIcon';
 
 import { usePopover } from 'src/hooks/use-popover';
+import { useTranslation } from 'react-i18next';
 
 interface MultiSelectProps {
   label: string;
   // Same as type as the value received above
   onChange?: (value: any[]) => void;
-  options: { label: string; value: unknown }[];
+  options: { resource_string: string }[]
   // This should accept string[], number[] or boolean[]
   value: any[];
 }
 
 export const MultiSelect: FC<MultiSelectProps> = (props) => {
+
   const { label, onChange, options, value = [], ...other } = props;
   const popover = usePopover<HTMLButtonElement>();
-
+  const { t } = useTranslation();
   const handleValueChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
       let newValue = [...value];
@@ -52,7 +54,7 @@ export const MultiSelect: FC<MultiSelectProps> = (props) => {
         ref={popover.anchorRef}
         {...other}
       >
-        {label}
+        {t(label)}
       </Button>
       <Menu
         anchorEl={popover.anchorRef.current}
@@ -61,16 +63,16 @@ export const MultiSelect: FC<MultiSelectProps> = (props) => {
         PaperProps={{ style: { width: 250 } }}
       >
         {options.map((option) => (
-          <MenuItem key={option.label}>
+          <MenuItem key={option.resource_string}>
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={value.includes(option.value)}
+                  checked={value.includes(option.resource_string)}
                   onChange={handleValueChange}
-                  value={option.value}
+                  value={option.resource_string}
                 />
               }
-              label={option.label}
+              label={t(option.resource_string)}
               sx={{
                 flexGrow: 1,
                 mr: 0,

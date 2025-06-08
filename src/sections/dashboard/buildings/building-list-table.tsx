@@ -42,7 +42,7 @@ interface BuildingListTableProps {
   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   page?: number;
   rowsPerPage?: number;
-  buildingStatuses: BaseEntity[]
+  buildingStatuses: (BaseEntity & { resource_string: string })[]
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = ({
@@ -165,22 +165,24 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                     <TableCell>
                       <SeverityPill
                         color={
-                          // Map status name to SeverityPillColor
                           (
-                            buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.name === 'Active'
+                            buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'active'
                               ? 'success'
-                              : buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.name === 'Inactive'
+                              : buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'inactive'
                                 ? 'error'
                                 : 'warning'
                           ) as SeverityPillColor
                         }
                       >
-                        {
-                          buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.name ||
-                          building.building_status
-                        }
+                        {(() => {
+                          const status = buildingStatuses.find((status: BaseEntity) => status.id === building.building_status);
+                          return status?.resource_string
+                            ? t(`common.lbl${status.resource_string.replace(/(^|_)(\w)/g, (_, __, c) => c.toUpperCase())}`)
+                            : building.building_status;
+                        })()}
                       </SeverityPill>
                     </TableCell>
+
                     <TableCell align="left">
                       <SeverityPill color={bicycleRoomColor}>
                         {building.has_bicycle_room ? (

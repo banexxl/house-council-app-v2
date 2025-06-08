@@ -15,7 +15,6 @@ import Typography from '@mui/material/Typography';
 
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
-import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
@@ -23,15 +22,14 @@ import type { Building } from 'src/types/building';
 import { useTranslation } from 'react-i18next';
 import { BaseEntity } from 'src/types/base-entity';
 
-interface Filters {
+export interface BuildingSearchFilters {
   name?: string;
   amenities: string[];
   statuses: string[];
-  specifications: string[];
 }
 
-interface BuildingsSearchState {
-  filters: Filters;
+export interface BuildingsSearchState {
+  filters: BuildingSearchFilters;
   page: number;
   rowsPerPage: number;
 }
@@ -43,13 +41,12 @@ const useBuildingsSearch = () => {
       name: undefined,
       amenities: [],
       statuses: [],
-      specifications: [],
     },
     page: 0,
     rowsPerPage: 5,
   });
 
-  const handleFiltersChange = useCallback((filters: Filters): void => {
+  const handleFiltersChange = useCallback((filters: BuildingSearchFilters): void => {
     setState((prevState) => ({
       ...prevState,
       filters,
@@ -82,7 +79,7 @@ const useBuildingsSearch = () => {
 
 type BuildingTableProps = {
   clientBuildings: Building[];
-  buildingStatuses: BaseEntity[]
+  buildingStatuses: (BaseEntity & { resource_string: string })[]
 };
 
 const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) => {
@@ -93,7 +90,7 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);
   // Optional: filter logic here, if needed
   const filteredBuildings = useMemo(() => {
-    const { name, amenities, statuses, specifications } = buildingSearch.state.filters;
+    const { name, amenities, statuses } = buildingSearch.state.filters;
 
     return clientBuildings.filter((building) => {
       const location = building.building_location;
@@ -110,11 +107,7 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
         ? statuses.includes(building.building_status)
         : true;
 
-      const matchesSpecifications = specifications.length
-        ? specifications.every((spec) => building[spec as keyof Building])
-        : true;
-
-      return matchesName && matchesAmenities && matchesStatuses && matchesSpecifications;
+      return matchesName && matchesAmenities && matchesStatuses
     });
   }, [clientBuildings, buildingSearch.state.filters]);
 
@@ -160,7 +153,7 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
           </Stack>
 
           <Card>
-            <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} />
+            <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} buildingStatuses={buildingStatuses} />
             <BuildingListTable
               items={paginatedBuildings}
               count={filteredBuildings.length}
