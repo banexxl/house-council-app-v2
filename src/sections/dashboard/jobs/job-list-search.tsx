@@ -223,7 +223,7 @@ export const JobListSearch: FC = (props) => {
         spacing={2}
         sx={{ p: 1 }}
       >
-        <MultiSelect
+        {/* <MultiSelect
           label="Type"
           options={typeOptions}
           value={typeValues}
@@ -242,7 +242,7 @@ export const JobListSearch: FC = (props) => {
           label="Role"
           options={roleOptions}
           value={roleValues}
-        />
+        /> */}
         <Box sx={{ flexGrow: 1 }} />
         <FormControlLabel
           control={<Checkbox defaultChecked />}

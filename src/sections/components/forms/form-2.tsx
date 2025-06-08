@@ -165,7 +165,7 @@ export const Form2: FC = () => {
         spacing={2}
         sx={{ p: 1 }}
       >
-        <MultiSelect
+        {/* <MultiSelect
           label="Category"
           options={categoryOptions}
           value={categoryValues}
@@ -179,7 +179,7 @@ export const Form2: FC = () => {
           label="Stock"
           options={stockOptions}
           value={stockValues}
-        />
+        /> */}
         <Box sx={{ flexGrow: 1 }} />
         <FormControlLabel
           control={<Checkbox defaultChecked />}

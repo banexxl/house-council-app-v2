@@ -24,8 +24,8 @@ interface Filters {
 interface SearchChip {
   label: string;
   field: 'name' | 'amenities' | 'statuses';
-  value: unknown;
-  displayValue?: unknown;
+  value: string;
+  displayValue: string;
 }
 
 interface Option {
@@ -146,6 +146,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           label: 'Name',
           field: 'name',
           value,
+          displayValue: value,
         };
 
         return [...prevChips, chip];
@@ -188,7 +189,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           const option = amenityOptions.find((option) => option.resource_string === value);
 
           newChips.push({
-            label: 'Amenity',
+            label: t('common.lblAmenity'),
             field: 'amenities',
             value,
             displayValue: option!.resource_string,
@@ -229,7 +230,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           const option = props.buildingStatuses.find((option) => option.resource_string === value);
 
           newChips.push({
-            label: 'Statuses',
+            label: t('common.lblStatus'),
             field: 'statuses',
             value,
             displayValue: option!.name,
@@ -272,7 +273,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
           disableUnderline
           fullWidth
           inputProps={{ ref: queryRef }}
-          placeholder={t('common.filterSearchByName')}
+          placeholder={t('common.filterSearchByAddress')}
           sx={{ flexGrow: 1 }}
         />
       </Stack>
@@ -299,7 +300,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
                   }}
                 >
                   <>
-                    <span>{chip.label}</span>: {chip.displayValue || chip.value}
+                    <span>{t(chip.label)}</span>: {t(chip.displayValue || chip.value)}
                   </>
                 </Box>
               }

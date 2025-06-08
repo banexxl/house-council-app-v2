@@ -166,9 +166,9 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                       <SeverityPill
                         color={
                           (
-                            buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'active'
+                            buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'buildings.lblBuildingStatusActive'
                               ? 'success'
-                              : buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'inactive'
+                              : buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'buildings.lblBuildingStatusInactive'
                                 ? 'error'
                                 : 'warning'
                           ) as SeverityPillColor
@@ -177,7 +177,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                         {(() => {
                           const status = buildingStatuses.find((status: BaseEntity) => status.id === building.building_status);
                           return status?.resource_string
-                            ? t(`common.lbl${status.resource_string.replace(/(^|_)(\w)/g, (_, __, c) => c.toUpperCase())}`)
+                            ? t(status.resource_string)
                             : building.building_status;
                         })()}
                       </SeverityPill>

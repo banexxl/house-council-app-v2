@@ -43,6 +43,7 @@ export const rs = {
      [tokens.common.btnBackHome]: 'Vrati se na početnu',
      [tokens.common.lblName]: 'Naziv',
      [tokens.common.lblDescription]: 'Opis',
+     [tokens.common.lblAmenity]: 'Detalj',
      [tokens.common.lblStatus]: 'Status',
      [tokens.common.lblActions]: 'Akcije',
      [tokens.common.lblCoverImage]: 'Naslovna slika',
@@ -116,6 +117,7 @@ export const rs = {
      [tokens.common.tableFilterSpecification]: 'Specifikacija',
      [tokens.common.tableFilterNoFilterSelected]: 'Nema odabranih filtera',
      [tokens.common.filterSearchByName]: 'Tražite po nazivu',
+     [tokens.common.filterSearchByAddress]: 'Tražite po adresi',
      //#endregion
      //#region Navigation
      [tokens.nav.academy]: 'Akademija',

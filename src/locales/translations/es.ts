@@ -43,6 +43,7 @@ export const es = {
   [tokens.common.btnBackHome]: 'Volver a la casa',
   [tokens.common.lblName]: 'Nombre',
   [tokens.common.lblDescription]: 'Descripción',
+  [tokens.common.lblAmenity]: 'Amenidad',
   [tokens.common.lblStatus]: 'Estado',
   [tokens.common.lblActions]: 'Acciones',
   [tokens.common.lblCoverImage]: 'Portada',
@@ -116,6 +117,7 @@ export const es = {
   [tokens.common.tableFilterSpecification]: 'Especificaciones',
   [tokens.common.tableFilterNoFilterSelected]: 'No se ha seleccionado ningun filtro',
   [tokens.common.filterSearchByName]: 'Buscar por nombre',
+  [tokens.common.filterSearchByAddress]: 'Buscar por dirección',
   //#endregion
   //#region Navigation
   [tokens.nav.academy]: 'Academia',

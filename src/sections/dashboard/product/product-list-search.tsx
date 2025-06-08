@@ -401,7 +401,7 @@ export const ProductListSearch: FC<ProductListSearchProps> = (props) => {
         spacing={1}
         sx={{ p: 1 }}
       >
-        <MultiSelect
+        {/* <MultiSelect
           label="Category"
           onChange={handleCategoryChange}
           options={categoryOptions}
@@ -418,7 +418,7 @@ export const ProductListSearch: FC<ProductListSearchProps> = (props) => {
           onChange={handleStockChange}
           options={stockOptions}
           value={stockValues}
-        />
+        /> */}
       </Stack>
     </div>
   );

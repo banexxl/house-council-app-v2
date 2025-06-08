@@ -44,6 +44,7 @@ export const tokens = {
     lblName: 'common.lblName',
     lblDescription: 'common.lblDescription',
     lblActions: 'common.lblActions',
+    lblAmenity: 'common.lblAmenity',
     lblStatus: 'common.lblStatus',
     lblCoverImage: 'common.lblCoverImage',
     lblCity: 'common.lblCity',
@@ -116,6 +117,7 @@ export const tokens = {
     tableFilterSpecification: 'common.tableFilterSpecification',
     tableFilterNoFilterSelected: 'common.tableFilterNoFilterSelected',
     filterSearchByName: 'common.filterSearchByName',
+    filterSearchByAddress: 'common.filterSearchByAddress',
   },
   nav: {
     home: 'nav.home',
