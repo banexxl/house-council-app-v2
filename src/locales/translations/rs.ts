@@ -236,6 +236,7 @@ export const rs = {
      [tokens.buildings.lblBuildingStatusRestrictedAccess]: 'Ograničen pristup',
      [tokens.buildings.lblBuildingStatusInactive]: 'Neaktivna',
      [tokens.buildings.lblBuildingStatusUnderInspection]: 'Pod inspekcijom',
+     [tokens.buildings.lblBuildingStatusHistorical]: 'Istorijska',
      //#endregion
      //#region Clients
      [tokens.clients.client]: 'Klijent',

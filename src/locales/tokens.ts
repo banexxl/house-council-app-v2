@@ -202,7 +202,8 @@ export const tokens = {
     lblBuildingStatusDemolished: 'buildings.lblBuildingStatusDemolished',
     lblBuildingStatusRestrictedAccess: 'buildings.lblBuildingStatusRestrictedAccess',
     lblBuildingStatusInactive: 'buildings.lblBuildingStatusInactive',
-    lblBuildingStatusUnderInspection: 'buildings.lblBuildingStatusUnderInspection'
+    lblBuildingStatusUnderInspection: 'buildings.lblBuildingStatusUnderInspection',
+    lblBuildingStatusHistorical: 'buildings.lblBuildingStatusHistorical'
   },
   locations: {
     geoLocationAvailable: 'locations.geoLocationAvailable',

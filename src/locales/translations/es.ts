@@ -235,6 +235,7 @@ export const es = {
   [tokens.buildings.lblBuildingStatusRestrictedAccess]: 'Acceso Restringido',
   [tokens.buildings.lblBuildingStatusInactive]: 'Inactivo',
   [tokens.buildings.lblBuildingStatusUnderInspection]: 'En Inspección',
+  [tokens.buildings.lblBuildingStatusHistorical]: 'Historico',
   //#endregion
   //#region Clients
   [tokens.clients.client]: 'Cliente',
