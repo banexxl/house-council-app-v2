@@ -57,7 +57,6 @@ const useBuildingsSearch = () => {
     page: 0,
     rowsPerPage: 5,
   });
-  console.log(state);
 
   const handleFiltersChange = useCallback((filters: BuildingSearchFilters): void => {
     setState((prevState) => ({

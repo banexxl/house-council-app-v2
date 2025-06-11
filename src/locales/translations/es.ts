@@ -32,6 +32,7 @@ export const es = {
   [tokens.common.btnDownload]: 'Descargar',
   [tokens.common.btnUpload]: 'Subir',
   [tokens.common.btnAdd]: 'Añadir',
+  [tokens.common.btnUpdate]: 'Actualizar',
   [tokens.common.btnRemove]: 'Quitar',
   [tokens.common.btnRemoveAll]: 'Quitar todo',
   [tokens.common.btnSearch]: 'Buscar',

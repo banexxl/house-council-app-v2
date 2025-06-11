@@ -32,6 +32,7 @@ export const de = {
   [tokens.common.btnDownload]: 'Herunterladen',
   [tokens.common.btnUpload]: 'Hochladen',
   [tokens.common.btnAdd]: 'Hinzufügen',
+  [tokens.common.btnUpdate]: 'Aktualisieren',
   [tokens.common.btnRemove]: 'Entfernen',
   [tokens.common.btnRemoveAll]: 'Alle entfernen',
   [tokens.common.btnSearch]: 'Suchen',

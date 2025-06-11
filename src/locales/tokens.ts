@@ -32,6 +32,7 @@ export const tokens = {
     btnDownload: 'common.btnDownload',
     btnUpload: 'common.btnUpload',
     btnAdd: 'common.btnAdd',
+    btnUpdate: 'common.btnUpdate',
     btnRemove: 'common.btnRemove',
     btnRemoveAll: 'common.btnRemoveAll',
     btnSearch: 'common.btnSearch',
