@@ -109,7 +109,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
               const elevatorColor = colorSwitcher(building.has_elevator);
               const gasHeatingColor = colorSwitcher(building.has_gas_heating);
               const centralHeatingColor = colorSwitcher(building.has_central_heating);
-              const recentlyBuiltColor = colorSwitcher(building.is_is_recently_built);
+              const recentlyBuiltColor = colorSwitcher(building.is_recently_built);
               const electricHeatingColor = colorSwitcher(building.has_electric_heating);
               const solarPowerColor = colorSwitcher(building.has_solar_power);
               const preHeatedWaterColor = colorSwitcher(building.has_pre_heated_water);
@@ -259,7 +259,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                     <TableCell align="left">
                       <SeverityPill color={recentlyBuiltColor}>
                         {
-                          building.is_is_recently_built ? (
+                          building.is_recently_built ? (
                             <SvgIcon>
                               <CheckCircleIcon />
                             </SvgIcon>

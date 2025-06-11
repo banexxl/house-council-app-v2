@@ -22,8 +22,20 @@ import type { Building } from 'src/types/building';
 import { useTranslation } from 'react-i18next';
 import { BaseEntity } from 'src/types/base-entity';
 
+const amenityKeyMap: Record<string, keyof Building> = {
+  'common.lblHasParkingLot': 'has_parking_lot',
+  'common.lblHasGasHeating': 'has_gas_heating',
+  'common.lblHasCentralHeating': 'has_central_heating',
+  'common.lblHasElectricHeating': 'has_electric_heating',
+  'common.lblHasSolarPower': 'has_solar_power',
+  'common.lblHasBicycleRoom': 'has_bicycle_room',
+  'common.lblHasPreHeatedWater': 'has_pre_heated_water',
+  'common.lblHasElevator': 'has_elevator',
+  'common.lblIsRecentlyBuilt': 'is_recently_built',
+};
+
 export interface BuildingSearchFilters {
-  name?: string;
+  address?: string;
   amenities: string[];
   statuses: string[];
 }
@@ -38,13 +50,14 @@ const useBuildingsSearch = () => {
 
   const [state, setState] = useState<BuildingsSearchState>({
     filters: {
-      name: undefined,
+      address: undefined,
       amenities: [],
       statuses: [],
     },
     page: 0,
     rowsPerPage: 5,
   });
+  console.log(state);
 
   const handleFiltersChange = useCallback((filters: BuildingSearchFilters): void => {
     setState((prevState) => ({
@@ -87,27 +100,41 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
   const { t } = useTranslation();
   const buildingSearch = useBuildingsSearch();
 
+  const statusMap: Record<string, string> = useMemo(() => {
+    const map: Record<string, string> = {};
+    buildingStatuses.forEach((status) => {
+      map[status.resource_string] = status.id!;
+    });
+    return map;
+  }, [buildingStatuses]);
+
+
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);
   // Optional: filter logic here, if needed
   const filteredBuildings = useMemo(() => {
-    const { name, amenities, statuses } = buildingSearch.state.filters;
+    const { address, amenities, statuses } = buildingSearch.state.filters;
 
     return clientBuildings.filter((building) => {
+
       const location = building.building_location;
 
-      const matchesName = name
-        ? location?.street_address.toLowerCase().includes(name.toLowerCase())
+      const matchesAddress = address
+        ? location?.street_address.toLowerCase().includes(address.toLowerCase())
         : true;
 
       const matchesAmenities = amenities.length
-        ? amenities.every((amenity) => building[amenity as keyof Building])
+        ? amenities.every((resourceKey: string) => {
+          const fieldKey = amenityKeyMap[resourceKey];
+          return fieldKey && building[fieldKey];
+        })
         : true;
 
       const matchesStatuses = statuses.length
-        ? statuses.includes(building.building_status)
+        ? statuses.some((r) => statusMap[r] === building.building_status)
         : true;
 
-      return matchesName && matchesAmenities && matchesStatuses
+
+      return matchesAddress && matchesAmenities && matchesStatuses
     });
   }, [clientBuildings, buildingSearch.state.filters]);
 

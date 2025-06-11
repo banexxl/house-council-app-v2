@@ -16,14 +16,14 @@ import { useTranslation } from 'react-i18next';
 import { BaseEntity } from 'src/types/base-entity';
 
 interface Filters {
-  name?: string;
+  address?: string;
   amenities: string[];
   statuses: string[];
 }
 
 interface SearchChip {
   label: string;
-  field: 'name' | 'amenities' | 'statuses';
+  field: 'address' | 'amenities' | 'statuses';
   value: string;
   displayValue: string;
 }
@@ -75,17 +75,17 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
   const handleChipsUpdate = useCallback(() => {
     const filters: Filters = {
-      name: undefined,
+      address: undefined,
       amenities: [],
       statuses: [],
     };
 
     chips.forEach((chip) => {
       switch (chip.field) {
-        case 'name':
-          // There will (or should) be only one chips with field "name"
+        case 'address':
+          // There will (or should) be only one chips with field "address"
           // so we can set up it directly
-          filters.name = chip.value as string;
+          filters.address = chip.value as string;
           break;
         case 'amenities':
           filters.amenities.push(chip.value as string);
@@ -122,11 +122,11 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
     const value = queryRef.current?.value || '';
 
     setChips((prevChips) => {
-      const found = prevChips.find((chip) => chip.field === 'name');
+      const found = prevChips.find((chip) => chip.field === 'address');
 
       if (found && value) {
         return prevChips.map((chip) => {
-          if (chip.field === 'name') {
+          if (chip.field === 'address') {
             return {
               ...chip,
               value: queryRef.current?.value || '',
@@ -138,13 +138,13 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
       }
 
       if (found && !value) {
-        return prevChips.filter((chip) => chip.field !== 'name');
+        return prevChips.filter((chip) => chip.field !== 'address');
       }
 
       if (!found && value) {
         const chip: SearchChip = {
           label: 'Name',
-          field: 'name',
+          field: 'address',
           value,
           displayValue: value,
         };

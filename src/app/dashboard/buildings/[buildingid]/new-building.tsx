@@ -149,7 +149,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
         <ElevatorIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
-    is_is_recently_built: (
+    is_recently_built: (
       <Tooltip title="Recently Built">
         <HomeWorkIcon sx={{ mr: 1 }} />
       </Tooltip>
