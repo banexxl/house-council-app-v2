@@ -172,8 +172,8 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           }
      });
 
-     if (!authError == null) {
-          return { success: false, error: authError };
+     if (authError != null) {
+         return { success: false, error: authError };
      } else {
           if (authData.url) {
                redirect(authData.url);
