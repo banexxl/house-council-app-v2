@@ -30,8 +30,8 @@ import { UserSessionCombined } from 'src/hooks/use-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
-import { t } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { removeFilePath, uploadImageAndGetUrl } from 'src/libs/supabase/sb-storage';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -48,6 +48,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const { t } = useTranslation();
 
   const formik = useFormik({
@@ -70,7 +71,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           }
 
           toast.success('Building updated');
-          router.push(paths.dashboard.buildings.index);
+          router.push(paths.dashboard.buildings.index + '/' + buildingData.id);
         } else {
           // ➕ CREATE MODE
           const { success, data, error } = await createBuilding({
@@ -97,15 +98,64 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
   });
 
-  const handleFilesDrop = useCallback((newFiles: File[]): void => {
-    setFiles((prev) => [...prev, ...newFiles]);
-    const url = URL.createObjectURL(newFiles[0]); // simplify to single upload
-    formik.setFieldValue('cover_image', url);
+  const handleFilesDrop = useCallback(async (newFiles: File[]): Promise<void> => {
+    let fakeProgress = 0;
+    setUploadProgress(0);
+
+    // Simulate gradual progress while uploading
+    const interval = setInterval(() => {
+      fakeProgress += 5;
+      if (fakeProgress <= 99) {
+        setUploadProgress(fakeProgress);
+      }
+    }, 300); // adjust speed here
+
+    try {
+      // Start upload
+      const uploadResponse = await uploadImageAndGetUrl(
+        newFiles,
+        userSession.client?.name!,
+        buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number
+      );
+
+      // Stop progress simulation
+      clearInterval(interval);
+      setUploadProgress(100);
+
+      // Wait briefly before clearing
+      setTimeout(() => {
+        setUploadProgress(undefined);
+      }, 700);
+
+      if (uploadResponse.success) {
+        // setFiles((prev) => [...prev, ...newFiles]);
+        formik.setFieldValue('cover_images', uploadResponse.urls);
+        toast.success('Image uploaded successfully');
+      } else {
+        toast.error('Failed to upload image');
+      }
+    } catch (error) {
+      clearInterval(interval);
+      setUploadProgress(undefined);
+      toast.error('Failed to upload image');
+      console.error('Error uploading image:', error);
+    }
+  }, [formik, userSession.client?.name]);
+
+  const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
+    console.log('filePath', filePath);
+
+    try {
+      const { success } = await removeFilePath(buildingData?.id!, filePath);
+      formik.setFieldValue('cover_images', []);
+    } catch (error) {
+      console.error('Error removing image:', error);
+    }
+    formik.setFieldValue('cover_images', []);
   }, [formik]);
 
-  const handleFileRemove = useCallback((): void => {
-    setFiles([]);
-    formik.setFieldValue('cover_image', '');
+  const handleFileRemoveAll = useCallback((): void => {
+    formik.setFieldValue('cover_images', []);
   }, [formik]);
 
   const featureIcons: Record<string, JSX.Element> = {
@@ -287,22 +337,25 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.lblCoverImage')}</Typography>
-            <FileDropzone
-              accept={{ 'image/*': [] }}
-              caption="(SVG, JPG, PNG or GIF up to 900x400)"
-              files={files}
-              onDrop={handleFilesDrop}
-              onRemoveAll={handleFileRemove}
-              onRemove={handleFileRemove}
-            />
-            {formik.errors.cover_image && (
-              <FormHelperText error>{formik.dirty}</FormHelperText>
-            )}
-          </CardContent>
-        </Card>
+        {buildingData && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('common.lblImages')}</Typography>
+              <FileDropzone
+                accept={{ 'image/*': [] }}
+                caption="(SVG, JPG, PNG or GIF up to 900x400)"
+                onDrop={handleFilesDrop}
+                onRemoveAll={handleFileRemoveAll}
+                onRemoveImage={handleFileRemove}
+                uploadProgress={uploadProgress}
+                images={buildingData.cover_images || []}
+              />
+              {formik.errors.cover_images && (
+                <FormHelperText error>{formik.dirty}</FormHelperText>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
           {/* Left: Delete button (only if editing) */}

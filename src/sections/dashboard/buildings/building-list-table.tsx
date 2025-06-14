@@ -34,6 +34,8 @@ import type { Building } from 'src/types/building';
 import { Card, SvgIcon } from '@mui/material';
 import { BaseEntity } from 'src/types/base-entity';
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
+import { paths } from 'src/paths';
 
 interface BuildingListTableProps {
   count?: number;
@@ -125,13 +127,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {building.cover_image ? (
+                        {building.cover_images!.length > 0 ? (
                           <Box
                             sx={{
                               width: 64,
                               height: 64,
                               borderRadius: 1,
-                              backgroundImage: `url(${building.cover_image})`,
+                              backgroundImage: `url(${building.cover_images![0]})`,
                               backgroundSize: 'cover',
                               backgroundPosition: 'center',
                               mr: 2,
@@ -156,7 +158,15 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                           </Box>
                         )}
                         <Box>
-                          <Typography variant="subtitle2">{building.building_location?.street_address}</Typography>
+                          <Link
+                            color="inherit"
+                            href={paths.dashboard.buildings.index + '/' + encodeURIComponent(building.id!)}
+                            style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+                          >
+                            <Typography variant="subtitle2">
+                              {building.building_location?.street_address}
+                            </Typography>
+                          </Link>
                         </Box>
                       </Box>
                     </TableCell>

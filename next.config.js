@@ -11,11 +11,15 @@ const config = {
         protocol: 'https',
         hostname: 'house-council.s3.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'https://sorklznvftjmhkaejkej.supabase.co/storage/v1/object/public/',
+      },
     ],
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "4MB",
+      bodySizeLimit: "50MB",
     },
   },
 };

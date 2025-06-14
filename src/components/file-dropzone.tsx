@@ -1,44 +1,63 @@
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 import PropTypes from 'prop-types';
 import type { DropzoneOptions, FileWithPath } from 'react-dropzone';
 import { useDropzone } from 'react-dropzone';
 import Upload01Icon from '@untitled-ui/icons-react/build/esm/Upload01';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
+import CloseIcon from '@mui/icons-material/Close';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-
-import { FileIcon } from 'src/components/file-icon';
-import { bytesToSize } from 'src/utils/bytes-to-size';
 import { useTranslation } from 'react-i18next';
+import { FullScreenLoader } from './full-screen-loader';
+import { Card, CardContent, Dialog, Grid, ListItemAvatar, ListItemSecondaryAction } from '@mui/material';
+import { PopupModal } from './modal-dialog';
+import { removeFilePath } from 'src/libs/supabase/sb-storage';
 
 export type File = FileWithPath;
 
 interface FileDropzoneProps extends DropzoneOptions {
+  entityId?: string
   caption?: string;
-  files?: File[];
-  onRemove?: (file: File) => void;
+  onRemoveImage?: (url: string) => void;
   onRemoveAll?: () => void;
   onUpload?: () => void;
+  uploadProgress?: number;
+  images?: string[]
 }
 
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
-  const { caption, files = [], onRemove, onRemoveAll, onUpload, ...other } = props;
+  const { entityId, caption, onRemoveAll, onUpload, uploadProgress, images, onRemoveImage, ...other } = props;
+
+  const [open, setOpen] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const handleImageClick = (index: number) => {
+    setSelectedIndex(index);
+    setViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setViewerOpen(false);
+    setSelectedIndex(null);
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
   const { t } = useTranslation()
-  const hasAnyFiles = files.length > 0;
 
   return (
     <div>
+      {uploadProgress !== undefined && (
+        <FullScreenLoader progress={uploadProgress} message="Uploading image..." />
+      )}
       <Box
         sx={{
           alignItems: 'center',
@@ -101,80 +120,125 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
           </Stack>
         </Stack>
       </Box>
-      {hasAnyFiles && (
-        <Box sx={{ mt: 2 }}>
-          <List>
-            {files.map((file) => {
-              const extension = file.name.split('.').pop();
-
-              return (
-                <ListItem
-                  key={file.path}
-                  sx={{
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    '& + &': {
-                      mt: 1,
-                    },
-                  }}
-                >
-                  <ListItemIcon>
-                    <FileIcon extension={extension} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={file.name}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                    secondary={bytesToSize(file.size)}
-                  />
-                  <Tooltip title="Remove">
+      <Box sx={{ mt: 2 }}>
+        {images && images.length > 0 && (
+          <Card sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                {t('common.lblUploadedImages') ?? 'Uploaded Images'}
+              </Typography>
+              <Grid container spacing={2}>
+                {images.map((url, index) => (
+                  <ListItem key={index}>
+                    <ListItemAvatar>
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          width: 64,
+                          height: 64,
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                        }}
+                      >
+                        <img
+                          src={url}
+                          alt={`Uploaded ${index + 1}`}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      </Box>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={url.split('/').pop()}
+                      secondary={t('common.actionRemove')}
+                    />
+                    <PopupModal
+                      isOpen={open}
+                      onClose={() => setOpen(false)}
+                      onConfirm={() => {
+                        removeFilePath(entityId!, images?.[index] ?? '');
+                        setOpen(false)
+                      }}
+                      title={'Are you sure you want to remove this image?'}
+                      type={'confirmation'}
+                    />
                     <IconButton
-                      edge="end"
-                      onClick={() => onRemove?.(file)}
+                      size="small"
+                      sx={{
+                        '&:hover': { bgcolor: 'grey.100' },
+                      }}
+                      onClick={() => setOpen(true)}
                     >
-                      <SvgIcon>
+                      <SvgIcon fontSize="small">
                         <XIcon />
                       </SvgIcon>
                     </IconButton>
-                  </Tooltip>
-                </ListItem>
-              );
-            })}
-          </List>
-          <Stack
-            alignItems="center"
-            direction="row"
-            justifyContent="flex-end"
-            spacing={2}
-            sx={{ mt: 2 }}
-          >
-            <Button
-              color="inherit"
-              onClick={onRemoveAll}
-              size="small"
-              type="button"
+                  </ListItem>
+                ))}
+                <Box
+                  sx={{
+                    textAlign: 'right',
+                    mt: 1,
+                  }}
+                >
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={onRemoveAll}
+                  >
+                    Remove all
+                  </Button>
+                </Box>
+              </Grid>
+            </CardContent>
+          </Card>
+        )}
+        <Dialog
+          open={viewerOpen}
+          onClose={handleCloseViewer}
+          fullWidth
+          maxWidth="md"
+          PaperProps={{
+            sx: {
+              bgcolor: 'background.default',
+              boxShadow: 5,
+            },
+          }}
+        >
+          <Box sx={{ position: 'relative', p: 2 }}>
+            <IconButton
+              onClick={handleCloseViewer}
+              sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
             >
-              {t('common.btnRemoveAll')}
-            </Button>
-            <Button
-              onClick={onUpload}
-              size="small"
-              type="button"
-              variant="contained"
-            >
-              {t('common.btnUpload')}
-            </Button>
-          </Stack>
-        </Box>
-      )}
+              <CloseIcon />
+            </IconButton>
+            {selectedIndex !== null && (
+              <img
+                src={images?.[selectedIndex]}
+                alt={`Preview ${selectedIndex + 1}`}
+                style={{ width: '100%', height: 'auto', borderRadius: 8 }}
+              />
+            )}
+            {/* Optional: Add next/prev buttons */}
+          </Box>
+        </Dialog>
+
+      </Box>
     </div>
   );
 };
 
 FileDropzone.propTypes = {
   caption: PropTypes.string,
-  files: PropTypes.array,
-  onRemove: PropTypes.func,
+  onRemoveImage: PropTypes.func,
   onRemoveAll: PropTypes.func,
   onUpload: PropTypes.func,
   // From Dropzone
