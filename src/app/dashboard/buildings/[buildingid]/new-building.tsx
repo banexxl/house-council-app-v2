@@ -31,7 +31,7 @@ import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
-import { removeFilePath, uploadImageAndGetUrl } from 'src/libs/supabase/sb-storage';
+import { removeBuildingImageFilePath, uploadImagesAndGetUrl } from 'src/libs/supabase/sb-storage';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -99,6 +99,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   });
 
   const handleFilesDrop = useCallback(async (newFiles: File[]): Promise<void> => {
+
     let fakeProgress = 0;
     setUploadProgress(0);
 
@@ -112,10 +113,11 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
     try {
       // Start upload
-      const uploadResponse = await uploadImageAndGetUrl(
+      const uploadResponse = await uploadImagesAndGetUrl(
         newFiles,
         userSession.client?.name!,
-        buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number
+        buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number,
+        buildingData?.id!
       );
 
       // Stop progress simulation
@@ -128,7 +130,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       }, 700);
 
       if (uploadResponse.success) {
-        // setFiles((prev) => [...prev, ...newFiles]);
+        setFiles((prev) => [...prev, ...newFiles]);
         formik.setFieldValue('cover_images', uploadResponse.urls);
         toast.success('Image uploaded successfully');
       } else {
@@ -143,20 +145,56 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   }, [formik, userSession.client?.name]);
 
   const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
-    console.log('filePath', filePath);
-
     try {
-      const { success } = await removeFilePath(buildingData?.id!, filePath);
-      formik.setFieldValue('cover_images', []);
+      const { success, error } = await removeBuildingImageFilePath(buildingData?.id!, filePath);
+
+      if (!success) {
+        toast.error(error ?? 'Failed to remove image.');
+        return;
+      }
+
+      // Update local form state (UI)
+      const newImages = formik.values.cover_images!.filter((url: string) => url !== filePath);
+      formik.setFieldValue('cover_images', newImages);
+      toast.success('Image removed');
+
+      // Auto-save form
+      await formik.submitForm();
+
     } catch (error) {
       console.error('Error removing image:', error);
+      toast.error('Error removing image');
     }
-    formik.setFieldValue('cover_images', []);
-  }, [formik]);
+  }, [formik, buildingData?.id]);
 
-  const handleFileRemoveAll = useCallback((): void => {
-    formik.setFieldValue('cover_images', []);
-  }, [formik]);
+  const handleFileRemoveAll = useCallback(async (): Promise<void> => {
+    if (!formik.values.cover_images?.length || !buildingData?.id) return;
+
+    const imageUrls = formik.values.cover_images;
+
+    try {
+      const results = await Promise.all(
+        imageUrls.map(url => removeBuildingImageFilePath(buildingData.id!, url))
+      );
+
+      const failed = results.find(r => !r.success);
+      if (failed) {
+        toast.error(failed.error ?? 'One or more images could not be deleted');
+        return;
+      }
+
+      // Clear local form state
+      formik.setFieldValue('cover_images', []);
+      toast.success('All images removed');
+
+      // Auto-save form
+      await formik.submitForm();
+
+    } catch (error) {
+      console.error('Error removing all images:', error);
+      toast.error('Failed to remove all images');
+    }
+  }, [formik, buildingData?.id]);
 
   const featureIcons: Record<string, JSX.Element> = {
     has_parking_lot: (

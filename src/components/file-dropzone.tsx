@@ -10,16 +10,13 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { FullScreenLoader } from './full-screen-loader';
-import { Card, CardContent, Dialog, Grid, ListItemAvatar, ListItemSecondaryAction } from '@mui/material';
+import { Card, CardContent, Dialog, Grid, ListItemAvatar } from '@mui/material';
 import { PopupModal } from './modal-dialog';
-import { removeFilePath } from 'src/libs/supabase/sb-storage';
 
 export type File = FileWithPath;
 
@@ -34,6 +31,7 @@ interface FileDropzoneProps extends DropzoneOptions {
 }
 
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
+
   const { entityId, caption, onRemoveAll, onUpload, uploadProgress, images, onRemoveImage, ...other } = props;
 
   const [open, setOpen] = useState(false);
@@ -129,7 +127,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
               </Typography>
               <Grid container spacing={2}>
                 {images.map((url, index) => (
-                  <ListItem key={index}>
+                  <ListItem key={index} sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <ListItemAvatar>
                       <Box
                         sx={{
@@ -156,15 +154,11 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                         />
                       </Box>
                     </ListItemAvatar>
-                    <ListItemText
-                      primary={url.split('/').pop()}
-                      secondary={t('common.actionRemove')}
-                    />
                     <PopupModal
                       isOpen={open}
                       onClose={() => setOpen(false)}
                       onConfirm={() => {
-                        removeFilePath(entityId!, images?.[index] ?? '');
+                        onRemoveImage!(url)
                         setOpen(false)
                       }}
                       title={'Are you sure you want to remove this image?'}
