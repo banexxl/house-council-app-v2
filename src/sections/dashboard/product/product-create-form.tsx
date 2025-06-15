@@ -115,10 +115,8 @@ export const ProductCreateForm: FC = (props) => {
     });
   }, []);
 
-  const handleFileRemove = useCallback((file: File): void => {
-    setFiles((prevFiles) => {
-      return prevFiles.filter((_file) => _file.path !== file.path);
-    });
+  const handleFileRemove = useCallback((file: string): void => {
+
   }, []);
 
   const handleFilesRemoveAll = useCallback((): void => {
@@ -207,7 +205,7 @@ export const ProductCreateForm: FC = (props) => {
                   caption="(SVG, JPG, PNG, or gif maximum 900x400)"
                   files={files}
                   onDrop={handleFilesDrop}
-                  onRemove={handleFileRemove}
+                  onRemoveImage={handleFileRemove}
                   onRemoveAll={handleFilesRemoveAll}
                 />
               </Grid>

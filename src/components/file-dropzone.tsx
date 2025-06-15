@@ -23,6 +23,7 @@ export type File = FileWithPath;
 interface FileDropzoneProps extends DropzoneOptions {
   entityId?: string
   caption?: string;
+  files?: File[];
   onRemoveImage?: (url: string) => void;
   onRemoveAll?: () => void;
   onUpload?: () => void;
