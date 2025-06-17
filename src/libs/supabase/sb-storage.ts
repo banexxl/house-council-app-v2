@@ -287,10 +287,18 @@ export const setAsBuildingCoverImage = async (
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
+
+          //Clear existing cover
+          const { error: clearError } = await supabase
+               .from('tblBuildingImages')
+               .update({ is_cover_image: false })
+               .eq('building_id', buildingId)
+
+          // Set new cover
           const { error: updateError } = await supabase
                .from('tblBuildingImages')
                .update({ is_cover_image: true })
-               .eq('id', buildingId)
+               .eq('building_id', buildingId)
                .eq('image_url', imageURL)
 
           if (updateError) {

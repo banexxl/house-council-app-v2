@@ -36,7 +36,7 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<{ su
                .eq('client_id', client_id),
           supabase
                .from('tblBuildingImages')
-               .select('building_id, image_url')
+               .select('*')
      ]);
 
      if (error) {

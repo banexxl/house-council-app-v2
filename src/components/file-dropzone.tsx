@@ -34,7 +34,6 @@ interface FileDropzoneProps extends DropzoneOptions {
 }
 
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
-  console.log(props);
 
   const { entityId, caption, onRemoveAll, onUpload, uploadProgress, images, onRemoveImage, ...other } = props;
   const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
@@ -176,6 +175,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                               height: '100%',
                               objectFit: 'cover',
                             }}
+                            onClick={() => handleImageClick(index)}
                           />
                         </Tooltip>
 

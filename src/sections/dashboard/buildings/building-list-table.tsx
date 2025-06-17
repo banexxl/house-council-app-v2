@@ -104,7 +104,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((building) => {
+            {items.map((building: Building) => {
               const isCurrent = building.id === currentBuilding;
               const bicycleRoomColor = colorSwitcher(building.has_bicycle_room);
               const parkingColor = colorSwitcher(building.has_parking_lot);
@@ -115,7 +115,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
               const electricHeatingColor = colorSwitcher(building.has_electric_heating);
               const solarPowerColor = colorSwitcher(building.has_solar_power);
               const preHeatedWaterColor = colorSwitcher(building.has_pre_heated_water);
-
 
               return (
                 <Fragment key={building.id}>
