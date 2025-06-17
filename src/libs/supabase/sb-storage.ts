@@ -282,7 +282,6 @@ export const setAsBuildingCoverImage = async (
      buildingId: string,
      imageURL: string
 ): Promise<{ success: boolean; error?: string }> => {
-     console.log(buildingId, imageURL);
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 

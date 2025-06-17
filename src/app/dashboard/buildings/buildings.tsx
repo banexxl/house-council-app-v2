@@ -95,7 +95,6 @@ type BuildingTableProps = {
 };
 
 const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) => {
-  console.log('clientBuildings', clientBuildings);
 
   const { t } = useTranslation();
   const buildingSearch = useBuildingsSearch();
