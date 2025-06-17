@@ -107,6 +107,7 @@ export const en = {
   [tokens.common.actionSubmitError]: 'Error during submit',
   [tokens.common.actionResetSuccess]: 'Reset successfully',
   [tokens.common.actionResetError]: 'Error during reset',
+  [tokens.common.actionRemove]: 'Remove',
   [tokens.common.actionDownloadSuccess]: 'Downloaded successfully',
   [tokens.common.actionDownloadError]: 'Error during download',
   [tokens.common.actionUploadSuccess]: 'Uploaded successfully',

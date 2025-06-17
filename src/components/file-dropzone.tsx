@@ -15,7 +15,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { FullScreenLoader } from './full-screen-loader';
-import { Card, CardContent, Dialog, Grid, ListItemAvatar } from '@mui/material';
+import { Card, CardContent, Dialog, Grid, ListItemAvatar, Tooltip } from '@mui/material';
 import { PopupModal } from './modal-dialog';
 
 export type File = FileWithPath;
@@ -36,7 +36,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
   const { entityId, caption, onRemoveAll, onUpload, uploadProgress, images, onRemoveImage, ...other } = props;
   const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
   const { t } = useTranslation()
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<string | null>('');
   const [openRemoveAll, setOpenRemoveAll] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -51,8 +51,6 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
     setSelectedIndex(null);
   };
 
-
-
   return (
     <div>
       {uploadProgress !== undefined && (
@@ -62,7 +60,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
         sx={{
           alignItems: 'center',
           border: 1,
-          borderRadius: 1,
+          borderRadius: '20px',
           borderStyle: 'dashed',
           borderColor: 'divider',
           display: 'flex',
@@ -121,27 +119,27 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
         </Stack>
       </Box>
       <Box sx={{ mt: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          {t('common.lblUploadedImages') ?? 'Uploaded Images'}
+        </Typography>
         {images && images.length > 0 && (
           <Card sx={{ mt: 2 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                {t('common.lblUploadedImages') ?? 'Uploaded Images'}
-              </Typography>
               <Grid container spacing={2}>
                 {images.map((url, index) => (
-                  <ListItem key={index} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <ListItemAvatar>
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          width: 64,
-                          height: 64,
-                          borderRadius: 1,
-                          overflow: 'hidden',
-                          border: '1px solid',
-                          borderColor: 'divider',
-                        }}
-                      >
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: '80%',
+                        paddingTop: '100%', // 1:1 aspect ratio
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Tooltip title={url.split('/').pop()} placement='top'>
                         <img
                           src={url}
                           alt={`Uploaded ${index + 1}`}
@@ -154,56 +152,55 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                             objectFit: 'cover',
                           }}
                         />
-                      </Box>
-                    </ListItemAvatar>
-                    <PopupModal
-                      isOpen={open}
-                      onClose={() => setOpen(false)}
-                      onConfirm={() => {
-                        onRemoveImage!(url)
-                        setOpen(false)
-                      }}
-                      title={'Are you sure you want to remove this image?'}
-                      type={'confirmation'}
-                    />
-                    <IconButton
-                      size="small"
-                      sx={{
-                        '&:hover': { bgcolor: 'grey.100' },
-                      }}
-                      onClick={() => setOpen(true)}
-                    >
-                      <SvgIcon fontSize="small">
-                        <XIcon />
-                      </SvgIcon>
-                    </IconButton>
-                  </ListItem>
+                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          bgcolor: 'background.paper',
+                          '&:hover': { bgcolor: 'grey.100' },
+                        }}
+                        onClick={() => setOpen(url)}
+                      >
+                        <Tooltip title={t('common.actionRemove')}>
+                          <SvgIcon fontSize="small">
+                            <XIcon />
+                          </SvgIcon>
+                        </Tooltip>
+                      </IconButton>
+                      <PopupModal
+                        isOpen={Boolean(open)}
+                        onClose={() => setOpen(null)}
+                        onConfirm={() => {
+                          onRemoveImage!(open!);
+                          setOpen(null);
+                        }}
+                        title={'Are you sure you want to remove this image?'}
+                        type={'confirmation'}
+                      />
+                    </Box>
+                  </Grid>
                 ))}
-                <Box
-                  sx={{
-                    textAlign: 'right',
-                    mt: 1,
-                  }}
-                >
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={() => setOpenRemoveAll(true)}
-                  >
-                    Remove all
-                  </Button>
-                  <PopupModal
-                    isOpen={openRemoveAll}
-                    onClose={() => setOpenRemoveAll(false)}
-                    onConfirm={() => {
-                      onRemoveAll!()
-                      setOpenRemoveAll(false)
-                    }}
-                    title={'Are you sure you want to remove all images?'}
-                    type={'confirmation'}
-                  />
-                </Box>
               </Grid>
+
+              <Box sx={{ textAlign: 'right', mt: 2 }}>
+                <Button size="small" color="error" onClick={() => setOpenRemoveAll(true)}>
+                  Remove all
+                </Button>
+                <PopupModal
+                  isOpen={openRemoveAll}
+                  onClose={() => setOpenRemoveAll(false)}
+                  onConfirm={() => {
+                    onRemoveAll!();
+                    setOpenRemoveAll(false);
+                  }}
+                  title={'Are you sure you want to remove all images?'}
+                  type={'confirmation'}
+                />
+              </Box>
+
             </CardContent>
           </Card>
         )}
@@ -212,10 +209,12 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
           onClose={handleCloseViewer}
           fullWidth
           maxWidth="md"
-          PaperProps={{
-            sx: {
-              bgcolor: 'background.default',
-              boxShadow: 5,
+          slotProps={{
+            paper: {
+              sx: {
+                bgcolor: 'background.default',
+                boxShadow: 5,
+              },
             },
           }}
         >

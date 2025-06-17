@@ -107,6 +107,7 @@ export const es = {
   [tokens.common.actionSubmitError]: 'Ha habido un error al enviar',
   [tokens.common.actionResetSuccess]: 'Se ha restablecido correctamente',
   [tokens.common.actionResetError]: 'Ha habido un error al restablecer',
+  [tokens.common.actionRemove]: 'Eliminar',
   [tokens.common.actionDownloadSuccess]: 'Se ha descargado correctamente',
   [tokens.common.actionDownloadError]: 'Ha habido un error al descargar',
   [tokens.common.actionUploadSuccess]: 'Se ha subido correctamente',

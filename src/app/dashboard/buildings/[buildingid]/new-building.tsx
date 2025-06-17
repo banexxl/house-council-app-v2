@@ -70,7 +70,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
             return;
           }
 
-          toast.success('Building updated');
+          toast.success(t('common.actionSaveSuccess'));
           router.push(paths.dashboard.buildings.index + '/' + buildingData.id);
         } else {
           // ➕ CREATE MODE
@@ -85,7 +85,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
             return;
           }
 
-          toast.success('Building created');
+          toast.success(t('common.actionSaveSuccess'));
           router.push(paths.dashboard.buildings.index + '/' + data?.id);
         }
         setLoading(false);
@@ -132,15 +132,14 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       if (uploadResponse.success) {
         setFiles((prev) => [...prev, ...newFiles]);
         formik.setFieldValue('building_images', uploadResponse.urls);
-        toast.success('Image uploaded successfully');
+        toast.success(t('common.actionUploadSuccess'));
       } else {
-        toast.error('Failed to upload image');
+        toast.error(t('common.actionUploadError'));
       }
     } catch (error) {
       clearInterval(interval);
       setUploadProgress(undefined);
-      toast.error('Failed to upload image');
-      console.error('Error uploading image:', error);
+      toast.error(t('common.actionUploadError'));
     }
   }, [formik, userSession.client?.name]);
 
@@ -149,17 +148,16 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       const { success, error } = await removeBuildingImageFilePath(buildingData?.id!, filePath);
 
       if (!success) {
-        toast.error(error ?? 'Failed to remove image.');
+        toast.error(error ?? t('common.actionDeleteError'));
         return;
       }
 
       // Update local form state (UI)
       const newImages = formik.values.building_images!.filter((url: string) => url !== filePath);
       formik.setFieldValue('building_images', newImages);
-      toast.success('Image removed');
+      toast.success(t('common.actionDeleteSuccess'));
     } catch (error) {
-      console.error('Error removing image:', error);
-      toast.error('Error removing image');
+      toast.error(t('common.actionDeleteError'));
     }
   }, [formik, buildingData?.id]);
 
@@ -171,63 +169,62 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       const removeAllImagesResponse = await removeAllImagesFromBuilding(buildingData.id);
 
       if (!removeAllImagesResponse.success) {
-        toast.error('Failed to remove all images');
+        toast.error(t('common.actionDeleteError'));
         return;
       }
 
       // Clear local form state
       formik.setFieldValue('building_images', []);
-      toast.success('All images removed');
+      toast.success(t('common.actionDeleteSuccess'));
 
     } catch (error) {
-      console.error('Error removing all images:', error);
-      toast.error('Failed to remove all images');
+      toast.error(t('common.actionDeleteError'));
     }
   }, [formik, buildingData?.id]);
 
   const featureIcons: Record<string, JSX.Element> = {
     has_parking_lot: (
-      <Tooltip title="Parking Lot">
+      <Tooltip title={t('common.lblHasParkingLot')}>
         <DirectionsCarIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_gas_heating: (
-      <Tooltip title="Gas Heating">
+      <Tooltip title={t('common.lblHasGasHeating')}>
         <WhatshotIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_central_heating: (
-      <Tooltip title="Central Heating">
+      <Tooltip title={t('common.lblHasCentralHeating')}>
         <AcUnitIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_electric_heating: (
-      <Tooltip title="Electric Heating">
+      <Tooltip title={t('common.lblHasElectricHeating')}>
         <BoltIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_solar_power: (
-      <Tooltip title="Solar Power">
+      <Tooltip title={t('common.lblHasSolarPower')}>
         <SolarPowerIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_bicycle_room: (
-      <Tooltip title="Bicycle Room">
+      <Tooltip title={t('common.lblHasBicycleRoom')}>
         <DirectionsBikeIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_pre_heated_water: (
-      <Tooltip title="Pre-Heated Water">
+      <Tooltip title={t('common.lblHasPreHeatedWater')}>
         <OpacityIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     has_elevator: (
-      <Tooltip title="Elevator">
+      <Tooltip title={t('common.lblHasElevator')}>
         <ElevatorIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
     is_recently_built: (
-      <Tooltip title="Recently Built">
+      <Tooltip title={t('common.lblRecentlyBuilt')}>
         <HomeWorkIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),

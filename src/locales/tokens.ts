@@ -107,6 +107,7 @@ export const tokens = {
     actionSubmitError: 'common.actionSubmitError',
     actionResetSuccess: 'common.actionResetSuccess',
     actionResetError: 'common.actionResetError',
+    actionRemove: 'common.actionRemove',
     actionDownloadSuccess: 'common.actionDownloadSuccess',
     actionDownloadError: 'common.actionDownloadError',
     actionUploadSuccess: 'common.actionUploadSuccess',

@@ -4,6 +4,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
+import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
 
 /**
  * Helper to map images to buildings
@@ -272,12 +273,38 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
  * DELETE a building
  */
 export async function deleteBuilding(id: string): Promise<{ success: boolean, error?: string, data?: null }> {
+
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     // Delete related images
-     await supabase.from('tblBuildingImages').delete().eq('building_id', id);
+     // Need to delete the images from SB S3 because if we delete from tblBuildingImages first, removeAllImagesFromBuilding wont even try to delete them
+     const { success, error } = await removeAllImagesFromBuilding(id);
 
+     if (!success) {
+          await logServerAction({
+               action: 'Delete Building - deleting images from SB S3 failed.',
+               duration_ms: Date.now() - time,
+               error: error!,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+          })
+     }
+     // Delete related images
+     const { error: deleteImagesError } = await supabase.from('tblBuildingImages').delete().eq('building_id', id);
+
+     if (deleteImagesError) {
+          await logServerAction({
+               action: 'Delete Building - deleting images from tblBuildingImages failed.',
+               duration_ms: Date.now() - time,
+               error: deleteImagesError.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+               user_id: '',
+          });
+     }
      // Find linked location
      const { data: location, error: locationError } = await supabase
           .from('tblBuildingLocations')
@@ -287,7 +314,7 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
 
      if (locationError && locationError.code !== 'PGRST116') {
           await logServerAction({
-               action: 'deleteBuilding',
+               action: 'Delete Building - failed to check building location',
                duration_ms: Date.now() - time,
                error: locationError.message,
                payload: { id },
@@ -305,7 +332,7 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
      const { error: deleteError } = await supabase.from('tblBuildings').delete().eq('id', id);
      if (deleteError) {
           await logServerAction({
-               action: 'deleteBuilding',
+               action: 'Delete Building - failed to delete building from tblBuildings',
                duration_ms: Date.now() - time,
                error: deleteError.message,
                payload: { id },
@@ -317,7 +344,7 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
      }
 
      await logServerAction({
-          action: 'deleteBuilding',
+          action: 'Delete Building - Success',
           duration_ms: Date.now() - time,
           error: '',
           payload: { id },

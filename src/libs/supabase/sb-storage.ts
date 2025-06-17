@@ -87,6 +87,7 @@ export const removeBuildingImageFilePath = async (
      buildingId: string,
      filePathOrUrl: string
 ): Promise<{ success: boolean; error?: string }> => {
+
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
 
@@ -132,6 +133,7 @@ export const removeBuildingImageFilePath = async (
 export const removeAllImagesFromBuilding = async (
      buildingId: string
 ): Promise<{ success: boolean; error?: string }> => {
+
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
 
@@ -168,7 +170,7 @@ export const removeAllImagesFromBuilding = async (
           }
 
           // Delete rows from DB
-          const { error: dbDeleteError } = await supabase
+          const { data, error: dbDeleteError, count } = await supabase
                .from('tblBuildingImages')
                .delete({ count: 'exact' }) // optional but useful if you want to confirm
                .eq('building_id', buildingId);

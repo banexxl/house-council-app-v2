@@ -107,6 +107,7 @@ export const de = {
   [tokens.common.actionSubmitError]: 'Fehler beim Übermitteln',
   [tokens.common.actionResetSuccess]: 'Zurücksetzen erfolgreich',
   [tokens.common.actionResetError]: 'Fehler beim Zurücksetzen',
+  [tokens.common.actionRemove]: 'Entfernen',
   [tokens.common.actionDownloadSuccess]: 'Herunterladen erfolgreich',
   [tokens.common.actionDownloadError]: 'Fehler beim Herunterladen',
   [tokens.common.actionUploadSuccess]: 'Hochladen erfolgreich',
