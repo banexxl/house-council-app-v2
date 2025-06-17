@@ -9,11 +9,30 @@ import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
 /**
  * Helper to map images to buildings
  */
-const enrichBuildingsWithImages = (buildings: Building[], imageRecords: { building_id: string; image_url: string }[]): Building[] => {
-     const imageMap = new Map<string, string[]>();
-     imageRecords.forEach(({ building_id, image_url }) => {
-          if (!imageMap.has(building_id)) imageMap.set(building_id, []);
-          imageMap.get(building_id)!.push(image_url);
+const enrichBuildingsWithImages = (
+     buildings: Building[],
+     imageRecords: {
+          building_id: string;
+          image_url: string;
+          is_cover_image: boolean;
+     }[]
+): Building[] => {
+     const imageMap = new Map<
+          string,
+          { image_url: string; is_cover_image: boolean }[]
+     >();
+
+     imageRecords.forEach((record) => {
+          if (!imageMap.has(record.building_id)) {
+               imageMap.set(record.building_id, []);
+          }
+          const images = imageMap.get(record.building_id)!;
+
+          if (record.is_cover_image) {
+               images.unshift({ image_url: record.image_url, is_cover_image: true });
+          } else {
+               images.push({ image_url: record.image_url, is_cover_image: false });
+          }
      });
 
      return buildings.map((b) => ({
@@ -23,46 +42,53 @@ const enrichBuildingsWithImages = (buildings: Building[], imageRecords: { buildi
 };
 
 /**
- * GET all buildings for a client
+ * Get all buildings from a client
  */
-export async function getAllBuildingsFromClient(client_id: string): Promise<{ success: boolean, error?: string, data?: Building[] }> {
+export async function getAllBuildingsFromClient(
+     client_id: string
+): Promise<{ success: boolean; error?: string; data?: Building[] }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const [{ data: buildings, error }, { data: imageRecords }] = await Promise.all([
-          supabase
-               .from('tblBuildings')
-               .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
-               .eq('client_id', client_id),
-          supabase
-               .from('tblBuildingImages')
-               .select('*')
-     ]);
+     const [{ data: buildings, error }, { data: imageRecords }] =
+          await Promise.all([
+               supabase
+                    .from("tblBuildings")
+                    .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
+                    .eq("client_id", client_id),
+               supabase
+                    .from("tblBuildingImages")
+                    .select("building_id, image_url, is_cover_image"),
+          ]);
 
      if (error) {
           await logServerAction({
-               action: 'getAllBuildingsFromClient',
+               action: "getAllBuildingsFromClient",
                duration_ms: Date.now() - time,
                error: error.message,
                payload: { client_id },
-               status: 'fail',
-               type: 'db',
+               status: "fail",
+               type: "db",
                user_id: client_id,
-               id: '',
+               id: "",
           });
           return { success: false, error: error.message };
      }
 
-     const enriched = enrichBuildingsWithImages(buildings ?? [], imageRecords ?? []);
+     const enriched = enrichBuildingsWithImages(
+          buildings ?? [],
+          imageRecords ?? []
+     );
+
      await logServerAction({
-          action: 'getAllBuildingsFromClient',
+          action: "getAllBuildingsFromClient",
           duration_ms: Date.now() - time,
-          error: '',
+          error: "",
           payload: { client_id },
-          status: 'success',
-          type: 'db',
+          status: "success",
+          type: "db",
           user_id: client_id,
-          id: '',
+          id: "",
      });
 
      return { success: true, data: enriched };

@@ -20,7 +20,10 @@ export interface Building {
      building_status: string;
      number_of_apartments: number;
      client_id: string;
-     building_images?: string[];
+     building_images?: {
+          image_url: string;
+          is_cover_image: boolean;
+     }[];
 }
 
 export const buildingInitialValues: Building = {
