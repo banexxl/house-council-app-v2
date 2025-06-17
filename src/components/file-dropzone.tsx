@@ -34,8 +34,10 @@ interface FileDropzoneProps extends DropzoneOptions {
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
 
   const { entityId, caption, onRemoveAll, onUpload, uploadProgress, images, onRemoveImage, ...other } = props;
-
+  const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false);
+  const [openRemoveAll, setOpenRemoveAll] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
@@ -49,8 +51,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
     setSelectedIndex(null);
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
-  const { t } = useTranslation()
+
 
   return (
     <div>
@@ -187,10 +188,20 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                   <Button
                     size="small"
                     color="error"
-                    onClick={onRemoveAll}
+                    onClick={() => setOpenRemoveAll(true)}
                   >
                     Remove all
                   </Button>
+                  <PopupModal
+                    isOpen={openRemoveAll}
+                    onClose={() => setOpenRemoveAll(false)}
+                    onConfirm={() => {
+                      onRemoveAll!()
+                      setOpenRemoveAll(false)
+                    }}
+                    title={'Are you sure you want to remove all images?'}
+                    type={'confirmation'}
+                  />
                 </Box>
               </Grid>
             </CardContent>

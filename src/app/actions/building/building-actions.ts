@@ -5,31 +5,38 @@ import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-ser
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 
-// GET all buildings
+/**
+ * Helper to map images to buildings
+ */
+const enrichBuildingsWithImages = (buildings: Building[], imageRecords: { building_id: string; image_url: string }[]): Building[] => {
+     const imageMap = new Map<string, string[]>();
+     imageRecords.forEach(({ building_id, image_url }) => {
+          if (!imageMap.has(building_id)) imageMap.set(building_id, []);
+          imageMap.get(building_id)!.push(image_url);
+     });
+
+     return buildings.map((b) => ({
+          ...b,
+          building_images: imageMap.get(b.id!) ?? [],
+     }));
+};
+
+/**
+ * GET all buildings for a client
+ */
 export async function getAllBuildingsFromClient(client_id: string): Promise<{ success: boolean, error?: string, data?: Building[] }> {
-
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data, error } = await supabase
-          .from('tblBuildings')
-          .select(`
-               *,
-               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
-                 id,
-                 street_address,
-                 street_number,
-                 city,
-                 region,
-                 country,
-                 post_code,
-                 latitude,
-                 longitude,
-                 created_at,
-                 updated_at
-               )
-             `)
-          .eq('client_id', client_id);
+     const [{ data: buildings, error }, { data: imageRecords }] = await Promise.all([
+          supabase
+               .from('tblBuildings')
+               .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
+               .eq('client_id', client_id),
+          supabase
+               .from('tblBuildingImages')
+               .select('building_id, image_url')
+     ]);
 
      if (error) {
           await logServerAction({
@@ -41,9 +48,11 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<{ su
                type: 'db',
                user_id: client_id,
                id: '',
-          })
+          });
           return { success: false, error: error.message };
      }
+
+     const enriched = enrichBuildingsWithImages(buildings ?? [], imageRecords ?? []);
      await logServerAction({
           action: 'getAllBuildingsFromClient',
           duration_ms: Date.now() - time,
@@ -53,42 +62,31 @@ export async function getAllBuildingsFromClient(client_id: string): Promise<{ su
           type: 'db',
           user_id: client_id,
           id: '',
-     })
-     return { success: true, data: data as Building[] };
+     });
+
+     return { success: true, data: enriched };
 }
 
-// GET single building by ID
+/**
+ * GET building by ID
+ */
 export async function getBuildingById(id: string): Promise<{ success: boolean, error?: string, data?: Building }> {
-
-     const isValidUUIDv4 = isUUID(id);
-
-     if (!isValidUUIDv4) {
-          return { success: false, error: 'Invalid UUID' };
-     }
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
 
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data, error } = await supabase
-          .from('tblBuildings')
-          .select(`
-               *,
-               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
-                 id,
-                 street_address,
-                 street_number,
-                 city,
-                 region,
-                 country,
-                 post_code,
-                 latitude,
-                 longitude,
-                 created_at,
-                 updated_at
-               )
-             `)
-          .eq('id', id)
-          .single();
+     const [{ data: building, error }, { data: imageRecords }] = await Promise.all([
+          supabase
+               .from('tblBuildings')
+               .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
+               .eq('id', id)
+               .single(),
+          supabase
+               .from('tblBuildingImages')
+               .select('building_id, image_url')
+               .eq('building_id', id)
+     ]);
 
      if (error) {
           await logServerAction({
@@ -100,7 +98,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
                type: 'db',
                user_id: '',
                id: '',
-          })
+          });
           return { success: false, error: error.message };
      }
 
@@ -113,16 +111,27 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
           type: 'db',
           user_id: '',
           id: '',
-     })
-     return { success: true, data: data as Building };
+     });
+
+     return {
+          success: true,
+          data: {
+               ...building,
+               building_images: imageRecords?.map(i => i.image_url) ?? [],
+          }
+     };
 }
 
-// CREATE a new building
+/**
+ * CREATE a new building
+ */
 export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ success: boolean, error?: string, data?: Building | null }> {
-
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     const payloadData = { ...payload, building_location: payload.building_location?.id };
+
+     const { building_images, ...buildingPayload } = payload;
+     const building_location_id = payload.building_location?.id;
+     const payloadData = { ...buildingPayload, building_location: building_location_id };
 
      const { data: buildingData, error: insertError } = await supabase
           .from('tblBuildings')
@@ -144,15 +153,20 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
           return { success: false, error: insertError.message };
      }
 
-     // 👉 Step 1: Check if location already has a building
+     // Insert building images
+     if (building_images?.length) {
+          const imageInserts = building_images.map(url => ({ building_id: buildingData.id, image_url: url }));
+          await supabase.from('tblBuildingImages').insert(imageInserts);
+     }
+
+     // Check if location already has a building
      const { data: existingLocation, error: fetchError } = await supabase
           .from('tblBuildingLocations')
           .select('building_id')
-          .eq('id', payloadData.building_location)
+          .eq('id', building_location_id)
           .single();
 
      if (fetchError) {
-          // Optional: clean up inserted building if location fetch fails
           await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
           await logServerAction({
                action: 'createBuilding',
@@ -168,8 +182,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
      }
 
      if (existingLocation?.building_id) {
-          // ❌ Already assigned, delete inserted building
-          const { count, error } = await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
+          await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
           await logServerAction({
                action: 'createBuilding',
                duration_ms: Date.now() - time,
@@ -183,53 +196,41 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
           return { success: false, error: 'Location is already assigned to another building' };
      }
 
-     // ✅ Step 2: Safe to update the location
-     const { status: updateStatus, count, error: updateError } = await supabase
+     await supabase
           .from('tblBuildingLocations')
           .update({ building_id: buildingData.id })
-          .match({ id: payloadData.building_location });
-
-     if (updateError) {
-          await logServerAction({
-               action: 'createBuilding',
-               duration_ms: Date.now() - time,
-               error: updateError.message,
-               payload: `Updated ${updateStatus} building location: ${buildingData.id}`,
-               status: 'fail',
-               type: 'db',
-               user_id: '',
-               id: '',
-          });
-          return { success: false, error: updateError.message };
-     }
+          .match({ id: building_location_id });
 
      await logServerAction({
           action: 'createBuilding',
           duration_ms: Date.now() - time,
           error: '',
-          payload: `Updated ${updateStatus} building location: ${buildingData.id}`,
+          payload: payloadData,
           status: 'success',
           type: 'db',
           user_id: '',
           id: '',
      });
 
-     return { success: true, data: buildingData as Building };
+     return { success: true, data: buildingData };
 }
 
-// UPDATE a building
+/**
+ * UPDATE a building
+ */
 export async function updateBuilding(id: string, updates: Partial<Building>): Promise<{ success: boolean, error?: string, data?: Building }> {
-
-     const buildingUpdate = {
-          ...updates,
-          building_location: updates.building_location ? updates.building_location.id : undefined,
-     };
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     const { building_images, ...buildingUpdate } = updates;
+     const updatePayload = {
+          ...buildingUpdate,
+          building_location: updates.building_location?.id,
+     };
 
      const { data, error } = await supabase
           .from('tblBuildings')
-          .update(buildingUpdate)
+          .update(updatePayload)
           .eq('id', id)
           .select()
           .single();
@@ -243,8 +244,15 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
                status: 'fail',
                type: 'db',
                user_id: '',
-          })
+          });
           return { success: false, error: error.message };
+     }
+
+     // Replace existing images
+     if (building_images) {
+          await supabase.from('tblBuildingImages').delete().eq('building_id', id);
+          const newImages = building_images.map(url => ({ building_id: id, image_url: url }));
+          await supabase.from('tblBuildingImages').insert(newImages);
      }
 
      await logServerAction({
@@ -255,16 +263,22 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
           status: 'success',
           type: 'db',
           user_id: '',
-     })
-     return { success: true, data: data as Building };
+     });
+
+     return { success: true, data };
 }
 
-// DELETE a building
+/**
+ * DELETE a building
+ */
 export async function deleteBuilding(id: string): Promise<{ success: boolean, error?: string, data?: null }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     // Step 1: Check for location with this building_id
+     // Delete related images
+     await supabase.from('tblBuildingImages').delete().eq('building_id', id);
+
+     // Find linked location
      const { data: location, error: locationError } = await supabase
           .from('tblBuildingLocations')
           .select('id')
@@ -272,7 +286,6 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
           .single();
 
      if (locationError && locationError.code !== 'PGRST116') {
-          // PGRST116 = no rows found — acceptable; any other error = fail
           await logServerAction({
                action: 'deleteBuilding',
                duration_ms: Date.now() - time,
@@ -285,44 +298,22 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
           return { success: false, error: 'Failed to check building location' };
      }
 
-     // Step 2: Delete location if found
      if (location?.id) {
-          const { error: deleteLocationError } = await supabase
-               .from('tblBuildingLocations')
-               .delete()
-               .eq('id', location.id);
-
-          if (deleteLocationError) {
-               await logServerAction({
-                    action: 'deleteBuilding',
-                    duration_ms: Date.now() - time,
-                    error: deleteLocationError.message,
-                    payload: { id },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: '',
-               });
-               return { success: false, error: 'Failed to delete linked building location' };
-          }
+          await supabase.from('tblBuildingLocations').delete().eq('id', location.id);
      }
 
-     // Step 3: Delete the building
-     const { error: deleteBuildingError } = await supabase
-          .from('tblBuildings')
-          .delete()
-          .eq('id', id);
-
-     if (deleteBuildingError) {
+     const { error: deleteError } = await supabase.from('tblBuildings').delete().eq('id', id);
+     if (deleteError) {
           await logServerAction({
                action: 'deleteBuilding',
                duration_ms: Date.now() - time,
-               error: deleteBuildingError.message,
+               error: deleteError.message,
                payload: { id },
                status: 'fail',
                type: 'db',
                user_id: '',
           });
-          return { success: false, error: deleteBuildingError.message };
+          return { success: false, error: deleteError.message };
      }
 
      await logServerAction({
@@ -337,4 +328,3 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
 
      return { success: true, data: null };
 }
-

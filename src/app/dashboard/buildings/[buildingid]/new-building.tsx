@@ -31,7 +31,7 @@ import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
-import { removeBuildingImageFilePath, uploadImagesAndGetUrl } from 'src/libs/supabase/sb-storage';
+import { removeAllImagesFromBuilding, removeBuildingImageFilePath, uploadImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -113,7 +113,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
     try {
       // Start upload
-      const uploadResponse = await uploadImagesAndGetUrl(
+      const uploadResponse = await uploadImagesAndGetUrls(
         newFiles,
         userSession.client?.name!,
         buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number,
@@ -131,7 +131,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
       if (uploadResponse.success) {
         setFiles((prev) => [...prev, ...newFiles]);
-        formik.setFieldValue('cover_images', uploadResponse.urls);
+        formik.setFieldValue('building_images', uploadResponse.urls);
         toast.success('Image uploaded successfully');
       } else {
         toast.error('Failed to upload image');
@@ -154,13 +154,9 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       }
 
       // Update local form state (UI)
-      const newImages = formik.values.cover_images!.filter((url: string) => url !== filePath);
-      formik.setFieldValue('cover_images', newImages);
+      const newImages = formik.values.building_images!.filter((url: string) => url !== filePath);
+      formik.setFieldValue('building_images', newImages);
       toast.success('Image removed');
-
-      // Auto-save form
-      await formik.submitForm();
-
     } catch (error) {
       console.error('Error removing image:', error);
       toast.error('Error removing image');
@@ -168,27 +164,20 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
   }, [formik, buildingData?.id]);
 
   const handleFileRemoveAll = useCallback(async (): Promise<void> => {
-    if (!formik.values.cover_images?.length || !buildingData?.id) return;
-
-    const imageUrls = formik.values.cover_images;
+    if (!formik.values.building_images?.length || !buildingData?.id) return;
 
     try {
-      const results = await Promise.all(
-        imageUrls.map(url => removeBuildingImageFilePath(buildingData.id!, url))
-      );
 
-      const failed = results.find(r => !r.success);
-      if (failed) {
-        toast.error(failed.error ?? 'One or more images could not be deleted');
+      const removeAllImagesResponse = await removeAllImagesFromBuilding(buildingData.id);
+
+      if (!removeAllImagesResponse.success) {
+        toast.error('Failed to remove all images');
         return;
       }
 
       // Clear local form state
-      formik.setFieldValue('cover_images', []);
+      formik.setFieldValue('building_images', []);
       toast.success('All images removed');
-
-      // Auto-save form
-      await formik.submitForm();
 
     } catch (error) {
       console.error('Error removing all images:', error);
@@ -386,9 +375,9 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
                 onRemoveAll={handleFileRemoveAll}
                 onRemoveImage={handleFileRemove}
                 uploadProgress={uploadProgress}
-                images={buildingData.cover_images || []}
+                images={buildingData.building_images || []}
               />
-              {formik.errors.cover_images && (
+              {formik.errors.building_images && (
                 <FormHelperText error>{formik.dirty}</FormHelperText>
               )}
             </CardContent>

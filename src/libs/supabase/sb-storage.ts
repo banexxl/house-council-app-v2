@@ -1,19 +1,23 @@
-'use server'
+'use server';
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseServiceRoleClient } from "./sb-server";
 
+// Helper to sanitize file paths for S3
 const sanitizeSegmentForS3 = (segment: string): string => {
      return segment
-          .normalize('NFD')                         // separate diacritics (e.g., ć → c +  ́)
-          .replace(/[\u0300-\u036f]/g, '')          // remove diacritics
-          .replace(/[^a-zA-Z0-9-_\.]/g, '_')        // replace non-safe characters with _
-          .replace(/_+/g, '_')                      // collapse multiple underscores
-          .replace(/^_+|_+$/g, '');                 // trim leading/trailing underscores
-}
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9-_.]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_+|_+$/g, '');
+};
 
-export const uploadImagesAndGetUrl = async (
-     file: File[],
+/**
+ * Uploads one or more images to Supabase Storage and links them to a building in `tblBuildingImages`
+ */
+export const uploadImagesAndGetUrls = async (
+     files: File[],
      client: string,
      address: string,
      buildingId: string
@@ -21,9 +25,9 @@ export const uploadImagesAndGetUrl = async (
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
      const urls: string[] = [];
+
      try {
-          // Upload files and collect their public URLs
-          for (const singleFile of file) {
+          for (const singleFile of files) {
                const encodedFilePath = [
                     'Clients',
                     sanitizeSegmentForS3(client),
@@ -31,7 +35,7 @@ export const uploadImagesAndGetUrl = async (
                     sanitizeSegmentForS3(singleFile.name),
                ].join('/');
 
-               const { error: uploadError } = await supabase.storage
+               const { data, error: uploadError } = await supabase.storage
                     .from(bucket)
                     .upload(encodedFilePath, singleFile, {
                          cacheControl: '3600',
@@ -49,79 +53,73 @@ export const uploadImagesAndGetUrl = async (
                     .from(bucket)
                     .getPublicUrl(encodedFilePath);
 
-               if (publicUrlData?.publicUrl) {
-                    urls.push(publicUrlData.publicUrl);
+               const imageUrl = publicUrlData?.publicUrl;
+
+               if (!imageUrl) {
+                    return { success: false, error: 'Failed to retrieve public URL' };
                }
-          }
-          console.log('urls', urls);
 
-          // Fetch existing cover_images
-          const { data: building, error: fetchError } = await supabase
-               .from('tblBuildings')
-               .select('cover_images')
-               .eq('id', buildingId)
-               .single();
+               const { error: insertError } = await supabase
+                    .from('tblBuildingImages')
+                    .insert({
+                         building_id: buildingId,
+                         image_url: imageUrl,
+                    });
 
-          if (fetchError) {
-               return { success: false, error: fetchError.message };
-          }
+               if (insertError) {
+                    return { success: false, error: insertError.message };
+               }
 
-          const existingUrls = building.cover_images || [];
-          const newUrls = Array.from(new Set([...existingUrls, ...urls]));
-
-          const { data: updatedRows, error: updateError } = await supabase
-               .from('tblBuildings')
-               .update({ cover_images: newUrls })
-               .eq('id', buildingId)
-               .select();
-
-          console.log('updatedRows', updatedRows);
-
-          if (updateError) {
-               return { success: false, error: updateError.message };
+               urls.push(imageUrl);
           }
 
           revalidatePath(`/dashboard/buildings/${buildingId}`);
-
-          return {
-               success: true,
-               urls,
-          };
+          return { success: true, urls };
      } catch (error: any) {
           return { success: false, error: error.message };
      }
 };
 
-export const removeBuildingImageFilePath = async (buildingId: string, filePath: string): Promise<{ success: boolean; error?: string }> => {
-
+/**
+ * Removes an image file from Supabase Storage and deletes the image record from `tblBuildingImages`
+ */
+export const removeBuildingImageFilePath = async (
+     buildingId: string,
+     filePathOrUrl: string
+): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!
+     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
 
      try {
-          const { error } = await supabase.storage.from(bucket).remove([filePath]);
+          // Extract the file path relative to the bucket
+          let filePath = filePathOrUrl;
 
-          if (error) {
-               return { success: false, error: error.message };
-          }
-          const { data: building } = await supabase
-               .from('tblBuildings')
-               .select('cover_images')
-               .eq('id', buildingId)
-               .single();
+          if (filePathOrUrl.startsWith('https://')) {
+               const publicPrefix = `/storage/v1/object/public/${bucket}/`;
+               const startIndex = filePathOrUrl.indexOf(publicPrefix);
+               if (startIndex === -1) {
+                    return { success: false, error: 'Invalid public URL format.' };
+               }
 
-          if (!building) {
-               return { success: false, error: 'Building not found' };
+               filePath = filePathOrUrl.substring(startIndex + publicPrefix.length);
           }
 
-          const updatedImages = (building.cover_images || []).filter((url: string) => url !== filePath);
+          // Delete from S3
+          const { error: deleteError } = await supabase.storage.from(bucket).remove([filePath]);
+          if (deleteError) {
+               return { success: false, error: deleteError.message };
+          }
 
-          const { error: updateError } = await supabase
-               .from('tblBuildings')
-               .update({ cover_images: updatedImages })
-               .eq('id', buildingId);
+          // Delete from tblBuildingImages
+          const { error: dbDeleteError } = await supabase
+               .from('tblBuildingImages')
+               .delete({ count: 'exact' })
+               .eq('building_id', buildingId)
+               .eq('image_url', filePathOrUrl) // This is still full URL as stored in DB
+               .select('*');
 
-          if (updateError) {
-               return { success: false, error: updateError.message };
+          if (dbDeleteError) {
+               return { success: false, error: dbDeleteError.message };
           }
 
           revalidatePath(`/dashboard/buildings/${buildingId}`);
@@ -129,4 +127,59 @@ export const removeBuildingImageFilePath = async (buildingId: string, filePath: 
      } catch (error: any) {
           return { success: false, error: error.message };
      }
-}
+};
+
+export const removeAllImagesFromBuilding = async (
+     buildingId: string
+): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+
+     try {
+          const { data: images, error: imagesError } = await supabase
+               .from('tblBuildingImages')
+               .select('image_url')
+               .eq('building_id', buildingId);
+
+          if (imagesError) {
+               return { success: false, error: imagesError.message };
+          }
+
+          if (!images || images.length === 0) {
+               return { success: true }; // Nothing to delete
+          }
+
+          // Extract relative file paths from full URLs
+          const publicPrefix = `/storage/v1/object/public/${bucket}/`;
+          const filePaths = images
+               .map((img) => {
+                    const url = img.image_url;
+                    const idx = url.indexOf(publicPrefix);
+                    return idx !== -1 ? url.substring(idx + publicPrefix.length) : null;
+               })
+               .filter((path): path is string => Boolean(path)); // filter out nulls
+
+          // Delete files from S3
+          if (filePaths.length > 0) {
+               const { error: deleteError } = await supabase.storage.from(bucket).remove(filePaths);
+               if (deleteError) {
+                    return { success: false, error: deleteError.message };
+               }
+          }
+
+          // Delete rows from DB
+          const { error: dbDeleteError } = await supabase
+               .from('tblBuildingImages')
+               .delete({ count: 'exact' }) // optional but useful if you want to confirm
+               .eq('building_id', buildingId);
+
+          if (dbDeleteError) {
+               return { success: false, error: dbDeleteError.message };
+          }
+
+          revalidatePath(`/dashboard/buildings/${buildingId}`);
+          return { success: true };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};

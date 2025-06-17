@@ -127,13 +127,13 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {building.cover_images!.length > 0 ? (
+                        {building.building_images!.length > 0 ? (
                           <Box
                             sx={{
                               width: 64,
                               height: 64,
                               borderRadius: 1,
-                              backgroundImage: `url(${building.cover_images![0]})`,
+                              backgroundImage: `url(${building.building_images![0]})`,
                               backgroundSize: 'cover',
                               backgroundPosition: 'center',
                               mr: 2,

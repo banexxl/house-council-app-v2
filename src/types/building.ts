@@ -20,7 +20,7 @@ export interface Building {
      building_status: string;
      number_of_apartments: number;
      client_id: string;
-     cover_images?: string[];
+     building_images?: string[];
 }
 
 export const buildingInitialValues: Building = {
@@ -38,7 +38,7 @@ export const buildingInitialValues: Building = {
      stories_high: 0,
      number_of_apartments: 0,
      client_id: '',
-     cover_images: [],
+     building_images: [],
      building_status: '',
      created_at: new Date(),
      updated_at: new Date(),
@@ -59,5 +59,5 @@ export const buildingValidationSchema = Yup.object({
      stories_high: Yup.number().min(1).required(),
      number_of_apartments: Yup.number().min(0).required(),
      building_status: Yup.string().required('Required'),
-     cover_images: Yup.array()
+     building_images: Yup.array()
 });

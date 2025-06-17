@@ -85,7 +85,7 @@ export function PopupModal({
                                    if (type === 'confirmation' && onConfirm) {
                                         setLoading(true);
                                         await onConfirm();
-                                        // setLoading(false);
+                                        setLoading(false);
                                    } else {
                                         onClose();
                                    }
