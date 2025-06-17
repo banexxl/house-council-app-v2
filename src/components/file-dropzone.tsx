@@ -15,8 +15,10 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { FullScreenLoader } from './full-screen-loader';
-import { Card, CardContent, Dialog, Grid, ListItemAvatar, Tooltip } from '@mui/material';
+import { Card, CardContent, Dialog, Fade, Grid, ListItemAvatar, Tooltip } from '@mui/material';
 import { PopupModal } from './modal-dialog';
+import { setAsBuildingCoverImage } from 'src/libs/supabase/sb-storage';
+import toast from 'react-hot-toast';
 
 export type File = FileWithPath;
 
@@ -32,6 +34,7 @@ interface FileDropzoneProps extends DropzoneOptions {
 }
 
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
+  console.log(props);
 
   const { entityId, caption, onRemoveAll, onUpload, uploadProgress, images, onRemoveImage, ...other } = props;
   const { getRootProps, getInputProps, isDragActive } = useDropzone(other);
@@ -40,6 +43,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
   const [openRemoveAll, setOpenRemoveAll] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
 
   const handleImageClick = (index: number) => {
     setSelectedIndex(index);
@@ -49,6 +53,19 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
   const handleCloseViewer = () => {
     setViewerOpen(false);
     setSelectedIndex(null);
+  };
+
+  const handleSetAsCover = async (url: string) => {
+    try {
+      const { success } = await setAsBuildingCoverImage(entityId!, url)
+      if (success) {
+        toast.success(t('common.actionSaveSuccess'));
+      } else {
+        toast.error(t('common.actionSaveError'));
+      }
+    } catch (error) {
+      toast.error(t('common.actionSaveError'));
+    }
   };
 
   return (
@@ -132,27 +149,65 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                       sx={{
                         position: 'relative',
                         width: '80%',
-                        paddingTop: '100%', // 1:1 aspect ratio
+                        paddingTop: '100%',
                         borderRadius: 1,
                         overflow: 'hidden',
                         border: '1px solid',
                         borderColor: 'divider',
                       }}
                     >
-                      <Tooltip title={url.split('/').pop()} placement='top'>
-                        <img
-                          src={url}
-                          alt={`Uploaded ${index + 1}`}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      </Tooltip>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                        }}
+                        onMouseEnter={() => setHoveredImageIndex(index)}
+                        onMouseLeave={() => setHoveredImageIndex(null)}
+                      >
+                        <Tooltip title={url.split('/').pop()} placement="top">
+                          <img
+                            src={url}
+                            alt={`Uploaded ${index + 1}`}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        </Tooltip>
+
+                        <Fade in={hoveredImageIndex === index}>
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              bottom: 8,
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                            }}
+                          >
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              sx={{
+                                textTransform: 'none',
+                                fontWeight: 500,
+                                fontSize: '0.75rem',
+                                px: 2,
+                                py: 0.5,
+                              }}
+                              onClick={() => handleSetAsCover(images[index])}
+                            >
+                              Set as cover
+                            </Button>
+                          </Box>
+                        </Fade>
+                      </Box>
+
+                      {/* Remove button (independent of hover) */}
                       <IconButton
                         size="small"
                         sx={{
@@ -170,6 +225,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                           </SvgIcon>
                         </Tooltip>
                       </IconButton>
+
                       <PopupModal
                         isOpen={Boolean(open)}
                         onClose={() => setOpen(null)}

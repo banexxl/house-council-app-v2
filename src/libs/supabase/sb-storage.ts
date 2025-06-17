@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseServiceRoleClient } from "./sb-server";
+import { logServerAction } from "./server-logging";
 
 // Helper to sanitize file paths for S3
 const sanitizeSegmentForS3 = (segment: string): string => {
@@ -43,6 +44,15 @@ export const uploadImagesAndGetUrls = async (
                     });
 
                if (uploadError) {
+                    await logServerAction({
+                         action: 'Upload Image - Failed to upload to S3',
+                         duration_ms: 0,
+                         error: uploadError.message,
+                         payload: { client, address, buildingId },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: '',
+                    })
                     return {
                          success: false,
                          error: `${uploadError.message} for file ${singleFile.name}`,
@@ -54,8 +64,25 @@ export const uploadImagesAndGetUrls = async (
                     .getPublicUrl(encodedFilePath);
 
                const imageUrl = publicUrlData?.publicUrl;
-
+               await logServerAction({
+                    action: 'Upload Image - Success',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { imageUrl },
+                    status: 'success',
+                    type: 'db',
+                    user_id: '',
+               })
                if (!imageUrl) {
+                    await logServerAction({
+                         action: 'Upload Image - Failed to get public URL',
+                         duration_ms: 0,
+                         error: 'Failed to retrieve public URL',
+                         payload: { client, address, buildingId },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: '',
+                    })
                     return { success: false, error: 'Failed to retrieve public URL' };
                }
 
@@ -67,9 +94,26 @@ export const uploadImagesAndGetUrls = async (
                     });
 
                if (insertError) {
+                    await logServerAction({
+                         action: 'Upload Image - Failed to insert into tblBuildingImages',
+                         duration_ms: 0,
+                         error: insertError.message,
+                         payload: { client, address, buildingId },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: '',
+                    })
                     return { success: false, error: insertError.message };
                }
-
+               await logServerAction({
+                    action: 'Upload Image - Success',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { imageUrl },
+                    status: 'success',
+                    type: 'db',
+                    user_id: '',
+               })
                urls.push(imageUrl);
           }
 
@@ -108,6 +152,15 @@ export const removeBuildingImageFilePath = async (
           // Delete from S3
           const { error: deleteError } = await supabase.storage.from(bucket).remove([filePath]);
           if (deleteError) {
+               await logServerAction({
+                    action: 'Delete Image - Failed to delete from S3',
+                    duration_ms: 0,
+                    error: deleteError.message,
+                    payload: { buildingId, filePathOrUrl },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
                return { success: false, error: deleteError.message };
           }
 
@@ -120,6 +173,15 @@ export const removeBuildingImageFilePath = async (
                .select('*');
 
           if (dbDeleteError) {
+               await logServerAction({
+                    action: 'Delete Image - Failed to delete from tblBuildingImages',
+                    duration_ms: 0,
+                    error: dbDeleteError.message,
+                    payload: { buildingId, filePathOrUrl },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
                return { success: false, error: dbDeleteError.message };
           }
 
@@ -130,6 +192,9 @@ export const removeBuildingImageFilePath = async (
      }
 };
 
+/**
+ * Removes all images from Supabase Storage and deletes the image records from `tblBuildingImages`
+ */
 export const removeAllImagesFromBuilding = async (
      buildingId: string
 ): Promise<{ success: boolean; error?: string }> => {
@@ -144,6 +209,15 @@ export const removeAllImagesFromBuilding = async (
                .eq('building_id', buildingId);
 
           if (imagesError) {
+               await logServerAction({
+                    action: 'Delete All Images - Failed to retrieve images from tblBuildingImages',
+                    duration_ms: 0,
+                    error: imagesError.message,
+                    payload: { buildingId },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
                return { success: false, error: imagesError.message };
           }
 
@@ -176,7 +250,60 @@ export const removeAllImagesFromBuilding = async (
                .eq('building_id', buildingId);
 
           if (dbDeleteError) {
+               await logServerAction({
+                    action: 'Delete All Images - Failed to delete from tblBuildingImages',
+                    duration_ms: 0,
+                    error: dbDeleteError.message,
+                    payload: { buildingId },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
                return { success: false, error: dbDeleteError.message };
+          }
+
+          await logServerAction({
+               action: 'Delete All Images - Success',
+               duration_ms: 0,
+               error: '',
+               payload: { buildingId },
+               status: 'success',
+               type: 'db',
+               user_id: '',
+          })
+          revalidatePath(`/dashboard/buildings/${buildingId}`);
+          return { success: true };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};
+
+export const setAsBuildingCoverImage = async (
+     buildingId: string,
+     imageURL: string
+): Promise<{ success: boolean; error?: string }> => {
+     console.log(buildingId, imageURL);
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          const { error: updateError } = await supabase
+               .from('tblBuildingImages')
+               .update({ is_cover_image: true })
+               .eq('id', buildingId)
+               .eq('image_url', imageURL)
+
+          if (updateError) {
+               await logServerAction({
+                    action: 'setAsBuildingCoverImage',
+                    duration_ms: 0,
+                    error: updateError.message,
+                    payload: { buildingId, imageURL },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
+               return { success: false, error: updateError.message };
           }
 
           revalidatePath(`/dashboard/buildings/${buildingId}`);
@@ -184,4 +311,4 @@ export const removeAllImagesFromBuilding = async (
      } catch (error: any) {
           return { success: false, error: error.message };
      }
-};
+}

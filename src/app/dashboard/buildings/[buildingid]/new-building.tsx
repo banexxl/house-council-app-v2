@@ -366,6 +366,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>{t('common.lblImages')}</Typography>
               <FileDropzone
+                entityId={buildingData.id}
                 accept={{ 'image/*': [] }}
                 caption="(SVG, JPG, PNG or GIF up to 900x400)"
                 onDrop={handleFilesDrop}
