@@ -15,6 +15,10 @@ export const paths = {
     },
     account: '/dashboard/account',
     analytics: '/dashboard/analytics',
+    apartments: {
+      index: '/dashboard/apartments',
+      new: '/dashboard/apartments/new',
+    },
     blank: '/dashboard/blank',
     buildings: {
       index: '/dashboard/buildings',

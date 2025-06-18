@@ -129,6 +129,9 @@ export const rs = {
      [tokens.nav.adminDashboard]: 'Kontrolna tabla',
      [tokens.nav.analytics]: 'Analitika',
      [tokens.nav.auth]: 'Autentikacija',
+     [tokens.nav.apartments]: 'Apartmani',
+     [tokens.nav.apartment]: 'Apartman',
+     [tokens.nav.apartmentAdd]: 'Dodaj',
      [tokens.nav.billingInformation]: 'Podaci o računu',
      [tokens.nav.buildings]: 'Zgrade',
      [tokens.nav.building]: 'Zgrada',
@@ -344,11 +347,11 @@ export const rs = {
      [tokens.clients.clientAlreadyExists]: 'Klijent postoji!',
      //#endregion
      //#region Tenants
-     [tokens.tenants.tenantsList]: 'Pregled mietnera',
-     [tokens.tenants.tenantDetails]: 'Detalji mietnere',
-     [tokens.tenants.tenantCreate]: 'Kreiraj mietnere',
-     [tokens.tenants.tenantEdit]: 'Izmeni mietnere',
-     [tokens.tenants.tenantDelete]: 'Brisanje mietnere',
+     [tokens.tenants.tenantsList]: 'Stanari',
+     [tokens.tenants.tenantDetails]: 'Detalji stanara',
+     [tokens.tenants.tenantCreate]: 'Kreiraj stanara',
+     [tokens.tenants.tenantEdit]: 'Izmeni stanara',
+     [tokens.tenants.tenantDelete]: 'Brisanje stanara',
      // Tenant from
      [tokens.tenants.tenantName]: 'Ime',
      [tokens.tenants.tenantEmail]: 'Email',

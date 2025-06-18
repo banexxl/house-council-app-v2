@@ -31,6 +31,7 @@ import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
 import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AddCardIcon from '@mui/icons-material/AddCard';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { tokens } from 'src/locales/tokens';
 import { paths } from 'src/paths';
@@ -186,6 +187,25 @@ export const useSections = () => {
               {
                 title: t(tokens.nav.locationAdd),
                 path: paths.dashboard.locations.new,
+              },
+            ]
+          },
+          {
+            title: t(tokens.nav.apartments),
+            path: paths.dashboard.apartments.index,
+            icon: (
+              <SvgIcon fontSize="small">
+                <MeetingRoomIcon />
+              </SvgIcon>
+            ),
+            items: [
+              {
+                title: t(tokens.nav.list),
+                path: paths.dashboard.apartments.index,
+              },
+              {
+                title: t(tokens.nav.apartments),
+                path: paths.dashboard.apartments.new,
               },
             ]
           },

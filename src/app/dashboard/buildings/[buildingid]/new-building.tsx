@@ -153,7 +153,10 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       }
 
       // Update local form state (UI)
-      const newImages = formik.values.building_images!.filter((url: string) => url !== filePath);
+      const newImages = formik.values.building_images!.filter((url: {
+        image_url: string;
+        is_cover_image: boolean;
+      }) => url.image_url !== filePath);
       formik.setFieldValue('building_images', newImages);
       toast.success(t('common.actionDeleteSuccess'));
     } catch (error) {
