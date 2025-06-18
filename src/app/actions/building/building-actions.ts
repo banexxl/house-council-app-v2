@@ -111,7 +111,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
                .single(),
           supabase
                .from('tblBuildingImages')
-               .select('building_id, image_url')
+               .select('building_id, image_url, is_cover_image')
                .eq('building_id', id)
      ]);
 
@@ -144,7 +144,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
           success: true,
           data: {
                ...building,
-               building_images: imageRecords?.map(i => i.image_url) ?? [],
+               building_images: imageRecords ?? [],
           }
      };
 }

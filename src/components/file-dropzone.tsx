@@ -291,7 +291,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                 style={{ width: '100%', height: 'auto', borderRadius: 8 }}
               />
             )}
-            {/* Optional: Add next/prev buttons */}
+            {/* next/prev buttons */}
           </Box>
         </Dialog>
 
