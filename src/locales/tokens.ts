@@ -116,6 +116,7 @@ export const tokens = {
     actionImportError: 'common.actionImportError',
     actionExportSuccess: 'common.actionExportSuccess',
     actionExportError: 'common.actionExportError',
+    actionSetAsCover: 'common.actionSetAsCover',
     tableFilterAmenities: 'common.tableFilterAmenities',
     tableFilterStatus: 'common.tableFilterStatus',
     tableFilterSpecification: 'common.tableFilterSpecification',

@@ -116,6 +116,7 @@ export const rs = {
      [tokens.common.actionImportError]: 'Greška prilikom uvoza',
      [tokens.common.actionExportSuccess]: 'Uspešno izvezena',
      [tokens.common.actionExportError]: 'Greška prilikom izvoza',
+     [tokens.common.actionSetAsCover]: 'Postavi kao naslovnu',
      [tokens.common.tableFilterAmenities]: 'Detalji',
      [tokens.common.tableFilterStatus]: 'Status',
      [tokens.common.tableFilterSpecification]: 'Specifikacija',

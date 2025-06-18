@@ -116,6 +116,7 @@ export const de = {
   [tokens.common.actionImportError]: 'Fehler beim Importieren',
   [tokens.common.actionExportSuccess]: 'Exportieren erfolgreich',
   [tokens.common.actionExportError]: 'Fehler beim Exportieren',
+  [tokens.common.actionSetAsCover]: 'Als Cover setzen',
   [tokens.common.tableFilterAmenities]: 'Amenities',
   [tokens.common.tableFilterStatus]: 'Status',
   [tokens.common.tableFilterSpecification]: 'Spezifikation',

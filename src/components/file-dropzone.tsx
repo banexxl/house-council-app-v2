@@ -204,7 +204,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                               }}
                               onClick={() => handleSetAsCover(images[index].image_url)}
                             >
-                              Set as cover
+                              {t('common.actionSetAsCover')}
                             </Button>
                           </Box>
                         </Fade>
