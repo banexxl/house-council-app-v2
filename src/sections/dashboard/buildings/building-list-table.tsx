@@ -87,8 +87,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
         <Table sx={{ minWidth: 1000 }}>
           <TableHead>
             <TableRow>
-              <TableCell />
-              <TableCell>{t('common.lblName')}</TableCell>
+              <TableCell>{t('common.lblCoverImage')}</TableCell>
               <TableCell>{t('common.lblCity')}</TableCell>
               <TableCell>{t('common.lblAddress')}</TableCell>
               <TableCell>{t('common.lblStatus')}</TableCell>
@@ -119,11 +118,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
               return (
                 <Fragment key={building.id}>
                   <TableRow hover>
-                    <TableCell>
-                      <IconButton onClick={() => handleToggle(building.id!)}>
-                        <SvgIcon>{isCurrent ? <ChevronDownIcon /> : <ChevronRightIcon />}</SvgIcon>
-                      </IconButton>
-                    </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {building.building_images!.length > 0 ? (
@@ -156,17 +150,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                             </SvgIcon>
                           </Box>
                         )}
-                        <Box>
-                          <Link
-                            color="inherit"
-                            href={paths.dashboard.buildings.index + '/' + encodeURIComponent(building.id!)}
-                            style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-                          >
-                            <Typography variant="subtitle2">
-                              {building.building_location?.street_address}
-                            </Typography>
-                          </Link>
-                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell>{building.building_location?.city}</TableCell>
@@ -191,7 +174,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                         })()}
                       </SeverityPill>
                     </TableCell>
-
                     <TableCell align="left">
                       <SeverityPill color={bicycleRoomColor}>
                         {building.has_bicycle_room ? (
@@ -325,63 +307,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                         }
                       </SeverityPill>
                     </TableCell>
-
                   </TableRow>
-
-                  {isCurrent && (
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        <Card>
-
-                          <CardContent>
-                            <Grid container spacing={3}>
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                <Typography variant="h6">Basic Details</Typography>
-                                <Divider sx={{ my: 2 }} />
-                                <Grid container spacing={2}>
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <TextField fullWidth label="Name" defaultValue={building.building_location?.street_address} />
-                                  </Grid>
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <TextField fullWidth label="City" defaultValue={building.building_location?.city} />
-                                  </Grid>
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <TextField fullWidth label="Street Address" defaultValue={building.building_location?.street_address} />
-                                  </Grid>
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <TextField fullWidth label="Street Number" defaultValue={building.building_location?.street_number} />
-                                  </Grid>
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <TextField fullWidth label="Post Code" defaultValue={building.building_location?.post_code} />
-                                  </Grid>
-                                </Grid>
-                              </Grid>
-                            </Grid>
-                          </CardContent>
-
-                        </Card>
-                        <Divider />
-                        <Stack
-                          direction="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          sx={{ px: 2, py: 1 }}
-                        >
-                          <Stack direction="row" spacing={2}>
-                            <Button variant="contained" onClick={handleUpdate}>
-                              Update
-                            </Button>
-                            <Button color="inherit" onClick={handleClose}>
-                              Cancel
-                            </Button>
-                          </Stack>
-                          <Button color="error" onClick={handleDelete}>
-                            Delete building
-                          </Button>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </Fragment>
               );
             })}
