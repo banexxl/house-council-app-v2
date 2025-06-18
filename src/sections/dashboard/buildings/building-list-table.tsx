@@ -1,40 +1,24 @@
 import type { ChangeEvent, FC, MouseEvent } from 'react';
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toast } from 'react-hot-toast';
 import type { SeverityPillColor } from 'src/components/severity-pill';
-import ChevronDownIcon from '@untitled-ui/icons-react/build/esm/ChevronDown';
-import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
-import DotsHorizontalIcon from '@untitled-ui/icons-react/build/esm/DotsHorizontal';
 import Image01Icon from '@untitled-ui/icons-react/build/esm/Image01';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CardContent from '@mui/material/CardContent';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-
+import Link from 'next/link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { Building } from 'src/types/building';
-import { Card, SvgIcon } from '@mui/material';
+import { SvgIcon } from '@mui/material';
 import { BaseEntity } from 'src/types/base-entity';
 import { useTranslation } from 'react-i18next';
-import Link from 'next/link';
 import { paths } from 'src/paths';
 
 interface BuildingListTableProps {
@@ -58,24 +42,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
 }) => {
 
   const { t } = useTranslation();
-  const [currentBuilding, setCurrentBuilding] = useState<string | null>(null);
-
-  const handleToggle = useCallback((id: string) => {
-    setCurrentBuilding((prev) => (prev === id ? null : id));
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setCurrentBuilding(null);
-  }, []);
-
-  const handleUpdate = useCallback(() => {
-    setCurrentBuilding(null);
-    toast.success('Building updated');
-  }, []);
-
-  const handleDelete = useCallback(() => {
-    toast.error('Building cannot be deleted');
-  }, []);
 
   const colorSwitcher = (value: boolean): SeverityPillColor => {
     return value ? 'success' : 'error';
@@ -104,7 +70,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
           </TableHead>
           <TableBody>
             {items.map((building: Building) => {
-              const isCurrent = building.id === currentBuilding;
               const bicycleRoomColor = colorSwitcher(building.has_bicycle_room);
               const parkingColor = colorSwitcher(building.has_parking_lot);
               const elevatorColor = colorSwitcher(building.has_elevator);
@@ -119,38 +84,44 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                 <Fragment key={building.id}>
                   <TableRow hover>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {building.building_images!.length > 0 ? (
-                          <Box
-                            sx={{
-                              width: 64,
-                              height: 64,
-                              borderRadius: 1,
-                              backgroundImage: `url(${building.building_images!.find((image) => image.is_cover_image)?.image_url || building.building_images![0].image_url})`,
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              mr: 2,
-                            }}
-                          />
-                        ) : (
-                          <Box
-                            sx={{
-                              width: 64,
-                              height: 64,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderRadius: 1,
-                              backgroundColor: 'neutral.100',
-                              mr: 2,
-                            }}
-                          >
-                            <SvgIcon>
-                              <Image01Icon />
-                            </SvgIcon>
-                          </Box>
-                        )}
-                      </Box>
+                      <Link
+                        color="inherit"
+                        href={paths.dashboard.buildings.index + '/' + encodeURIComponent(building.id!)}
+                        style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          {building.building_images!.length > 0 ? (
+                            <Box
+                              sx={{
+                                width: 64,
+                                height: 64,
+                                borderRadius: 1,
+                                backgroundImage: `url(${building.building_images!.find((image) => image.is_cover_image)?.image_url || building.building_images![0].image_url})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                mr: 2,
+                              }}
+                            />
+                          ) : (
+                            <Box
+                              sx={{
+                                width: 64,
+                                height: 64,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 1,
+                                backgroundColor: 'neutral.100',
+                                mr: 2,
+                              }}
+                            >
+                              <SvgIcon>
+                                <Image01Icon />
+                              </SvgIcon>
+                            </Box>
+                          )}
+                        </Box>
+                      </Link>
                     </TableCell>
                     <TableCell>{building.building_location?.city}</TableCell>
                     <TableCell>{building.building_location?.street_address} {building.building_location?.street_number}</TableCell>
