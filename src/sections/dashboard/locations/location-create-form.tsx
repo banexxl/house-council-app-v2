@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, Stack, TextField, Typography, useTheme } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import LocationAutocomplete from './autocomplete';
@@ -28,6 +28,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
      const [location, setLocation] = useState({ latitude: clientCoords?.latitude, longitude: clientCoords?.longitude }); // Default to Belgrade
      const [markerData, setMarkerData] = useState<BuildingLocation[]>(locationsData);
      const [mapRefreshKey, setMapRefreshKey] = useState(0);
+     const theme = useTheme();
 
      useEffect(() => {
           if (locationsData.length > 0) {
@@ -217,7 +218,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
           <Card
                sx={{
                     display: 'flex',
-                    flexDirection: 'row',
+                    flexDirection: theme.breakpoints.down('md') ? 'column' : 'row',
                     padding: '20px',
                     justifyContent: 'space-between',
                     gap: 2,
@@ -228,7 +229,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                          display: 'flex',
                          flexDirection: 'column',
                          gap: 2,
-                         width: '40%',
+                         width: theme.breakpoints.down('md') ? '100%' : '40%',
                     }}
                >
                     <Typography variant="h6">
