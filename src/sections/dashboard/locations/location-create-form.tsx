@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Card, Stack, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, Stack, TextField, Theme, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import LocationAutocomplete from './autocomplete';
@@ -29,6 +29,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
      const [markerData, setMarkerData] = useState<BuildingLocation[]>(locationsData);
      const [mapRefreshKey, setMapRefreshKey] = useState(0);
      const theme = useTheme();
+     const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
      useEffect(() => {
           if (locationsData.length > 0) {
@@ -218,7 +219,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
           <Card
                sx={{
                     display: 'flex',
-                    flexDirection: theme.breakpoints.down('md') ? 'column' : 'row',
+                    flexDirection: mdUp ? 'row' : 'column',
                     padding: '20px',
                     justifyContent: 'space-between',
                     gap: 2,
