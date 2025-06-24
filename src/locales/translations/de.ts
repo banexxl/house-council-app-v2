@@ -245,6 +245,9 @@ export const de = {
   [tokens.apartments.apartmentDetails]: 'Wohnung Details',
   [tokens.apartments.apartmentCreate]: 'Wohnung Erstellen',
   [tokens.apartments.apartmentEdit]: 'Wohnung Bearbeiten',
+  [tokens.apartments.filterSearchByApartmentNumber]: 'Nach Wohnungsnummer suchen',
+  [tokens.apartments.tableFilterNoFilterSelected]: 'Kein Filter ausgewählt',
+
   //#endregion
   //#region Buildings
   [tokens.buildings.buildingsTitle]: 'Gebäude',
@@ -258,7 +261,7 @@ export const de = {
   [tokens.buildings.lblBuildingStatusVacant]: 'Leer',
   [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Teilweise vermietet',
   [tokens.buildings.lblBuildingStatusRenovation]: 'In Renovierung',
-  [tokens.buildings.lblBuildingStatusUnderContruction]: 'In Bau',
+  [tokens.buildings.lblBuildingStatusUnderConstruction]: 'In Bau',
   [tokens.buildings.lblBuildingStatusActive]: 'Aktiv',
   [tokens.buildings.lblBuildingStatusTemporary]: 'Vorübergehend',
   [tokens.buildings.lblBuildingStatusCondemned]: 'Verurteilt',

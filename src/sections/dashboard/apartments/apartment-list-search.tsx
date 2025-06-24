@@ -30,22 +30,28 @@ interface SearchChip {
 }
 
 const typeOptions = [
-  'residential',
-  'business',
-  'mixed_use',
-  'vacation',
-  'storage',
-  'garage',
-  'utility',
+  { name: 'residential', resource_string: 'apartments.lblResidential' },
+  { name: 'business', resource_string: 'apartments.lblBusiness' },
+  { name: 'mixed_use', resource_string: 'apartments.lblMixedUse' },
+  { name: 'vacation', resource_string: 'apartments.lblVacation' },
+  { name: 'storage', resource_string: 'apartments.lblStorage' },
+  { name: 'garage', resource_string: 'apartments.lblGarage' },
+  { name: 'utility', resource_string: 'apartments.lblUtility' },
 ];
 
-const rentalStatusOptions = ['owned', 'rented', 'for_rent', 'vacant'];
+const rentalStatusOptions = [
+  { name: 'owned', resource_string: 'apartments.lblOwned' },
+  { name: 'rented', resource_string: 'apartments.lblRented' },
+  { name: 'for_rent', resource_string: 'apartments.lblForRent' },
+  { name: 'vacant', resource_string: 'apartments.lblVacant' },
+];
 
 interface ApartmentListSearchProps {
   onFiltersChange?: (filters: Filters) => void;
 }
 
 export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersChange }) => {
+
   const queryRef = useRef<HTMLInputElement | null>(null);
   const { t } = useTranslation();
 
@@ -85,6 +91,7 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
   }, []);
 
   const handleQueryChange = useCallback((event: FormEvent<HTMLFormElement>) => {
+
     event.preventDefault();
     const value = queryRef.current?.value || '';
 
@@ -105,7 +112,7 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
         return [
           ...prev,
           {
-            label: 'common.lblApartmentNumber',
+            label: 'apartments.lblApartmentNumber',
             field: 'apartment_number',
             value,
             displayValue: value,
@@ -132,10 +139,10 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
       values.forEach((val) => {
         if (!found.includes(val)) {
           newChips.push({
-            label: 'common.lblType',
+            label: 'apartments.lblType',
             field: 'types',
             value: val,
-            displayValue: t(`apartments.type.${val}`),
+            displayValue: t(`${val}`),
           });
         }
       });
@@ -157,10 +164,10 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
       values.forEach((val) => {
         if (!found.includes(val)) {
           newChips.push({
-            label: 'common.lblRentalStatus',
+            label: 'apartments.lblRentalStatus',
             field: 'rentalStatuses',
             value: val,
-            displayValue: t(`apartments.rentalStatus.${val}`),
+            displayValue: t(`${val}`),
           });
         }
       });
@@ -190,7 +197,7 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
           disableUnderline
           fullWidth
           inputProps={{ ref: queryRef }}
-          placeholder={t('common.filterSearchByApartmentNumber')}
+          placeholder={t('apartments.filterSearchByApartmentNumber')}
           sx={{ flexGrow: 1 }}
         />
       </Stack>
@@ -213,25 +220,25 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
       ) : (
         <Box sx={{ p: 2.5 }}>
           <Typography color="text.secondary" variant="subtitle2">
-            {t('common.tableFilterNoFilterSelected')}
+            {t('apartments.tableFilterNoFilterSelected')}
           </Typography>
         </Box>
       )}
       <Divider />
       <Stack direction="row" flexWrap="wrap" spacing={1} sx={{ p: 1 }}>
         <MultiSelect
-          label={t('common.lblType')}
+          label={t('apartments.lblType')}
           onChange={handleTypeChange}
           options={typeOptions.map((val) => ({
-            resource_string: val,
+            resource_string: val.resource_string,
           }))}
           value={typeValues}
         />
         <MultiSelect
-          label={t('common.lblRentalStatus')}
+          label={t('apartments.lblRentalStatus')}
           onChange={handleRentalStatusChange}
           options={rentalStatusOptions.map((val) => ({
-            resource_string: val,
+            resource_string: val.resource_string,
           }))}
           value={rentalValues}
         />

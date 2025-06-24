@@ -143,6 +143,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
         </Typography>
         {images && images.length > 0 ? (
           <Card sx={{ mt: 2 }}>
+
             <CardContent>
               <Grid container spacing={2}>
                 {images.map((image, index) => (

@@ -246,6 +246,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
  * UPDATE a building
  */
 export async function updateBuilding(id: string, updates: Partial<Building>): Promise<{ success: boolean, error?: string, data?: Building }> {
+
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -278,7 +279,7 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
      // Replace existing images
      if (building_images) {
           await supabase.from('tblBuildingImages').delete().eq('building_id', id);
-          const newImages = building_images.map(url => ({ building_id: id, image_url: url }));
+          const newImages = building_images.map(image => ({ building_id: id, image_url: image.image_url }));
           await supabase.from('tblBuildingImages').insert(newImages);
      }
 

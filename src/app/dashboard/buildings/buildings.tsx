@@ -18,9 +18,9 @@ import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
-import type { Building } from 'src/types/building';
 import { useTranslation } from 'react-i18next';
-import { BaseEntity } from 'src/types/base-entity';
+import { Building, BuildingOptions } from 'src/types/building';
+import { statusMap } from 'src/types/building';
 
 const amenityKeyMap: Record<string, keyof Building> = {
   'common.lblHasParkingLot': 'has_parking_lot',
@@ -31,13 +31,13 @@ const amenityKeyMap: Record<string, keyof Building> = {
   'common.lblHasBicycleRoom': 'has_bicycle_room',
   'common.lblHasPreHeatedWater': 'has_pre_heated_water',
   'common.lblHasElevator': 'has_elevator',
-  'common.lblIsRecentlyBuilt': 'is_recently_built',
+  'common.lblRecentlyBuilt': 'is_recently_built',
 };
 
 export interface BuildingSearchFilters {
   address?: string;
   amenities: string[];
-  statuses: string[];
+  statuses: (keyof typeof statusMap)[];
 }
 
 export interface BuildingsSearchState {
@@ -59,62 +59,37 @@ const useBuildingsSearch = () => {
   });
 
   const handleFiltersChange = useCallback((filters: BuildingSearchFilters): void => {
-    setState((prevState) => ({
-      ...prevState,
-      filters,
-      page: 0, // reset to first page on filter change
-    }));
+    setState((prev) => ({ ...prev, filters, page: 0 }));
   }, []);
 
   const handlePageChange = useCallback((_event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
-    setState((prevState) => ({
-      ...prevState,
-      page,
-    }));
+    setState((prev) => ({ ...prev, page }));
   }, []);
 
   const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-    setState((prevState) => ({
-      ...prevState,
+    setState((prev) => ({
+      ...prev,
       rowsPerPage: parseInt(event.target.value, 10),
       page: 0,
     }));
   }, []);
 
-  return {
-    handleFiltersChange,
-    handlePageChange,
-    handleRowsPerPageChange,
-    state,
-  };
+  return { state, handleFiltersChange, handlePageChange, handleRowsPerPageChange };
 };
 
-type BuildingTableProps = {
+interface BuildingTableProps {
   clientBuildings: Building[];
-  buildingStatuses: (BaseEntity & { resource_string: string })[]
-};
+}
 
-const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) => {
-
+const Buildings = ({ clientBuildings }: BuildingTableProps) => {
   const { t } = useTranslation();
   const buildingSearch = useBuildingsSearch();
-
-  const statusMap: Record<string, string> = useMemo(() => {
-    const map: Record<string, string> = {};
-    buildingStatuses.forEach((status) => {
-      map[status.resource_string] = status.id!;
-    });
-    return map;
-  }, [buildingStatuses]);
-
-
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);
-  // Optional: filter logic here, if needed
+
   const filteredBuildings = useMemo(() => {
     const { address, amenities, statuses } = buildingSearch.state.filters;
 
     return clientBuildings.filter((building) => {
-
       const location = building.building_location;
 
       const matchesAddress = address
@@ -122,21 +97,19 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
         : true;
 
       const matchesAmenities = amenities.length
-        ? amenities.every((resourceKey: string) => {
-          const fieldKey = amenityKeyMap[resourceKey];
+        ? amenities.every((key) => {
+          const fieldKey = amenityKeyMap[key];
           return fieldKey && building[fieldKey];
         })
         : true;
 
       const matchesStatuses = statuses.length
-        ? statuses.some((r) => statusMap[r] === building.building_status)
+        ? statuses.includes(Object.entries(statusMap).find(([key]) => key === building.building_status)?.[1] ?? '')
         : true;
 
-
-      return matchesAddress && matchesAmenities && matchesStatuses
+      return matchesAddress && matchesAmenities && matchesStatuses;
     });
   }, [clientBuildings, buildingSearch.state.filters]);
-
 
   const paginatedBuildings = useMemo(() => {
     const start = buildingSearch.state.page * buildingSearch.state.rowsPerPage;
@@ -145,7 +118,6 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
   }, [filteredBuildings, buildingSearch.state.page, buildingSearch.state.rowsPerPage]);
 
   return (
-
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
         <Stack spacing={4}>
@@ -166,11 +138,7 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
               component={RouterLink}
               href={paths.dashboard.buildings.new}
               onClick={() => setAddBuildingLoading(true)}
-              startIcon={
-                <SvgIcon>
-                  <PlusIcon />
-                </SvgIcon>
-              }
+              startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
               variant="contained"
               loading={addBuildingLoading}
             >
@@ -179,7 +147,7 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
           </Stack>
 
           <Card>
-            <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} buildingStatuses={buildingStatuses} />
+            <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} />
             <BuildingListTable
               items={paginatedBuildings}
               count={filteredBuildings.length}
@@ -187,13 +155,11 @@ const Buildings = ({ clientBuildings, buildingStatuses }: BuildingTableProps) =>
               rowsPerPage={buildingSearch.state.rowsPerPage}
               onPageChange={buildingSearch.handlePageChange}
               onRowsPerPageChange={buildingSearch.handleRowsPerPageChange}
-              buildingStatuses={buildingStatuses}
             />
           </Card>
         </Stack>
       </Container>
     </Box>
-
   );
 };
 

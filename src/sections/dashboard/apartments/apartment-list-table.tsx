@@ -37,6 +37,7 @@ export const ApartmentListTable: FC<ApartmentListTableProps> = ({
   page = 0,
   rowsPerPage = 0,
 }) => {
+
   const { t } = useTranslation();
 
   const pillColor = (val?: string): SeverityPillColor | undefined => {
@@ -113,10 +114,10 @@ export const ApartmentListTable: FC<ApartmentListTableProps> = ({
                   <TableCell>{apartment.floor}</TableCell>
                   <TableCell>{apartment.square_meters ?? '-'}</TableCell>
                   <TableCell>{apartment.room_count ?? '-'}</TableCell>
-                  <TableCell>{t(`apartments.type.${apartment.apartment_type ?? 'residential'}`)}</TableCell>
+                  <TableCell>{t(`${apartment.apartment_type}`).charAt(0).toUpperCase() + t(`${apartment.apartment_type}`).slice(1)}</TableCell>
                   <TableCell>
                     <SeverityPill color={pillColor(apartment.rental_status)}>
-                      {t(`apartments.rentalStatus.${apartment.rental_status ?? 'owned'}`)}
+                      {t(`${apartment.rental_status}`)}
                     </SeverityPill>
                   </TableCell>
                 </TableRow>

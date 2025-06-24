@@ -250,6 +250,8 @@ export const rs = {
      [tokens.apartments.apartmentDetails]: 'Detalji Apartmana',
      [tokens.apartments.apartmentCreate]: 'Kreiraj Apartman',
      [tokens.apartments.apartmentEdit]: 'Izmeni Apartman',
+     [tokens.apartments.filterSearchByApartmentNumber]: 'Pretraga po broju apartmana',
+     [tokens.apartments.tableFilterNoFilterSelected]: 'Nema odabranih filtera',
      //#endregion
      //#region Buildings
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
@@ -263,7 +265,7 @@ export const rs = {
      [tokens.buildings.lblBuildingStatusVacant]: 'Prazna',
      [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Delimično iznajmljena',
      [tokens.buildings.lblBuildingStatusRenovation]: 'U renoviranju',
-     [tokens.buildings.lblBuildingStatusUnderContruction]: 'U izgradnji',
+     [tokens.buildings.lblBuildingStatusUnderConstruction]: 'U izgradnji',
      [tokens.buildings.lblBuildingStatusActive]: 'Aktivna',
      [tokens.buildings.lblBuildingStatusTemporary]: 'Privremena',
      [tokens.buildings.lblBuildingStatusCondemned]: 'Osuđena',
@@ -281,7 +283,7 @@ export const rs = {
      [tokens.buildings.yupBuildingNumberOfApartmentsRequired]: 'Broj stanova u zgradi je obavezan',
      [tokens.buildings.yupBuildingMaxApartmentsPerFloorRequired]: 'Maksimalan broj stanova po spratu je obavezan',
      [tokens.buildings.yupBuildingStatusRequired]: 'Status zgrade je obavezan',
-     [tokens.buildings.yupBuildingNumberOfApartmentsMaxCheck]: 'Broj stanova ne sme biti ve i od broja spratova × maksimalan broj stanova po spratu',
+     [tokens.buildings.yupBuildingNumberOfApartmentsMaxCheck]: 'Broj stanova ne sme biti veći od broja spratova × maksimalan broj stanova po spratu',
      [tokens.buildings.yupBuildingMaxApartmentsPerFloorMaxCheck]: 'Broj stanova po spratu ne sme biti veći od ukupnog broja stanova u zgradi.',
      [tokens.buildings.yupBuildingHasGroundFloorApartmentsRequired]: 'Da li zgrada ima stambene jedinice na prizemlju je obavezno polje',
      //#endregion

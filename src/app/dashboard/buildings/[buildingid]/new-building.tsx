@@ -23,7 +23,7 @@ import OpacityIcon from '@mui/icons-material/Opacity';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { buildingInitialValues, buildingValidationSchema, type Building } from 'src/types/building';
+import { buildingInitialValues, buildingValidationSchema, statusMap, type Building } from 'src/types/building';
 import type { File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { BaseEntity } from 'src/types/base-entity';
@@ -36,18 +36,16 @@ import { removeAllImagesFromBuilding, removeBuildingImageFilePath, uploadImagesA
 
 type BuildingCreateFormProps = {
   buildingData?: Building
-  buildingStatuses: BaseEntity[]
   userSession: UserSessionCombined
   locationData: BuildingLocation[]
 }
 
 
-export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationData, userSession }: BuildingCreateFormProps) => {
+export const BuildingCreateForm = ({ buildingData, locationData, userSession }: BuildingCreateFormProps) => {
 
   const locationDataWithNoBuildingId = locationData.filter((location) => !location.building_id);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const { t } = useTranslation();
@@ -56,8 +54,8 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
     initialValues: buildingData ? buildingData : buildingInitialValues,
     validationSchema: buildingValidationSchema(t),
     onSubmit: async (values, helpers) => {
+
       helpers.setSubmitting(true);
-      setLoading(true);
       try {
         if (buildingData && buildingData.id) {
           // ✏️ EDIT MODE
@@ -68,7 +66,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
           if (!success) {
             toast.error(error!);
-            setLoading(false);
+            formik.setSubmitting(false);
             return;
           }
 
@@ -83,16 +81,15 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
           if (!success) {
             toast.error(error!);
-            setLoading(false);
+            formik.setSubmitting(false);
             return;
           }
 
           toast.success(t('common.actionSaveSuccess'));
           router.push(paths.dashboard.buildings.index + '/' + data?.id);
         }
-        setLoading(false);
       } catch (err: any) {
-        setLoading(false);
+        formik.setSubmitting(false);
         toast.error(err.message);
         helpers.setSubmitting(false);
       }
@@ -398,9 +395,9 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
                     : undefined
                 }
               >
-                {buildingStatuses.map((option: BaseEntity) => (
-                  <MenuItem key={option.id} value={option.id}>
-                    {option.name}
+                {Object.entries(statusMap).map(([value, resourceString]) => (
+                  <MenuItem key={value} value={value}>
+                    {t(resourceString)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -451,7 +448,6 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
           ) : (
             <Box /> // Empty box to keep layout aligned if no Delete
           )}
-
           {/* Right: Cancel + Create/Update */}
           <Stack direction="row" spacing={2}>
             <Button color="inherit" onClick={() => router.back()}>

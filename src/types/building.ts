@@ -28,6 +28,29 @@ export interface Building {
      has_ground_floor_apartments: boolean;
 }
 
+export interface BuildingOptions {
+     name: string; // lowercase with underscores
+     resource_string: string; // i18n label key
+}
+
+export const statusMap: Record<string, string> = {
+     vacant: 'buildings.lblBuildingStatusVacant',
+     partially_leased: 'buildings.lblBuildingStatusPartiallyLeased',
+     renovation: 'buildings.lblBuildingStatusRenovation',
+     under_construction: 'buildings.lblBuildingStatusUnderConstruction',
+     active: 'buildings.lblBuildingStatusActive',
+     temporary: 'buildings.lblBuildingStatusTemporary',
+     historical: 'buildings.lblBuildingStatusHistorical',
+     condemned: 'buildings.lblBuildingStatusCondemned',
+     for_sale: 'buildings.lblBuildingStatusForSale',
+     leased: 'buildings.lblBuildingStatusLeased',
+     planned: 'buildings.lblBuildingStatusPlanned',
+     demolished: 'buildings.lblBuildingStatusDemolished',
+     restricted_access: 'buildings.lblBuildingStatusRestrictedAccess',
+     inactive: 'buildings.lblBuildingStatusInactive',
+     under_inspection: 'buildings.lblBuildingStatusUnderInspection',
+};
+
 export const buildingInitialValues: Building = {
      id: undefined,
      is_recently_built: false,
@@ -44,7 +67,7 @@ export const buildingInitialValues: Building = {
      number_of_apartments: 1,
      client_id: '',
      building_images: [],
-     building_status: '',
+     building_status: 'active',
      created_at: new Date(),
      updated_at: new Date(),
      building_location: null,

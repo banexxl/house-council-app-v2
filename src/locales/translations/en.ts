@@ -249,6 +249,8 @@ export const en = {
   [tokens.apartments.apartmentDetails]: 'Apartment Details',
   [tokens.apartments.apartmentCreate]: 'Create Apartment',
   [tokens.apartments.apartmentEdit]: 'Apartment Edit',
+  [tokens.apartments.filterSearchByApartmentNumber]: 'Filter by Apartment Number',
+  [tokens.apartments.tableFilterNoFilterSelected]: 'No Filter Selected',
   //#endregion
   //#region Buildings
   [tokens.buildings.buildingsTitle]: 'Buildings',
@@ -262,7 +264,7 @@ export const en = {
   [tokens.buildings.lblBuildingStatusVacant]: 'Vacant',
   [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Partially Leased',
   [tokens.buildings.lblBuildingStatusRenovation]: 'Renovation',
-  [tokens.buildings.lblBuildingStatusUnderContruction]: 'Under Construction',
+  [tokens.buildings.lblBuildingStatusUnderConstruction]: 'Under Construction',
   [tokens.buildings.lblBuildingStatusActive]: 'Active',
   [tokens.buildings.lblBuildingStatusTemporary]: 'Temporary',
   [tokens.buildings.lblBuildingStatusCondemned]: 'Condemned',

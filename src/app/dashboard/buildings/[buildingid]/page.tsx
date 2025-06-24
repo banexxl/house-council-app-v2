@@ -15,9 +15,8 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const [buildingData, buildingStatuses, locationData, userSession] = await Promise.all([
+  const [buildingData, locationData, userSession] = await Promise.all([
     getBuildingById(buildingid as string),
-    readAllEntities<BaseEntity>("tblBuildingStatuses"),
     getAllAddedLocations(),
     getServerAuth()
   ]);
@@ -39,7 +38,6 @@ export default async function Page({ params }: {
           <BuildingFormHeader building={buildingData.success ? buildingData.data : undefined} />
           <BuildingCreateForm
             buildingData={buildingData.success ? buildingData.data : undefined}
-            buildingStatuses={buildingStatuses}
             userSession={userSession}
             locationData={locationData.success ? locationData.data ?? [] : []}
           />

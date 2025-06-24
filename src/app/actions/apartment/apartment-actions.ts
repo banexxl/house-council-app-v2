@@ -140,7 +140,6 @@ export async function getApartmentById(id: string) {
 export async function createApartment(payload: Omit<Apartment, "id">) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     console.log("createApartment payload:", payload);
 
      const { apartment_images, ...insertPayload } = payload;
 

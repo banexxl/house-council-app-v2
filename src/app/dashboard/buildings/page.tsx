@@ -9,13 +9,12 @@ import { BaseEntity } from "src/types/base-entity";
 export default async function Page() {
 
   const userSession = await getServerAuth()
-  const [{ success, data, error }, buildingStatuses] = await Promise.all([
+  const [{ success, data, error }] = await Promise.all([
     getAllBuildingsFromClient(userSession.client?.id!),
-    readAllEntities<BaseEntity & { resource_string: string }>("tblBuildingStatuses"),
   ]);
 
   return (
-    <Buildings clientBuildings={success ? data! : []} buildingStatuses={buildingStatuses} />
+    <Buildings clientBuildings={success ? data! : []} />
   )
 }
 

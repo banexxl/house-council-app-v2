@@ -1,5 +1,6 @@
-import type { FC } from 'react';
-import { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
+// Refactored version of BuildingListSearch with corrected chip handling and name-based filtering
+import type { FC, FormEvent } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import Box from '@mui/material/Box';
@@ -13,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import { MultiSelect } from 'src/components/multi-select';
 import { useUpdateEffect } from 'src/hooks/use-update-effect';
 import { useTranslation } from 'react-i18next';
-import { BaseEntity } from 'src/types/base-entity';
+import { BuildingOptions } from 'src/types/building';
 
 interface Filters {
   address?: string;
@@ -24,251 +25,120 @@ interface Filters {
 interface SearchChip {
   label: string;
   field: 'address' | 'amenities' | 'statuses';
-  value: string;
-  displayValue: string;
+  value: string; // <- name is stored here
+  displayValue: string; // <- translated string for UI
 }
 
-interface Option {
-  resource_string: string;
-}
+const amenityOptions: BuildingOptions[] = [
+  { name: 'has_parking_lot', resource_string: 'common.lblHasParkingLot' },
+  { name: 'has_gas_heating', resource_string: 'common.lblHasGasHeating' },
+  { name: 'has_central_heating', resource_string: 'common.lblHasCentralHeating' },
+  { name: 'has_electric_heating', resource_string: 'common.lblHasElectricHeating' },
+  { name: 'has_solar_power', resource_string: 'common.lblHasSolarPower' },
+  { name: 'has_bicycle_room', resource_string: 'common.lblHasBicycleRoom' },
+  { name: 'has_pre_heated_water', resource_string: 'common.lblHasPreHeatedWater' },
+  { name: 'has_elevator', resource_string: 'common.lblHasElevator' },
+  { name: 'is_recently_built', resource_string: 'common.lblRecentlyBuilt' }
+];
 
-const amenityOptions: Option[] = [
-  {
-    resource_string: 'common.lblHasParkingLot',
-  },
-  {
-    resource_string: 'common.lblHasGasHeating',
-  },
-  {
-    resource_string: 'common.lblHasCentralHeating',
-  },
-  {
-    resource_string: 'common.lblHasSolarPower',
-  },
-  {
-    resource_string: 'common.lblHasElectricHeating',
-  },
-  {
-    resource_string: 'common.lblHasBicycleRoom',
-  },
-  {
-    resource_string: 'common.lblHasPreHeatedWater',
-  },
-  {
-    resource_string: 'common.lblHasElevator',
-  },
-  {
-    resource_string: 'common.lblRecentlyBuilt',
-  }
+const buildingStatuses: BuildingOptions[] = [
+  { name: 'vacant', resource_string: 'buildings.lblBuildingStatusVacant' },
+  { name: 'partially_leased', resource_string: 'buildings.lblBuildingStatusPartiallyLeased' },
+  { name: 'renovation', resource_string: 'buildings.lblBuildingStatusRenovation' },
+  { name: 'under_construction', resource_string: 'buildings.lblBuildingStatusUnderConstruction' },
+  { name: 'active', resource_string: 'buildings.lblBuildingStatusActive' },
+  { name: 'temporary', resource_string: 'buildings.lblBuildingStatusTemporary' },
+  { name: 'historical', resource_string: 'buildings.lblBuildingStatusHistorical' },
+  { name: 'condemned', resource_string: 'buildings.lblBuildingStatusCondemned' },
+  { name: 'for_sale', resource_string: 'buildings.lblBuildingStatusForSale' },
+  { name: 'leased', resource_string: 'buildings.lblBuildingStatusLeased' },
+  { name: 'planned', resource_string: 'buildings.lblBuildingStatusPlanned' },
+  { name: 'demolished', resource_string: 'buildings.lblBuildingStatusDemolished' },
+  { name: 'restricted_access', resource_string: 'buildings.lblBuildingStatusRestrictedAccess' },
+  { name: 'inactive', resource_string: 'buildings.lblBuildingStatusInactive' },
+  { name: 'under_inspection', resource_string: 'buildings.lblBuildingStatusUnderInspection' }
 ];
 
 interface BuildingListSearchProps {
   onFiltersChange?: (filters: Filters) => void;
-  buildingStatuses: (BaseEntity & { resource_string: string })[]
 }
 
-export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
-
-  const { onFiltersChange, buildingStatuses } = props;
+export const BuildingListSearch: FC<BuildingListSearchProps> = ({ onFiltersChange }) => {
   const queryRef = useRef<HTMLInputElement | null>(null);
   const [chips, setChips] = useState<SearchChip[]>([]);
   const { t } = useTranslation();
 
   const handleChipsUpdate = useCallback(() => {
-    const filters: Filters = {
-      address: undefined,
-      amenities: [],
-      statuses: [],
-    };
+    const filters: Filters = { address: undefined, amenities: [], statuses: [] };
 
     chips.forEach((chip) => {
-      switch (chip.field) {
-        case 'address':
-          // There will (or should) be only one chips with field "address"
-          // so we can set up it directly
-          filters.address = chip.value as string;
-          break;
-        case 'amenities':
-          filters.amenities.push(chip.value as string);
-          break;
-        case 'statuses':
-          filters.statuses.push(chip.value as string);
-          break;
-        default:
-          break;
-      }
+      if (chip.field === 'address') filters.address = chip.value;
+      else if (chip.field === 'amenities') filters.amenities.push(chip.value);
+      else if (chip.field === 'statuses') filters.statuses.push(chip.value); // value is name
     });
 
     onFiltersChange?.(filters);
   }, [chips, onFiltersChange]);
 
-  useUpdateEffect(() => {
-    handleChipsUpdate();
-  }, [chips, handleChipsUpdate]);
+  useUpdateEffect(() => { handleChipsUpdate(); }, [chips, handleChipsUpdate]);
 
   const handleChipDelete = useCallback((deletedChip: SearchChip): void => {
-    setChips((prevChips) => {
-      return prevChips.filter((chip) => {
-        // There can exist multiple chips for the same field.
-        // Filter them by value.
-
-        return !(deletedChip.field === chip.field && deletedChip.value === chip.value);
-      });
-    });
+    setChips((prev) => prev.filter((chip) => chip.field !== deletedChip.field || chip.value !== deletedChip.value));
   }, []);
 
   const handleQueryChange = useCallback((event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-
-    const value = queryRef.current?.value || '';
+    const value = queryRef.current?.value.trim() || '';
 
     setChips((prevChips) => {
-      const found = prevChips.find((chip) => chip.field === 'address');
-
-      if (found && value) {
-        return prevChips.map((chip) => {
-          if (chip.field === 'address') {
-            return {
-              ...chip,
-              value: queryRef.current?.value || '',
-            };
-          }
-
-          return chip;
-        });
+      const existing = prevChips.find((chip) => chip.field === 'address');
+      if (existing && value) {
+        return prevChips.map((chip) => chip.field === 'address' ? { ...chip, value, displayValue: value } : chip);
       }
-
-      if (found && !value) {
-        return prevChips.filter((chip) => chip.field !== 'address');
-      }
-
-      if (!found && value) {
-        const chip: SearchChip = {
-          label: 'Name',
-          field: 'address',
-          value,
-          displayValue: value,
-        };
-
-        return [...prevChips, chip];
-      }
-
+      if (existing && !value) return prevChips.filter((chip) => chip.field !== 'address');
+      if (!existing && value) return [...prevChips, { label: 'Name', field: 'address', value, displayValue: value }];
       return prevChips;
     });
 
-    if (queryRef.current) {
-      queryRef.current.value = '';
-    }
+    if (queryRef.current) queryRef.current.value = '';
   }, []);
 
-  const handleAmenityChange = useCallback((values: string[]): void => {
-    setChips((prevChips) => {
-      const valuesFound: string[] = [];
+  const handleGenericChange = useCallback(
+    (field: 'amenities' | 'statuses', options: BuildingOptions[]) => (values: string[]) => {
+      setChips((prevChips) => {
+        const existing = prevChips.filter((chip) => chip.field === field).map((chip) => chip.value);
+        const toRemove = new Set(existing);
+        const newChips = prevChips.filter((chip) => chip.field !== field || values.includes(chip.value));
 
-      // First cleanup the previous chips
-      const newChips = prevChips.filter((chip) => {
-        if (chip.field !== 'amenities') {
-          return true;
-        }
+        values.forEach((value) => {
+          if (!toRemove.has(value)) {
+            const option = options.find((opt) => opt.name === value);
+            newChips.push({
+              label: field === 'amenities' ? t('common.lblAmenity') : t('common.lblStatus'),
+              field,
+              value, // store name
+              displayValue: t(option?.resource_string || value),
+            });
+          }
+        });
 
-        const found = values.includes(chip.value as string);
-
-        if (found) {
-          valuesFound.push(chip.value as string);
-        }
-
-        return found;
-      });
-
-      // Nothing changed
-      if (values.length === valuesFound.length) {
         return newChips;
-      }
-
-      values.forEach((value) => {
-        if (!valuesFound.includes(value)) {
-          const option = amenityOptions.find((option) => option.resource_string === value);
-
-          newChips.push({
-            label: t('common.lblAmenity'),
-            field: 'amenities',
-            value,
-            displayValue: option!.resource_string,
-          });
-        }
       });
-
-      return newChips;
-    });
-  }, []);
-
-  const handleStatusChange = useCallback((values: string[]): void => {
-    setChips((prevChips) => {
-      const valuesFound: string[] = [];
-
-      // First cleanup the previous chips
-      const newChips = prevChips.filter((chip) => {
-        if (chip.field !== 'statuses') {
-          return true;
-        }
-
-        const found = values.includes(chip.value as string);
-
-        if (found) {
-          valuesFound.push(chip.value as string);
-        }
-
-        return found;
-      });
-
-      // Nothing changed
-      if (values.length === valuesFound.length) {
-        return newChips;
-      }
-
-      values.forEach((value) => {
-        if (!valuesFound.includes(value)) {
-          const option = buildingStatuses.find((option) => option.resource_string === value);
-
-          newChips.push({
-            label: t('common.lblStatus'),
-            field: 'statuses',
-            value,
-            displayValue: option!.name,
-          });
-        }
-      });
-
-      return newChips;
-    });
-  }, []);
-
-  // We memoize this part to prevent re-render issues
-  const amenityValues = useMemo(
-    () => chips.filter((chip) => chip.field === 'amenities').map((chip) => chip.value) as string[],
-    [chips]
+    },
+    [t]
   );
 
-  const statusValues = useMemo(
-    () => chips.filter((chip) => chip.field === 'statuses').map((chip) => chip.value) as string[],
-    [chips]
-  );
+  const handleAmenityChange = handleGenericChange('amenities', amenityOptions);
+  const handleStatusChange = handleGenericChange('statuses', buildingStatuses);
 
+  const amenityValues = useMemo(() => chips.filter((c) => c.field === 'amenities').map((c) => c.value), [chips]);
+  const statusValues = useMemo(() => chips.filter((c) => c.field === 'statuses').map((c) => c.value), [chips]);
   const showChips = chips.length > 0;
 
   return (
     <div>
-      <Stack
-        alignItems="center"
-        component="form"
-        direction="row"
-        onSubmit={handleQueryChange}
-        spacing={2}
-        sx={{ p: 2 }}
-      >
-        <SvgIcon>
-          <SearchMdIcon />
-        </SvgIcon>
+      <Stack alignItems="center" component="form" direction="row" onSubmit={handleQueryChange} spacing={2} sx={{ p: 2 }}>
+        <SvgIcon><SearchMdIcon /></SvgIcon>
         <Input
           defaultValue=""
           disableUnderline
@@ -280,66 +150,33 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
       </Stack>
       <Divider />
       {showChips ? (
-        <Stack
-          alignItems="center"
-          direction="row"
-          flexWrap="wrap"
-          gap={1}
-          sx={{ p: 2 }}
-        >
+        <Stack alignItems="center" direction="row" flexWrap="wrap" gap={1} sx={{ p: 2 }}>
           {chips.map((chip, index) => (
             <Chip
               key={index}
               label={
-                <Box
-                  sx={{
-                    alignItems: 'center',
-                    display: 'flex',
-                    '& span': {
-                      fontWeight: 600,
-                    },
-                  }}
-                >
+                <Box sx={{ display: 'flex', alignItems: 'center', '& span': { fontWeight: 600 } }}>
                   <>
                     <span>{t(chip.label)}</span>: {t(chip.displayValue || chip.value)}
                   </>
                 </Box>
               }
-              onDelete={(): void => handleChipDelete(chip)}
+              onDelete={() => handleChipDelete(chip)}
               variant="outlined"
             />
           ))}
         </Stack>
       ) : (
         <Box sx={{ p: 2.5 }}>
-          <Typography
-            color="text.secondary"
-            variant="subtitle2"
-          >
+          <Typography color="text.secondary" variant="subtitle2">
             {t('common.tableFilterNoFilterSelected')}
           </Typography>
         </Box>
       )}
       <Divider />
-      <Stack
-        alignItems="center"
-        direction="row"
-        flexWrap="wrap"
-        spacing={1}
-        sx={{ p: 1 }}
-      >
-        <MultiSelect
-          label={t('common.tableFilterAmenities')}
-          onChange={handleAmenityChange}
-          options={amenityOptions}
-          value={amenityValues}
-        />
-        <MultiSelect
-          label={t('common.tableFilterStatus')}
-          onChange={handleStatusChange}
-          options={buildingStatuses}
-          value={statusValues}
-        />
+      <Stack alignItems="center" direction="row" flexWrap="wrap" spacing={1} sx={{ p: 1 }}>
+        <MultiSelect label={t('common.tableFilterAmenities')} onChange={handleAmenityChange} options={amenityOptions} value={amenityValues} />
+        <MultiSelect label={t('common.tableFilterStatus')} onChange={handleStatusChange} options={buildingStatuses} value={statusValues} />
       </Stack>
     </div>
   );

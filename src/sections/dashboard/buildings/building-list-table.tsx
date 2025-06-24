@@ -15,9 +15,8 @@ import TableRow from '@mui/material/TableRow';
 import Link from 'next/link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import type { Building } from 'src/types/building';
+import { statusMap, type Building } from 'src/types/building';
 import { SvgIcon } from '@mui/material';
-import { BaseEntity } from 'src/types/base-entity';
 import { useTranslation } from 'react-i18next';
 import { paths } from 'src/paths';
 
@@ -28,7 +27,6 @@ interface BuildingListTableProps {
   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   page?: number;
   rowsPerPage?: number;
-  buildingStatuses: (BaseEntity & { resource_string: string })[]
 }
 
 export const BuildingListTable: FC<BuildingListTableProps> = ({
@@ -38,7 +36,6 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
   onRowsPerPageChange,
   page = 0,
   rowsPerPage = 0,
-  buildingStatuses
 }) => {
 
   const { t } = useTranslation();
@@ -129,21 +126,14 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                     <TableCell>
                       <SeverityPill
                         color={
-                          (
-                            buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'buildings.lblBuildingStatusActive'
-                              ? 'success'
-                              : buildingStatuses.find((status: BaseEntity) => status.id === building.building_status)?.resource_string === 'buildings.lblBuildingStatusInactive'
-                                ? 'error'
-                                : 'warning'
-                          ) as SeverityPillColor
+                          building.building_status === 'active'
+                            ? 'success'
+                            : building.building_status === 'inactive'
+                              ? 'error'
+                              : 'warning'
                         }
                       >
-                        {(() => {
-                          const status = buildingStatuses.find((status: BaseEntity) => status.id === building.building_status);
-                          return status?.resource_string
-                            ? t(status.resource_string)
-                            : building.building_status;
-                        })()}
+                        {t(statusMap[building.building_status] || building.building_status)}
                       </SeverityPill>
                     </TableCell>
                     <TableCell align="left">{building.number_of_apartments}</TableCell>
