@@ -6,13 +6,9 @@ import { Box, Container, Stack } from "@mui/material";
 import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment-new-header";
 import { ApartmentCreateForm } from "./new-apartment";
 
-interface PageProps {
-  params: {
-    apartmentid?: string; // dynamic segment if editing
-  };
-}
-
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: {
+  params: Promise<{ apartmentid: string }>
+}) {
 
   const { apartmentid } = await params;
 
