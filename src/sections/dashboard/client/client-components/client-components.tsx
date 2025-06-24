@@ -34,7 +34,6 @@ interface GenericTableEditorProps {
      invoiceStatuses: BaseEntity[]
      subscriptionPlanStatuses: BaseEntity[]
      features: (BaseEntity & FeatureExtension)[]
-     buildingStatuses: BaseEntity[]
      updateEntity: <T extends BaseEntity>(
           table: string,
           id: string,
@@ -64,7 +63,6 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
      invoiceStatuses,
      subscriptionPlanStatuses,
      features,
-     buildingStatuses,
      updateEntity,
      deleteEntity,
      createEntity,
@@ -130,11 +128,6 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
                name: "tblFeatures",
                displayName: "clients.featuresTableName",
                data: features,
-          },
-          {
-               name: "tblBuildingStatuses",
-               displayName: "clients.buildingStatusesTableName",
-               data: buildingStatuses,
           },
      ]
 
