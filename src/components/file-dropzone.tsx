@@ -141,7 +141,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
         <Typography variant="h6" sx={{ mb: 2 }}>
           {t('common.lblUploadedImages') ?? 'Uploaded Images'}
         </Typography>
-        {images && images.length > 0 && (
+        {images && images.length > 0 ? (
           <Card sx={{ mt: 2 }}>
             <CardContent>
               <Grid container spacing={2}>
@@ -262,6 +262,10 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
 
             </CardContent>
           </Card>
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            {t('common.lblNoImagesUploaded') ?? 'No images uploaded'}
+          </Typography>
         )}
         <Dialog
           open={viewerOpen}

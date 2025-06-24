@@ -68,7 +68,8 @@ interface BuildingListSearchProps {
 }
 
 export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
-  const { onFiltersChange, ...other } = props;
+
+  const { onFiltersChange, buildingStatuses } = props;
   const queryRef = useRef<HTMLInputElement | null>(null);
   const [chips, setChips] = useState<SearchChip[]>([]);
   const { t } = useTranslation();
@@ -227,7 +228,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
 
       values.forEach((value) => {
         if (!valuesFound.includes(value)) {
-          const option = props.buildingStatuses.find((option) => option.resource_string === value);
+          const option = buildingStatuses.find((option) => option.resource_string === value);
 
           newChips.push({
             label: t('common.lblStatus'),
@@ -256,7 +257,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
   const showChips = chips.length > 0;
 
   return (
-    <div {...other}>
+    <div>
       <Stack
         alignItems="center"
         component="form"
@@ -336,7 +337,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = (props) => {
         <MultiSelect
           label={t('common.tableFilterStatus')}
           onChange={handleStatusChange}
-          options={props.buildingStatuses}
+          options={buildingStatuses}
           value={statusValues}
         />
       </Stack>

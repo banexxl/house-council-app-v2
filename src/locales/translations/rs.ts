@@ -92,6 +92,10 @@ export const rs = {
      [tokens.common.lblInactive]: 'Neaktivan',
      [tokens.common.lblUnderInspection]: 'Pod inspekcijom',
      [tokens.common.lblUploadedImages]: 'Učitane slike',
+     [tokens.common.lblNoImagesUploaded]: 'Nema učitanih slika',
+     [tokens.common.lblApartmentCount]: 'Broj stanova',
+     [tokens.common.lblMaximumApartmentsPerFloor]: 'Maksimalan broj stanova po spratu',
+     [tokens.common.lblHasGroundFloorApartments]: 'Ima stanove na prizemlju',
      [tokens.common.notes]: 'Napomene',
      [tokens.common.settings]: 'Podešavanje',
      [tokens.common.actionClickToUploadOrDragAndDrop]: 'Kliknite ovdje ili prevucite sliku za upload',
@@ -221,6 +225,32 @@ export const rs = {
      [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
      [tokens.locations.searchLocationLabel]: 'Pretraga lokacija',
      //#endregion
+     //#region Apartments
+     [tokens.apartments.lblApartmentNumber]: 'Broj apartmana',
+     [tokens.apartments.lblCoverImage]: 'Naslovna slika',
+     [tokens.apartments.lblFloor]: 'Sprat',
+     [tokens.apartments.lblSizeM2]: 'Veličina (m²)',
+     [tokens.apartments.lblRooms]: 'Sobe',
+     [tokens.apartments.lblType]: 'Tip',
+     [tokens.apartments.lblNotes]: 'Napomene',
+     [tokens.apartments.lblRentalStatus]: 'Status najma',
+     [tokens.apartments.lblResidential]: 'Stambeni',
+     [tokens.apartments.lblBusiness]: 'Poslovni',
+     [tokens.apartments.lblMixedUse]: 'Mešovita namena',
+     [tokens.apartments.lblVacation]: 'Odmor',
+     [tokens.apartments.lblStorage]: 'Skladište',
+     [tokens.apartments.lblGarage]: 'Garaža',
+     [tokens.apartments.lblUtility]: 'Komunalno',
+     [tokens.apartments.lblOwned]: 'Vlasništvo',
+     [tokens.apartments.lblRented]: 'Iznajmljeno',
+     [tokens.apartments.lblForRent]: 'Za iznajmljivanje',
+     [tokens.apartments.lblVacant]: 'Prazan',
+     [tokens.apartments.apartmentsTitle]: 'Apartmani',
+     [tokens.apartments.apartmentList]: 'Lista Apartmana',
+     [tokens.apartments.apartmentDetails]: 'Detalji Apartmana',
+     [tokens.apartments.apartmentCreate]: 'Kreiraj Apartman',
+     [tokens.apartments.apartmentEdit]: 'Izmeni Apartman',
+     //#endregion
      //#region Buildings
      [tokens.buildings.buildingsTitle]: 'Pregled zgrada',
      [tokens.buildings.buildingList]: 'Lista zgrada',
@@ -229,7 +259,7 @@ export const rs = {
      [tokens.buildings.buildingEdit]: 'Izmeni zgradu',
      [tokens.buildings.buildingStats]: 'Statistike zgrade',
      [tokens.buildings.buildingStories]: 'Broj Spratova',
-     [tokens.buildings.numberOfApartments]: 'Broj Apartmana',
+     [tokens.buildings.numberOfApartments]: 'Broj Stanova',
      [tokens.buildings.lblBuildingStatusVacant]: 'Prazna',
      [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Delimično iznajmljena',
      [tokens.buildings.lblBuildingStatusRenovation]: 'U renoviranju',
@@ -245,6 +275,15 @@ export const rs = {
      [tokens.buildings.lblBuildingStatusInactive]: 'Neaktivna',
      [tokens.buildings.lblBuildingStatusUnderInspection]: 'Pod inspekcijom',
      [tokens.buildings.lblBuildingStatusHistorical]: 'Istorijska',
+     [tokens.buildings.yupBuildingLocationRequired]: 'Lokacija zgrade je obavezna',
+     [tokens.buildings.yupBuildingDescriptionRequired]: 'Opis zgrade je obavezan',
+     [tokens.buildings.yupBuildingStoriesHighRequired]: 'Broj spratova zgrade je obavezan',
+     [tokens.buildings.yupBuildingNumberOfApartmentsRequired]: 'Broj stanova u zgradi je obavezan',
+     [tokens.buildings.yupBuildingMaxApartmentsPerFloorRequired]: 'Maksimalan broj stanova po spratu je obavezan',
+     [tokens.buildings.yupBuildingStatusRequired]: 'Status zgrade je obavezan',
+     [tokens.buildings.yupBuildingNumberOfApartmentsMaxCheck]: 'Broj stanova ne sme biti ve i od broja spratova × maksimalan broj stanova po spratu',
+     [tokens.buildings.yupBuildingMaxApartmentsPerFloorMaxCheck]: 'Broj stanova po spratu ne sme biti veći od ukupnog broja stanova u zgradi.',
+     [tokens.buildings.yupBuildingHasGroundFloorApartmentsRequired]: 'Da li zgrada ima stambene jedinice na prizemlju je obavezno polje',
      //#endregion
      //#region Clients
      [tokens.clients.client]: 'Klijent',
@@ -414,6 +453,7 @@ export const rs = {
      [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Mesečno',
      [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Godišnje',
      //#endregion
+     //#region Errors
      [tokens.errors.page.notFound]: 'Stranica nije pronađena',
      [tokens.errors.page.notFoundDescription]: 'Stranica koju tražite ne postoji',
      [tokens.errors.page.notFoundDescriptionShort]: 'Stranica nije pronađena',
@@ -433,4 +473,5 @@ export const rs = {
      [tokens.errors.authorization.authorizationError]: 'Greška autorizacije',
      [tokens.errors.authorization.authorizationErrorDescription]: 'Nemate dozvolu za pristup ovoj stranici',
      [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Greška autorizacije',
+     //#endregion
 };

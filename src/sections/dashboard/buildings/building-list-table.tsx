@@ -57,6 +57,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
               <TableCell>{t('common.lblCity')}</TableCell>
               <TableCell>{t('common.lblAddress')}</TableCell>
               <TableCell>{t('common.lblStatus')}</TableCell>
+              <TableCell>{t('common.lblApartmentCount')}</TableCell>
               <TableCell>{t('common.lblHasBicycleRoom')}</TableCell>
               <TableCell>{t('common.lblHasParkingLot')}</TableCell>
               <TableCell>{t('common.lblHasElevator')}</TableCell>
@@ -145,6 +146,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                         })()}
                       </SeverityPill>
                     </TableCell>
+                    <TableCell align="left">{building.number_of_apartments}</TableCell>
                     <TableCell align="left">
                       <SeverityPill color={bicycleRoomColor}>
                         {building.has_bicycle_room ? (

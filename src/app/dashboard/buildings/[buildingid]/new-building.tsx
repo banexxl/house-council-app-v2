@@ -17,6 +17,7 @@ import WhatshotIcon from '@mui/icons-material/Whatshot';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import BoltIcon from '@mui/icons-material/Bolt';
 import SolarPowerIcon from '@mui/icons-material/SolarPower';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import ElevatorIcon from '@mui/icons-material/Elevator';
@@ -53,8 +54,9 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
 
   const formik = useFormik({
     initialValues: buildingData ? buildingData : buildingInitialValues,
-    validationSchema: buildingValidationSchema,
+    validationSchema: buildingValidationSchema(t),
     onSubmit: async (values, helpers) => {
+      helpers.setSubmitting(true);
       setLoading(true);
       try {
         if (buildingData && buildingData.id) {
@@ -231,6 +233,11 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
         <HomeWorkIcon sx={{ mr: 1 }} />
       </Tooltip>
     ),
+    has_ground_floor_apartments: (
+      <Tooltip title={t('common.lblHasGroundFloorApartments')}>
+        <MeetingRoomIcon sx={{ mr: 1 }} />
+      </Tooltip>
+    )
   };
 
   const handleDeleteBuilding = async (buildingId: string) => {
@@ -286,7 +293,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
               onBlur={formik.handleBlur}
               value={formik.values.description}
               error={!!formik.touched.description && !!formik.errors.description}
-              helperText={formik.touched.description && typeof formik.errors.description === 'string' ? formik.errors.description : undefined}
+              helperText={formik.touched.description && formik.errors.description}
               sx={{ mt: 2 }}
             />
           </CardContent>
@@ -318,7 +325,6 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
             </Grid>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>{t('buildings.buildingStats')}</Typography>
@@ -327,18 +333,56 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
                 type="number"
                 label={t('buildings.buildingStories')}
                 name="stories_high"
-                onBlur={formik.handleBlur}
+                fullWidth
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const rounded = Math.round(val);
+                  const absolute = rounded < 0 ? Math.abs(rounded) : rounded;
+                  formik.setFieldValue('stories_high', absolute);
+                  formik.handleBlur(e); // ✅ ensures touched state is updated
+                }}
                 onChange={formik.handleChange}
                 value={formik.values.stories_high}
+                error={!!formik.touched.stories_high && !!formik.errors.stories_high}
+                helperText={formik.touched.stories_high && formik.errors.stories_high}
               />
+
               <TextField
                 type="number"
                 label={t('buildings.numberOfApartments')}
                 name="number_of_apartments"
-                onBlur={formik.handleBlur}
+                fullWidth
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const rounded = Math.round(val);
+                  const absolute = rounded < 0 ? Math.abs(rounded) : rounded;
+                  formik.setFieldValue('number_of_apartments', absolute);
+                  formik.handleBlur(e);
+                }}
                 onChange={formik.handleChange}
                 value={formik.values.number_of_apartments}
+                error={!!formik.touched.number_of_apartments && !!formik.errors.number_of_apartments}
+                helperText={formik.touched.number_of_apartments && formik.errors.number_of_apartments}
               />
+
+              <TextField
+                type="number"
+                label={t('common.lblMaximumApartmentsPerFloor')}
+                name="max_apartments_per_floor"
+                fullWidth
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const rounded = Math.round(val);
+                  const absolute = rounded < 0 ? Math.abs(rounded) : rounded;
+                  formik.setFieldValue('max_apartments_per_floor', absolute);
+                  formik.handleBlur(e);
+                }}
+                onChange={formik.handleChange}
+                value={formik.values.max_apartments_per_floor}
+                error={!!formik.touched.max_apartments_per_floor && !!formik.errors.max_apartments_per_floor}
+                helperText={formik.touched.max_apartments_per_floor && formik.errors.max_apartments_per_floor}
+              />
+
               <TextField
                 label={t('common.lblStatus')}
                 name="building_status"
@@ -417,7 +461,7 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
               type="submit"
               variant="contained"
               disabled={!formik.isValid || !formik.dirty}
-              loading={loading}
+              loading={formik.isSubmitting}
             >
               {buildingData ? t('common.btnUpdate') : t('common.btnCreate')}
             </Button>
@@ -428,12 +472,12 @@ export const BuildingCreateForm = ({ buildingData, buildingStatuses, locationDat
       <PopupModal
         isOpen={open}
         onClose={() => {
-
           setOpen(false)
         }}
         onConfirm={() => handleDeleteBuilding(buildingData?.id!)}
         title={'Are you sure you want to delete this building?'}
-        type={'confirmation'} />
+        type={'confirmation'}
+      />
     </form >
   );
 };

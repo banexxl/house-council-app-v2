@@ -24,6 +24,8 @@ export interface Building {
           image_url: string;
           is_cover_image: boolean;
      }[];
+     max_apartments_per_floor: number;
+     has_ground_floor_apartments: boolean;
 }
 
 export const buildingInitialValues: Building = {
@@ -38,29 +40,55 @@ export const buildingInitialValues: Building = {
      has_bicycle_room: false,
      has_pre_heated_water: false,
      has_elevator: false,
-     stories_high: 0,
-     number_of_apartments: 0,
+     stories_high: 1,
+     number_of_apartments: 1,
      client_id: '',
      building_images: [],
      building_status: '',
      created_at: new Date(),
      updated_at: new Date(),
-     building_location: null
+     building_location: null,
+     max_apartments_per_floor: 1,
+     has_ground_floor_apartments: false
 };
 
-export const buildingValidationSchema = Yup.object({
+export const buildingValidationSchema = (t: (key: string) => string) => Yup.object({
      building_location: Yup.object({
-          street_address: Yup.string().required('Required'),
-          city: Yup.string().required('Required'),
-          country: Yup.string().required('Required'),
-          street_number: Yup.string().required('Required'),
-          post_code: Yup.number().required('Required'),
-          latitude: Yup.number().required('Required'),
-          longitude: Yup.number().required('Required')
+          street_address: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
+          city: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
+          country: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
+          street_number: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
+          post_code: Yup.number().required(t('buildings.yupBuildingLocationRequired')),
+          latitude: Yup.number().required(t('buildings.yupBuildingLocationRequired')),
+          longitude: Yup.number().required(t('buildings.yupBuildingLocationRequired'))
      }),
-     description: Yup.string().max(5000),
-     stories_high: Yup.number().min(1).required(),
-     number_of_apartments: Yup.number().min(0).required(),
-     building_status: Yup.string().required('Required'),
-     building_images: Yup.array()
+     description: Yup.string().max(5000).required(t('buildings.yupBuildingDescriptionRequired')),
+     stories_high: Yup.number().min(1).required(t('buildings.yupBuildingStoriesHighRequired')),
+     building_status: Yup.string().required(t('buildings.yupBuildingStatusRequired')),
+     building_images: Yup.array(),
+     number_of_apartments: Yup.number()
+          .required(t('buildings.yupBuildingNumberOfApartmentsRequired'))
+          .min(1, t('buildings.yupBuildingNumberOfApartmentsRequired'))
+          .test(
+               'max-apartments-check',
+               t('buildings.yupBuildingNumberOfApartmentsMaxCheck'),
+               function (value) {
+                    const { stories_high, max_apartments_per_floor } = this.parent as Building;
+                    if (!value || !stories_high || !max_apartments_per_floor) return true; // skip if undefined
+                    return value <= stories_high * max_apartments_per_floor;
+               }
+          ),
+     max_apartments_per_floor: Yup.number()
+          .required(t('buildings.yupBuildingMaxApartmentsPerFloorRequired'))
+          .min(1, t('buildings.yupBuildingMaxApartmentsPerFloorRequired'))
+          .test(
+               'max-per-floor-check',
+               t('buildings.yupBuildingMaxApartmentsPerFloorMaxCheck'),
+               function (value) {
+                    const { number_of_apartments } = this.parent as Building;
+                    if (!value || !number_of_apartments) return true;
+                    return value <= number_of_apartments;
+               }
+          ),
+     has_ground_floor_apartments: Yup.boolean().required(t('buildings.yupBuildingHasGroundFloorApartmentsRequired')),
 });

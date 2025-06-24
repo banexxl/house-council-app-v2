@@ -204,7 +204,7 @@ export const useSections = () => {
                 path: paths.dashboard.apartments.index,
               },
               {
-                title: t(tokens.nav.apartments),
+                title: t(tokens.nav.apartmentAdd),
                 path: paths.dashboard.apartments.new,
               },
             ]
