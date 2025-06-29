@@ -35,6 +35,8 @@ import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { tokens } from 'src/locales/tokens';
 import { paths } from 'src/paths';
+import { supabase } from 'src/libs/supabase/sb-client';
+import { useAuth } from 'src/hooks/use-auth';
 
 export interface Item {
   disabled?: boolean;
@@ -104,20 +106,20 @@ export const useSections = () => {
                   }
                 ]
               },
-              {
-                title: t(tokens.common.settings),
-                items: [
-                  {
-                    title: t(tokens.nav.clientSettings),
-                    path: paths.dashboard.clients.clientSettings.index,
-                    icon: (
-                      <SvgIcon fontSize="small">
-                        <SettingsIcon />
-                      </SvgIcon>
-                    )
-                  }
-                ]
-              }
+              // {
+              //   title: t(tokens.common.settings),
+              //   items: [
+              //     {
+              //       title: t(tokens.nav.clientSettings),
+              //       path: paths.dashboard.clients.clientSettings.index,
+              //       icon: (
+              //         <SvgIcon fontSize="small">
+              //           <SettingsIcon />
+              //         </SvgIcon>
+              //       )
+              //     }
+              //   ]
+              // }
             ]
           },
           {

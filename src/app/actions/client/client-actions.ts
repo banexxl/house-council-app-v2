@@ -2,13 +2,27 @@
 
 import { revalidatePath } from "next/cache"
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server"
+import { logServerAction } from "src/libs/supabase/server-logging";
 import { Client } from "src/types/client"
+import { validate as isUUID } from 'uuid';
+
+
+// Helper to sanitize file paths for S3
+const sanitizeSegmentForS3 = (segment: string): string => {
+     return segment
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9-_.]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_+|_+$/g, '');
+};
 
 export const createOrUpdateClientAction = async (client: Client): Promise<{
      saveClientActionSuccess: boolean
      saveClientActionData?: Client
      saveClientActionError?: any
 }> => {
+     console.log('createOrUpdateClientAction', client);
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { id, ...clientData } = client
@@ -50,30 +64,13 @@ export const readAllClientsAction = async (): Promise<{
      try {
           const { data, error } = await supabase
                .from("tblClients")
-               .select(`
-        *,
-        tblClientStatuses (name),
-        tblClientTypes (name)
-      `);
+               .select(`*`);
 
           if (error) throw error;
 
-          // Transform the data to remove unnecessary properties
-          const transformedData = data.map(client => ({
-               ...client,
-               status: client.tblClientStatuses?.name, // Map tblClientStatuses.name to status
-               type: client.tblClientTypes?.name, // Map tblClientTypes.name to type
-          }));
-
-          // Remove the tblClientStatuses and tblClientTypes properties
-          transformedData.forEach(client => {
-               delete client.tblClientStatuses;
-               delete client.tblClientTypes;
-          });
-
           return {
                getAllClientsActionSuccess: true,
-               getAllClientsActionData: transformedData as Client[],
+               getAllClientsActionData: data as Client[],
           };
      } catch (error) {
           return {
@@ -92,6 +89,9 @@ export const readClientByIdAction = async (
      getClientByIdActionError?: string
 }> => {
 
+     const time = Date.now();
+     if (!isUUID(clientId)) return { getClientByIdActionSuccess: false, getClientByIdActionError: "Invalid client ID format" };
+
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
@@ -107,12 +107,9 @@ export const readClientByIdAction = async (
                throw new Error("Client not found")
           }
 
-          // Destructure the properties we want, including nested ones
-          const { tblClientStatuses, tblClientTypes, ...clientData } = data
-
           return {
                getClientByIdActionSuccess: true,
-               getClientByIdActionData: clientData,
+               getClientByIdActionData: data as Client,
           }
 
      } catch (error) {
@@ -161,3 +158,76 @@ export const readClientByEmailAction = async (email: string): Promise<{
           return { getClientByEmailActionSuccess: false }
      }
 }
+
+export const uploadClientLogoAndGetUrl = async (
+     file: File,
+     client: string
+): Promise<{ success: boolean; url?: string; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+
+     try {
+          const encodedFilePath = [
+               'Clients',
+               sanitizeSegmentForS3(client),
+               'logo',
+               sanitizeSegmentForS3(file.name),
+          ].join('/');
+
+          const { data, error: uploadError } = await supabase.storage
+               .from(bucket)
+               .upload(encodedFilePath, file, {
+                    cacheControl: '3600',
+                    upsert: true,
+               });
+
+          if (uploadError) {
+               await logServerAction({
+                    action: 'Upload Client Logo - Failed',
+                    duration_ms: 0,
+                    error: uploadError.message,
+                    payload: { client },
+                    status: 'fail',
+                    type: 'action',
+                    user_id: '',
+               });
+               return {
+                    success: false,
+                    error: `${uploadError.message} for file ${file.name}`,
+               };
+          }
+
+          const { data: publicUrlData } = supabase.storage
+               .from(bucket)
+               .getPublicUrl(encodedFilePath);
+
+          const imageUrl = publicUrlData?.publicUrl;
+
+          if (!imageUrl) {
+               await logServerAction({
+                    action: 'Upload Client Logo - Failed to get public URL',
+                    duration_ms: 0,
+                    error: 'Failed to retrieve public URL',
+                    payload: { client },
+                    status: 'fail',
+                    type: 'action',
+                    user_id: '',
+               });
+               return { success: false, error: 'Failed to retrieve public URL' };
+          }
+
+          await logServerAction({
+               action: 'Upload Client Logo - Success',
+               duration_ms: 0,
+               error: '',
+               payload: { imageUrl, client },
+               status: 'success',
+               type: 'action',
+               user_id: '',
+          });
+
+          return { success: true, url: imageUrl };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};

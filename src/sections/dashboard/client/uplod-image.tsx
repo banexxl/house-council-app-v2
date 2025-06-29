@@ -20,6 +20,8 @@ import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
 import { uploadFile } from "src/app/actions/client/client-image-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
+import { uploadImagesAndGetUrls } from "src/libs/supabase/sb-storage"
+import { uploadClientLogoAndGetUrl } from "src/app/actions/client/client-actions"
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -82,15 +84,18 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          formData.append("fileName", selectedFile.name)
                          formData.append("folderName", folderName)
 
-                         const imageUploadResponse = await uploadFile(formData)
+                         const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(
+                              selectedFile,
+                              folderName // e.g. userSession.client?.name
+                         );
 
-                         if (imageUploadResponse.success && imageUploadResponse.awsUrl) {
-                              setAvatarUrl(imageUploadResponse.awsUrl)
-                              toast.success("Image uploaded successfully")
-                              onUploadSuccess(imageUploadResponse.awsUrl)
+                         if (success && url) {
+                              setAvatarUrl(url);
+                              toast.success("Logo uploaded successfully");
+                              onUploadSuccess(url);
                          } else {
-                              toast.error(imageUploadResponse.message || "Failed to upload image")
-                              onUploadSuccess("")
+                              toast.error(imageUploadResponse || "Failed to upload logo");
+                              onUploadSuccess("");
                          }
                     }
                } catch (error) {

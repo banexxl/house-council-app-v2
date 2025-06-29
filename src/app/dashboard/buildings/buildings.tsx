@@ -19,7 +19,7 @@ import { paths } from 'src/paths';
 import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
 import { useTranslation } from 'react-i18next';
-import { Building, BuildingOptions } from 'src/types/building';
+import { Building } from 'src/types/building';
 import { statusMap } from 'src/types/building';
 
 const amenityKeyMap: Record<string, keyof Building> = {

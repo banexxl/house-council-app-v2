@@ -311,7 +311,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
                       </TableCell>
                       <TableCell>{client.mobile_phone}</TableCell>
                       <TableCell>{client.phone}</TableCell>
-                      <TableCell>{client.type}</TableCell>
+                      <TableCell>{client.client_type}</TableCell>
                       <TableCell>
                         {clientStatuses?.find((cs) => cs.id === client.client_status)?.name ?? ''}
                       </TableCell>
@@ -330,9 +330,11 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
                   );
                 })
                 :
-                <Typography sx={{ m: '20px' }}>
-                  {t('common.emptyTableInfo')}
-                </Typography>
+                <TableCell colSpan={12} sx={{ textAlign: 'center', py: 5 }}>
+                  <Typography sx={{ m: '20px' }}>
+                    {t('common.emptyTableInfo')}
+                  </Typography>
+                </TableCell>
             }
           </TableBody>
         </Table>

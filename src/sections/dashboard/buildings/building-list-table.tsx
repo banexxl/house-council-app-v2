@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import { statusMap, type Building } from 'src/types/building';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { paths } from 'src/paths';
 
@@ -67,213 +67,223 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((building: Building) => {
-              const bicycleRoomColor = colorSwitcher(building.has_bicycle_room);
-              const parkingColor = colorSwitcher(building.has_parking_lot);
-              const elevatorColor = colorSwitcher(building.has_elevator);
-              const gasHeatingColor = colorSwitcher(building.has_gas_heating);
-              const centralHeatingColor = colorSwitcher(building.has_central_heating);
-              const recentlyBuiltColor = colorSwitcher(building.is_recently_built);
-              const electricHeatingColor = colorSwitcher(building.has_electric_heating);
-              const solarPowerColor = colorSwitcher(building.has_solar_power);
-              const preHeatedWaterColor = colorSwitcher(building.has_pre_heated_water);
+            {items.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} align="center">
+                  <Typography variant="subtitle1" color="textSecondary">
+                    {t('common.emptyTableInfo')}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              items.map((building: Building) => {
+                const bicycleRoomColor = colorSwitcher(building.has_bicycle_room);
+                const parkingColor = colorSwitcher(building.has_parking_lot);
+                const elevatorColor = colorSwitcher(building.has_elevator);
+                const gasHeatingColor = colorSwitcher(building.has_gas_heating);
+                const centralHeatingColor = colorSwitcher(building.has_central_heating);
+                const recentlyBuiltColor = colorSwitcher(building.is_recently_built);
+                const electricHeatingColor = colorSwitcher(building.has_electric_heating);
+                const solarPowerColor = colorSwitcher(building.has_solar_power);
+                const preHeatedWaterColor = colorSwitcher(building.has_pre_heated_water);
 
-              return (
-                <Fragment key={building.id}>
-                  <TableRow hover>
-                    <TableCell>
-                      <Link
-                        color="inherit"
-                        href={paths.dashboard.buildings.index + '/' + encodeURIComponent(building.id!)}
-                        style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          {building.building_images!.length > 0 ? (
-                            <Box
-                              sx={{
-                                width: 64,
-                                height: 64,
-                                borderRadius: 1,
-                                backgroundImage: `url(${building.building_images!.find((image) => image.is_cover_image)?.image_url || building.building_images![0].image_url})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                mr: 2,
-                              }}
-                            />
+                return (
+                  <Fragment key={building.id}>
+                    <TableRow hover>
+                      <TableCell>
+                        <Link
+                          color="inherit"
+                          href={paths.dashboard.buildings.index + '/' + encodeURIComponent(building.id!)}
+                          style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {building.building_images!.length > 0 ? (
+                              <Box
+                                sx={{
+                                  width: 64,
+                                  height: 64,
+                                  borderRadius: 1,
+                                  backgroundImage: `url(${building.building_images!.find((image) => image.is_cover_image)?.image_url || building.building_images![0].image_url})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  mr: 2,
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: 64,
+                                  height: 64,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: 1,
+                                  backgroundColor: 'neutral.100',
+                                  mr: 2,
+                                }}
+                              >
+                                <SvgIcon>
+                                  <Image01Icon />
+                                </SvgIcon>
+                              </Box>
+                            )}
+                          </Box>
+                        </Link>
+                      </TableCell>
+                      <TableCell>{building.building_location?.city}</TableCell>
+                      <TableCell>{building.building_location?.street_address} {building.building_location?.street_number}</TableCell>
+                      <TableCell>
+                        <SeverityPill
+                          color={
+                            building.building_status === 'active'
+                              ? 'success'
+                              : building.building_status === 'inactive'
+                                ? 'error'
+                                : 'warning'
+                          }
+                        >
+                          {t(statusMap[building.building_status] || building.building_status)}
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">{building.number_of_apartments}</TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={bicycleRoomColor}>
+                          {building.has_bicycle_room ? (
+                            <SvgIcon>
+                              <CheckCircleIcon />
+                            </SvgIcon>
                           ) : (
-                            <Box
-                              sx={{
-                                width: 64,
-                                height: 64,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: 1,
-                                backgroundColor: 'neutral.100',
-                                mr: 2,
-                              }}
-                            >
-                              <SvgIcon>
-                                <Image01Icon />
-                              </SvgIcon>
-                            </Box>
+                            <SvgIcon>
+                              <CancelIcon />
+                            </SvgIcon>
                           )}
-                        </Box>
-                      </Link>
-                    </TableCell>
-                    <TableCell>{building.building_location?.city}</TableCell>
-                    <TableCell>{building.building_location?.street_address} {building.building_location?.street_number}</TableCell>
-                    <TableCell>
-                      <SeverityPill
-                        color={
-                          building.building_status === 'active'
-                            ? 'success'
-                            : building.building_status === 'inactive'
-                              ? 'error'
-                              : 'warning'
-                        }
-                      >
-                        {t(statusMap[building.building_status] || building.building_status)}
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">{building.number_of_apartments}</TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={bicycleRoomColor}>
-                        {building.has_bicycle_room ? (
-                          <SvgIcon>
-                            <CheckCircleIcon />
-                          </SvgIcon>
-                        ) : (
-                          <SvgIcon>
-                            <CancelIcon />
-                          </SvgIcon>
-                        )}
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={parkingColor}>
-                        {
-                          building.has_parking_lot ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={elevatorColor}>
-                        {
-                          building.has_elevator ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={gasHeatingColor}>
-                        {
-                          building.has_gas_heating ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={centralHeatingColor}>
-                        {
-                          building.has_central_heating ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={recentlyBuiltColor}>
-                        {
-                          building.is_recently_built ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={electricHeatingColor}>
-                        {
-                          building.has_electric_heating ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={solarPowerColor}>
-                        {
-                          building.has_solar_power ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                    <TableCell align="left">
-                      <SeverityPill color={preHeatedWaterColor}>
-                        {
-                          building.has_pre_heated_water ? (
-                            <SvgIcon>
-                              <CheckCircleIcon />
-                            </SvgIcon>
-                          ) : (
-                            <SvgIcon>
-                              <CancelIcon />
-                            </SvgIcon>
-                          )
-                        }
-                      </SeverityPill>
-                    </TableCell>
-                  </TableRow>
-                </Fragment>
-              );
-            })}
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={parkingColor}>
+                          {
+                            building.has_parking_lot ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={elevatorColor}>
+                          {
+                            building.has_elevator ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={gasHeatingColor}>
+                          {
+                            building.has_gas_heating ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={centralHeatingColor}>
+                          {
+                            building.has_central_heating ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={recentlyBuiltColor}>
+                          {
+                            building.is_recently_built ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={electricHeatingColor}>
+                          {
+                            building.has_electric_heating ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={solarPowerColor}>
+                          {
+                            building.has_solar_power ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell align="left">
+                        <SeverityPill color={preHeatedWaterColor}>
+                          {
+                            building.has_pre_heated_water ? (
+                              <SvgIcon>
+                                <CheckCircleIcon />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon>
+                                <CancelIcon />
+                              </SvgIcon>
+                            )
+                          }
+                        </SeverityPill>
+                      </TableCell>
+                    </TableRow>
+                  </Fragment>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </Scrollbar>

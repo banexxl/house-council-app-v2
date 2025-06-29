@@ -4,7 +4,6 @@ import { BaseEntity } from "src/types/base-entity";
 import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
 import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
-import { unauthorized } from "next/navigation";
 import { getAllAddedLocations } from "src/app/actions/location/location-services";
 import { getServerAuth } from "src/libs/supabase/server-auth";
 
@@ -20,10 +19,6 @@ export default async function Page({ params }: {
     getAllAddedLocations(),
     getServerAuth()
   ]);
-
-  if (!userSession.client || !userSession.session) {
-    unauthorized()
-  }
 
   return (
     <Box

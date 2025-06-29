@@ -31,7 +31,3 @@ export const Layout: FC<LayoutProps> = ((props) => {
     />
   );
 });
-
-Layout.propTypes = {
-
-};

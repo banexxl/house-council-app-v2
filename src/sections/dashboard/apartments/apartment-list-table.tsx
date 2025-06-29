@@ -66,63 +66,71 @@ export const ApartmentListTable: FC<ApartmentListTableProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((apartment: Apartment) => (
-              <Fragment key={apartment.id}>
-                <TableRow hover>
-                  <TableCell>
-                    <Link
-                      href={paths.dashboard.apartments.index + '/' + encodeURIComponent(apartment.id!)}
-                      style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {apartment.apartment_images?.length ? (
-                          <Box
-                            sx={{
-                              width: 64,
-                              height: 64,
-                              borderRadius: 1,
-                              backgroundImage: `url(${apartment.apartment_images.find(img => img.is_cover_image)?.image_url ||
-                                apartment.apartment_images[0].image_url
-                                })`,
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              mr: 2,
-                            }}
-                          />
-                        ) : (
-                          <Box
-                            sx={{
-                              width: 64,
-                              height: 64,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderRadius: 1,
-                              backgroundColor: 'neutral.100',
-                              mr: 2,
-                            }}
-                          >
-                            <SvgIcon>
-                              <Image01Icon />
-                            </SvgIcon>
-                          </Box>
-                        )}
-                      </Box>
-                    </Link>
-                  </TableCell>
-                  <TableCell>{apartment.apartment_number}</TableCell>
-                  <TableCell>{apartment.floor}</TableCell>
-                  <TableCell>{apartment.square_meters ?? '-'}</TableCell>
-                  <TableCell>{apartment.room_count ?? '-'}</TableCell>
-                  <TableCell>{t(`${apartment.apartment_type}`).charAt(0).toUpperCase() + t(`${apartment.apartment_type}`).slice(1)}</TableCell>
-                  <TableCell>
-                    <SeverityPill color={pillColor(apartment.rental_status)}>
-                      {t(`${apartment.rental_status}`)}
-                    </SeverityPill>
-                  </TableCell>
-                </TableRow>
-              </Fragment>
-            ))}
+            {items.length > 0 ? (
+              items.map((apartment: Apartment) => (
+                <Fragment key={apartment.id}>
+                  <TableRow hover>
+                    <TableCell>
+                      <Link
+                        href={paths.dashboard.apartments.index + '/' + encodeURIComponent(apartment.id!)}
+                        style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          {apartment.apartment_images?.length ? (
+                            <Box
+                              sx={{
+                                width: 64,
+                                height: 64,
+                                borderRadius: 1,
+                                backgroundImage: `url(${apartment.apartment_images.find(img => img.is_cover_image)?.image_url ||
+                                  apartment.apartment_images[0].image_url
+                                  })`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                mr: 2,
+                              }}
+                            />
+                          ) : (
+                            <Box
+                              sx={{
+                                width: 64,
+                                height: 64,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 1,
+                                backgroundColor: 'neutral.100',
+                                mr: 2,
+                              }}
+                            >
+                              <SvgIcon>
+                                <Image01Icon />
+                              </SvgIcon>
+                            </Box>
+                          )}
+                        </Box>
+                      </Link>
+                    </TableCell>
+                    <TableCell>{apartment.apartment_number}</TableCell>
+                    <TableCell>{apartment.floor}</TableCell>
+                    <TableCell>{apartment.square_meters ?? '-'}</TableCell>
+                    <TableCell>{apartment.room_count ?? '-'}</TableCell>
+                    <TableCell>{t(`${apartment.apartment_type}`).charAt(0).toUpperCase() + t(`${apartment.apartment_type}`).slice(1)}</TableCell>
+                    <TableCell>
+                      <SeverityPill color={pillColor(apartment.rental_status)}>
+                        {t(`${apartment.rental_status}`)}
+                      </SeverityPill>
+                    </TableCell>
+                  </TableRow>
+                </Fragment>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  {t('apartments.lblApartmentListEmpty')}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Scrollbar>

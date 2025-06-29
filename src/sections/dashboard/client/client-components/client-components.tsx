@@ -26,13 +26,6 @@ import toast from "react-hot-toast"
 import { BaseEntity, FeatureExtension } from "src/types/base-entity"
 
 interface GenericTableEditorProps {
-     clientStatuses: BaseEntity[]
-     clientTypes: BaseEntity[]
-     clientRoles: BaseEntity[]
-     clientPaymentMethods: BaseEntity[]
-     clientBillingInformationStatuses: BaseEntity[]
-     invoiceStatuses: BaseEntity[]
-     subscriptionPlanStatuses: BaseEntity[]
      features: (BaseEntity & FeatureExtension)[]
      updateEntity: <T extends BaseEntity>(
           table: string,
@@ -55,13 +48,6 @@ interface DeleteEntityData {
 }
 
 const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
-     clientStatuses,
-     clientTypes,
-     clientRoles,
-     clientPaymentMethods,
-     clientBillingInformationStatuses,
-     invoiceStatuses,
-     subscriptionPlanStatuses,
      features,
      updateEntity,
      deleteEntity,
@@ -89,41 +75,6 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
      }, [])
 
      const tables = [
-          {
-               name: "tblClientStatuses",
-               displayName: "clients.clientStatusesTableName",
-               data: clientStatuses,
-          },
-          {
-               name: "tblClientTypes",
-               displayName: "clients.clientTypesTableName",
-               data: clientTypes,
-          },
-          {
-               name: "tblClientRoles",
-               displayName: "clients.clientRolesTableName",
-               data: clientRoles,
-          },
-          {
-               name: "tblPaymentMethods",
-               displayName: "clients.clientPaymentMethodsTableName",
-               data: clientPaymentMethods,
-          },
-          {
-               name: "tblBillingInformationStatuses",
-               displayName: "clients.clientBillingInformationStatusesTableName",
-               data: clientBillingInformationStatuses,
-          },
-          {
-               name: "tblInvoiceStatuses",
-               displayName: "clients.invoiceStatusesTableName",
-               data: invoiceStatuses,
-          },
-          {
-               name: "tblSubscriptionPlanStatuses",
-               displayName: "subscriptionPlans.subscriptionPlanStatusesTableName",
-               data: subscriptionPlanStatuses,
-          },
           {
                name: "tblFeatures",
                displayName: "clients.featuresTableName",

@@ -8,22 +8,8 @@ import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 export default async function TableEditorPage() {
 
      const [
-          readClientStatusesData,
-          readClientTypesData,
-          clientRolesData,
-          readClientBillingInformationStatusesData,
-          readClientPaymentMethodsData,
-          readInvoiceStatusesData,
-          readSubscriptionPlanStatusesData,
           readFeaturesData,
      ] = await Promise.all([
-          readAllEntities<BaseEntity>("tblClientStatuses"),
-          readAllEntities<BaseEntity>("tblClientTypes"),
-          readAllEntities<BaseEntity>("tblClientRoles"),
-          readAllEntities<BaseEntity>("tblBillingInformationStatuses"),
-          readAllEntities<BaseEntity>("tblPaymentMethods"),
-          readAllEntities<BaseEntity>("tblInvoiceStatuses"),
-          readAllEntities<BaseEntity>("tblSubscriptionPlanStatuses"),
           readAllEntities<BaseEntity>("tblFeatures"),
      ]);
 
@@ -39,13 +25,6 @@ export default async function TableEditorPage() {
                <Container maxWidth="lg">
                     <Stack spacing={4}>
                          <GenericTableEditor
-                              clientStatuses={readClientStatusesData}
-                              clientTypes={readClientTypesData}
-                              clientRoles={clientRolesData}
-                              clientPaymentMethods={readClientPaymentMethodsData}
-                              clientBillingInformationStatuses={readClientBillingInformationStatusesData}
-                              invoiceStatuses={readInvoiceStatusesData}
-                              subscriptionPlanStatuses={readSubscriptionPlanStatusesData}
                               features={readFeaturesData as (BaseEntity & FeatureExtension)[]}
                               updateEntity={updateEntity}
                               deleteEntity={deleteEntity}

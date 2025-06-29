@@ -16,7 +16,7 @@ import MenuItem from '@mui/material/MenuItem'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
-import { Client, clientInitialValues, clientValidationSchema } from 'src/types/client'
+import { Client, clientInitialValues, clientStatusMapping, clientTypeMapping, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
 import { createOrUpdateClientAction } from 'src/app/actions/client/client-actions'
@@ -27,14 +27,10 @@ import { hashPassword } from 'src/utils/bcrypt'
 import { BaseEntity } from 'src/types/base-entity'
 
 interface ClientNewFormProps {
-  clientTypes: BaseEntity[],
-  clientStatuses: BaseEntity[],
-  clientPaymentMethods?: BaseEntity[],
-  clientRoles: BaseEntity[],
   clientData?: Client
 }
 
-export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses, clientData, clientPaymentMethods, clientRoles }) => {
+export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
 
   const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
@@ -44,15 +40,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
   const router = useRouter()
   const currentRoute = usePathname()
 
-  // if (!isUUIDv4(initialValues?.id) && !currentRoute.includes('new')) {
-  //   notFound()
-  // }
-
   const formik = useFormik({
     initialValues: {
       ...clientInitialValues, // Default values for new clients
       ...initialValues, // Overwrite with existing client data if editing
-      type: initialValues?.type || clientInitialValues.type || '', // Ensure type is valid
+      client_type: initialValues?.client_type || clientInitialValues.client_type || '', // Ensure type is valid
       client_status: initialValues?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
     },
     validationSchema: clientValidationSchema(t),
@@ -60,24 +52,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
     onSubmit: async (values, { setSubmitting }) => {
 
       try {
-        let hashedPassword = values.password;
 
-        // Check if the password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
-        const isAlreadyHashed = hashedPassword.startsWith("$2a$") ||
-          hashedPassword.startsWith("$2b$") ||
-          hashedPassword.startsWith("$2y$");
-
-        if (!isAlreadyHashed && hashedPassword) {
-          hashedPassword = await hashPassword(hashedPassword);
-        }
-
-        const submissionValues = {
-          ...values,
-          password: hashedPassword, // Keep existing hash or store new one
-        };
-
-        // Simulate a server call
-        const saveClientResponse = await createOrUpdateClientAction(submissionValues)
+        const saveClientResponse = await createOrUpdateClientAction(values as Client)
         if (saveClientResponse.saveClientActionSuccess) {
           setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
           const clientId = saveClientResponse.saveClientActionData?.id;
@@ -108,7 +84,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
         <CardHeader title={t('common.formBasicInfo')} />
         <CardContent sx={{ pt: 0 }}>
           {/* <Typography>
-            {JSON.stringify(formik.values)}
+            {JSON.stringify(formik.errors)}
           </Typography> */}
           <AvatarUpload
             buttonDisabled={initialValues?.id == '' ? true : false}
@@ -126,16 +102,16 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 select
                 fullWidth
                 label={t('clients.clientType')}
-                name="type"
+                name="client_type"
                 disabled={formik.isSubmitting}
-                value={formik.values.type || ''}
+                value={formik.values.client_type || ''}
                 onChange={formik.handleChange} // Use onChange for handling selection
-                error={!!(formik.touched.type && formik.errors.type)}
-                helperText={formik.touched.type && formik.errors.type}
+                error={!!(formik.touched.client_type && formik.errors.client_type)}
+                helperText={formik.touched.client_type && formik.errors.client_type}
               >
-                {clientTypes.map((option) => (
-                  <MenuItem key={option.id} value={option.id}>
-                    {option.name} {/* Display human-readable name */}
+                {Object.entries(clientTypeMapping).map(([key, label]) => (
+                  <MenuItem key={key} value={key}>
+                    {t(label)} {/* Translate the label */}
                   </MenuItem>
                 ))}
               </TextField>
@@ -154,34 +130,13 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 error={!!(formik.touched.client_status && formik.errors.client_status)}
                 helperText={formik.touched.client_status && formik.errors.client_status}
               >
-                {clientStatuses.map((status: BaseEntity) => (
+                {Object.entries(clientStatusMapping).map(([key, label]) => (
                   <MenuItem
-                    key={status.id} value={status.id}
+                    key={key} value={key}
                     sx={{ cursor: 'pointer' }}
                   >
-                    {status.name}
+                    {t(label)} {/* Translate the label */}
                   </MenuItem >
-                ))}
-              </TextField>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 6 }}
-            >
-              <TextField
-                select
-                fullWidth
-                label={t('clients.clientRole')}
-                name="role_id"
-                disabled={formik.isSubmitting}
-                value={formik.values.role_id || ''}
-                onChange={formik.handleChange} // Use onChange for handling selection
-                error={!!(formik.touched.role_id && formik.errors.role_id)}
-                helperText={formik.touched.role_id && formik.errors.role_id}
-              >
-                {clientRoles.map((option) => (
-                  <MenuItem key={option.id} value={option.id}>
-                    {option.name} {/* Display human-readable name */}
-                  </MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -256,23 +211,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientTypes, clientStatuses
                 disabled={formik.isSubmitting}
               />
             </Grid>
-            <Grid
-              size={{ xs: 12, md: 6 }}
-            >
-              <TextField
-                fullWidth
-                label={t('clients.clientPassword')}
-                name="password"
-                type="password"
-                error={!!(formik.touched.password && formik.errors.password)}
-                helperText={formik.touched.password && formik.errors.password}
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.password}
-                disabled={formik.isSubmitting}
-              />
-            </Grid>
-
             <Grid
               size={{ xs: 12, md: 6 }}
             >

@@ -6,20 +6,18 @@ import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { readAllEntities } from 'src/app/actions/base-entity-actions'
-import { BaseEntity } from 'src/types/base-entity'
+import { getServerAuth } from 'src/libs/supabase/server-auth'
 
-const Page = async ({ params }: any) => {
+export default async function Page({ params }: {
+  params: Promise<{ clientid: string }>
+}) {
 
-  const [clientTypes, clientStatuses, clientPaymentMethods, clientRoles] = await Promise.all([
-    readAllEntities<BaseEntity>("tblClientTypes"),
-    readAllEntities<BaseEntity>("tblClientStatuses"),
-    readAllEntities<BaseEntity>("tblPaymentMethods"),
-    readAllEntities<BaseEntity>("tblClientRoles"),
-  ])
+
   const { clientid } = await params
-
-  const { getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError } = await readClientByIdAction(clientid)
+  const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }, userSession] = await Promise.all([
+    readClientByIdAction(clientid),
+    getServerAuth(),
+  ]);
 
   return (
     <>
@@ -34,19 +32,10 @@ const Page = async ({ params }: any) => {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientFormHeader client={getClientByIdActionData} />
-            <ClientForm
-              clientTypes={clientTypes}
-              clientStatuses={clientStatuses?.length != 0 ? clientStatuses! : []}
-              clientData={getClientByIdActionData}
-              clientPaymentMethods={clientPaymentMethods}
-              clientRoles={clientRoles}
-            />
+            <ClientForm clientData={getClientByIdActionData} />
           </Stack>
         </Container>
       </Box>
     </>
   )
 }
-
-export default Page
-

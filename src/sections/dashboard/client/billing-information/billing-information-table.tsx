@@ -308,9 +308,13 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                                    )
                               })
                                    :
-                                   <Typography sx={{ m: '20px' }}>
-                                        {t('common.emptyTableInfo')}
-                                   </Typography>
+                                   <TableRow>
+                                        <TableCell colSpan={10} align="center">
+                                             <Typography variant="subtitle1" color="textSecondary">
+                                                  {t('common.emptyTableInfo')}
+                                             </Typography>
+                                        </TableCell>
+                                   </TableRow>
                               }
                          </TableBody>
                     </Table>
