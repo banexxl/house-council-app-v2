@@ -29,11 +29,10 @@ export async function GET(request: Request) {
      const code = requestUrl.searchParams.get('code');
      const error = requestUrl.searchParams.get('error');
      const errorCode = requestUrl.searchParams.get('error_code');
-     const errorDescription = requestUrl.searchParams.get('error_description');
 
      if (error) {
           // Redirect to error page with absolute URL
-          const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode}&error_description=${encodeURIComponent(errorDescription || '')}`;
+          const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode})}`;
           return NextResponse.redirect(errorPageUrl)
      }
 
@@ -46,6 +45,8 @@ export async function GET(request: Request) {
 
      // Retrieve the session after OAuth to get the user details
      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+     console.log('sessionData', sessionData);
+
      if (sessionError) {
           console.error('Error retrieving session:', sessionError);
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
@@ -62,6 +63,24 @@ export async function GET(request: Request) {
           .from('tblClients')
           .select('*')
           .eq('email', userEmail)
+          .single();
+
+     // Check if client has an active subscription
+     const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from('tblClient_Subscriptions')
+          .select('*')
+          .eq('client_id', data.id)
+          .single();
+
+     if (subscriptionError || !subscriptionData) {
+          supabase.auth.signOut();
+          // Remove cookies
+          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
+     }
+
+     // Continue with login
+
 
      if (clientError) {
           console.error('Error checking email in database:', clientError);
@@ -76,12 +95,13 @@ export async function GET(request: Request) {
 
      if (!data || data.length === 0) {
           supabase.auth.signOut();
+          // If the email is not found in tblClients, delete the user from Supabase auth users table sand redirect to error page
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
 
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Email not registered. Please sign up.`);
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=email_not_registered`);
      }
 
      if (data.length > 1) {
@@ -91,7 +111,7 @@ export async function GET(request: Request) {
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`);
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found. Please contact support.`);
      }
 
      // Redirect to dashboard with absolute URL

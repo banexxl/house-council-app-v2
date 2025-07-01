@@ -17,13 +17,13 @@ export type ErrorType = {
      message?: string;
 }
 
-export const checkIfUserExists = async (email: string): Promise<boolean> => {
+export const checkIfUserExistsAndGetRole = async (email: string): Promise<{ exists: boolean; error?: string; role?: string }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data, error } = await supabase
           .from('tblClients')
-          .select('email')
+          .select('email, role')
           .eq('email', email)
           .single();
 
@@ -40,7 +40,6 @@ export const checkIfUserExists = async (email: string): Promise<boolean> => {
      }
 
      if (error) {
-
           logServerAction({
                user_id: null,
                action: 'NLA - Checking if user exists failed',
@@ -51,7 +50,7 @@ export const checkIfUserExists = async (email: string): Promise<boolean> => {
                type: 'auth'
           })
 
-          return false;
+          return { exists: false, error: error.message };
      }
 
      // If data is returned, the user exists
@@ -65,17 +64,17 @@ export const checkIfUserExists = async (email: string): Promise<boolean> => {
                duration_ms: 0, // Duration can be calculated if needed
                type: 'auth'
           })
-          return false;
+          return { exists: false, error: 'User does not exist' };
      }
 
-     return !!data;
+     return { exists: true, role: data.role };
 }
 
-export async function magicLinkLogin(email: string) {
+export const magicLinkLogin = async (email: string) => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      // Check if the user exists
-     const userExists = await checkIfUserExists(email);
+     const userExists = await checkIfUserExistsAndGetRole(email);
 
      if (!userExists) {
           await logServerAction({
@@ -138,7 +137,7 @@ export async function magicLinkLogin(email: string) {
      return { success: 'Check your email for the login link!' };
 }
 
-export async function logout() {
+export const logout = async () => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -171,9 +170,10 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                redirectTo: `${process.env.BASE_URL}/auth/callback`
           }
      });
+     console.log('authData', authData);
 
      if (authError != null) {
-         return { success: false, error: authError };
+          return { success: false, error: authError };
      } else {
           if (authData.url) {
                redirect(authData.url);

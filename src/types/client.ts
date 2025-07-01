@@ -9,20 +9,13 @@ export const clientTypeMapping = {
 }
 
 export const clientStatusMapping = {
-  cancelled: 'clients.lblClientStatusCancelled',
-  pendingActivation: 'clients.lblClientStatusPendingActivation',
+  active: 'clients.lblClientStatusActive',
+  inactive: 'clients.lblClientStatusInactive',
+  pending_activation: 'clients.lblClientStatusPendingActivation',
   suspended: 'clients.lblClientStatusSuspended',
   trial: 'clients.lblClientStatusTrial',
-  pendingPayment: 'clients.lblClientStatusPendingPayment',
   archived: 'clients.lblClientStatusArchived',
-  active: 'clients.lblClientStatusActive',
-  awaitingApproval: 'clients.lblClientStatusAwaitingApproval',
-  inactive: 'clients.lblClientStatusInactive',
-  banned: 'clients.lblClientStatusBanned',
-  blocked: 'clients.lblClientStatusBlocked',
   vip: 'clients.lblClientStatusVIP',
-  reactivated: 'clients.lblClientStatusReactivated',
-  dormant: 'clients.lblClientStatusDormant',
 };
 
 

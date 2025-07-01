@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 import { handleGoogleSignIn } from "../actions"
 import { Box, Button, CircularProgress, TextField } from "@mui/material"
 import { MagicLinkForm } from "./magic-link-form"
+import Link from "next/link"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -140,6 +141,10 @@ const LoginForm = () => {
                )}
                {authMethod === "magic_link" && <MagicLinkForm />}
 
+               <Divider sx={{ my: 3 }} />
+               <Typography color="text.secondary" variant="body2" align="center">
+                    Don&apos;t have an account? <Link href="https://nest-link.app/auth/register" target="_blank" rel="noopener noreferrer" >Sign up</Link>
+               </Typography>
           </div>
      )
 }

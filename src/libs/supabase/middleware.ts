@@ -2,11 +2,17 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
+     const { pathname } = request.nextUrl;
 
-     let supabaseResponse = NextResponse.next({
-          request,
-     });
+     // Bypass middleware for static/public assets or login
+     const PUBLIC_ROUTES = ['/auth/login', '/auth/error', '/auth/callback'];
+     const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
+     if (isPublic) {
+          return NextResponse.next();
+     }
+
+     // Proceed with Supabase auth logic only for protected routes
      const supabase = createServerClient(
           process.env.SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -16,10 +22,6 @@ export async function updateSession(request: NextRequest) {
                          return request.cookies.getAll();
                     },
                     setAll(cookiesToSet) {
-                         cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
-                         supabaseResponse = NextResponse.next({
-                              request,
-                         });
                          cookiesToSet.forEach(({ name, value, options }) =>
                               supabaseResponse.cookies.set(name, value, options)
                          );
@@ -28,37 +30,26 @@ export async function updateSession(request: NextRequest) {
           }
      );
 
-     // Retrieve the authenticated user
+     const supabaseResponse = NextResponse.next();
+
      const {
           data: { user },
      } = await supabase.auth.getUser();
 
-     const { pathname } = request.nextUrl;
-
-     // Define public routes that don't require authentication
-     const publicRoutes = ['/auth/login', '/auth/callback', '/auth/error'];
-     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-
-     // Always allow access to the error page
-     if (pathname.startsWith('/auth/error')) {
-          return supabaseResponse;
+     if (!user || !user.email) {
+          return NextResponse.redirect(new URL('/auth/error?error=access_denied', request.url));
      }
 
-     if (user) {
-          // User is authenticated
-          if (pathname === '/auth/login' || pathname === '/') {
-               // Redirect to dashboard if trying to access login page or root
-               return NextResponse.redirect(new URL('/dashboard', request.url));
-          }
-     } else {
-          // User is not authenticated
-          if (!isPublicRoute) {
-               // Redirect to login page if trying to access a protected route
-               return NextResponse.redirect(new URL('/auth/login', request.url));
-          }
+     const { data } = await supabase
+          .from('tblClients')
+          .select('id')
+          .eq('email', user.email)
+          .single();
+
+     if (!data) {
+          return NextResponse.redirect(new URL('/auth/error?error_code=not_found_in_tblclients', request.url));
      }
 
-     // Return the response for all other cases
      return supabaseResponse;
 }
 
