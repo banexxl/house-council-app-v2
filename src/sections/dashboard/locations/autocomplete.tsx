@@ -79,7 +79,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
      };
 
      return (
-          <Box >
+          <Box sx={{ position: "relative", width: "100%" }}>
                <TextField
                     label={label}
                     variant="outlined"
