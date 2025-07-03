@@ -18,7 +18,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { chatApi } from 'src/api/chat';
+import { chatApi } from 'src/app/api/chat';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Contact } from 'src/types/chat';
 

@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { ordersApi } from 'src/api/orders';
+import { ordersApi } from 'src/app/api/orders';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
 ;

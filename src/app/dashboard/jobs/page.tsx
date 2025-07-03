@@ -12,7 +12,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { jobsApi } from 'src/api/jobs';
+import { jobsApi } from 'src/app/api/jobs';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 ;

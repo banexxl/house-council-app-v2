@@ -20,7 +20,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { blueGrey } from '@mui/material/colors';
 
-import { socialApi } from 'src/api/social';
+import { socialApi } from 'src/app/api/social';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 ;

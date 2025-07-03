@@ -6,7 +6,7 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { socialApi } from 'src/api/social';
+import { socialApi } from 'src/app/api/social';
 import { Seo } from 'src/components/seo';
 ;
 

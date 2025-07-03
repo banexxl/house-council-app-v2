@@ -11,7 +11,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { fileManagerApi } from 'src/api/file-manager';
+import { fileManagerApi } from 'src/app/api/file-manager';
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
 ;

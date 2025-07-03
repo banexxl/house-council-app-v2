@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 
-import { chatApi } from 'src/api/chat';
+import { chatApi } from 'src/app/api/chat';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';

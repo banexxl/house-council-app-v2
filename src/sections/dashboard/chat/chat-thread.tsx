@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 
-import { chatApi } from 'src/api/chat';
+import { chatApi } from 'src/app/api/chat';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
