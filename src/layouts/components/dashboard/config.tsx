@@ -155,25 +155,6 @@ export const useSections = () => {
             ),
           },
           {
-            title: t(tokens.nav.buildings),
-            path: paths.dashboard.buildings.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <ApartmentIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.buildings.index,
-              },
-              {
-                title: t(tokens.nav.buildingAdd),
-                path: paths.dashboard.buildings.new,
-              },
-            ],
-          },
-          {
             title: t(tokens.nav.locations),
             path: paths.dashboard.locations.index,
             icon: (
@@ -191,6 +172,25 @@ export const useSections = () => {
                 path: paths.dashboard.locations.new,
               },
             ]
+          },
+          {
+            title: t(tokens.nav.buildings),
+            path: paths.dashboard.buildings.index,
+            icon: (
+              <SvgIcon fontSize="small">
+                <ApartmentIcon />
+              </SvgIcon>
+            ),
+            items: [
+              {
+                title: t(tokens.nav.list),
+                path: paths.dashboard.buildings.index,
+              },
+              {
+                title: t(tokens.nav.buildingAdd),
+                path: paths.dashboard.buildings.new,
+              },
+            ],
           },
           {
             title: t(tokens.nav.apartments),
