@@ -1,0 +1,61 @@
+// app/api/subscription/check-expired/route.ts
+import { NextResponse } from 'next/server'
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
+import { logServerAction } from 'src/libs/supabase/server-logging'
+
+export async function POST() {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
+
+     const { data, error } = await supabase
+          .from('tblBuildingLocations')
+          .select('*')
+          .is('building_id', null)
+
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Location Check - failed to fetch locations without building_id (every location is taken...)',
+               payload: {},
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'db'
+          })
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+     }
+
+     if (data) {
+
+          const addressesDeleted = data.map(location => location.street_address + ', ' + location.street_number + ', ' + location.city);
+
+          const { error: deleteError } = await supabase
+               .from('tblBuildingLocations')
+               .delete()
+               .in('id', data.map(location => location.id))
+
+          if (deleteError) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Location Check - failed to delete locations without building_id',
+                    payload: { ids: data.map(location => location.id) },
+                    status: 'fail',
+                    error: deleteError.message,
+                    duration_ms: 0,
+                    type: 'db'
+               })
+               return NextResponse.json({ success: false, error: deleteError.message }, { status: 500 })
+          } else {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Location Check - successfully deleted locations without building_id',
+                    payload: { ids: data.map(location => location.id) },
+                    status: 'success',
+                    error: '',
+                    duration_ms: 0,
+                    type: 'db'
+               })
+               return NextResponse.json({ success: true, addressesDeleted })
+          }
+     }
+}
