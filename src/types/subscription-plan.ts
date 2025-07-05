@@ -1,5 +1,9 @@
 import * as Yup from 'yup';
 
+export type SubscriptionStatus = 'trialing' | 'active' | 'canceled' | 'past_due'; // extend if needed
+
+export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
+
 export type SubscriptionPlan = {
      id?: string;
      created_at: Date;
@@ -48,3 +52,15 @@ export const subscriptionPlanValidationSchema = Yup.object({
      total_price_with_discounts: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
      max_number_of_apartments: Yup.number().min(0, "Must be positive").required("Required")
 })
+
+export interface ClientSubscription {
+     id: string;
+     client_id: string;
+     subscription_plan_id: string;
+     status: SubscriptionStatus;
+     created_at: string; // ISO date string
+     updated_at: string; // ISO date string
+     is_auto_renew: boolean;
+     next_payment_date: string | null; // nullable
+     renewal_period: RenewalPeriod
+}
