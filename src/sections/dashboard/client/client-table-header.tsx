@@ -31,7 +31,7 @@ export const ClientTableHeader = (props: ClientTableHeaderProps) => {
                <Stack spacing={1}>
                     <Typography variant="h4">{t('clients.clientsList')}</Typography>
                     <Stack alignItems="center" direction="row" spacing={1}>
-                         <Button
+                         {/* <Button
                               color="inherit"
                               size="small"
                               startIcon={
@@ -41,7 +41,7 @@ export const ClientTableHeader = (props: ClientTableHeaderProps) => {
                               }
                          >
                               {t('common.btnImport')}
-                         </Button>
+                         </Button> */}
                          <Button
                               color="inherit"
                               size="small"

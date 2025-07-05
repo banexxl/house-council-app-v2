@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type FC } from 'react'
+import { useRef, useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -23,8 +23,6 @@ import { createOrUpdateClientAction } from 'src/app/actions/client/client-action
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname, notFound } from 'next/navigation'
-import { hashPassword } from 'src/utils/bcrypt'
-import { BaseEntity } from 'src/types/base-entity'
 
 interface ClientNewFormProps {
   clientData?: Client
@@ -89,7 +87,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
           <AvatarUpload
             buttonDisabled={initialValues?.id == '' ? true : false}
             ref={avatarUploadRef}
-            onUploadSuccess={(url: string) => formik.setFieldValue('avatar', url)}
+            onUploadSuccess={(url: string) => {
+              formik.setFieldValue('avatar', url)
+            }}
             folderName={formik.values.name}
             initialValue={clientData?.id == '' ? '' : clientData?.avatar}
           />

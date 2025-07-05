@@ -17,10 +17,8 @@ import {
      Tooltip,
 } from "@mui/material"
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
-import { uploadFile } from "src/app/actions/client/client-image-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
-import { uploadImagesAndGetUrls } from "src/libs/supabase/sb-storage"
 import { uploadClientLogoAndGetUrl } from "src/app/actions/client/client-actions"
 
 const VisuallyHiddenInput = styled("input")`
@@ -117,32 +115,32 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          ...sx,
                     }}
                >
-                    <Tooltip title={t("clients.clientSaveClientFirst")}>
-                         <Box
+                    {/* <Tooltip title={t("clients.clientSaveClientFirst")}> */}
+                    <Box
+                         sx={{
+                              position: "relative",
+                              width: 150,
+                              height: 150,
+                         }}
+                    >
+                         <Avatar
                               sx={{
-                                   position: "relative",
-                                   width: 150,
-                                   height: 150,
+                                   width: "100%",
+                                   height: "100%",
+                                   bgcolor: "grey.100",
+                                   border: "1px dashed",
+                                   borderColor: "grey.300",
                               }}
+                              src={avatarUrl}
                          >
-                              <Avatar
-                                   sx={{
-                                        width: "100%",
-                                        height: "100%",
-                                        bgcolor: "grey.100",
-                                        border: "1px dashed",
-                                        borderColor: "grey.300",
-                                   }}
-                                   src={avatarUrl}
-                              >
-                                   {loading ? (
-                                        <CircularProgress size={40} />
-                                   ) : (
-                                        <CameraAltOutlinedIcon sx={{ fontSize: 40, color: "grey.500" }} />
-                                   )}
-                              </Avatar>
-                         </Box>
-                    </Tooltip>
+                              {loading ? (
+                                   <CircularProgress size={40} />
+                              ) : (
+                                   <CameraAltOutlinedIcon sx={{ fontSize: 40, color: "grey.500" }} />
+                              )}
+                         </Avatar>
+                    </Box>
+                    {/* </Tooltip> */}
                     <Box
                          sx={{
                               display: "flex",

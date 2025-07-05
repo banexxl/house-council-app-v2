@@ -22,34 +22,68 @@ export const createOrUpdateClientAction = async (client: Client): Promise<{
      saveClientActionData?: Client
      saveClientActionError?: any
 }> => {
-     console.log('createOrUpdateClientAction', client);
-
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { id, ...clientData } = client
-     let result
 
      if (id && id !== "") {
           // Update existing client
-          result = await supabase.from("tblClients").update({ ...clientData, updated_at: new Date().toISOString() }).eq("id", id).select().single()
+          const { data, error: updateError } = await supabase.from("tblClients").update({ ...clientData, updated_at: new Date().toISOString() }).eq("id", id).select().single()
+          if (updateError) {
+
+               await logServerAction({
+                    action: 'Update Client - Failed',
+                    duration_ms: 0,
+                    error: updateError.message,
+                    payload: { clientId: id, clientData },
+                    status: 'fail',
+                    type: 'action',
+                    user_id: '',
+               })
+               return { saveClientActionSuccess: false, saveClientActionError: updateError }
+          }
+          await logServerAction({
+               action: 'Update Client - Success',
+               duration_ms: 0,
+               error: '',
+               payload: { clientId: id, clientData },
+               status: 'success',
+               type: 'action',
+               user_id: '',
+          })
           revalidatePath(`/dashboard/clients/${id}`)
+          return {
+               saveClientActionSuccess: true,
+               saveClientActionData: data as Client,
+          }
      } else {
           // Insert new client
-          result = await supabase.from("tblClients").insert(clientData).select().single()
-     }
-
-     const { data, error } = result
-
-     if (error) {
-          return { saveClientActionSuccess: false, saveClientActionError: error }
-     }
-
-     if (!data) {
-          return { saveClientActionSuccess: false, saveClientActionError: "No data returned after operation" }
-     }
-
-     return {
-          saveClientActionSuccess: true,
-          saveClientActionData: data as Client,
+          const { data, error: insertError } = await supabase.from("tblClients").insert(clientData).select().single()
+          if (insertError) {
+               await logServerAction({
+                    action: 'Create Client - Failed',
+                    duration_ms: 0,
+                    error: insertError.message,
+                    payload: { clientData },
+                    status: 'fail',
+                    type: 'action',
+                    user_id: '',
+               })
+               return { saveClientActionSuccess: false, saveClientActionError: insertError }
+          }
+          await logServerAction({
+               action: 'Create Client - Success',
+               duration_ms: 0,
+               error: '',
+               payload: { clientData },
+               status: 'success',
+               type: 'action',
+               user_id: '',
+          })
+          revalidatePath(`/dashboard/clients/${data.id}`)
+          return {
+               saveClientActionSuccess: true,
+               saveClientActionData: data as Client,
+          }
      }
 }
 

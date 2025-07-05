@@ -21,7 +21,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
-import type { Client } from 'src/types/client';
+import { clientStatusMapping, clientTypeMapping, type Client } from 'src/types/client';
 import { getInitials } from 'src/utils/get-initials';
 import { useTranslation } from 'react-i18next';
 import { useSelection } from 'src/hooks/use-selection';
@@ -32,11 +32,9 @@ import { FilterBar } from './table-filter';
 import { deleteClientByIDsAction } from 'src/app/actions/client/client-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { BaseEntity } from 'src/types/base-entity';
 
 interface ClientListTableProps {
   items?: Client[];
-  clientStatuses?: BaseEntity[];
 }
 
 interface DeleteClientsData {
@@ -107,7 +105,7 @@ const useClientSearch = () => {
   };
 };
 
-export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientStatuses }) => {
+export const ClientListTable: FC<ClientListTableProps> = ({ items = [] }) => {
 
   const [count, setCount] = useState(items.length);
   const clientIds = useMemo(() => items.map((client) => client.id), [items]);
@@ -311,9 +309,11 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [], clientSt
                       </TableCell>
                       <TableCell>{client.mobile_phone}</TableCell>
                       <TableCell>{client.phone}</TableCell>
-                      <TableCell>{client.client_type}</TableCell>
                       <TableCell>
-                        {clientStatuses?.find((cs) => cs.id === client.client_status)?.name ?? ''}
+                        {t(clientTypeMapping[client.client_type as keyof typeof clientTypeMapping]) ?? ''}
+                      </TableCell>
+                      <TableCell>
+                        {t(clientStatusMapping[client.client_status as keyof typeof clientStatusMapping]) ?? ''}
                       </TableCell>
                       <TableCell>
                         {client.is_verified ? (
