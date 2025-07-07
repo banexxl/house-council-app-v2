@@ -1,7 +1,7 @@
 "use client"
 
 import type { FC } from 'react';
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import PropTypes from 'prop-types';
 import CreditCard01Icon from '@untitled-ui/icons-react/build/esm/CreditCard01';
 import Settings04Icon from '@untitled-ui/icons-react/build/esm/Settings04';
@@ -21,6 +21,7 @@ import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { logout } from 'src/app/auth/actions';
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 
 interface AccountPopoverProps {
   anchorEl: null | Element;
@@ -33,6 +34,14 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   const router = useRouter();
   const user = useMockedUser();
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data, error } = await supabaseBrowserClient.auth.getSession();
+      console.log('supabaseBrowserClient', data, error);
+    }
+    getUser();
+  }, []);
 
   const handleLogout = () => {
     startTransition(() => {

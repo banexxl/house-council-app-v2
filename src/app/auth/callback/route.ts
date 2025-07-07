@@ -45,7 +45,6 @@ export async function GET(request: Request) {
 
      // Retrieve the session after OAuth to get the user details
      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-     console.log('sessionData', sessionData);
 
      if (sessionError) {
           console.error('Error retrieving session:', sessionError);
