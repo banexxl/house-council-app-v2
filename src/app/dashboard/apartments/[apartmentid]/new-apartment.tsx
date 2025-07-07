@@ -22,16 +22,16 @@ import type { File } from 'src/components/file-dropzone';
 import { apartmentInitialValues, apartmentValidationSchema, type Apartment } from 'src/types/apartment';
 import { createApartment, updateApartment } from 'src/app/actions/apartment/apartment-actions';
 import { uploadImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
-import { UserSessionCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/hooks/use-auth';
 import { Building } from 'src/types/building';
 
 interface ApartmentCreateFormProps {
   apartmentData?: Apartment;
-  userSession: UserSessionCombined;
+  userData: UserDataCombined;
   buildings: Building[];
 }
 
-export const ApartmentCreateForm = ({ apartmentData, userSession, buildings }: ApartmentCreateFormProps) => {
+export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: ApartmentCreateFormProps) => {
   const router = useRouter();
   const { t } = useTranslation();
   const [files, setFiles] = useState<File[]>([]);
@@ -76,7 +76,7 @@ export const ApartmentCreateForm = ({ apartmentData, userSession, buildings }: A
 
     const upload = await uploadImagesAndGetUrls(
       newFiles,
-      userSession.client?.name!,
+      userData.client?.name!,
       buildings[0].building_location?.city + ' ' + buildings[0].building_location?.street_address,
       apartmentData?.id || ''
     );
@@ -91,7 +91,7 @@ export const ApartmentCreateForm = ({ apartmentData, userSession, buildings }: A
     } else {
       toast.error(t('common.actionUploadError'));
     }
-  }, [apartmentData?.id, buildings, userSession.client?.name, formik, t]);
+  }, [apartmentData?.id, buildings, userData.client?.name, formik, t]);
 
   return (
     <form onSubmit={formik.handleSubmit}>

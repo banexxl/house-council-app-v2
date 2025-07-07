@@ -13,17 +13,17 @@ import { useTranslation } from 'react-i18next';
 import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
-import { UserSessionCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/hooks/use-auth';
 import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 import { BuildingLocation } from 'src/types/location';
 
 type NewLoctionProps = {
      mapBoxAccessToken?: string;
-     userSession?: UserSessionCombined;
+     userData?: UserDataCombined;
 }
 
-const NewLocation = ({ mapBoxAccessToken, userSession }: NewLoctionProps) => {
+const NewLocation = ({ mapBoxAccessToken, userData }: NewLoctionProps) => {
 
      const { t } = useTranslation();
      const [locationsData, setLocationsData] = useState<BuildingLocation[]>([]);
@@ -49,7 +49,7 @@ const NewLocation = ({ mapBoxAccessToken, userSession }: NewLoctionProps) => {
      });
 
      useEffect(() => {
-          getAllAddedLocationsByClientId().then((res) => {
+          getAllAddedLocationsByClientId(userData?.client?.id!).then((res) => {
                if (res.success && res.data) {
                     setLocationsData(res.data.length > 0 ? res.data : []);
                }
@@ -103,7 +103,7 @@ const NewLocation = ({ mapBoxAccessToken, userSession }: NewLoctionProps) => {
                               mapBoxAccessToken={mapBoxAccessToken}
                               locationsData={locationsData}
                               clientCoords={clientCoords}
-                              userSession={userSession}
+                              userData={userData}
                          />
                     </Stack>
                </Container>

@@ -84,7 +84,7 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
 
                          const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(
                               selectedFile,
-                              folderName // e.g. userSession.client?.name
+                              folderName // e.g. userData.client?.name
                          );
 
                          if (success && url) {

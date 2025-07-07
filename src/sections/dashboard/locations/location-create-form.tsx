@@ -12,17 +12,17 @@ import toast from 'react-hot-toast';
 import SaveIcon from '@mui/icons-material/Save';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import { MapComponent } from './map-box';
-import { UserSessionCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/hooks/use-auth';
 
 type LocationCreateFormProps = {
      mapBoxAccessToken?: string;
      locationsData: BuildingLocation[] | [];
      clientCoords?: { latitude: number; longitude: number } | null;
      isGeolocationEnabled?: boolean;
-     userSession?: UserSessionCombined
+     userData?: UserDataCombined
 }
 
-const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, userSession }: LocationCreateFormProps) => {
+const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, userData }: LocationCreateFormProps) => {
 
      const { t } = useTranslation();
      const [location, setLocation] = useState({ latitude: clientCoords?.latitude, longitude: clientCoords?.longitude }); // Default to Belgrade
@@ -67,7 +67,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                latitude: data.latitude,
                longitude: data.longitude,
                post_code: parseInt(data.postcode),
-               client_id: userSession?.client?.id!,
+               client_id: userData?.client?.id!,
                building_id: null
           };
 
@@ -156,7 +156,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                     region: region,
                     post_code: postcode,
                     location_id: id,
-                    client_id: userSession?.client?.id!,
+                    client_id: userData?.client?.id!,
                     building_id: null
                },
           ]);

@@ -5,7 +5,7 @@ import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
 import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
 import { getAllAddedLocationsByClientId } from "src/app/actions/location/location-services";
-import { getServerAuth } from "src/libs/supabase/server-auth";
+import { checkIfUserIsLoggedInAndReturnUserData } from "src/libs/supabase/server-auth";
 
 
 export default async function Page({ params }: {
@@ -14,12 +14,11 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const { client } = await getServerAuth();
+  const userData = await checkIfUserIsLoggedInAndReturnUserData();
 
-  const [buildingData, locationData, userSession] = await Promise.all([
+  const [buildingData, locationData] = await Promise.all([
     getBuildingById(buildingid as string),
-    getAllAddedLocationsByClientId(client?.id!),
-    getServerAuth()
+    getAllAddedLocationsByClientId(userData.client?.id!)
   ]);
 
   return (
@@ -35,7 +34,7 @@ export default async function Page({ params }: {
           <BuildingFormHeader building={buildingData.success ? buildingData.data : undefined} />
           <BuildingCreateForm
             buildingData={buildingData.success ? buildingData.data : undefined}
-            userSession={userSession}
+            userData={userData}
             locationData={locationData.success ? locationData.data ?? [] : []}
           />
         </Stack>

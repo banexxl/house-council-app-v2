@@ -8,6 +8,8 @@ export async function updateSession(request: NextRequest) {
      const PUBLIC_ROUTES = ['/auth/login', '/auth/error', '/auth/callback'];
      const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
+     // If the request is for a static/public asset or login, bypass middleware
+     // NextResponse.next() returns the original response without any modification
      if (isPublic) {
           return NextResponse.next();
      }

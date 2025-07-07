@@ -27,7 +27,7 @@ import { buildingInitialValues, buildingValidationSchema, statusMap, type Buildi
 import type { File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { BaseEntity } from 'src/types/base-entity';
-import { UserSessionCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/hooks/use-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
@@ -36,12 +36,12 @@ import { removeAllImagesFromBuilding, removeBuildingImageFilePath, uploadImagesA
 
 type BuildingCreateFormProps = {
   buildingData?: Building
-  userSession: UserSessionCombined
+  userData: UserDataCombined
   locationData: BuildingLocation[]
 }
 
 
-export const BuildingCreateForm = ({ buildingData, locationData, userSession }: BuildingCreateFormProps) => {
+export const BuildingCreateForm = ({ buildingData, locationData, userData }: BuildingCreateFormProps) => {
 
   const locationDataWithNoBuildingId = locationData.filter((location) => !location.building_id);
   const router = useRouter();
@@ -61,7 +61,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userSession }: 
           // ✏️ EDIT MODE
           const { success, error } = await updateBuilding(buildingData.id, {
             ...values,
-            client_id: userSession.client?.id!
+            client_id: userData.client?.id!
           });
 
           if (!success) {
@@ -76,7 +76,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userSession }: 
           // ➕ CREATE MODE
           const { success, data, error } = await createBuilding({
             ...values,
-            client_id: userSession.client?.id!
+            client_id: userData.client?.id!
           });
 
           if (!success) {
@@ -114,7 +114,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userSession }: 
       // Start upload
       const uploadResponse = await uploadImagesAndGetUrls(
         newFiles,
-        userSession.client?.name!,
+        userData.client?.name!,
         buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number,
         buildingData?.id!
       );
@@ -140,7 +140,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userSession }: 
       setUploadProgress(undefined);
       toast.error(t('common.actionUploadError'));
     }
-  }, [formik, userSession.client?.name]);
+  }, [formik, userData.client?.name]);
 
   const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
     try {

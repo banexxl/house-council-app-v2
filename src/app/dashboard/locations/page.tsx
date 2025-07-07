@@ -6,11 +6,11 @@ import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
 import { LocationsTable } from 'src/sections/dashboard/locations/locations-table';
-import { getServerAuth } from 'src/libs/supabase/server-auth';
+import { checkIfUserIsLoggedInAndReturnUserData } from 'src/libs/supabase/server-auth';
 
 const Page = async () => {
 
-  const { client } = await getServerAuth();
+  const { client } = await checkIfUserIsLoggedInAndReturnUserData();
   const { data } = await getAllAddedLocationsByClientId(client?.id!);
 
   return (

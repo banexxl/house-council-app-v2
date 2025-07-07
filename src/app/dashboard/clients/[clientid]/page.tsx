@@ -6,7 +6,7 @@ import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { getServerAuth } from 'src/libs/supabase/server-auth'
+import { checkIfUserIsLoggedInAndReturnUserData } from 'src/libs/supabase/server-auth'
 
 export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
@@ -16,7 +16,7 @@ export default async function Page({ params }: {
   const { clientid } = await params
   const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }, userSession] = await Promise.all([
     readClientByIdAction(clientid),
-    getServerAuth(),
+    checkIfUserIsLoggedInAndReturnUserData(),
   ]);
 
   return (
