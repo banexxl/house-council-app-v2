@@ -4,7 +4,7 @@ import { BaseEntity } from "src/types/base-entity";
 import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
 import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
-import { getAllAddedLocations } from "src/app/actions/location/location-services";
+import { getAllAddedLocationsByClientId } from "src/app/actions/location/location-services";
 import { getServerAuth } from "src/libs/supabase/server-auth";
 
 
@@ -14,9 +14,11 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
+  const { client } = await getServerAuth();
+
   const [buildingData, locationData, userSession] = await Promise.all([
     getBuildingById(buildingid as string),
-    getAllAddedLocations(),
+    getAllAddedLocationsByClientId(client?.id!),
     getServerAuth()
   ]);
 

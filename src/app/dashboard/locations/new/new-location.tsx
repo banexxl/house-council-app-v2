@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { getAllAddedLocations } from 'src/app/actions/location/location-services';
+import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { UserSessionCombined } from 'src/hooks/use-auth';
@@ -49,7 +49,7 @@ const NewLocation = ({ mapBoxAccessToken, userSession }: NewLoctionProps) => {
      });
 
      useEffect(() => {
-          getAllAddedLocations().then((res) => {
+          getAllAddedLocationsByClientId().then((res) => {
                if (res.success && res.data) {
                     setLocationsData(res.data.length > 0 ? res.data : []);
                }

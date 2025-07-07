@@ -284,6 +284,53 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
      }
 }
 
+export const getAllAddedLocationsByClientId = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient()
+
+     try {
+          const { data, error } = await supabase.from('tblBuildingLocations').select('*').eq('client_id', client_id)
+
+          if (error) {
+               await logServerAction({
+                    action: 'getAllAddedLocationsByClientId',
+                    duration_ms: 0,
+                    error: error.message,
+                    payload: { client_id },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: false, error: error };
+          } else {
+               await logServerAction({
+                    action: 'getAllAddedLocationsByClientId',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { client_id },
+                    status: 'success',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: true, data };
+          }
+     } catch (error) {
+          await logServerAction({
+               action: 'getAllAddedLocationsByClientId',
+               duration_ms: 0,
+               error: (error as Error).message,
+               payload: { client_id },
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: '',
+          })
+          return { success: false, error };
+     }
+}
+
 export const deleteLocationByID = async (id: string | undefined): Promise<{ success: boolean; error?: ErrorResponse }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()

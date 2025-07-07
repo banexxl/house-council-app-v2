@@ -49,6 +49,7 @@ export async function getAllBuildingsFromClient(
 ): Promise<{ success: boolean; error?: string; data?: Building[] }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     console.log('client_id', client_id);
 
      const [{ data: buildings, error }, { data: imageRecords }] =
           await Promise.all([
@@ -60,6 +61,7 @@ export async function getAllBuildingsFromClient(
                     .from("tblBuildingImages")
                     .select("building_id, image_url, is_cover_image"),
           ]);
+     console.log('data', buildings, imageRecords);
 
      if (error) {
           await logServerAction({
