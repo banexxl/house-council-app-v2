@@ -1,7 +1,7 @@
 "use client"
 
 import type { FC } from 'react';
-import { useEffect, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import PropTypes from 'prop-types';
 import CreditCard01Icon from '@untitled-ui/icons-react/build/esm/CreditCard01';
 import Settings04Icon from '@untitled-ui/icons-react/build/esm/Settings04';
@@ -22,6 +22,8 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { logout } from 'src/app/auth/actions';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import { User } from '@supabase/supabase-js';
+import { Tooltip } from '@mui/material';
 
 interface AccountPopoverProps {
   anchorEl: null | Element;
@@ -32,13 +34,14 @@ interface AccountPopoverProps {
 export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   const { anchorEl, onClose, open, ...other } = props;
   const router = useRouter();
-  const user = useMockedUser();
+  const mockedUser = useMockedUser();
+  const [user, setUser] = useState<User>();
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
     const getUser = async () => {
       const { data, error } = await supabaseBrowserClient.auth.getSession();
-      console.log('supabaseBrowserClient', data, error);
+      setUser(data.session?.user);
     }
     getUser();
   }, []);
@@ -64,13 +67,17 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
       {...other}
     >
       <Box sx={{ p: 2 }}>
-        <Typography variant="body1">{user.name}</Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-        >
-          demo@devias.io
-        </Typography>
+        {/* <Typography variant="body1">{user?.}</Typography> */}
+        <Tooltip title={user?.email}>
+          <Typography
+            color="text.secondary"
+            variant="body2"
+            noWrap
+            sx={{ maxWidth: 180 }}
+          >
+            {user?.email?.slice(0, 20)}{user?.email && user.email.length > 20 ? '...' : ''}
+          </Typography>
+        </Tooltip>
       </Box>
       <Divider />
       <Box sx={{ p: 1 }}>
