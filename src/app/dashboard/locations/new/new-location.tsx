@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
-import { UserDataCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 import { BuildingLocation } from 'src/types/location';

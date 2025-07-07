@@ -11,6 +11,7 @@ import { usePopover } from 'src/hooks/use-popover';
 import { AccountPopover } from './account-popover';
 
 export const AccountButton: FC = () => {
+
   const user = useMockedUser();
   const popover = usePopover<HTMLButtonElement>();
 

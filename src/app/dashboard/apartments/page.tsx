@@ -2,13 +2,19 @@
 
 import { getAllApartmentsFromClientsBuildings } from "src/app/actions/apartment/apartment-actions";
 import Apartments from "./apartments";
-import { checkIfUserIsLoggedInAndReturnUserData } from "src/libs/supabase/server-auth";
+import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
+import { logout } from "src/app/auth/actions";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
 
-  const userData = await checkIfUserIsLoggedInAndReturnUserData();
+  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client) {
+    logout()
+    redirect('/auth/login')
+  };
 
-  const { success, data, error } = await getAllApartmentsFromClientsBuildings(userData.client!.id);
+  const { success, data, error } = await getAllApartmentsFromClientsBuildings(client!.id);
 
   return (
     <Apartments apartments={data ?? []} />

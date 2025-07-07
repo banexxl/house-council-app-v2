@@ -6,17 +6,24 @@ import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { checkIfUserIsLoggedInAndReturnUserData } from 'src/libs/supabase/server-auth'
+import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth'
+import { logout } from 'src/app/auth/actions'
+import { redirect } from 'next/navigation'
 
 export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
 }) {
 
+  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client) {
+    logout()
+    redirect('/auth/login')
+  };
 
   const { clientid } = await params
   const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }, userSession] = await Promise.all([
     readClientByIdAction(clientid),
-    checkIfUserIsLoggedInAndReturnUserData(),
+    checkIfUserExistsAndReturnDataAndSessionObject(),
   ]);
 
   return (

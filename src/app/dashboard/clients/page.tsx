@@ -6,8 +6,17 @@ import Card from '@mui/material/Card';
 import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
+import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { logout } from 'src/app/auth/actions';
+import { redirect } from 'next/navigation';
 
 const Page = async () => {
+
+  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client) {
+    logout()
+    redirect('/auth/login')
+  };
 
   const [{ getAllClientsActionData }] = await Promise.all([
     readAllClientsAction(),

@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import SaveIcon from '@mui/icons-material/Save';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import { MapComponent } from './map-box';
-import { UserDataCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/libs/supabase/server-auth';
 
 type LocationCreateFormProps = {
      mapBoxAccessToken?: string;

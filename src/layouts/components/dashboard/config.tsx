@@ -29,14 +29,9 @@ import ShoppingCart01Icon from 'src/icons/untitled-ui/duocolor/shopping-cart-01'
 import Truck01Icon from 'src/icons/untitled-ui/duocolor/truck-01';
 import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
 import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import AddCardIcon from '@mui/icons-material/AddCard';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { tokens } from 'src/locales/tokens';
 import { paths } from 'src/paths';
-import { supabase } from 'src/libs/supabase/sb-client';
-import { useAuth } from 'src/hooks/use-auth';
 
 export interface Item {
   disabled?: boolean;

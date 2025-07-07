@@ -7,9 +7,18 @@ import { readAllClientBillingInformation } from 'src/app/actions/client/client-b
 import { readAllEntities } from 'src/app/actions/base-entity-actions';
 import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { BaseEntity } from 'src/types/base-entity';
+import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { logout } from 'src/app/auth/actions';
+import { redirect } from 'next/navigation';
 
 
 const Page = async () => {
+
+  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client) {
+    logout()
+    redirect('/auth/login')
+  };
 
   const [
     { readAllClientBillingInformationData: clientBillingInfo },

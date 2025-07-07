@@ -1,11 +1,11 @@
 import { getBuildingById } from "src/app/actions/building/building-actions";
-import { readAllEntities } from "src/app/actions/base-entity-actions";
-import { BaseEntity } from "src/types/base-entity";
 import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
 import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
 import { getAllAddedLocationsByClientId } from "src/app/actions/location/location-services";
-import { checkIfUserIsLoggedInAndReturnUserData } from "src/libs/supabase/server-auth";
+import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
+import { logout } from "src/app/auth/actions";
+import { redirect } from "next/navigation";
 
 
 export default async function Page({ params }: {
@@ -14,7 +14,11 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const userData = await checkIfUserIsLoggedInAndReturnUserData();
+  const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!userData) {
+    logout()
+    redirect('/auth/login')
+  };
 
   const [buildingData, locationData] = await Promise.all([
     getBuildingById(buildingid as string),

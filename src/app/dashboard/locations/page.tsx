@@ -6,11 +6,18 @@ import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
 import { LocationsTable } from 'src/sections/dashboard/locations/locations-table';
-import { checkIfUserIsLoggedInAndReturnUserData } from 'src/libs/supabase/server-auth';
+import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { logout } from 'src/app/auth/actions';
+import { redirect } from 'next/navigation';
 
 const Page = async () => {
 
-  const { client } = await checkIfUserIsLoggedInAndReturnUserData();
+  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client) {
+    logout()
+    redirect('/auth/login')
+  };
+
   const { data } = await getAllAddedLocationsByClientId(client?.id!);
 
   return (

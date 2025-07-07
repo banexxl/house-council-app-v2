@@ -7,8 +7,17 @@ import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { readAllEntities } from 'src/app/actions/base-entity-actions';
 import { BillingInfoFormHeader } from 'src/sections/dashboard/client/billing-information/billing-information-form-header';
 import { BaseEntity } from 'src/types/base-entity';
+import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { logout } from 'src/app/auth/actions';
+import { redirect } from 'next/navigation';
 
 const Page = async () => {
+
+  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client) {
+    logout()
+    redirect('/auth/login')
+  };
 
   const clientPaymentMethods = await readAllEntities<BaseEntity>("tblPaymentMethods")
   const billingInformationStatuses = await readAllEntities<BaseEntity>("tblBillingInformationStatuses")

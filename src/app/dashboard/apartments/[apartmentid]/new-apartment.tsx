@@ -22,8 +22,8 @@ import type { File } from 'src/components/file-dropzone';
 import { apartmentInitialValues, apartmentValidationSchema, type Apartment } from 'src/types/apartment';
 import { createApartment, updateApartment } from 'src/app/actions/apartment/apartment-actions';
 import { uploadImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
-import { UserDataCombined } from 'src/hooks/use-auth';
 import { Building } from 'src/types/building';
+import { UserDataCombined } from 'src/libs/supabase/server-auth';
 
 interface ApartmentCreateFormProps {
   apartmentData?: Apartment;

@@ -1,9 +1,11 @@
 import { getAllBuildingsFromClient, getBuildingById } from "src/app/actions/building/building-actions";
 import { getApartmentById } from "src/app/actions/apartment/apartment-actions";
-import { checkIfUserIsLoggedInAndReturnUserData } from "src/libs/supabase/server-auth";
+import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
 import { Box, Container, Stack } from "@mui/material";
 import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment-new-header";
 import { ApartmentCreateForm } from "./new-apartment";
+import { logout } from "src/app/auth/actions";
+import { redirect } from "next/navigation";
 
 export default async function Page({ params }: {
   params: Promise<{ apartmentid: string }>
@@ -11,7 +13,11 @@ export default async function Page({ params }: {
 
   const { apartmentid } = await params;
 
-  const userData = await checkIfUserIsLoggedInAndReturnUserData();
+  const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!userData) {
+    logout()
+    redirect('/auth/login')
+  };
 
   const [buildingsRes, apartmentRes] = await Promise.all([
     getAllBuildingsFromClient(userData.client!.id!),

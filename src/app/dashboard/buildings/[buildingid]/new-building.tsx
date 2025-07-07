@@ -27,7 +27,7 @@ import { buildingInitialValues, buildingValidationSchema, statusMap, type Buildi
 import type { File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { BaseEntity } from 'src/types/base-entity';
-import { UserDataCombined } from 'src/hooks/use-auth';
+import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';

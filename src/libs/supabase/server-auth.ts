@@ -1,16 +1,17 @@
 'use server'
 
-import { User } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { Client } from 'src/types/client';
 
 export type UserDataCombined = {
      client: Client | null;
      userData: User | null;
-     error?: string
+     error?: string,
+     session?: Session | null
 }
 
-export const checkIfUserIsLoggedInAndReturnUserData = async (): Promise<UserDataCombined> => {
+export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<UserDataCombined> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data: userData, error } = await supabase.auth.getUser();
@@ -22,9 +23,10 @@ export const checkIfUserIsLoggedInAndReturnUserData = async (): Promise<UserData
           return { client: null, userData: null, error: userError.message };
      }
      //Get the session of the user to check if he is logged in
-     const { data: session, error: sessionError } = await supabase.auth.getSession();
+     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
      if (sessionError) {
           return { client: null, userData: null, error: sessionError.message };
      }
-     return { client: user, userData: userData.user };
+     return { client: user, userData: userData.user, session: sessionData.session };
 }

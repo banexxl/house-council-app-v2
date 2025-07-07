@@ -157,27 +157,6 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
      return { success: true, error: '' };
 }
 
-export const logout = async () => {
-
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-
-     const { error } = await supabase.auth.signOut();
-
-     if (error) {
-          await logServerAction({
-               user_id: null,
-               action: 'NLA - Logout failed',
-               payload: {},
-               status: 'fail',
-               error: error.message,
-               duration_ms: 0, // Duration can be calculated if needed
-               type: 'auth'
-          })
-          return { success: false, error: error.message };
-     }
-     redirect('/auth/login');
-}
-
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
@@ -317,4 +296,26 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           type: 'auth'
      })
      return { success: true };
+}
+
+
+export const logout = async () => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     const { error } = await supabase.auth.signOut();
+
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'NLA - Logout failed',
+               payload: {},
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0, // Duration can be calculated if needed
+               type: 'auth'
+          })
+          return { success: false, error: error.message };
+     }
+     redirect('/auth/login');
 }
