@@ -9,6 +9,11 @@ import { BaseEntity } from "src/types/base-entity";
 export default async function Page() {
 
   const userSession = await getServerAuth()
+  console.log('userSession', userSession);
+
+  if (!userSession.client) {
+    return <div>No client found</div>;
+  }
   const [{ success, data, error }] = await Promise.all([
     getAllBuildingsFromClient(userSession.client?.id!),
   ]);

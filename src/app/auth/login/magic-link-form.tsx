@@ -26,7 +26,6 @@ export const MagicLinkForm = () => {
           } else if (result.success) {
                setLoginError(false)
                toast.success("Successfully authenticated with Magic Link")
-               setMessage(result.success)
                formik.resetForm() // Reset the form after successful submission
           }
      }

@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import { readClientByEmailAction } from '../actions/client/client-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export type SignInFormValues = {
      email: string;
@@ -70,13 +72,16 @@ export const checkIfUserExistsAndGetRole = async (email: string): Promise<{ exis
      return { exists: true, role: data.role };
 }
 
-export const magicLinkLogin = async (email: string) => {
+export const magicLinkLogin = async (email: string): Promise<{ success?: boolean, error?: string }> => {
+
+     const cookieStore = await cookies();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     // Check if the user exists
-     const userExists = await checkIfUserExistsAndGetRole(email);
 
-     if (!userExists) {
+     //Get client id from email
+     const { getClientByEmailActionData } = await readClientByEmailAction(email);
+
+     if (!getClientByEmailActionData) {
           await logServerAction({
                user_id: null,
                action: 'NLA - Magic link login attempt for non-existing user',
@@ -87,6 +92,21 @@ export const magicLinkLogin = async (email: string) => {
                type: 'auth'
           })
           return { error: 'User does not exist. Please sign up first.' };
+     }
+
+     // Check if client has an active subscription
+     const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from('tblClient_Subscription')
+          .select('*')
+          .eq('client_id', getClientByEmailActionData.id)
+          .single();
+
+     if (subscriptionError || !subscriptionData) {
+          supabase.auth.signOut();
+          // Remove cookies
+          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+
+          return { success: false, error: 'No active subscription found. Please subscribe to continue.' };
      }
 
      // Send magic link since the user exists
@@ -134,7 +154,7 @@ export const magicLinkLogin = async (email: string) => {
           type: 'auth'
      })
 
-     return { success: 'Check your email for the login link!' };
+     return { success: true, error: '' };
 }
 
 export const logout = async () => {
@@ -186,12 +206,13 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
 export const signInWithEmailAndPassword = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
      const start = Date.now();
-
+     const cookieStore = await cookies();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
+     // Check if the user exists in tblClients
      const { data, error } = await supabase
           .from('tblClients')
-          .select('email')
+          .select('email, id',)
           .eq('email', values.email)
           .single();
 
@@ -243,6 +264,29 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     })
                     return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
           }
+     }
+
+     // Check if client has an active subscription
+     const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from('tblClient_Subscription')
+          .select('*')
+          .eq('client_id', data.id)
+          .single();
+
+     if (subscriptionError || !subscriptionData) {
+          supabase.auth.signOut();
+          // Remove cookies
+          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+          await logServerAction({
+               user_id: null,
+               action: 'Signing in with email and password - no active subscription found',
+               payload: JSON.stringify(values),
+               status: 'fail',
+               error: subscriptionError ? subscriptionError.message : 'No active subscription found',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          })
+          return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
      }
 
      const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({

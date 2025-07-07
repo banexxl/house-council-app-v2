@@ -67,10 +67,11 @@ export async function GET(request: Request) {
 
      // Check if client has an active subscription
      const { data: subscriptionData, error: subscriptionError } = await supabase
-          .from('tblClient_Subscriptions')
+          .from('tblClient_Subscription')
           .select('*')
           .eq('client_id', data.id)
           .single();
+
 
      if (subscriptionError || !subscriptionData) {
           supabase.auth.signOut();

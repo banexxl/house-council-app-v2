@@ -20,8 +20,6 @@ export const PasswordForm = () => {
 
      const onSubmit = async (values: typeof initialValuesEmailAndPassword) => {
 
-          const hashedPassword = await hashPassword(values.password);
-
           const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: values.password })
 
           if (error) {
