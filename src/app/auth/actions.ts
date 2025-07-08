@@ -1,11 +1,10 @@
 'use server';
 
-import { redirect } from 'next/navigation';
 import { readClientByEmailAction } from '../actions/client/client-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { redirect } from 'next/navigation';
 
 export type SignInFormValues = {
      email: string;
@@ -21,7 +20,7 @@ export type ErrorType = {
 
 export const checkIfUserExistsAndGetRole = async (email: string): Promise<{ exists: boolean; error?: string; role?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from('tblClients')
@@ -76,7 +75,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
 
      const cookieStore = await cookies();
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      //Get client id from email
      const { getClientByEmailActionData } = await readClientByEmailAction(email);
@@ -159,7 +158,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
 
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      // Initiate Google OAuth flow.
      const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
@@ -169,7 +168,6 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                redirectTo: `${process.env.BASE_URL}/auth/callback`
           }
      });
-     console.log('authData', authData);
 
      if (authError != null) {
           return { success: false, error: authError };
@@ -186,7 +184,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
      const start = Date.now();
      const cookieStore = await cookies();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      // Check if the user exists in tblClients
      const { data, error } = await supabase
@@ -300,9 +298,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
 
 export const logout = async () => {
-
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-
+     const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.auth.signOut();
 
      if (error) {
@@ -312,10 +308,11 @@ export const logout = async () => {
                payload: {},
                status: 'fail',
                error: error.message,
-               duration_ms: 0, // Duration can be calculated if needed
-               type: 'auth'
-          })
+               duration_ms: 0,
+               type: 'auth',
+          });
           return { success: false, error: error.message };
      }
-     redirect('/auth/login');
-}
+
+     return { success: true };
+};

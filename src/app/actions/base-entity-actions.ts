@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { BaseEntity } from "src/types/base-entity";
 import { generateSlug } from "src/utils/url-creator";
 
 export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean; createdEntity?: T; error?: any }> => {
 
      const duration_ms = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      if (!table.trim()) {
           await logServerAction({
@@ -112,7 +112,7 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
 };
 
 export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
      if (error) {
           await logServerAction({
@@ -143,7 +143,7 @@ export const readEntity = async <T extends BaseEntity>(table: string, id: string
 };
 
 export const updateEntity = async <T extends BaseEntity>(table: string, id: string, entity: Partial<T>): Promise<{ success: boolean, updatedEntity?: T, error?: any }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      if (!table.trim()) {
           return { success: false, error: 'clients.clientSettingsNoTableError' };
      }
@@ -206,7 +206,7 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
 };
 
 export const deleteEntity = async (table: string, id: string): Promise<{ success: boolean, error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { error } = await supabase.from(table).delete().eq('id', id);
 
@@ -241,7 +241,7 @@ export const deleteEntity = async (table: string, id: string): Promise<{ success
 
 export const readAllEntities = async <T extends BaseEntity>(table: string): Promise<T[]> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from(table)

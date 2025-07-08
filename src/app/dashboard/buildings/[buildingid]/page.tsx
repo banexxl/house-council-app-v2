@@ -17,7 +17,6 @@ export default async function Page({ params }: {
   const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!userData) {
     logout()
-    redirect('/auth/login')
   };
 
   const [buildingData, locationData] = await Promise.all([

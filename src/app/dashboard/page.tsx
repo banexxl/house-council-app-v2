@@ -9,9 +9,8 @@ const Page = async () => {
 
   const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client) {
-    logout()
     redirect('/auth/login')
-  };
+  }
 
   return (
     <>

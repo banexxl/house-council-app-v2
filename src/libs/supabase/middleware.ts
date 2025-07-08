@@ -1,57 +1,64 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/**
+ * @function updateSession
+ * @description Next.js middleware function to update user session based on Supabase authentication.
+ * @param {NextRequest} request - The request object from Next.js.
+ * @returns {NextResponse} - The response object from Next.js after updating the user session.
+ * @remarks
+ * This middleware function is used in Next.js pages to update the user session based on the Supabase authentication.
+ * It bypasses the middleware for static/public assets or login, and proceeds with Supabase auth logic only for protected routes.
+ * If the user is not authenticated or does not have an email, it redirects to the '/auth/error' page with an 'access_denied' error.
+ * If the user is authenticated and has an email, but is not found in the 'tblClients' table, it redirects to the '/auth/error' page with an 'access_denied' error.
+ * Otherwise, it returns the original response without any modification.
+ */
 export async function updateSession(request: NextRequest) {
-     const { pathname } = request.nextUrl;
+     const { pathname } = request.nextUrl
 
-     // Bypass middleware for static/public assets or login
-     const PUBLIC_ROUTES = ['/auth/login', '/auth/error', '/auth/callback'];
-     const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+     const PUBLIC_ROUTES = ['/auth/login', '/auth/error', '/auth/callback']
+     const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
 
-     // If the request is for a static/public asset or login, bypass middleware
-     // NextResponse.next() returns the original response without any modification
      if (isPublic) {
-          return NextResponse.next();
+          return NextResponse.next()
      }
 
-     // Proceed with Supabase auth logic only for protected routes
+     // ✅ FIX: create response before passing into Supabase client
+     const response = NextResponse.next()
+
      const supabase = createServerClient(
           process.env.SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           {
                cookies: {
                     getAll() {
-                         return request.cookies.getAll();
+                         return request.cookies.getAll()
                     },
                     setAll(cookiesToSet) {
-                         cookiesToSet.forEach(({ name, value, options }) =>
-                              supabaseResponse.cookies.set(name, value, options)
-                         );
+                         cookiesToSet.forEach(({ name, value, options }) => {
+                              response.cookies.set(name, value, options)
+                         })
                     },
                },
           }
-     );
+     )
 
-     const supabaseResponse = NextResponse.next();
+     const { data: { user } } = await supabase.auth.getUser()
 
-     const {
-          data: { user },
-     } = await supabase.auth.getUser();
-
-     if (!user || !user.email) {
-          return NextResponse.redirect(new URL('/auth/error?error=access_denied', request.url));
+     if (!user?.email) {
+          return NextResponse.redirect(new URL('/auth/error?error=access_denied', request.url))
      }
 
-     const { data } = await supabase
+     const { data: client } = await supabase
           .from('tblClients')
           .select('id')
           .eq('email', user.email)
-          .single();
+          .single()
 
-     if (!data) {
-          return NextResponse.redirect(new URL('/auth/error?error_code=not_found_in_tblclients', request.url));
+     if (!client) {
+          return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
      }
 
-     return supabaseResponse;
+     return response
 }
 

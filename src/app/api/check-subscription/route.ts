@@ -1,12 +1,12 @@
 // app/api/subscription/check-expired/route.ts
 import { NextResponse } from 'next/server'
 import { sendSubscriptionEndingNotificationToSupport, sendTrialEndingEmailToClient } from 'src/libs/email/node-mailer'
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
 export async function POST() {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      // Fetch all client subscriptions
      const { data: client_subscriptions, error } = await supabase

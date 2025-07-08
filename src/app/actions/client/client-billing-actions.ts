@@ -1,14 +1,14 @@
 'use server';
 
 import { revalidatePath } from "next/cache"
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 
 export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
      : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformation?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      let result;
 
      if (billingInformationId && billingInformationId !== "") {
@@ -63,7 +63,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
 
 export const readClientBillingInformation = async (id: string): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformationData?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from('tblBillingInformation')
@@ -80,7 +80,7 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
 
 export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      if (ids?.length == 0) {
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: "No IDs provided" };
@@ -105,7 +105,7 @@ export const readAllClientBillingInformation = async (): Promise<{
      readAllClientBillingInformationError?: string;
 }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from("tblBillingInformation")

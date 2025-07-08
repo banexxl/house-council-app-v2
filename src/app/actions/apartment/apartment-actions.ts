@@ -1,6 +1,6 @@
 'use server';
 
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
@@ -36,7 +36,7 @@ const enrichApartmentsWithImages = (
 
 export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const [{ data: buildings, error: buildingsError }, { data: imageRecords }] = await Promise.all([
           supabase.from("tblBuildings").select("*").eq("client_id", clientid),
@@ -96,7 +96,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
 export async function getApartmentById(id: string) {
      const time = Date.now();
      if (!isUUID(id)) return { success: false, error: "Invalid UUID" };
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const [{ data: apartment, error }, { data: imageRecords }] = await Promise.all([
           supabase.from("tblApartments").select("*").eq("id", id).single(),
@@ -139,7 +139,7 @@ export async function getApartmentById(id: string) {
 
 export async function createApartment(payload: Omit<Apartment, "id">) {
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { apartment_images, ...insertPayload } = payload;
 
@@ -240,7 +240,7 @@ export async function createApartment(payload: Omit<Apartment, "id">) {
 export async function updateApartment(id: string, updates: Partial<Apartment>) {
 
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { apartment_images, ...updatePayload } = updates;
 
@@ -285,7 +285,7 @@ export async function updateApartment(id: string, updates: Partial<Apartment>) {
 
 export async function deleteApartment(id: string) {
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      await supabase.from("tblApartmentImages").delete().eq("apartment_id", id);
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from "next/cache";
-import { useServerSideSupabaseServiceRoleClient } from "./sb-server";
+import { useServerSideSupabaseAnonClient } from "./sb-server";
 import { logServerAction } from "./server-logging";
 
 // Helper to sanitize file paths for S3
@@ -23,7 +23,7 @@ export const uploadImagesAndGetUrls = async (
      address: string,
      buildingId: string
 ): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
      const urls: string[] = [];
 
@@ -132,7 +132,7 @@ export const removeBuildingImageFilePath = async (
      filePathOrUrl: string
 ): Promise<{ success: boolean; error?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
 
      try {
@@ -199,7 +199,7 @@ export const removeAllImagesFromBuilding = async (
      buildingId: string
 ): Promise<{ success: boolean; error?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
 
      try {
@@ -283,7 +283,7 @@ export const setAsBuildingCoverImage = async (
      imageURL: string
 ): Promise<{ success: boolean; error?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
 

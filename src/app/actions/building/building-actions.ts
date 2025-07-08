@@ -1,7 +1,7 @@
 'use server';
 
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
@@ -48,7 +48,7 @@ export async function getAllBuildingsFromClient(
      client_id: string
 ): Promise<{ success: boolean; error?: string; data?: Building[] }> {
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      console.log('client_id', client_id);
 
      const [{ data: buildings, error }, { data: imageRecords }] =
@@ -103,7 +103,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
      const time = Date.now();
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const [{ data: building, error }, { data: imageRecords }] = await Promise.all([
           supabase
@@ -156,7 +156,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
  */
 export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ success: boolean, error?: string, data?: Building | null }> {
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { building_images, ...buildingPayload } = payload;
      const building_location_id = payload.building_location?.id;
@@ -250,7 +250,7 @@ export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ s
 export async function updateBuilding(id: string, updates: Partial<Building>): Promise<{ success: boolean, error?: string, data?: Building }> {
 
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { building_images, ...buildingUpdate } = updates;
      const updatePayload = {
@@ -304,7 +304,7 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
 export async function deleteBuilding(id: string): Promise<{ success: boolean, error?: string, data?: null }> {
 
      const time = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      // Need to delete the images from SB S3 because if we delete from tblBuildingImages first, removeAllImagesFromBuilding wont even try to delete them
      const { success, error } = await removeAllImagesFromBuilding(id);

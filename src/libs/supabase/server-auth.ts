@@ -1,32 +1,48 @@
 'use server'
 
-import { Session, User } from '@supabase/supabase-js';
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
-import { Client } from 'src/types/client';
+import { Session, User } from '@supabase/supabase-js'
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
+import { Client } from 'src/types/client'
 
 export type UserDataCombined = {
-     client: Client | null;
-     userData: User | null;
-     error?: string,
-     session?: Session | null
+     client: Client | null
+     userData: User | null
+     error?: string
 }
 
 export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<UserDataCombined> => {
+     const supabase = await useServerSideSupabaseAnonClient()
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-     const { data: userData, error } = await supabase.auth.getUser();
-     if (error) {
-          return { client: null, userData: null, error: error.message };
-     }
-     const { data: user, error: userError } = await supabase.from('tblClients').select().eq('email', userData.user.email).single();
-     if (userError) {
-          return { client: null, userData: null, error: userError.message };
-     }
-     //Get the session of the user to check if he is logged in
-     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+     // ✅ 1. Securely get authenticated user from Supabase Auth server
+     const { data: userData, error: userError } = await supabase.auth.getUser()
 
-     if (sessionError) {
-          return { client: null, userData: null, error: sessionError.message };
+     if (userError || !userData?.user) {
+          return {
+               client: null,
+               userData: null,
+               error: userError?.message || 'Failed to authenticate user',
+          }
      }
-     return { client: user, userData: userData.user, session: sessionData.session };
+
+     const user = userData.user
+
+     // ✅ 4. Look up the client record by email
+     const { data: client, error: clientError } = await supabase
+          .from('tblClients')
+          .select('*')
+          .eq('email', user.email)
+          .single()
+
+     if (clientError) {
+          return {
+               client: null,
+               userData: user,
+               error: clientError.message,
+          }
+     }
+
+     return {
+          client,
+          userData: user,
+     }
 }

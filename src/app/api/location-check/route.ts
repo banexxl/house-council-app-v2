@@ -1,11 +1,11 @@
 // app/api/subscription/check-expired/route.ts
 import { NextResponse } from 'next/server'
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
 export async function POST() {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      const { data, error } = await supabase
           .from('tblBuildingLocations')

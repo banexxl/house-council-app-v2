@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { SubscriptionPlan } from "src/types/subscription-plan";
 
 export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):
@@ -12,7 +12,7 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           createSubscriptionPlanError?: any;
      }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from("tblSubscriptionPlans")
@@ -70,7 +70,7 @@ export const updateSubscriptionPlan = async (
 }> => {
 
      const start = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from("tblSubscriptionPlans")
@@ -193,7 +193,7 @@ export const readSubscriptionPlan = async (id: string): Promise<{
      readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
 }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      // Fetch the subscription plan along with its features using a join
      const { data: subscriptionPlan, error: planError } = await supabase
@@ -237,7 +237,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
      readAllSubscriptionPlansSuccess: boolean; subscriptionPlanData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
 }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: subscriptionPlans, error: planError } = await supabase
           .from("tblSubscriptionPlans")
@@ -257,7 +257,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
 };
 export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ deleteSubscriptionPlansSuccess: boolean, deleteSubscriptionPlansError?: any }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      // Delete related entries from the connection table first
      const { error: relationError } = await supabase.from("tblSubscriptionPlans_Features").delete().in("subscription_plan_id", ids);

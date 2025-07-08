@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache"
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server"
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server"
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Client } from "src/types/client"
 import { validate as isUUID } from 'uuid';
@@ -22,7 +22,7 @@ export const createOrUpdateClientAction = async (client: Client): Promise<{
      saveClientActionData?: Client
      saveClientActionError?: any
 }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { id, ...clientData } = client
 
      if (id && id !== "") {
@@ -93,7 +93,7 @@ export const readAllClientsAction = async (): Promise<{
      getAllClientsActionError?: string;
 }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           const { data, error } = await supabase
@@ -126,7 +126,7 @@ export const readClientByIdAction = async (
      const time = Date.now();
      if (!isUUID(clientId)) return { getClientByIdActionSuccess: false, getClientByIdActionError: "Invalid client ID format" };
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           const { data, error } = await supabase
@@ -160,7 +160,7 @@ export const deleteClientByIDsAction = async (ids: string[]): Promise<{
      deleteClientByIDsActionError?: string
 }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           const { error } = await supabase.from('tblClients').delete().in('id', ids);
@@ -181,7 +181,7 @@ export const readClientByEmailAction = async (email: string): Promise<{
      getClientByEmailActionData?: Client
 }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           const { data, error } = await supabase.from('tblClients').select().eq('email', email).single()
@@ -197,7 +197,7 @@ export const uploadClientLogoAndGetUrl = async (
      file: File,
      client: string
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
 
      try {
