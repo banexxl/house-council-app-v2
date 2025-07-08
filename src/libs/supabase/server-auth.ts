@@ -1,6 +1,6 @@
 'use server'
 
-import { Session, User } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js'
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
 import { Client } from 'src/types/client'
 

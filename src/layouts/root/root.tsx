@@ -6,8 +6,6 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import 'src/locales/i18n';
 
@@ -54,13 +52,11 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   return (
     <NextAppDirEmotionCacheProvider options={{ key: 'css' }}>
       <ReduxProvider store={store}>
-        {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
         <SettingsProvider
           onReset={handleSettingsReset}
           onUpdate={handleSettingsUpdate}
           settings={initialSettings}
         >
-
           <SettingsConsumer>
             {(settings) => {
               const theme = createTheme({
@@ -111,7 +107,6 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
             }}
           </SettingsConsumer>
         </SettingsProvider>
-        {/* </LocalizationProvider> */}
       </ReduxProvider>
 
     </NextAppDirEmotionCacheProvider>
