@@ -4,6 +4,8 @@ import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabas
 import Dashboard from "./dashboard";
 import { logout } from "../auth/actions";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import Loading from "../loading";
 
 const Page = async () => {
 
@@ -13,9 +15,9 @@ const Page = async () => {
   }
 
   return (
-    <>
+    <Suspense fallback={<Loading />}>
       <Dashboard />
-    </>
+    </Suspense>
   );
 };
 

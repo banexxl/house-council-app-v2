@@ -20,8 +20,8 @@ import { paths } from 'src/paths';
 import { FileDropzone } from 'src/components/file-dropzone';
 import type { File } from 'src/components/file-dropzone';
 import { apartmentInitialValues, apartmentValidationSchema, type Apartment } from 'src/types/apartment';
-import { createApartment, updateApartment } from 'src/app/actions/apartment/apartment-actions';
-import { uploadImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { createOrUpdateApartment } from 'src/app/actions/apartment/apartment-actions';
+import { setAsApartmentCoverImage, uploadApartmentImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
 import { Building } from 'src/types/building';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 
@@ -44,12 +44,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
       helpers.setSubmitting(true); // manually set submitting state
 
       try {
-        let response;
-        if (apartmentData?.id) {
-          response = await updateApartment(apartmentData.id, values);
-        } else {
-          response = await createApartment(values);
-        }
+        const response = await createOrUpdateApartment(values);
 
         if (!response.success) {
           toast.error(response.error || 'Error');
@@ -57,12 +52,15 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
         }
 
         toast.success(t('common.actionSaveSuccess'));
-        router.push(paths.dashboard.apartments.index + '/' + (apartmentData?.id ?? response.data?.id));
+        router.push(
+          paths.dashboard.apartments.index + '/' + (values.id ?? response.data?.id)
+        );
       } catch (error) {
         toast.error('Unexpected error');
       } finally {
-        helpers.setSubmitting(false); // clear submitting state
+        helpers.setSubmitting(false);
       }
+
     }
   });
 
@@ -74,7 +72,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
       if (progress <= 95) setUploadProgress(progress);
     }, 200);
 
-    const upload = await uploadImagesAndGetUrls(
+    const upload = await uploadApartmentImagesAndGetUrls(
       newFiles,
       userData.client?.name!,
       buildings[0].building_location?.city + ' ' + buildings[0].building_location?.street_address,
@@ -108,6 +106,9 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="building_id"
                   value={formik.values.building_id}
                   onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={Boolean(formik.touched.building_id && formik.errors.building_id)}
+                  helperText={formik.touched.building_id && formik.errors.building_id}
                 >
                   {buildings?.map((building) => (
                     <MenuItem key={building.id} value={building.id}>
@@ -123,15 +124,15 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="apartment_number"
                   value={formik.values.apartment_number}
                   type="number"
-                  onChange={(e) => {
-                    // Update formik value directly with raw input
-                    formik.setFieldValue("apartment_number", e.target.value);
-                  }}
+                  onChange={formik.handleChange}
                   onBlur={() => {
                     // On blur, sanitize and cast to integer
                     const value = parseInt(String(formik.values.apartment_number), 10);
                     formik.setFieldValue("apartment_number", isNaN(value) ? '' : value);
+                    formik.setFieldTouched("apartment_number", true);
                   }}
+                  error={Boolean(formik.touched.apartment_number && formik.errors.apartment_number)}
+                  helperText={formik.touched.apartment_number && formik.errors.apartment_number}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -141,13 +142,14 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   label={t('apartments.lblFloor')}
                   name="floor"
                   value={formik.values.floor}
-                  onChange={(e) => {
-                    formik.setFieldValue("floor", e.target.value);
-                  }}
+                  onChange={formik.handleChange}
                   onBlur={() => {
                     const value = parseInt(String(formik.values.floor), 10);
                     formik.setFieldValue("floor", isNaN(value) ? '' : value);
+                    formik.setFieldTouched("floor", true);
                   }}
+                  error={Boolean(formik.touched.floor && formik.errors.floor)}
+                  helperText={formik.touched.floor && formik.errors.floor}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -255,6 +257,10 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                 onDrop={handleImageUpload}
                 uploadProgress={uploadProgress}
                 images={apartmentData.apartment_images || []}
+                onSetAsCover={async (url) => {
+                  const { success } = await setAsApartmentCoverImage(apartmentData.id!, url);
+                  if (!success) throw new Error();
+                }}
               />
             </CardContent>
           </Card>
@@ -264,7 +270,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
           <Button color="inherit" onClick={() => router.back()}>
             {t('common.btnCancel')}
           </Button>
-          <Button type="submit" variant="contained" loading={formik.isSubmitting}>
+          <Button
+            type="submit"
+            variant="contained"
+            loading={formik.isSubmitting}
+            disabled={formik.isSubmitting || !formik.isValid}
+          >
             {apartmentData ? t('common.btnUpdate') : t('common.btnCreate')}
           </Button>
         </Stack>

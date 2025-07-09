@@ -284,7 +284,12 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
      }
 }
 
-export const getAllAddedLocationsByClientId = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Gets all added locations for a given client ID
+ * @param client_id The ID of the client whose locations to fetch
+
+/*******  8ec0ebed-a677-4699-bfb8-7c9ec8c9d02c  *******/export const getAllAddedLocationsByClientId = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
 
      const supabase = await useServerSideSupabaseAnonClient()
 
@@ -319,6 +324,52 @@ export const getAllAddedLocationsByClientId = async (client_id: string): Promise
      } catch (error) {
           await logServerAction({
                action: 'getAllAddedLocationsByClientId',
+               duration_ms: 0,
+               error: (error as Error).message,
+               payload: { client_id },
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: '',
+          })
+          return { success: false, error };
+     }
+}
+
+export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
+
+     const supabase = await useServerSideSupabaseAnonClient()
+
+     try {
+          const { data, error } = await supabase.from('tblBuildingLocations').select('*').eq('client_id', client_id).is('building_id', null)
+          if (error) {
+               await logServerAction({
+                    action: 'getAllNotOcupiedLocationsAddedByClient',
+                    duration_ms: 0,
+                    error: error.message,
+                    payload: { client_id },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: false, error: error };
+          } else {
+               await logServerAction({
+                    action: 'getAllNotOcupiedLocationsAddedByClient',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { client_id },
+                    status: 'success',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               })
+               return { success: true, data };
+          }
+     } catch (error) {
+          await logServerAction({
+               action: 'getAllNotOcupiedLocationsAddedByClient',
                duration_ms: 0,
                error: (error as Error).message,
                payload: { client_id },

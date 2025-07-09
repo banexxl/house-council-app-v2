@@ -2,10 +2,9 @@ import { getBuildingById } from "src/app/actions/building/building-actions";
 import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
 import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
-import { getAllAddedLocationsByClientId } from "src/app/actions/location/location-services";
+import { getAllNotOcupiedLocationsAddedByClient } from "src/app/actions/location/location-services";
 import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
-import { redirect } from "next/navigation";
 
 
 export default async function Page({ params }: {
@@ -21,7 +20,7 @@ export default async function Page({ params }: {
 
   const [buildingData, locationData] = await Promise.all([
     getBuildingById(buildingid as string),
-    getAllAddedLocationsByClientId(userData.client?.id!)
+    getAllNotOcupiedLocationsAddedByClient(userData.client?.id!)
   ]);
 
   return (

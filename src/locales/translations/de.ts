@@ -223,6 +223,7 @@ export const de = {
   [tokens.locations.locationPopupTitle]: 'Der Stift wird platziert bei',
   [tokens.locations.locationAlreadyExists]: 'Ort bereits vorhanden!',
   [tokens.locations.searchLocationLabel]: 'Ort suchen',
+  [tokens.locations.addLocationsFirstLabel]: 'Zuerst Orte hinzufügen',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Wohnungsnummer',

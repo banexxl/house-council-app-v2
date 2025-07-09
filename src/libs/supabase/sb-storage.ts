@@ -17,12 +17,13 @@ const sanitizeSegmentForS3 = (segment: string): string => {
 /**
  * Uploads one or more images to Supabase Storage and links them to a building in `tblBuildingImages`
  */
-export const uploadImagesAndGetUrls = async (
+export const uploadBuildingImagesAndGetUrls = async (
      files: File[],
      client: string,
      address: string,
      buildingId: string
 ): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
+
      const supabase = await useServerSideSupabaseAnonClient();
      const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
      const urls: string[] = [];
@@ -318,4 +319,257 @@ export const setAsBuildingCoverImage = async (
      } catch (error: any) {
           return { success: false, error: error.message };
      }
+}
+
+/**
+ * Uploads one or more images to Supabase Storage and links them to a apartment in `tblApartmentImages`
+ */
+export const uploadApartmentImagesAndGetUrls = async (
+     files: File[],
+     client: string,
+     address: string,
+     apartmentid: string
+): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const urls: string[] = [];
+
+     try {
+          for (const singleFile of files) {
+               const encodedFilePath = [
+                    'Clients',
+                    sanitizeSegmentForS3(client),
+                    sanitizeSegmentForS3(address),
+                    sanitizeSegmentForS3(singleFile.name),
+               ].join('/');
+
+               const { data, error: uploadError } = await supabase.storage
+                    .from(bucket)
+                    .upload(encodedFilePath, singleFile, {
+                         cacheControl: '3600',
+                         upsert: true,
+                    });
+
+               if (uploadError) {
+                    await logServerAction({
+                         action: 'Upload Image - Failed to upload to S3',
+                         duration_ms: 0,
+                         error: uploadError.message,
+                         payload: { client, address, apartmentid },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: '',
+                    })
+                    return {
+                         success: false,
+                         error: `${uploadError.message} for file ${singleFile.name}`,
+                    };
+               }
+
+               const { data: publicUrlData } = supabase.storage
+                    .from(bucket)
+                    .getPublicUrl(encodedFilePath);
+
+               const imageUrl = publicUrlData?.publicUrl;
+               await logServerAction({
+                    action: 'Upload Image - Success',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { imageUrl },
+                    status: 'success',
+                    type: 'db',
+                    user_id: '',
+               })
+               if (!imageUrl) {
+                    await logServerAction({
+                         action: 'Upload Image - Failed to get public URL',
+                         duration_ms: 0,
+                         error: 'Failed to retrieve public URL',
+                         payload: { client, address, apartmentid },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: '',
+                    })
+                    return { success: false, error: 'Failed to retrieve public URL' };
+               }
+
+               const { error: insertError } = await supabase
+                    .from('tblApartmentImages')
+                    .insert({
+                         apartment_id: apartmentid,
+                         image_url: imageUrl,
+                    });
+               console.log('insertError', insertError);
+
+               if (insertError) {
+                    await logServerAction({
+                         action: 'Upload Image - Failed to insert into tblApartmentImages',
+                         duration_ms: 0,
+                         error: insertError.message,
+                         payload: { client, address, apartmentid },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: '',
+                    })
+                    return { success: false, error: insertError.message };
+               }
+               await logServerAction({
+                    action: 'Upload Image - Success',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { imageUrl },
+                    status: 'success',
+                    type: 'db',
+                    user_id: '',
+               })
+               urls.push(imageUrl);
+          }
+
+          revalidatePath(`/dashboard/apartments/${apartmentid}`);
+          return { success: true, urls };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};
+
+export const removeApartmentImageFilePath = async (
+     apartmentid: string,
+     filePathOrUrl: string
+): Promise<{ success: boolean; error?: string }> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+
+     try {
+          // Extract the file path relative to the bucket
+          let filePath = filePathOrUrl;
+
+          if (filePathOrUrl.startsWith('https://')) {
+               const publicPrefix = `/storage/v1/object/public/${bucket}/`;
+               const startIndex = filePathOrUrl.indexOf(publicPrefix);
+               if (startIndex === -1) {
+                    return { success: false, error: 'Invalid public URL format.' };
+               }
+
+               filePath = filePathOrUrl.substring(startIndex + publicPrefix.length);
+          }
+
+          // Delete from S3
+          const { error: deleteError } = await supabase.storage.from(bucket).remove([filePath]);
+          if (deleteError) {
+               await logServerAction({
+                    action: 'Delete Image - Failed to delete from S3',
+                    duration_ms: 0,
+                    error: deleteError.message,
+                    payload: { apartmentid, filePathOrUrl },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
+               return { success: false, error: deleteError.message };
+          }
+
+          // Delete from tblApartmentImages
+          const { error: dbDeleteError } = await supabase
+               .from('tblApartmentImages')
+               .delete({ count: 'exact' })
+               .eq('apartment_id', apartmentid)
+               .eq('image_url', filePathOrUrl) // This is still full URL as stored in DB
+               .select('*');
+
+          if (dbDeleteError) {
+               await logServerAction({
+                    action: 'Delete Image - Failed to delete from tblApartmentImages',
+                    duration_ms: 0,
+                    error: dbDeleteError.message,
+                    payload: { apartmentid, filePathOrUrl },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
+               return { success: false, error: dbDeleteError.message };
+          }
+
+          return { success: true };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};
+
+export const removeAllImagesFromApartment = async (apartmentid: string): Promise<{ success: boolean; error?: string }> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+
+     try {
+          // 1. Get all images for the apartment
+          const { data: images, error: imagesError } = await supabase
+               .from('tblApartmentImages')
+               .select('image_url')
+               .eq('apartment_id', apartmentid);
+
+          if (imagesError) {
+               await logServerAction({
+                    action: 'Delete All Images - Failed to retrieve images from tblApartmentImages',
+                    duration_ms: 0,
+                    error: imagesError.message,
+                    payload: { apartmentid },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
+               return { success: false, error: imagesError.message };
+          }
+
+          if (!images || images.length === 0) {
+               return { success: true }; // Nothing to delete
+          }
+
+          // 2. Delete all images from S3
+          const filePaths = images
+               .map((img) => {
+                    const url = img.image_url;
+                    const idx = url.indexOf(`/storage/v1/object/public/${bucket}/`);
+                    return idx !== -1 ? url.substring(idx + `/storage/v1/object/public/${bucket}/`.length) : null;
+               })
+               .filter((path): path is string => Boolean(path)); // filter out nulls
+
+          if (filePaths.length > 0) {
+               const { error: deleteError } = await supabase.storage.from(bucket).remove(filePaths);
+               if (deleteError) {
+                    return { success: false, error: deleteError.message };
+               }
+          }
+
+          // 3. Delete all images from tblApartmentImages
+          const { error: dbDeleteError } = await supabase
+               .from('tblApartmentImages')
+               .delete({ count: 'exact' })
+               .eq('apartment_id', apartmentid)
+               .select('*');
+
+          if (dbDeleteError) {
+               await logServerAction({
+                    action: 'Delete All Images - Failed to delete from tblApartmentImages',
+                    duration_ms: 0,
+                    error: dbDeleteError.message,
+                    payload: { apartmentid },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: '',
+               })
+               return { success: false, error: dbDeleteError.message };
+          }
+
+          return { success: true };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};
+
+export const setAsApartmentCoverImage = async (apartmentid: string, url: string): Promise<{ success: boolean }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { error: dbError } = await supabase.from('tblApartments').update({ cover_image: url }).eq('id', apartmentid);
+     return { success: !dbError }
 }

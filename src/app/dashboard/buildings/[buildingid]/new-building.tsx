@@ -26,13 +26,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { buildingInitialValues, buildingValidationSchema, statusMap, type Building } from 'src/types/building';
 import type { File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
-import { BaseEntity } from 'src/types/base-entity';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
-import { removeAllImagesFromBuilding, removeBuildingImageFilePath, uploadImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { removeAllImagesFromBuilding, removeBuildingImageFilePath, setAsBuildingCoverImage, uploadBuildingImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -112,7 +111,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
 
     try {
       // Start upload
-      const uploadResponse = await uploadImagesAndGetUrls(
+      const uploadResponse = await uploadBuildingImagesAndGetUrls(
         newFiles,
         userData.client?.name!,
         buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number,
@@ -263,7 +262,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
               data={locationDataWithNoBuildingId}
               selectedItem={formik.values.building_location?.id ? locationData.find(item => item.id === formik.values.building_location?.id) : undefined}
               searchKey="street_address"
-              label={t('locations.searchLocationLabel')}
+              label={locationData.length > 0 ? t('locations.searchLocationLabel') : t('locations.addLocationsFirstLabel')}
               onValueChange={(id) => formik.setFieldValue('building_location', locationData.find(item => item.id === id))}
               renderOption={(item) => (
                 <Box>
@@ -418,6 +417,10 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 onRemoveImage={handleFileRemove}
                 uploadProgress={uploadProgress}
                 images={buildingData.building_images || []}
+                onSetAsCover={async (url) => {
+                  const { success } = await setAsBuildingCoverImage(buildingData.id!, url);
+                  if (!success) throw new Error();
+                }}
               />
               {formik.errors.building_images && (
                 <FormHelperText error>{formik.dirty}</FormHelperText>

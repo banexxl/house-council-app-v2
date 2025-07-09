@@ -223,6 +223,7 @@ export const en = {
   [tokens.locations.locationPopupTitle]: 'Pin is placed on',
   [tokens.locations.locationAlreadyExists]: 'Location has been taken!',
   [tokens.locations.searchLocationLabel]: 'Search location',
+  [tokens.locations.addLocationsFirstLabel]: 'Please add locations first',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Apartment Number',

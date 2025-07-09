@@ -1,3 +1,5 @@
+import { checkIfApartmentExistsInBuilding } from 'src/app/actions/apartment/apartment-actions';
+import { getBuildingById } from 'src/app/actions/building/building-actions';
 import * as Yup from 'yup';
 
 // Apartment Type Enum (String Literal Union)
@@ -69,8 +71,31 @@ export const RentalStatusValues: RentalStatus[] = [
 // Yup Validation Schema
 export const apartmentValidationSchema = Yup.object().shape({
      building_id: Yup.string().required('Required'),
-     apartment_number: Yup.string().required('Required'),
-     floor: Yup.number().integer().required('Required'),
+     apartment_number: Yup.string().test(
+          'unique-apartment-number',
+          'Apartment number already exists in this building',
+          async (value, context) => {
+               const { building_id } = context.parent as Apartment;
+               const { exists } = await checkIfApartmentExistsInBuilding(
+                    building_id,
+                    value!
+               );
+               console.log('exists', exists);
+
+               return !exists;
+          }
+     ).required('Required'),
+     floor: Yup.number().integer().test(
+          'valid-floor',
+          'Floor cannot be higher than the building stories',
+          async (value, context) => {
+               const { building_id } = context.parent as Apartment;
+               const { data: building } = await getBuildingById(building_id);
+               if (!building) return false;
+
+               return value! <= building.stories_high;
+          }
+     ).required('Required'),
      square_meters: Yup.number().integer().min(0).optional(),
      room_count: Yup.number().integer().min(0).optional(),
      notes: Yup.string().optional(),

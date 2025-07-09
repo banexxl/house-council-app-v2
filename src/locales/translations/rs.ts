@@ -224,6 +224,7 @@ export const rs = {
      [tokens.locations.locationPopupTitle]: 'Zauzeta lokacija',
      [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
      [tokens.locations.searchLocationLabel]: 'Pretraga lokacija',
+     [tokens.locations.addLocationsFirstLabel]: 'Morate prvo dodati lokacije',
      //#endregion
      //#region Apartments
      [tokens.apartments.lblApartmentNumber]: 'Broj apartmana',

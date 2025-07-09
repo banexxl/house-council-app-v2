@@ -137,150 +137,147 @@ export async function getApartmentById(id: string) {
      };
 }
 
-export async function createApartment(payload: Omit<Apartment, "id">) {
+export async function createOrUpdateApartment(payload: Omit<Apartment, "id"> & { id?: string }) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { apartment_images, ...insertPayload } = payload;
+     const { apartment_images, id, ...apartmentPayload } = payload;
 
-     // 1. Fetch building data to get number_of_apartments limit
-     const { data: building, error: buildingError } = await supabase
-          .from("tblBuildings")
-          .select("number_of_apartments")
-          .eq("id", payload.building_id)
-          .single();
+     if (id) {
+          // === UPDATE ===
+          const { data, error } = await supabase
+               .from("tblApartments")
+               .update(apartmentPayload)
+               .eq("id", id)
+               .select()
+               .single();
 
-     if (buildingError) {
-          await logServerAction({
-               action: "createApartment",
-               duration_ms: Date.now() - time,
-               error: buildingError.message,
-               payload,
-               status: "fail",
-               type: "db",
-               user_id: "",
-               id: "",
-          });
-          return { success: false, error: "Failed to fetch building data." };
-     }
+          if (error) {
+               await logServerAction({
+                    action: "updateApartment",
+                    duration_ms: Date.now() - time,
+                    error: error.message,
+                    payload,
+                    status: "fail",
+                    type: "db",
+                    user_id: "",
+               });
+               return { success: false, error: error.message };
+          }
 
-     const maxApartments = building?.number_of_apartments ?? 0;
+          if (apartment_images) {
+               await supabase.from("tblApartmentImages").delete().eq("apartment_id", id);
+               const newImages = apartment_images.map((url) => ({ apartment_id: id, image_url: url }));
+               await supabase.from("tblApartmentImages").insert(newImages);
+          }
 
-     // 2. Count current apartments linked to this building
-     const { count, error: countError } = await supabase
-          .from("tblApartments")
-          .select("id", { count: "exact", head: true })
-          .eq("building_id", payload.building_id);
-
-     if (countError) {
-          await logServerAction({
-               action: "createApartment",
-               duration_ms: Date.now() - time,
-               error: countError.message,
-               payload,
-               status: "fail",
-               type: "db",
-               user_id: "",
-               id: "",
-          });
-          return { success: false, error: "Failed to count apartments for building." };
-     }
-
-     if (count! >= maxApartments) {
-          return {
-               success: false,
-               error: "Maximum number of apartments for this building has been reached.",
-          };
-     }
-
-     // 3. Insert new apartment
-     const { data, error } = await supabase
-          .from("tblApartments")
-          .insert(insertPayload)
-          .select()
-          .single();
-
-     if (error) {
-          await logServerAction({
-               action: "createApartment",
-               duration_ms: Date.now() - time,
-               error: error.message,
-               payload,
-               status: "fail",
-               type: "db",
-               user_id: "",
-               id: "",
-          });
-          return { success: false, error: error.message };
-     }
-
-     // 4. Insert images if provided
-     if (apartment_images?.length) {
-          const imageInserts = apartment_images.map((url) => ({
-               apartment_id: data.id,
-               image_url: url,
-          }));
-          await supabase.from("tblApartmentImages").insert(imageInserts);
-     }
-
-     await logServerAction({
-          action: "createApartment",
-          duration_ms: Date.now() - time,
-          error: "",
-          payload,
-          status: "success",
-          type: "db",
-          user_id: "",
-          id: "",
-     });
-
-     return { success: true, data };
-}
-
-export async function updateApartment(id: string, updates: Partial<Apartment>) {
-
-     const time = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     const { apartment_images, ...updatePayload } = updates;
-
-     const { data, error } = await supabase
-          .from("tblApartments")
-          .update(updatePayload)
-          .eq("id", id)
-          .select()
-          .single();
-
-     if (error) {
           await logServerAction({
                action: "updateApartment",
                duration_ms: Date.now() - time,
-               error: error.message,
-               payload: { id, updates },
-               status: "fail",
+               error: "",
+               payload,
+               status: "success",
                type: "db",
                user_id: "",
           });
-          return { success: false, error: error.message };
+
+          return { success: true, data };
+     } else {
+          // === CREATE ===
+
+          // 1. Fetch building data to get number_of_apartments limit
+          const { data: building, error: buildingError } = await supabase
+               .from("tblBuildings")
+               .select("number_of_apartments")
+               .eq("id", payload.building_id)
+               .single();
+
+          if (buildingError) {
+               await logServerAction({
+                    action: "createApartment",
+                    duration_ms: Date.now() - time,
+                    error: buildingError.message,
+                    payload,
+                    status: "fail",
+                    type: "db",
+                    user_id: "",
+                    id: "",
+               });
+               return { success: false, error: "Failed to fetch building data." };
+          }
+
+          const maxApartments = building?.number_of_apartments ?? 0;
+
+          // 2. Count current apartments linked to this building
+          const { count, error: countError } = await supabase
+               .from("tblApartments")
+               .select("id", { count: "exact", head: true })
+               .eq("building_id", payload.building_id);
+
+          if (countError) {
+               await logServerAction({
+                    action: "createApartment",
+                    duration_ms: Date.now() - time,
+                    error: countError.message,
+                    payload,
+                    status: "fail",
+                    type: "db",
+                    user_id: "",
+                    id: "",
+               });
+               return { success: false, error: "Failed to count apartments for building." };
+          }
+
+          if (count! >= maxApartments) {
+               return {
+                    success: false,
+                    error: "Maximum number of apartments for this building has been reached.",
+               };
+          }
+
+          // 3. Insert new apartment
+          const { data, error } = await supabase
+               .from("tblApartments")
+               .insert(apartmentPayload)
+               .select()
+               .single();
+
+          if (error) {
+               await logServerAction({
+                    action: "createApartment",
+                    duration_ms: Date.now() - time,
+                    error: error.message,
+                    payload,
+                    status: "fail",
+                    type: "db",
+                    user_id: "",
+                    id: "",
+               });
+               return { success: false, error: error.message };
+          }
+
+          // 4. Insert images if provided
+          if (apartment_images?.length) {
+               const imageInserts = apartment_images.map((url) => ({
+                    apartment_id: data.id,
+                    image_url: url,
+               }));
+               await supabase.from("tblApartmentImages").insert(imageInserts);
+          }
+
+          await logServerAction({
+               action: "createApartment",
+               duration_ms: Date.now() - time,
+               error: "",
+               payload,
+               status: "success",
+               type: "db",
+               user_id: "",
+               id: "",
+          });
+
+          return { success: true, data };
      }
-
-     if (apartment_images) {
-          await supabase.from("tblApartmentImages").delete().eq("apartment_id", id);
-          const newImages = apartment_images.map((url) => ({ apartment_id: id, image_url: url }));
-          await supabase.from("tblApartmentImages").insert(newImages);
-     }
-
-     await logServerAction({
-          action: "updateApartment",
-          duration_ms: Date.now() - time,
-          error: "",
-          payload: { id, updates },
-          status: "success",
-          type: "db",
-          user_id: "",
-     });
-
-     return { success: true, data };
 }
 
 export async function deleteApartment(id: string) {
@@ -315,3 +312,29 @@ export async function deleteApartment(id: string) {
 
      return { success: true, data: null };
 }
+
+export async function checkIfApartmentExistsInBuilding(buildingId: string, apartmentNumber: string): Promise<{ exists: boolean }> {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { count, error } = await supabase
+          .from("tblApartments")
+          .select("id", { count: "exact", head: true })
+          .eq("building_id", buildingId)
+          .eq("apartment_number", apartmentNumber);
+
+     if (error) {
+          await logServerAction({
+               action: "checkIfApartmentExistsInBuilding",
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { buildingId, apartmentNumber },
+               status: "fail",
+               type: "db",
+               user_id: "",
+          });
+          return { exists: false };
+     }
+     return { exists: count! > 0 };
+}
+

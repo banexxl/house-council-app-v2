@@ -289,6 +289,7 @@ export const tokens = {
     locationPopupTitle: 'locations.locationPopupTitle',
     locationAlreadyExists: 'locations.locationAlreadyExists',
     searchLocationLabel: 'locations.searchLocationLabel',
+    addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
   },
   clients: {
     client: 'clients.client',

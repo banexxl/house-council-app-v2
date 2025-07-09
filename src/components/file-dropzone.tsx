@@ -9,7 +9,6 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import ListItem from '@mui/material/ListItem';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -17,7 +16,6 @@ import { useTranslation } from 'react-i18next';
 import { FullScreenLoader } from './full-screen-loader';
 import { Card, CardContent, Dialog, Fade, Grid, ListItemAvatar, Tooltip } from '@mui/material';
 import { PopupModal } from './modal-dialog';
-import { setAsBuildingCoverImage } from 'src/libs/supabase/sb-storage';
 import toast from 'react-hot-toast';
 
 export type File = FileWithPath;
@@ -33,7 +31,8 @@ interface FileDropzoneProps extends DropzoneOptions {
   images?: {
     image_url: string;
     is_cover_image: boolean;
-  }[]
+  }[],
+  onSetAsCover?: (url: string) => Promise<void>;
 }
 
 export const FileDropzone: FC<FileDropzoneProps> = (props) => {
@@ -58,13 +57,11 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
   };
 
   const handleSetAsCover = async (url: string) => {
+    if (!props.onSetAsCover) return;
+
     try {
-      const { success } = await setAsBuildingCoverImage(entityId!, url)
-      if (success) {
-        toast.success(t('common.actionSaveSuccess'));
-      } else {
-        toast.error(t('common.actionSaveError'));
-      }
+      await props.onSetAsCover(url);
+      toast.success(t('common.actionSaveSuccess'));
     } catch (error) {
       toast.error(t('common.actionSaveError'));
     }

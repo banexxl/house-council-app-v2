@@ -223,6 +223,7 @@ export const es = {
   [tokens.locations.locationPopupTitle]: 'El pin se coloca en',
   [tokens.locations.locationAlreadyExists]: 'Ubicación ya existente!',
   [tokens.locations.searchLocationLabel]: 'Buscar ubicación',
+  [tokens.locations.addLocationsFirstLabel]: 'Para agregar ubicaciones, primero cree un edificio',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Número de Apartamento',
