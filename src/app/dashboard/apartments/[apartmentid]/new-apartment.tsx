@@ -21,7 +21,7 @@ import { FileDropzone } from 'src/components/file-dropzone';
 import type { File } from 'src/components/file-dropzone';
 import { apartmentInitialValues, apartmentValidationSchema, type Apartment } from 'src/types/apartment';
 import { createOrUpdateApartment } from 'src/app/actions/apartment/apartment-actions';
-import { setAsApartmentCoverImage, uploadApartmentImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { removeAllImagesFromApartment, removeApartmentImageFilePath, setAsApartmentCoverImage, uploadApartmentImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
 import { Building } from 'src/types/building';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 
@@ -34,7 +34,6 @@ interface ApartmentCreateFormProps {
 export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: ApartmentCreateFormProps) => {
   const router = useRouter();
   const { t } = useTranslation();
-  const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
 
   const formik = useFormik<Apartment>({
@@ -90,6 +89,48 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
       toast.error(t('common.actionUploadError'));
     }
   }, [apartmentData?.id, buildings, userData.client?.name, formik, t]);
+
+  const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
+    try {
+      const { success, error } = await removeApartmentImageFilePath(apartmentData?.id!, filePath);
+
+      if (!success) {
+        toast.error(error ?? t('common.actionDeleteError'));
+        return;
+      }
+
+      // Update local form state (UI)
+      const newImages = formik.values.apartment_images!.filter((url: {
+        image_url: string;
+        is_cover_image: boolean;
+      }) => url.image_url !== filePath);
+      formik.setFieldValue('building_images', newImages);
+      toast.success(t('common.actionDeleteSuccess'));
+    } catch (error) {
+      toast.error(t('common.actionDeleteError'));
+    }
+  }, [formik, apartmentData?.id]);
+
+  const handleFileRemoveAll = useCallback(async (): Promise<void> => {
+    if (!formik.values.apartment_images?.length || !apartmentData?.id) return;
+
+    try {
+
+      const removeAllImagesResponse = await removeAllImagesFromApartment(apartmentData.id);
+
+      if (!removeAllImagesResponse.success) {
+        toast.error(t('common.actionDeleteError'));
+        return;
+      }
+
+      // Clear local form state
+      formik.setFieldValue('building_images', []);
+      toast.success(t('common.actionDeleteSuccess'));
+
+    } catch (error) {
+      toast.error(t('common.actionDeleteError'));
+    }
+  }, [formik, apartmentData?.id]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -172,16 +213,23 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                 <TextField
                   fullWidth
                   type="number"
+                  slotProps={{
+                    htmlInput: {
+                      min: 0,
+                      max: 8
+                    }
+                  }}
                   label={t('apartments.lblRooms')}
                   name="room_count"
                   value={formik.values.room_count}
-                  onChange={(e) => {
-                    formik.setFieldValue("room_count", e.target.value);
-                  }}
+                  onChange={formik.handleChange}
                   onBlur={() => {
                     const value = parseInt(String(formik.values.room_count), 10);
-                    formik.setFieldValue("room_count", isNaN(value) ? '' : value);
+                    formik.setFieldValue("room_count", isNaN(value) ? '' : Math.min(8, Math.max(0, value)));
+                    formik.setFieldTouched("room_count", true);
                   }}
+                  error={Boolean(formik.touched.room_count && formik.errors.room_count)}
+                  helperText={formik.touched.room_count && formik.errors.room_count}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -252,6 +300,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
               <Typography variant="h6" sx={{ mb: 2 }}>{t('common.lblImages')}</Typography>
               <FileDropzone
                 entityId={apartmentData.id}
+                onRemoveImage={handleFileRemove}
+                onRemoveAll={handleFileRemoveAll}
                 accept={{ 'image/*': [] }}
                 caption="(SVG, JPG, PNG or GIF up to 900x400)"
                 onDrop={handleImageUpload}
@@ -265,7 +315,9 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
             </CardContent>
           </Card>
         )}
-
+        <Typography>
+          {JSON.stringify(formik.errors)}
+        </Typography>
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
           <Button color="inherit" onClick={() => router.back()}>
             {t('common.btnCancel')}

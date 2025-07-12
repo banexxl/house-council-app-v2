@@ -97,7 +97,7 @@ export const apartmentValidationSchema = Yup.object().shape({
           }
      ).required('Required'),
      square_meters: Yup.number().integer().min(0).optional(),
-     room_count: Yup.number().integer().min(0).optional(),
+     room_count: Yup.number().integer().min(0).max(8, 'Room count cannot be greater than 8').optional(),
      notes: Yup.string().optional(),
      apartment_type: Yup.string()
           .oneOf(ApartmentTypeValues)
