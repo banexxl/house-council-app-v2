@@ -1,17 +1,20 @@
 // app/api/subscription/check-expired/route.ts
 import { NextResponse } from 'next/server'
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
 export async function POST() {
 
-     const supabase = await useServerSideSupabaseAnonClient()
+     const supabase = await useServerSideSupabaseServiceRoleClient()
 
+     // get all locations without building_id
      const { data, error } = await supabase
           .from('tblBuildingLocations')
           .select('*')
           .is('building_id', null)
 
+
+     // if there are no locations without building_id, that means all locations are taken
      if (error) {
           await logServerAction({
                user_id: null,
@@ -25,8 +28,10 @@ export async function POST() {
           return NextResponse.json({ success: false, error: error.message }, { status: 500 })
      }
 
+     // if there are locations without building_id
      if (data) {
 
+          // delete all locations without building_id
           const addressesDeleted = data.map(location => location.street_address + ', ' + location.street_number + ', ' + location.city);
 
           const { error: deleteError } = await supabase

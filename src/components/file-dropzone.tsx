@@ -28,10 +28,7 @@ interface FileDropzoneProps extends DropzoneOptions {
   onRemoveAll?: () => void;
   onUpload?: () => void;
   uploadProgress?: number;
-  images?: {
-    image_url: string;
-    is_cover_image: boolean;
-  }[],
+  images?: string[],
   onSetAsCover?: (url: string) => Promise<void>;
 }
 
@@ -167,9 +164,9 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                         onMouseEnter={() => setHoveredImageIndex(index)}
                         onMouseLeave={() => setHoveredImageIndex(null)}
                       >
-                        <Tooltip title={image.image_url.split('/').pop()} placement="top">
+                        <Tooltip title={image ? image.split('/').pop() : ''} placement="top">
                           <img
-                            src={image.image_url}
+                            src={image}
                             alt={`Uploaded ${index + 1}`}
                             style={{
                               width: '100%',
@@ -200,7 +197,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                                 px: 2,
                                 py: 0.5,
                               }}
-                              onClick={() => handleSetAsCover(images[index].image_url)}
+                              onClick={() => handleSetAsCover(images[index])}
                             >
                               {t('common.actionSetAsCover')}
                             </Button>
@@ -218,7 +215,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                           bgcolor: 'background.paper',
                           '&:hover': { bgcolor: 'grey.100' },
                         }}
-                        onClick={() => setOpen(image.image_url)}
+                        onClick={() => setOpen(image)}
                       >
                         <Tooltip title={t('common.actionRemove')}>
                           <SvgIcon fontSize="small">
@@ -288,7 +285,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
             </IconButton>
             {selectedIndex !== null && (
               <img
-                src={images?.[selectedIndex].image_url}
+                src={images?.[selectedIndex]}
                 alt={`Preview ${selectedIndex + 1}`}
                 style={{ width: '100%', height: 'auto', borderRadius: 8 }}
               />

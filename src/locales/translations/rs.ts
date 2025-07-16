@@ -96,6 +96,8 @@ export const rs = {
      [tokens.common.lblApartmentCount]: 'Broj stanova',
      [tokens.common.lblMaximumApartmentsPerFloor]: 'Maksimalan broj stanova po spratu',
      [tokens.common.lblHasGroundFloorApartments]: 'Ima stanove na prizemlju',
+     [tokens.common.lblYes]: 'Da',
+     [tokens.common.lblNo]: 'Ne',
      [tokens.common.notes]: 'Napomene',
      [tokens.common.settings]: 'Podešavanje',
      [tokens.common.actionClickToUploadOrDragAndDrop]: 'Kliknite ovdje ili prevucite sliku za upload',
@@ -225,6 +227,7 @@ export const rs = {
      [tokens.locations.locationAlreadyExists]: 'Lokacija je zauzeta!',
      [tokens.locations.searchLocationLabel]: 'Pretraga lokacija',
      [tokens.locations.addLocationsFirstLabel]: 'Morate prvo dodati lokacije',
+     [tokens.locations.locationTaken]: 'Lokacija zauzeta',
      //#endregion
      //#region Apartments
      [tokens.apartments.lblApartmentNumber]: 'Broj apartmana',
@@ -447,6 +450,10 @@ export const rs = {
      [tokens.errors.client.dataTypeMismatch]: 'Tipovi podataka se ne podudaraju',
      [tokens.errors.client.checkViolation]: 'Provjera ne prolazi',
      [tokens.errors.client.unexpectedError]: 'Neočekivana greška',
+     //#endregion
+     //#region Errors Apartment
+     [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'Broj apartmana mora biti alfanumericni',
+     [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'Broj apartmana mora biti jedinstven',
      //#endregion
      //#region Warnings
      [tokens.warning.deleteWarningTitle]: 'Brisanje',

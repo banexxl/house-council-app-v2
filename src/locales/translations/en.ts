@@ -96,6 +96,8 @@ export const en = {
   [tokens.common.lblApartmentCount]: 'Number of Apartments',
   [tokens.common.lblMaximumApartmentsPerFloor]: 'Maximum Apartments per Floor',
   [tokens.common.lblHasGroundFloorApartments]: 'Has Ground Floor Apartments',
+  [tokens.common.lblYes]: 'Yes',
+  [tokens.common.lblNo]: 'No',
   [tokens.common.notes]: 'Notes',
   [tokens.common.settings]: 'Settings',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Click here to upload or drag and drop to upload',
@@ -224,6 +226,7 @@ export const en = {
   [tokens.locations.locationAlreadyExists]: 'Location has been taken!',
   [tokens.locations.searchLocationLabel]: 'Search location',
   [tokens.locations.addLocationsFirstLabel]: 'Please add locations first',
+  [tokens.locations.locationTaken]: 'Location has been taken',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Apartment Number',
@@ -446,6 +449,10 @@ export const en = {
   [tokens.errors.client.dataTypeMismatch]: 'Data types do not match',
   [tokens.errors.client.checkViolation]: 'Check violation',
   [tokens.errors.client.unexpectedError]: 'Unexpected error',
+  //#endregion
+  //#region Errors Apartment
+  [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'Apartment number must be alphanumeric',
+  [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'Apartment number must be unique',
   //#endregion
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Delete Warning',

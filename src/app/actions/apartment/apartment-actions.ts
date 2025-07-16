@@ -5,42 +5,13 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
 
-const enrichApartmentsWithImages = (
-     apartments: Apartment[],
-     imageRecords: {
-          apartment_id: string;
-          image_url: string;
-          is_cover_image: boolean;
-     }[]
-): Apartment[] => {
-     const imageMap = new Map<string, { image_url: string; is_cover_image: boolean }[]>();
-
-     imageRecords.forEach((record) => {
-          if (!imageMap.has(record.apartment_id)) {
-               imageMap.set(record.apartment_id, []);
-          }
-          const images = imageMap.get(record.apartment_id)!;
-
-          if (record.is_cover_image) {
-               images.unshift({ image_url: record.image_url, is_cover_image: true });
-          } else {
-               images.push({ image_url: record.image_url, is_cover_image: false });
-          }
-     });
-
-     return apartments.map((a) => ({
-          ...a,
-          apartment_images: imageMap.get(a.id!) ?? [],
-     }));
-};
-
 export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      const [{ data: buildings, error: buildingsError }, { data: imageRecords }] = await Promise.all([
           supabase.from("tblBuildings").select("*").eq("client_id", clientid),
-          supabase.from("tblApartmentImages").select("apartment_id, image_url, is_cover_image"),
+          supabase.from("tblApartmentImages").select("apartment_id, image_url"),
      ]);
 
      if (buildingsError) {
@@ -57,10 +28,8 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
           return { success: false, error: buildingsError.message };
      }
 
-     const buildingIds = buildings ?? [];
-
      const [{ data: apartments, error: apartmentsError }] = await Promise.all([
-          supabase.from("tblApartments").select("*").in("building_id", buildingIds.map(b => b.id)),
+          supabase.from("tblApartments").select("*").in("building_id", buildings.map(b => b.id)),
      ]);
 
      if (apartmentsError) {
@@ -77,8 +46,6 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
           return { success: false, error: apartmentsError.message };
      }
 
-     const enriched = enrichApartmentsWithImages(apartments ?? [], imageRecords ?? []);
-
      await logServerAction({
           action: "getAllApartmentsFromClientsBuildings",
           duration_ms: Date.now() - time,
@@ -90,17 +57,17 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
           id: "",
      });
 
-     return { success: true, data: enriched };
+     return { success: true, data: { apartments: apartments ?? [], building_images: imageRecords ?? [] } };
 }
 
-export async function getApartmentById(id: string) {
+export async function getApartmentById(id: string): Promise<{ success: boolean; error?: string; data?: Apartment }> {
      const time = Date.now();
      if (!isUUID(id)) return { success: false, error: "Invalid UUID" };
      const supabase = await useServerSideSupabaseAnonClient();
 
      const [{ data: apartment, error }, { data: imageRecords }] = await Promise.all([
           supabase.from("tblApartments").select("*").eq("id", id).single(),
-          supabase.from("tblApartmentImages").select("apartment_id, image_url, is_cover_image").eq("apartment_id", id),
+          supabase.from("tblApartmentImages").select("image_url").eq("apartment_id", id),
      ]);
 
      if (error) {
@@ -132,7 +99,7 @@ export async function getApartmentById(id: string) {
           success: true,
           data: {
                ...apartment,
-               apartment_images: imageRecords ?? [],
+               apartment_images: imageRecords?.map((img) => img.image_url) ?? [],
           },
      };
 }
@@ -257,7 +224,7 @@ export async function createOrUpdateApartment(payload: Omit<Apartment, "id"> & {
           }
 
           // 4. Insert images if provided
-          if (apartment_images?.length) {
+          if (apartment_images && apartment_images.length > 0) {
                const imageInserts = apartment_images.map((url) => ({
                     apartment_id: data.id,
                     image_url: url,
@@ -313,15 +280,16 @@ export async function deleteApartment(id: string) {
      return { success: true, data: null };
 }
 
-export async function checkIfApartmentExistsInBuilding(buildingId: string, apartmentNumber: string): Promise<{ exists: boolean }> {
+export async function checkIfApartmentExistsInBuilding(buildingId: string, apartmentNumber: string): Promise<{ exists: boolean, apartmentid?: string }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { count, error } = await supabase
+     const { data, error } = await supabase
           .from("tblApartments")
-          .select("id", { count: "exact", head: true })
+          .select("id")
           .eq("building_id", buildingId)
-          .eq("apartment_number", apartmentNumber);
+          .eq("apartment_number", apartmentNumber)
+          .limit(1);
 
      if (error) {
           await logServerAction({
@@ -335,6 +303,9 @@ export async function checkIfApartmentExistsInBuilding(buildingId: string, apart
           });
           return { exists: false };
      }
-     return { exists: count! > 0 };
+     return {
+          exists: !!data?.length,
+          apartmentid: data?.[0]?.id
+     };
 }
 

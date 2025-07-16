@@ -32,6 +32,7 @@ import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
 import { removeAllImagesFromBuilding, removeBuildingImageFilePath, setAsBuildingCoverImage, uploadBuildingImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { validate } from 'uuid';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -151,10 +152,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
       }
 
       // Update local form state (UI)
-      const newImages = formik.values.building_images!.filter((url: {
-        image_url: string;
-        is_cover_image: boolean;
-      }) => url.image_url !== filePath);
+      const newImages = formik.values.building_images!.filter((url) => url !== filePath);
       formik.setFieldValue('building_images', newImages);
       toast.success(t('common.actionDeleteSuccess'));
     } catch (error) {
@@ -260,7 +258,11 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
             <Typography variant="h6" sx={{ mb: 2 }}>{t('locations.searchLocationLabel')}</Typography>
             <CustomAutocomplete<BuildingLocation>
               data={locationDataWithNoBuildingId}
-              selectedItem={formik.values.building_location?.id ? locationData.find(item => item.id === formik.values.building_location?.id) : undefined}
+              selectedItem={
+                buildingData?.building_location?.id === formik.values.building_location?.id!
+                  ? buildingData?.building_location
+                  : undefined  // Only pass `undefined` when no match
+              }
               searchKey="street_address"
               label={locationData.length > 0 ? t('locations.searchLocationLabel') : t('locations.addLocationsFirstLabel')}
               onValueChange={(id) => formik.setFieldValue('building_location', locationData.find(item => item.id === id))}
@@ -271,7 +273,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 </Box>
               )}
               getOptionLabel={(item) => `${item.city} — ${item.street_address} ${item.street_number}`}
-              disabled={!!buildingData}
+              disabled={!!locationData}
             />
           </CardContent>
         </Card>

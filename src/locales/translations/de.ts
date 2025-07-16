@@ -96,6 +96,8 @@ export const de = {
   [tokens.common.lblApartmentCount]: 'Anzahl der Wohnungen',
   [tokens.common.lblMaximumApartmentsPerFloor]: 'Maximale Anzahl von Wohnungen pro Stockwerk',
   [tokens.common.lblHasGroundFloorApartments]: 'Hat Erdgeschosswohnungen',
+  [tokens.common.lblYes]: 'Ja',
+  [tokens.common.lblNo]: 'Nein',
   [tokens.common.notes]: 'Notizen',
   [tokens.common.settings]: 'Einstellungen',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Klicken Sie hier, um hochzuladen oder ziehen und loslassen, um hochzuladen',
@@ -224,6 +226,7 @@ export const de = {
   [tokens.locations.locationAlreadyExists]: 'Ort bereits vorhanden!',
   [tokens.locations.searchLocationLabel]: 'Ort suchen',
   [tokens.locations.addLocationsFirstLabel]: 'Zuerst Orte hinzufügen',
+  [tokens.locations.locationTaken]: 'Ort bereits vergeben',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Wohnungsnummer',
@@ -362,7 +365,7 @@ export const de = {
   [tokens.clients.clientStatusVIP]: 'VIP',
   [tokens.clients.clientStatusReactivated]: 'Reaktiviert',
   [tokens.clients.clientStatusDormant]: 'Inaktiv',
-  // Client validation
+  //#region Client validation
   [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
   [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',
   [tokens.clients.clientEmailRequired]: 'Email ist erforderlich',
@@ -442,6 +445,10 @@ export const de = {
   [tokens.errors.client.checkViolation]: 'Überprüfungsverletzung',
   [tokens.errors.client.unexpectedError]: 'Unerwarteter Fehler',
   //#endregion
+  //#region Errors Apartment
+  [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'Zimmernummer muss alphanumerisch sein',
+  [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'Zimmernummer muss eindeutig sein',
+  //#endregion
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Löschen bestätigen',
   [tokens.warning.deleteWarningMessage]: 'Möchten Sie diesen Eintrag wirklich löschen?',
@@ -471,7 +478,6 @@ export const de = {
   [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Monatlich',
   [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Jahres',
   //#endregion
-  //#region Page Errors
   //#region Page Errors
   [tokens.errors.page.notFound]: 'Seite nicht gefunden',
   [tokens.errors.page.notFoundDescription]: 'Die von Ihnen angeforderte Seite existiert nicht. Bitte überprüfen Sie die URL.',

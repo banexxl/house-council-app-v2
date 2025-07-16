@@ -32,13 +32,14 @@ interface ApartmentCreateFormProps {
 }
 
 export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: ApartmentCreateFormProps) => {
+
   const router = useRouter();
   const { t } = useTranslation();
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
 
   const formik = useFormik<Apartment>({
     initialValues: apartmentData ? apartmentData : apartmentInitialValues,
-    validationSchema: apartmentValidationSchema,
+    validationSchema: apartmentValidationSchema(t, apartmentData?.id),
     onSubmit: async (values, helpers) => {
       helpers.setSubmitting(true); // manually set submitting state
 
@@ -83,8 +84,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
     setTimeout(() => setUploadProgress(undefined), 500);
 
     if (upload.success && upload.urls) {
-      const newImages = upload.urls.map((url) => ({ image_url: url, is_cover_image: false }));
-      formik.setFieldValue('apartment_images', [...(formik.values.apartment_images || []), ...newImages]);
+      const newImages = upload.urls.map((url) => url); // just strings
+
+      formik.setFieldValue(
+        'apartment_images',
+        [...(formik.values.apartment_images || []), ...newImages]
+      );
     } else {
       toast.error(t('common.actionUploadError'));
     }
@@ -100,11 +105,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
       }
 
       // Update local form state (UI)
-      const newImages = formik.values.apartment_images!.filter((url: {
-        image_url: string;
-        is_cover_image: boolean;
-      }) => url.image_url !== filePath);
-      formik.setFieldValue('building_images', newImages);
+      const newImages = formik.values.apartment_images!.filter((url) => url !== filePath);
+      formik.setFieldValue('apartment_images', newImages);
       toast.success(t('common.actionDeleteSuccess'));
     } catch (error) {
       toast.error(t('common.actionDeleteError'));
@@ -163,18 +165,18 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   fullWidth
                   label={t('apartments.lblApartmentNumber')}
                   name="apartment_number"
+                  type="text"
                   value={formik.values.apartment_number}
-                  type="number"
                   onChange={formik.handleChange}
                   onBlur={() => {
-                    // On blur, sanitize and cast to integer
-                    const value = parseInt(String(formik.values.apartment_number), 10);
-                    formik.setFieldValue("apartment_number", isNaN(value) ? '' : value);
+                    const trimmedValue = formik.values.apartment_number?.trim() ?? '';
+                    formik.setFieldValue("apartment_number", trimmedValue);
                     formik.setFieldTouched("apartment_number", true);
                   }}
                   error={Boolean(formik.touched.apartment_number && formik.errors.apartment_number)}
                   helperText={formik.touched.apartment_number && formik.errors.apartment_number}
                 />
+
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField

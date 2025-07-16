@@ -96,6 +96,8 @@ export const tokens = {
     lblApartmentCount: 'common.lblApartmentCount',
     lblMaximumApartmentsPerFloor: 'common.lblMaximumApartmentsPerFloor',
     lblHasGroundFloorApartments: 'common.lblHasGroundFloorApartments',
+    lblYes: 'common.lblYes',
+    lblNo: 'common.lblNo',
     notes: 'common.notes',
     settings: 'common.settings',
     actionClickToUploadOrDragAndDrop: 'common.actionClickToUploadOrDragAndDrop',
@@ -288,6 +290,7 @@ export const tokens = {
     locationAddress: 'locations.locationAddress',
     locationPopupTitle: 'locations.locationPopupTitle',
     locationAlreadyExists: 'locations.locationAlreadyExists',
+    locationTaken: 'locations.locationTaken',
     searchLocationLabel: 'locations.searchLocationLabel',
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
   },
@@ -467,6 +470,10 @@ export const tokens = {
   },
   errors: {
     locationPermissionDenied: 'errors.locationPermissionDenied',
+    apartment: {
+      apartmentNumberMustBeAlphaNumeric: 'errors.apartment.apartmentNumberMustBeAlphaNumeric',
+      apartmentNumberMustBeUnique: 'errors.apartment.apartmentNumberMustBeUnique',
+    },
     client: {
       clientPaymentMethodError: 'errors.client.clientPaymentMethodError',
       uniqueEmailViolation: 'errors.client.uniqueEmailViolation',

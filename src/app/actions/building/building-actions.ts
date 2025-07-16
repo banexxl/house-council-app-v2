@@ -7,41 +7,6 @@ import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
 
 /**
- * Helper to map images to buildings
- */
-const enrichBuildingsWithImages = (
-     buildings: Building[],
-     imageRecords: {
-          building_id: string;
-          image_url: string;
-          is_cover_image: boolean;
-     }[]
-): Building[] => {
-     const imageMap = new Map<
-          string,
-          { image_url: string; is_cover_image: boolean }[]
-     >();
-
-     imageRecords.forEach((record) => {
-          if (!imageMap.has(record.building_id)) {
-               imageMap.set(record.building_id, []);
-          }
-          const images = imageMap.get(record.building_id)!;
-
-          if (record.is_cover_image) {
-               images.unshift({ image_url: record.image_url, is_cover_image: true });
-          } else {
-               images.push({ image_url: record.image_url, is_cover_image: false });
-          }
-     });
-
-     return buildings.map((b) => ({
-          ...b,
-          building_images: imageMap.get(b.id!) ?? [],
-     }));
-};
-
-/**
  * Get all buildings from a client
  */
 export async function getAllBuildingsFromClient(
@@ -58,7 +23,7 @@ export async function getAllBuildingsFromClient(
                     .eq("client_id", client_id),
                supabase
                     .from("tblBuildingImages")
-                    .select("building_id, image_url, is_cover_image"),
+                    .select("building_id, image_url"),
           ]);
 
      if (error) {
@@ -75,11 +40,6 @@ export async function getAllBuildingsFromClient(
           return { success: false, error: error.message };
      }
 
-     const enriched = enrichBuildingsWithImages(
-          buildings ?? [],
-          imageRecords ?? []
-     );
-
      await logServerAction({
           action: "getAllBuildingsFromClient",
           duration_ms: Date.now() - time,
@@ -91,7 +51,7 @@ export async function getAllBuildingsFromClient(
           id: "",
      });
 
-     return { success: true, data: enriched };
+     return { success: true, data: buildings ?? [] };
 }
 
 /**
@@ -111,7 +71,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
                .single(),
           supabase
                .from('tblBuildingImages')
-               .select('building_id, image_url, is_cover_image')
+               .select('building_id, image_url')
                .eq('building_id', id)
      ]);
 
@@ -144,7 +104,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
           success: true,
           data: {
                ...building,
-               building_images: imageRecords ?? [],
+               building_images: imageRecords?.map((img) => img.image_url) ?? [],
           }
      };
 }
@@ -278,9 +238,9 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
 
      // Replace existing images
      if (building_images) {
-          await supabase.from('tblBuildingImages').delete().eq('building_id', id);
-          const newImages = building_images.map(image => ({ building_id: id, image_url: image.image_url }));
-          await supabase.from('tblBuildingImages').insert(newImages);
+          const { error: deleteError } = await supabase.from('tblBuildingImages').delete().eq('building_id', id);
+          const newImages = building_images.map(image => ({ building_id: id, image_url: image }));
+          const { error: insertError } = await supabase.from('tblBuildingImages').insert(newImages);
      }
 
      await logServerAction({

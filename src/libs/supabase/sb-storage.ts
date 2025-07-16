@@ -279,6 +279,19 @@ export const removeAllImagesFromBuilding = async (
      }
 };
 
+/**
+ * Sets the cover image for a specific building.
+ *
+ * @param buildingId - The unique identifier of the building.
+ * @param imageURL - The URL of the image to be set as the cover.
+ * @returns An object indicating success or failure, with an optional error message.
+ *
+ * This function updates the `cover_image` field in the `tblBuildings` table
+ * with the provided image URL for the specified building. It also logs the
+ * action and revalidates the associated path. If an error occurs during the 
+ * update, it logs the error and returns an object with the error message.
+ */
+
 export const setAsBuildingCoverImage = async (
      buildingId: string,
      imageURL: string
@@ -288,18 +301,11 @@ export const setAsBuildingCoverImage = async (
 
      try {
 
-          //Clear existing cover
-          const { error: clearError } = await supabase
-               .from('tblBuildingImages')
-               .update({ is_cover_image: false })
-               .eq('building_id', buildingId)
-
           // Set new cover
           const { error: updateError } = await supabase
-               .from('tblBuildingImages')
-               .update({ is_cover_image: true })
+               .from('tblBuildings')
+               .update({ cover_image: imageURL })
                .eq('building_id', buildingId)
-               .eq('image_url', imageURL)
 
           if (updateError) {
                await logServerAction({
@@ -321,8 +327,15 @@ export const setAsBuildingCoverImage = async (
      }
 }
 
+
 /**
- * Uploads one or more images to Supabase Storage and links them to a apartment in `tblApartmentImages`
+ * Uploads one or more images to Supabase Storage and links them to an apartment in `tblApartmentImages`
+ *
+ * @param files - The images to be uploaded
+ * @param client - The client that the apartment belongs to
+ * @param address - The address of the apartment
+ * @param apartmentid - The unique identifier of the apartment
+ * @returns An object indicating success or failure, with an optional array of URLs and an optional error message
  */
 export const uploadApartmentImagesAndGetUrls = async (
      files: File[],
@@ -433,6 +446,9 @@ export const uploadApartmentImagesAndGetUrls = async (
      }
 };
 
+/**
+ * Removes an image file from Supabase Storage and deletes the image record from `tblApartmentImages`
+ */
 export const removeApartmentImageFilePath = async (
      apartmentid: string,
      filePathOrUrl: string
@@ -490,13 +506,19 @@ export const removeApartmentImageFilePath = async (
                })
                return { success: false, error: dbDeleteError.message };
           }
-
+          revalidatePath(`/dashboard/apartments/${apartmentid}`);
           return { success: true };
      } catch (error: any) {
           return { success: false, error: error.message };
      }
 };
 
+/**
+ * Deletes all images associated with a given apartment ID from Supabase Storage and tblApartmentImages.
+ * 
+ * @param apartmentid The ID of the apartment to delete images for.
+ * @returns A promise resolving to an object with a success boolean and optionally an error string.
+ */
 export const removeAllImagesFromApartment = async (apartmentid: string): Promise<{ success: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -561,15 +583,24 @@ export const removeAllImagesFromApartment = async (apartmentid: string): Promise
                })
                return { success: false, error: dbDeleteError.message };
           }
-
+          revalidatePath(`/dashboard/apartments/${apartmentid}`);
           return { success: true };
      } catch (error: any) {
           return { success: false, error: error.message };
      }
 };
 
+/**
+ * Sets the given URL as the cover image for the apartment with the given ID.
+ * Returns a promise resolving to an object with a success boolean.
+ * @param apartmentid The ID of the apartment to set the cover image for.
+ * @param url The URL of the image to set as the cover image.
+ * @returns A promise resolving to an object with a success boolean.
+ */
 export const setAsApartmentCoverImage = async (apartmentid: string, url: string): Promise<{ success: boolean }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { error: dbError } = await supabase.from('tblApartments').update({ cover_image: url }).eq('id', apartmentid);
+     if (dbError) return { success: false };
+     revalidatePath(`/dashboard/apartments/`);
      return { success: !dbError }
 }

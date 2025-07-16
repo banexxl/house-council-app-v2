@@ -5,8 +5,6 @@ import Buildings from "./buildings";
 import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import Loading from "src/app/loading";
 
 export default async function Page() {
 
@@ -21,9 +19,7 @@ export default async function Page() {
   ]);
 
   return (
-    <Suspense fallback={<Loading />}>
-      <Buildings clientBuildings={success ? data! : []} />
-    </Suspense>
+    <Buildings clientBuildings={success ? data! : []} />
   )
 }
 

@@ -76,15 +76,13 @@ export const ApartmentListTable: FC<ApartmentListTableProps> = ({
                         style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          {apartment.apartment_images?.length ? (
+                          {apartment.cover_image ? (
                             <Box
                               sx={{
                                 width: 64,
                                 height: 64,
                                 borderRadius: 1,
-                                backgroundImage: `url(${apartment.apartment_images.find(img => img.is_cover_image)?.image_url ||
-                                  apartment.apartment_images[0].image_url
-                                  })`,
+                                backgroundImage: `url(${apartment.cover_image})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 mr: 2,

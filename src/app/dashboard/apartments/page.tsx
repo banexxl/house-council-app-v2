@@ -17,6 +17,6 @@ export default async function Page() {
   const { success, data, error } = await getAllApartmentsFromClientsBuildings(client!.id);
 
   return (
-    <Apartments apartments={data ?? []} />
+    <Apartments apartments={data?.apartments ?? []} />
   );
 }

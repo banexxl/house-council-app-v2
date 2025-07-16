@@ -82,6 +82,7 @@ interface BuildingTableProps {
 }
 
 const Buildings = ({ clientBuildings }: BuildingTableProps) => {
+
   const { t } = useTranslation();
   const buildingSearch = useBuildingsSearch();
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);

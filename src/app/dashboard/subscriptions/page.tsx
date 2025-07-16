@@ -1,8 +1,6 @@
-import { Box, Card, Container, Stack, Typography } from "@mui/material";
-import { Suspense } from "react";
+import { Box, Container, Stack } from "@mui/material";
 import { readAllEntities } from "src/app/actions/base-entity-actions";
 import { readAllSubscriptionPlans } from "src/app/actions/subscription-plans/subscription-plan-actions";
-import Loading from "src/app/loading";
 import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
 import { BaseEntity } from "src/types/base-entity";
 
@@ -22,9 +20,7 @@ export default async function Page() {
           >
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <Suspense fallback={<Loading />}>
-                              <SubscriptionTable subscriptionPlans={subscriptionPlans.subscriptionPlanData} subscriptionPlanStatuses={subscriptionPlanStatuses} />
-                         </Suspense>
+                         <SubscriptionTable subscriptionPlans={subscriptionPlans.subscriptionPlanData} subscriptionPlanStatuses={subscriptionPlanStatuses} />
                     </Stack>
                </Container>
           </Box>

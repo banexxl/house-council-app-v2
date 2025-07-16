@@ -96,6 +96,8 @@ export const es = {
   [tokens.common.lblApartmentCount]: 'Cantidad de apartamentos',
   [tokens.common.lblMaximumApartmentsPerFloor]: 'Máximo de apartamentos por piso',
   [tokens.common.lblHasGroundFloorApartments]: 'Tiene apartamentos en planta baja',
+  [tokens.common.lblYes]: 'Si',
+  [tokens.common.lblNo]: 'No',
   [tokens.common.notes]: 'Notas',
   [tokens.common.settings]: 'Ajustes',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Haz clic aqui para subir o arrastra y suelta para subir',
@@ -224,6 +226,7 @@ export const es = {
   [tokens.locations.locationAlreadyExists]: 'Ubicación ya existente!',
   [tokens.locations.searchLocationLabel]: 'Buscar ubicación',
   [tokens.locations.addLocationsFirstLabel]: 'Para agregar ubicaciones, primero cree un edificio',
+  [tokens.locations.locationTaken]: 'Ubicación tomada!',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Número de Apartamento',
@@ -445,6 +448,10 @@ export const es = {
   [tokens.errors.client.dataTypeMismatch]: 'Violación de tipo de datos',
   [tokens.errors.client.checkViolation]: 'Violación de verificación',
   [tokens.errors.client.unexpectedError]: 'Error inesperado',
+  //#endregion
+  //#region Errors Apartment
+  [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'El numero de apartamento debe ser alfanumerico',
+  [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'El numero de apartamento debe ser unico',
   //#endregion
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Eliminar',

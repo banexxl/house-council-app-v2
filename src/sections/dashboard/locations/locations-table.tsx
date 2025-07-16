@@ -2,13 +2,12 @@
 
 import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
+import { validate as isUUID } from 'uuid';
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
+
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -16,8 +15,6 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
@@ -244,6 +241,7 @@ export const LocationsTable: FC<LocationsTableProps> = ({ items = [] }) => {
               <TableCell>{t('locations.locationState')}</TableCell>
               <TableCell>{t('locations.locationCountry')}</TableCell>
               <TableCell>{t('locations.locationZipCode')}</TableCell>
+              <TableCell>{t('locations.locationTaken')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -272,6 +270,9 @@ export const LocationsTable: FC<LocationsTableProps> = ({ items = [] }) => {
                       <TableCell>{location.region}</TableCell>
                       <TableCell>{location.country}</TableCell>
                       <TableCell>{location.post_code}</TableCell>
+                      <TableCell>
+                        {isUUID(location.building_id) ? t('common.lblYes') : t('common.lblNo')}
+                      </TableCell>
                     </TableRow>
                   );
                 })
