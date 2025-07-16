@@ -23,7 +23,7 @@ import OpacityIcon from '@mui/icons-material/Opacity';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { buildingInitialValues, buildingValidationSchema, statusMap, type Building } from 'src/types/building';
+import { buildingInitialValues, buildingValidationSchema, buildingStatusMap, type Building } from 'src/types/building';
 import type { File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
@@ -396,7 +396,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                     : undefined
                 }
               >
-                {Object.entries(statusMap).map(([value, resourceString]) => (
+                {Object.entries(buildingStatusMap).map(([value, resourceString]) => (
                   <MenuItem key={value} value={value}>
                     {t(resourceString)}
                   </MenuItem>

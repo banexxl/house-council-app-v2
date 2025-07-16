@@ -11,12 +11,12 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Link from 'next/link';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, Typography } from '@mui/material';
 import Image01Icon from '@untitled-ui/icons-react/build/esm/Image01';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { SeverityPillColor } from 'src/components/severity-pill';
-import type { Apartment } from 'src/types/apartment';
+import { apartmentStatusMap, apartmentTypeMap, type Apartment } from 'src/types/apartment';
 import { useTranslation } from 'react-i18next';
 import { paths } from 'src/paths';
 
@@ -113,10 +113,10 @@ export const ApartmentListTable: FC<ApartmentListTableProps> = ({
                     <TableCell>{apartment.floor}</TableCell>
                     <TableCell>{apartment.square_meters ?? '-'}</TableCell>
                     <TableCell>{apartment.room_count ?? '-'}</TableCell>
-                    <TableCell>{t(`${apartment.apartment_type}`).charAt(0).toUpperCase() + t(`${apartment.apartment_type}`).slice(1)}</TableCell>
+                    <TableCell>{t(apartmentTypeMap[apartment.apartment_type])}</TableCell>
                     <TableCell>
-                      <SeverityPill color={pillColor(apartment.rental_status)}>
-                        {t(`${apartment.rental_status}`)}
+                      <SeverityPill color={pillColor(apartment.apartment_status)}>
+                        {t(apartmentStatusMap[apartment.apartment_status]) || apartment.apartment_status}
                       </SeverityPill>
                     </TableCell>
                   </TableRow>

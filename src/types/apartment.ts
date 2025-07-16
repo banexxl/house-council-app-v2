@@ -28,9 +28,9 @@ export interface Apartment {
      square_meters?: number;
      room_count?: number;
      notes?: string;
-     apartment_type?: ApartmentType;
-     rental_status?: ApartmentStatus;
-     created_at?: string;
+     apartment_type: ApartmentType;
+     apartment_status: ApartmentStatus;
+     created_at: string;
      updated_at?: string;
      apartment_images?: string[];
      cover_image?: string;
@@ -45,7 +45,8 @@ export const apartmentInitialValues: Apartment = {
      room_count: 0,
      notes: '',
      apartment_type: 'residential',
-     rental_status: 'owned',
+     apartment_status: 'owned',
+     created_at: ''
 };
 
 // Explicit allowed values for validation
@@ -65,6 +66,23 @@ export const ApartmentStatusValues: ApartmentStatus[] = [
      'for_rent',
      'vacant'
 ];
+
+export const apartmentTypeMap: Record<string, string> = {
+     residential: 'apartments.lblApartmentTypeResidential',
+     business: 'apartments.lblApartmentTypeBusiness',
+     mixed_use: 'apartments.lblApartmentTypeMixedUse',
+     vacation: 'apartments.lblApartmentTypeVacation',
+     storage: 'apartments.lblApartmentTypeStorage',
+     garage: 'apartments.lblApartmentTypeGarage',
+     utility: 'apartments.lblApartmentTypeUtility',
+};
+
+export const apartmentStatusMap: Record<string, string> = {
+     owned: 'apartments.lblOwned',
+     rented: 'apartments.lblRented',
+     for_rent: 'apartments.lblForRent',
+     vacant: 'apartments.lblVacant',
+}
 
 // Yup Validation Schema
 export const apartmentValidationSchema = (t: (key: string) => string, apartmentId?: string) => Yup.object().shape({
@@ -107,7 +125,7 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
      apartment_type: Yup.string()
           .oneOf(ApartmentTypeValues)
           .required('Required'),
-     rental_status: Yup.string()
+     apartment_status: Yup.string()
           .oneOf(ApartmentStatusValues)
           .required('Required'),
      apartment_images: Yup.array().of(

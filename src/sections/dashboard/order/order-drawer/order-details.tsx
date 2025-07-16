@@ -22,7 +22,7 @@ import { SeverityPill } from 'src/components/severity-pill';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Order, OrderStatus } from 'src/types/order';
 
-const statusMap: Record<OrderStatus, string> = {
+const buildingStatusMap: Record<OrderStatus, string> = {
   canceled: 'warning',
   complete: 'success',
   pending: 'info',
@@ -43,7 +43,7 @@ export const OrderDetails: FC<OrderDetailsProps> = (props) => {
   const align = lgUp ? 'horizontal' : 'vertical';
   const items = order.items || [];
   const created_at = format(order.created_at, 'dd/MM/yyyy HH:mm');
-  const statusColor = statusMap[order.status] as SeverityPillColor;
+  const statusColor = buildingStatusMap[order.status] as SeverityPillColor;
   const totalAmount = numeral(order.totalAmount).format(`${order.currency}0,0.00`);
 
   return (

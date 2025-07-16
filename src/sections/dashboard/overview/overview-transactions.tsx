@@ -18,7 +18,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
 
-const statusMap: Record<string, SeverityPillColor> = {
+const buildingStatusMap: Record<string, SeverityPillColor> = {
   confirmed: 'success',
   on_hold: 'warning',
   failed: 'error',
@@ -72,7 +72,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = (props) => {
             {transactions.map((transaction) => {
               const createdAtMonth = format(transaction.created_at, 'LLL').toUpperCase();
               const createdAtDay = format(transaction.created_at, 'd');
-              const statusColor = statusMap[transaction.status];
+              const statusColor = buildingStatusMap[transaction.status];
               const type = transaction.type === 'receive' ? 'Payment received' : 'Payment sent';
               const amount =
                 (transaction.type === 'receive' ? '+' : '-') +

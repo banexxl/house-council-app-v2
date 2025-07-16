@@ -31,6 +31,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const [{ data: apartments, error: apartmentsError }] = await Promise.all([
           supabase.from("tblApartments").select("*").in("building_id", buildings.map(b => b.id)),
      ]);
+     console.log('data', apartments);
 
      if (apartmentsError) {
           await logServerAction({

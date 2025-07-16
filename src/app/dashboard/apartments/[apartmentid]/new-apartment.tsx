@@ -267,8 +267,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   select
                   fullWidth
                   label={t('apartments.lblRentalStatus')}
-                  name="rental_status"
-                  value={formik.values.rental_status}
+                  name="apartment_status"
+                  value={formik.values.apartment_status}
                   onChange={formik.handleChange}
                 >
                   {['owned', 'rented', 'for_rent', 'vacant'].map((option) => (

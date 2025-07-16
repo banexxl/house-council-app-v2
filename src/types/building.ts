@@ -31,7 +31,7 @@ export interface BuildingOptions {
      resource_string: string; // i18n label key
 }
 
-export const statusMap: Record<string, string> = {
+export const buildingStatusMap: Record<string, string> = {
      vacant: 'buildings.lblBuildingStatusVacant',
      partially_leased: 'buildings.lblBuildingStatusPartiallyLeased',
      renovation: 'buildings.lblBuildingStatusRenovation',

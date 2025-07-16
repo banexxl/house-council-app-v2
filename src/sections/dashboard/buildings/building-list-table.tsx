@@ -15,7 +15,7 @@ import TableRow from '@mui/material/TableRow';
 import Link from 'next/link';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
-import { statusMap, type Building } from 'src/types/building';
+import { buildingStatusMap, type Building } from 'src/types/building';
 import { SvgIcon, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { paths } from 'src/paths';
@@ -142,7 +142,7 @@ export const BuildingListTable: FC<BuildingListTableProps> = ({
                                 : 'warning'
                           }
                         >
-                          {t(statusMap[building.building_status] || building.building_status)}
+                          {t(buildingStatusMap[building.building_status] || building.building_status)}
                         </SeverityPill>
                       </TableCell>
                       <TableCell align="left">{building.number_of_apartments}</TableCell>

@@ -14,7 +14,7 @@ import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
 import type { Order, OrderStatus } from 'src/types/order';
 
-const statusMap: Record<OrderStatus, SeverityPillColor> = {
+const buildingStatusMap: Record<OrderStatus, SeverityPillColor> = {
   complete: 'success',
   pending: 'info',
   canceled: 'warning',
@@ -50,7 +50,7 @@ export const OrderListTable: FC<OrderListTableProps> = (props) => {
             const createdAtMonth = format(order.created_at, 'LLL').toUpperCase();
             const createdAtDay = format(order.created_at, 'd');
             const totalAmount = numeral(order.totalAmount).format(`${order.currency}0,0.00`);
-            const statusColor = statusMap[order.status] || 'warning';
+            const statusColor = buildingStatusMap[order.status] || 'warning';
 
             return (
               <TableRow

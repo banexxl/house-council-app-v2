@@ -59,7 +59,7 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
         : true;
 
       const matchesRental = filters.rentalStatuses.length
-        ? filters.rentalStatuses.includes(apartment.rental_status || '')
+        ? filters.rentalStatuses.includes(apartment.apartment_status || '')
         : true;
 
       return matchesNumber && matchesType && matchesRental;

@@ -20,7 +20,7 @@ import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-li
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
 import { useTranslation } from 'react-i18next';
 import { Building } from 'src/types/building';
-import { statusMap } from 'src/types/building';
+import { buildingStatusMap } from 'src/types/building';
 
 const amenityKeyMap: Record<string, keyof Building> = {
   'common.lblHasParkingLot': 'has_parking_lot',
@@ -37,7 +37,7 @@ const amenityKeyMap: Record<string, keyof Building> = {
 export interface BuildingSearchFilters {
   address?: string;
   amenities: string[];
-  statuses: (keyof typeof statusMap)[];
+  statuses: (keyof typeof buildingStatusMap)[];
 }
 
 export interface BuildingsSearchState {
@@ -105,7 +105,7 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
         : true;
 
       const matchesStatuses = statuses.length
-        ? statuses.includes(Object.entries(statusMap).find(([key]) => key === building.building_status)?.[1] ?? '')
+        ? statuses.includes(Object.entries(buildingStatusMap).find(([key]) => key === building.building_status)?.[1] ?? '')
         : true;
 
       return matchesAddress && matchesAmenities && matchesStatuses;
