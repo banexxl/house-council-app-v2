@@ -31,7 +31,6 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const [{ data: apartments, error: apartmentsError }] = await Promise.all([
           supabase.from("tblApartments").select("*").in("building_id", buildings.map(b => b.id)),
      ]);
-     console.log('data', apartments);
 
      if (apartmentsError) {
           await logServerAction({
@@ -110,6 +109,16 @@ export async function createOrUpdateApartment(payload: Omit<Apartment, "id"> & {
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { apartment_images, id, ...apartmentPayload } = payload;
+
+     if (id) {
+          // === UPDATE ===
+          delete apartmentPayload.created_at;
+          delete apartmentPayload.updated_at;
+     } else {
+          // === CREATE ===
+          apartmentPayload.created_at = new Date();
+          apartmentPayload.updated_at = new Date();
+     }
 
      if (id) {
           // === UPDATE ===
@@ -284,6 +293,10 @@ export async function deleteApartment(id: string) {
 export async function checkIfApartmentExistsInBuilding(buildingId: string, apartmentNumber: string): Promise<{ exists: boolean, apartmentid?: string }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+
+     if (!buildingId || !apartmentNumber) {
+          return { exists: false };
+     }
 
      const { data, error } = await supabase
           .from("tblApartments")

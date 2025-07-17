@@ -152,6 +152,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   onBlur={formik.handleBlur}
                   error={Boolean(formik.touched.building_id && formik.errors.building_id)}
                   helperText={formik.touched.building_id && formik.errors.building_id}
+                  disabled={formik.isSubmitting || !!apartmentData?.id}
                 >
                   {buildings?.map((building) => (
                     <MenuItem key={building.id} value={building.id}>
@@ -175,6 +176,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   }}
                   error={Boolean(formik.touched.apartment_number && formik.errors.apartment_number)}
                   helperText={formik.touched.apartment_number && formik.errors.apartment_number}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 />
 
               </Grid>
@@ -193,6 +195,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   }}
                   error={Boolean(formik.touched.floor && formik.errors.floor)}
                   helperText={formik.touched.floor && formik.errors.floor}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -209,6 +212,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     const value = parseInt(String(formik.values.square_meters), 10);
                     formik.setFieldValue("square_meters", isNaN(value) ? '' : value);
                   }}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -227,11 +231,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   onChange={formik.handleChange}
                   onBlur={() => {
                     const value = parseInt(String(formik.values.room_count), 10);
-                    formik.setFieldValue("room_count", isNaN(value) ? '' : Math.min(8, Math.max(0, value)));
+                    formik.setFieldValue("room_count", isNaN(value) ? '' : Math.min(8, Math.max(1, value)));
                     formik.setFieldTouched("room_count", true);
                   }}
                   error={Boolean(formik.touched.room_count && formik.errors.room_count)}
                   helperText={formik.touched.room_count && formik.errors.room_count}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -242,6 +247,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="apartment_type"
                   value={formik.values.apartment_type}
                   onChange={formik.handleChange}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 >
                   {['residential',
                     'business',
@@ -270,6 +276,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="apartment_status"
                   value={formik.values.apartment_status}
                   onChange={formik.handleChange}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 >
                   {['owned', 'rented', 'for_rent', 'vacant'].map((option) => (
                     <MenuItem key={option} value={option}>
@@ -290,6 +297,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="notes"
                   value={formik.values.notes}
                   onChange={formik.handleChange}
+                  disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
             </Grid>
@@ -313,22 +321,21 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   const { success } = await setAsApartmentCoverImage(apartmentData.id!, url);
                   if (!success) throw new Error();
                 }}
+                disabled={formik.isSubmitting || !formik.values.building_id}
               />
             </CardContent>
           </Card>
         )}
-        <Typography>
-          {JSON.stringify(formik.errors)}
-        </Typography>
+
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
-          <Button color="inherit" onClick={() => router.back()}>
+          <Button color="inherit" onClick={() => router.back()} disabled={formik.isSubmitting || !formik.values.building_id}>
             {t('common.btnCancel')}
           </Button>
           <Button
             type="submit"
             variant="contained"
             loading={formik.isSubmitting}
-            disabled={formik.isSubmitting || !formik.isValid}
+            disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
           >
             {apartmentData ? t('common.btnUpdate') : t('common.btnCreate')}
           </Button>
@@ -337,3 +344,4 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
     </form>
   );
 };
+

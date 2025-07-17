@@ -30,8 +30,8 @@ export interface Apartment {
      notes?: string;
      apartment_type: ApartmentType;
      apartment_status: ApartmentStatus;
-     created_at: string;
-     updated_at?: string;
+     created_at?: Date;
+     updated_at?: Date;
      apartment_images?: string[];
      cover_image?: string;
 }
@@ -46,7 +46,8 @@ export const apartmentInitialValues: Apartment = {
      notes: '',
      apartment_type: 'residential',
      apartment_status: 'owned',
-     created_at: ''
+     created_at: new Date(),
+     updated_at: new Date(),
 };
 
 // Explicit allowed values for validation
@@ -86,7 +87,7 @@ export const apartmentStatusMap: Record<string, string> = {
 
 // Yup Validation Schema
 export const apartmentValidationSchema = (t: (key: string) => string, apartmentId?: string) => Yup.object().shape({
-     building_id: Yup.string().required('Required'),
+     building_id: Yup.string(),
      apartment_number: Yup.string()
           .matches(/^[a-zA-Z0-9]+$/, t('errors.apartment.apartmentNumberMustBeAlphaNumeric'))
           .test(
@@ -95,7 +96,7 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
                async function (apartment_number) {
                     const { building_id } = this.parent as Apartment;
 
-                    if (!apartment_number || !building_id) return false;
+                    if (!apartment_number) return false;
 
                     const { exists, apartmentid: existingApartmentId } = await checkIfApartmentExistsInBuilding(
                          building_id,
@@ -114,13 +115,14 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
           async (value, context) => {
                const { building_id } = context.parent as Apartment;
                const { data: building } = await getBuildingById(building_id);
+
                if (!building) return false;
 
                return value! <= building.stories_high;
           }
      ).required('Required'),
      square_meters: Yup.number().integer().min(0).optional(),
-     room_count: Yup.number().integer().min(0).max(8, 'Room count cannot be greater than 8').optional(),
+     room_count: Yup.number().integer().min(1).max(8, 'Room count cannot be greater than 8').optional(),
      notes: Yup.string().optional(),
      apartment_type: Yup.string()
           .oneOf(ApartmentTypeValues)

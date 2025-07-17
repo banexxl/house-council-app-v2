@@ -601,6 +601,6 @@ export const setAsApartmentCoverImage = async (apartmentid: string, url: string)
      const supabase = await useServerSideSupabaseAnonClient();
      const { error: dbError } = await supabase.from('tblApartments').update({ cover_image: url }).eq('id', apartmentid);
      if (dbError) return { success: false };
-     revalidatePath(`/dashboard/apartments/`);
+     revalidatePath(`/dashboard/apartments`);
      return { success: !dbError }
 }
