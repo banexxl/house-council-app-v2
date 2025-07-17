@@ -2,7 +2,6 @@
 
 import type { FC, FormEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -15,11 +14,12 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { MultiSelect } from 'src/components/multi-select';
 import { useUpdateEffect } from 'src/hooks/use-update-effect';
+import PropTypes from 'prop-types';
 
 interface Filters {
   apartment_number?: string;
-  types: string[];
-  rentalStatuses: string[];
+  apartment_types: string[];
+  apartment_statuses: string[];
 }
 
 interface SearchChip {
@@ -30,13 +30,13 @@ interface SearchChip {
 }
 
 const typeOptions = [
-  { name: 'residential', resource_string: 'apartments.lblResidential' },
-  { name: 'business', resource_string: 'apartments.lblBusiness' },
-  { name: 'mixed_use', resource_string: 'apartments.lblMixedUse' },
-  { name: 'vacation', resource_string: 'apartments.lblVacation' },
-  { name: 'storage', resource_string: 'apartments.lblStorage' },
-  { name: 'garage', resource_string: 'apartments.lblGarage' },
-  { name: 'utility', resource_string: 'apartments.lblUtility' },
+  { name: 'residential', resource_string: 'apartments.lblApartmentTypeResidential' },
+  { name: 'business', resource_string: 'apartments.lblApartmentTypeBusiness' },
+  { name: 'mixed_use', resource_string: 'apartments.lblApartmentTypeMixedUse' },
+  { name: 'vacation', resource_string: 'apartments.lblApartmentTypeVacation' },
+  { name: 'storage', resource_string: 'apartments.lblApartmentTypeStorage' },
+  { name: 'garage', resource_string: 'apartments.lblApartmentTypeGarage' },
+  { name: 'utility', resource_string: 'apartments.lblApartmentTypeUtility' },
 ];
 
 const rentalStatusOptions = [
@@ -51,27 +51,21 @@ interface ApartmentListSearchProps {
 }
 
 export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersChange }) => {
-
   const queryRef = useRef<HTMLInputElement | null>(null);
-  const { t } = useTranslation();
-
   const [chips, setChips] = useState<SearchChip[]>([]);
+  const { t } = useTranslation();
 
   const handleChipsUpdate = useCallback(() => {
     const filters: Filters = {
       apartment_number: undefined,
-      types: [],
-      rentalStatuses: [],
+      apartment_types: [],
+      apartment_statuses: [],
     };
 
     chips.forEach((chip) => {
-      if (chip.field === 'apartment_number') {
-        filters.apartment_number = chip.value;
-      } else if (chip.field === 'types') {
-        filters.types.push(chip.value);
-      } else if (chip.field === 'rentalStatuses') {
-        filters.rentalStatuses.push(chip.value);
-      }
+      if (chip.field === 'apartment_number') filters.apartment_number = chip.value;
+      else if (chip.field === 'apartment_types') filters.apartment_types.push(chip.value);
+      else if (chip.field === 'apartment_statuses') filters.apartment_statuses.push(chip.value);
     });
 
     onFiltersChange?.(filters);
@@ -126,58 +120,38 @@ export const ApartmentListSearch: FC<ApartmentListSearchProps> = ({ onFiltersCha
     if (queryRef.current) queryRef.current.value = '';
   }, []);
 
-  const handleTypeChange = useCallback((values: string[]) => {
-    setChips((prev) => {
-      const found: string[] = [];
-      const newChips = prev.filter((chip) => {
-        if (chip.field !== 'types') return true;
-        const match = values.includes(chip.value);
-        if (match) found.push(chip.value);
-        return match;
-      });
+  const handleGenericChange = useCallback(
+    (field: 'apartment_types' | 'apartment_statuses', label: string) =>
+      (values: string[]) => {
+        setChips((prevChips) => {
+          const existing = prevChips.filter((chip) => chip.field === field).map((chip) => chip.value);
+          const toRemove = new Set(existing);
+          const newChips = prevChips.filter((chip) => chip.field !== field || values.includes(chip.value));
 
-      values.forEach((val) => {
-        if (!found.includes(val)) {
-          newChips.push({
-            label: 'apartments.lblType',
-            field: 'types',
-            value: val,
-            displayValue: t(`${val}`),
+          values.forEach((value) => {
+            if (!toRemove.has(value)) {
+              newChips.push({
+                label,
+                field,
+                value,
+                displayValue: t(value),
+              });
+            }
           });
-        }
-      });
 
-      return newChips;
-    });
-  }, [t]);
+          return newChips;
+        });
+      },
+    [t]
+  );
 
-  const handleRentalStatusChange = useCallback((values: string[]) => {
-    setChips((prev) => {
-      const found: string[] = [];
-      const newChips = prev.filter((chip) => {
-        if (chip.field !== 'rentalStatuses') return true;
-        const match = values.includes(chip.value);
-        if (match) found.push(chip.value);
-        return match;
-      });
+  // Usage
+  const handleTypeChange = handleGenericChange('apartment_types', 'apartments.lblType');
+  const handleRentalStatusChange = handleGenericChange('apartment_statuses', 'apartments.lblRentalStatus');
 
-      values.forEach((val) => {
-        if (!found.includes(val)) {
-          newChips.push({
-            label: 'apartments.lblRentalStatus',
-            field: 'rentalStatuses',
-            value: val,
-            displayValue: t(`${val}`),
-          });
-        }
-      });
-
-      return newChips;
-    });
-  }, [t]);
-
-  const typeValues = useMemo(() => chips.filter((c) => c.field === 'types').map((c) => c.value), [chips]);
-  const rentalValues = useMemo(() => chips.filter((c) => c.field === 'rentalStatuses').map((c) => c.value), [chips]);
+  // Selected values
+  const typeValues = useMemo(() => chips.filter((c) => c.field === 'apartment_types').map((c) => c.value), [chips]);
+  const rentalValues = useMemo(() => chips.filter((c) => c.field === 'apartment_statuses').map((c) => c.value), [chips]);
 
   return (
     <div>

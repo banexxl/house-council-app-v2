@@ -64,6 +64,7 @@ interface BuildingListSearchProps {
 }
 
 export const BuildingListSearch: FC<BuildingListSearchProps> = ({ onFiltersChange }) => {
+
   const queryRef = useRef<HTMLInputElement | null>(null);
   const [chips, setChips] = useState<SearchChip[]>([]);
   const { t } = useTranslation();
@@ -74,7 +75,7 @@ export const BuildingListSearch: FC<BuildingListSearchProps> = ({ onFiltersChang
     chips.forEach((chip) => {
       if (chip.field === 'address') filters.address = chip.value;
       else if (chip.field === 'amenities') filters.amenities.push(chip.value);
-      else if (chip.field === 'statuses') filters.statuses.push(chip.value); // value is name
+      else if (chip.field === 'statuses') filters.statuses.push(chip.value);
     });
 
     onFiltersChange?.(filters);
