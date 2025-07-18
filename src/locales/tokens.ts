@@ -152,6 +152,7 @@ export const tokens = {
     clientDashboard: 'nav.clientDashboard',
     clientSettings: 'nav.clientSettings',
     tenants: 'nav.tenants',
+    tenantAdd: 'nav.tenantAdd',
     contact: 'nav.contact',
     course: 'nav.course',
     create: 'nav.create',

@@ -154,6 +154,7 @@ export const es = {
   [tokens.nav.clientDashboard]: 'Dashboard Cliente',
   [tokens.nav.clientSettings]: 'Ajustes Cliente',
   [tokens.nav.tenants]: 'Inquilinos',
+  [tokens.nav.tenantAdd]: 'Agregar inquilino',
   [tokens.nav.contact]: 'Contacto',
   [tokens.nav.course]: 'Curso',
   [tokens.nav.create]: 'Crear',

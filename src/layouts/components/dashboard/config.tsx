@@ -216,15 +216,11 @@ export const useSections = () => {
             ),
             items: [
               {
-                title: t(tokens.tenants.tenantsList),
+                title: t(tokens.nav.list),
                 path: paths.dashboard.tenants.index,
               },
               {
-                title: t(tokens.tenants.tenantDetails),
-                path: paths.dashboard.tenants.tenant,
-              },
-              {
-                title: t(tokens.tenants.tenantCreate),
+                title: t(tokens.nav.tenantAdd),
                 path: paths.dashboard.tenants.new,
               },
             ],

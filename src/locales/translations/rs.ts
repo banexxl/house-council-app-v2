@@ -161,6 +161,7 @@ export const rs = {
      [tokens.nav.clientDashboard]: 'Klijent',
      [tokens.nav.clientSettings]: 'Klijentska podešavanja',
      [tokens.nav.tenants]: 'Stanari',
+     [tokens.nav.tenantAdd]: 'Dodaj',
      [tokens.nav.contact]: 'Kontakt',
      [tokens.nav.course]: 'Kurs',
      [tokens.nav.create]: 'Kreiraj',
