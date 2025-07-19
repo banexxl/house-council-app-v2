@@ -2,7 +2,7 @@ import { getAllBuildingsFromClient, getBuildingById } from "src/app/actions/buil
 import { getApartmentById } from "src/app/actions/apartment/apartment-actions";
 import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
 import { Box, Container, Stack } from "@mui/material";
-import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment-new-header";
+import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment-form-header";
 import { ApartmentCreateForm } from "./new-apartment";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";

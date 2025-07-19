@@ -16,13 +16,16 @@ export const createOrUpdateTenantAction = async (
 }> => {
      const anonSupabase = await useServerSideSupabaseAnonClient();
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
-     const { id, ...tenantData } = tenant;
+     const { id, apartment, ...tenantData } = tenant; // Remove `apartment` if it exists
 
      if (id && id !== '') {
           // === UPDATE ===
           const { data, error: updateError } = await anonSupabase
                .from('tblTenants')
-               .update({ ...tenantData, updated_at: new Date().toISOString() })
+               .update({
+                    ...tenantData,
+                    updated_at: new Date().toISOString(),
+               })
                .eq('id', id)
                .select()
                .single();
@@ -57,15 +60,17 @@ export const createOrUpdateTenantAction = async (
           };
      } else {
           // === CREATE ===
-          const { data: invitedUser, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(tenantData.email!, {
-               redirectTo: process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL!,
+          const { data: createdUser, error: userError } = await adminSupabase.auth.admin.createUser({
+               email: tenantData.email!,
+               password: process.env.DEFAULT_TENANT_PASSWORD || 'TempPassword123!',
+               email_confirm: true,
           });
 
-          if (inviteError || !invitedUser?.user) {
+          if (userError || !createdUser?.user) {
                await logServerAction({
-                    action: 'Invite Tenant Auth User - Failed',
+                    action: 'Create Tenant Auth User - Failed',
                     duration_ms: 0,
-                    error: inviteError?.message ?? 'Unknown error',
+                    error: userError?.message ?? 'Unknown error',
                     payload: { email: tenantData.email },
                     status: 'fail',
                     type: 'auth',
@@ -74,7 +79,7 @@ export const createOrUpdateTenantAction = async (
 
                return {
                     saveTenantActionSuccess: false,
-                    saveTenantActionError: inviteError?.message ?? 'Failed to invite tenant auth user',
+                    saveTenantActionError: userError?.message ?? 'Failed to create auth user for tenant',
                };
           }
 
@@ -82,9 +87,12 @@ export const createOrUpdateTenantAction = async (
                .from('tblTenants')
                .insert({
                     ...tenantData,
-                    user_id: invitedUser.user.id,
+                    user_id: createdUser.user.id,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
+                    move_in_date: tenantData.move_in_date || null,
+                    move_out_date: tenantData.move_out_date || null,
+                    date_of_birth: tenantData.date_of_birth || null,
                })
                .select()
                .single();
@@ -97,7 +105,7 @@ export const createOrUpdateTenantAction = async (
                     payload: { tenantData },
                     status: 'fail',
                     type: 'action',
-                    user_id: invitedUser.user.id,
+                    user_id: createdUser.user.id,
                });
                return { saveTenantActionSuccess: false, saveTenantActionError: insertError };
           }
@@ -109,7 +117,7 @@ export const createOrUpdateTenantAction = async (
                payload: { tenantData },
                status: 'success',
                type: 'action',
-               user_id: invitedUser.user.id,
+               user_id: createdUser.user.id,
           });
 
           revalidatePath(`/dashboard/tenants/${data.id}`);
@@ -190,13 +198,23 @@ export const deleteTenantByIDsAction = async (
      }
 };
 
-// READ tenants for a client’s buildings
 export const getAllTenantsFromClientsBuildings = async (
      clientId: string
-): Promise<{ success: boolean; data?: Tenant[]; error?: string }> => {
+): Promise<{
+     success: boolean; data?: Tenant[] & {
+          apartment?: {
+               apartment_number?: string;
+               building?: {
+                    street_address?: string;
+                    city?: string;
+               };
+          }
+     }; error?: string
+}> => {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
+     // 1. Get buildings owned by the client
      const { data: buildings, error: buildingsError } = await supabase
           .from('tblBuildings')
           .select('id')
@@ -207,7 +225,11 @@ export const getAllTenantsFromClientsBuildings = async (
      }
 
      const buildingIds = buildings.map((b) => b.id);
+     if (buildingIds.length === 0) {
+          return { success: true, data: [] };
+     }
 
+     // 2. Get apartments in those buildings
      const { data: apartments, error: apartmentsError } = await supabase
           .from('tblApartments')
           .select('id')
@@ -218,10 +240,27 @@ export const getAllTenantsFromClientsBuildings = async (
      }
 
      const apartmentIds = apartments.map((a) => a.id);
+     if (apartmentIds.length === 0) {
+          return { success: true, data: [] };
+     }
 
+     // ✅ 3. Get tenants with nested apartment → building → building_location
      const { data: tenants, error: tenantsError } = await supabase
           .from('tblTenants')
-          .select('*')
+          .select(`
+      *,
+      apartment:tblApartments (
+        id,
+        apartment_number,
+        building:tblBuildings (
+          id,
+          building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+            street_address,
+            city
+          )
+        )
+      )
+    `)
           .in('apartment_id', apartmentIds);
 
      if (tenantsError) {
@@ -239,4 +278,54 @@ export const getAllTenantsFromClientsBuildings = async (
      }
 
      return { success: true, data: tenants ?? [] };
+};
+
+
+export const getAllBuildingsWithApartmentsForClient = async (
+     clientId: string
+): Promise<{
+     success: boolean;
+     data?: {
+          id: string;
+          name: string; // composed from location
+          apartments: {
+               id: string;
+               apartment_number: string;
+          }[];
+     }[];
+     error?: string;
+}> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase
+          .from('tblBuildings')
+          .select(`
+    id,
+    building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+      street_address,
+      street_number,
+      city
+    ),
+    apartments:tblApartments (
+      id,
+      apartment_number
+    )
+  `)
+          .eq('client_id', clientId);
+
+     if (error) {
+          return { success: false, error: error.message };
+     }
+
+     // Compose a name from building location fields
+     const buildings = (data ?? []).map((building: any) => ({
+          id: building.id,
+          name: `${building.building_location?.street_number ?? ''} ${building.building_location?.street_address ?? ''}, ${building.building_location?.city ?? ''}`.trim(),
+          apartments: building.apartments ?? [],
+     }));
+
+     return {
+          success: true,
+          data: buildings,
+     };
 };

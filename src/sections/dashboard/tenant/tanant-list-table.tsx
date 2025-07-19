@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
+import { useCallback, useMemo, useState, type ChangeEvent, type FC, MouseEvent } from 'react';
 import PropTypes from 'prop-types';
 import {
      Avatar,
@@ -22,7 +22,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Cancel as CancelIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-
 import { Scrollbar } from 'src/components/scrollbar';
 import { paths } from 'src/paths';
 import { useSelection } from 'src/hooks/use-selection';
@@ -39,11 +38,18 @@ interface TenantListTableProps {
           apartment?: {
                apartment_number?: string;
                building?: {
-                    street_address?: string;
-                    city?: string;
+                    building_location?: {
+                         street_address?: string;
+                         city?: string;
+                    };
                };
           };
      })[];
+     count?: number;
+     onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
+     onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+     page?: number;
+     rowsPerPage?: number;
 }
 
 export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
@@ -112,20 +118,8 @@ export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
 
      return (
           <Box sx={{ position: 'relative' }}>
-               <FilterBar
-                    onFiltersChange={handleQueryChange}
-                    onSortChange={handleSortChange}
-                    sortBy={state.sortBy}
-                    sortDir={state.sortDir}
-                    sortOptions={[
-                         { label: 'Last Name', value: 'last_name' },
-                         { label: 'Email', value: 'email' },
-                         { label: 'Move-in Date', value: 'move_in_date' },
-                         { label: 'Updated At', value: 'updated_at' },
-                    ]}
-                    btnAddUrl='/dashboard/tenants/new'
-                    tabs={[]}
-               />
+
+
 
                <Scrollbar>
                     <Table>
@@ -176,7 +170,11 @@ export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
                                                        </Stack>
                                                   </TableCell>
                                                   <TableCell>{tenant.apartment?.apartment_number ?? '-'}</TableCell>
-                                                  <TableCell>{tenant.apartment?.building ? `${tenant.apartment.building.street_address}, ${tenant.apartment.building.city}` : '-'}</TableCell>
+                                                  <TableCell>
+                                                       {tenant.apartment?.building?.building_location
+                                                            ? `${tenant.apartment.building.building_location.street_address}, ${tenant.apartment.building.building_location.city}`
+                                                            : '-'}
+                                                  </TableCell>
                                                   <TableCell>{tenant.move_in_date ?? '-'}</TableCell>
                                                   <TableCell>{tenant.move_out_date ?? '-'}</TableCell>
                                                   <TableCell>

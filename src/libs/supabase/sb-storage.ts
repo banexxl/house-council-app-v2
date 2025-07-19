@@ -413,7 +413,6 @@ export const uploadApartmentImagesAndGetUrls = async (
                          apartment_id: apartmentid,
                          image_url: imageUrl,
                     });
-               console.log('insertError', insertError);
 
                if (insertError) {
                     await logServerAction({

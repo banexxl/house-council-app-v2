@@ -89,7 +89,6 @@ export const paths = {
     },
     tenants: {
       index: '/dashboard/tenants',
-      tenant: '/dashboard/tenants/:tenantId',
       new: '/dashboard/tenants/new',
     }
   },

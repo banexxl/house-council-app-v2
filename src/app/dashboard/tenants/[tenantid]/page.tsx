@@ -4,25 +4,31 @@ import Stack from '@mui/material/Stack';
 import { redirect } from 'next/navigation';
 
 import { Seo } from 'src/components/seo';
-import { readTenantByIdAction } from 'src/app/actions/tenant/tenant-actions';
+import { getAllBuildingsWithApartmentsForClient, readTenantByIdAction } from 'src/app/actions/tenant/tenant-actions';
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
-import { TenantFormHeader } from 'src/sections/dashboard/tenant/tenant-header';
-import { TenantForm } from 'src/sections/dashboard/tenant/tenant-form';
+import { TenantFormHeader } from 'src/sections/dashboard/tenant/tenant-form-header';
+import { TenantForm } from 'src/app/dashboard/tenants/[tenantid]/tenant-form';
 
-export default async function Page({ params }: { params: { tenantid: string } }) {
+export default async function Page({ params }: {
+  params: Promise<{ tenantid: string }>
+}) {
+
   const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client) {
     logout();
     redirect('/auth/login');
   }
 
-  const { tenantid } = params;
+  const { tenantid } = await params;
 
-  const [{ getTenantByIdActionSuccess, getTenantByIdActionData }, _session] = await Promise.all([
+  const [{ getTenantByIdActionSuccess, getTenantByIdActionData }, session, buildingsResult] = await Promise.all([
     readTenantByIdAction(tenantid),
     checkIfUserExistsAndReturnDataAndSessionObject(),
+    getAllBuildingsWithApartmentsForClient(client.id),
   ]);
+
+  const buildings = buildingsResult.success && buildingsResult.data ? buildingsResult.data : [];
 
   return (
     <>
@@ -37,7 +43,7 @@ export default async function Page({ params }: { params: { tenantid: string } })
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <TenantFormHeader tenant={getTenantByIdActionData} />
-            <TenantForm tenantData={getTenantByIdActionData} />
+            <TenantForm tenantData={getTenantByIdActionData} buildings={buildings} />
           </Stack>
         </Container>
       </Box>
