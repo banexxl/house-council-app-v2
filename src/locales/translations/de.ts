@@ -373,6 +373,7 @@ export const de = {
   [tokens.clients.clientStatusVIP]: 'VIP',
   [tokens.clients.clientStatusReactivated]: 'Reaktiviert',
   [tokens.clients.clientStatusDormant]: 'Inaktiv',
+  //#endregion
   //#region Client validation
   [tokens.clients.clientNameRequired]: 'Name ist erforderlich',
   [tokens.clients.clientEmailMustBeValid]: 'Email muss gültig sein',
@@ -409,7 +410,6 @@ export const de = {
   [tokens.clients.clientSettingsNoTableError]: 'Keine Tabelle angegeben',
   [tokens.clients.clientSettingsNoEntityError]: 'Keine Entität angegeben',
   [tokens.clients.clientSettingsNoNameError]: 'Kein Name angegeben',
-  // Client popup
   [tokens.clients.clientSave]: 'Speichern',
   [tokens.clients.clientSaved]: 'Kunde gespeichert',
   [tokens.clients.clientNotSaved]: 'Kunde nicht gespeichert',
@@ -422,16 +422,14 @@ export const de = {
   [tokens.tenants.tenantEdit]: 'Mietnehmer Bearbeiten',
   [tokens.tenants.tenantDelete]: 'Mietnehmer Löschen',
   // Tenant form
-  [tokens.tenants.tenantName]: 'Name',
-  [tokens.tenants.tenantEmail]: 'Email',
-  [tokens.tenants.tenantPhone]: 'Telefon',
-  [tokens.tenants.tenantMobilePhone]: 'Mobiltelefon',
-  [tokens.tenants.tenantAddress1]: 'Adresse 1',
-  [tokens.tenants.tenantAddress2]: 'Adresse 2',
-  [tokens.tenants.tenantCity]: 'Stadt',
-  [tokens.tenants.tenantState]: 'Bundesland',
-  [tokens.tenants.tenantCountry]: 'Land',
-  [tokens.tenants.tenantPostalCode]: 'Postleitzahl',
+  [tokens.tenants.formTitle]: 'Mietnehmer Formular',
+  [tokens.tenants.selectBuilding]: 'Gebäude auswählen',
+  [tokens.tenants.selectApartment]: 'Wohnung auswählen',
+  [tokens.tenants.firstName]: 'Vorname',
+  [tokens.tenants.lastName]: 'Nachname',
+  [tokens.tenants.birthDate]: 'Geburtsdatum',
+  [tokens.tenants.email]: 'Email',
+  [tokens.tenants.tenantPhoneNumber]: 'Telefonnummer',
   // Tenant validation
   [tokens.tenants.tenantNameRequired]: 'Name ist erforderlich',
   [tokens.tenants.tenantEmailMustBeValid]: 'Email muss gültig sein',

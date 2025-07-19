@@ -212,7 +212,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               variant="contained"
                               disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
                          >
-                              {t('tenants.tenantSave')}
+                              {t('common.btnSave')}
                          </Button>
                          <Button
                               color="inherit"
@@ -220,7 +220,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               href={paths.dashboard.tenants.index}
                               disabled={formik.isSubmitting}
                          >
-                              {t('common.cancel')}
+                              {t('common.btnCancel')}
                          </Button>
                     </Stack>
                </Card>
