@@ -27,7 +27,6 @@ export interface Tenant {
      };
      is_primary: boolean;
      move_in_date: string;   // ISO string
-     move_out_date?: string; // ISO string or null
 
      tenant_type: TenantType;
 
@@ -50,7 +49,6 @@ export const tenantInitialValues: Tenant = {
      apartment: { apartment_number: '', building: { street_address: '', city: '' } },
      is_primary: false,
      move_in_date: '',
-     move_out_date: '',
      tenant_type: 'owner',
      notes: '',
      created_at: new Date().toISOString(),
@@ -60,11 +58,20 @@ export const tenantInitialValues: Tenant = {
 export const tenantValidationSchema = (t: (key: string) => string) => Yup.object().shape({
      first_name: Yup.string().required(t('tenants.firstNameRequired')),
      last_name: Yup.string().required(t('tenants.lastNameRequired')),
-     email: Yup.string().email('Invalid email'),
-     phone_number: Yup.string(),
-     date_of_birth: Yup.string().required(t('tenants.dateOfBirthRequired')),
+     email: Yup.string().email(t('tenants.emailMustBeValid')).max(40)
+          .when('is_primary', {
+               is: (is_primary: boolean) => is_primary === true,
+               then: (schema: Yup.StringSchema) => schema.required(t('tenants.emailRequired')),
+               otherwise: (schema: Yup.StringSchema) => schema.notRequired()
+          }),
+     phone_number: Yup.string()
+          .when('is_primary', {
+               is: (is_primary: boolean) => is_primary === true,
+               then: (schema: Yup.StringSchema) => schema.required(t('tenants.phoneNumberRequired')),
+               otherwise: (schema: Yup.StringSchema) => schema.notRequired()
+          }),
+     date_of_birth: Yup.date().nullable(),
      apartment_id: Yup.string().required(t('tenants.apartmentRequired')),
      is_primary: Yup.boolean().required(t('tenants.isPrimaryRequired')),
-     move_in_date: Yup.date(),
-     move_out_date: Yup.date()
+     move_in_date: Yup.date().nullable(),
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useFormik } from 'formik';
 import {
      Box,
@@ -8,14 +8,14 @@ import {
      Card,
      CardContent,
      CardHeader,
-     Divider,
      Grid,
      MenuItem,
      Stack,
      TextField,
-     Typography
+     Typography,
+     Checkbox,
+     Tooltip
 } from '@mui/material';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -49,6 +49,18 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
      const [selectedBuildingId, setSelectedBuildingId] = useState<string>('');
      const [availableApartments, setAvailableApartments] = useState<{ id: string; apartment_number: string }[]>([]);
 
+     // Set selects from tenantData on load or when tenantData/buildings change
+     useEffect(() => {
+          if (tenantData?.apartment_id && buildings.length > 0) {
+               // Find the building containing the apartment
+               const building = buildings.find(b => b.apartments.some(a => a.id === tenantData.apartment_id));
+               if (building) {
+                    setSelectedBuildingId(building.id);
+                    setAvailableApartments(building.apartments);
+               }
+          }
+     }, [tenantData, buildings]);
+
      const formik = useFormik({
           initialValues: {
                ...tenantInitialValues,
@@ -66,7 +78,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                          }
                          toast.success(t('tenants.tenantSaved'));
                     } else {
-                         toast.error(t('tenants.tenantNotSaved'));
+                         toast.error(t('tenants.tenantNotSaved') + ' ' + response.saveTenantActionError);
                     }
                } catch (error) {
                     toast.error(t('tenants.tenantNotSaved'), error.message);
@@ -76,19 +88,21 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
           },
      });
 
-     useEffect(() => {
-          if (selectedBuildingId) {
-               const selected = buildings.find((b) => b.id === selectedBuildingId);
-               setAvailableApartments(selected?.apartments || []);
-          }
-     }, [selectedBuildingId, buildings]);
+     // useEffect(() => {
+     //      if (selectedBuildingId) {
+     //           const selected = buildings.find((b) => b.id === selectedBuildingId);
+     //           setAvailableApartments(selected?.apartments || []);
+     //      } else {
+     //           setAvailableApartments([]);
+     //      }
+     // }, [selectedBuildingId, buildings]);
 
      const apartmentSelected = !!formik.values.apartment_id;
 
      return (
           <form onSubmit={formik.handleSubmit}>
                <Card>
-                    <CardHeader title={t('tenants.formTitle')} />
+                    <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
                     <CardContent>
                          <Grid container spacing={3}>
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -127,6 +141,30 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                              </MenuItem>
                                         ))}
                                    </TextField>
+                              </Grid>
+
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Box display="flex" alignItems="center" height="100%">
+                                        <Checkbox
+                                             name="is_primary"
+                                             checked={formik.values.is_primary || false}
+                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                  formik.setFieldValue('is_primary', e.target.checked);
+                                                  formik.setFieldTouched('email', true, false);
+                                                  formik.setFieldTouched('phone_number', true, false);
+                                             }}
+                                             color="primary"
+                                             id="is_primary_checkbox"
+                                             sx={{ mr: 1 }}
+                                             disabled={!apartmentSelected}
+                                        />
+                                        <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
+                                             <label htmlFor="is_primary_checkbox">
+                                                  <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
+                                             </label>
+                                        </Tooltip>
+                                   </Box>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -173,6 +211,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                        helperText: formik.touched.date_of_birth && formik.errors.date_of_birth,
                                                   },
                                              }}
+                                             disabled={!apartmentSelected}
                                         />
                                    </LocalizationProvider>
                               </Grid>

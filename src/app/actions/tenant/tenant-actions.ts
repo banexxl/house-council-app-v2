@@ -60,6 +60,33 @@ export const createOrUpdateTenantAction = async (
           };
      } else {
           // === CREATE ===
+          // 1. Insert tenant without user_id
+          const { data: insertedTenant, error: insertError } = await anonSupabase
+               .from('tblTenants')
+               .insert({
+                    ...tenantData,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    move_in_date: tenantData.move_in_date || null,
+                    date_of_birth: tenantData.date_of_birth || null,
+               })
+               .select()
+               .single();
+
+          if (insertError || !insertedTenant) {
+               await logServerAction({
+                    action: 'Create Tenant - Failed',
+                    duration_ms: 0,
+                    error: insertError?.message ?? 'Unknown error',
+                    payload: { tenantData },
+                    status: 'fail',
+                    type: 'action',
+                    user_id: '',
+               });
+               return { saveTenantActionSuccess: false, saveTenantActionError: insertError };
+          }
+
+          // 2. Create auth user
           const { data: createdUser, error: userError } = await adminSupabase.auth.admin.createUser({
                email: tenantData.email!,
                password: process.env.DEFAULT_TENANT_PASSWORD || 'TempPassword123!',
@@ -77,37 +104,42 @@ export const createOrUpdateTenantAction = async (
                     user_id: '',
                });
 
+               // Optionally, you may want to delete the tenant record if user creation fails
+               await anonSupabase.from('tblTenants').delete().eq('id', insertedTenant.id);
+
                return {
                     saveTenantActionSuccess: false,
                     saveTenantActionError: userError?.message ?? 'Failed to create auth user for tenant',
                };
           }
 
-          const { data, error: insertError } = await anonSupabase
+          // 3. Update tenant with user_id
+          const { data: updatedTenant, error: updateTenantError } = await anonSupabase
                .from('tblTenants')
-               .insert({
-                    ...tenantData,
-                    user_id: createdUser.user.id,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    move_in_date: tenantData.move_in_date || null,
-                    move_out_date: tenantData.move_out_date || null,
-                    date_of_birth: tenantData.date_of_birth || null,
-               })
+               .update({ user_id: createdUser.user.id })
+               .eq('id', insertedTenant.id)
                .select()
                .single();
 
-          if (insertError) {
+          if (updateTenantError) {
                await logServerAction({
-                    action: 'Create Tenant - Failed',
+                    action: 'Update Tenant with user_id - Failed',
                     duration_ms: 0,
-                    error: insertError.message,
-                    payload: { tenantData },
+                    error: updateTenantError.message,
+                    payload: { tenantId: insertedTenant.id, userId: createdUser.user.id },
                     status: 'fail',
                     type: 'action',
                     user_id: createdUser.user.id,
                });
-               return { saveTenantActionSuccess: false, saveTenantActionError: insertError };
+
+               // Optionally, you may want to delete the auth user if this fails
+               try {
+                    await adminSupabase.auth.admin.deleteUser(createdUser.user.id);
+               } catch (error) {
+                    console.error('Error deleting user', error);
+               }
+
+               return { saveTenantActionSuccess: false, saveTenantActionError: updateTenantError };
           }
 
           await logServerAction({
@@ -120,10 +152,10 @@ export const createOrUpdateTenantAction = async (
                user_id: createdUser.user.id,
           });
 
-          revalidatePath(`/dashboard/tenants/${data.id}`);
+          revalidatePath(`/dashboard/tenants/${insertedTenant.id}`);
           return {
                saveTenantActionSuccess: true,
-               saveTenantActionData: data as Tenant,
+               saveTenantActionData: updatedTenant as Tenant,
           };
      }
 };

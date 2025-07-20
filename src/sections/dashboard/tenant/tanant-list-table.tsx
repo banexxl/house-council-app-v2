@@ -139,7 +139,6 @@ export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
                                    <TableCell>Apartment</TableCell>
                                    <TableCell>Building Address</TableCell>
                                    <TableCell>Move-in</TableCell>
-                                   <TableCell>Move-out</TableCell>
                                    <TableCell>Primary</TableCell>
                               </TableRow>
                          </TableHead>
@@ -159,15 +158,17 @@ export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
                                                        />
                                                   </TableCell>
                                                   <TableCell>
-                                                       <Stack direction="row" spacing={1} alignItems="center">
-                                                            <Avatar>
-                                                                 {getInitials(`${tenant.first_name} ${tenant.last_name}`)}
-                                                            </Avatar>
-                                                            <Box>
-                                                                 <Typography variant="subtitle2">{tenant.first_name} {tenant.last_name}</Typography>
-                                                                 <Typography variant="body2" color="text.secondary">{tenant.email}</Typography>
-                                                            </Box>
-                                                       </Stack>
+                                                       <Link href={`/dashboard/tenants/${tenant.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                                 <Avatar>
+                                                                      {getInitials(`${tenant.first_name} ${tenant.last_name}`)}
+                                                                 </Avatar>
+                                                                 <Box>
+                                                                      <Typography variant="subtitle2">{tenant.first_name} {tenant.last_name}</Typography>
+                                                                      <Typography variant="body2" color="text.secondary">{tenant.email}</Typography>
+                                                                 </Box>
+                                                            </Stack>
+                                                       </Link>
                                                   </TableCell>
                                                   <TableCell>{tenant.apartment?.apartment_number ?? '-'}</TableCell>
                                                   <TableCell>
@@ -176,7 +177,6 @@ export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
                                                             : '-'}
                                                   </TableCell>
                                                   <TableCell>{tenant.move_in_date ?? '-'}</TableCell>
-                                                  <TableCell>{tenant.move_out_date ?? '-'}</TableCell>
                                                   <TableCell>
                                                        {tenant.is_primary ? (
                                                             <SvgIcon><CheckCircleIcon color="success" /></SvgIcon>
