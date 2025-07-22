@@ -19,11 +19,12 @@ import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
-import { LocationsTable } from 'src/sections/dashboard/locations/locations-list-table';
 import { BuildingLocation } from 'src/types/location';
 import { deleteLocationByID } from 'src/app/actions/location/location-services';
 import toast from 'react-hot-toast';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
+import { validate as isUUID } from 'uuid';
+import { GenericTable } from 'src/components/table';
 
 export type LocationFilters = {
      location_occupied?: boolean;
@@ -40,17 +41,14 @@ const useLocationsSearch = () => {
      const [state, setState] = useState<LocationsSearchState>({
           filters: {
                location_occupied: undefined,
+               search: '',
           },
           page: 0,
           rowsPerPage: 5,
      });
 
      const handleFiltersChange = useCallback((filters: LocationFilters): void => {
-          setState((prev) => ({
-               ...prev,
-               filters,
-               page: 0,
-          }));
+          setState((prev) => ({ ...prev, filters, page: 0 }));
      }, []);
 
      const handlePageChange = useCallback(
@@ -102,24 +100,20 @@ const Locations = ({ locations }: LocationsProps) => {
           });
      }, [locations, locationsSearch.state.filters]);
 
-
      const paginatedLocations = useMemo(() => {
           const start = locationsSearch.state.page * locationsSearch.state.rowsPerPage;
           const end = start + locationsSearch.state.rowsPerPage;
           return filteredLocations.slice(start, end);
      }, [filteredLocations, locationsSearch.state.page, locationsSearch.state.rowsPerPage]);
 
-     const handleDeleteLocationsConfirm = useCallback(
-          async (locationId: string) => {
-               const deleteLocationResponse = await deleteLocationByID(locationId);
-               if (deleteLocationResponse.success) {
-                    toast.success(t('locations.locationDeletedSuccessfully'));
-               } else {
-                    toast.error(t('locations.locationNotDeleted'));
-               }
-          },
-          [t]
-     );
+     const handleDeleteLocationsConfirm = useCallback(async (locationId: string) => {
+          const deleteLocationResponse = await deleteLocationByID(locationId);
+          if (deleteLocationResponse.success) {
+               toast.success(t('common.actionDeleteSuccess'));
+          } else {
+               toast.error(t('common.actionDeleteError'));
+          }
+     }, [t]);
 
      return (
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
@@ -147,11 +141,7 @@ const Locations = ({ locations }: LocationsProps) => {
                                    component={RouterLink}
                                    href={paths.dashboard.locations.new}
                                    onClick={() => setAddLocationLoading(true)}
-                                   startIcon={
-                                        <SvgIcon>
-                                             <PlusIcon />
-                                        </SvgIcon>
-                                   }
+                                   startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
                                    variant="contained"
                                    loading={addLocationLoading}
                               >
@@ -160,27 +150,36 @@ const Locations = ({ locations }: LocationsProps) => {
                          </Stack>
 
                          <Card>
-
                               <SearchAndBooleanFilters
                                    fields={[
                                         { field: 'location_occupied', label: 'locations.locationTaken' }
                                    ]}
                                    value={locationsSearch.state.filters}
-                                   onChange={(newFilters) => {
-                                        locationsSearch.handleFiltersChange(newFilters);
-                                   }}
+                                   onChange={(newFilters) => locationsSearch.handleFiltersChange(newFilters)}
                               />
 
-                              <LocationsTable
+                              <GenericTable<BuildingLocation>
                                    items={paginatedLocations}
                                    page={locationsSearch.state.page}
                                    rowsPerPage={locationsSearch.state.rowsPerPage}
                                    onPageChange={locationsSearch.handlePageChange}
                                    onRowsPerPageChange={locationsSearch.handleRowsPerPageChange}
                                    count={filteredLocations.length}
-                                   handleDeleteConfirm={(data) => {
-                                        handleDeleteLocationsConfirm(data.locationId);
-                                   }}
+                                   handleDeleteConfirm={({ id }) => handleDeleteLocationsConfirm(id)}
+                                   columns={[
+                                        { key: 'street_address', label: t('locations.locationStreet') },
+                                        { key: 'street_number', label: t('locations.locationStreetNumber') },
+                                        { key: 'city', label: t('locations.locationCity') },
+                                        { key: 'region', label: t('locations.locationState') },
+                                        { key: 'country', label: t('locations.locationCountry') },
+                                        { key: 'post_code', label: t('locations.locationZipCode') },
+                                        {
+                                             key: 'building_id',
+                                             label: t('locations.locationTaken'),
+                                             render: (value, _item) =>
+                                                  isUUID(value as string) ? t('common.lblYes') : t('common.lblNo'),
+                                        }
+                                   ]}
                               />
                          </Card>
                     </Stack>

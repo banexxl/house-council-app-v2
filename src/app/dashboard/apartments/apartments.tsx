@@ -26,6 +26,10 @@ import {
 } from 'src/types/apartment';
 import { ApartmentListTable } from 'src/sections/dashboard/apartments/apartment-list-table';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
+import { GenericTable } from 'src/components/table';
+import { deleteBuilding } from 'src/app/actions/building/building-actions';
+import { deleteApartment } from 'src/app/actions/apartment/apartment-actions';
+import { toast } from 'react-hot-toast';
 
 export type ApartmentFilters = {
   apartment_number?: string;
@@ -112,6 +116,15 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
     return filteredApartments.slice(start, end);
   }, [filteredApartments, apartmentSearch.state.page, apartmentSearch.state.rowsPerPage]);
 
+  const handleDeleteConfirm = useCallback(async (apartmentId: string) => {
+    const deleteApartmentResponse = await deleteApartment(apartmentId);
+    if (deleteApartmentResponse.success) {
+      toast.success(t('common.actionDeleteSuccess'));
+    } else {
+      toast.error(t('common.actionDeleteError'));
+    }
+  }, [t]);
+
   return (
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
@@ -173,14 +186,38 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
                 });
               }}
             />
-            <ApartmentListTable
+            <GenericTable<Apartment>
               items={paginatedApartments}
               count={filteredApartments.length}
               page={apartmentSearch.state.page}
               rowsPerPage={apartmentSearch.state.rowsPerPage}
               onPageChange={apartmentSearch.handlePageChange}
               onRowsPerPageChange={apartmentSearch.handleRowsPerPageChange}
+              baseUrl="/dashboard/apartments"
+              columns={[
+                { key: 'cover_image', label: t('apartments.lblCoverImage') },
+                { key: 'apartment_number', label: t('apartments.lblApartmentNumber') },
+                { key: 'floor', label: t('apartments.lblFloor') },
+                {
+                  key: 'apartment_type',
+                  label: t('apartments.lblType'),
+                  render: (value) => t(apartmentTypeMap[value as keyof typeof apartmentTypeMap])
+                },
+                {
+                  key: 'apartment_status',
+                  label: t('apartments.lblRentalStatus'),
+                  render: (value) => t(apartmentStatusMap[value as keyof typeof apartmentStatusMap])
+                },
+                {
+                  key: 'square_meters',
+                  label: t('apartments.lblSizeM2')
+                }
+              ]}
+              handleDeleteConfirm={({ id }) => {
+                handleDeleteConfirm(id);
+              }}
             />
+
           </Card>
         </Stack>
       </Container>

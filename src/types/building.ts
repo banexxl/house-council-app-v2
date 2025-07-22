@@ -2,7 +2,7 @@ import { BuildingLocation } from "./location";
 import * as Yup from 'yup';
 
 export interface Building {
-     id?: string;
+     id: string;
      created_at: Date
      updated_at: Date
      is_recently_built: boolean;
@@ -50,7 +50,7 @@ export const buildingStatusMap: Record<string, string> = {
 };
 
 export const buildingInitialValues: Building = {
-     id: undefined,
+     id: '',
      is_recently_built: false,
      description: '',
      has_parking_lot: false,

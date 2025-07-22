@@ -16,10 +16,12 @@ import Typography from '@mui/material/Typography';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
-import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
 import { useTranslation } from 'react-i18next';
 import { Building } from 'src/types/building';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
+import { GenericTable } from 'src/components/table';
+import { deleteBuilding } from 'src/app/actions/building/building-actions';
+import toast from 'react-hot-toast';
 
 export type BuildingFilters = {
   search?: string;
@@ -98,6 +100,15 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
     return filteredBuildings.slice(start, end);
   }, [filteredBuildings, buildingSearch.state.page, buildingSearch.state.rowsPerPage]);
 
+  const handleDeleteConfirm = useCallback(async (buildingId: string) => {
+    const deleteBuildingResponse = await deleteBuilding(buildingId);
+    if (deleteBuildingResponse.success) {
+      toast.success(t('common.actionDeleteSuccess'));
+    } else {
+      toast.error(t('common.actionDeleteError'));
+    }
+  }, [t]);
+
   return (
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
@@ -149,13 +160,44 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
               }}
             />
 
-            <BuildingListTable
+            <GenericTable<Building>
               items={paginatedBuildings}
-              count={filteredBuildings.length}
               page={buildingSearch.state.page}
               rowsPerPage={buildingSearch.state.rowsPerPage}
               onPageChange={buildingSearch.handlePageChange}
               onRowsPerPageChange={buildingSearch.handleRowsPerPageChange}
+              count={filteredBuildings.length}
+              baseUrl="/dashboard/buildings"
+              handleDeleteConfirm={({ id }) => {
+                handleDeleteConfirm(id);
+              }}
+              columns={[
+                {
+                  key: 'cover_image',
+                  label: t('common.lblCoverImage'),
+                  render: (value) => value ? <img src={value as string} alt="cover" width={64} height={40} /> : null
+                },
+                {
+                  key: 'building_location',
+                  label: t('locations.locationCity'),
+                  render: (_, item) => item.building_location?.city ?? '-'
+                },
+                {
+                  key: 'building_location',
+                  label: t('locations.locationStreet'),
+                  render: (_, item) => `${item.building_location?.street_address ?? ''} ${item.building_location?.street_number ?? ''}`
+                },
+                { key: 'building_status', label: t('buildings.buildingStatus') },
+                { key: 'has_bicycle_room', label: t('common.lblHasBicycleRoom') },
+                { key: 'has_parking_lot', label: t('common.lblHasParkingLot') },
+                { key: 'has_elevator', label: t('common.lblHasElevator') },
+                { key: 'has_gas_heating', label: t('common.lblHasGasHeating') },
+                { key: 'has_central_heating', label: t('common.lblHasCentralHeating') },
+                { key: 'is_recently_built', label: t('common.lblRecentlyBuilt') },
+                { key: 'has_electric_heating', label: t('common.lblHasElectricHeating') },
+                { key: 'has_solar_power', label: t('common.lblHasSolarPower') },
+                { key: 'has_pre_heated_water', label: t('common.lblHasPreHeatedWater') },
+              ]}
             />
           </Card>
         </Stack>

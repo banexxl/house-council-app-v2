@@ -241,6 +241,7 @@ export const tokens = {
     buildingStats: 'buildings.buildingStats',
     buildingStories: 'buildings.buildingStories',
     numberOfApartments: 'buildings.numberOfApartments',
+    buildingStatus: 'buildings.buildingStatus',
     lblBuildingStatusVacant: 'buildings.lblBuildingStatusVacant',
     lblBuildingStatusPartiallyLeased: 'buildings.lblBuildingStatusPartiallyLeased',
     lblBuildingStatusRenovation: 'buildings.lblBuildingStatusRenovation',

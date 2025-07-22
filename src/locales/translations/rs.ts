@@ -278,6 +278,7 @@ export const rs = {
      [tokens.buildings.buildingStats]: 'Statistike zgrade',
      [tokens.buildings.buildingStories]: 'Broj Spratova',
      [tokens.buildings.numberOfApartments]: 'Broj Stanova',
+     [tokens.buildings.buildingStatus]: 'Status zgrade',
      [tokens.buildings.lblBuildingStatusVacant]: 'Prazna',
      [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Delimično iznajmljena',
      [tokens.buildings.lblBuildingStatusRenovation]: 'U renoviranju',

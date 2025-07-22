@@ -337,7 +337,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                   const rounded = Math.round(val);
                   const absolute = rounded < 0 ? Math.abs(rounded) : rounded;
                   formik.setFieldValue('stories_high', absolute);
-                  formik.handleBlur(e); // ✅ ensures touched state is updated
+                  formik.handleBlur(e);
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.stories_high}

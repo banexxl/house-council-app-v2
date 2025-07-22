@@ -277,6 +277,7 @@ export const en = {
   [tokens.buildings.buildingStats]: 'Building Stats',
   [tokens.buildings.buildingStories]: 'Building Stories',
   [tokens.buildings.numberOfApartments]: 'Number of Apartments',
+  [tokens.buildings.buildingStatus]: 'Building Status',
   [tokens.buildings.lblBuildingStatusVacant]: 'Vacant',
   [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Partially Leased',
   [tokens.buildings.lblBuildingStatusRenovation]: 'Renovation',

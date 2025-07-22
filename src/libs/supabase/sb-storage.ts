@@ -305,7 +305,7 @@ export const setAsBuildingCoverImage = async (
           const { error: updateError } = await supabase
                .from('tblBuildings')
                .update({ cover_image: imageURL })
-               .eq('building_id', buildingId)
+               .eq('id', buildingId)
 
           if (updateError) {
                await logServerAction({

@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
@@ -104,7 +105,7 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
      };
 }
 
-export async function createOrUpdateApartment(payload: Omit<Apartment, "id"> & { id?: string }) {
+export async function createOrUpdateApartment(payload: Apartment) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -286,7 +287,7 @@ export async function deleteApartment(id: string) {
           type: "db",
           user_id: "",
      });
-
+     revalidatePath('/dashboard/apartments');
      return { success: true, data: null };
 }
 

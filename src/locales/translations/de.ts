@@ -272,6 +272,7 @@ export const de = {
   [tokens.buildings.buildingStats]: 'Gebäude Statistik',
   [tokens.buildings.buildingStories]: 'Gebäudegeschoss',
   [tokens.buildings.numberOfApartments]: 'Anzahl der Wohnungen',
+  [tokens.buildings.buildingStatus]: 'Gebäude Status',
   [tokens.buildings.lblBuildingStatusVacant]: 'Leer',
   [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Teilweise vermietet',
   [tokens.buildings.lblBuildingStatusRenovation]: 'In Renovierung',

@@ -12,7 +12,7 @@ import {
      Link,
      Stack,
      SvgIcon,
-     Typography
+     Typography,
 } from '@mui/material';
 
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
@@ -21,11 +21,12 @@ import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
 import { TenantListTable } from 'src/sections/dashboard/tenant/tanant-list-table';
-import { FilterSearch } from 'src/components/filter-list-search';
+import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 
-type TenantFilters = {
-     name: string;
-     email: string;
+export type TenantFilters = {
+     search?: string;
+     is_primary?: boolean;
+     tenant_type?: string;
 };
 
 export interface TenantSearchState {
@@ -36,10 +37,7 @@ export interface TenantSearchState {
 
 const useTenantsSearch = () => {
      const [state, setState] = useState<TenantSearchState>({
-          filters: {
-               name: '',
-               email: '',
-          },
+          filters: {},
           page: 0,
           rowsPerPage: 5,
      });
@@ -68,19 +66,23 @@ interface TenantsProps {
 }
 
 const Tenants = ({ tenants }: TenantsProps) => {
-
      const { t } = useTranslation();
      const tenantsSearch = useTenantsSearch();
      const [addTenantLoading, setAddTenantLoading] = useState(false);
 
      const filteredTenants = useMemo(() => {
-          const { name, email } = tenantsSearch.state.filters;
+          const { search, is_primary, tenant_type } = tenantsSearch.state.filters;
 
           return tenants.filter((tenant) => {
                const fullName = `${tenant.first_name} ${tenant.last_name}`.toLowerCase();
-               const matchesName = name ? fullName.includes(name.toLowerCase()) : true;
-               const matchesEmail = email ? tenant.email?.toLowerCase().includes(email.toLowerCase()) : true;
-               return matchesName && matchesEmail;
+               const matchesSearch = search
+                    ? fullName.includes(search.toLowerCase()) || tenant.email?.toLowerCase().includes(search.toLowerCase())
+                    : true;
+
+               const matchesType = tenant_type ? tenant.tenant_type === tenant_type : true;
+               const matchesPrimary = typeof is_primary === 'boolean' ? tenant.is_primary === is_primary : true;
+
+               return matchesSearch && matchesType && matchesPrimary;
           });
      }, [tenants, tenantsSearch.state.filters]);
 
@@ -88,16 +90,7 @@ const Tenants = ({ tenants }: TenantsProps) => {
           const start = tenantsSearch.state.page * tenantsSearch.state.rowsPerPage;
           const end = start + tenantsSearch.state.rowsPerPage;
           return filteredTenants.slice(start, end);
-
      }, [filteredTenants, tenantsSearch.state.page, tenantsSearch.state.rowsPerPage]);
-
-     const handleTenantFilters = useCallback((filters: Record<string, any>) => {
-          const mappedFilters: TenantFilters = {
-               name: filters.name || '',
-               email: filters.email || '',
-          };
-          tenantsSearch.handleFiltersChange(mappedFilters);
-     }, [tenantsSearch]);
 
      return (
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
@@ -129,36 +122,12 @@ const Tenants = ({ tenants }: TenantsProps) => {
                          </Stack>
 
                          <Card>
-                              <FilterSearch
-                                   resourceBase="tenants"
-                                   filtersConfig={[
-                                        {
-                                             type: 'text&select',
-                                             field: 'name',
-                                             label: 'lblTenantName',
-                                             placeholder: 'filterSearchByName',
-                                        },
-                                        {
-                                             type: 'select',
-                                             field: 'tenant_types',
-                                             label: 'lblTenantType',
-                                             options: [
-                                                  { value: 'owner', label: 'tenantTypeOwner' },
-                                                  { value: 'renter', label: 'tenantTypeRenter' },
-                                             ],
-                                        },
-                                        {
-                                             type: 'select',
-                                             field: 'is_primary',
-                                             label: 'lblIsPrimary',
-                                             options: [
-                                                  { value: 'true', label: 'common.lblYes' },
-                                                  { value: 'false', label: 'common.lblNo' },
-                                             ],
-                                             single: true,
-                                        },
+                              <SearchAndBooleanFilters
+                                   value={tenantsSearch.state.filters}
+                                   onChange={tenantsSearch.handleFiltersChange}
+                                   fields={[
+                                        { field: 'is_primary', label: 'lblIsPrimary' }
                                    ]}
-                                   onFiltersChange={handleTenantFilters}
                               />
                               <TenantListTable
                                    items={paginatedTenants}

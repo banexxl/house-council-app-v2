@@ -112,11 +112,12 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
 /**
  * CREATE a new building
  */
-export async function createBuilding(payload: Omit<Building, 'id'>): Promise<{ success: boolean, error?: string, data?: Building | null }> {
+export async function createBuilding(payload: Building): Promise<{ success: boolean, error?: string, data?: Building | null }> {
+
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { building_images, ...buildingPayload } = payload;
+     const { id, building_images, ...buildingPayload } = payload;
      const building_location_id = payload.building_location?.id;
      const payloadData = { ...buildingPayload, building_location: building_location_id };
 

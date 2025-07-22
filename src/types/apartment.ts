@@ -21,7 +21,7 @@ export type ApartmentStatus =
 
 // Apartment Entity Interface
 export interface Apartment {
-     id?: string;
+     id: string;
      building_id: string;
      apartment_number: string;
      floor: number;
@@ -38,6 +38,7 @@ export interface Apartment {
 
 // Initial Values for Formik
 export const apartmentInitialValues: Apartment = {
+     id: '',
      building_id: '',
      apartment_number: '',
      floor: 0,

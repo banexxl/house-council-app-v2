@@ -276,6 +276,7 @@ export const es = {
   [tokens.buildings.buildingStats]: 'Estadísticas del Edificio',
   [tokens.buildings.buildingStories]: 'Pisos',
   [tokens.buildings.numberOfApartments]: 'Cantidad de Apartamentos',
+  [tokens.buildings.buildingStatus]: 'Estado del Edificio',
   [tokens.buildings.lblBuildingStatusVacant]: 'Vacío',
   [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Parcialmente Alquilado',
   [tokens.buildings.lblBuildingStatusRenovation]: 'En Renovación',
