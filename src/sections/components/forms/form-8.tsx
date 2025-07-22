@@ -65,7 +65,7 @@ export const Form8: FC = () => {
                     avatar={<Avatar>{tag.slice(0, 1)}</Avatar>}
                     key={tag}
                     label={tag}
-                    onDelete={() => {}}
+                    onDelete={() => { }}
                     variant="outlined"
                   />
                 ))}
@@ -76,7 +76,7 @@ export const Form8: FC = () => {
               direction="row"
               spacing={3}
             >
-              <MobileDatePicker
+              {/* <MobileDatePicker
                 label="Start Date"
                 onChange={(newDate) => setStartDate(newDate)}
                 value={startDate}
@@ -85,7 +85,7 @@ export const Form8: FC = () => {
                 label="End Date"
                 onChange={(newDate) => setEndDate(newDate)}
                 value={endDate}
-              />
+              /> */}
             </Stack>
           </Stack>
           <Box

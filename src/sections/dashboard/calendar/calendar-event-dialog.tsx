@@ -243,7 +243,7 @@ export const CalendarEventDialog: FC<CalendarEventDialogProps> = (props) => {
             }
             label="All day"
           />
-          <DateTimePicker
+          {/* <DateTimePicker
             label="Start date"
             onChange={handleStartDateChange}
             value={formik.values.start}
@@ -252,7 +252,7 @@ export const CalendarEventDialog: FC<CalendarEventDialogProps> = (props) => {
             label="End date"
             onChange={handleEndDateChange}
             value={formik.values.end}
-          />
+          /> */}
           {!!(formik.touched.end && formik.errors.end) && (
             <FormHelperText error>{formik.errors.end as string}</FormHelperText>
           )}

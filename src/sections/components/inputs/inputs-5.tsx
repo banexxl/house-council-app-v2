@@ -51,11 +51,11 @@ export const Inputs5: FC = () => (
           label="Schedule Publish"
         />
       </div>
-      <DateTimePicker
+      {/* <DateTimePicker
         label="Start date"
         onChange={() => {}}
         value={now}
-      />
+      /> */}
       <TextField
         defaultValue={categoryOptions[0].value}
         fullWidth

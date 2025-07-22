@@ -58,6 +58,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
      const handleSave = async (data: any) => {
           setLoading(true);
           const payload: BuildingLocation = {
+               id: data.location_id || '',
                location_id: data.location_id,
                street_address: transliterateCyrillicToLatin(data.street_address),
                city: data.city,
@@ -68,7 +69,8 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                longitude: data.longitude,
                post_code: parseInt(data.postcode),
                client_id: userData?.client?.id!,
-               building_id: null
+               building_id: null,
+               location_occupied: false
           };
 
           try {
@@ -147,6 +149,8 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
           setMarkerData((prev) => [
                ...prev,
                {
+                    id: id,
+                    location_id: id,
                     latitude: center[1],
                     longitude: center[0],
                     street_address: street_address,
@@ -155,9 +159,9 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                     city: city,
                     region: region,
                     post_code: postcode,
-                    location_id: id,
                     client_id: userData?.client?.id!,
-                    building_id: null
+                    building_id: null,
+                    location_occupied: false
                },
           ]);
           setMapRefreshKey(prev => prev + 1);

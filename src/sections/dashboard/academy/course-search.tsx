@@ -49,7 +49,7 @@ export const CourseSearch: FC = () => {
           </TextField>
         </Box>
         <div>
-          <DatePicker
+          {/* <DatePicker
             format="dd/MM/yyyy"
             label="From"
             onChange={() => { }}
@@ -62,7 +62,7 @@ export const CourseSearch: FC = () => {
             label="To"
             onChange={() => { }}
             value={new Date()}
-          />
+          /> */}
         </div>
         <Button
           size="large"

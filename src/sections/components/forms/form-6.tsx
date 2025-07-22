@@ -33,7 +33,7 @@ export const Form6: FC = () => {
               label="All day"
             />
           </div>
-          <DateTimePicker
+          {/* <DateTimePicker
             onChange={(newDate) => setStartDate(newDate)}
             label="Start date"
             value={startDate}
@@ -42,7 +42,7 @@ export const Form6: FC = () => {
             onChange={(newDate) => setEndDate(newDate)}
             label="End date"
             value={endDate}
-          />
+          /> */}
         </Stack>
         <Divider sx={{ my: 3 }} />
         <Box

@@ -20,7 +20,6 @@ import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
-import { TenantListTable } from 'src/sections/dashboard/tenant/tanant-list-table';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { GenericTable } from 'src/components/table';
 

@@ -24,10 +24,8 @@ import {
   apartmentTypeMap,
   type Apartment,
 } from 'src/types/apartment';
-import { ApartmentListTable } from 'src/sections/dashboard/apartments/apartment-list-table';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { GenericTable } from 'src/components/table';
-import { deleteBuilding } from 'src/app/actions/building/building-actions';
 import { deleteApartment } from 'src/app/actions/apartment/apartment-actions';
 import { toast } from 'react-hot-toast';
 

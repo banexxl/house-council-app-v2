@@ -1,7 +1,6 @@
 'use server'
 
 import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
-import { LocationsTable } from 'src/sections/dashboard/locations/locations-list-table';
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';

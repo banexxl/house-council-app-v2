@@ -6,8 +6,7 @@ import { Formik, Form, Field } from "formik"
 import * as Yup from "yup"
 import { TextField, InputAdornment, Button, FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material"
 import { DatePicker } from "@mui/x-date-pickers/DatePicker"
-// import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
-// import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
+import dayjs from "dayjs"
 import { CreditCard } from "@mui/icons-material"
 import { Mastercard, Visa, Amex } from "react-payment-logos/dist/flat"
 import type { Client } from "src/types/client"
@@ -159,9 +158,8 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                          <DatePicker
                               label={t('clients.clientCardExpirationDate')}
                               views={["year", "month"]}
-                              format="MM/yy"
-                              minDate={new Date()}
-                              value={values.expiration_date}
+                              minDate={dayjs()}
+                              value={values.expiration_date ? dayjs(values.expiration_date) : null}
                               onChange={(date) => setFieldValue("expiration_date", date)}
                               slotProps={{
                                    textField: {
