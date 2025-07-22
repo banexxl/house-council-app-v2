@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -52,7 +52,7 @@ export const CourseSearch: FC = () => {
           <DatePicker
             format="dd/MM/yyyy"
             label="From"
-            onChange={() => {}}
+            onChange={() => { }}
             value={new Date()}
           />
         </div>
@@ -60,7 +60,7 @@ export const CourseSearch: FC = () => {
           <DatePicker
             format="dd/MM/yyyy"
             label="To"
-            onChange={() => {}}
+            onChange={() => { }}
             value={new Date()}
           />
         </div>
@@ -68,7 +68,7 @@ export const CourseSearch: FC = () => {
           size="large"
           startIcon={
             <SvgIcon>
-              <SearchMdIcon />
+              <SearchIcon />
             </SvgIcon>
           }
           variant="contained"

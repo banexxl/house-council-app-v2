@@ -98,6 +98,7 @@ export const rs = {
      [tokens.common.lblHasGroundFloorApartments]: 'Ima stanove na prizemlju',
      [tokens.common.lblYes]: 'Da',
      [tokens.common.lblNo]: 'Ne',
+     [tokens.common.lblFilters]: 'Filter',
      [tokens.apartments.lblApartmentTypeBusiness]: 'Poslovni',
      [tokens.apartments.lblApartmentTypeResidential]: 'Stambeni',
      [tokens.apartments.lblApartmentTypeMixedUse]: 'Mešovita namena',
@@ -236,6 +237,7 @@ export const rs = {
      [tokens.locations.searchLocationLabel]: 'Pretraga lokacija',
      [tokens.locations.addLocationsFirstLabel]: 'Morate prvo dodati lokacije',
      [tokens.locations.locationTaken]: 'Lokacija zauzeta',
+     [tokens.locations.tableFilterNoFilterSelected]: 'Nema odabranih filtera',
      //#endregion
      //#region Apartments
      [tokens.apartments.lblApartmentNumber]: 'Broj apartmana',

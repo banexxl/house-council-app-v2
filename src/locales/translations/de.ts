@@ -98,6 +98,7 @@ export const de = {
   [tokens.common.lblHasGroundFloorApartments]: 'Hat Erdgeschosswohnungen',
   [tokens.common.lblYes]: 'Ja',
   [tokens.common.lblNo]: 'Nein',
+  [tokens.common.lblFilters]: 'Filter',
   [tokens.common.notes]: 'Notizen',
   [tokens.common.settings]: 'Einstellungen',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Klicken Sie hier, um hochzuladen oder ziehen und loslassen, um hochzuladen',
@@ -228,6 +229,7 @@ export const de = {
   [tokens.locations.searchLocationLabel]: 'Ort suchen',
   [tokens.locations.addLocationsFirstLabel]: 'Zuerst Orte hinzufügen',
   [tokens.locations.locationTaken]: 'Ort bereits vergeben',
+  [tokens.locations.tableFilterNoFilterSelected]: 'Kein Filter ausgewählt',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Wohnungsnummer',

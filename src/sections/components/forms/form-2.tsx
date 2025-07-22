@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { useMemo } from 'react';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
@@ -111,7 +111,7 @@ export const Form2: FC = () => {
         }}
       >
         <SvgIcon>
-          <SearchMdIcon />
+          <SearchIcon />
         </SvgIcon>
         <Box
           sx={{

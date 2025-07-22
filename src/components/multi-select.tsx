@@ -14,31 +14,44 @@ import { useTranslation } from 'react-i18next';
 
 interface MultiSelectProps {
   label: string;
-  // Same as type as the value received above
-  onChange?: (value: any[]) => void;
-  options: { resource_string: string }[]
-  // This should accept string[], number[] or boolean[]
-  value: any[];
+  options: { resource_string: string; value: string }[];
+  value: string[];
+  onChange?: (value: string[]) => void;
+  single?: boolean;
 }
 
-export const MultiSelect: FC<MultiSelectProps> = (props) => {
-
-  const { label, onChange, options, value = [], ...other } = props;
+export const MultiSelect: FC<MultiSelectProps> = ({
+  label,
+  options,
+  value = [],
+  onChange,
+  single = false,
+  ...other
+}) => {
   const popover = usePopover<HTMLButtonElement>();
   const { t } = useTranslation();
+
   const handleValueChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
-      let newValue = [...value];
+      const selectedValue = event.target.value;
+      let newValue: string[];
 
-      if (event.target.checked) {
-        newValue.push(event.target.value);
+      if (single) {
+        // Only allow one value at a time
+        newValue = event.target.checked ? [selectedValue] : [];
       } else {
-        newValue = newValue.filter((item) => item !== event.target.value);
+        // Multi-select logic
+        newValue = [...value];
+        if (event.target.checked) {
+          newValue.push(selectedValue);
+        } else {
+          newValue = newValue.filter((item) => item !== selectedValue);
+        }
       }
 
       onChange?.(newValue);
     },
-    [onChange, value]
+    [onChange, value, single]
   );
 
   return (
@@ -63,20 +76,17 @@ export const MultiSelect: FC<MultiSelectProps> = (props) => {
         PaperProps={{ style: { width: 250 } }}
       >
         {options.map((option) => (
-          <MenuItem key={option.resource_string}>
+          <MenuItem key={option.value}>
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={value.includes(option.resource_string)}
+                  checked={value.includes(option.value)}
                   onChange={handleValueChange}
-                  value={option.resource_string}
+                  value={option.value}
                 />
               }
               label={t(option.resource_string)}
-              sx={{
-                flexGrow: 1,
-                mr: 0,
-              }}
+              sx={{ flexGrow: 1, mr: 0 }}
             />
           </MenuItem>
         ))}
@@ -87,7 +97,8 @@ export const MultiSelect: FC<MultiSelectProps> = (props) => {
 
 MultiSelect.propTypes = {
   label: PropTypes.string.isRequired,
-  onChange: PropTypes.func,
   options: PropTypes.array.isRequired,
   value: PropTypes.array.isRequired,
+  onChange: PropTypes.func,
+  single: PropTypes.bool,
 };

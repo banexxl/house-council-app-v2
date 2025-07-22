@@ -12,22 +12,25 @@ import {
   Link,
   Stack,
   SvgIcon,
-  Typography
+  Typography,
 } from '@mui/material';
 
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
-import { apartmentStatusMap, apartmentTypeMap, type Apartment } from 'src/types/apartment';
+import {
+  apartmentStatusMap,
+  apartmentTypeMap,
+  type Apartment,
+} from 'src/types/apartment';
 import { ApartmentListTable } from 'src/sections/dashboard/apartments/apartment-list-table';
-import { ApartmentListSearch } from 'src/sections/dashboard/apartments/apartment-list-search';
+import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 
-export interface ApartmentFilters {
+export type ApartmentFilters = {
   apartment_number?: string;
-  apartment_statuses: string[];
-  apartment_types: string[];
-}
+  [key: string]: string | boolean | undefined;
+};
 
 export interface ApartmentsSearchState {
   filters: ApartmentFilters;
@@ -36,12 +39,9 @@ export interface ApartmentsSearchState {
 }
 
 const useApartmentsSearch = () => {
-
   const [state, setState] = useState<ApartmentsSearchState>({
     filters: {
       apartment_number: undefined,
-      apartment_statuses: [],
-      apartment_types: [],
     },
     page: 0,
     rowsPerPage: 5,
@@ -51,19 +51,30 @@ const useApartmentsSearch = () => {
     setState((prev) => ({ ...prev, filters, page: 0 }));
   }, []);
 
-  const handlePageChange = useCallback((_event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
-    setState((prev) => ({ ...prev, page }));
-  }, []);
+  const handlePageChange = useCallback(
+    (_event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
+      setState((prev) => ({ ...prev, page }));
+    },
+    []
+  );
 
-  const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-    setState((prev) => ({
-      ...prev,
-      rowsPerPage: parseInt(event.target.value, 10),
-      page: 0,
-    }));
-  }, []);
+  const handleRowsPerPageChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>): void => {
+      setState((prev) => ({
+        ...prev,
+        rowsPerPage: parseInt(event.target.value, 10),
+        page: 0,
+      }));
+    },
+    []
+  );
 
-  return { state, handleFiltersChange, handlePageChange, handleRowsPerPageChange };
+  return {
+    state,
+    handleFiltersChange,
+    handlePageChange,
+    handleRowsPerPageChange,
+  };
 };
 
 interface ApartmentsProps {
@@ -76,26 +87,24 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
   const [addApartmentLoading, setAddApartmentLoading] = useState(false);
 
   const filteredApartments = useMemo(() => {
-    const { apartment_number, apartment_statuses, apartment_types } = apartmentSearch.state.filters;
+    const { apartment_number, ...boolFilters } = apartmentSearch.state.filters;
 
     return apartments.filter((apartment) => {
-
       const matchesNumber = apartment_number
         ? apartment.apartment_number?.toLowerCase().includes(apartment_number.toLowerCase())
         : true;
 
-      const matchesType = apartment_types.length
-        ? apartment_types.includes(apartmentTypeMap[apartment.apartment_type as keyof typeof apartmentTypeMap] || '')
+      const matchesType = boolFilters['residential'] || boolFilters['business'] || boolFilters['mixed_use'] || boolFilters['vacation'] || boolFilters['storage'] || boolFilters['garage'] || boolFilters['utility']
+        ? Boolean(boolFilters[apartment.apartment_type])
         : true;
 
-      const matchesStatus = apartment_statuses.length
-        ? apartment_statuses.includes(apartmentStatusMap[apartment.apartment_status as keyof typeof apartmentStatusMap] || '')
+      const matchesStatus = boolFilters['owned'] || boolFilters['rented'] || boolFilters['for_rent'] || boolFilters['vacant']
+        ? Boolean(boolFilters[apartment.apartment_status])
         : true;
 
       return matchesNumber && matchesType && matchesStatus;
     });
   }, [apartments, apartmentSearch.state.filters]);
-
 
   const paginatedApartments = useMemo(() => {
     const start = apartmentSearch.state.page * apartmentSearch.state.rowsPerPage;
@@ -111,7 +120,12 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
             <Stack spacing={1}>
               <Typography variant="h4">{t('apartments.apartmentList')}</Typography>
               <Breadcrumbs separator={<BreadcrumbsSeparator />}>
-                <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
+                <Link
+                  color="text.primary"
+                  component={RouterLink}
+                  href={paths.dashboard.index}
+                  variant="subtitle2"
+                >
                   {t('nav.adminDashboard')}
                 </Link>
                 <Typography color="text.secondary" variant="subtitle2">
@@ -124,7 +138,11 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
               component={RouterLink}
               href={paths.dashboard.apartments.new}
               onClick={() => setAddApartmentLoading(true)}
-              startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
+              startIcon={
+                <SvgIcon>
+                  <PlusIcon />
+                </SvgIcon>
+              }
               variant="contained"
               loading={addApartmentLoading}
             >
@@ -133,7 +151,28 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
           </Stack>
 
           <Card>
-            <ApartmentListSearch onFiltersChange={apartmentSearch.handleFiltersChange} />
+            <SearchAndBooleanFilters
+              fields={[
+                { field: 'residential', label: 'apartments.lblApartmentTypeResidential' },
+                { field: 'business', label: 'apartments.lblApartmentTypeBusiness' },
+                { field: 'mixed_use', label: 'apartments.lblApartmentTypeMixedUse' },
+                { field: 'vacation', label: 'apartments.lblApartmentTypeVacation' },
+                { field: 'storage', label: 'apartments.lblApartmentTypeStorage' },
+                { field: 'garage', label: 'apartments.lblApartmentTypeGarage' },
+                { field: 'utility', label: 'apartments.lblApartmentTypeUtility' },
+                { field: 'owned', label: 'apartments.lblOwned' },
+                { field: 'rented', label: 'apartments.lblRented' },
+                { field: 'for_rent', label: 'apartments.lblForRent' },
+                { field: 'vacant', label: 'apartments.lblVacant' },
+              ]}
+              value={apartmentSearch.state.filters}
+              onChange={(newFilters: Partial<ApartmentFilters>) => {
+                apartmentSearch.handleFiltersChange({
+                  ...apartmentSearch.state.filters,
+                  ...newFilters,
+                });
+              }}
+            />
             <ApartmentListTable
               items={paginatedApartments}
               count={filteredApartments.length}

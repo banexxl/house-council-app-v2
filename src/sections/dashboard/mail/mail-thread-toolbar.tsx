@@ -5,7 +5,7 @@ import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import ChevronLeftIcon from '@untitled-ui/icons-react/build/esm/ChevronLeft';
 import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import DotsHorizontalIcon from '@untitled-ui/icons-react/build/esm/DotsHorizontal';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Trash02Icon from '@untitled-ui/icons-react/build/esm/Trash02';
 import ReplyIcon from '@mui/icons-material/Reply';
 import ReplyAllIcon from '@mui/icons-material/ReplyAll';
@@ -71,7 +71,7 @@ export const MailThreadToolbar: FC<MailThreadToolbarProps> = (props) => {
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
-                  <SearchMdIcon />
+                  <SearchIcon />
                 </SvgIcon>
               </InputAdornment>
             }

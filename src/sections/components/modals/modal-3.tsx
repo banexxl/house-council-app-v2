@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -46,7 +46,7 @@ export const Modal3: FC = () => (
               startAdornment={
                 <InputAdornment position="start">
                   <SvgIcon>
-                    <SearchMdIcon />
+                    <SearchIcon />
                   </SvgIcon>
                 </InputAdornment>
               }

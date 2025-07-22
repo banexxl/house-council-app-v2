@@ -98,6 +98,7 @@ export const es = {
   [tokens.common.lblHasGroundFloorApartments]: 'Tiene apartamentos en planta baja',
   [tokens.common.lblYes]: 'Si',
   [tokens.common.lblNo]: 'No',
+  [tokens.common.lblFilters]: 'Filtros',
   [tokens.common.notes]: 'Notas',
   [tokens.common.settings]: 'Ajustes',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Haz clic aqui para subir o arrastra y suelta para subir',
@@ -228,6 +229,7 @@ export const es = {
   [tokens.locations.searchLocationLabel]: 'Buscar ubicación',
   [tokens.locations.addLocationsFirstLabel]: 'Para agregar ubicaciones, primero cree un edificio',
   [tokens.locations.locationTaken]: 'Ubicación tomada!',
+  [tokens.locations.tableFilterNoFilterSelected]: 'No se ha seleccionado ningún filtro',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Número de Apartamento',

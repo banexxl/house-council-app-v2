@@ -1,7 +1,7 @@
 import type { ChangeEvent, FocusEvent } from 'react';
 import { forwardRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -32,7 +32,7 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
     const {
       isFocused,
       onChange,
-      onClickAway = () => {},
+      onClickAway = () => { },
       onFocus,
       onSelect,
       query = '',
@@ -66,7 +66,7 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
-                  <SearchMdIcon />
+                  <SearchIcon />
                 </SvgIcon>
               </InputAdornment>
             }

@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Grid01Icon from '@untitled-ui/icons-react/build/esm/Grid01';
 import ListIcon from '@untitled-ui/icons-react/build/esm/List';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -107,7 +107,7 @@ export const ItemSearch: FC<ItemSearchProps> = (props) => {
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
-                  <SearchMdIcon />
+                  <SearchIcon />
                 </SvgIcon>
               </InputAdornment>
             }

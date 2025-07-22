@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { useMemo } from 'react';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -163,7 +163,7 @@ export const JobListSearch: FC = (props) => {
         sx={{ p: 2 }}
       >
         <SvgIcon>
-          <SearchMdIcon />
+          <SearchIcon />
         </SvgIcon>
         <Box sx={{ flexGrow: 1 }}>
           <Input

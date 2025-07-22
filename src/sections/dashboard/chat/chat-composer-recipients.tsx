@@ -1,7 +1,7 @@
 import type { ChangeEvent, FC } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -105,7 +105,7 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
                   startAdornment={
                     <InputAdornment position="start">
                       <SvgIcon>
-                        <SearchMdIcon />
+                        <SearchIcon />
                       </SvgIcon>
                     </InputAdornment>
                   }

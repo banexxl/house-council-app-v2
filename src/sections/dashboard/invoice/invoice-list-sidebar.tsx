@@ -1,7 +1,7 @@
 import type { ChangeEvent, FC, FormEvent } from 'react';
 import { useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
@@ -167,7 +167,7 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
-                  <SearchMdIcon />
+                  <SearchIcon />
                 </SvgIcon>
               </InputAdornment>
             }

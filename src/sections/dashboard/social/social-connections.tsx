@@ -1,6 +1,6 @@
 import type { ChangeEvent, FC } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -37,7 +37,7 @@ export const SocialConnections: FC<SocialConnectionsProps> = (props) => {
         }}
       >
         <SvgIcon>
-          <SearchMdIcon />
+          <SearchIcon />
         </SvgIcon>
         <Box sx={{ flexGrow: 1 }}>
           <Input

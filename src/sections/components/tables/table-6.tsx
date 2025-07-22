@@ -3,7 +3,7 @@ import { format, subDays, subHours } from 'date-fns';
 import numeral from 'numeral';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import Edit02Icon from '@untitled-ui/icons-react/build/esm/Edit02';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -166,7 +166,7 @@ export const Table6: FC = () => (
           startAdornment={
             <InputAdornment position="start">
               <SvgIcon>
-                <SearchMdIcon />
+                <SearchIcon />
               </SvgIcon>
             </InputAdornment>
           }

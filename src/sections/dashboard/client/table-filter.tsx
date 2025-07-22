@@ -2,7 +2,7 @@
 
 import React, { FC, useState, useCallback, ChangeEvent } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import { Box, Button, Divider, InputAdornment, OutlinedInput, Stack, SvgIcon, Tab, Tabs, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
@@ -116,7 +116,7 @@ export const FilterBar = <T,>({
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
-                  <SearchMdIcon />
+                  <SearchIcon />
                 </SvgIcon>
               </InputAdornment>
             }

@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import IconButton from '@mui/material/IconButton';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
@@ -16,7 +16,7 @@ export const SearchButton: FC = () => {
       <Tooltip title="Search">
         <IconButton onClick={dialog.handleOpen}>
           <SvgIcon>
-            <SearchMdIcon />
+            <SearchIcon />
           </SvgIcon>
         </IconButton>
       </Tooltip>

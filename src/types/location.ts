@@ -13,4 +13,5 @@ export interface BuildingLocation {
      post_code: number; // Optional zip code
      latitude: number; // Optional latitude
      longitude: number; // Optional longitude
+     location_occupied: boolean; // Indicates if the location is occupied
 }

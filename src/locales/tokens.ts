@@ -98,6 +98,7 @@ export const tokens = {
     lblHasGroundFloorApartments: 'common.lblHasGroundFloorApartments',
     lblYes: 'common.lblYes',
     lblNo: 'common.lblNo',
+    lblFilters: 'common.lblFilters',
     notes: 'common.notes',
     settings: 'common.settings',
     actionClickToUploadOrDragAndDrop: 'common.actionClickToUploadOrDragAndDrop',
@@ -301,6 +302,7 @@ export const tokens = {
     locationTaken: 'locations.locationTaken',
     searchLocationLabel: 'locations.searchLocationLabel',
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
+    tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected'
   },
   clients: {
     client: 'clients.client',

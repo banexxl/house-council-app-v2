@@ -98,6 +98,7 @@ export const en = {
   [tokens.common.lblHasGroundFloorApartments]: 'Has Ground Floor Apartments',
   [tokens.common.lblYes]: 'Yes',
   [tokens.common.lblNo]: 'No',
+  [tokens.common.lblFilters]: 'Filters',
   [tokens.common.notes]: 'Notes',
   [tokens.common.settings]: 'Settings',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Click here to upload or drag and drop to upload',
@@ -228,6 +229,7 @@ export const en = {
   [tokens.locations.searchLocationLabel]: 'Search location',
   [tokens.locations.addLocationsFirstLabel]: 'Please add locations first',
   [tokens.locations.locationTaken]: 'Location has been taken',
+  [tokens.locations.tableFilterNoFilterSelected]: 'No Filter Selected',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Apartment Number',

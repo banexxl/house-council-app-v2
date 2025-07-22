@@ -273,7 +273,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 </Box>
               )}
               getOptionLabel={(item) => `${item.city} — ${item.street_address} ${item.street_number}`}
-              disabled={!!locationData}
+              disabled={!locationDataWithNoBuildingId}
             />
           </CardContent>
         </Card>

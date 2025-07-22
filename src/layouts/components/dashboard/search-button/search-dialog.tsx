@@ -1,7 +1,7 @@
 import type { FC, SyntheticEvent } from 'react';
 import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -117,7 +117,7 @@ export const SearchDialog: FC<SearchDialogProps> = (props) => {
               startAdornment: (
                 <InputAdornment position="start">
                   <SvgIcon>
-                    <SearchMdIcon />
+                    <SearchIcon />
                   </SvgIcon>
                 </InputAdornment>
               ),

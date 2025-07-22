@@ -6,7 +6,7 @@ import ChevronLeftIcon from '@untitled-ui/icons-react/build/esm/ChevronLeft';
 import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import Menu01Icon from '@untitled-ui/icons-react/build/esm/Menu01';
 import RefreshCcw02Icon from '@untitled-ui/icons-react/build/esm/RefreshCcw02';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import Divider from '@mui/material/Divider';
@@ -148,7 +148,7 @@ export const MailList: FC<MailListProps> = (props) => {
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
-                  <SearchMdIcon />
+                  <SearchIcon />
                 </SvgIcon>
               </InputAdornment>
             }

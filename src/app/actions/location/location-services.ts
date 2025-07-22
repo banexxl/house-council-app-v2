@@ -143,6 +143,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
                     user_id: null,
                     id: values.location_id
                })
+               revalidatePath('/dashboard/locations');
                return { success: true, data: data![0] };
           }
      } catch (error) {
@@ -155,84 +156,6 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
                type: 'db',
                user_id: null,
                id: values.id || '',
-          })
-          return { success: false, error };
-     }
-}
-
-export const deleteLocationsByIDsAction = async (ids: (string | undefined)[]) => {
-
-     const supabase = await useServerSideSupabaseServiceRoleClient()
-
-     if (!ids) {
-          await logServerAction({
-               action: 'deleteLocationsByIDsAction',
-               duration_ms: 0,
-               error: 'No location IDs provided',
-               payload: ids,
-               status: 'fail',
-               type: 'db',
-               user_id: null,
-               id: '',
-          })
-          return { success: false, error: 'No location IDs provided' };
-     }
-     if (ids.length === 0) {
-          await logServerAction({
-               action: 'deleteLocationsByIDsAction',
-               duration_ms: 0,
-               error: 'No location IDs provided',
-               payload: ids,
-               status: 'fail',
-               type: 'db',
-               user_id: null,
-               id: '',
-          })
-          return { success: false, error: 'No location IDs provided' };
-     }
-     ids.forEach((id) => {
-          if (!id) {
-               return { success: false, error: 'Invalid location ID' };
-          }
-     })
-     try {
-          const { error } = await supabase.from('tblBuildingLocations').delete().in('id', ids);
-          if (error) {
-               await logServerAction({
-                    action: 'deleteLocationsByIDsAction',
-                    duration_ms: 0,
-                    error: error.message,
-                    payload: ids,
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-                    id: '',
-               })
-               return { success: false, error: error };
-          } else {
-               await logServerAction({
-                    action: 'deleteLocationsByIDsAction',
-                    duration_ms: 0,
-                    error: '',
-                    payload: ids,
-                    status: 'success',
-                    type: 'db',
-                    user_id: null,
-                    id: ids.join(','),
-               })
-               revalidatePath('/dashboard/locations');
-               return { success: true };
-          }
-     } catch (error) {
-          await logServerAction({
-               action: 'deleteLocationsByIDsAction',
-               duration_ms: 0,
-               error: (error as Error).message,
-               payload: ids,
-               status: 'fail',
-               type: 'db',
-               user_id: null,
-               id: '',
           })
           return { success: false, error };
      }
@@ -284,13 +207,16 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
      }
 }
 
-export const getAllAddedLocationsByClientId = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
-
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+export const getAllAddedLocationsByClientId = async (
+     client_id: string
+): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
-
-          const { data, error } = await supabase.from('tblBuildingLocations').select('*').eq('client_id', client_id)
+          const { data, error } = await supabase
+               .from('tblBuildingLocations')
+               .select('*')
+               .eq('client_id', client_id);
 
           if (error) {
                await logServerAction({
@@ -302,21 +228,27 @@ export const getAllAddedLocationsByClientId = async (client_id: string): Promise
                     type: 'db',
                     user_id: null,
                     id: '',
-               })
-               return { success: false, error: error };
-          } else {
-               await logServerAction({
-                    action: 'getAllAddedLocationsByClientId',
-                    duration_ms: 0,
-                    error: '',
-                    payload: { client_id },
-                    status: 'success',
-                    type: 'db',
-                    user_id: null,
-                    id: '',
-               })
-               return { success: true, data };
+               });
+               return { success: false, error };
           }
+
+          const enrichedData = data.map((location) => ({
+               ...location,
+               location_occupied: !!(location.building_id && location.building_id !== ''),
+          }));
+
+          await logServerAction({
+               action: 'getAllAddedLocationsByClientId',
+               duration_ms: 0,
+               error: '',
+               payload: { client_id },
+               status: 'success',
+               type: 'db',
+               user_id: null,
+               id: '',
+          });
+
+          return { success: true, data: enrichedData };
      } catch (error) {
           await logServerAction({
                action: 'getAllAddedLocationsByClientId',
@@ -327,10 +259,10 @@ export const getAllAddedLocationsByClientId = async (client_id: string): Promise
                type: 'db',
                user_id: null,
                id: '',
-          })
+          });
           return { success: false, error };
      }
-}
+};
 
 export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
 
@@ -382,7 +314,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string):
      }
 }
 
-export const deleteLocationByID = async (id: string | undefined): Promise<{ success: boolean; error?: ErrorResponse }> => {
+export const deleteLocationByID = async (id: string): Promise<{ success: boolean; error?: ErrorResponse }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
@@ -400,7 +332,7 @@ export const deleteLocationByID = async (id: string | undefined): Promise<{ succ
           return { success: false, error: { code: '400', details: null, hint: null, message: 'No location ID provided' } };
      }
      try {
-          const { error } = await supabase.from('tblBuildingLocations').delete().eq('location_id', id);
+          const { error, count } = await supabase.from('tblBuildingLocations').delete().eq('id', id);
 
           if (error) {
                await logServerAction({
@@ -425,6 +357,7 @@ export const deleteLocationByID = async (id: string | undefined): Promise<{ succ
                     user_id: null,
                     id: id,
                })
+               revalidatePath('/dashboard/locations');
                return { success: true };
           }
      } catch (error) {
@@ -438,6 +371,7 @@ export const deleteLocationByID = async (id: string | undefined): Promise<{ succ
                user_id: null,
                id: '',
           })
+
           return { success: false, error };
      }
 }

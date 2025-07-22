@@ -16,55 +16,43 @@ import Typography from '@mui/material/Typography';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
-import { BuildingListSearch } from 'src/sections/dashboard/buildings/building-list-search';
 import { BuildingListTable } from 'src/sections/dashboard/buildings/building-list-table';
 import { useTranslation } from 'react-i18next';
 import { Building } from 'src/types/building';
-import { buildingStatusMap } from 'src/types/building';
+import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 
-const amenityKeyMap: Record<string, keyof Building> = {
-  'common.lblHasParkingLot': 'has_parking_lot',
-  'common.lblHasGasHeating': 'has_gas_heating',
-  'common.lblHasCentralHeating': 'has_central_heating',
-  'common.lblHasElectricHeating': 'has_electric_heating',
-  'common.lblHasSolarPower': 'has_solar_power',
-  'common.lblHasBicycleRoom': 'has_bicycle_room',
-  'common.lblHasPreHeatedWater': 'has_pre_heated_water',
-  'common.lblHasElevator': 'has_elevator',
-  'common.lblRecentlyBuilt': 'is_recently_built',
+export type BuildingFilters = {
+  search?: string;
+  [key: string]: boolean | string | undefined;
 };
 
-export interface BuildingSearchFilters {
-  address?: string;
-  amenities: string[];
-  statuses: (keyof typeof buildingStatusMap)[];
-}
-
-export interface BuildingsSearchState {
-  filters: BuildingSearchFilters;
+interface BuildingsSearchState {
+  filters: BuildingFilters;
   page: number;
   rowsPerPage: number;
 }
 
 const useBuildingsSearch = () => {
-
   const [state, setState] = useState<BuildingsSearchState>({
-    filters: {
-      address: undefined,
-      amenities: [],
-      statuses: [],
-    },
+    filters: {},
     page: 0,
     rowsPerPage: 5,
   });
 
-  const handleFiltersChange = useCallback((filters: BuildingSearchFilters): void => {
-    setState((prev) => ({ ...prev, filters, page: 0 }));
+  const handleFiltersChange = useCallback((filters: BuildingFilters): void => {
+    setState((prev) => ({
+      ...prev,
+      filters,
+      page: 0,
+    }));
   }, []);
 
-  const handlePageChange = useCallback((_event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
-    setState((prev) => ({ ...prev, page }));
-  }, []);
+  const handlePageChange = useCallback(
+    (_event: MouseEvent<HTMLButtonElement> | null, page: number): void => {
+      setState((prev) => ({ ...prev, page }));
+    },
+    []
+  );
 
   const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setState((prev) => ({
@@ -82,33 +70,25 @@ interface BuildingTableProps {
 }
 
 const Buildings = ({ clientBuildings }: BuildingTableProps) => {
-
   const { t } = useTranslation();
   const buildingSearch = useBuildingsSearch();
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);
 
   const filteredBuildings = useMemo(() => {
-    const { address, amenities, statuses } = buildingSearch.state.filters;
+    const { search, ...booleanFilters } = buildingSearch.state.filters;
 
     return clientBuildings.filter((building) => {
       const location = building.building_location;
 
-      const matchesAddress = address
-        ? location?.street_address.toLowerCase().includes(address.toLowerCase())
+      const matchesSearch = search
+        ? location?.street_address.toLowerCase().includes(search.toLowerCase())
         : true;
 
-      const matchesAmenities = amenities.length
-        ? amenities.every((key) => {
-          const fieldKey = amenityKeyMap[key];
-          return fieldKey && building[fieldKey];
-        })
-        : true;
+      const matchesBooleanFields = Object.entries(booleanFilters).every(([field, expected]) => {
+        return expected === undefined || building[field as keyof Building] === expected;
+      });
 
-      const matchesStatuses = statuses.length
-        ? statuses.includes(Object.entries(buildingStatusMap).find(([key]) => key === building.building_status)?.[1] ?? '')
-        : true;
-
-      return matchesAddress && matchesAmenities && matchesStatuses;
+      return matchesSearch && matchesBooleanFields;
     });
   }, [clientBuildings, buildingSearch.state.filters]);
 
@@ -148,7 +128,27 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
           </Stack>
 
           <Card>
-            <BuildingListSearch onFiltersChange={buildingSearch.handleFiltersChange} />
+            <SearchAndBooleanFilters
+              fields={[
+                { field: 'has_parking_lot', label: 'common.lblHasParkingLot' },
+                { field: 'has_gas_heating', label: 'common.lblHasGasHeating' },
+                { field: 'has_central_heating', label: 'common.lblHasCentralHeating' },
+                { field: 'has_electric_heating', label: 'common.lblHasElectricHeating' },
+                { field: 'has_solar_power', label: 'common.lblHasSolarPower' },
+                { field: 'has_bicycle_room', label: 'common.lblHasBicycleRoom' },
+                { field: 'has_pre_heated_water', label: 'common.lblHasPreHeatedWater' },
+                { field: 'has_elevator', label: 'common.lblHasElevator' },
+                { field: 'is_recently_built', label: 'common.lblRecentlyBuilt' },
+              ]}
+              value={buildingSearch.state.filters}
+              onChange={(newFilters) => {
+                buildingSearch.handleFiltersChange({
+                  ...buildingSearch.state.filters,
+                  ...newFilters
+                });
+              }}
+            />
+
             <BuildingListTable
               items={paginatedBuildings}
               count={filteredBuildings.length}

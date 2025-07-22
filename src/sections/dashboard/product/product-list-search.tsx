@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import SearchMdIcon from '@untitled-ui/icons-react/build/esm/SearchMd';
+import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
@@ -340,7 +340,7 @@ export const ProductListSearch: FC<ProductListSearchProps> = (props) => {
         sx={{ p: 2 }}
       >
         <SvgIcon>
-          <SearchMdIcon />
+          <SearchIcon />
         </SvgIcon>
         <Input
           defaultValue=""

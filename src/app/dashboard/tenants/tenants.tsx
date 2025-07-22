@@ -21,7 +21,7 @@ import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
 import { TenantListTable } from 'src/sections/dashboard/tenant/tanant-list-table';
-import { TenantListSearch } from 'src/sections/dashboard/tenant/tenant-list-search';
+import { FilterSearch } from 'src/components/filter-list-search';
 
 type TenantFilters = {
      name: string;
@@ -88,7 +88,16 @@ const Tenants = ({ tenants }: TenantsProps) => {
           const start = tenantsSearch.state.page * tenantsSearch.state.rowsPerPage;
           const end = start + tenantsSearch.state.rowsPerPage;
           return filteredTenants.slice(start, end);
+
      }, [filteredTenants, tenantsSearch.state.page, tenantsSearch.state.rowsPerPage]);
+
+     const handleTenantFilters = useCallback((filters: Record<string, any>) => {
+          const mappedFilters: TenantFilters = {
+               name: filters.name || '',
+               email: filters.email || '',
+          };
+          tenantsSearch.handleFiltersChange(mappedFilters);
+     }, [tenantsSearch]);
 
      return (
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
@@ -120,7 +129,37 @@ const Tenants = ({ tenants }: TenantsProps) => {
                          </Stack>
 
                          <Card>
-                              <TenantListSearch onFiltersChange={tenantsSearch.handleFiltersChange} />
+                              <FilterSearch
+                                   resourceBase="tenants"
+                                   filtersConfig={[
+                                        {
+                                             type: 'text&select',
+                                             field: 'name',
+                                             label: 'lblTenantName',
+                                             placeholder: 'filterSearchByName',
+                                        },
+                                        {
+                                             type: 'select',
+                                             field: 'tenant_types',
+                                             label: 'lblTenantType',
+                                             options: [
+                                                  { value: 'owner', label: 'tenantTypeOwner' },
+                                                  { value: 'renter', label: 'tenantTypeRenter' },
+                                             ],
+                                        },
+                                        {
+                                             type: 'select',
+                                             field: 'is_primary',
+                                             label: 'lblIsPrimary',
+                                             options: [
+                                                  { value: 'true', label: 'common.lblYes' },
+                                                  { value: 'false', label: 'common.lblNo' },
+                                             ],
+                                             single: true,
+                                        },
+                                   ]}
+                                   onFiltersChange={handleTenantFilters}
+                              />
                               <TenantListTable
                                    items={paginatedTenants}
                                    count={filteredTenants.length}

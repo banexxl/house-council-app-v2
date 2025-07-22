@@ -31,7 +31,6 @@ import { applySort } from 'src/utils/apply-sort';
 import { getInitials } from 'src/utils/get-initials';
 import { deleteTenantByIDsAction } from 'src/app/actions/tenant/tenant-actions';
 import { type Tenant } from 'src/types/tenant';
-import { FilterBar } from '../client/table-filter';
 
 interface TenantListTableProps {
      items?: (Tenant & {
@@ -118,9 +117,6 @@ export const TenantListTable: FC<TenantListTableProps> = ({ items = [] }) => {
 
      return (
           <Box sx={{ position: 'relative' }}>
-
-
-
                <Scrollbar>
                     <Table>
                          <TableHead>
