@@ -456,6 +456,10 @@ export const tokens = {
     tenantCreate: 'tenants.tenantCreate',
     tenantEdit: 'tenants.tenantEdit',
     tenantDelete: 'tenants.tenantDelete',
+    tenantTypeOwner: 'tenants.lblOwner',
+    tenantTypeRenter: 'tenants.lblRenter',
+    tenantTypeRelative: 'tenants.lblRelative',
+    tenantTypeOther: 'tenants.lblOther',
     // Tenant form
     formTitle: 'tenants.formTitle',
     selectBuilding: 'tenants.selectBuilding',
@@ -467,8 +471,13 @@ export const tokens = {
     tenantPhoneNumber: 'tenants.tenantPhoneNumber',
     tenantIsPrimary: 'tenants.tenantIsPrimary',
     tenantIsPrimaryDescription: 'tenants.tenantIsPrimaryDescription',
+    tenantType: 'tenants.tenantType',
     tenantSaved: 'tenants.tenantSaved',
     tenantNotSaved: 'tenants.tenantNotSaved',
+    phoneNumberMustStartWithPlusAndNumbersOnly: 'tenants.phoneNumberMustStartWithPlusAndNumbersOnly',
+    phoneAlreadyExists: 'tenants.phoneAlreadyExists',
+    tenantAlreadyExists: 'tenants.tenantAlreadyExists',
+    
     // Tenant validation
     tenantNameRequired: 'tenants.tenantNameRequired',
     tenantFirstNameRequired: 'tenants.firstNameRequired',

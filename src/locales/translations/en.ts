@@ -440,8 +440,12 @@ export const en = {
   [tokens.tenants.tenantPhoneNumber]: 'Phone Number',
   [tokens.tenants.tenantIsPrimary]: 'Is Primary',
   [tokens.tenants.tenantIsPrimaryDescription]: 'Owner or primary contact person!',
+  [tokens.tenants.tenantType]: 'Tenant Type',
   [tokens.tenants.tenantSaved]: 'Tenant saved',
   [tokens.tenants.tenantNotSaved]: 'Tenant not saved',
+  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Phone number must start with +',
+  [tokens.tenants.phoneAlreadyExists]: 'Phone number already exists',
+  [tokens.tenants.tenantAlreadyExists]: 'Email already exists',
   // Tenant validation
   [tokens.tenants.tenantNameRequired]: 'Tenant name is required',
   [tokens.tenants.tenantFirstNameRequired]: 'First name is required',

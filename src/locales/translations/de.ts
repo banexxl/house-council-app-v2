@@ -425,6 +425,10 @@ export const de = {
   [tokens.tenants.tenantEdit]: 'Mietnehmer Bearbeiten',
   [tokens.tenants.tenantDelete]: 'Mietnehmer Löschen',
   // Tenant form
+  [tokens.tenants.tenantTypeOwner]: 'Eigentümer',
+  [tokens.tenants.tenantTypeRenter]: 'Mieter',
+  [tokens.tenants.tenantTypeRelative]: 'Verwandter',
+  [tokens.tenants.tenantTypeOther]: 'Andere',
   [tokens.tenants.formTitle]: 'Mietnehmer Formular',
   [tokens.tenants.selectBuilding]: 'Gebäude auswählen',
   [tokens.tenants.selectApartment]: 'Wohnung auswählen',
@@ -435,8 +439,13 @@ export const de = {
   [tokens.tenants.tenantPhoneNumber]: 'Telefonnummer',
   [tokens.tenants.tenantIsPrimary]: 'Primärstatus',
   [tokens.tenants.tenantIsPrimaryDescription]: 'Eigentümer oder Hauptkontakt!',
+  [tokens.tenants.tenantType]: 'Mietnehmer Typ',
   [tokens.tenants.tenantSaved]: 'Mietnehmer gespeichert',
   [tokens.tenants.tenantNotSaved]: 'Mietnehmer nicht gespeichert',
+  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Telefonnummer muss mit + beginnen',
+  [tokens.tenants.phoneAlreadyExists]: 'Telefonnummer bereits vorhanden',
+  [tokens.tenants.tenantAlreadyExists]: 'Mietnehmer bereits vorhanden!',
+
   // Tenant validation
   [tokens.tenants.tenantNameRequired]: 'Name erforderlich',
   [tokens.tenants.tenantFirstNameRequired]: 'Vorname erforderlich',

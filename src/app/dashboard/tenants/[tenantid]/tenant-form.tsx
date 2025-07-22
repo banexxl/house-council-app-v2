@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
 import { paths } from 'src/paths';
 import { RouterLink } from 'src/components/router-link';
 import { createOrUpdateTenantAction } from 'src/app/actions/tenant/tenant-actions';
-import { Tenant, tenantInitialValues, tenantValidationSchema } from 'src/types/tenant';
+import { Tenant, tenantInitialValues, tenantValidationSchema, tenantTypeOptions } from 'src/types/tenant';
 import dayjs from 'dayjs';
 
 interface TenantFormProps {
@@ -41,6 +41,7 @@ interface TenantFormProps {
 }
 
 export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
+
      const [initialValues, setInitialValues] = useState<Tenant>(tenantData || tenantInitialValues);
      const { t } = useTranslation();
      const router = useRouter();
@@ -52,7 +53,6 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
      // Set selects from tenantData on load or when tenantData/buildings change
      useEffect(() => {
           if (tenantData?.apartment_id && buildings.length > 0) {
-               // Find the building containing the apartment
                const building = buildings.find(b => b.apartments.some(a => a.id === tenantData.apartment_id));
                if (building) {
                     setSelectedBuildingId(building.id);
@@ -60,6 +60,19 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                }
           }
      }, [tenantData, buildings]);
+
+     // If no tenantData, set initial values to 
+     useEffect(() => {
+          if (selectedBuildingId) {
+               const building = buildings.find(b => b.id === selectedBuildingId);
+               if (building) {
+                    setAvailableApartments(building.apartments);
+               } else {
+                    setAvailableApartments([]);
+               }
+          }
+     }, [selectedBuildingId, buildings]);
+
 
      const formik = useFormik({
           initialValues: {
@@ -78,24 +91,15 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                          }
                          toast.success(t('tenants.tenantSaved'));
                     } else {
-                         toast.error(t('tenants.tenantNotSaved') + ' ' + response.saveTenantActionError);
+                         toast.error(t('tenants.tenantNotSaved') + ': ' + t(response.saveTenantActionError));
                     }
                } catch (error) {
-                    toast.error(t('tenants.tenantNotSaved'), error.message);
+                    toast.error(t('tenants.tenantNotSaved') + ': ' + t(error.message));
                } finally {
                     setSubmitting(false);
                }
           },
      });
-
-     // useEffect(() => {
-     //      if (selectedBuildingId) {
-     //           const selected = buildings.find((b) => b.id === selectedBuildingId);
-     //           setAvailableApartments(selected?.apartments || []);
-     //      } else {
-     //           setAvailableApartments([]);
-     //      }
-     // }, [selectedBuildingId, buildings]);
 
      const apartmentSelected = !!formik.values.apartment_id;
 
@@ -105,6 +109,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                     <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
                     <CardContent>
                          <Grid container spacing={3}>
+
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <TextField
                                         select
@@ -116,6 +121,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                              setSelectedBuildingId(val);
                                              formik.setFieldValue('apartment_id', '');
                                         }}
+                                        sx={{ mb: 3 }}
                                    >
                                         {buildings.map((building) => (
                                              <MenuItem key={building.id} value={building.id}>
@@ -134,6 +140,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         value={formik.values.apartment_id}
                                         onChange={formik.handleChange}
                                         disabled={!selectedBuildingId}
+                                        sx={{ mb: 3 }}
                                    >
                                         {availableApartments.map((apt) => (
                                              <MenuItem key={apt.id} value={apt.id}>
@@ -141,30 +148,6 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                              </MenuItem>
                                         ))}
                                    </TextField>
-                              </Grid>
-
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <Box display="flex" alignItems="center" height="100%">
-                                        <Checkbox
-                                             name="is_primary"
-                                             checked={formik.values.is_primary || false}
-                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                                  formik.setFieldValue('is_primary', e.target.checked);
-                                                  formik.setFieldTouched('email', true, false);
-                                                  formik.setFieldTouched('phone_number', true, false);
-                                             }}
-                                             color="primary"
-                                             id="is_primary_checkbox"
-                                             sx={{ mr: 1 }}
-                                             disabled={!apartmentSelected}
-                                        />
-                                        <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
-                                             <label htmlFor="is_primary_checkbox">
-                                                  <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
-                                             </label>
-                                        </Tooltip>
-                                   </Box>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -177,7 +160,11 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
                                         error={!!(formik.touched.first_name && formik.errors.first_name)}
-                                        helperText={formik.touched.first_name && formik.errors.first_name}
+                                        helperText={
+                                             <span style={{ display: 'block', minHeight: 24 }}>
+                                                  {formik.touched.first_name && formik.errors.first_name ? formik.errors.first_name : ''}
+                                             </span>
+                                        }
                                    />
                               </Grid>
 
@@ -191,8 +178,55 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
                                         error={!!(formik.touched.last_name && formik.errors.last_name)}
-                                        helperText={formik.touched.last_name && formik.errors.last_name}
+                                        helperText={
+                                             <span style={{ display: 'block', minHeight: 24 }}>
+                                                  {formik.touched.last_name && formik.errors.last_name ? formik.errors.last_name : ''}
+                                             </span>
+                                        }
                                    />
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <TextField
+                                        fullWidth
+                                        label={t('tenants.email')}
+                                        name="email"
+                                        value={formik.values.email}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        disabled={!apartmentSelected || !!tenantData}
+                                        error={!!(formik.touched.email && formik.errors.email)}
+                                        helperText={
+                                             <span style={{ display: 'block', minHeight: 24 }}>
+                                                  {formik.touched.email && formik.errors.email ? formik.errors.email : ''}
+                                             </span>
+                                        }
+                                   />
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <TextField
+                                        select
+                                        fullWidth
+                                        label={t('tenants.tenantType')}
+                                        name="tenant_type"
+                                        value={formik.values.tenant_type}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        disabled={!apartmentSelected}
+                                        error={!!(formik.touched.tenant_type && formik.errors.tenant_type)}
+                                        helperText={
+                                             <span style={{ display: 'block', minHeight: 24 }}>
+                                                  {formik.touched.tenant_type && formik.errors.tenant_type ? formik.errors.tenant_type : ''}
+                                             </span>
+                                        }
+                                   >
+                                        {tenantTypeOptions.map((option) => (
+                                             <MenuItem key={option.value} value={option.value}>
+                                                  {t(option.label)}
+                                             </MenuItem>
+                                        ))}
+                                   </TextField>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -219,20 +253,6 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <TextField
                                         fullWidth
-                                        label={t('tenants.email')}
-                                        name="email"
-                                        value={formik.values.email}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        disabled={!apartmentSelected}
-                                        error={!!(formik.touched.email && formik.errors.email)}
-                                        helperText={formik.touched.email && formik.errors.email}
-                                   />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        fullWidth
                                         label={t('tenants.tenantPhoneNumber')}
                                         name="phone_number"
                                         value={formik.values.phone_number}
@@ -240,9 +260,37 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
                                         error={!!(formik.touched.phone_number && formik.errors.phone_number)}
-                                        helperText={formik.touched.phone_number && formik.errors.phone_number}
+                                        helperText={
+                                             <span style={{ display: 'block', minHeight: 24 }}>
+                                                  {formik.touched.phone_number && formik.errors.phone_number ? formik.errors.phone_number : ''}
+                                             </span>
+                                        }
                                    />
                               </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Box display="flex" alignItems="center" height="100%">
+                                        <Checkbox
+                                             name="is_primary"
+                                             checked={formik.values.is_primary || false}
+                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                  formik.setFieldValue('is_primary', e.target.checked);
+                                                  formik.setFieldTouched('email', true, false);
+                                                  formik.setFieldTouched('phone_number', true, false);
+                                             }}
+                                             color="primary"
+                                             id="is_primary_checkbox"
+                                             sx={{ mr: 1 }}
+                                             disabled={!apartmentSelected}
+                                        />
+                                        <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
+                                             <label htmlFor="is_primary_checkbox">
+                                                  <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
+                                             </label>
+                                        </Tooltip>
+                                   </Box>
+                              </Grid>
+
                          </Grid>
                     </CardContent>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ p: 3 }}>

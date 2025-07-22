@@ -181,10 +181,12 @@ export const readClientByIdAction = async (
 export const deleteClientByIDsAction = async (
      ids: string[]
 ): Promise<{ deleteClientByIDsActionSuccess: boolean; deleteClientByIDsActionError?: string }> => {
+
      const anonSupabase = await useServerSideSupabaseAnonClient();
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
+          // Fetch user_ids before deleting clients
           const { data: clientsToDelete, error: fetchError } = await anonSupabase
                .from('tblClients')
                .select('user_id')

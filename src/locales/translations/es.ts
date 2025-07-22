@@ -430,6 +430,10 @@ export const es = {
   [tokens.tenants.tenantEdit]: 'Editar Mietnehmer',
   [tokens.tenants.tenantDelete]: 'Borrar Mietnehmer',
   // Tenant form
+  [tokens.tenants.tenantTypeOwner]: 'Propietario',
+  [tokens.tenants.tenantTypeRenter]: 'Inquilino',
+  [tokens.tenants.tenantTypeRelative]: 'Familiar',
+  [tokens.tenants.tenantTypeOther]: 'Otro',
   [tokens.tenants.formTitle]: 'Formulario de Mietnehmer',
   [tokens.tenants.selectBuilding]: 'Seleccione el edificio',
   [tokens.tenants.selectApartment]: 'Seleccione el apartamento',
@@ -440,8 +444,12 @@ export const es = {
   [tokens.tenants.tenantPhoneNumber]: 'Telefono Móvil',
   [tokens.tenants.tenantIsPrimary]: 'Estado de ser principal',
   [tokens.tenants.tenantIsPrimaryDescription]: 'Propietario o contacto principal!',
+  [tokens.tenants.tenantType]: 'Tipo de Mietnehmer',
   [tokens.tenants.tenantSaved]: 'Mietnehmer guardado',
   [tokens.tenants.tenantNotSaved]: 'Mietnehmer no guardado',
+  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'El número de teléfono debe comenzar con un signo más (+)',
+  [tokens.tenants.phoneAlreadyExists]: 'El número de teléfono ya existe',
+  [tokens.tenants.tenantAlreadyExists]: '¡El Mietnehmer ya existe!',
   // Tenant validation
   [tokens.tenants.tenantNameRequired]: 'El nombre del inquilino es obligatorio',
   [tokens.tenants.tenantFirstNameRequired]: 'El primer nombre es obligatorio',

@@ -431,6 +431,10 @@ export const rs = {
      [tokens.tenants.tenantEdit]: 'Izmeni stanara',
      [tokens.tenants.tenantDelete]: 'Brisanje stanara',
      // Tenant from
+     [tokens.tenants.tenantTypeOwner]: 'Vlasnik',
+     [tokens.tenants.tenantTypeRenter]: 'Zakupac',
+     [tokens.tenants.tenantTypeRelative]: 'Srodnik',
+     [tokens.tenants.tenantTypeOther]: 'Ostalo',
      [tokens.tenants.formTitle]: 'Formular stanara',
      [tokens.tenants.selectBuilding]: 'Izaberite zgradu',
      [tokens.tenants.selectApartment]: 'Izaberite apartman',
@@ -441,8 +445,11 @@ export const rs = {
      [tokens.tenants.tenantPhoneNumber]: 'Telefon',
      [tokens.tenants.tenantIsPrimary]: 'Glavni stanar',
      [tokens.tenants.tenantIsPrimaryDescription]: 'Vlasnik ili glavna kontakt osoba!',
+     [tokens.tenants.tenantType]: 'Tip stanara',
      [tokens.tenants.tenantSaved]: 'Stanar je sačuvan',
      [tokens.tenants.tenantNotSaved]: 'Stanar nije sačuvan',
+     [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Broj telefona mora početi sa +',
+     [tokens.tenants.phoneAlreadyExists]: 'Telefon već postoji',
      // Tenant validation     
      [tokens.tenants.tenantNameRequired]: 'Ime stanara je obavezno',
      [tokens.tenants.tenantFirstNameRequired]: 'Ime je obavezno',
@@ -453,6 +460,7 @@ export const rs = {
      [tokens.tenants.tenantApartmentRequired]: 'Apartman je obavezan',
      [tokens.tenants.tenantIsPrimaryRequired]: 'Glavni stanar je obavezan',
      [tokens.tenants.tenantPhoneNumberRequired]: 'Telefon je obavezan',
+     [tokens.tenants.tenantAlreadyExists]: 'Stanar sa istim emailom već postoji!',
      //#endregion
      //#region Errors
      [tokens.errors.locationPermissionDenied]: 'Zabranjen pristup lokaciji!',

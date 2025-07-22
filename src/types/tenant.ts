@@ -58,7 +58,8 @@ export const tenantInitialValues: Tenant = {
 export const tenantValidationSchema = (t: (key: string) => string) => Yup.object().shape({
      first_name: Yup.string().required(t('tenants.firstNameRequired')),
      last_name: Yup.string().required(t('tenants.lastNameRequired')),
-     email: Yup.string().email(t('tenants.emailMustBeValid')).max(40)
+     email: Yup.string()
+          .email(t('tenants.emailMustBeValid')).max(40)
           .when('is_primary', {
                is: (is_primary: boolean) => is_primary === true,
                then: (schema: Yup.StringSchema) => schema.required(t('tenants.emailRequired')),
@@ -67,9 +68,14 @@ export const tenantValidationSchema = (t: (key: string) => string) => Yup.object
      phone_number: Yup.string()
           .when('is_primary', {
                is: (is_primary: boolean) => is_primary === true,
-               then: (schema: Yup.StringSchema) => schema.required(t('tenants.phoneNumberRequired')),
-               otherwise: (schema: Yup.StringSchema) => schema.notRequired()
-          }),
+               then: (schema: Yup.StringSchema) =>
+                    schema
+                         .required(t('tenants.phoneNumberRequired'))
+                         .matches(/^\+\d{7,15}$/, t('tenants.phoneNumberMustStartWithPlusAndNumbersOnly')),
+               otherwise: (schema: Yup.StringSchema) =>
+                    schema.matches(/^$|^\+\d{7,15}$/, t('tenants.phoneNumberMustStartWithPlusAndNumbersOnly')),
+          })
+          .matches(/^$|^\+\d{7,15}$/, t('tenants.phoneNumberMustStartWithPlusAndNumbersOnly')),
      date_of_birth: Yup.date().nullable(),
      apartment_id: Yup.string().required(t('tenants.apartmentRequired')),
      is_primary: Yup.boolean().required(t('tenants.isPrimaryRequired')),

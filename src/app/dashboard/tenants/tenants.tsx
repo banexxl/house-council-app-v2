@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
 import { TenantListTable } from 'src/sections/dashboard/tenant/tanant-list-table';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
+import { GenericTable } from 'src/components/table';
 
 export type TenantFilters = {
      search?: string;
@@ -98,13 +99,13 @@ const Tenants = ({ tenants }: TenantsProps) => {
                     <Stack spacing={4}>
                          <Stack direction="row" justifyContent="space-between" spacing={4}>
                               <Stack spacing={1}>
-                                   <Typography variant="h4">{t('tenants.tenantList')}</Typography>
+                                   <Typography variant="h4">{t('tenants.tenantsList')}</Typography>
                                    <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                         <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
                                              {t('nav.adminDashboard')}
                                         </Link>
                                         <Typography color="text.secondary" variant="subtitle2">
-                                             {t('tenants.tenantList')}
+                                             {t('tenants.tenantsList')}
                                         </Typography>
                                    </Breadcrumbs>
                               </Stack>
@@ -126,16 +127,42 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                    value={tenantsSearch.state.filters}
                                    onChange={tenantsSearch.handleFiltersChange}
                                    fields={[
-                                        { field: 'is_primary', label: 'lblIsPrimary' }
+                                        { field: 'is_primary', label: 'tenants.tenantIsPrimary' }
                                    ]}
                               />
-                              <TenantListTable
+                              <GenericTable<Tenant>
                                    items={paginatedTenants}
                                    count={filteredTenants.length}
                                    page={tenantsSearch.state.page}
                                    rowsPerPage={tenantsSearch.state.rowsPerPage}
                                    onPageChange={tenantsSearch.handlePageChange}
                                    onRowsPerPageChange={tenantsSearch.handleRowsPerPageChange}
+                                   baseUrl="/dashboard/tenants"
+                                   columns={[
+                                        {
+                                             key: 'first_name',
+                                             label: t('tenants.firstName'),
+                                             render: (_, tenant) => `${tenant.first_name} ${tenant.last_name}`
+                                        },
+                                        {
+                                             key: 'email',
+                                             label: t('tenants.email')
+                                        },
+                                        {
+                                             key: 'phone_number',
+                                             label: t('tenants.tenantPhoneNumber')
+                                        },
+                                        {
+                                             key: 'tenant_type',
+                                             label: t('tenants.tenantType'),
+                                             render: (val) => t(`tenants.types.${val as string}`)
+                                        },
+                                        {
+                                             key: 'is_primary',
+                                             label: t('tenants.tenantIsPrimary'),
+                                             render: (val) => val ? t('common.lblYes') : t('common.lblNo')
+                                        }
+                                   ]}
                               />
                          </Card>
                     </Stack>
