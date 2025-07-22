@@ -207,47 +207,41 @@ export const readTenantByIdAction = async (
      };
 };
 
-// DELETE tenants by IDs (and delete linked auth.users)
-export const deleteTenantByIDsAction = async (
-     ids: string[]
-): Promise<{ deleteTenantByIDsActionSuccess: boolean; deleteTenantByIDsActionError?: string }> => {
+// DELETE tenant by ID (and delete linked auth.users)
+export const deleteTenantByIDAction = async (
+     id: string
+): Promise<{ deleteTenantByIDActionSuccess: boolean; deleteTenantByIDActionError?: string }> => {
      const anonSupabase = await useServerSideSupabaseAnonClient();
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
-          const { data: tenantsToDelete, error: fetchError } = await anonSupabase
+          const { data: tenantToDelete, error: fetchError } = await anonSupabase
                .from('tblTenants')
                .select('user_id')
-               .in('id', ids);
+               .eq('id', id)
+               .single();
 
-          if (fetchError) throw fetchError;
+          if (fetchError) {
+               return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: fetchError.message };
+          }
 
-          const userIdsToDelete = tenantsToDelete.map((t) => t.user_id).filter(Boolean);
+          const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
+          if (deleteUserError) {
+               return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteUserError.message };
+          }
 
-          const { error: deleteTenantError } = await anonSupabase.from('tblTenants').delete().in('id', ids);
-          if (deleteTenantError) throw deleteTenantError;
-
-          const failedDeletes: string[] = [];
-
-          for (const userId of userIdsToDelete) {
-               const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(userId);
-               if (deleteUserError) failedDeletes.push(userId);
+          const { error: deleteTenantError } = await anonSupabase.from('tblTenants').delete().eq('id', id);
+          if (deleteTenantError) {
+               return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteTenantError.message };
           }
 
           revalidatePath('/dashboard/tenants');
 
-          if (failedDeletes.length > 0) {
-               return {
-                    deleteTenantByIDsActionSuccess: false,
-                    deleteTenantByIDsActionError: `Failed to delete auth.users for: ${failedDeletes.join(', ')}`,
-               };
-          }
-          revalidatePath('/dashboard/tenants');
-          return { deleteTenantByIDsActionSuccess: true };
+          return { deleteTenantByIDActionSuccess: true };
      } catch (error: any) {
           return {
-               deleteTenantByIDsActionSuccess: false,
-               deleteTenantByIDsActionError: error.message,
+               deleteTenantByIDActionSuccess: false,
+               deleteTenantByIDActionError: error.message,
           };
      }
 };

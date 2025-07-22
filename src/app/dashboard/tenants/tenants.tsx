@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { GenericTable } from 'src/components/table';
+import { deleteTenantByIDAction } from 'src/app/actions/tenant/tenant-actions';
+import toast from 'react-hot-toast';
 
 export type TenantFilters = {
      search?: string;
@@ -92,6 +94,15 @@ const Tenants = ({ tenants }: TenantsProps) => {
           return filteredTenants.slice(start, end);
      }, [filteredTenants, tenantsSearch.state.page, tenantsSearch.state.rowsPerPage]);
 
+     const handleDeleteConfirm = useCallback(async (tenantId: string) => {
+          const deleteTenantResponse = await deleteTenantByIDAction(tenantId);
+          if (deleteTenantResponse.deleteTenantByIDActionSuccess) {
+               toast.success(t('common.actionDeleteSuccess'));
+          } else {
+               toast.error(t('common.actionDeleteError'));
+          }
+     }, [t]);
+
      return (
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
                <Container maxWidth="xl">
@@ -154,7 +165,7 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                         {
                                              key: 'tenant_type',
                                              label: t('tenants.tenantType'),
-                                             render: (val) => t(`tenants.types.${val as string}`)
+                                             render: (val) => t(`tenants.lbl${(val as string).charAt(0).toUpperCase() + (val as string).slice(1)}`)
                                         },
                                         {
                                              key: 'is_primary',
@@ -162,6 +173,9 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                              render: (val) => val ? t('common.lblYes') : t('common.lblNo')
                                         }
                                    ]}
+                                   handleDeleteConfirm={({ id }) => {
+                                        handleDeleteConfirm(id);
+                                   }}
                               />
                          </Card>
                     </Stack>
