@@ -92,8 +92,6 @@ export async function updateSession(request: NextRequest) {
       null;
   }
 
-  console.log("role", role);
-
   // Role based navigation
   if (role === "admin") {
     return response;
