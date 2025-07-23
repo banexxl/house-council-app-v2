@@ -18,57 +18,119 @@ export type ErrorType = {
      message?: string;
 }
 
-export const checkIfUserExistsAndGetRole = async (email: string): Promise<{ exists: boolean; error?: string; role?: string }> => {
+export const checkIfUserExistsAndGetRole = async (
+     email: string
+): Promise<{ exists: boolean; error?: string; role?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data, error } = await supabase
+     const { data: client, error: clientError } = await supabase
           .from('tblClients')
-          .select('email, role')
+          .select('email')
           .eq('email', email)
           .single();
 
-     if (data) {
+     if (client) {
           logServerAction({
                user_id: null,
                action: 'NLA - Checking if user exists',
                payload: { email },
                status: 'success',
                error: '',
-               duration_ms: 0, // Duration can be calculated if needed
+               duration_ms: 0,
                type: 'auth'
-          })
+          });
+          return { exists: true, role: 'client' };
      }
 
-     if (error) {
+     if (clientError && clientError.code !== 'PGRST116') {
           logServerAction({
                user_id: null,
                action: 'NLA - Checking if user exists failed',
                payload: { email },
                status: 'fail',
-               error: error.message,
-               duration_ms: 0, // Duration can be calculated if needed
+               error: clientError.message,
+               duration_ms: 0,
                type: 'auth'
-          })
-
-          return { exists: false, error: error.message };
+          });
+          return { exists: false, error: clientError.message };
      }
 
-     // If data is returned, the user exists
-     if (!data) {
+     const { data: tenant, error: tenantError } = await supabase
+          .from('tblTenants')
+          .select('email')
+          .eq('email', email)
+          .single();
+
+     if (tenant) {
           logServerAction({
                user_id: null,
-               action: 'NLA - Checking if user exists returned no data',
+               action: 'NLA - Checking if user exists',
                payload: { email },
-               status: 'fail',
-               error: 'User does not exist',
-               duration_ms: 0, // Duration can be calculated if needed
+               status: 'success',
+               error: '',
+               duration_ms: 0,
                type: 'auth'
-          })
-          return { exists: false, error: 'User does not exist' };
+          });
+          return { exists: true, role: 'tenant' };
      }
 
-     return { exists: true, role: data.role };
+     if (tenantError && tenantError.code !== 'PGRST116') {
+          logServerAction({
+               user_id: null,
+               action: 'NLA - Checking if user exists failed',
+               payload: { email },
+               status: 'fail',
+               error: tenantError.message,
+               duration_ms: 0,
+               type: 'auth'
+          });
+          return { exists: false, error: tenantError.message };
+     }
+
+     const { data: admin, error: adminError } = await supabase
+          .from('tblAdmins')
+          .select('email')
+          .eq('email', email)
+          .single();
+
+     if (admin) {
+          logServerAction({
+               user_id: null,
+               action: 'NLA - Checking if user exists',
+               payload: { email },
+               status: 'success',
+               error: '',
+               duration_ms: 0,
+               type: 'auth'
+          });
+          return { exists: true, role: 'admin' };
+     }
+
+     if (adminError && adminError.code !== 'PGRST116') {
+          logServerAction({
+               user_id: null,
+               action: 'NLA - Checking if user exists failed',
+               payload: { email },
+               status: 'fail',
+               error: adminError.message,
+               duration_ms: 0,
+               type: 'auth'
+          });
+          return { exists: false, error: adminError.message };
+     }
+
+     logServerAction({
+          user_id: null,
+          action: 'NLA - Checking if user exists returned no data',
+          payload: { email },
+          status: 'fail',
+          error: 'User does not exist',
+          duration_ms: 0,
+          type: 'auth'
+     });
+
+     return { exists: false, error: 'User does not exist' };
 }
 
 export const magicLinkLogin = async (email: string): Promise<{ success?: boolean, error?: string }> => {
