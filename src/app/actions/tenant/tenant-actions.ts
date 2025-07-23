@@ -13,6 +13,7 @@ export const createOrUpdateTenantAction = async (
      saveTenantActionData?: Tenant;
      saveTenantActionError?: any;
 }> => {
+     const start = Date.now();
      const anonSupabase = await useServerSideSupabaseAnonClient();
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const { id, apartment, ...tenantData } = tenant; // Remove `apartment` if it exists
@@ -33,7 +34,7 @@ export const createOrUpdateTenantAction = async (
           if (updateTenantError) {
                await logServerAction({
                     action: 'Update Tenant - Failed',
-                    duration_ms: 0,
+                    duration_ms: Date.now() - start,
                     error: updateTenantError.message,
                     payload: { id, tenantData },
                     status: 'fail',
@@ -53,7 +54,7 @@ export const createOrUpdateTenantAction = async (
           if (updateUserError) {
                await logServerAction({
                     action: 'Update Tenant Auth User - Failed',
-                    duration_ms: 0,
+                    duration_ms: Date.now() - start,
                     error: updateUserError.message,
                     payload: { email: tenantData.email },
                     status: 'fail',
@@ -69,7 +70,7 @@ export const createOrUpdateTenantAction = async (
 
           await logServerAction({
                action: 'Update Tenant - Success',
-               duration_ms: 0,
+               duration_ms: Date.now() - start,
                error: '',
                payload: { tenantData },
                status: 'success',
@@ -94,7 +95,7 @@ export const createOrUpdateTenantAction = async (
           if (userError || !createdUser?.user) {
                await logServerAction({
                     action: 'Create Tenant Auth User - Failed',
-                    duration_ms: 0,
+                    duration_ms: Date.now() - start,
                     error: userError?.message ?? 'Unknown error',
                     payload: { email: tenantData.email },
                     status: 'fail',
@@ -139,7 +140,7 @@ export const createOrUpdateTenantAction = async (
           if (insertError || !insertedTenant) {
                await logServerAction({
                     action: 'Create Tenant - Failed',
-                    duration_ms: 0,
+                    duration_ms: Date.now() - start,
                     error: insertError?.message ?? 'Unknown error',
                     payload: { tenantData },
                     status: 'fail',
@@ -153,7 +154,7 @@ export const createOrUpdateTenantAction = async (
                if (deleteUserError) {
                     await logServerAction({
                          action: 'Delete Tenant Auth User - Failed',
-                         duration_ms: 0,
+                         duration_ms: Date.now() - start,
                          error: deleteUserError.message,
                          payload: { userId: createdUser.user.id },
                          status: 'fail',
@@ -166,7 +167,7 @@ export const createOrUpdateTenantAction = async (
 
           await logServerAction({
                action: 'Create Tenant - Success',
-               duration_ms: 0,
+               duration_ms: Date.now() - start,
                error: '',
                payload: { tenantData },
                status: 'success',
@@ -260,7 +261,7 @@ export const getAllTenantsFromClientsBuildings = async (
           }
      }; error?: string
 }> => {
-     const time = Date.now();
+     const start = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      // 1. Get buildings owned by the client
@@ -315,7 +316,7 @@ export const getAllTenantsFromClientsBuildings = async (
      if (tenantsError) {
           await logServerAction({
                action: 'getAllTenantsFromClientsBuildings',
-               duration_ms: Date.now() - time,
+               duration_ms: Date.now() - start,
                error: tenantsError.message,
                payload: { clientId },
                status: 'fail',
