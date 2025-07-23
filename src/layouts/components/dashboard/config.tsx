@@ -48,12 +48,12 @@ export interface Section {
   subheader?: string;
 }
 
-export const useSections = () => {
+export const useSections = (role: 'client' | 'tenant' | 'admin') => {
 
   const { t } = useTranslation();
 
   return useMemo(() => {
-    return [
+    const sections = [
       {
         subheader: t(tokens.nav.adminDashboard),
         items: [
@@ -481,5 +481,14 @@ export const useSections = () => {
         ],
       },
     ];
-  }, [t]);
+
+    switch (role) {
+      case 'client':
+        return sections.slice(1);
+      case 'tenant':
+        return sections.slice(2);
+      default:
+        return sections;
+    }
+  }, [role, t]);
 };
