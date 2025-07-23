@@ -1,37 +1,38 @@
-import type { ReactNode } from 'react';
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import Chip from '@mui/material/Chip';
-import SvgIcon from '@mui/material/SvgIcon';
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import AlignLeft02Icon from 'src/icons/untitled-ui/duocolor/align-left-02';
-import BarChartSquare02Icon from 'src/icons/untitled-ui/duocolor/bar-chart-square-02';
-import Building04Icon from 'src/icons/untitled-ui/duocolor/building-04';
-import CalendarIcon from 'src/icons/untitled-ui/duocolor/calendar';
-import CheckDone01Icon from 'src/icons/untitled-ui/duocolor/check-done-01';
-import CreditCard01Icon from 'src/icons/untitled-ui/duocolor/credit-card-01';
-import CurrencyBitcoinCircleIcon from 'src/icons/untitled-ui/duocolor/currency-bitcoin-circle';
-import File01Icon from 'src/icons/untitled-ui/duocolor/file-01';
-import GraduationHat01Icon from 'src/icons/untitled-ui/duocolor/graduation-hat-01';
-import HomeSmileIcon from 'src/icons/untitled-ui/duocolor/home-smile';
-import LayoutAlt02Icon from 'src/icons/untitled-ui/duocolor/layout-alt-02';
-import LineChartUp04Icon from 'src/icons/untitled-ui/duocolor/line-chart-up-04';
-import Lock01Icon from 'src/icons/untitled-ui/duocolor/lock-01';
-import LogOut01Icon from 'src/icons/untitled-ui/duocolor/log-out-01';
-import Mail03Icon from 'src/icons/untitled-ui/duocolor/mail-03';
-import Mail04Icon from 'src/icons/untitled-ui/duocolor/mail-04';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import MessageChatSquareIcon from 'src/icons/untitled-ui/duocolor/message-chat-square';
-import ReceiptCheckIcon from 'src/icons/untitled-ui/duocolor/receipt-check';
-import Share07Icon from 'src/icons/untitled-ui/duocolor/share-07';
-import ShoppingBag03Icon from 'src/icons/untitled-ui/duocolor/shopping-bag-03';
-import ShoppingCart01Icon from 'src/icons/untitled-ui/duocolor/shopping-cart-01';
-import Truck01Icon from 'src/icons/untitled-ui/duocolor/truck-01';
-import Upload04Icon from 'src/icons/untitled-ui/duocolor/upload-04';
-import Users03Icon from 'src/icons/untitled-ui/duocolor/users-03';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import { tokens } from 'src/locales/tokens';
-import { paths } from 'src/paths';
+import type { ReactNode } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Chip from "@mui/material/Chip";
+import SvgIcon from "@mui/material/SvgIcon";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import AlignLeft02Icon from "src/icons/untitled-ui/duocolor/align-left-02";
+import BarChartSquare02Icon from "src/icons/untitled-ui/duocolor/bar-chart-square-02";
+import Building04Icon from "src/icons/untitled-ui/duocolor/building-04";
+import CalendarIcon from "src/icons/untitled-ui/duocolor/calendar";
+import CheckDone01Icon from "src/icons/untitled-ui/duocolor/check-done-01";
+import CreditCard01Icon from "src/icons/untitled-ui/duocolor/credit-card-01";
+import CurrencyBitcoinCircleIcon from "src/icons/untitled-ui/duocolor/currency-bitcoin-circle";
+import File01Icon from "src/icons/untitled-ui/duocolor/file-01";
+import GraduationHat01Icon from "src/icons/untitled-ui/duocolor/graduation-hat-01";
+import HomeSmileIcon from "src/icons/untitled-ui/duocolor/home-smile";
+import LayoutAlt02Icon from "src/icons/untitled-ui/duocolor/layout-alt-02";
+import LineChartUp04Icon from "src/icons/untitled-ui/duocolor/line-chart-up-04";
+import Lock01Icon from "src/icons/untitled-ui/duocolor/lock-01";
+import LogOut01Icon from "src/icons/untitled-ui/duocolor/log-out-01";
+import Mail03Icon from "src/icons/untitled-ui/duocolor/mail-03";
+import Mail04Icon from "src/icons/untitled-ui/duocolor/mail-04";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import MessageChatSquareIcon from "src/icons/untitled-ui/duocolor/message-chat-square";
+import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
+import Share07Icon from "src/icons/untitled-ui/duocolor/share-07";
+import ShoppingBag03Icon from "src/icons/untitled-ui/duocolor/shopping-bag-03";
+import ShoppingCart01Icon from "src/icons/untitled-ui/duocolor/shopping-cart-01";
+import Truck01Icon from "src/icons/untitled-ui/duocolor/truck-01";
+import Upload04Icon from "src/icons/untitled-ui/duocolor/upload-04";
+import Users03Icon from "src/icons/untitled-ui/duocolor/users-03";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import { tokens } from "src/locales/tokens";
+import { paths } from "src/paths";
+import { supabaseBrowserClient } from "src/libs/supabase/sb-client";
 
 export interface Item {
   disabled?: boolean;
@@ -48,12 +49,36 @@ export interface Section {
   subheader?: string;
 }
 
-export const useSections = () => {
+const useIsAdmin = () => {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
+  useEffect(() => {
+    const check = async () => {
+      const { data } = await supabaseBrowserClient.auth.getSession();
+      const user = data.session?.user;
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data: admin } = await supabaseBrowserClient
+        .from("tblAdmins")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setIsAdmin(!!admin);
+    };
+    check();
+  }, []);
+
+  return isAdmin;
+};
+
+export const useSections = () => {
   const { t } = useTranslation();
+  const isAdmin = useIsAdmin();
 
   return useMemo(() => {
-    return [
+    const allSections: Section[] = [
       {
         subheader: t(tokens.nav.adminDashboard),
         items: [
@@ -72,7 +97,7 @@ export const useSections = () => {
                   <SvgIcon fontSize="small">
                     <Users03Icon />
                   </SvgIcon>
-                )
+                ),
               },
               {
                 title: t(tokens.nav.create),
@@ -81,7 +106,7 @@ export const useSections = () => {
                   <SvgIcon fontSize="small">
                     <Users03Icon />
                   </SvgIcon>
-                )
+                ),
               },
               {
                 title: t(tokens.nav.billingInformation),
@@ -98,8 +123,8 @@ export const useSections = () => {
                   {
                     title: t(tokens.nav.create),
                     path: paths.dashboard.clients.billingInformation.new,
-                  }
-                ]
+                  },
+                ],
               },
               // {
               //   title: t(tokens.common.settings),
@@ -115,7 +140,7 @@ export const useSections = () => {
               //     }
               //   ]
               // }
-            ]
+            ],
           },
           {
             title: t(tokens.nav.subscriptions),
@@ -132,10 +157,10 @@ export const useSections = () => {
               {
                 title: t(tokens.nav.create),
                 path: paths.dashboard.subscriptions.new,
-              }
-            ]
-          }
-        ]
+              },
+            ],
+          },
+        ],
       },
       {
         subheader: t(tokens.nav.clientDashboard),
@@ -166,7 +191,7 @@ export const useSections = () => {
                 title: t(tokens.nav.locationAdd),
                 path: paths.dashboard.locations.new,
               },
-            ]
+            ],
           },
           {
             title: t(tokens.nav.buildings),
@@ -204,7 +229,7 @@ export const useSections = () => {
                 title: t(tokens.nav.apartmentAdd),
                 path: paths.dashboard.apartments.new,
               },
-            ]
+            ],
           },
           {
             title: t(tokens.nav.tenants),
@@ -251,13 +276,7 @@ export const useSections = () => {
                 <CurrencyBitcoinCircleIcon />
               </SvgIcon>
             ),
-            label: (
-              <Chip
-                color="primary"
-                label="New"
-                size="small"
-              />
-            ),
+            label: <Chip color="primary" label="New" size="small" />,
           },
           {
             title: t(tokens.nav.account),
@@ -481,5 +500,11 @@ export const useSections = () => {
         ],
       },
     ];
-  }, [t]);
+
+    if (isAdmin === false) {
+      return allSections.filter((section) => section.subheader !== t(tokens.nav.adminDashboard));
+    }
+
+    return allSections;
+  }, [t, isAdmin]);
 };

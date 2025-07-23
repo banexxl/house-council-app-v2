@@ -1,5 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * @function updateSession
@@ -14,51 +14,58 @@ import { NextResponse, type NextRequest } from 'next/server';
  * Otherwise, it returns the original response without any modification.
  */
 export async function updateSession(request: NextRequest) {
-     const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
 
-     const PUBLIC_ROUTES = ['/auth/login', '/auth/error', '/auth/callback']
-     const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
+  const PUBLIC_ROUTES = ["/auth/login", "/auth/error", "/auth/callback"];
+  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
-     if (isPublic) {
-          return NextResponse.next()
-     }
+  if (isPublic) {
+    return NextResponse.next();
+  }
 
-     // ✅ FIX: create response before passing into Supabase client
-     const response = NextResponse.next()
+  // ✅ FIX: create response before passing into Supabase client
+  const response = NextResponse.next();
 
-     const supabase = createServerClient(
-          process.env.SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-               cookies: {
-                    getAll() {
-                         return request.cookies.getAll()
-                    },
-                    setAll(cookiesToSet) {
-                         cookiesToSet.forEach(({ name, value, options }) => {
-                              response.cookies.set(name, value, options)
-                         })
-                    },
-               },
-          }
-     )
+  const supabase = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
 
-     const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-     if (!user?.email) {
-          return NextResponse.redirect(new URL('/auth/error?error=access_denied', request.url))
-     }
+  if (!user?.email) {
+    return NextResponse.redirect(new URL("/auth/error?error=access_denied", request.url));
+  }
 
-     const { data: client } = await supabase
-          .from('tblClients')
-          .select('id')
-          .eq('email', user.email)
-          .single()
+  const { data: client } = await supabase
+    .from("tblClients")
+    .select("id")
+    .eq("email", user.email)
+    .maybeSingle();
 
-     if (!client) {
-          return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
-     }
+  const { data: admin } = await supabase
+    .from("tblAdmins")
+    .select("id, role")
+    .eq("email", user.email)
+    .maybeSingle();
 
-     return response
+  if (!client && !admin) {
+    return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
+  }
+
+  return response;
 }
-
