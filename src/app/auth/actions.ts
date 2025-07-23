@@ -1,8 +1,7 @@
 'use server';
 
-import { readClientByEmailAction } from '../actions/client/client-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -22,7 +21,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
 
      const cookieStore = await cookies();
 
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      // Try to find user in tblClients
      const { data: client, error: clientError } = await supabase
@@ -44,7 +43,8 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
                .from('tblTenants')
                .select('id')
                .eq('email', email)
-               .maybeSingle();
+               .single();
+          console.log('tenant', tenant, tenantError);
 
           if (tenant) {
                userType = 'tenant';
@@ -77,8 +77,10 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           });
           return { error: 'User does not exist. Please sign up first.' };
      }
+     console.log('userType', userType);
 
      if (userType === 'client') {
+
           // Check if client has an active subscription
           const { data: subscriptionData, error: subscriptionError } = await supabase
                .from('tblClient_Subscription')
@@ -312,7 +314,6 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      })
      return { success: true };
 }
-
 
 export const logout = async () => {
      const supabase = await useServerSideSupabaseAnonClient();
