@@ -67,5 +67,28 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
   }
 
-  return response;
+  // Role based navigation
+  if (role === 'admin') {
+    return response
+  }
+
+  if (role === 'client') {
+    const allowedClientPaths = ['/dashboard', '/dashboard/clients', '/dashboard/tenants']
+    const allowed = allowedClientPaths.some((route) => pathname.startsWith(route))
+    if (!allowed) {
+      return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+    }
+    return response
+  }
+
+  if (role === 'tenant') {
+    const allowedTenantPaths = ['/dashboard/tenants']
+    const allowed = allowedTenantPaths.some((route) => pathname.startsWith(route))
+    if (!allowed) {
+      return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+    }
+    return response
+  }
+
+  return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
 }
