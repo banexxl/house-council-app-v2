@@ -1,137 +1,127 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            try {
+              cookieStore.set(name, value, options);
+            } catch {
+              // ignore errors when cookies cannot be set
+            }
+          });
+        },
+      },
+    },
+  );
 
-     const cookieStore = await cookies();
-     const supabase = createServerClient(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          {
-               cookies: {
-                    getAll: () => cookieStore.getAll(),
-                    setAll: (cookiesToSet) => {
-                         cookiesToSet.forEach(({ name, value, options }) => {
-                              try {
-                                   cookieStore.set(name, value, options);
-                              } catch {
-                                   // Handle cases where setting cookies in server actions isn't supported
-                              }
-                         });
-                    },
-               },
-          }
-     );
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
+  const oauthError = requestUrl.searchParams.get("error");
+  const errorCode = requestUrl.searchParams.get("error_code");
 
-     const requestUrl = new URL(request.url);
-     // Extract the "code" and "error" parameters
-     const code = requestUrl.searchParams.get('code');
-     const error = requestUrl.searchParams.get('error');
-     const errorCode = requestUrl.searchParams.get('error_code');
+  if (oauthError) {
+    const errorPageUrl = `${requestUrl.origin}/auth/error?error=${oauthError}&error_code=${errorCode})}`;
+    return NextResponse.redirect(errorPageUrl);
+  }
 
-     if (error) {
-          // Redirect to error page with absolute URL
-          const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode})}`;
-          return NextResponse.redirect(errorPageUrl)
-     }
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${error.message}`);
+    }
+  }
 
-     if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) {
-               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${error.message}`);
-          }
-     }
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !sessionData.session) {
+    const message = sessionError ? sessionError.message : "No session found.";
+    return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${message}`);
+  }
 
-     // Retrieve the session after OAuth to get the user details
-     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const userEmail = sessionData.session.user.email;
 
-     if (sessionError) {
-          console.error('Error retrieving session:', sessionError);
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
-     }
-     if (!sessionData.session) {
-          console.error('No session available after sign in.');
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=No session found.`);
-     }
+  const { data: client, error: clientError } = await supabase
+    .from("tblClients")
+    .select("id")
+    .eq("email", userEmail)
+    .maybeSingle();
 
-     // Extract the user's email from the session
-     const userEmail = sessionData.session.user.email;
-     // Check if the user's email exists in tblClients.
-     const { data: userData, error: clientError } = await supabase
-          .from('tblClients')
-          .select('*')
-          .eq('email', userEmail)
-          .single();
+  if (clientError && clientError.code !== "PGRST116") {
+    await supabase.auth.signOut();
+    cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+    return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${clientError.message}`);
+  }
 
-     if (!userData) {
-          // If the email is not found in tblClients, check tblTenants
-          const { data: tenantData, error: tenantError } = await supabase
-               .from('tblTenants')
-               .select('*')
-               .eq('email', userEmail)
-               .single();
+  let role: "client" | "tenant" | "admin" | null = null;
+  let userId: string | undefined;
 
-          if (tenantData) {
-               // If found in tblTenants, set userData to tenantData
-               userData = tenantData;
-          } else {
-               // If not found in both tables, redirect to error page
-               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=email_not_registered`);
-          }
-     }
+  if (client) {
+    role = "client";
+    userId = client.id;
+  } else {
+    const { data: tenant, error: tenantError } = await supabase
+      .from("tblTenants")
+      .select("id")
+      .eq("email", userEmail)
+      .maybeSingle();
 
-     // Check if client has an active subscription
-     const { data: subscriptionData, error: subscriptionError } = await supabase
-          .from('tblClient_Subscription')
-          .select('*')
-          .eq('client_id', userData.id)
-          .single();
+    if (tenantError && tenantError.code !== "PGRST116") {
+      await supabase.auth.signOut();
+      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${tenantError.message}`);
+    }
 
+    if (tenant) {
+      role = "tenant";
+      userId = tenant.id;
+    } else {
+      const { data: admin, error: adminError } = await supabase
+        .from("tblSuperAdmins")
+        .select("id")
+        .eq("email", userEmail)
+        .maybeSingle();
 
-     if (subscriptionError || !subscriptionData) {
-          supabase.auth.signOut();
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
-     }
+      if (adminError && adminError.code !== "PGRST116") {
+        await supabase.auth.signOut();
+        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${adminError.message}`);
+      }
 
-     // Continue with login
+      if (admin) {
+        role = "admin";
+        userId = admin.id;
+      } else {
+        await supabase.auth.signOut();
+        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+        return NextResponse.redirect(
+          `${requestUrl.origin}/auth/error?error_code=email_not_registered`,
+        );
+      }
+    }
+  }
 
+  if (role === "client") {
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from("tblClient_Subscription")
+      .select("*")
+      .eq("client_id", userId!)
+      .maybeSingle();
 
-     if (clientError) {
-          console.error('Error checking email in database:', clientError);
-          supabase.auth.signOut();
-          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+    if (subscriptionError || !subscription) {
+      await supabase.auth.signOut();
+      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
+    }
+  }
 
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
-
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Error checking email in database.`);
-     }
-
-     if (!data || data.length === 0) {
-          supabase.auth.signOut();
-          // If the email is not found in tblClients, delete the user from Supabase auth users table sand redirect to error page
-          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
-
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=email_not_registered`);
-     }
-
-     if (data.length > 1) {
-          supabase.auth.signOut();
-          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
-
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found. Please contact support.`);
-     }
-
-     // Redirect to dashboard with absolute URL
-     const dashboardUrl = `${requestUrl.origin}/dashboard`;
-     return NextResponse.redirect(dashboardUrl);
+  const dashboardUrl = `${requestUrl.origin}/dashboard`;
+  return NextResponse.redirect(dashboardUrl);
 }
