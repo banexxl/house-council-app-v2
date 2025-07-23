@@ -51,14 +51,39 @@ export async function updateSession(request: NextRequest) {
 
      const { data: client } = await supabase
           .from('tblClients')
-          .select('id')
+          .select('id, role')
           .eq('email', user.email)
           .single()
 
-     if (!client) {
+     let role = (user.user_metadata as any)?.role || (user.app_metadata as any)?.role || client?.role
+
+     if (!client || !role) {
           return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
      }
 
-     return response
+     // Role based navigation
+     if (role === 'admin') {
+          return response
+     }
+
+     if (role === 'client') {
+          const allowedClientPaths = ['/dashboard', '/dashboard/clients', '/dashboard/tenants']
+          const allowed = allowedClientPaths.some((route) => pathname.startsWith(route))
+          if (!allowed) {
+               return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+          }
+          return response
+     }
+
+     if (role === 'tenant') {
+          const allowedTenantPaths = ['/dashboard/tenants']
+          const allowed = allowedTenantPaths.some((route) => pathname.startsWith(route))
+          if (!allowed) {
+               return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+          }
+          return response
+     }
+
+     return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
 }
 
