@@ -53,7 +53,13 @@ export async function updateSession(request: NextRequest) {
 
   const { data: client } = await supabase
     .from("tblClients")
-    .select("id")
+    .select("id, role")
+    .eq("email", user.email)
+    .maybeSingle();
+
+  const { data: tenant } = await supabase
+    .from("tblTenants")
+    .select("id, role")
     .eq("email", user.email)
     .maybeSingle();
 
@@ -63,32 +69,39 @@ export async function updateSession(request: NextRequest) {
     .eq("email", user.email)
     .maybeSingle();
 
-  if (!client && !admin) {
+  if (!client && !tenant && !admin) {
     return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
   }
 
+  const role =
+    (user.user_metadata as any)?.role ||
+    (user.app_metadata as any)?.role ||
+    admin?.role ||
+    tenant?.role ||
+    client?.role;
+
   // Role based navigation
-  if (role === 'admin') {
-    return response
+  if (role === "admin") {
+    return response;
   }
 
-  if (role === 'client') {
-    const allowedClientPaths = ['/dashboard', '/dashboard/clients', '/dashboard/tenants']
-    const allowed = allowedClientPaths.some((route) => pathname.startsWith(route))
+  if (role === "client") {
+    const allowedClientPaths = ["/dashboard", "/dashboard/clients", "/dashboard/tenants"];
+    const allowed = allowedClientPaths.some((route) => pathname.startsWith(route));
     if (!allowed) {
-      return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+      return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
     }
-    return response
+    return response;
   }
 
-  if (role === 'tenant') {
-    const allowedTenantPaths = ['/dashboard/tenants']
-    const allowed = allowedTenantPaths.some((route) => pathname.startsWith(route))
+  if (role === "tenant") {
+    const allowedTenantPaths = ["/dashboard/tenants"];
+    const allowed = allowedTenantPaths.some((route) => pathname.startsWith(route));
     if (!allowed) {
-      return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+      return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
     }
-    return response
+    return response;
   }
 
-  return NextResponse.redirect(new URL('/auth/error?error_code=access_denied', request.url))
+  return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
 }

@@ -73,14 +73,12 @@ const useIsAdmin = () => {
   return isAdmin;
 };
 
-export const useSections = () => {
-  export const useSections = (role: 'client' | 'tenant' | 'admin') => {
+export const useSections = (role: 'client' | 'tenant' | 'admin') => {
+  const { t } = useTranslation();
+  const isAdmin = useIsAdmin();
 
-    const { t } = useTranslation();
-    const isAdmin = useIsAdmin();
-
-    return useMemo(() => {
-      const allSections: Section[] = [
+  return useMemo(() => {
+    const allSections: Section[] = [
         {
           subheader: t(tokens.nav.adminDashboard),
           items: [
@@ -503,20 +501,24 @@ export const useSections = () => {
         },
       ];
 
+      let filtered = allSections;
       switch (role) {
         case 'client':
-          return sections.slice(1);
+          filtered = allSections.slice(1);
+          break;
         case 'tenant':
-          return sections.slice(2);
+          filtered = allSections.slice(2);
+          break;
         default:
-          return sections;
+          filtered = allSections;
       }
-    }, [role, t]);
 
-    if (isAdmin === false) {
-      return allSections.filter((section) => section.subheader !== t(tokens.nav.adminDashboard));
-    }
+      if (isAdmin === false) {
+        filtered = filtered.filter(
+          (section) => section.subheader !== t(tokens.nav.adminDashboard),
+        );
+      }
 
-    return allSections;
-  }, [t, isAdmin]);
+      return filtered;
+    }, [role, t, isAdmin]);
 };
