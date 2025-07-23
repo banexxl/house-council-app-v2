@@ -87,10 +87,14 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (role === "client") {
-    const allowedClientPaths = ["/dashboard", "/dashboard/clients", "/dashboard/tenants"];
-    const allowed = allowedClientPaths.some((route) => pathname.startsWith(route));
-    if (!allowed) {
-      return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
+    const superAdminRoutes = ["/dashboard/clients", "/dashboard/subscriptions"];
+    const isRestricted = superAdminRoutes.some((route) =>
+      pathname.startsWith(route),
+    );
+    if (isRestricted) {
+      return NextResponse.redirect(
+        new URL("/auth/error?error_code=access_denied", request.url),
+      );
     }
     return response;
   }
