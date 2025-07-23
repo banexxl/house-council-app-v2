@@ -54,7 +54,7 @@ const NewLocation = ({ mapBoxAccessToken, userData }: NewLoctionProps) => {
                     setLocationsData(res.data.length > 0 ? res.data : []);
                }
           });
-     }, []);
+     }, [userData?.client?.id]);
 
      useEffect(() => {
           if (coords) {
