@@ -10,7 +10,9 @@ import { NextResponse, type NextRequest } from "next/server";
  * This middleware function is used in Next.js pages to update the user session based on the Supabase authentication.
  * It bypasses the middleware for static/public assets or login, and proceeds with Supabase auth logic only for protected routes.
  * If the user is not authenticated or does not have an email, it redirects to the '/auth/error' page with an 'access_denied' error.
- * If the user is authenticated and has an email, but is not found in the 'tblClients' table, it redirects to the '/auth/error' page with an 'access_denied' error.
+ * If the user is authenticated and has an email, but is not found in
+ * 'tblClients', 'tblTenants', or 'tblSuperAdmins', it redirects to the
+ * '/auth/error' page with an 'access_denied' error.
  * Otherwise, it returns the original response without any modification.
  */
 export async function updateSession(request: NextRequest) {
@@ -53,19 +55,19 @@ export async function updateSession(request: NextRequest) {
 
   const { data: client } = await supabase
     .from("tblClients")
-    .select("id, role")
+    .select("id")
     .eq("email", user.email)
     .maybeSingle();
 
   const { data: tenant } = await supabase
     .from("tblTenants")
-    .select("id, role")
+    .select("id")
     .eq("email", user.email)
     .maybeSingle();
 
   const { data: admin } = await supabase
     .from("tblSuperAdmins")
-    .select("id, role")
+    .select("id")
     .eq("email", user.email)
     .maybeSingle();
 
@@ -73,13 +75,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
   }
 
-  const role =
-    (user.user_metadata as any)?.role ||
-    (user.app_metadata as any)?.role ||
-    admin?.role ||
-    tenant?.role ||
-    client?.role;
-  console.log('role', role);
+  let role: "admin" | "client" | "tenant" | null = null;
+
+  if (admin) {
+    role = "admin";
+  } else if (client) {
+    role = "client";
+  } else if (tenant) {
+    role = "tenant";
+  }
+
+  if (!role) {
+    role =
+      (user.user_metadata as any)?.role ||
+      (user.app_metadata as any)?.role ||
+      null;
+  }
+
+  console.log("role", role);
 
   // Role based navigation
   if (role === "admin") {
