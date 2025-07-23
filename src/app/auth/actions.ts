@@ -24,35 +24,75 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     //Get client id from email
-     const { getClientByEmailActionData } = await readClientByEmailAction(email);
+     // Try to find user in tblClients
+     const { data: client, error: clientError } = await supabase
+          .from('tblClients')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
 
-     if (!getClientByEmailActionData) {
+     let userType: 'client' | 'tenant' | null = null;
+     let userId: string | null = null;
+
+     if (client) {
+          userType = 'client';
+          userId = client.id;
+     }
+
+     if (!client) {
+          const { data: tenant, error: tenantError } = await supabase
+               .from('tblTenants')
+               .select('id')
+               .eq('email', email)
+               .maybeSingle();
+
+          if (tenant) {
+               userType = 'tenant';
+               userId = tenant.id;
+          }
+
+          if (tenantError && tenantError.code !== 'PGRST116') {
+               await logServerAction({
+                    user_id: null,
+                    action: 'NLA - Magic link tenant lookup failed',
+                    payload: { email },
+                    status: 'fail',
+                    error: tenantError.message,
+                    duration_ms: 0,
+                    type: 'auth',
+               });
+               return { error: tenantError.message };
+          }
+     }
+
+     if (!userId) {
           await logServerAction({
                user_id: null,
                action: 'NLA - Magic link login attempt for non-existing user',
                payload: { email },
                status: 'fail',
                error: 'User does not exist. Please sign up first.',
-               duration_ms: 0, // Duration can be calculated if needed
-               type: 'auth'
-          })
+               duration_ms: 0,
+               type: 'auth',
+          });
           return { error: 'User does not exist. Please sign up first.' };
      }
 
-     // Check if client has an active subscription
-     const { data: subscriptionData, error: subscriptionError } = await supabase
-          .from('tblClient_Subscription')
-          .select('*')
-          .eq('client_id', getClientByEmailActionData.id)
-          .single();
+     if (userType === 'client') {
+          // Check if client has an active subscription
+          const { data: subscriptionData, error: subscriptionError } = await supabase
+               .from('tblClient_Subscription')
+               .select('*')
+               .eq('client_id', userId)
+               .single();
 
-     if (subscriptionError || !subscriptionData) {
-          supabase.auth.signOut();
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+          if (subscriptionError || !subscriptionData) {
+               supabase.auth.signOut();
+               // Remove cookies
+               cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 
-          return { success: false, error: 'No active subscription found. Please subscribe to continue.' };
+               return { success: false, error: 'No active subscription found. Please subscribe to continue.' };
+          }
      }
 
      // Send magic link since the user exists
@@ -133,14 +173,32 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      const cookieStore = await cookies();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // Check if the user exists in tblClients
-     const { data, error } = await supabase
+     // Look for the user in tblClients
+     const { data: client, error: clientError } = await supabase
           .from('tblClients')
-          .select('email, id',)
+          .select('id')
           .eq('email', values.email)
-          .single();
+          .maybeSingle();
 
-     if (data) {
+     if (clientError && clientError.code !== 'PGRST116') {
+          await logServerAction({
+               user_id: null,
+               action: 'Signing in with email and password client lookup failed',
+               payload: JSON.stringify(values),
+               status: 'fail',
+               error: clientError.message,
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          })
+          return { success: false, error: { code: clientError.code, details: clientError.details, hint: clientError.hint, message: clientError.message } };
+     }
+
+     let userType: 'client' | 'tenant' | null = null;
+     let userId: string | null = null;
+
+     if (client) {
+          userType = 'client';
+          userId = client.id;
           await logServerAction({
                user_id: null,
                action: 'Signing in with email and password - user found in tblClients',
@@ -152,65 +210,77 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           })
      }
 
-     if (error) {
-          switch (error.code) {
-               case 'PGRST116':
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password failed',
-                         payload: JSON.stringify(values),
-                         status: 'fail',
-                         error: error.message,
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Invalid credentials' } };
-               case 'PGRS003':
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password failed',
-                         payload: JSON.stringify(values),
-                         status: 'fail',
-                         error: error.message,
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Invalid credentials' } };
-               default:
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password failed',
-                         payload: JSON.stringify(values),
-                         status: 'fail',
-                         error: error.message,
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    })
-                    return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
+     if (!client) {
+          const { data: tenant, error: tenantError } = await supabase
+               .from('tblTenants')
+               .select('id')
+               .eq('email', values.email)
+               .maybeSingle();
+
+          if (tenant) {
+               userType = 'tenant';
+               userId = tenant.id;
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password - user found in tblTenants',
+                    payload: JSON.stringify(values),
+                    status: 'success',
+                    error: '',
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               })
+          }
+
+          if (tenantError && tenantError.code !== 'PGRST116') {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password tenant lookup failed',
+                    payload: JSON.stringify(values),
+                    status: 'fail',
+                    error: tenantError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               })
+               return { success: false, error: { code: tenantError.code, details: tenantError.details, hint: tenantError.hint, message: tenantError.message } };
           }
      }
 
-     // Check if client has an active subscription
-     const { data: subscriptionData, error: subscriptionError } = await supabase
-          .from('tblClient_Subscription')
-          .select('*')
-          .eq('client_id', data.id)
-          .single();
-
-     if (subscriptionError || !subscriptionData) {
-          supabase.auth.signOut();
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+     if (!userId) {
           await logServerAction({
                user_id: null,
-               action: 'Signing in with email and password - no active subscription found',
+               action: 'Signing in with email and password failed',
                payload: JSON.stringify(values),
                status: 'fail',
-               error: subscriptionError ? subscriptionError.message : 'No active subscription found',
+               error: 'User does not exist',
                duration_ms: Date.now() - start,
                type: 'auth'
           })
-          return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
+          return { success: false, error: { code: 'PGRST116', details: 'User does not exist', hint: 'Please try registering first', message: 'Invalid credentials' } };
+     }
+
+     if (userType === 'client') {
+          // Check if client has an active subscription
+          const { data: subscriptionData, error: subscriptionError } = await supabase
+               .from('tblClient_Subscription')
+               .select('*')
+               .eq('client_id', userId)
+               .single();
+
+          if (subscriptionError || !subscriptionData) {
+               supabase.auth.signOut();
+               // Remove cookies
+               cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password - no active subscription found',
+                    payload: JSON.stringify(values),
+                    status: 'fail',
+                    error: subscriptionError ? subscriptionError.message : 'No active subscription found',
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               })
+               return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
+          }
      }
 
      const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({
@@ -221,7 +291,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      if (signInError) {
           await logServerAction({
                user_id: null,
-               action: 'User with valid password found in tblClients but signing in with email and password failed',
+               action: 'User found but signing in with email and password failed',
                payload: JSON.stringify(values),
                status: 'fail',
                error: signInError.message,
