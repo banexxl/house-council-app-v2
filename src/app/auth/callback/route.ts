@@ -58,17 +58,34 @@ export async function GET(request: Request) {
      // Extract the user's email from the session
      const userEmail = sessionData.session.user.email;
      // Check if the user's email exists in tblClients.
-     const { data, error: clientError } = await supabase
+     const { data: userData, error: clientError } = await supabase
           .from('tblClients')
           .select('*')
           .eq('email', userEmail)
           .single();
 
+     if (!userData) {
+          // If the email is not found in tblClients, check tblTenants
+          const { data: tenantData, error: tenantError } = await supabase
+               .from('tblTenants')
+               .select('*')
+               .eq('email', userEmail)
+               .single();
+
+          if (tenantData) {
+               // If found in tblTenants, set userData to tenantData
+               userData = tenantData;
+          } else {
+               // If not found in both tables, redirect to error page
+               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=email_not_registered`);
+          }
+     }
+
      // Check if client has an active subscription
      const { data: subscriptionData, error: subscriptionError } = await supabase
           .from('tblClient_Subscription')
           .select('*')
-          .eq('client_id', data.id)
+          .eq('client_id', userData.id)
           .single();
 
 

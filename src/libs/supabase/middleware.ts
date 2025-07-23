@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
     .maybeSingle();
 
   const { data: admin } = await supabase
-    .from("tblAdmins")
+    .from("tblSuperAdmins")
     .select("id, role")
     .eq("email", user.email)
     .maybeSingle();
@@ -79,6 +79,7 @@ export async function updateSession(request: NextRequest) {
     admin?.role ||
     tenant?.role ||
     client?.role;
+  console.log('role', role);
 
   // Role based navigation
   if (role === "admin") {

@@ -79,9 +79,9 @@ export const checkIfUserExistsAndReturnDataAndSessionObject =
                };
           }
 
-          // ✅ 4. Look up tblAdmins by user_id
+          // ✅ 4. Look up tblSuperAdmins by user_id
           const { data: admin, error: adminError } = await supabase
-               .from('tblAdmins')
+               .from('tblSuperAdmins')
                .select('*')
                .eq('user_id', user.id)
                .single();

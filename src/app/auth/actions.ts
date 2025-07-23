@@ -89,7 +89,7 @@ export const checkIfUserExistsAndGetRole = async (
      }
 
      const { data: admin, error: adminError } = await supabase
-          .from('tblAdmins')
+          .from('tblSuperAdmins')
           .select('email')
           .eq('email', email)
           .single();
