@@ -79,6 +79,7 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
 
   return useMemo(() => {
     const allSections: Section[] = [
+      // Admin Dashboard
       {
         subheader: t(tokens.nav.adminDashboard),
         items: [
@@ -162,6 +163,7 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
           },
         ],
       },
+      // Client Dashboard
       {
         subheader: t(tokens.nav.clientDashboard),
         items: [
@@ -289,6 +291,7 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
           },
         ],
       },
+      // Tenant Dashboard
       {
         subheader: t(tokens.nav.tenants),
         items: [
