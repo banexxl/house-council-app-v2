@@ -10,8 +10,8 @@ import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 
 export default async function TableEditorPage() {
 
-     const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-     if (!client) {
+     const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+     if (!client && !tenant && !admin) {
           logout()
           redirect('/auth/login')
      };

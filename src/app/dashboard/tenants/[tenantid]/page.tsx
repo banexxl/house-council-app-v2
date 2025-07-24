@@ -14,8 +14,8 @@ export default async function Page({ params }: {
   params: Promise<{ tenantid: string }>
 }) {
 
-  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!client) {
+  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
     logout();
     redirect('/auth/login');
   }
@@ -25,7 +25,7 @@ export default async function Page({ params }: {
   const [{ getTenantByIdActionSuccess, getTenantByIdActionData }, session, buildingsResult] = await Promise.all([
     readTenantByIdAction(tenantid),
     checkIfUserExistsAndReturnDataAndSessionObject(),
-    getAllBuildingsWithApartmentsForClient(client.id),
+    getAllBuildingsWithApartmentsForClient(client!.id),
   ]);
 
   const buildings = buildingsResult.success && buildingsResult.data ? buildingsResult.data : [];

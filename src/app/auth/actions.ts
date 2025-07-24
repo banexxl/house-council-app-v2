@@ -23,34 +23,60 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     // Try to find user in tblClients
-     const { data: client, error: clientError } = await supabase
-          .from('tblClients')
+     // Check tblSuperAdmins, tblClients, tblTenants for user existence
+     let userType: 'client' | 'tenant' | 'admin' | null = null;
+     let userId: string | null = null;
+     let userFound = false;
+
+     // 1. Check tblSuperAdmins
+     const { data: admin, error: adminError } = await supabase
+          .from('tblSuperAdmins')
           .select('id')
           .eq('email', email)
           .single();
-
-     let userType: 'client' | 'tenant' | null = null;
-     let userId: string | null = null;
-
-     if (client) {
-          userType = 'client';
-          userId = client.id;
+     if (admin) {
+          userType = 'admin';
+          userId = admin.id;
+          userFound = true;
      }
 
-     if (!client) {
+     // 2. If not found, check tblClients
+     if (!userFound) {
+          const { data: client, error: clientError } = await supabase
+               .from('tblClients')
+               .select('id')
+               .eq('email', email)
+               .single();
+          if (client) {
+               userType = 'client';
+               userId = client.id;
+               userFound = true;
+          } else if (clientError && clientError.code !== 'PGRST116') {
+               await logServerAction({
+                    user_id: null,
+                    action: 'NLA - Magic link client lookup failed',
+                    payload: { email },
+                    status: 'fail',
+                    error: clientError.message,
+                    duration_ms: 0,
+                    type: 'auth',
+               });
+               return { error: clientError.message };
+          }
+     }
+
+     // 3. If not found, check tblTenants
+     if (!userFound) {
           const { data: tenant, error: tenantError } = await supabase
                .from('tblTenants')
                .select('id')
                .eq('email', email)
                .single();
-
           if (tenant) {
                userType = 'tenant';
                userId = tenant.id;
-          }
-
-          if (tenantError && tenantError.code !== 'PGRST116') {
+               userFound = true;
+          } else if (tenantError && tenantError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: null,
                     action: 'NLA - Magic link tenant lookup failed',
@@ -64,7 +90,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           }
      }
 
-     if (!userId) {
+     if (!userFound || !userId) {
           await logServerAction({
                user_id: null,
                action: 'NLA - Magic link login attempt for non-existing user',
@@ -76,25 +102,6 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           });
           return { error: 'User does not exist. Please sign up first.' };
      }
-
-     if (userType === 'client') {
-
-          // Check if client has an active subscription
-          const { data: subscriptionData, error: subscriptionError } = await supabase
-               .from('tblClient_Subscription')
-               .select('*')
-               .eq('client_id', userId)
-               .single();
-
-          if (subscriptionError || !subscriptionData) {
-               supabase.auth.signOut();
-               // Remove cookies
-               cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
-
-               return { success: false, error: 'No active subscription found. Please subscribe to continue.' };
-          }
-     }
-
      // Send magic link since the user exists
      const { data, error } = await supabase.auth.signInWithOtp({
           email,
@@ -304,6 +311,12 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
           }
      }
+
+     // const { data, error } = await supabase.auth.admin.updateUserById('c94d8bef-06a8-4f95-97bc-ea9f0a50f911', {
+     //      password: 'Banned983983!'
+     // });
+     // console.log('User password updated:', data, error);
+
 
      const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({
           email: values.email,

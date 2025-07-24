@@ -8,10 +8,11 @@ import Loading from "../loading";
 
 const Page = async () => {
 
-  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!client) {
+  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
     redirect('/auth/login')
   }
+  console.log("Client data:", client);
 
   return (
     <Suspense fallback={<Loading />}>

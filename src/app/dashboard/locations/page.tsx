@@ -8,8 +8,8 @@ import Locations from './locations';
 
 const Page = async () => {
 
-  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!client) {
+  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
     logout()
     redirect('/auth/login')
   };

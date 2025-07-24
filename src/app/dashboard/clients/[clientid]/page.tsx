@@ -14,8 +14,8 @@ export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
 }) {
 
-  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!client) {
+  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
     logout()
     redirect('/auth/login')
   };

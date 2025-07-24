@@ -13,8 +13,8 @@ import { redirect } from 'next/navigation';
 
 const Page = async ({ params }: any) => {
 
-  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!client) {
+  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
     logout()
     redirect('/auth/login')
   };

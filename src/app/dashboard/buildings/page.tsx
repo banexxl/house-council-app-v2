@@ -8,8 +8,8 @@ import { redirect } from "next/navigation";
 
 export default async function Page() {
 
-  const { client } = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!client) {
+  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
     logout()
     redirect('/auth/login')
   };

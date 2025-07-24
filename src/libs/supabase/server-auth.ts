@@ -1,7 +1,7 @@
 "use server";
 
 import { User } from '@supabase/supabase-js'
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { Client } from 'src/types/client'
 import { Tenant } from 'src/types/tenant'
 import { Admin } from 'src/types/admin'
@@ -17,7 +17,7 @@ export type UserDataCombined = {
 
 export const checkIfUserExistsAndReturnDataAndSessionObject =
      async (): Promise<UserDataCombined> => {
-          const supabase = await useServerSideSupabaseAnonClient();
+          const supabase = await useServerSideSupabaseServiceRoleClient();
 
           // ✅ 1. Get current user from Supabase Auth
           const { data: userData, error: userError } = await supabase.auth.getUser();
