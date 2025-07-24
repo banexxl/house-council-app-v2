@@ -50,6 +50,7 @@ export interface Section {
 }
 
 const useIsAdmin = () => {
+
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -64,8 +65,10 @@ const useIsAdmin = () => {
         .from("tblSuperAdmins")
         .select("id")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .single();
+
       setIsAdmin(!!admin);
+
     };
     check();
   }, []);
@@ -505,16 +508,11 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
     ];
 
     let filtered = allSections;
-    switch (role) {
-      case 'client':
-        filtered = allSections.slice(1);
-        break;
-      case 'tenant':
-        filtered = allSections.slice(2);
-        break;
-      default:
-        filtered = allSections;
-    }
+    if (role === 'client') {
+      filtered = allSections.slice(1); // Exclude admin section
+    } else if (role === 'tenant') {
+      filtered = allSections.slice(-1); // Only show tenant section
+    } // if admin, show all
 
     if (isAdmin === false) {
       filtered = filtered.filter(

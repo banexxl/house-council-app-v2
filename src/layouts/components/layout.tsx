@@ -1,19 +1,8 @@
 import type { FC, ReactNode } from 'react';
 import PropTypes from 'prop-types';
-import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
-import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
-import { RouterLink } from 'src/components/router-link';
-import { paths } from 'src/paths';
 
 const LayoutRoot = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.default,

@@ -13,20 +13,45 @@ interface LayoutProps {
 export const Layout: FC<LayoutProps> = ((props) => {
 
   const settings = useSettings();
-  const [role, setRole] = useState<'admin' | 'client' | 'tenant'>('admin');
+  const [role, setRole] = useState<'admin' | 'client' | 'tenant'>('tenant');
 
   useEffect(() => {
     const getRole = async () => {
       const { data } = await supabaseBrowserClient.auth.getSession();
-      const metaRole =
-        data.session?.user?.user_metadata?.role ||
-        data.session?.user?.app_metadata?.role;
-      if (
-        metaRole === 'admin' ||
-        metaRole === 'client' ||
-        metaRole === 'tenant'
-      ) {
-        setRole(metaRole);
+      const email = data.session?.user?.email;
+      if (!email) return;
+
+      // 1. Check tblSuperAdmins
+      const { data: admin } = await supabaseBrowserClient
+        .from('tblSuperAdmins')
+        .select('id')
+        .eq('email', email)
+        .single();
+      if (admin) {
+        setRole('admin');
+        return;
+      }
+
+      // 2. Check tblClients
+      const { data: client } = await supabaseBrowserClient
+        .from('tblClients')
+        .select('id')
+        .eq('email', email)
+        .single();
+      if (client) {
+        setRole('client');
+        return;
+      }
+
+      // 3. Check tblTenants
+      const { data: tenant } = await supabaseBrowserClient
+        .from('tblTenants')
+        .select('id')
+        .eq('email', email)
+        .single();
+      if (tenant) {
+        setRole('tenant');
+        return;
       }
     };
 

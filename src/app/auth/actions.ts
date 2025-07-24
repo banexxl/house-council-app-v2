@@ -312,7 +312,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           }
      }
 
-     // const { data, error } = await supabase.auth.admin.updateUserById('c94d8bef-06a8-4f95-97bc-ea9f0a50f911', {
+     // const { data, error } = await supabase.auth.admin.updateUserById('4c8d3043-33a0-47b7-8443-4818edbc49e6', {
      //      password: 'Banned983983!'
      // });
      // console.log('User password updated:', data, error);

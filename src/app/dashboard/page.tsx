@@ -12,7 +12,6 @@ const Page = async () => {
   if (!client && !tenant && !admin) {
     redirect('/auth/login')
   }
-  console.log("Client data:", client);
 
   return (
     <Suspense fallback={<Loading />}>
