@@ -1,5 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { useServerSideSupabaseAnonClient } from "./sb-server";
 
 /**
  * @function updateSession
@@ -28,22 +28,7 @@ export async function updateSession(request: NextRequest) {
   // ✅ FIX: create response before passing into Supabase client
   const response = NextResponse.next();
 
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
-      },
-    },
-  );
+  const supabase = await useServerSideSupabaseAnonClient()
 
   const {
     data: { user },
@@ -57,19 +42,19 @@ export async function updateSession(request: NextRequest) {
     .from("tblClients")
     .select("id")
     .eq("email", user.email)
-    .maybeSingle();
+    .single();
 
   const { data: tenant } = await supabase
     .from("tblTenants")
     .select("id")
     .eq("email", user.email)
-    .maybeSingle();
+    .single();
 
   const { data: admin } = await supabase
     .from("tblSuperAdmins")
     .select("id")
     .eq("email", user.email)
-    .maybeSingle();
+    .single();
 
   if (!client && !tenant && !admin) {
     return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));

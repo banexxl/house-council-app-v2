@@ -28,7 +28,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           .from('tblClients')
           .select('id')
           .eq('email', email)
-          .maybeSingle();
+          .single();
 
      let userType: 'client' | 'tenant' | null = null;
      let userId: string | null = null;
@@ -44,7 +44,6 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
                .select('id')
                .eq('email', email)
                .single();
-          console.log('tenant', tenant, tenantError);
 
           if (tenant) {
                userType = 'tenant';
@@ -77,7 +76,6 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           });
           return { error: 'User does not exist. Please sign up first.' };
      }
-     console.log('userType', userType);
 
      if (userType === 'client') {
 
@@ -173,55 +171,79 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
      const start = Date.now();
      const cookieStore = await cookies();
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     // Look for the user in tblClients
-     const { data: client, error: clientError } = await supabase
-          .from('tblClients')
+     let userType: 'client' | 'tenant' | 'admin' | null = null;
+     let userId: string | null = null;
+     let userFound = false;
+
+     // 1. Check tblSuperAdmins
+     const { data: admin, error: adminError } = await supabase
+          .from('tblSuperAdmins')
           .select('id')
           .eq('email', values.email)
-          .maybeSingle();
+          .single();
 
-     if (clientError && clientError.code !== 'PGRST116') {
+     if (admin) {
+          userType = 'admin';
+          userId = admin.id;
+          userFound = true;
           await logServerAction({
                user_id: null,
-               action: 'Signing in with email and password client lookup failed',
-               payload: JSON.stringify(values),
-               status: 'fail',
-               error: clientError.message,
-               duration_ms: Date.now() - start,
-               type: 'auth'
-          })
-          return { success: false, error: { code: clientError.code, details: clientError.details, hint: clientError.hint, message: clientError.message } };
-     }
-
-     let userType: 'client' | 'tenant' | null = null;
-     let userId: string | null = null;
-
-     if (client) {
-          userType = 'client';
-          userId = client.id;
-          await logServerAction({
-               user_id: null,
-               action: 'Signing in with email and password - user found in tblClients',
+               action: 'Signing in with email and password - user found in tblSuperAdmins',
                payload: JSON.stringify(values),
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
                type: 'auth'
-          })
+          });
      }
 
-     if (!client) {
+     // 2. If not found, check tblClients
+     if (!userFound) {
+          const { data: client, error: clientError } = await supabase
+               .from('tblClients')
+               .select('id')
+               .eq('email', values.email)
+               .single();
+          if (client) {
+               userType = 'client';
+               userId = client.id;
+               userFound = true;
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password - user found in tblClients',
+                    payload: JSON.stringify(values),
+                    status: 'success',
+                    error: '',
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               });
+          } else if (clientError && clientError.code !== 'PGRST116') {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password client lookup failed',
+                    payload: JSON.stringify(values),
+                    status: 'fail',
+                    error: clientError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               });
+               return { success: false, error: { code: clientError.code, details: clientError.details, hint: clientError.hint, message: clientError.message } };
+          }
+     }
+
+     // 3. If not found, check tblTenants
+     if (!userFound) {
           const { data: tenant, error: tenantError } = await supabase
                .from('tblTenants')
                .select('id')
                .eq('email', values.email)
-               .maybeSingle();
-
+               .single();
           if (tenant) {
                userType = 'tenant';
                userId = tenant.id;
+               userFound = true;
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblTenants',
@@ -230,10 +252,8 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     error: '',
                     duration_ms: Date.now() - start,
                     type: 'auth'
-               })
-          }
-
-          if (tenantError && tenantError.code !== 'PGRST116') {
+               });
+          } else if (tenantError && tenantError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password tenant lookup failed',
@@ -242,12 +262,12 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     error: tenantError.message,
                     duration_ms: Date.now() - start,
                     type: 'auth'
-               })
+               });
                return { success: false, error: { code: tenantError.code, details: tenantError.details, hint: tenantError.hint, message: tenantError.message } };
           }
      }
 
-     if (!userId) {
+     if (!userFound || !userId) {
           await logServerAction({
                user_id: null,
                action: 'Signing in with email and password failed',
@@ -256,7 +276,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                error: 'User does not exist',
                duration_ms: Date.now() - start,
                type: 'auth'
-          })
+          });
           return { success: false, error: { code: 'PGRST116', details: 'User does not exist', hint: 'Please try registering first', message: 'Invalid credentials' } };
      }
 
@@ -280,7 +300,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     error: subscriptionError ? subscriptionError.message : 'No active subscription found',
                     duration_ms: Date.now() - start,
                     type: 'auth'
-               })
+               });
                return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
           }
      }
@@ -299,7 +319,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                error: signInError.message,
                duration_ms: Date.now() - start,
                type: 'db'
-          })
+          });
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
 
@@ -311,7 +331,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           error: '',
           duration_ms: Date.now() - start,
           type: 'auth'
-     })
+     });
      return { success: true };
 }
 

@@ -1,27 +1,10 @@
-import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 
 export async function GET(request: Request) {
   const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            try {
-              cookieStore.set(name, value, options);
-            } catch {
-              // ignore errors when cookies cannot be set
-            }
-          });
-        },
-      },
-    },
-  );
+  const supabase = await useServerSideSupabaseServiceRoleClient();
 
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
@@ -87,7 +70,7 @@ export async function GET(request: Request) {
         .from("tblSuperAdmins")
         .select("id")
         .eq("email", userEmail)
-        .maybeSingle();
+        .single();
 
       if (adminError && adminError.code !== "PGRST116") {
         await supabase.auth.signOut();
