@@ -1,4 +1,4 @@
-import { getAllBuildingsFromClient, getBuildingById } from "src/app/actions/building/building-actions";
+import { getAllBuildingsFromClient, getBuildingById, getAllBuildings } from "src/app/actions/building/building-actions";
 import { getApartmentById } from "src/app/actions/apartment/apartment-actions";
 import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
 import { Box, Container, Stack } from "@mui/material";
@@ -10,22 +10,37 @@ import { redirect } from "next/navigation";
 export default async function Page({ params }: {
   params: Promise<{ apartmentid: string }>
 }) {
-
   const { apartmentid } = await params;
+  const { client, tenant, admin, userData, role, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!client && !tenant && !admin) {
+    logout();
+    redirect('/auth/login');
+  }
 
-  const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!userData) {
-    logout()
-    redirect('/auth/login')
-  };
+  let buildings: any = undefined;
+  let apartment: any = undefined;
 
-  const [buildingsRes, apartmentRes] = await Promise.all([
-    getAllBuildingsFromClient(userData.client!.id!),
-    apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
-  ]);
-
-  const buildings = buildingsRes.success ? buildingsRes.data : undefined;
-  const apartment = apartmentRes.success ? apartmentRes.data : undefined;
+  if (admin) {
+    // For admin, fetch all buildings and the apartment by id
+    const [buildingsRes, apartmentRes] = await Promise.all([
+      getAllBuildings(),
+      apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
+    ]);
+    buildings = buildingsRes.success ? buildingsRes.data : undefined;
+    apartment = apartmentRes.success ? apartmentRes.data : undefined;
+  } else if (client) {
+    // For client, fetch only their buildings and the apartment by id
+    const [buildingsRes, apartmentRes] = await Promise.all([
+      getAllBuildingsFromClient(client.id),
+      apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
+    ]);
+    buildings = buildingsRes.success ? buildingsRes.data : undefined;
+    apartment = apartmentRes.success ? apartmentRes.data : undefined;
+  } else if (tenant) {
+    // For tenant, you may want to fetch only apartments/buildings they have access to
+    buildings = [];
+    apartment = apartmentid ? (await getApartmentById(apartmentid)).data : undefined;
+  }
 
   return (
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
@@ -35,9 +50,9 @@ export default async function Page({ params }: {
             apartment={apartment}
           />
           <ApartmentCreateForm
-            buildings={buildings!}
+            buildings={buildings}
             apartmentData={apartment}
-            userData={userData}
+            userData={{ client, tenant, admin, userData, role, error }}
           />
         </Stack>
       </Container>

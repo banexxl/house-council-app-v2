@@ -15,91 +15,91 @@ export type UserDataCombined = {
      error?: string
 }
 
-export const checkIfUserExistsAndReturnDataAndSessionObject =
-     async (): Promise<UserDataCombined> => {
-          const supabase = await useServerSideSupabaseServiceRoleClient();
+export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<UserDataCombined> => {
 
-          // ✅ 1. Get current user from Supabase Auth
-          const { data: userData, error: userError } = await supabase.auth.getUser();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
-          if (userError || !userData?.user) {
-               return {
-                    client: null,
-                    tenant: null,
-                    admin: null,
-                    userData: null,
-                    role: null,
-                    error: userError?.message || 'Failed to authenticate user',
-               };
-          }
+     // ✅ 1. Get current user from Supabase Auth
+     const { data: userData, error: userError } = await supabase.auth.getUser();
 
-          const user = userData.user;
+     if (userError || !userData?.user) {
+          return {
+               client: null,
+               tenant: null,
+               admin: null,
+               userData: null,
+               role: null,
+               error: userError?.message || 'Failed to authenticate user',
+          };
+     }
 
-          // ✅ 2. Look up tblClients by user_id
-          const { data: client, error: clientError } = await supabase
-               .from('tblClients')
-               .select('*')
-               .eq('user_id', user.id)
-               .single();
+     const user = userData.user;
 
-          if (client) {
-               return { client, tenant: null, admin: null, userData: user, role: 'client' };
-          }
+     // ✅ 2. Look up tblClients by user_id
+     const { data: client, error: clientError } = await supabase
+          .from('tblClients')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-          if (clientError && clientError.code !== 'PGRST116') {
-               return {
-                    client: null,
-                    tenant: null,
-                    admin: null,
-                    userData: user,
-                    role: null,
-                    error: clientError.message,
-               };
-          }
+     if (client) {
+          return { client, tenant: null, admin: null, userData: user, role: 'client' };
+     }
 
-          // ✅ 3. Look up tblTenants by user_id
-          const { data: tenant, error: tenantError } = await supabase
-               .from('tblTenants')
-               .select('*')
-               .eq('user_id', user.id)
-               .single();
+     if (clientError && clientError.code !== 'PGRST116') {
+          return {
+               client: null,
+               tenant: null,
+               admin: null,
+               userData: user,
+               role: null,
+               error: clientError.message,
+          };
+     }
 
-          if (tenant) {
-               return { client: null, tenant, admin: null, userData: user, role: 'tenant' };
-          }
+     // ✅ 3. Look up tblTenants by user_id
+     const { data: tenant, error: tenantError } = await supabase
+          .from('tblTenants')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-          if (tenantError && tenantError.code !== 'PGRST116') {
-               return {
-                    client: null,
-                    tenant: null,
-                    admin: null,
-                    userData: user,
-                    role: null,
-                    error: tenantError.message,
-               };
-          }
+     if (tenant) {
+          return { client: null, tenant, admin: null, userData: user, role: 'tenant' };
+     }
 
-          // ✅ 4. Look up tblSuperAdmins by user_id
-          const { data: admin, error: adminError } = await supabase
-               .from('tblSuperAdmins')
-               .select('*')
-               .eq('user_id', user.id)
-               .single();
+     if (tenantError && tenantError.code !== 'PGRST116') {
+          return {
+               client: null,
+               tenant: null,
+               admin: null,
+               userData: user,
+               role: null,
+               error: tenantError.message,
+          };
+     }
 
-          if (admin) {
-               return { client: null, tenant: null, admin, userData: user, role: 'admin' };
-          }
+     // ✅ 4. Look up tblSuperAdmins by user_id
+     const { data: admin, error: adminError } = await supabase
+          .from('tblSuperAdmins')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-          if (adminError && adminError.code !== 'PGRST116') {
-               return {
-                    client: null,
-                    tenant: null,
-                    admin: null,
-                    userData: user,
-                    role: null,
-                    error: adminError.message,
-               };
-          }
+     if (admin) {
+          return { client: null, tenant: null, admin, userData: user, role: 'admin' };
+     }
 
-          return { client: null, tenant: null, admin: null, userData: user, role: null, error: 'User record not found' };
-     };
+     if (adminError && adminError.code !== 'PGRST116') {
+          return {
+               client: null,
+               tenant: null,
+               admin: null,
+               userData: user,
+               role: null,
+               error: adminError.message,
+          };
+     }
+
+     return { client: null, tenant: null, admin: null, userData: user, role: null, error: 'User record not found' };
+};

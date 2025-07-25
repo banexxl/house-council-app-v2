@@ -6,6 +6,38 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
 
+export const getAllApartments = async (): Promise<{ success: boolean; error?: string; data?: Apartment[] }> => {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase.from("tblApartments").select("*");
+
+     if (error) {
+          await logServerAction({
+               action: "getAllApartments",
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: {},
+               status: "fail",
+               type: "db",
+               user_id: "",
+          });
+          return { success: false, error: error.message };
+     }
+
+     await logServerAction({
+          action: "getAllapartments",
+          duration_ms: Date.now() - time,
+          error: "",
+          payload: {},
+          status: "success",
+          type: "db",
+          user_id: "",
+     });
+
+     return { success: true, data };
+}
+
 export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -5,6 +6,18 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
+
+/**
+ * Get all tenants (admin only)
+ */
+export const getAllTenants = async () => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data, error } = await supabase
+          .from('tblTenants')
+          .select('*');
+     if (error) return { success: false, error: error.message };
+     return { success: true, data };
+};
 // CREATE or UPDATE tenant
 export const createOrUpdateTenantAction = async (
      tenant: Tenant

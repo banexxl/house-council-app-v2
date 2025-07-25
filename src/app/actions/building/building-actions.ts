@@ -6,6 +6,50 @@ import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
 
+/** * Get all buildings
+ */
+export const getAllBuildings = async (): Promise<{ success: boolean; error?: string; data?: Building[] }> => {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const [{ data: buildings, error }, { data: imageRecords }] =
+          await Promise.all([
+               supabase
+                    .from("tblBuildings")
+                    .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`),
+               supabase
+                    .from("tblBuildingImages")
+                    .select("building_id, image_url"),
+          ]);
+
+     if (error) {
+          await logServerAction({
+               action: "getAllBuildings",
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: {},
+               status: "fail",
+               type: "db",
+               user_id: "",
+               id: "",
+          });
+          return { success: false, error: error.message };
+     }
+
+     await logServerAction({
+          action: "getAllBuildings",
+          duration_ms: Date.now() - time,
+          error: "",
+          payload: {},
+          status: "success",
+          type: "db",
+          user_id: "",
+          id: "",
+     });
+
+     return { success: true, data: buildings ?? [] };
+}
+
 /**
  * Get all buildings from a client
  */

@@ -12,6 +12,18 @@ type ErrorResponse = {
      message: string;
 }
 
+/**
+ * Get all locations (admin only)
+ */
+export const getAllLocations = async () => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabase
+          .from('tblBuildingLocations')
+          .select('*');
+     if (error) return { success: false, error: error.message };
+     return { success: true, data };
+};
+
 export const insertLocationAction = async (values: BuildingLocation): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation }> => {
 
      const startTime = Date.now();
