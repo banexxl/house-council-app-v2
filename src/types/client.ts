@@ -21,6 +21,7 @@ export const clientStatusMapping = {
 
 export interface Client {
   id: string;
+  user_id: string;
   created_at?: Date;
   updated_at?: Date;
   name: string;
@@ -94,6 +95,7 @@ export const clientValidationSchema = (t: (key: string) => string): Yup.ObjectSc
 // Add all iniitial values
 export const clientInitialValues: Client = {
   id: '',
+  user_id: '',
   name: '',
   email: '',
   address_1: '',

@@ -7,7 +7,7 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Divider from '@mui/material/Divider'
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
@@ -19,16 +19,23 @@ import toast from 'react-hot-toast'
 import { Client, clientInitialValues, clientStatusMapping, clientTypeMapping, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
-import { createOrUpdateClientAction } from 'src/app/actions/client/client-actions'
+import { createOrUpdateClientAction, sendPasswordRecoveryEmail, sendMagicLink, removeAllMfaFactors, banUser, unbanUser } from 'src/app/actions/client/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname, notFound } from 'next/navigation'
+import { PopupModal } from 'src/components/modal-dialog'
 
 interface ClientNewFormProps {
   clientData?: Client
 }
 
 export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
+  console.log('clientData:', clientData);
+
+  // Modal state for admin actions
+  const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalResult, setModalResult] = useState<string | null>(null);
 
   const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
@@ -75,6 +82,66 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
       }
     },
   })
+
+  const handleSendPasswordRecovery = async () => {
+    setModalLoading(true);
+    try {
+      const { success, error } = await sendPasswordRecoveryEmail(formik.values.email);
+      setModalResult(success ? t('clients.passwordRecoverySent') : error || t('clients.clientNotSaved'));
+    } catch (error) {
+      toast.error(t('clients.clientNotSaved'), error.message);
+      setModalResult(t('clients.clientNotSaved'));
+    }
+    setModalLoading(false);
+  };
+
+  const handleSendMagicLink = async () => {
+    setModalLoading(true);
+    try {
+      const { success, error } = await sendMagicLink(formik.values.email);
+      setModalResult(success ? t('clients.magicLinkSent') : error || t('clients.clientNotSaved'));
+    } catch (error) {
+      toast.error(t('clients.clientNotSaved'), error.message);
+      setModalResult(t('clients.clientNotSaved'));
+    }
+    setModalLoading(false);
+  };
+
+  const handleRemoveMfa = async () => {
+    setModalLoading(true);
+    try {
+      const { success, error } = await removeAllMfaFactors(formik.values.user_id);
+      setModalResult(success ? t('clients.mfaRemoved') : error || t('clients.clientNotSaved'));
+    } catch (error) {
+      toast.error(t('clients.clientNotSaved'), error.message);
+      setModalResult(t('clients.clientNotSaved'));
+    }
+    setModalLoading(false);
+  };
+
+  const handleBanUser = async () => {
+    setModalLoading(true);
+    try {
+      const { success, error } = await banUser(formik.values.user_id);
+      setModalResult(success ? t('clients.userBanned') : error || t('clients.clientNotSaved'));
+    } catch (error) {
+      toast.error(t('clients.clientNotSaved'), error.message);
+      setModalResult(t('clients.clientNotSaved'));
+    }
+    setModalLoading(false);
+  };
+
+  const handleUnbanUser = async () => {
+    setModalLoading(true);
+    try {
+      const { success, error } = await unbanUser(formik.values.user_id);
+      setModalResult(success ? t('clients.userUnbanned') : error || t('clients.clientNotSaved'));
+    } catch (error) {
+      toast.error(t('clients.clientNotSaved'), error.message);
+      setModalResult(t('clients.clientNotSaved'));
+    }
+    setModalLoading(false);
+  };
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -289,7 +356,109 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
               />
             </Stack>
           </Stack>
+          <Divider sx={{ my: 3 }} />
+          <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+            <Stack direction="column" spacing={2} alignItems="flex-start" sx={{ width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  {t('clients.sendPasswordRecoveryDescription')}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  disabled={formik.isSubmitting || !formik.values.email}
+                  onClick={() => setModal({ type: 'recovery', open: true })}
+                >
+                  {t('clients.sendPasswordRecovery')}
+                </Button>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  {t('clients.sendMagicLinkDescription')}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  disabled={formik.isSubmitting || !formik.values.email}
+                  onClick={() => setModal({ type: 'magic', open: true })}
+                >
+                  {t('clients.sendMagicLink')}
+                </Button>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  {t('clients.removeMfaDescription')}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  disabled={formik.isSubmitting || !formik.values.id}
+                  onClick={() => setModal({ type: 'mfa', open: true })}
+                >
+                  {t('clients.removeMfa')}
+                </Button>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  {t('clients.banUserDescription')}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  disabled={formik.isSubmitting || !formik.values.id}
+                  onClick={() => setModal({ type: 'ban', open: true })}
+                >
+                  {t('clients.banUser')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="success"
+                  disabled={formik.isSubmitting || !formik.values.id}
+                  onClick={() => setModal({ type: 'unban', open: true })}
+                >
+                  {t('clients.unbanUser')}
+                </Button>
+              </Box>
+            </Stack>
+            <PopupModal
+              isOpen={modal.open}
+              title={
+                modal.type === 'recovery' ? t('clients.sendPasswordRecovery') :
+                  modal.type === 'magic' ? t('clients.sendMagicLink') :
+                    modal.type === 'mfa' ? t('clients.removeMfa') :
+                      modal.type === 'ban' ? t('clients.banUser') :
+                        modal.type === 'unban' ? t('clients.unbanUser') : ''
+              }
+              type="confirmation"
+              loading={modalLoading}
+              onClose={() => {
+                setModal({ open: false, type: undefined });
+                setModalResult(null);
+              }}
+              onConfirm={() => {
+                if (modal.type === 'recovery') return handleSendPasswordRecovery();
+                if (modal.type === 'magic') return handleSendMagicLink();
+                if (modal.type === 'mfa') return handleRemoveMfa();
+                if (modal.type === 'ban') return handleBanUser();
+                if (modal.type === 'unban') return handleUnbanUser();
+              }}
+              confirmText={t('common.btnConfirm')}
+              cancelText={t('common.btnCancel')}
+            >
+              {modal.type === 'recovery' && t('clients.confirmSendPasswordRecovery')}
+              {modal.type === 'magic' && t('clients.confirmSendMagicLink')}
+              {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
+              {modal.type === 'ban' && t('clients.confirmBanUser')}
+              {modal.type === 'unban' && t('clients.confirmUnbanUser')}
+              {modalResult && (
+                <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
+                  {modalResult}
+                </div>
+              )}
+            </PopupModal>
+          </Stack>
         </CardContent>
+        <Divider sx={{ my: 3 }} />
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           flexWrap="wrap"

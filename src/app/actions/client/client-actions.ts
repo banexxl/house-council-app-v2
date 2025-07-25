@@ -6,6 +6,88 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
 import { validate as isUUID } from 'uuid';
 
+// --- Supabase Auth Actions for Client Management ---
+export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: process.env.NEXT_PUBLIC_SUPABASE_PASSWORD_RECOVERY_REDIRECT_URL,
+     });
+
+     if (error) return { success: false, error: error.message };
+     return { success: true };
+};
+
+export const sendMagicLink = async (email: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+               emailRedirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
+          },
+     });
+
+     if (error) return { success: false, error: error.message };
+     return { success: true };
+};
+
+export const removeAllMfaFactors = async (userId: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     // List all factors for the user
+     const { data: factors, error: listError } = await supabase.auth.admin.mfa.listFactors({ userId });
+     console.log('List MFA factors:', factors);
+     console.log('listError:', listError);
+
+
+     if (listError) return { success: false, error: listError.message };
+     if (!factors || !Array.isArray(factors.factors)) return { success: true };
+     let lastError = null;
+     for (const factor of factors.factors) {
+          const { error } = await supabase.auth.admin.mfa.deleteFactor({ id: factor.id, userId });
+          console.log('Delete MFA factor:', factor.id, 'Error:', error);
+
+          if (error) lastError = error;
+     }
+     if (lastError) return { success: false, error: lastError.message };
+     return { success: true };
+};
+
+export const banUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     // Mark user as banned in user_metadata (Supabase does not support a direct ban flag)
+     const { error } = await supabase.auth.admin.updateUserById(userId, {
+          app_metadata: {
+               banned: true,
+               ban_reason: 'Violation of terms of service',
+          },
+          ban_duration: '24h',
+          email_confirm: true, // Optional: prevent login until email is confirmed
+     });
+     console.log('Ban user:', userId, 'Error:', error);
+
+     if (error) return { success: false, error: error.message };
+
+     await supabase.auth.admin.signOut(userId);
+
+     return { success: true };
+};
+
+export const unbanUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { error } = await supabase.auth.admin.updateUserById(userId, {
+          app_metadata: {
+               banned: false,
+               ban_reason: null,
+          },
+          ban_duration: '0s',
+          email_confirm: false,
+     });
+     console.log('Unban user:', userId, 'Error:', error);
+
+     if (error) return { success: false, error: error.message };
+
+     return { success: true };
+};
+
 // Helper to sanitize file paths for S3
 const sanitizeSegmentForS3 = (segment: string): string => {
      return segment

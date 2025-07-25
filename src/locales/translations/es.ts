@@ -1,3 +1,4 @@
+
 import { tokens } from '../tokens';
 
 export const es = {
@@ -19,6 +20,7 @@ export const es = {
   [tokens.common.btnDelete]: 'Eliminar',
   [tokens.common.btnEdit]: 'Editar',
   [tokens.common.btnCancel]: 'Cancelar',
+  [tokens.common.btnConfirm]: 'Confirmar',
   [tokens.common.btnCreate]: 'Crear',
   [tokens.common.btnClose]: 'Cerrar',
   [tokens.common.btnReset]: 'Restablecer',
@@ -325,6 +327,27 @@ export const es = {
   [tokens.clients.buildingStatusesTableName]: 'Estados de Edificio',
   [tokens.clients.clientComponentSettings]: 'Ajustes de Componentes de Cliente',
   [tokens.clients.clientComponentSettingsShortDescription]: 'Esta tabla se utiliza para administrar los ajustes de los clientes, permitiendo agregar y actualizar nuevos registros según sea necesario.',
+  // Admin actions
+  [tokens.clients.sendPasswordRecovery]: 'Enviar recuperación de contraseña',
+  [tokens.clients.sendPasswordRecoveryDescription]: 'Enviar un correo de recuperación de contraseña al usuario.',
+  [tokens.clients.confirmSendPasswordRecovery]: '¿Está seguro de que desea enviar un correo de recuperación de contraseña?',
+  [tokens.clients.passwordRecoverySent]: '¡Correo de recuperación enviado!',
+  [tokens.clients.sendMagicLink]: 'Enviar magic link',
+  [tokens.clients.sendMagicLinkDescription]: 'Enviar un magic link al usuario para iniciar sesión sin contraseña.',
+  [tokens.clients.confirmSendMagicLink]: '¿Está seguro de que desea enviar un magic link?',
+  [tokens.clients.magicLinkSent]: '¡Magic link enviado!',
+  [tokens.clients.removeMfa]: 'Eliminar MFA',
+  [tokens.clients.removeMfaDescription]: 'Eliminar todos los factores de autenticación multifactor para el usuario.',
+  [tokens.clients.confirmRemoveMfa]: '¿Está seguro de que desea eliminar todos los factores MFA?',
+  [tokens.clients.mfaRemoved]: '¡Factores MFA eliminados!',
+  [tokens.clients.banUser]: 'Bloquear usuario',
+  [tokens.clients.banUserDescription]: 'Marcar al usuario como bloqueado.',
+  [tokens.clients.confirmBanUser]: '¿Está seguro de que desea bloquear a este usuario?',
+  [tokens.clients.userBanned]: '¡Usuario bloqueado!',
+  [tokens.clients.unbanUser]: 'Desbloquear usuario',
+  [tokens.clients.unbanUserDescription]: 'Marcar al usuario como desbloqueado.',
+  [tokens.clients.confirmUnbanUser]: '¿Está seguro de que desea desbloquear a este usuario?',
+  [tokens.clients.userUnbanned]: '¡Usuario desbloqueado!',
   // Client form
   [tokens.common.formBasicInfo]: 'Información Basica',
   [tokens.common.formAdvancedInfo]: 'Información Avanzada',

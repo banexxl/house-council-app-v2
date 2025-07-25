@@ -1,3 +1,4 @@
+
 import { tokens } from '../tokens';
 
 export const en = {
@@ -19,6 +20,7 @@ export const en = {
   [tokens.common.btnDelete]: 'Delete',
   [tokens.common.btnEdit]: 'Edit',
   [tokens.common.btnCancel]: 'Cancel',
+  [tokens.common.btnConfirm]: 'Confirm',
   [tokens.common.btnCreate]: 'Create',
   [tokens.common.btnClose]: 'Close',
   [tokens.common.btnReset]: 'Reset',
@@ -326,6 +328,27 @@ export const en = {
   [tokens.clients.buildingStatusesTableName]: 'Building Statuses',
   [tokens.clients.clientComponentSettings]: 'Client Component Settings',
   [tokens.clients.clientComponentSettingsShortDescription]: 'This table is used for managing client settings, allowing new entries to be added and updated as needed.',
+  // Admin actions
+  [tokens.clients.sendPasswordRecovery]: 'Send password recovery',
+  [tokens.clients.sendPasswordRecoveryDescription]: 'Send a password recovery email to the user.',
+  [tokens.clients.confirmSendPasswordRecovery]: 'Are you sure you want to send a password recovery email?',
+  [tokens.clients.passwordRecoverySent]: 'Password recovery email sent!',
+  [tokens.clients.sendMagicLink]: 'Send magic link',
+  [tokens.clients.sendMagicLinkDescription]: 'Send a magic link to the user for passwordless login.',
+  [tokens.clients.confirmSendMagicLink]: 'Are you sure you want to send a magic link?',
+  [tokens.clients.magicLinkSent]: 'Magic link sent!',
+  [tokens.clients.removeMfa]: 'Remove MFA',
+  [tokens.clients.removeMfaDescription]: 'Remove all multi-factor authentication factors for the user.',
+  [tokens.clients.confirmRemoveMfa]: 'Are you sure you want to remove all MFA factors?',
+  [tokens.clients.mfaRemoved]: 'MFA factors removed!',
+  [tokens.clients.banUser]: 'Ban user',
+  [tokens.clients.banUserDescription]: 'Mark the user as banned.',
+  [tokens.clients.confirmBanUser]: 'Are you sure you want to ban this user?',
+  [tokens.clients.userBanned]: 'User has been banned!',
+  [tokens.clients.unbanUser]: 'Unban user',
+  [tokens.clients.unbanUserDescription]: 'Mark the user as unbanned.',
+  [tokens.clients.confirmUnbanUser]: 'Are you sure you want to unban this user?',
+  [tokens.clients.userUnbanned]: 'User has been unbanned!',
   // Client form
   [tokens.common.formBasicInfo]: 'Basic Information',
   [tokens.common.formAdvancedInfo]: 'Advanced Information',
