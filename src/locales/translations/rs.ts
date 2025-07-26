@@ -100,6 +100,7 @@ export const rs = {
      [tokens.common.lblYes]: 'Da',
      [tokens.common.lblNo]: 'Ne',
      [tokens.common.lblFilters]: 'Filter',
+     [tokens.common.lblClientAccountActions]: 'Akcije klijentskog naloga',
      [tokens.apartments.lblApartmentTypeBusiness]: 'Poslovni',
      [tokens.apartments.lblApartmentTypeResidential]: 'Stambeni',
      [tokens.apartments.lblApartmentTypeMixedUse]: 'Mešovita namena',

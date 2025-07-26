@@ -100,6 +100,7 @@ export const tokens = {
     lblYes: 'common.lblYes',
     lblNo: 'common.lblNo',
     lblFilters: 'common.lblFilters',
+    lblClientAccountActions: 'common.lblClientAccountActions',
     notes: 'common.notes',
     settings: 'common.settings',
     actionClickToUploadOrDragAndDrop: 'common.actionClickToUploadOrDragAndDrop',

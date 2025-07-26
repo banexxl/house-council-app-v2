@@ -356,11 +356,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
               />
             </Stack>
           </Stack>
-          <Divider sx={{ my: 3 }} />
+          <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
           <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
-            <Stack direction="column" spacing={2} alignItems="flex-start" sx={{ width: '100%' }}>
+            <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
                   {t('clients.sendPasswordRecoveryDescription')}
                 </Typography>
                 <Button
@@ -372,8 +372,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                   {t('clients.sendPasswordRecovery')}
                 </Button>
               </Box>
+              <Divider sx={{ my: 3 }} />
               <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
                   {t('clients.sendMagicLinkDescription')}
                 </Typography>
                 <Button
@@ -385,8 +386,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                   {t('clients.sendMagicLink')}
                 </Button>
               </Box>
+              <Divider sx={{ my: 3 }} />
               <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
                   {t('clients.removeMfaDescription')}
                 </Typography>
                 <Button
@@ -398,8 +400,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                   {t('clients.removeMfa')}
                 </Button>
               </Box>
+              <Divider sx={{ my: 3 }} />
               <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
                   {t('clients.banUserDescription')}
                 </Typography>
                 <Button

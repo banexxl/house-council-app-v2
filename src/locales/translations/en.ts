@@ -101,6 +101,7 @@ export const en = {
   [tokens.common.lblYes]: 'Yes',
   [tokens.common.lblNo]: 'No',
   [tokens.common.lblFilters]: 'Filters',
+  [tokens.common.lblClientAccountActions]: 'Client Account Actions',
   [tokens.common.notes]: 'Notes',
   [tokens.common.settings]: 'Settings',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Click here to upload or drag and drop to upload',
