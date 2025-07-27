@@ -19,8 +19,6 @@ const Page = async () => {
     redirect('/auth/login')
   };
 
-  const clientPaymentMethods = await readAllEntities<BaseEntity>("tblPaymentMethods")
-  const billingInformationStatuses = await readAllEntities<BaseEntity>("tblBillingInformationStatuses")
   const allClients = await readAllClientsAction()
 
   return (
@@ -34,7 +32,7 @@ const Page = async () => {
       <Container maxWidth="xl">
         <Stack spacing={4}>
           <BillingInfoFormHeader />
-          <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} clientPaymentMethods={clientPaymentMethods} billingInformationStatuses={billingInformationStatuses} />
+          <ClientBillingInformationForm allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []} />
         </Stack>
       </Container>
     </Box>
