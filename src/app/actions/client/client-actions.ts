@@ -105,13 +105,12 @@ export const createOrUpdateClientAction = async (
      saveClientActionData?: Client;
      saveClientActionError?: any;
 }> => {
-     const anonSupabase = await useServerSideSupabaseAnonClient();
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const { id, ...clientData } = client;
 
      if (id && id !== '') {
           // === UPDATE ===
-          const { data, error: updateError } = await anonSupabase
+          const { data, error: updateError } = await adminSupabase
                .from('tblClients')
                .update({ ...clientData, updated_at: new Date().toISOString() })
                .eq('id', id)
@@ -152,6 +151,7 @@ export const createOrUpdateClientAction = async (
           const { data: invitedUser, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(clientData.email, {
                redirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
           });
+          console.log('Invite User Data:', invitedUser, 'Error:', inviteError);
 
           if (inviteError || !invitedUser?.user) {
                await logServerAction({
@@ -170,11 +170,12 @@ export const createOrUpdateClientAction = async (
                };
           }
 
-          const { data, error: insertError } = await anonSupabase
+          const { data, error: insertError } = await adminSupabase
                .from('tblClients')
                .insert({ ...clientData, user_id: invitedUser.user.id })
                .select()
                .single();
+          console.log('Insert Client Data:', data, 'Error:', insertError);
 
           if (insertError) {
                await logServerAction({

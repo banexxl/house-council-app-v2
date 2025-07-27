@@ -35,10 +35,11 @@ export async function GET(request: Request) {
     .from("tblClients")
     .select("id")
     .eq("email", userEmail)
-    .maybeSingle();
+    .single();
 
   if (clientError && clientError.code !== "PGRST116") {
     await supabase.auth.signOut();
+    await supabase.auth.admin.deleteUser(sessionData.session.user.id);
     cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
     return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${clientError.message}`);
   }
