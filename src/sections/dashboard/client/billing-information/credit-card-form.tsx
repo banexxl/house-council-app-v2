@@ -10,9 +10,10 @@ import dayjs from "dayjs"
 import { CreditCard } from "@mui/icons-material"
 import { Mastercard, Visa, Amex } from "react-payment-logos/dist/flat"
 import type { Client } from "src/types/client"
-
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { ClientBillingInformation, clientBillingInformationInitialValues } from "src/types/client-billing-information"
 import { useTranslation } from "react-i18next"
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 
 interface Card_numberFormProps {
      clients: Client[]
@@ -58,37 +59,38 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
      }
 
      return (
-          // <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <Formik
-               initialValues={{
-                    ...clientBillingInformationInitialValues,
-                    ...billingInformationData,
-                    expiration_date: billingInformationData?.expiration_date ? new Date(billingInformationData.expiration_date) : new Date(),
-               }}
-               validationSchema={Yup.object({
-                    client_id: Yup.string().required(t('clients.clientPaymentMethodClientIdRequired')),
-                    full_name: Yup.string().required(t('clients.clientPaymentMethodFullNameRequired')),
-                    billing_address: Yup.string().required(t('clients.clientPaymentMethodAddressRequired')),
-                    card_number: Yup.string()
-                         .required(t('clients.clientPaymentMethodCardNumberRequired'))
-                         .test("len", t('clients.clientPaymentMethodCardNumber16DigitsRequired'), (val) => val?.replace(/\s+/g, "").length === 16),
-                    expiration_date: Yup.date()
-                         .required(t('clients.clientPaymentMethodCardExpirationDateRequired'))
-                         .min(new Date(), t('clients.clientPaymentMethodCardExpirationDateFutureDateRequired')),
-                    cvc: Yup.number()
-                         .required(t('clients.clientPaymentMethodCvcRequired'))
-                         .typeError(t('clients.clientPaymentMethodCvcNumberRequired'))
-                         .min(0, t('clients.clientPaymentMethodCvcMinimumValueRequired'))
-                         .max(999, t('clients.clientPaymentMethodCvcMaximumValueRequired'))
-                         .integer(t('clients.clientPaymentMethodCvcIntegerRequired')),
-               })}
-               onSubmit={onSubmit}
-          >
-               {({ errors, touched, values, setFieldValue, isValid, isSubmitting }) => (
-                    <Form>
-                         <FormControl fullWidth margin="normal" required>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+               <Formik
+                    initialValues={{
+                         ...clientBillingInformationInitialValues,
+                         ...billingInformationData,
+                         expiration_date: billingInformationData?.expiration_date ? new Date(billingInformationData.expiration_date) : new Date(),
+                    }}
+                    validationSchema={Yup.object({
+                         client_id: Yup.string().required(t('clients.clientPaymentMethodClientIdRequired')),
+                         contact_person: Yup.string().required(t('clients.clientPaymentMethodFullNameRequired')),
+                         billing_address: Yup.string().required(t('clients.clientPaymentMethodAddressRequired')),
+                         card_number: Yup.string()
+                              .required(t('clients.clientPaymentMethodCardNumberRequired'))
+                              .test("len", t('clients.clientPaymentMethodCardNumber16DigitsRequired'), (val) => val?.replace(/\s+/g, "").length === 16),
+                         expiration_date: Yup.date()
+                              .required(t('clients.clientPaymentMethodCardExpirationDateRequired'))
+                              .min(new Date(), t('clients.clientPaymentMethodCardExpirationDateFutureDateRequired')),
+                         cvc: Yup.number()
+                              .required(t('clients.clientPaymentMethodCvcRequired'))
+                              .typeError(t('clients.clientPaymentMethodCvcNumberRequired'))
+                              .min(0, t('clients.clientPaymentMethodCvcMinimumValueRequired'))
+                              .max(999, t('clients.clientPaymentMethodCvcMaximumValueRequired'))
+                              .integer(t('clients.clientPaymentMethodCvcIntegerRequired')),
+                    })}
+                    onSubmit={onSubmit}
+               >
+                    {({ errors, touched, values, setFieldValue, isValid, isSubmitting }) => (
+                         <Form>
+
                               <TextField
                                    select
+                                   fullWidth
                                    id="client-select"
                                    name="client_id"
                                    label={t('clients.client')}
@@ -98,6 +100,7 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                         setFieldValue("client_id", e.target.value)
                                    }}
                                    value={clients.some(client => client.id === values.client_id) ? values.client_id : ""}
+                                   sx={{ my: 1.5 }}
                               >
                                    {clients.map((client) => (
                                         <MenuItem key={client.id} value={client.id}>
@@ -105,101 +108,104 @@ export const CardNumberForm: React.FC<Card_numberFormProps> = ({ clients, onSubm
                                         </MenuItem>
                                    ))}
                               </TextField>
-                         </FormControl>
 
-                         <Field
-                              component={TextField}
-                              fullWidth
-                              margin="normal"
-                              name="full_name"
-                              label={t('common.fullName')}
-                              error={touched.full_name && !!errors.full_name}
-                              helperText={touched.full_name && errors.full_name}
-                              value={values.full_name}
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                   setFieldValue("full_name", e.target.value)
-                              }}
-                              sx={{ mb: 2 }}
-                         />
+                              <TextField
+                                   fullWidth
+                                   margin="normal"
+                                   name="contact_person"
+                                   label={t('common.fullName')}
+                                   error={touched.contact_person && !!errors.contact_person}
+                                   helperText={touched.contact_person && errors.contact_person}
+                                   value={values.contact_person}
+                                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        setFieldValue("contact_person", e.target.value)
+                                   }}
+                                   sx={{ mb: 1.5 }}
+                              />
 
-                         <Field
-                              component={TextField}
-                              fullWidth
-                              margin="normal"
-                              name="billing_address"
-                              label={t('common.address')}
-                              error={touched.billing_address && !!errors.billing_address}
-                              helperText={touched.billing_address && errors.billing_address}
-                              value={values.billing_address}
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                   setFieldValue("billing_address", e.target.value)
-                              }}
-                              sx={{ mb: 2 }}
-                         />
+                              <TextField
+                                   fullWidth
+                                   margin="normal"
+                                   name="billing_address"
+                                   label={t('common.address')}
+                                   error={touched.billing_address && !!errors.billing_address}
+                                   helperText={touched.billing_address && errors.billing_address}
+                                   value={values.billing_address}
+                                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        setFieldValue("billing_address", e.target.value)
+                                   }}
+                                   sx={{ mb: 3 }}
+                              />
 
-                         <TextField
-                              fullWidth
-                              name="card_number"
-                              label={t('clients.clientCardNumber')}
-                              error={touched.card_number && !!errors.card_number}
-                              helperText={touched.card_number && errors.card_number}
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                   const formattedValue = formatCard_number(e.target.value)
-                                   setFieldValue("card_number", formattedValue)
-                                   setCardType(detectCardType(formattedValue.replace(/\s+/g, "")))
-                              }}
-                              value={values.card_number}
-                              InputProps={{
-                                   endAdornment: <InputAdornment position="end">{getCardIcon()}</InputAdornment>,
-                              }}
-                              sx={{ mb: 2, mt: 2 }}
-                         />
+                              <TextField
+                                   fullWidth
+                                   name="card_number"
+                                   label={t('clients.clientCardNumber')}
+                                   error={touched.card_number && !!errors.card_number}
+                                   helperText={touched.card_number && errors.card_number}
+                                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const formattedValue = formatCard_number(e.target.value)
+                                        setFieldValue("card_number", formattedValue)
+                                        setCardType(detectCardType(formattedValue.replace(/\s+/g, "")))
+                                   }}
+                                   value={values.card_number}
+                                   slotProps={{
+                                        input: {
+                                             endAdornment: (
+                                                  <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
+                                                       {getCardIcon()}
+                                                  </InputAdornment>
+                                             )
+                                        }
+                                   }}
+                                   sx={{ mb: 3 }}
+                              />
 
-                         <DatePicker
-                              label={t('clients.clientCardExpirationDate')}
-                              views={["year", "month"]}
-                              minDate={dayjs()}
-                              value={values.expiration_date ? dayjs(values.expiration_date) : null}
-                              onChange={(date) => setFieldValue("expiration_date", date)}
-                              slotProps={{
-                                   textField: {
-                                        fullWidth: true,
-                                        error: touched.expiration_date && !!errors.expiration_date,
-                                        helperText: touched.expiration_date && errors.expiration_date ? String(errors.expiration_date) : undefined,
-                                        sx: { mb: 2 },
-                                   },
-                              }}
-                         />
+                              <DatePicker
+                                   label={t('clients.clientCardExpirationDate')}
+                                   views={["year", "month"]}
+                                   minDate={dayjs()}
+                                   value={values.expiration_date ? dayjs(values.expiration_date) : null}
+                                   onChange={(date) => setFieldValue("expiration_date", date)}
+                                   slotProps={{
+                                        textField: {
+                                             fullWidth: true,
+                                             error: touched.expiration_date && !!errors.expiration_date,
+                                             helperText: touched.expiration_date && errors.expiration_date ? String(errors.expiration_date) : undefined,
+                                             sx: { mb: 3 },
+                                        },
+                                   }}
+                              />
 
-                         <TextField
-                              fullWidth
-                              name="cvc"
-                              label="CVC"
-                              error={touched.cvc && !!errors.cvc}
-                              helperText={touched.cvc && errors.cvc}
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                   const value = e.target.value.replace(/\D/g, "").slice(0, 3)
-                                   setFieldValue("cvc", value)
-                              }}
-                              value={values.cvc}
-                              type='number'
-                              sx={{ mb: 2 }}
-                         />
+                              <TextField
+                                   fullWidth
+                                   name="cvc"
+                                   label="CVC"
+                                   error={touched.cvc && !!errors.cvc}
+                                   helperText={touched.cvc && errors.cvc}
+                                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = e.target.value.replace(/\D/g, "").slice(0, 3)
+                                        setFieldValue("cvc", value)
+                                   }}
+                                   value={values.cvc}
+                                   type='number'
+                                   sx={{ mb: 3 }}
+                              />
 
-                         <Button
-                              type="submit"
-                              variant="contained"
-                              color="primary"
-                              fullWidth
-                              loading={isSubmitting}
-                              disabled={isValid ? false : true}
-                         >
-                              {t('common.btnSave')}
-                         </Button>
-                    </Form>
-               )}
-          </Formik>
-          // </LocalizationProvider>
+                              <Button
+                                   type="submit"
+                                   variant="contained"
+                                   color="primary"
+                                   fullWidth
+                                   loading={isSubmitting}
+                                   disabled={isValid ? false : true}
+                              >
+                                   {t('common.btnSave')}
+                              </Button>
+                         </Form>
+                    )}
+               </Formik>
+          </LocalizationProvider>
      )
 }
 

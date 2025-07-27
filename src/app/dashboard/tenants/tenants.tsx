@@ -21,7 +21,7 @@ import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
-import { GenericTable } from 'src/components/table';
+import { GenericTable } from 'src/components/generic-table';
 import { deleteTenantByIDAction } from 'src/app/actions/tenant/tenant-actions';
 import toast from 'react-hot-toast';
 

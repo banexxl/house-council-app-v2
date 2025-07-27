@@ -25,7 +25,7 @@ import {
   type Apartment,
 } from 'src/types/apartment';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
-import { GenericTable } from 'src/components/table';
+import { GenericTable } from 'src/components/generic-table';
 import { deleteApartment } from 'src/app/actions/apartment/apartment-actions';
 import { toast } from 'react-hot-toast';
 

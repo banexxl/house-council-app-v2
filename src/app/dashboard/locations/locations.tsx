@@ -24,7 +24,7 @@ import { deleteLocationByID } from 'src/app/actions/location/location-services';
 import toast from 'react-hot-toast';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { validate as isUUID } from 'uuid';
-import { GenericTable } from 'src/components/table';
+import { GenericTable } from 'src/components/generic-table';
 
 export type LocationFilters = {
      location_occupied?: boolean;

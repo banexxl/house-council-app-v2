@@ -9,6 +9,18 @@ export type PaymentMethod =
      | 'cryptocurrency'
      | 'credit_card';
 
+export const clientPaymentMethods: PaymentMethod[] = [
+     'not_selected',
+     'cash',
+     'wire_transfer',
+     'bank_transfer',
+     'invoice_billing',
+     'paypal',
+     'check',
+     'cryptocurrency',
+     'credit_card',
+];
+
 export const paymentMethodMapping: Record<PaymentMethod, string> = {
      not_selected: 'payments.lblPaymentMethodNotSelected',
      cash: 'payments.lblPaymentMethodCash',

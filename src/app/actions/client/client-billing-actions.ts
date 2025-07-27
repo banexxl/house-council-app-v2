@@ -5,7 +5,7 @@ import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
 
-export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
+export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, billingInformationId?: string)
      : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformation?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -17,13 +17,13 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                .from('tblBillingInformation')
                .update({
                     updated_at: new Date().toISOString(),
-                    full_name: clientBillingInformation.full_name,
+                    contact_person: clientBillingInformation.contact_person,
                     billing_address: clientBillingInformation.billing_address,
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
-                    payment_method_id: paymentMethodTypeId,
-                    billing_status_id: billingInformationStatusId,
+                    payment_method: clientBillingInformation.payment_method,
+                    billing_status: clientBillingInformation.billing_status,
                     /////////////////////////////
                     cash_amount: Number(clientBillingInformation.cash_amount)
                })
@@ -38,17 +38,18 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
                     client_id: clientBillingInformation.client_id,
-                    full_name: clientBillingInformation.full_name,
+                    contact_person: clientBillingInformation.contact_person,
                     billing_address: clientBillingInformation.billing_address,
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
-                    payment_method_id: paymentMethodTypeId,
-                    billing_status_id: billingInformationStatusId,
+                    payment_method: clientBillingInformation.payment_method,
+                    billing_status: clientBillingInformation.billing_status,
                     cash_amount: Number(clientBillingInformation.cash_amount)
                })
                .select()
                .single();
+
      }
 
      const { data, error } = result;
@@ -57,7 +58,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
           return { createOrUpdateClientBillingInformationSuccess: false, createOrUpdateClientBillingInformationError: error };
      }
 
-     revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.client_id}`);
+     revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.id}`);
      return { createOrUpdateClientBillingInformationSuccess: true, createOrUpdateClientBillingInformation: data };
 }
 

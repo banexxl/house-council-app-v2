@@ -11,56 +11,39 @@ import BankTransferForm from "./bank-transfer-form"
 import { useTranslation } from "react-i18next"
 import { createOrUpdateClientBillingInformation } from "src/app/actions/client/client-billing-actions"
 import toast from "react-hot-toast"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { paths } from "src/paths"
-import { ClientBillingInformation } from "src/types/client-billing-information"
-import { BaseEntity } from "src/types/base-entity"
+import { ClientBillingInformation, ClientBillingInformationStatus, clientBillingInformationStatuses, clientBillingInformationStatusMapping } from "src/types/client-billing-information"
+import { clientPaymentMethods, PaymentMethod, paymentMethodMapping } from "src/types/payment"
 
 interface ClientBillingInformationFormProps {
      allClients?: Client[]
-     clientPaymentMethods?: BaseEntity[]
-     billingInformationStatuses?: BaseEntity[]
      billingInformationData?: ClientBillingInformation
-     clientBillingInformationStatus?: { value: string; name: string }
-     clientPaymentMethod?: { value: string; name: string }
 }
 
-export const ClientBillingInformationForm: React.FC<ClientBillingInformationFormProps> = ({ allClients, clientPaymentMethods, billingInformationStatuses, billingInformationData, clientBillingInformationStatus, clientPaymentMethod }) => {
+export const ClientBillingInformationForm: React.FC<ClientBillingInformationFormProps> = ({ allClients, billingInformationData }) => {
 
      const router = useRouter()
      const { t } = useTranslation()
-     const currentRoute = usePathname()
 
-     // if (!isUUIDv4(billingInformationData?.id) && !currentRoute.includes('new')) {
-     //      notFound()
-     // }
+     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
 
-     const [paymentMethod, setPaymentMethod] = useState<{ value?: string; name?: string }>({
-          value: "",
-          name: "",
-          ...clientPaymentMethod
-     })
-
-     const [billingInformationStatus, setBillingInformationStatus] = useState<{ value: string; name: string }>({
-          value: billingInformationStatuses?.[0]?.id || "",
-          name: billingInformationStatuses?.[0]?.name || "",
-          ...clientBillingInformationStatus
-     });
+     const [billingInformationStatus, setBillingInformationStatus] = useState<ClientBillingInformationStatus | ''>('');
 
      const handlePaymentMethodChange = (event: SelectChangeEvent) => {
-          const paymentMethod = clientPaymentMethods?.find((p) => p.id === event.target.value)
-          setPaymentMethod({ value: event.target.value, name: paymentMethod?.name || "" })
+          const paymentMethod = clientPaymentMethods?.find((p) => p === event.target.value)
+          setPaymentMethod(paymentMethod || 'credit_card')
      }
 
      const handleBillingInformationStatusChange = (event: SelectChangeEvent) => {
-          const status = billingInformationStatuses?.find((p) => p.id === event.target.value)
-          setBillingInformationStatus({ value: event.target.value, name: status?.name || "" })
+          const status = clientBillingInformationStatuses?.find((p) => p === event.target.value)
+          setBillingInformationStatus(status || 'active')
      }
 
      const handleSubmit = async (values: any, paymentMethodId: string, billingInformationStatusId: string) => {
 
           try {
-               const response = await createOrUpdateClientBillingInformation(values, paymentMethodId, billingInformationStatusId, billingInformationData?.id);
+               const response = await createOrUpdateClientBillingInformation(values, billingInformationData?.id);
 
                response.createOrUpdateClientBillingInformationSuccess
                     ? (
@@ -79,28 +62,28 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
      }
 
      const renderForm = () => {
-          switch (clientPaymentMethod && clientPaymentMethod?.value !== '' ? clientPaymentMethod!.name : paymentMethod.name) {
-               case "Cash":
+          switch (paymentMethod) {
+               case "cash":
                     return <CashPaymentForm
                          clients={allClients ? allClients : []}
-                         onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                         onSubmit={(values) => handleSubmit(values, paymentMethod!, billingInformationStatus)}
                          billingInformationData={billingInformationData}
                     />
-               case "Wire Transfer":
+               case "wire_transfer":
                     return <WireTransferForm
                          clients={allClients ? allClients : []}
-                         onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                         onSubmit={(values) => handleSubmit(values, paymentMethod!, billingInformationStatus)}
                     />
-               case "Credit Card":
+               case "credit_card":
                     return <CardNumberForm
                          clients={allClients ? allClients : []}
-                         onSubmit={(values: any) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                         onSubmit={(values: any) => handleSubmit(values, paymentMethod!, billingInformationStatus)}
                          billingInformationData={billingInformationData}
                     />
-               case "Bank Transfer":
+               case "bank_transfer":
                     return <BankTransferForm
                          clients={allClients ? allClients : []}
-                         onSubmit={(values) => handleSubmit(values, paymentMethod.value!, billingInformationStatus.value)}
+                         onSubmit={(values) => handleSubmit(values, paymentMethod!, billingInformationStatus)}
                     />
                default:
                     return null
@@ -122,19 +105,19 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                     }
                </CardContent>
                <CardContent>
-                    <FormControl fullWidth margin="normal" required error={!billingInformationStatus.value && billingInformationStatuses!.length > 0}>
+                    <FormControl fullWidth margin="normal" required error={!billingInformationStatus && clientBillingInformationStatuses!.length > 0}>
                          <TextField
                               select
-                              value={billingInformationStatus.value || billingInformationStatuses?.[0]?.id}
+                              value={billingInformationStatus}
                               name="status"
                               label={t('clients.clientBillingStatus')}
                               onChange={(e: any) => handleBillingInformationStatusChange(e)}
                               required
                          >
                               {
-                                   billingInformationStatuses?.map((status: BaseEntity) => (
-                                        <MenuItem key={status.id} value={status.id}>
-                                             {status.name}
+                                   clientBillingInformationStatuses?.map((status: string) => (
+                                        <MenuItem key={status} value={status}>
+                                             {t(clientBillingInformationStatusMapping[status as keyof typeof clientBillingInformationStatusMapping])}
                                         </MenuItem>
                                    ))
                               }
@@ -143,7 +126,7 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                     <FormControl fullWidth margin="normal">
                          <TextField
                               select
-                              value={clientPaymentMethods?.some(method => method.id === paymentMethod.value) ? paymentMethod.value : ''}
+                              value={clientPaymentMethods?.some(method => method === paymentMethod) ? paymentMethod : ''}
                               name="Payment type"
                               label={t('clients.clientPaymentMethod')}
                               onChange={(e: any) => handlePaymentMethodChange(e)}
@@ -151,15 +134,15 @@ export const ClientBillingInformationForm: React.FC<ClientBillingInformationForm
                               disabled={billingInformationData && billingInformationData.id ? true : false}
                          >
                               {
-                                   clientPaymentMethods?.map((paymentMethod: BaseEntity) => (
-                                        <MenuItem key={paymentMethod.id} value={paymentMethod.id}>
-                                             {paymentMethod.name}
+                                   clientPaymentMethods?.map((paymentMethod: string) => (
+                                        <MenuItem key={paymentMethod} value={paymentMethod}>
+                                             {t(paymentMethodMapping[paymentMethod as keyof typeof paymentMethodMapping])}
                                         </MenuItem>
                                    ))
                               }
                          </TextField>
                     </FormControl>
-                    {renderForm()}
+                    {billingInformationStatus && paymentMethod && renderForm()}
                </CardContent>
           </Card>
      )

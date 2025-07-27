@@ -1,345 +1,173 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, ChangeEvent } from "react";
-import {
-     Table,
-     TableBody,
-     TableCell,
-     TableContainer,
-     TableHead,
-     TableRow,
-     TablePagination,
-     Paper,
-     Card,
-     Typography,
-     Checkbox,
-     Button,
-     Stack,
-} from "@mui/material";
-import { useCallback } from "react";
-import { ClientBillingInformation } from "src/types/client-billing-information";
+import React, { useState, useMemo, useCallback, ChangeEvent } from "react";
+import { Card } from "@mui/material";
+import { ClientBillingInformation, clientBillingInformationStatusMapping } from "src/types/client-billing-information";
 import { format } from "date-fns";
-import { paths } from "src/paths";
 import { useTranslation } from "react-i18next";
-import { FilterBar } from "../table-filter";
-import { useSelection } from "src/hooks/use-selection";
-import { useDialog } from "src/hooks/use-dialog";
-import { applySort } from "src/utils/apply-sort";
-import { Scrollbar } from "src/components/scrollbar";
-import { PopupModal } from "src/components/modal-dialog";
+import { SearchAndBooleanFilters } from "src/components/filter-list-search";
 import { deleteClientBillingInformation } from "src/app/actions/client/client-billing-actions";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { BaseEntity } from "src/types/base-entity";
 import { Client } from "src/types/client";
+import { GenericTable, TableColumn } from "src/components/generic-table";
+import { paymentMethodMapping } from "src/types/payment";
 
 interface BillingInformationTableProps {
      data?: (ClientBillingInformation & { client: Client })[]
-     paymentMethods?: BaseEntity[]
-     billingInfoStatuses?: BaseEntity[]
      clients?: Client[]
 }
 
-interface DeleteBillingInfoData {
-     billingInfoIds: string[];
-}
-
-const useBillingInfoSearch = () => {
-
-     const [state, setState] = useState({
-          all: false,
-          query: '',
-          page: 0,
-          rowsPerPage: 5,
-          sortBy: 'updated_at' as keyof ClientBillingInformation,
-          sortDir: 'desc' as 'asc' | 'desc',
-     });
-
-     const handleQueryChange = useCallback((filters: Partial<typeof state>) => {
-          setState((prevState) => ({
-               ...prevState,
-               ...filters,
-          }));
-     }, []);
-
-     const handlePageChange = useCallback((event: any, page: number) => {
-          setState((prevState) => ({
-               ...prevState,
-               page,
-          }));
-     }, []);
-
-     const handleRowsPerPageChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-          setState((prevState) => ({
-               ...prevState,
-               page: 0,
-               rowsPerPage: parseInt(event.target.value, 10),
-          }));
-     }, []);
-
-     const handleSortChange = useCallback((sortBy: keyof ClientBillingInformation, sortDir: 'asc' | 'desc') => {
-          setState((prevState) => ({
-               ...prevState,
-               sortBy,
-               sortDir,
-          }));
-     }, []);
-
-     return {
-          handleQueryChange,
-          handleSortChange,
-          handlePageChange,
-          handleRowsPerPageChange,
-          state,
-     };
-};
-
-const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], paymentMethods, billingInfoStatuses, clients }) => {
+const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], clients }) => {
      const { t } = useTranslation();
-     const [count, setCount] = useState(data.length);
-     const billingInfoSearch: ReturnType<typeof useBillingInfoSearch> = useBillingInfoSearch();
-     const billingInfoIds = useMemo(() => data.map((billingIfno: ClientBillingInformation) => billingIfno.id), [data]);
-     const billingInfoSelection = useSelection(billingInfoIds);
-     const selectedSome = billingInfoSelection.selected.length > 0 && billingInfoSelection.selected.length < billingInfoIds.length;
-     const selectedAll = data.length > 0 && billingInfoSelection.selected.length === billingInfoIds.length;
-     const enableBulkActions = billingInfoSelection.selected.length > 0;
-     const router = useRouter();
+     const [page, setPage] = useState(0);
+     const [rowsPerPage, setRowsPerPage] = useState(5);
+     const [filters, setFilters] = useState<{ search?: string; active?: boolean; inactive?: boolean; pending?: boolean; suspended?: boolean }>({ search: '' });
 
-     const deleteBillingInfoDialog = useDialog<DeleteBillingInfoData>();
-
-     const handleChangePage = useCallback((event: unknown, newPage: number) => {
-          billingInfoSearch.handlePageChange(event, newPage);
+     const handlePageChange = useCallback((event: unknown, newPage: number) => {
+          setPage(newPage);
      }, []);
 
-     const handleChangeRowsPerPage = useCallback(
-          (event: React.ChangeEvent<HTMLInputElement>) => {
-               billingInfoSearch.handleRowsPerPageChange(event);
-               billingInfoSearch.handlePageChange(null, 0);
-          },
-          []
-     );
+     const handleRowsPerPageChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+          setRowsPerPage(parseInt(event.target.value, 10));
+          setPage(0);
+     }, []);
 
-     const handleDeleteBillingInfoClick = useCallback(() => {
-          deleteBillingInfoDialog.handleOpen();
-     }, [deleteBillingInfoDialog]);
 
-     const handleDeleteBillingInfoConfirm = useCallback(async () => {
-          deleteBillingInfoDialog.handleClose();
-          const deleteBillingInfoResponse = await deleteClientBillingInformation(billingInfoSelection.selected);
-          if (deleteBillingInfoResponse.deleteClientBillingInformationSuccess) {
-               billingInfoSelection.handleDeselectAll();
-          }
-     }, [deleteBillingInfoDialog]);
+     const handleFiltersChange = useCallback((newFilters: typeof filters) => {
+          setFilters(newFilters);
+          setPage(0);
+     }, []);
 
-     const visibleRows = useMemo(() => {
-          // Apply filters based on state
-          const filtered = data.filter((billingInfo: ClientBillingInformation) => {
-               // Check query filter
-               const matchesQuery = !billingInfoSearch.state.query || billingInfo.full_name.toLowerCase().includes(billingInfoSearch.state.query.toLowerCase());
+     const handleDeleteConfirm = async ({ id }: { id: string }) => {
+          await deleteClientBillingInformation([id]);
+     };
 
-               // Check "all" filter (if "all" is true, no other filters apply)
-               if (billingInfoSearch.state.all) {
-                    return matchesQuery;
-               }
-
-               // // Apply individual filters
-               // const matchesAcceptedMarketing =
-               //      !clientSearch.state.has_accepted_marketing || client.has_accepted_marketing === clientSearch.state.has_accepted_marketing;
-
-               // const matchesIsVerified =
-               //      !clientSearch.state.is_verified || client.is_verified === clientSearch.state.is_verified;
-
-               // const matchesIsReturning =
-               //      !clientSearch.state.is_returning || client.is_returning === clientSearch.state.is_returning;
-               // Combine all filters
-               return matchesQuery //&& matchesAcceptedMarketing && matchesIsVerified && matchesIsReturning;
+     const filtered = useMemo(() => {
+          return data.filter((billingInfo: ClientBillingInformation) => {
+               // Search filter
+               const matchesSearch = !filters.search || billingInfo.contact_person.toLowerCase().includes(filters.search.toLowerCase());
+               // Boolean status filters
+               const status = billingInfo.billing_status;
+               const statusFilters = ['active', 'inactive', 'pending', 'suspended'] as const;
+               const statusSelected = statusFilters.filter((s) => filters[s]);
+               const matchesStatus = statusSelected.length === 0 || statusSelected.includes(status);
+               return matchesSearch && matchesStatus;
           });
-
-          setCount(filtered.length);
-          // Apply sorting and pagination
-          return applySort(filtered, billingInfoSearch.state.sortBy, billingInfoSearch.state.sortDir).slice(
-               billingInfoSearch.state.page * billingInfoSearch.state.rowsPerPage,
-               billingInfoSearch.state.page * billingInfoSearch.state.rowsPerPage + billingInfoSearch.state.rowsPerPage
-          );
+     }, [data, filters]);
 
 
+     const paginated = useMemo(() => {
+          return filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+     }, [filtered, page, rowsPerPage]);
 
-     }, [data, billingInfoSearch.state]);
+     const columns: TableColumn<ClientBillingInformation & { client: Client }>[] = [
+          {
+               key: 'client_id',
+               label: t('clients.client'),
+               render: (value, row) => {
+                    const clientId = typeof value === 'string' ? value : '';
+                    const client = clients?.find((c) => c.id === clientId);
+                    return client ? client.name : '';
+               }
+          },
+          {
+               key: 'contact_person',
+               label: t('common.fullName'),
+          },
+          {
+               key: 'billing_address',
+               label: t('common.address'),
+          },
+          {
+               key: 'card_number',
+               label: t('clients.clientCardNumber'),
+               render: (value) => {
+                    if (typeof value === 'string' && value) return '****' + value.slice(-4);
+                    return '';
+               }
+          },
+          {
+               key: 'cvc',
+               label: 'CVC',
+               render: () => '***'
+          },
+          {
+               key: 'expiration_date',
+               label: t('clients.clientCardExpirationDate'),
+               render: (value) => {
+                    if (!value) return '';
+                    let dateVal: Date;
+                    if (typeof value === 'string' || typeof value === 'number') {
+                         dateVal = new Date(value);
+                    } else if (value instanceof Date) {
+                         dateVal = value;
+                    } else {
+                         return '';
+                    }
+                    return format(dateVal, 'MM/yyyy');
+               }
+          },
+          {
+               key: 'payment_method',
+               label: t('clients.clientPaymentMethod'),
+               render: (value) => {
+                    if (typeof value === 'string') {
+                         return t(paymentMethodMapping[value as keyof typeof paymentMethodMapping]);
+                    }
+                    return '';
+               }
+          },
+          {
+               key: 'billing_status',
+               label: t('clients.clientBillingStatus'),
+               render: (value) => {
+                    if (typeof value === 'string') {
+                         return t(clientBillingInformationStatusMapping[value as keyof typeof clientBillingInformationStatusMapping]);
+                    }
+                    return '';
+               }
+          },
+          {
+               key: 'updated_at',
+               label: t('common.updatedAt'),
+               render: (value) => {
+                    if (!value) return '';
+                    let dateVal: Date;
+                    if (typeof value === 'number' || typeof value === 'string') {
+                         dateVal = new Date(value);
+                    } else if (value instanceof Date) {
+                         dateVal = value;
+                    } else {
+                         return '';
+                    }
+                    return dateVal.toLocaleString();
+               }
+          },
+     ];
 
      return (
           <Card sx={{ width: "100%", overflow: "hidden" }}>
-               <FilterBar
-                    onFiltersChange={billingInfoSearch.handleQueryChange}
-                    onSortChange={billingInfoSearch.handleSortChange} // Remove the arrow function
-                    sortBy={billingInfoSearch.state.sortBy} // Pass value, not a function
-                    sortDir={billingInfoSearch.state.sortDir} // Pass value, not a function
-                    sortOptions={[
-                         { label: t('clients.clientName'), value: 'full_name' },
-                         { label: t('common.updatedAt'), value: 'updated_at' },
+               <SearchAndBooleanFilters
+                    fields={[
+                         { field: 'active', label: 'clients.billingInformationStatusActive' },
+                         { field: 'inactive', label: 'clients.billingInformationStatusInactive' },
+                         { field: 'pending', label: 'clients.billingInformationStatusPending' },
+                         { field: 'suspended', label: 'clients.billingInformationStatusSuspended' },
                     ]}
-                    tabs={[
-                         { label: t('common.all'), value: 'all' },]
-                    }
-                    btnAddUrl={paths.dashboard.clients.billingInformation.new}
+                    value={filters}
+                    onChange={handleFiltersChange}
                />
-               <Scrollbar>
-                    <Table>
-                         <TableHead>
-                              <TableRow>
-                                   {enableBulkActions && (
-                                        <Stack
-                                             direction="row"
-                                             spacing={2}
-                                             sx={{
-                                                  alignItems: 'center',
-                                                  backgroundColor: (theme) =>
-                                                       theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
-                                                  position: 'absolute',
-                                                  top: 0,
-                                                  left: 0,
-                                                  width: '100%',
-                                                  px: 2,
-                                                  py: 0.5,
-                                                  zIndex: 10,
-                                             }}
-                                        >
-                                             <Checkbox
-                                                  checked={selectedAll}
-                                                  indeterminate={selectedSome}
-                                                  onChange={(event) => {
-                                                       if (event.target.checked) {
-                                                            billingInfoSelection.handleSelectAll();
-                                                       } else {
-                                                            billingInfoSelection.handleDeselectAll();
-                                                       }
-                                                  }}
-                                             />
-                                             <Button color="inherit" size="small" onClick={handleDeleteBillingInfoClick}>
-                                                  {t('common.btnDelete')}
-                                             </Button>
-                                             {billingInfoSelection.selected.length === 1 && (
-                                                  <Button
-                                                       color="inherit"
-                                                       size="small"
-                                                       onClick={() => {
-                                                            router.push(paths.dashboard.clients.billingInformation.details + '/' + billingInfoSelection.selected[0]);
-                                                       }}
-                                                  >
-                                                       {t('common.btnEdit')}
-                                                  </Button>
-                                             )}
-                                        </Stack>
-                                   )}
-                                   <TableCell padding="checkbox">
-                                        <Checkbox
-                                             checked={selectedAll}
-                                             indeterminate={selectedSome}
-                                             onChange={(event) => {
-                                                  if (event.target.checked) {
-                                                       billingInfoSelection.handleSelectAll();
-                                                  } else {
-                                                       billingInfoSelection.handleDeselectAll();
-                                                  }
-                                             }}
-                                        />
-                                   </TableCell>
-                                   <TableCell>{t('clients.client')}</TableCell>
-                                   <TableCell>{t('common.fullName')}</TableCell>
-                                   <TableCell>{t('common.address')}</TableCell>
-                                   <TableCell>{t('clients.clientCardNumber')}</TableCell>
-                                   <TableCell>CVC</TableCell>
-                                   <TableCell>{t('clients.clientCardExpirationDate')}</TableCell>
-                                   <TableCell>{t('clients.clientPaymentMethod')}</TableCell>
-                                   <TableCell>{t('clients.clientBillingStatus')}</TableCell>
-                                   <TableCell>{t('common.updatedAt')}</TableCell>
-                              </TableRow>
-                         </TableHead>
-                         <TableBody>
-                              {visibleRows && visibleRows.length > 0 ? visibleRows.map((row: ClientBillingInformation & { client: Client }) => {
-                                   const isSelected = billingInfoSelection.selected.includes(row.id);
-                                   return (
-                                        <TableRow
-                                             key={row.id}
-                                             component="a"
-                                             // href={paths.dashboard.clients.billingInformation.details + '/' + row.id}
-                                             sx={{ textDecoration: 'none', color: 'inherit' }}
-                                        >
-                                             <TableCell padding="checkbox">
-                                                  <Checkbox
-                                                       checked={isSelected}
-                                                       onChange={(event) => {
-                                                            if (event.target.checked) {
-                                                                 billingInfoSelection.handleSelectOne(row.id);
-                                                            } else {
-                                                                 billingInfoSelection.handleDeselectOne(row.id);
-                                                            }
-                                                       }}
-                                                  />
-                                             </TableCell>
-                                             <TableCell>
-                                                  <Link
-                                                       href={paths.dashboard.clients.details + '/' + row.client_id}
-                                                       style={{ textDecoration: 'none', color: 'inherit' }}
-                                                  >
-                                                       {
-                                                            clients!.find((client: any) => client.id === row.client_id)?.name
-                                                       }
-                                                  </Link>
-                                             </TableCell>
-                                             <TableCell>{row.client.contact_person}</TableCell>
-                                             <TableCell>{row.billing_address}</TableCell>
-                                             <TableCell>{row.card_number ? '****' + row.card_number.slice(-4) : ''}</TableCell>
-                                             <TableCell>
-                                                  ***
-                                             </TableCell>
-                                             <TableCell>{row.expiration_date ? format(new Date(row.expiration_date), 'MM/yyyy') : ''}</TableCell>
-                                             <TableCell>
-                                                  {
-                                                       paymentMethods!.find((method: any) => method.id === row.payment_method_id)?.name
-                                                  }
-                                             </TableCell>
-                                             <TableCell>
-                                                  {
-                                                       billingInfoStatuses!.find((status: any) => status.id === row.billing_status_id)?.name
-                                                  }
-                                             </TableCell>
-                                             <TableCell>{new Date(row.updated_at!).toLocaleString()}</TableCell>
-                                        </TableRow>
-                                   )
-                              })
-                                   :
-                                   <TableRow>
-                                        <TableCell colSpan={10} align="center">
-                                             <Typography variant="subtitle1" color="textSecondary">
-                                                  {t('common.emptyTableInfo')}
-                                             </Typography>
-                                        </TableCell>
-                                   </TableRow>
-                              }
-                         </TableBody>
-                    </Table>
-               </Scrollbar>
-               <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={count}
-                    rowsPerPage={billingInfoSearch.state.rowsPerPage}
-                    page={billingInfoSearch.state.page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    labelRowsPerPage={t('common.rowsPerPage')}
+               <GenericTable
+                    columns={columns}
+                    items={paginated}
+                    count={filtered.length}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    handleDeleteConfirm={handleDeleteConfirm}
                />
-               <PopupModal
-                    isOpen={deleteBillingInfoDialog.open}
-                    onClose={() => deleteBillingInfoDialog.handleClose()}
-                    onConfirm={handleDeleteBillingInfoConfirm}
-                    title={t('warning.deleteWarningTitle')}
-                    confirmText={t('common.btnDelete')}
-                    cancelText={t('common.btnClose')}
-                    children={t('warning.deleteWarningMessage')}
-                    type={'confirmation'} />
           </Card>
      );
-};
+}
 
 export default BillingInformationTable;

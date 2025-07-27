@@ -19,13 +19,9 @@ const Page = async ({ params }: any) => {
     redirect('/auth/login')
   };
 
-  const clientPaymentMethods = await readAllEntities<BaseEntity>("tblPaymentMethods")
-  const billingInformationStatuses = await readAllEntities<BaseEntity>("tblBillingInformationStatuses")
   const allClients = await readAllClientsAction()
   const { billingInformationId } = await params
   const { readClientBillingInformationData } = await readClientBillingInformation(billingInformationId)
-  const billingInformationStatus = billingInformationStatuses.find((status) => status.id === readClientBillingInformationData?.billing_status_id)
-  const clientPaymentMethod = clientPaymentMethods.find((method) => method.id === readClientBillingInformationData?.payment_method_id)
 
   return (
     <Box
@@ -40,10 +36,6 @@ const Page = async ({ params }: any) => {
           <BillingInfoFormHeader />
           <ClientBillingInformationForm
             allClients={allClients.getAllClientsActionData?.length != 0 ? allClients.getAllClientsActionData! : []}
-            clientPaymentMethod={{ value: clientPaymentMethod?.id || "", name: clientPaymentMethod?.name || "" }}
-            clientBillingInformationStatus={{ value: billingInformationStatus?.id!, name: billingInformationStatus?.name! }}
-            clientPaymentMethods={clientPaymentMethods}
-            billingInformationStatuses={billingInformationStatuses}
             billingInformationData={readClientBillingInformationData} />
         </Stack>
       </Container>

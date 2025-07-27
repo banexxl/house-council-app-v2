@@ -16,7 +16,7 @@ export const ClientBillingInformationTableHeader = () => {
                <Typography variant="h4">{t('clients.clientBillingInformation')}</Typography>
                <Stack spacing={1}>
                     <Box >
-                         {/* <Stack alignItems="center" direction="row" spacing={3}>
+                         <Stack alignItems="center" direction="row" spacing={3}>
                               <Button
                                    href={paths.dashboard.clients.billingInformation.new}
                                    startIcon={
@@ -28,7 +28,7 @@ export const ClientBillingInformationTableHeader = () => {
                               >
                                    {t('common.btnCreate')}
                               </Button>
-                         </Stack> */}
+                         </Stack>
                     </Box>
                </Stack>
           </Stack>
