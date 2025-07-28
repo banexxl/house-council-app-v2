@@ -15,6 +15,7 @@ export default async function Page() {
     logout();
     redirect('/auth/login');
   }
+  console.log('User role:', { client, tenant, admin });
 
   if (admin) {
     const { success, data } = await getAllApartments();

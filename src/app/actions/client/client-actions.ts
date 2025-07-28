@@ -151,7 +151,6 @@ export const createOrUpdateClientAction = async (
           const { data: invitedUser, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(clientData.email, {
                redirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
           });
-          console.log('Invite User Data:', invitedUser, 'Error:', inviteError);
 
           if (inviteError || !invitedUser?.user) {
                await logServerAction({
@@ -175,7 +174,6 @@ export const createOrUpdateClientAction = async (
                .insert({ ...clientData, user_id: invitedUser.user.id })
                .select()
                .single();
-          console.log('Insert Client Data:', data, 'Error:', insertError);
 
           if (insertError) {
                await logServerAction({

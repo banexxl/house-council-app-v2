@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/client/billing-information/billing-information-table-header';
-import BillingInformationTable from 'src/sections/dashboard/client/billing-information/billing-information-table';
+import BillingInformationTable from 'src/app/dashboard/clients/billing-information/billing-information';
 import { readAllClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
 import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';

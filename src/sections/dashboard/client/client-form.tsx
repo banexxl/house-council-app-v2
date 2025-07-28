@@ -30,7 +30,6 @@ interface ClientNewFormProps {
 }
 
 export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
-  console.log('clientData:', clientData);
 
   // Modal state for admin actions
   const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
@@ -272,7 +271,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.email}
-                disabled={formik.isSubmitting}
+                disabled={formik.isSubmitting || initialValues?.id !== ''}
               />
             </Grid>
             <Grid

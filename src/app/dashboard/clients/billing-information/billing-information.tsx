@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, ChangeEvent } from "react";
 import { Card } from "@mui/material";
-import { ClientBillingInformation, clientBillingInformationStatusMapping } from "src/types/client-billing-information";
+import { ClientBillingInformation, ClientBillingInformationStatus, clientBillingInformationStatusMapping } from "src/types/client-billing-information";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { SearchAndBooleanFilters } from "src/components/filter-list-search";
@@ -11,6 +11,56 @@ import { Client } from "src/types/client";
 import { GenericTable, TableColumn } from "src/components/generic-table";
 import { paymentMethodMapping } from "src/types/payment";
 
+type BillingFilters = {
+     search?: string;
+     [key: string]: string | boolean | undefined;
+}
+
+type BillingInfoSearchState = {
+     filters?: BillingFilters;
+     page?: number;
+     rowsPerPage?: number;
+};
+
+const useBillingInfoSearch = () => {
+     const [state, setState] = useState<BillingInfoSearchState>({
+          filters: {
+               search: '',
+          },
+          page: 0,
+          rowsPerPage: 5,
+     });
+
+     const handleFiltersChange = useCallback((filters: BillingFilters): void => {
+          setState((prev) => ({ ...prev, filters, page: 0 }));
+     }, []);
+
+     const handlePageChange = useCallback(
+          (_event: React.MouseEvent<HTMLButtonElement> | null, page: number): void => {
+               setState((prev) => ({ ...prev, page }));
+          },
+          []
+     );
+
+     const handleRowsPerPageChange = useCallback(
+          (event: ChangeEvent<HTMLInputElement>): void => {
+               setState((prev) => ({
+                    ...prev,
+                    rowsPerPage: parseInt(event.target.value, 10),
+                    page: 0,
+               }));
+          },
+          []
+     );
+
+     return {
+          state,
+          handleFiltersChange,
+          handlePageChange,
+          handleRowsPerPageChange,
+     };
+};
+
 interface BillingInformationTableProps {
      data?: (ClientBillingInformation & { client: Client })[]
      clients?: Client[]
@@ -18,46 +68,36 @@ interface BillingInformationTableProps {
 
 const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data = [], clients }) => {
      const { t } = useTranslation();
-     const [page, setPage] = useState(0);
-     const [rowsPerPage, setRowsPerPage] = useState(5);
-     const [filters, setFilters] = useState<{ search?: string; active?: boolean; inactive?: boolean; pending?: boolean; suspended?: boolean }>({ search: '' });
+     const billingInfoSearch = useBillingInfoSearch();
 
-     const handlePageChange = useCallback((event: unknown, newPage: number) => {
-          setPage(newPage);
-     }, []);
+     const filteredBillingInformation = useMemo(() => {
+          const { search, ...boolFilters } = billingInfoSearch.state.filters ?? { search: '' };
 
-     const handleRowsPerPageChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-          setRowsPerPage(parseInt(event.target.value, 10));
-          setPage(0);
-     }, []);
-
-
-     const handleFiltersChange = useCallback((newFilters: typeof filters) => {
-          setFilters(newFilters);
-          setPage(0);
-     }, []);
-
-     const handleDeleteConfirm = async ({ id }: { id: string }) => {
-          await deleteClientBillingInformation([id]);
-     };
-
-     const filtered = useMemo(() => {
           return data.filter((billingInfo: ClientBillingInformation) => {
                // Search filter
-               const matchesSearch = !filters.search || billingInfo.contact_person.toLowerCase().includes(filters.search.toLowerCase());
+               const matchesSearch = !search || billingInfo.contact_person.toLowerCase().includes(search.toLowerCase());
                // Boolean status filters
                const status = billingInfo.billing_status;
                const statusFilters = ['active', 'inactive', 'pending', 'suspended'] as const;
-               const statusSelected = statusFilters.filter((s) => filters[s]);
+               const statusSelected = statusFilters.filter((s) => boolFilters[s]);
                const matchesStatus = statusSelected.length === 0 || statusSelected.includes(status);
                return matchesSearch && matchesStatus;
           });
-     }, [data, filters]);
+     }, [data, billingInfoSearch.state.filters]);
+
+     const paginatedBillingInformation = useMemo(() => {
+          const page = billingInfoSearch.state.page ?? 0;
+          const rowsPerPage = billingInfoSearch.state.rowsPerPage ?? 5;
+          const start = page * rowsPerPage;
+          const end = start + rowsPerPage;
+          return filteredBillingInformation.slice(start, end);
+     }, [filteredBillingInformation, billingInfoSearch.state.page, billingInfoSearch.state.rowsPerPage]);
 
 
-     const paginated = useMemo(() => {
-          return filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-     }, [filtered, page, rowsPerPage]);
+
+     const handleDeleteConfirm = useCallback(async ({ id }: { id: string }) => {
+          await deleteClientBillingInformation([id]);
+     }, []);
 
      const columns: TableColumn<ClientBillingInformation & { client: Client }>[] = [
           {
@@ -153,18 +193,19 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                          { field: 'pending', label: 'clients.billingInformationStatusPending' },
                          { field: 'suspended', label: 'clients.billingInformationStatusSuspended' },
                     ]}
-                    value={filters}
-                    onChange={handleFiltersChange}
+                    value={billingInfoSearch.state.filters!}
+                    onChange={billingInfoSearch.handleFiltersChange}
                />
                <GenericTable
                     columns={columns}
-                    items={paginated}
-                    count={filtered.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    onPageChange={handlePageChange}
-                    onRowsPerPageChange={handleRowsPerPageChange}
+                    items={paginatedBillingInformation}
+                    count={filteredBillingInformation.length}
+                    page={billingInfoSearch.state.page}
+                    rowsPerPage={billingInfoSearch.state.rowsPerPage}
+                    onPageChange={billingInfoSearch.handlePageChange}
+                    onRowsPerPageChange={billingInfoSearch.handleRowsPerPageChange}
                     handleDeleteConfirm={handleDeleteConfirm}
+                    baseUrl="/dashboard/clients/billing-information"
                />
           </Card>
      );
