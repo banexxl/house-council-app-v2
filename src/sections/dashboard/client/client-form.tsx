@@ -356,109 +356,119 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
             </Stack>
           </Stack>
           <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
-          <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
-            <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                  {t('clients.sendPasswordRecoveryDescription')}
+          {
+            clientData ? (
+              <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                      {t('clients.sendPasswordRecoveryDescription')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      disabled={formik.isSubmitting || !formik.values.email}
+                      onClick={() => setModal({ type: 'recovery', open: true })}
+                    >
+                      {t('clients.sendPasswordRecovery')}
+                    </Button>
+                  </Box>
+                  <Divider sx={{ my: 3 }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                      {t('clients.sendMagicLinkDescription')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      disabled={formik.isSubmitting || !formik.values.email}
+                      onClick={() => setModal({ type: 'magic', open: true })}
+                    >
+                      {t('clients.sendMagicLink')}
+                    </Button>
+                  </Box>
+                  <Divider sx={{ my: 3 }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                      {t('clients.removeMfaDescription')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="warning"
+                      disabled={formik.isSubmitting || !formik.values.id}
+                      onClick={() => setModal({ type: 'mfa', open: true })}
+                    >
+                      {t('clients.removeMfa')}
+                    </Button>
+                  </Box>
+                  <Divider sx={{ my: 3 }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                      {t('clients.banUserDescription')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      disabled={formik.isSubmitting || !formik.values.id}
+                      onClick={() => setModal({ type: 'ban', open: true })}
+                    >
+                      {t('clients.banUser')}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      disabled={formik.isSubmitting || !formik.values.id}
+                      onClick={() => setModal({ type: 'unban', open: true })}
+                    >
+                      {t('clients.unbanUser')}
+                    </Button>
+                  </Box>
+                </Stack>
+                <PopupModal
+                  isOpen={modal.open}
+                  title={
+                    modal.type === 'recovery' ? t('clients.sendPasswordRecovery') :
+                      modal.type === 'magic' ? t('clients.sendMagicLink') :
+                        modal.type === 'mfa' ? t('clients.removeMfa') :
+                          modal.type === 'ban' ? t('clients.banUser') :
+                            modal.type === 'unban' ? t('clients.unbanUser') : ''
+                  }
+                  type="confirmation"
+                  loading={modalLoading}
+                  onClose={() => {
+                    setModal({ open: false, type: undefined });
+                    setModalResult(null);
+                  }}
+                  onConfirm={() => {
+                    if (modal.type === 'recovery') return handleSendPasswordRecovery();
+                    if (modal.type === 'magic') return handleSendMagicLink();
+                    if (modal.type === 'mfa') return handleRemoveMfa();
+                    if (modal.type === 'ban') return handleBanUser();
+                    if (modal.type === 'unban') return handleUnbanUser();
+                  }}
+                  confirmText={t('common.btnConfirm')}
+                  cancelText={t('common.btnCancel')}
+                >
+                  {modal.type === 'recovery' && t('clients.confirmSendPasswordRecovery')}
+                  {modal.type === 'magic' && t('clients.confirmSendMagicLink')}
+                  {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
+                  {modal.type === 'ban' && t('clients.confirmBanUser')}
+                  {modal.type === 'unban' && t('clients.confirmUnbanUser')}
+                  {modalResult && (
+                    <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
+                      {modalResult}
+                    </div>
+                  )}
+                </PopupModal>
+              </Stack>
+            ) :
+              <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                <Typography variant="body2" color="text.secondary">
+                  {t('clients.noClientData')}
                 </Typography>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  disabled={formik.isSubmitting || !formik.values.email}
-                  onClick={() => setModal({ type: 'recovery', open: true })}
-                >
-                  {t('clients.sendPasswordRecovery')}
-                </Button>
-              </Box>
-              <Divider sx={{ my: 3 }} />
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                  {t('clients.sendMagicLinkDescription')}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  disabled={formik.isSubmitting || !formik.values.email}
-                  onClick={() => setModal({ type: 'magic', open: true })}
-                >
-                  {t('clients.sendMagicLink')}
-                </Button>
-              </Box>
-              <Divider sx={{ my: 3 }} />
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                  {t('clients.removeMfaDescription')}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="warning"
-                  disabled={formik.isSubmitting || !formik.values.id}
-                  onClick={() => setModal({ type: 'mfa', open: true })}
-                >
-                  {t('clients.removeMfa')}
-                </Button>
-              </Box>
-              <Divider sx={{ my: 3 }} />
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                  {t('clients.banUserDescription')}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  disabled={formik.isSubmitting || !formik.values.id}
-                  onClick={() => setModal({ type: 'ban', open: true })}
-                >
-                  {t('clients.banUser')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="success"
-                  disabled={formik.isSubmitting || !formik.values.id}
-                  onClick={() => setModal({ type: 'unban', open: true })}
-                >
-                  {t('clients.unbanUser')}
-                </Button>
-              </Box>
-            </Stack>
-            <PopupModal
-              isOpen={modal.open}
-              title={
-                modal.type === 'recovery' ? t('clients.sendPasswordRecovery') :
-                  modal.type === 'magic' ? t('clients.sendMagicLink') :
-                    modal.type === 'mfa' ? t('clients.removeMfa') :
-                      modal.type === 'ban' ? t('clients.banUser') :
-                        modal.type === 'unban' ? t('clients.unbanUser') : ''
-              }
-              type="confirmation"
-              loading={modalLoading}
-              onClose={() => {
-                setModal({ open: false, type: undefined });
-                setModalResult(null);
-              }}
-              onConfirm={() => {
-                if (modal.type === 'recovery') return handleSendPasswordRecovery();
-                if (modal.type === 'magic') return handleSendMagicLink();
-                if (modal.type === 'mfa') return handleRemoveMfa();
-                if (modal.type === 'ban') return handleBanUser();
-                if (modal.type === 'unban') return handleUnbanUser();
-              }}
-              confirmText={t('common.btnConfirm')}
-              cancelText={t('common.btnCancel')}
-            >
-              {modal.type === 'recovery' && t('clients.confirmSendPasswordRecovery')}
-              {modal.type === 'magic' && t('clients.confirmSendMagicLink')}
-              {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
-              {modal.type === 'ban' && t('clients.confirmBanUser')}
-              {modal.type === 'unban' && t('clients.confirmUnbanUser')}
-              {modalResult && (
-                <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
-                  {modalResult}
-                </div>
-              )}
-            </PopupModal>
-          </Stack>
+              </Stack>
+          }
+
         </CardContent>
         <Divider sx={{ my: 3 }} />
         <Stack

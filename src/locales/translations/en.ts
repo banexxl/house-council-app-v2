@@ -134,6 +134,8 @@ export const en = {
   [tokens.common.filterSearchByName]: 'Search by name',
   [tokens.common.filterSearchByAddress]: 'Search by address',
   //#endregion
+  // Clients
+  [tokens.clients.noClientData]: 'No client data available',
   //#region Navigation
   [tokens.nav.adminDashboard]: 'Dashboard',
   [tokens.nav.academy]: 'Academy',

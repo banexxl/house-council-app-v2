@@ -140,6 +140,8 @@ export const rs = {
      [tokens.common.filterSearchByName]: 'Tražite po nazivu',
      [tokens.common.filterSearchByAddress]: 'Tražite po adresi',
      //#endregion
+     // Clients
+     [tokens.clients.noClientData]: 'Nema podataka o klijentu',
      //#region Navigation
      [tokens.nav.academy]: 'Akademija',
      [tokens.nav.account]: 'Nalog',
