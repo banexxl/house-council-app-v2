@@ -42,6 +42,7 @@ export interface Client {
   is_potential?: boolean;
   is_returning?: boolean;
   is_verified?: boolean;
+  unassigned_location_id?: string | null;
 }
 
 export interface ClientLog {
@@ -88,7 +89,8 @@ export const clientValidationSchema = (t: (key: string) => string): Yup.ObjectSc
     has_accepted_terms_and_conditions: Yup.bool(),
     has_accepted_privacy_policy: Yup.bool(),
     is_potential: Yup.bool(),
-    is_returning: Yup.bool()
+    is_returning: Yup.bool(),
+    unassigned_location_id: Yup.string().nullable(),
   })
 }
 
@@ -112,6 +114,7 @@ export const clientInitialValues: Client = {
   is_potential: false,
   is_returning: false,
   is_verified: false,
+  unassigned_location_id: null,
 };
 
 

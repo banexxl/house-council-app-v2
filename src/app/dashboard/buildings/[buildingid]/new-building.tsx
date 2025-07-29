@@ -455,7 +455,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           )}
           {/* Right: Cancel + Create/Update */}
           <Stack direction="row" spacing={2}>
-            <Button color="inherit" onClick={() => router.back()}>
+            <Button color="inherit" onClick={() => router.push(paths.dashboard.buildings.index)}>
               {t('common.btnCancel')}
             </Button>
             <Button

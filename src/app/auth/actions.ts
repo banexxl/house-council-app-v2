@@ -4,6 +4,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 export type SignInFormValues = {
      email: string;
@@ -364,6 +365,6 @@ export const logout = async () => {
           });
           return { success: false, error: error.message };
      }
-
+     revalidatePath('/auth/login');
      return { success: true };
 };

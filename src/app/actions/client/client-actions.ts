@@ -106,7 +106,7 @@ export const createOrUpdateClientAction = async (
      saveClientActionError?: any;
 }> => {
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
-     const { id, ...clientData } = client;
+     const { id, unassigned_location_id, ...clientData } = client;
 
      if (id && id !== '') {
           // === UPDATE ===
@@ -139,6 +139,47 @@ export const createOrUpdateClientAction = async (
                type: 'action',
                user_id: '',
           });
+
+          if (unassigned_location_id) {
+               // First, fetch the building location by unassigned_location_id
+               const { data: buildingLocation, error: fetchError } = await adminSupabase
+                    .from('tblBuildingLocations')
+                    .select('*')
+                    .eq('id', unassigned_location_id)
+                    .single();
+
+               if (fetchError || !buildingLocation) {
+                    await logServerAction({
+                         action: 'Fetch Unassigned Location - Failed',
+                         duration_ms: 0,
+                         error: fetchError?.message || 'Not found',
+                         payload: { clientId: id, unassignedLocationId: unassigned_location_id },
+                         status: 'fail',
+                         type: 'action',
+                         user_id: '',
+                    });
+                    return { saveClientActionSuccess: false, saveClientActionError: fetchError || 'Unassigned location not found' };
+               }
+
+               // Reassign unassigned location to the client
+               const { error: reassignError } = await adminSupabase
+                    .from('tblBuildingLocations')
+                    .update({ client_id: id })
+                    .eq('id', unassigned_location_id);
+
+               if (reassignError) {
+                    await logServerAction({
+                         action: 'Reassign Unassigned Locations - Failed',
+                         duration_ms: 0,
+                         error: reassignError.message,
+                         payload: { clientId: id, unassignedLocationId: unassigned_location_id },
+                         status: 'fail',
+                         type: 'action',
+                         user_id: '',
+                    });
+                    return { saveClientActionSuccess: false, saveClientActionError: reassignError };
+               }
+          }
 
           revalidatePath(`/dashboard/clients/${id}`);
 

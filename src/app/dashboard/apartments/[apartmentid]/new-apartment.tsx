@@ -328,7 +328,11 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
         )}
 
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
-          <Button color="inherit" onClick={() => router.back()} disabled={formik.isSubmitting || !formik.values.building_id}>
+          <Button
+            color="inherit"
+            onClick={() => router.push(paths.dashboard.apartments.index)}
+            disabled={formik.isSubmitting || !formik.values.building_id}
+          >
             {t('common.btnCancel')}
           </Button>
           <Button

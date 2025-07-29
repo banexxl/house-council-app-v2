@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type FC } from 'react'
+import { useEffect, useRef, useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -24,6 +24,9 @@ import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/upl
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname, notFound } from 'next/navigation'
 import { PopupModal } from 'src/components/modal-dialog'
+import { CustomAutocomplete } from 'src/components/autocomplete-custom'
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
+import { BuildingLocation } from 'src/types/location'
 
 interface ClientNewFormProps {
   clientData?: Client
@@ -35,14 +38,24 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
   const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
   const [modalLoading, setModalLoading] = useState(false);
   const [modalResult, setModalResult] = useState<string | null>(null);
-
+  const [unassignedLocations, setUnassignedLocations] = useState<any[]>([]);
   const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
   const avatarUploadRef = useRef<AvatarUploadRef>(null)
-  const autocompleteRef_1 = useRef<AutocompleteRef>(null)
-  const autocompleteRef_2 = useRef<AutocompleteRef>(null)
   const router = useRouter()
   const currentRoute = usePathname()
+
+  useEffect(() => {
+    const fetchBuildingLocations = async () => {
+      // Make sure client_id is defined
+      const client_id = clientData?.id;
+      if (!client_id) return;
+      const { data, error } = await supabaseBrowserClient.from('tblBuildingLocations').select('*').eq('client_id', client_id).is('building_id', null);
+      setUnassignedLocations(data || []);
+    };
+    fetchBuildingLocations();
+  }, [clientData?.id]);
+
 
   const formik = useFormik({
     initialValues: {
@@ -242,7 +255,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                 onAddressSelected={(e: any) => {
                   formik.setFieldValue('address_1', transliterateCyrillicToLatin(e.matching_place_name));
                 }}
-                ref={autocompleteRef_1}
                 initialValue={initialValues?.id == '' ? '' : initialValues?.address_1}
               />
             </Grid>
@@ -254,10 +266,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                 onAddressSelected={(e: any) => {
                   formik.setFieldValue('address_2', transliterateCyrillicToLatin(e.matching_place_name));
                 }}
-                ref={autocompleteRef_2}
                 initialValue={initialValues?.id == '' ? '' : initialValues?.address_2}
               />
-
             </Grid>
             <Grid
               size={{ xs: 12, md: 6 }}
@@ -302,6 +312,28 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData }) => {
                 error={!!(formik.touched.mobile_phone && formik.errors.mobile_phone)}
                 helperText={formik.touched.mobile_phone && formik.errors.mobile_phone}
                 disabled={formik.isSubmitting}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <CustomAutocomplete
+                data={unassignedLocations}
+                searchKey={'street_address'}
+                disabled={formik.isSubmitting}
+                label={t('clients.clientUnassignedLocations')}
+                getOptionLabel={(item: BuildingLocation) => item.street_address + ' ' + item.street_number + ', ' + item.city || ''}
+                renderOption={(item) => (
+                  <Typography key={item.id}>
+                    {item.street_address} {item.street_number}, {item.city}
+                  </Typography>
+                )}
+                onValueChange={(value) => {
+                  if (value) {
+                    formik.setFieldValue('unassigned_location_id', value);
+                  } else {
+                    formik.setFieldValue('unassigned_location_id', null);
+                  }
+                }}
+                selectedItem={formik.values.unassigned_location_id ? unassignedLocations.find(loc => loc.id === formik.values.unassigned_location_id) : undefined}
               />
             </Grid>
           </Grid>

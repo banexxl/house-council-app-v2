@@ -1,6 +1,8 @@
 import { tokens } from '../tokens';
 
 export const de = {
+  // ...existing code...
+  [tokens.clients.clientUnassignedLocations]: 'Nicht zugewiesene Standorte',
   //#region Common
   [tokens.common.languageChanged]: 'Sprache geändert',
   [tokens.common.title]: 'Hausrat',

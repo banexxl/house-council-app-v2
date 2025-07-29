@@ -371,6 +371,7 @@ export const tokens = {
     clientStatusSuspended: 'clients.lblClientStatusSuspended',
     clientStatusTrial: 'clients.lblClientStatusTrial',
     noClientData: 'clients.noClientData',
+    clientUnassignedLocations: 'clients.clientUnassignedLocations',
     clientStatusPendingPayment: 'clients.lblClientStatusPendingPayment',
     clientStatusArchived: 'clients.lblClientStatusArchived',
     clientStatusActive: 'clients.lblClientStatusActive',

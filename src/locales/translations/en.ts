@@ -1,7 +1,8 @@
-
 import { tokens } from '../tokens';
 
 export const en = {
+  // ...existing code...
+  [tokens.clients.clientUnassignedLocations]: 'Unassigned locations',
   //#region Common
   [tokens.common.languageChanged]: 'Language changed',
   [tokens.common.title]: 'House Council',
