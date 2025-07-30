@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
@@ -28,6 +28,7 @@ export const createOrUpdateTenantAction = async (
 }> => {
      const start = Date.now();
      const anonSupabase = await useServerSideSupabaseAnonClient();
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const { id, apartment, ...tenantData } = tenant; // Remove `apartment` if it exists
 
      if (id && id !== '') {
@@ -58,7 +59,7 @@ export const createOrUpdateTenantAction = async (
           }
 
           // 2. Update auth user
-          const { data: updatedUser, error: updateUserError } = await anonSupabase.auth.admin.updateUserById(id, {
+          const { data: updatedUser, error: updateUserError } = await adminSupabase.auth.admin.updateUserById(tenant.user_id!, {
                email: tenantData.email!,
                email_confirm: true,
           });
@@ -98,7 +99,9 @@ export const createOrUpdateTenantAction = async (
      } else {
           // === CREATE ===
           // 1. Create auth user
-          const { data: createdUser, error: userError } = await anonSupabase.auth.admin.createUser({
+          // We need to use adminSupabase here to add the user to the auth.users table
+          // This is because anonSupabase does not have permissions to create users
+          const { data: createdUser, error: userError } = await adminSupabase.auth.admin.createUser({
                email: tenantData.email!,
                email_confirm: true,
                phone: tenantData.phone_number,
