@@ -34,17 +34,11 @@ export const removeAllMfaFactors = async (userId: string): Promise<{ success: bo
      const supabase = await useServerSideSupabaseAnonClient();
      // List all factors for the user
      const { data: factors, error: listError } = await supabase.auth.admin.mfa.listFactors({ userId });
-     console.log('List MFA factors:', factors);
-     console.log('listError:', listError);
-
-
      if (listError) return { success: false, error: listError.message };
      if (!factors || !Array.isArray(factors.factors)) return { success: true };
      let lastError = null;
      for (const factor of factors.factors) {
           const { error } = await supabase.auth.admin.mfa.deleteFactor({ id: factor.id, userId });
-          console.log('Delete MFA factor:', factor.id, 'Error:', error);
-
           if (error) lastError = error;
      }
      if (lastError) return { success: false, error: lastError.message };
@@ -62,7 +56,6 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
           ban_duration: '24h',
           email_confirm: true, // Optional: prevent login until email is confirmed
      });
-     console.log('Ban user:', userId, 'Error:', error);
 
      if (error) return { success: false, error: error.message };
 
@@ -81,7 +74,6 @@ export const unbanUser = async (userId: string): Promise<{ success: boolean; err
           ban_duration: '0s',
           email_confirm: false,
      });
-     console.log('Unban user:', userId, 'Error:', error);
 
      if (error) return { success: false, error: error.message };
 

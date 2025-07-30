@@ -14,7 +14,8 @@ import {
      TextField,
      Typography,
      Checkbox,
-     Tooltip
+     Tooltip,
+     Divider
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -27,6 +28,8 @@ import { RouterLink } from 'src/components/router-link';
 import { createOrUpdateTenantAction } from 'src/app/actions/tenant/tenant-actions';
 import { Tenant, tenantInitialValues, tenantValidationSchema, tenantTypeOptions } from 'src/types/tenant';
 import dayjs from 'dayjs';
+import { PopupModal } from 'src/components/modal-dialog';
+import { banUser, removeAllMfaFactors, sendMagicLink, sendPasswordRecoveryEmail, unbanUser } from 'src/app/actions/client/client-actions';
 
 interface TenantFormProps {
      tenantData?: Tenant;
@@ -41,6 +44,11 @@ interface TenantFormProps {
 }
 
 export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
+
+     // Modal state for admin actions
+     const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
+     const [modalLoading, setModalLoading] = useState(false);
+     const [modalResult, setModalResult] = useState<string | null>(null);
 
      const [initialValues, setInitialValues] = useState<Tenant>(tenantData || tenantInitialValues);
      const { t } = useTranslation();
@@ -103,13 +111,73 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
 
      const apartmentSelected = !!formik.values.apartment_id;
 
+     // Admin action handlers (reuse logic from client form, but use tenantData)
+     const handleSendPasswordRecovery = async () => {
+          setModalLoading(true);
+          try {
+               const { success, error } = await sendPasswordRecoveryEmail(formik.values.email!);
+               setModalResult(success ? t('clients.passwordRecoverySent') : error || t('clients.tenantNotSaved'));
+          } catch (error) {
+               toast.error(t('clients.tenantNotSaved'), error.message);
+               setModalResult(t('clients.tenantNotSaved'));
+          }
+          setModalLoading(false);
+     };
+
+     const handleSendMagicLink = async () => {
+          setModalLoading(true);
+          try {
+               const { success, error } = await sendMagicLink(formik.values.email!);
+               setModalResult(success ? t('clients.magicLinkSent') : error || t('clients.tenantNotSaved'));
+          } catch (error) {
+               toast.error(t('clients.tenantNotSaved'), error.message);
+               setModalResult(t('clients.tenantNotSaved'));
+          }
+          setModalLoading(false);
+     };
+
+     const handleRemoveMfa = async () => {
+          setModalLoading(true);
+          try {
+               const { success, error } = await removeAllMfaFactors(formik.values.user_id!);
+               setModalResult(success ? t('clients.mfaRemoved') : error || t('clients.tenantNotSaved'));
+          } catch (error) {
+               toast.error(t('clients.tenantNotSaved'), error.message);
+               setModalResult(t('clients.tenantNotSaved'));
+          }
+          setModalLoading(false);
+     };
+
+     const handleBanUser = async () => {
+          setModalLoading(true);
+          try {
+               const { success, error } = await banUser(formik.values.user_id!);
+               setModalResult(success ? t('clients.userBanned') : error || t('clients.tenantNotSaved'));
+          } catch (error) {
+               toast.error(t('clients.tenantNotSaved'), error.message);
+               setModalResult(t('clients.tenantNotSaved'));
+          }
+          setModalLoading(false);
+     };
+
+     const handleUnbanUser = async () => {
+          setModalLoading(true);
+          try {
+               const { success, error } = await unbanUser(formik.values.user_id!);
+               setModalResult(success ? t('clients.userUnbanned') : error || t('clients.tenantNotSaved'));
+          } catch (error) {
+               toast.error(t('clients.tenantNotSaved'), error.message);
+               setModalResult(t('clients.tenantNotSaved'));
+          }
+          setModalLoading(false);
+     };
+
      return (
           <form onSubmit={formik.handleSubmit}>
                <Card>
                     <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
                     <CardContent>
                          <Grid container spacing={3}>
-
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <TextField
                                         select
@@ -270,30 +338,144 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
-                                   <Box display="flex" alignItems="center" height="100%">
-                                        <Checkbox
-                                             name="is_primary"
-                                             checked={formik.values.is_primary || false}
-                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                                  formik.setFieldValue('is_primary', e.target.checked);
-                                                  formik.setFieldTouched('email', true, false);
-                                                  formik.setFieldTouched('phone_number', true, false);
-                                             }}
-                                             color="primary"
-                                             id="is_primary_checkbox"
-                                             sx={{ mr: 1 }}
-                                             disabled={!apartmentSelected}
-                                        />
-                                        <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
-                                             <label htmlFor="is_primary_checkbox">
-                                                  <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
-                                             </label>
-                                        </Tooltip>
-                                   </Box>
+                                   <Checkbox
+                                        name="is_primary"
+                                        checked={formik.values.is_primary || false}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                             formik.setFieldValue('is_primary', e.target.checked);
+                                             formik.setFieldTouched('email', true, false);
+                                             formik.setFieldTouched('phone_number', true, false);
+                                        }}
+                                        color="primary"
+                                        id="is_primary_checkbox"
+                                        sx={{ mr: 1 }}
+                                        disabled={!apartmentSelected}
+                                   />
+                                   <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
+                                        <label htmlFor="is_primary_checkbox">
+                                             <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
+                                        </label>
+                                   </Tooltip>
                               </Grid>
+
 
                          </Grid>
                     </CardContent>
+                    <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                         {
+                              tenantData ? (
+                                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
+                                        <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
+                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                       {t('clients.sendPasswordRecoveryDescription')}
+                                                  </Typography>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="primary"
+                                                       disabled={formik.isSubmitting || !formik.values.email}
+                                                       onClick={() => setModal({ type: 'recovery', open: true })}
+                                                  >
+                                                       {t('clients.sendPasswordRecovery')}
+                                                  </Button>
+                                             </Box>
+                                             <Divider sx={{ my: 3 }} />
+                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                       {t('clients.sendMagicLinkDescription')}
+                                                  </Typography>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="primary"
+                                                       disabled={formik.isSubmitting || !formik.values.email}
+                                                       onClick={() => setModal({ type: 'magic', open: true })}
+                                                  >
+                                                       {t('clients.sendMagicLink')}
+                                                  </Button>
+                                             </Box>
+                                             <Divider sx={{ my: 3 }} />
+                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                       {t('clients.removeMfaDescription')}
+                                                  </Typography>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="warning"
+                                                       disabled={formik.isSubmitting || !formik.values.id}
+                                                       onClick={() => setModal({ type: 'mfa', open: true })}
+                                                  >
+                                                       {t('clients.removeMfa')}
+                                                  </Button>
+                                             </Box>
+                                             <Divider sx={{ my: 3 }} />
+                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                       {t('clients.banUserDescription')}
+                                                  </Typography>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="error"
+                                                       disabled={formik.isSubmitting || !formik.values.id}
+                                                       onClick={() => setModal({ type: 'ban', open: true })}
+                                                  >
+                                                       {t('clients.banUser')}
+                                                  </Button>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="success"
+                                                       disabled={formik.isSubmitting || !formik.values.id}
+                                                       onClick={() => setModal({ type: 'unban', open: true })}
+                                                  >
+                                                       {t('clients.unbanUser')}
+                                                  </Button>
+                                             </Box>
+                                        </Stack>
+                                        <PopupModal
+                                             isOpen={modal.open}
+                                             title={
+                                                  modal.type === 'recovery' ? t('clients.sendPasswordRecovery') :
+                                                       modal.type === 'magic' ? t('clients.sendMagicLink') :
+                                                            modal.type === 'mfa' ? t('clients.removeMfa') :
+                                                                 modal.type === 'ban' ? t('clients.banUser') :
+                                                                      modal.type === 'unban' ? t('clients.unbanUser') : ''
+                                             }
+                                             type="confirmation"
+                                             loading={modalLoading}
+                                             onClose={() => {
+                                                  setModal({ open: false, type: undefined });
+                                                  setModalResult(null);
+                                             }}
+                                             onConfirm={() => {
+                                                  if (modal.type === 'recovery') return handleSendPasswordRecovery();
+                                                  if (modal.type === 'magic') return handleSendMagicLink();
+                                                  if (modal.type === 'mfa') return handleRemoveMfa();
+                                                  if (modal.type === 'ban') return handleBanUser();
+                                                  if (modal.type === 'unban') return handleUnbanUser();
+                                             }}
+                                             confirmText={t('common.btnConfirm')}
+                                             cancelText={t('common.btnCancel')}
+                                        >
+                                             {modal.type === 'recovery' && t('clients.confirmSendPasswordRecovery')}
+                                             {modal.type === 'magic' && t('clients.confirmSendMagicLink')}
+                                             {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
+                                             {modal.type === 'ban' && t('clients.confirmBanUser')}
+                                             {modal.type === 'unban' && t('clients.confirmUnbanUser')}
+                                             {modalResult && (
+                                                  <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
+                                                       {modalResult}
+                                                  </div>
+                                             )}
+                                        </PopupModal>
+                                   </Stack>
+                              ) :
+                                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                                        <Typography variant="body2" color="text.secondary">
+                                             {t('clients.noTenantData')}
+                                        </Typography>
+                                   </Stack>
+                         }
+                    </Grid>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ p: 3 }}>
                          <Button
                               type="submit"
