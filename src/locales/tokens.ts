@@ -305,7 +305,8 @@ export const tokens = {
     locationTaken: 'locations.locationTaken',
     searchLocationLabel: 'locations.searchLocationLabel',
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
-    tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected'
+    tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected',
+    loadingLocation: 'locations.loadingLocation'
   },
   clients: {
     client: 'clients.client',

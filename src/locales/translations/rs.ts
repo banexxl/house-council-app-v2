@@ -1,6 +1,8 @@
+
 import { tokens } from '../tokens';
 
 export const rs = {
+     [tokens.locations.loadingLocation]: 'Učitavanje lokacije...',
      // ...existing code...
      [tokens.clients.clientUnassignedLocations]: 'Nepridružene lokacije',
      //#region Common

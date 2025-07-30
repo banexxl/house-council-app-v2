@@ -29,41 +29,42 @@ const NewLocation = ({ mapBoxAccessToken, userData }: NewLoctionProps) => {
      const [locationsData, setLocationsData] = useState<BuildingLocation[]>([]);
      const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null);
 
+
      const { coords, isGeolocationEnabled } = useGeolocated({
           positionOptions: {
-               enableHighAccuracy: false,
+               enableHighAccuracy: true,
           },
           userDecisionTimeout: 5000,
-          onSuccess: (position) => {
-               if (position.coords) {
-                    toast.success(t('locations.geoLocationAvailable'));
-                    setClientCoords({
-                         latitude: position.coords.latitude || 47.502994,
-                         longitude: position.coords.longitude || 19.044443,
-                    });
-               }
-          },
-          onError: () => {
-               toast.error(t('locations.geoLocationNotAvailable'));
-          },
      });
 
      useEffect(() => {
+          let didSet = false;
+          if (coords && isGeolocationEnabled) {
+               setClientCoords({
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+               });
+               toast.success(t('locations.geoLocationAvailable'));
+               didSet = true;
+          }
           getAllAddedLocationsByClientId(userData?.client?.id!).then((res) => {
                if (res.success && res.data) {
                     setLocationsData(res.data.length > 0 ? res.data : []);
+                    if (!didSet && res.data.length > 0) {
+                         const firstLoc = res.data[0];
+                         if (firstLoc.latitude && firstLoc.longitude) {
+                              setClientCoords({
+                                   latitude: firstLoc.latitude,
+                                   longitude: firstLoc.longitude,
+                              });
+                         }
+                    }
                }
           });
-     }, [userData?.client?.id]);
-
-     useEffect(() => {
-          if (coords) {
-               setClientCoords({
-                    latitude: coords?.latitude || 47.502994,
-                    longitude: coords?.longitude || 19.044443,
-               });
+          if (!coords && !isGeolocationEnabled) {
+               toast.error(t('locations.geoLocationNotAvailable'));
           }
-     }, [coords, isGeolocationEnabled, t]);
+     }, [userData?.client?.id, coords, isGeolocationEnabled, t]);
 
      return (
           <Box
@@ -99,12 +100,16 @@ const NewLocation = ({ mapBoxAccessToken, userData }: NewLoctionProps) => {
                                    </Typography>
                               </Breadcrumbs>
                          </Stack>
-                         <LocationCreateForm
-                              mapBoxAccessToken={mapBoxAccessToken}
-                              locationsData={locationsData}
-                              clientCoords={clientCoords}
-                              userData={userData}
-                         />
+                         {clientCoords ? (
+                              <LocationCreateForm
+                                   mapBoxAccessToken={mapBoxAccessToken}
+                                   locationsData={locationsData}
+                                   clientCoords={clientCoords}
+                                   userData={userData}
+                              />
+                         ) : (
+                              <Typography variant="body1">{t('locations.loadingLocation')}</Typography>
+                         )}
                     </Stack>
                </Container>
           </Box>

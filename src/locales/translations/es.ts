@@ -1,6 +1,8 @@
+
 import { tokens } from '../tokens';
 
 export const es = {
+  [tokens.locations.loadingLocation]: 'Cargando ubicación...',
   // ...existing code...
   [tokens.clients.clientUnassignedLocations]: 'Ubicaciones no asignadas',
   //#region Common
