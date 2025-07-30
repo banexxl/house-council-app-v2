@@ -469,9 +469,9 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         </PopupModal>
                                    </Stack>
                               ) :
-                                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
                                         <Typography variant="body2" color="text.secondary">
-                                             {t('clients.noTenantData')}
+                                             {t('clients.noClientData')}
                                         </Typography>
                                    </Stack>
                          }
