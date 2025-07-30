@@ -306,7 +306,12 @@ export const tokens = {
     searchLocationLabel: 'locations.searchLocationLabel',
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
     tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected',
-    loadingLocation: 'locations.loadingLocation'
+    loadingLocation: 'locations.loadingLocation',
+    // Apartment validation
+    apartmentFloorTooHigh: 'apartments.errors.apartmentFloorTooHigh',
+    apartmentRoomCountTooHigh: 'apartments.errors.apartmentRoomCountTooHigh',
+    apartmentInvalidImageUrl: 'apartments.errors.apartmentInvalidImageUrl',
+    required: 'common.required',
   },
   clients: {
     client: 'clients.client',

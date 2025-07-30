@@ -109,10 +109,10 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
 
                     return !exists;
                }
-          ).required('Required'),
+          ).required(t('common.required')),
      floor: Yup.number().integer().test(
           'valid-floor',
-          'Floor cannot be higher than the building stories',
+          t('apartments.errors.apartmentFloorTooHigh'),
           async (value, context) => {
                const { building_id } = context.parent as Apartment;
                const { data: building } = await getBuildingById(building_id);
@@ -121,16 +121,16 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
 
                return value! <= building.stories_high;
           }
-     ).required('Required'),
+     ).required(t('common.required')),
      square_meters: Yup.number().integer().min(0).optional(),
-     room_count: Yup.number().integer().min(1).max(8, 'Room count cannot be greater than 8').optional(),
+     room_count: Yup.number().integer().min(1).max(8, t('apartments.errors.apartmentRoomCountTooHigh')).optional(),
      notes: Yup.string().optional(),
      apartment_type: Yup.string()
           .oneOf(ApartmentTypeValues)
-          .required('Required'),
+          .required(t('common.required')),
      apartment_status: Yup.string()
           .oneOf(ApartmentStatusValues)
-          .required('Required'),
+          .required(t('common.required')),
      apartment_images: Yup.array().of(
-          Yup.string().url('Invalid image URL').required('Required')).optional(),
+          Yup.string().url(t('apartments.errors.apartmentInvalidImageUrl')).required(t('common.required'))).optional(),
 });

@@ -1,8 +1,8 @@
-
 import { tokens } from '../tokens';
 
 export const de = {
   [tokens.locations.loadingLocation]: 'Standort wird geladen...',
+  // ...existing code...
   // ...existing code...
   [tokens.clients.clientUnassignedLocations]: 'Nicht zugewiesene Standorte',
   //#region Common

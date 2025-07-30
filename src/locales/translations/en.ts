@@ -1,8 +1,8 @@
-
 import { tokens } from '../tokens';
 
 export const en = {
   [tokens.locations.loadingLocation]: 'Loading location...',
+  // ...existing code...
   // ...existing code...
   [tokens.clients.clientUnassignedLocations]: 'Unassigned locations',
   //#region Common
