@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
 import { validate as isUUID } from 'uuid';
@@ -18,7 +18,7 @@ export const sendPasswordRecoveryEmail = async (email: string): Promise<{ succes
 };
 
 export const sendMagicLink = async (email: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -31,7 +31,7 @@ export const sendMagicLink = async (email: string): Promise<{ success: boolean; 
 };
 
 export const removeAllMfaFactors = async (userId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      // List all factors for the user
      const { data: factors, error: listError } = await supabase.auth.admin.mfa.listFactors({ userId });
      console.log('List MFA factors:', factors);
@@ -52,7 +52,7 @@ export const removeAllMfaFactors = async (userId: string): Promise<{ success: bo
 };
 
 export const banUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      // Mark user as banned in user_metadata (Supabase does not support a direct ban flag)
      const { error } = await supabase.auth.admin.updateUserById(userId, {
           app_metadata: {
@@ -72,7 +72,7 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
 };
 
 export const unbanUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.auth.admin.updateUserById(userId, {
           app_metadata: {
                banned: false,
@@ -105,7 +105,7 @@ export const createOrUpdateClientAction = async (
      saveClientActionData?: Client;
      saveClientActionError?: any;
 }> => {
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+     const adminSupabase = await useServerSideSupabaseAnonClient();
      const { id, unassigned_location_id, ...clientData } = client;
 
      if (id && id !== '') {
@@ -305,7 +305,7 @@ export const deleteClientByIDsAction = async (
 ): Promise<{ deleteClientByIDsActionSuccess: boolean; deleteClientByIDsActionError?: string }> => {
 
      const anonSupabase = await useServerSideSupabaseAnonClient();
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+     const adminSupabase = await useServerSideSupabaseAnonClient();
 
      try {
           // Fetch user_ids before deleting clients

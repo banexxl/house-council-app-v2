@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
@@ -28,7 +28,6 @@ export const createOrUpdateTenantAction = async (
 }> => {
      const start = Date.now();
      const anonSupabase = await useServerSideSupabaseAnonClient();
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const { id, apartment, ...tenantData } = tenant; // Remove `apartment` if it exists
 
      if (id && id !== '') {
@@ -59,7 +58,7 @@ export const createOrUpdateTenantAction = async (
           }
 
           // 2. Update auth user
-          const { data: updatedUser, error: updateUserError } = await adminSupabase.auth.admin.updateUserById(id, {
+          const { data: updatedUser, error: updateUserError } = await anonSupabase.auth.admin.updateUserById(id, {
                email: tenantData.email!,
                email_confirm: true,
           });
@@ -99,7 +98,7 @@ export const createOrUpdateTenantAction = async (
      } else {
           // === CREATE ===
           // 1. Create auth user
-          const { data: createdUser, error: userError } = await adminSupabase.auth.admin.createUser({
+          const { data: createdUser, error: userError } = await anonSupabase.auth.admin.createUser({
                email: tenantData.email!,
                email_confirm: true,
                phone: tenantData.phone_number,
@@ -163,7 +162,7 @@ export const createOrUpdateTenantAction = async (
 
                // Deleting the user if tenant creation fails
 
-               const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(createdUser.user.id);
+               const { error: deleteUserError } = await anonSupabase.auth.admin.deleteUser(createdUser.user.id);
                if (deleteUserError) {
                     await logServerAction({
                          action: 'Delete Tenant Auth User - Failed',
@@ -226,7 +225,6 @@ export const deleteTenantByIDAction = async (
      id: string
 ): Promise<{ deleteTenantByIDActionSuccess: boolean; deleteTenantByIDActionError?: string }> => {
      const anonSupabase = await useServerSideSupabaseAnonClient();
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
           const { data: tenantToDelete, error: fetchError } = await anonSupabase
@@ -239,7 +237,7 @@ export const deleteTenantByIDAction = async (
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: fetchError.message };
           }
 
-          const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
+          const { error: deleteUserError } = await anonSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
           if (deleteUserError) {
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteUserError.message };
           }

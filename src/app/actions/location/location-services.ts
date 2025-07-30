@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { BuildingLocation } from 'src/types/location'
 
@@ -16,7 +16,7 @@ type ErrorResponse = {
  * Get all locations (admin only)
  */
 export const getAllLocations = async () => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase
           .from('tblBuildingLocations')
           .select('*');
@@ -27,7 +27,7 @@ export const getAllLocations = async () => {
 export const insertLocationAction = async (values: BuildingLocation): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation }> => {
 
      const startTime = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      if (
           !values ||
@@ -175,7 +175,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
 
 export const getAllAddedLocations = async (): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      try {
           const { data, error } = await supabase.from('tblBuildingLocations').select('*')
@@ -222,7 +222,7 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
 export const getAllAddedLocationsByClientId = async (
      client_id: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           const { data, error } = await supabase
@@ -278,7 +278,7 @@ export const getAllAddedLocationsByClientId = async (
 
 export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      try {
 
@@ -328,7 +328,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string):
 
 export const deleteLocationByID = async (id: string): Promise<{ success: boolean; error?: ErrorResponse }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      if (!id) {
           await logServerAction({
@@ -390,7 +390,7 @@ export const deleteLocationByID = async (id: string): Promise<{ success: boolean
 
 export const getAllAddedLocationsWithoutBuildingId = async (): Promise<{ success: boolean; error?: ErrorResponse, data?: BuildingLocation[] }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      try {
           const { data, error } = await supabase.from('tblBuildingLocations').select('*').is('building_id', null)
