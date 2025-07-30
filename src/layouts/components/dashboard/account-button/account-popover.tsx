@@ -47,8 +47,13 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   }, []);
 
   const handleLogout = () => {
-    startTransition(() => {
-      logout()
+    startTransition(async () => {
+      const { success, error } = await logout()
+      if (success) {
+        router.push(paths.auth.login)
+      } else {
+        console.error('Logout error:', error)
+      }
     })
     onClose?.()
   }

@@ -349,7 +349,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      return { success: true };
 }
 
-export const logout = async () => {
+export const logout = async (): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.auth.signOut();
 
