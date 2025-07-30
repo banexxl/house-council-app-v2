@@ -493,6 +493,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               {t('common.btnCancel')}
                          </Button>
                     </Stack>
+
                </Card>
           </form>
      );
