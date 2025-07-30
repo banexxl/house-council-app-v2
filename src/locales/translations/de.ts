@@ -471,7 +471,7 @@ export const de = {
   [tokens.tenants.tenantType]: 'Mietnehmer Typ',
   [tokens.tenants.tenantSaved]: 'Mietnehmer gespeichert',
   [tokens.tenants.tenantNotSaved]: 'Mietnehmer nicht gespeichert',
-  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Telefonnummer muss mit + beginnen',
+  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Telefonnummer muss mit + beginnen, und mindestens 7 Ziffern enthalten',
   [tokens.tenants.phoneAlreadyExists]: 'Telefonnummer bereits vorhanden',
   [tokens.tenants.tenantAlreadyExists]: 'Mietnehmer bereits vorhanden!',
 

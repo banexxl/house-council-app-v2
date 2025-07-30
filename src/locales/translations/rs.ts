@@ -490,7 +490,7 @@ export const rs = {
      [tokens.tenants.tenantType]: 'Tip stanara',
      [tokens.tenants.tenantSaved]: 'Stanar je sačuvan',
      [tokens.tenants.tenantNotSaved]: 'Stanar nije sačuvan',
-     [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Broj telefona mora početi sa +',
+     [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Broj telefona mora početi sa +, i sadržati bar 7 cifara',
      [tokens.tenants.phoneAlreadyExists]: 'Telefon već postoji',
      // Tenant validation     
      [tokens.tenants.tenantNameRequired]: 'Ime stanara je obavezno',

@@ -246,6 +246,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   },
                                              }}
                                              disabled={!apartmentSelected}
+                                             disableFuture={true}
                                         />
                                    </LocalizationProvider>
                               </Grid>

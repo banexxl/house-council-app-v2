@@ -485,7 +485,7 @@ export const en = {
   [tokens.tenants.tenantType]: 'Tenant Type',
   [tokens.tenants.tenantSaved]: 'Tenant saved',
   [tokens.tenants.tenantNotSaved]: 'Tenant not saved',
-  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Phone number must start with +',
+  [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Phone number must start with +, followed by at least 7 digits',
   [tokens.tenants.phoneAlreadyExists]: 'Phone number already exists',
   [tokens.tenants.tenantAlreadyExists]: 'Email already exists',
   // Tenant validation

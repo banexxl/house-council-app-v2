@@ -43,7 +43,7 @@ export const tenantInitialValues: Tenant = {
      first_name: '',
      last_name: '',
      email: '',
-     phone_number: '',
+     phone_number: '+',
      date_of_birth: '',
      apartment_id: '',
      apartment: { apartment_number: '', building: { street_address: '', city: '' } },
