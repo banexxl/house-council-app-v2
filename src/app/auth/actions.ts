@@ -365,6 +365,5 @@ export const logout = async () => {
           });
           return { success: false, error: error.message };
      }
-     revalidatePath('/auth/login');
      return { success: true };
 };
