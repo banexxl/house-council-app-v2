@@ -40,7 +40,6 @@ export async function updateSession(request: NextRequest) {
   if (isPublic) {
     if (token) {
       const user = await getUserFromToken(token);
-      console.log('User from token:', user);
 
       // Validate user properties before redirecting
       const isNotAnonymous = user && user.is_anonymous === false;
@@ -62,7 +61,6 @@ export async function updateSession(request: NextRequest) {
   }
 
   const user = await getUserFromToken(token);
-  console.log('User from token:', user);
 
   if (!user) {
     // If token is invalid or user not found, redirect to login
