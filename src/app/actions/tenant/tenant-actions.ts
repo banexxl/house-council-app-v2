@@ -1,4 +1,3 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -6,6 +5,21 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
+
+/**
+ * 
+ * @param userId 
+ * @param newPassword 
+ * @returns 
+ */
+export const resetTenantPassword = async (userId: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { error } = await supabase.auth.admin.updateUserById(userId, {
+          password: newPassword,
+     });
+     if (error) return { success: false, error: error.message };
+     return { success: true };
+};
 
 /**
  * Get all tenants (admin only)

@@ -17,94 +17,58 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
  */
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   const PUBLIC_ROUTES = ["/auth/login", "/auth/error", "/auth/callback"];
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const token = request.cookies.get('sb-sorklznvftjmhkaejkej-auth-token')?.value;
+
+  // Helper: create Supabase client and set session with token
+  async function getUserFromToken(token: string | undefined) {
+    if (!token) return null;
+    const supabase = await useServerSideSupabaseAnonClient();
+    // Try to set the access token as the current session
+    try {
+      await supabase.auth.setSession({ access_token: token, refresh_token: '' });
+    } catch (e) {
+      // setSession may throw if token is invalid
+      return null;
+    }
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) return null;
+    return data.user;
+  }
 
   if (isPublic) {
+    if (token) {
+      const user = await getUserFromToken(token);
+      console.log('User from token:', user);
+
+      // Validate user properties before redirecting
+      const isNotAnonymous = user && user.is_anonymous === false;
+      const isEmailConfirmed = user && !!user.email_confirmed_at;
+      const isEmailVerified = user && user.user_metadata && user.user_metadata.email_verified === true;
+
+      if (isNotAnonymous && isEmailConfirmed && isEmailVerified) {
+        // If authenticated and validated, redirect away from auth pages
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
+    // If not authenticated or not validated, allow access to auth pages
     return NextResponse.next();
   }
 
-  // ✅ FIX: create response before passing into Supabase client
-  const response = NextResponse.next();
-
-  const supabase = await useServerSideSupabaseServiceRoleClient()
-  if (!supabase) {
-    return NextResponse.redirect(new URL("/auth/error?error=server_error", request.url));
-  }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user?.email) {
-    return NextResponse.redirect(new URL("/auth/error?error=access_denied", request.url));
+  if (!token) {
+    // If no token, redirect to login for any protected route
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  const { data: client } = await supabase
-    .from("tblClients")
-    .select("id")
-    .eq("email", user.email)
-    .single();
+  const user = await getUserFromToken(token);
+  console.log('User from token:', user);
 
-  const { data: tenant } = await supabase
-    .from("tblTenants")
-    .select("id")
-    .eq("email", user.email)
-    .single();
-
-  const { data: admin } = await supabase
-    .from("tblSuperAdmins")
-    .select("id")
-    .eq("email", user.email)
-    .single();
-
-  if (!client && !tenant && !admin) {
-    return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
+  if (!user) {
+    // If token is invalid or user not found, redirect to login
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  let role: "admin" | "client" | "tenant" | null = null;
-
-  if (admin) {
-    role = "admin";
-  } else if (client) {
-    role = "client";
-  } else if (tenant) {
-    role = "tenant";
-  }
-
-  if (!role) {
-    role =
-      (user.user_metadata as any)?.role ||
-      (user.app_metadata as any)?.role ||
-      null;
-  }
-
-  // Role based navigation
-  if (role === "admin") {
-    return response;
-  }
-
-  if (role === "client") {
-    const superAdminRoutes = ["/dashboard/clients", "/dashboard/subscriptions"];
-    const isRestricted = superAdminRoutes.some((route) =>
-      pathname.startsWith(route),
-    );
-    if (isRestricted) {
-      return NextResponse.redirect(
-        new URL("/auth/error?error_code=access_denied", request.url),
-      );
-    }
-    return response;
-  }
-
-  if (role === "tenant") {
-    const allowedTenantPaths = ["/dashboard/tenants"];
-    const allowed = allowedTenantPaths.some((route) => pathname.startsWith(route));
-    if (!allowed) {
-      return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
-    }
-    return response;
-  }
-
-  return NextResponse.redirect(new URL("/auth/error?error_code=access_denied", request.url));
+  // Allow the request to proceed if token and user are valid
+  return NextResponse.next();
 }
