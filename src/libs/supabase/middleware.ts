@@ -17,7 +17,7 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
  */
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const PUBLIC_ROUTES = ["/auth/login", "/auth/error", "/auth/callback"];
+  const PUBLIC_ROUTES = ["/auth/login", "/auth/error", "/auth/callback", "/auth/reset-password"];
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
   const token = request.cookies.get('sb-sorklznvftjmhkaejkej-auth-token')?.value;
 
