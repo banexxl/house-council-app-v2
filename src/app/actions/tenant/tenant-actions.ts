@@ -264,6 +264,8 @@ export const readTenantByIdAction = async (
 export const deleteTenantByIDAction = async (
      id: string
 ): Promise<{ deleteTenantByIDActionSuccess: boolean; deleteTenantByIDActionError?: string }> => {
+
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const anonSupabase = await useServerSideSupabaseAnonClient();
 
      try {
@@ -277,7 +279,7 @@ export const deleteTenantByIDAction = async (
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: fetchError.message };
           }
 
-          const { error: deleteUserError } = await anonSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
+          const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
           if (deleteUserError) {
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteUserError.message };
           }

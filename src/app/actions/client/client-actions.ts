@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
 import { validate as isUUID } from 'uuid';
@@ -297,7 +297,7 @@ export const deleteClientByIDsAction = async (
 ): Promise<{ deleteClientByIDsActionSuccess: boolean; deleteClientByIDsActionError?: string }> => {
 
      const anonSupabase = await useServerSideSupabaseAnonClient();
-     const adminSupabase = await useServerSideSupabaseAnonClient();
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
           // Fetch user_ids before deleting clients
