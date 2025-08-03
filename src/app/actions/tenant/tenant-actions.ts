@@ -221,6 +221,12 @@ export const createOrUpdateTenantAction = async (
                user_id: createdUser.user.id,
           });
 
+          // If all goes well, send the invite email
+          const { data: invitedUser, error: inviteError } = await adminSupabase.auth.resetPasswordForEmail(tenantData.email!, {
+               redirectTo: process.env.NEXT_PUBLIC_SUPABASE_PASSWORD_RECOVERY_REDIRECT_URL,
+          });
+          console.log('invitedUser', invitedUser, 'inviteError', inviteError);
+
           revalidatePath(`/dashboard/tenants/${insertedTenant.id}`);
           return {
                saveTenantActionSuccess: true,
