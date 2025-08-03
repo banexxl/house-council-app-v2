@@ -13,8 +13,11 @@ export default async function TableEditorPage() {
      const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
      if (!client && !tenant && !admin) {
           logout()
-          redirect('/auth/login')
      };
+
+     if (tenant) {
+          redirect('/dashboard/products');
+     }
 
      const [
           readFeaturesData,

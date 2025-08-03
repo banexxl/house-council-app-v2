@@ -13,7 +13,6 @@ export default async function Page() {
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client && !tenant && !admin) {
     logout();
-    redirect('/auth/login');
   }
 
   if (admin) {
@@ -27,7 +26,7 @@ export default async function Page() {
       apartments = data.apartments;
     }
   } else if (tenant) {
-    apartments = [];
+    redirect('/dashboard/products');
   }
 
   return (

@@ -570,5 +570,8 @@ export const rs = {
      [tokens.errors.authorization.authorizationError]: 'Greška autorizacije',
      [tokens.errors.authorization.authorizationErrorDescription]: 'Nemate dozvolu za pristup ovoj stranici',
      [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Greška autorizacije',
+     [tokens.errors.unauthorized.header]: 'Greška autorizacije',
+     [tokens.errors.unauthorized.subheader]: 'Greška autorizacije',
+     [tokens.errors.unauthorized.description]: 'Nemate dozvolu za pristup ovoj stranici',
      //#endregion
 };

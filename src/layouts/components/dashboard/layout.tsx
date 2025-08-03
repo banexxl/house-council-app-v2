@@ -21,35 +21,33 @@ export const Layout: FC<LayoutProps> = ((props) => {
       const email = data.session?.user?.email;
       if (!email) return;
 
-      // 1. Check tblSuperAdmins
-      const { data: admin } = await supabaseBrowserClient
-        .from('tblSuperAdmins')
-        .select('id')
-        .eq('email', email)
-        .single();
-      if (admin) {
+      const [adminRes, clientRes, tenantRes] = await Promise.all([
+        supabaseBrowserClient
+          .from('tblSuperAdmins')
+          .select('id')
+          .eq('email', email)
+          .single(),
+        supabaseBrowserClient
+          .from('tblClients')
+          .select('id')
+          .eq('email', email)
+          .single(),
+        supabaseBrowserClient
+          .from('tblTenants')
+          .select('id')
+          .eq('email', email)
+          .single(),
+      ]);
+
+      if (adminRes.data) {
         setRole('admin');
         return;
       }
-
-      // 2. Check tblClients
-      const { data: client } = await supabaseBrowserClient
-        .from('tblClients')
-        .select('id')
-        .eq('email', email)
-        .single();
-      if (client) {
+      if (clientRes.data) {
         setRole('client');
         return;
       }
-
-      // 3. Check tblTenants
-      const { data: tenant } = await supabaseBrowserClient
-        .from('tblTenants')
-        .select('id')
-        .eq('email', email)
-        .single();
-      if (tenant) {
+      if (tenantRes.data) {
         setRole('tenant');
         return;
       }

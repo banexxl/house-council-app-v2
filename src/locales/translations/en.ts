@@ -571,5 +571,8 @@ export const en = {
   [tokens.errors.authorization.authorizationError]: 'Authorization error',
   [tokens.errors.authorization.authorizationErrorDescription]: 'You do not have permission to access this page',
   [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Authorization error',
+  [tokens.errors.unauthorized.header]: 'Authorization error',
+  [tokens.errors.unauthorized.subheader]: 'Authorization error',
+  [tokens.errors.unauthorized.description]: 'You do not have permission to access this page',
   //#endregion
 };

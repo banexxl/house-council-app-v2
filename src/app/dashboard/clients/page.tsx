@@ -15,8 +15,11 @@ const Page = async () => {
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client && !tenant && !admin) {
     logout()
-    redirect('/auth/login')
   };
+
+  if (tenant) {
+    redirect('/dashboard/products');
+  }
 
   const [{ getAllClientsActionData }] = await Promise.all([
     readAllClientsAction(),

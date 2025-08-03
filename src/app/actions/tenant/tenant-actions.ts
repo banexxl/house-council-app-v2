@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { logout } from 'src/app/auth/actions';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
@@ -12,15 +13,31 @@ import { validate as isUUID } from 'uuid';
  * @param newPassword 
  * @returns 
  */
-export const resetTenantPassword = async (userId: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-     const { error } = await supabase.auth.admin.updateUserById(userId, {
+// This function is for password reset via email/token (not admin reset)
+export const resetTenantPassword = async (
+     email: string,
+     newPassword: string,
+     token: string
+): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     // Use verifyOtp to complete the password reset
+     const { error } = await supabase.auth.verifyOtp({
+          type: 'recovery',
+          token_hash: token, // Use the token as the hash
+     });
+     console.log('error', error);
+
+     if (error) return { success: false, error: error.message };
+
+     // Now update the password
+     const { error: updateError } = await supabase.auth.updateUser({
+          email,
           password: newPassword,
      });
-     if (error) return { success: false, error: error.message };
+     if (updateError) return { success: false, error: updateError.message };
      return { success: true };
 };
-
 /**
  * Get all tenants (admin only)
  */

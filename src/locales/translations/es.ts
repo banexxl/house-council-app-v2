@@ -574,5 +574,8 @@ export const es = {
   [tokens.errors.authorization.authorizationError]: 'Error de autorización',
   [tokens.errors.authorization.authorizationErrorDescription]: 'No tiene permiso para acceder a esta página',
   [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Error de autorización',
+  [tokens.errors.unauthorized.header]: 'Error de autorización',
+  [tokens.errors.unauthorized.subheader]: 'Error de autorización',
+  [tokens.errors.unauthorized.description]: 'No tiene permiso para acceder a esta página',
   //#endregion
 };

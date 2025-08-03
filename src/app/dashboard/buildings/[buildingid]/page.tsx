@@ -5,6 +5,7 @@ import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-ne
 import { getAllNotOcupiedLocationsAddedByClient } from "src/app/actions/location/location-services";
 import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
+import { redirect } from "next/navigation";
 
 
 export default async function Page({ params }: {
@@ -13,14 +14,18 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
-  if (!userData) {
+  const { admin, client, tenant, userData, role, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  if (!admin && !client && !tenant) {
     logout()
-  };
+  }
+
+  if (tenant) {
+    redirect('/dashboard/products');
+  }
 
   const [buildingData, locationData] = await Promise.all([
     getBuildingById(buildingid as string),
-    getAllNotOcupiedLocationsAddedByClient(userData.client?.id!)
+    getAllNotOcupiedLocationsAddedByClient(client?.id!)
   ]);
 
   return (
@@ -36,7 +41,7 @@ export default async function Page({ params }: {
           <BuildingFormHeader building={buildingData.success ? buildingData.data : undefined} />
           <BuildingCreateForm
             buildingData={buildingData.success ? buildingData.data : undefined}
-            userData={userData}
+            userData={{ client, tenant, admin, userData, role, error }}
             locationData={locationData.success ? locationData.data ?? [] : []}
           />
         </Stack>

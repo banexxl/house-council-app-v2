@@ -1,20 +1,24 @@
 'use client'
 
-
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { useState, useTransition } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useSearchParams } from "next/navigation";
 import { resetTenantPassword } from "src/app/actions/tenant/tenant-actions";
 import Link from "next/link";
+
 
 export default function TenantPasswordResetPage() {
      const [isPending, startTransition] = useTransition();
      const [success, setSuccess] = useState(false);
      const [submitError, setSubmitError] = useState("");
+     const searchParams = useSearchParams();
+     const emailFromUrl = searchParams.get("email") || "";
+     const tokenFromUrl = searchParams.get("token") || "";
 
      const validationSchema = Yup.object({
-          userId: Yup.string().required("User ID is required"),
+          email: Yup.string().email("Invalid email").required("Email is required"),
           newPassword: Yup.string()
                .required("Password is required")
                .min(8, "Password must be at least 8 characters")
@@ -29,16 +33,17 @@ export default function TenantPasswordResetPage() {
 
      const formik = useFormik({
           initialValues: {
-               userId: "",
+               email: emailFromUrl,
                newPassword: "",
                confirmPassword: "",
           },
+          enableReinitialize: true,
           validationSchema,
           onSubmit: (values, { resetForm }) => {
                setSubmitError("");
                setSuccess(false);
                startTransition(async () => {
-                    const result = await resetTenantPassword(values.userId, values.newPassword);
+                    const result = await resetTenantPassword(values.email, values.newPassword, tokenFromUrl);
                     if (result.success) {
                          setSuccess(true);
                          resetForm();
@@ -57,15 +62,16 @@ export default function TenantPasswordResetPage() {
                <form onSubmit={formik.handleSubmit} noValidate>
                     <Stack spacing={2}>
                          <TextField
-                              label="User ID"
-                              name="userId"
-                              value={formik.values.userId}
+                              label="Email"
+                              name="email"
+                              value={formik.values.email}
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
-                              error={formik.touched.userId && Boolean(formik.errors.userId)}
-                              helperText={formik.touched.userId && formik.errors.userId}
+                              error={formik.touched.email && Boolean(formik.errors.email)}
+                              helperText={formik.touched.email && formik.errors.email}
                               fullWidth
                               required
+                              disabled={!!emailFromUrl}
                          />
                          <TextField
                               label="New Password"
@@ -98,7 +104,7 @@ export default function TenantPasswordResetPage() {
                          </Button>
                     </Stack>
                     <Box mt={2}>
-                         <Link href="/auth/login" passHref>
+                         <Link href={'/auth/login'} passHref>
                               <Button variant="outlined" fullWidth>
                                    Back to Login
                               </Button>

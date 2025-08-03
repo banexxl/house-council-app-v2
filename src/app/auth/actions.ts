@@ -20,8 +20,6 @@ export type ErrorType = {
 
 export const magicLinkLogin = async (email: string): Promise<{ success?: boolean, error?: string }> => {
 
-     const cookieStore = await cookies();
-
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      // Check tblSuperAdmins, tblClients, tblTenants for user existence
@@ -35,6 +33,8 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           .select('id')
           .eq('email', email)
           .single();
+     console.log('Admin data:', admin);
+
      if (admin) {
           userType = 'admin';
           userId = admin.id;
@@ -48,6 +48,8 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
                .select('id')
                .eq('email', email)
                .single();
+          console.log('Client data:', client);
+
           if (client) {
                userType = 'client';
                userId = client.id;
@@ -73,6 +75,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
                .select('id')
                .eq('email', email)
                .single();
+
           if (tenant) {
                userType = 'tenant';
                userId = tenant.id;
@@ -365,5 +368,6 @@ export const logout = async (): Promise<{ success: boolean; error?: string }> =>
           });
           return { success: false, error: error.message };
      }
+
      return { success: true };
 };

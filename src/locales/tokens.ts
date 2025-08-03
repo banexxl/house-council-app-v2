@@ -579,5 +579,10 @@ export const tokens = {
       authorizationErrorDescription: 'errors.authorization.authorizationErrorDescription',
       authorizationErrorDescriptionShort: 'errors.authorization.authorizationErrorDescriptionShort',
     },
+    unauthorized: {
+      header: 'errors.authorization.authorizationError',
+      subheader: 'errors.authorization.authorizationErrorDescriptionShort',
+      description: 'errors.authorization.authorizationErrorDescription',
+    },
   }
 };

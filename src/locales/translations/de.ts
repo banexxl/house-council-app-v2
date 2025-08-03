@@ -558,5 +558,8 @@ export const de = {
   [tokens.errors.authorization.authorizationError]: 'Autorisierungsfehler',
   [tokens.errors.authorization.authorizationErrorDescription]: 'Sie haben keine Berechtigung diese Seite zu besuchen.',
   [tokens.errors.authorization.authorizationErrorDescriptionShort]: 'Autorisierungsfehler',
+  [tokens.errors.unauthorized.header]: 'Autorisierungsfehler',
+  [tokens.errors.unauthorized.subheader]: 'Autorisierungsfehler',
+  [tokens.errors.unauthorized.description]: 'Sie haben keine Berechtigung diese Seite zu besuchen.',
   //#endregion
 };

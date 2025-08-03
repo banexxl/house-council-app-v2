@@ -16,8 +16,11 @@ const Page = async ({ params }: any) => {
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client && !tenant && !admin) {
     logout()
-    redirect('/auth/login')
   };
+
+  if (tenant) {
+    redirect('/dashboard/products');
+  }
 
   const allClients = await readAllClientsAction()
   const { billingInformationId } = await params

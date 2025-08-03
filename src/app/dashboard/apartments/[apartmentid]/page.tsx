@@ -14,7 +14,6 @@ export default async function Page({ params }: {
   const { client, tenant, admin, userData, role, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client && !tenant && !admin) {
     logout();
-    redirect('/auth/login');
   }
 
   let buildings: any = undefined;
@@ -37,9 +36,7 @@ export default async function Page({ params }: {
     buildings = buildingsRes.success ? buildingsRes.data : undefined;
     apartment = apartmentRes.success ? apartmentRes.data : undefined;
   } else if (tenant) {
-    // For tenant, you may want to fetch only apartments/buildings they have access to
-    buildings = [];
-    apartment = apartmentid ? (await getApartmentById(apartmentid)).data : undefined;
+    redirect('/dashboard/products');
   }
 
   return (
