@@ -67,6 +67,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',') || request.headers.get('remoteAddress');
+
+  // Log the IP address for monitoring purposes (you can log to an external service)
+  console.log(`Client IP: ${ip}`);
+
   // Allow the request to proceed if token and user are valid
   return NextResponse.next();
 }
