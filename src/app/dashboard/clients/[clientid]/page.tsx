@@ -8,26 +8,28 @@ import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth'
 import { logout } from 'src/app/auth/actions'
-import { redirect } from 'next/navigation'
 
 export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
 }) {
 
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+
+  console.log('admin', admin);
+  console.log('tenant', tenant);
+  console.log('client', client);
+
   if (!admin || tenant || client) {
     logout()
   };
 
   const { clientid } = await params
-  const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }, userSession] = await Promise.all([
+  const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }] = await Promise.all([
     readClientByIdAction(clientid),
-    checkIfUserExistsAndReturnDataAndSessionObject(),
   ]);
 
   return (
     <>
-      <Seo title="Dashboard: Client Edit" />
       <Box
         component="main"
         sx={{
@@ -38,7 +40,7 @@ export default async function Page({ params }: {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientFormHeader client={getClientByIdActionData} />
-            <ClientForm clientData={getClientByIdActionData} />
+            <ClientForm clientData={getClientByIdActionData} showAdvancedSettings showClientActions />
           </Stack>
         </Container>
       </Box>

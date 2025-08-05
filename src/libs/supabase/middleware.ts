@@ -16,10 +16,33 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
  * Otherwise, it returns the original response without any modification.
  */
 export async function updateSession(request: NextRequest) {
+
   const { pathname } = request.nextUrl;
   const PUBLIC_ROUTES = ["/auth/login", "/auth/error", "/auth/callback", "/auth/reset-password"];
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
-  const token = request.cookies.get('sb-sorklznvftjmhkaejkej-auth-token')?.value;
+  const tokenBase = 'sb-sorklznvftjmhkaejkej-auth-token';
+
+  // Try to get the full token first
+  let token = request.cookies.get(tokenBase)?.value;
+
+  if (!token) {
+    // If it's undefined, try to reconstruct from split parts
+    const tokenParts = [];
+    let partIndex = 0;
+
+    while (true) {
+      const part = request.cookies.get(`${tokenBase}.${partIndex}`)?.value;
+      if (!part) break;  // Stop if part is missing
+      tokenParts.push(part);
+      partIndex++;
+    }
+
+    if (tokenParts.length > 0) {
+      token = tokenParts.join('');  // Combine all parts into one token string
+    }
+  }
+
+  console.log('token', token);
 
   // Helper: create Supabase client and set session with token
   async function getUserFromToken(token: string | undefined) {

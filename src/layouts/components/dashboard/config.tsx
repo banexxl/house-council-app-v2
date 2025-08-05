@@ -30,6 +30,7 @@ import Truck01Icon from "src/icons/untitled-ui/duocolor/truck-01";
 import Upload04Icon from "src/icons/untitled-ui/duocolor/upload-04";
 import Users03Icon from "src/icons/untitled-ui/duocolor/users-03";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client";
@@ -180,6 +181,15 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
             ),
           },
           {
+            title: t(tokens.nav.account),
+            path: paths.dashboard.account,
+            icon: (
+              <SvgIcon fontSize="small">
+                <ManageAccountsIcon />
+              </SvgIcon>
+            ),
+          },
+          {
             title: t(tokens.nav.locations),
             path: paths.dashboard.locations.index,
             icon: (
@@ -282,15 +292,6 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
               </SvgIcon>
             ),
             label: <Chip color="primary" label="New" size="small" />,
-          },
-          {
-            title: t(tokens.nav.account),
-            path: paths.dashboard.account,
-            icon: (
-              <SvgIcon fontSize="small">
-                <HomeSmileIcon />
-              </SvgIcon>
-            ),
           },
         ],
       },
