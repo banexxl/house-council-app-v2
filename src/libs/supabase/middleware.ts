@@ -42,8 +42,6 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  console.log('token', token);
-
   // Helper: create Supabase client and set session with token
   async function getUserFromToken(token: string | undefined) {
     if (!token) return null;
@@ -93,7 +91,6 @@ export async function updateSession(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',') || request.headers.get('remoteAddress');
 
   // Log the IP address for monitoring purposes (you can log to an external service)
-  console.log(`Client IP: ${ip}`);
 
   // Allow the request to proceed if token and user are valid
   return NextResponse.next();

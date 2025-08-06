@@ -7,12 +7,7 @@ import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import { Client } from 'src/types/client';
 
-interface PageProps {
-  searchParams?: { id?: string };
-}
-
-
-const Page = async ({ searchParams }: PageProps) => {
+const Page = async () => {
   let clientData: Client | null = null;
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client && !tenant && !admin) {
@@ -25,12 +20,13 @@ const Page = async ({ searchParams }: PageProps) => {
     if (getClientByIdActionSuccess && getClientByIdActionData) {
       clientData = getClientByIdActionData;
     }
-  } else if (admin && searchParams?.id) {
+  } else if (admin) {
+    redirect('/dashboard');
     //TODO: we do not have a client id in the URL when logged in as admin
-    const { getClientByIdActionSuccess, getClientByIdActionData } = await readClientByIdAction(searchParams.id);
-    if (getClientByIdActionSuccess && getClientByIdActionData) {
-      clientData = getClientByIdActionData;
-    }
+    // const { getClientByIdActionSuccess, getClientByIdActionData } = await readClientByIdAction(searchParams.id);
+    // if (getClientByIdActionSuccess && getClientByIdActionData) {
+    //   clientData = getClientByIdActionData;
+    // }
   } else if (tenant) {
     redirect('/dashboard/products');
   }

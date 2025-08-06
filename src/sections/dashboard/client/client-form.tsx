@@ -194,30 +194,34 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
                 ))}
               </TextField>
             </Grid>
-            <Grid
-              size={{ xs: 12, md: 6 }}
-            >
-              <TextField
-                select
-                fullWidth
-                label={t('clients.clientStatus')}
-                name="client_status"
-                disabled={formik.isSubmitting}
-                value={formik.values.client_status}
-                onChange={formik.handleChange} // Use onChange for handling selection
-                error={!!(formik.touched.client_status && formik.errors.client_status)}
-                helperText={formik.touched.client_status && formik.errors.client_status}
-              >
-                {Object.entries(clientStatusMapping).map(([key, label]) => (
-                  <MenuItem
-                    key={key} value={key}
-                    sx={{ cursor: 'pointer' }}
+            {
+              showAdvancedSettings && (
+                <Grid
+                  size={{ xs: 12, md: 6 }}
+                >
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('clients.clientStatus')}
+                    name="client_status"
+                    disabled={formik.isSubmitting}
+                    value={formik.values.client_status}
+                    onChange={formik.handleChange} // Use onChange for handling selection
+                    error={!!(formik.touched.client_status && formik.errors.client_status)}
+                    helperText={formik.touched.client_status && formik.errors.client_status}
                   >
-                    {t(label)} {/* Translate the label */}
-                  </MenuItem >
-                ))}
-              </TextField>
-            </Grid>
+                    {Object.entries(clientStatusMapping).map(([key, label]) => (
+                      <MenuItem
+                        key={key} value={key}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {t(label)} {/* Translate the label */}
+                      </MenuItem >
+                    ))}
+                  </TextField>
+                </Grid>
+              )
+            }
           </Grid>
           <Divider sx={{ my: 3 }} >{t('common.formBasicInfo')}</Divider>
           <Grid container spacing={3}>
@@ -316,28 +320,32 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
                 disabled={formik.isSubmitting}
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <CustomAutocomplete
-                data={unassignedLocations}
-                searchKey={'street_address'}
-                disabled={formik.isSubmitting}
-                label={t('clients.clientUnassignedLocations')}
-                getOptionLabel={(item: BuildingLocation) => item.street_address + ' ' + item.street_number + ', ' + item.city || ''}
-                renderOption={(item) => (
-                  <Typography key={item.id}>
-                    {item.street_address} {item.street_number}, {item.city}
-                  </Typography>
-                )}
-                onValueChange={(value) => {
-                  if (value) {
-                    formik.setFieldValue('unassigned_location_id', value);
-                  } else {
-                    formik.setFieldValue('unassigned_location_id', null);
-                  }
-                }}
-                selectedItem={formik.values.unassigned_location_id ? unassignedLocations.find(loc => loc.id === formik.values.unassigned_location_id) : undefined}
-              />
-            </Grid>
+            {
+              clientData && showClientActions && (
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <CustomAutocomplete
+                    data={unassignedLocations}
+                    searchKey={'street_address'}
+                    disabled={formik.isSubmitting}
+                    label={t('clients.clientUnassignedLocations')}
+                    getOptionLabel={(item: BuildingLocation) => item.street_address + ' ' + item.street_number + ', ' + item.city || ''}
+                    renderOption={(item) => (
+                      <Typography key={item.id}>
+                        {item.street_address} {item.street_number}, {item.city}
+                      </Typography>
+                    )}
+                    onValueChange={(value) => {
+                      if (value) {
+                        formik.setFieldValue('unassigned_location_id', value);
+                      } else {
+                        formik.setFieldValue('unassigned_location_id', null);
+                      }
+                    }}
+                    selectedItem={formik.values.unassigned_location_id ? unassignedLocations.find(loc => loc.id === formik.values.unassigned_location_id) : undefined}
+                  />
+                </Grid>
+              )
+            }
           </Grid>
           {
             showAdvancedSettings && (
@@ -505,12 +513,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
                   </PopupModal>
                 </Stack>
               </>
-            ) :
-              <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
-                <Typography variant="body2" color="text.secondary">
-                  {t('clients.noClientData')}
-                </Typography>
-              </Stack>
+            ) : null
           }
 
         </CardContent>
