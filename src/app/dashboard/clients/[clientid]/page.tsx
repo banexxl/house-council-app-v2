@@ -8,6 +8,7 @@ import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth'
 import { logout } from 'src/app/auth/actions'
+import { redirect } from 'next/navigation'
 
 export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
@@ -15,13 +16,17 @@ export default async function Page({ params }: {
 
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
 
-  console.log('admin', admin);
-  console.log('tenant', tenant);
-  console.log('client', client);
-
   if (!admin || tenant || client) {
     logout()
   };
+
+  if (client) {
+    redirect('/dashboard/account');
+  }
+
+  if (tenant) {
+    redirect('/dashboard/products');
+  }
 
   const { clientid } = await params
   const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }] = await Promise.all([

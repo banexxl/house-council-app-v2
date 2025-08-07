@@ -22,6 +22,11 @@ const Page = async ({ params }: any) => {
     redirect('/dashboard/products');
   }
 
+  if (client) {
+    redirect('/dashboard/account');
+  }
+
+
   const allClients = await readAllClientsAction()
   const { billingInformationId } = await params
   const { readClientBillingInformationData } = await readClientBillingInformation(billingInformationId)

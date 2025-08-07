@@ -19,6 +19,10 @@ export default async function TableEditorPage() {
           redirect('/dashboard/products');
      }
 
+     if (client) {
+          redirect('/dashboard/account');
+     }
+
      const [
           readFeaturesData,
      ] = await Promise.all([

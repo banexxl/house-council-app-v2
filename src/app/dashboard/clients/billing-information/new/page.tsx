@@ -22,6 +22,11 @@ const Page = async () => {
     redirect('/dashboard/products');
   }
 
+  if (client) {
+    redirect('/dashboard/account');
+  }
+
+
   const allClients = await readAllClientsAction()
 
   return (

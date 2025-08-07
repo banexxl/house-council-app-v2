@@ -21,6 +21,10 @@ const Page = async () => {
     redirect('/dashboard/products');
   }
 
+  if (client) {
+    redirect('/dashboard/account');
+  }
+
   const [{ getAllClientsActionData }] = await Promise.all([
     readAllClientsAction(),
   ]);

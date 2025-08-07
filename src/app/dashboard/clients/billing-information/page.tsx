@@ -21,6 +21,11 @@ const Page = async () => {
     redirect('/dashboard/products');
   }
 
+  if (client) {
+    redirect('/dashboard/account');
+  }
+
+
   const [
     { readAllClientBillingInformationData: clientBillingInfo },
     { getAllClientsActionData: clients },
