@@ -36,6 +36,8 @@ export const tokens = {
     btnUpdate: 'common.btnUpdate',
     btnRemove: 'common.btnRemove',
     btnRemoveAll: 'common.btnRemoveAll',
+    logout: 'common.logout',
+    loggingOut: 'common.loggingOut',
     btnSearch: 'common.btnSearch',
     btnClear: 'common.btnClear',
     btnImport: 'common.btnImport',

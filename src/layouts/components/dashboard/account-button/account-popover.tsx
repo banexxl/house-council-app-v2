@@ -24,6 +24,8 @@ import { logout } from 'src/app/auth/actions';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { User } from '@supabase/supabase-js';
 import { Tooltip } from '@mui/material';
+import { checkIfUserExistsAndReturnDataAndSessionObject, UserDataCombined } from 'src/libs/supabase/server-auth';
+import { useTranslation } from 'react-i18next';
 
 interface AccountPopoverProps {
   anchorEl: null | Element;
@@ -35,13 +37,14 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   const { anchorEl, onClose, open, ...other } = props;
   const router = useRouter();
   const mockedUser = useMockedUser();
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<UserDataCombined>();
   const [isPending, startTransition] = useTransition()
+  const { t } = useTranslation();
 
   useEffect(() => {
     const getUser = async () => {
-      const { data, error } = await supabaseBrowserClient.auth.getSession();
-      setUser(data.session?.user);
+      const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
+      setUser(userData);
     }
     getUser();
   }, []);
@@ -68,19 +71,30 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
       disableScrollLock
       onClose={onClose}
       open={!!open}
-      PaperProps={{ sx: { width: 200 } }}
+      slotProps={{
+        paper: {
+          sx: {
+            width: 300,
+          },
+        },
+      }}
       {...other}
     >
       <Box sx={{ p: 2 }}>
-        {/* <Typography variant="body1">{user?.}</Typography> */}
-        <Tooltip title={user?.email}>
+        <Typography variant="body1">{
+          user?.admin ? <strong>{user.admin.first_name}</strong>
+            : user?.client ? <strong>{user.client.name}</strong>
+              : user?.tenant ? <strong>{user.tenant.first_name + ' ' + user.tenant.last_name}</strong>
+                : <strong>User</strong>
+        }</Typography>
+        <Tooltip title={user?.userData?.email || 'No email available'}>
           <Typography
             color="text.secondary"
             variant="body2"
             noWrap
             sx={{ maxWidth: 180 }}
           >
-            {user?.email?.slice(0, 20)}{user?.email && user.email.length > 20 ? '...' : ''}
+            {user?.userData?.email?.slice(0, 20)}{user?.userData?.email && user.userData.email.length > 20 ? '...' : ''}
           </Typography>
         </Tooltip>
       </Box>
@@ -88,7 +102,11 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
       <Box sx={{ p: 1 }}>
         <ListItemButton
           component={RouterLink}
-          href={paths.dashboard.social.profile}
+          href={user?.admin ? paths.dashboard.index
+            : user?.client ? paths.dashboard.account
+              : user?.tenant ? paths.dashboard.social.profile
+                : paths.dashboard.index
+          }
           onClick={onClose}
           sx={{
             borderRadius: 1,
@@ -101,7 +119,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
               <User03Icon />
             </SvgIcon>
           </ListItemIcon>
-          <ListItemText primary={<Typography variant="body1">Profile</Typography>} />
+          <ListItemText primary={<Typography variant="body1">{t('nav.profile')}</Typography>} />
         </ListItemButton>
         <ListItemButton
           component={RouterLink}
@@ -118,7 +136,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
               <Settings04Icon />
             </SvgIcon>
           </ListItemIcon>
-          <ListItemText primary={<Typography variant="body1">Settings</Typography>} />
+          <ListItemText primary={<Typography variant="body1">{t('common.settings')}</Typography>} />
         </ListItemButton>
         <ListItemButton
           component={RouterLink}
@@ -135,7 +153,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
               <CreditCard01Icon />
             </SvgIcon>
           </ListItemIcon>
-          <ListItemText primary={<Typography variant="body1">Billing</Typography>} />
+          <ListItemText primary={<Typography variant="body1">{t('nav.billingInformation')}</Typography>} />
         </ListItemButton>
       </Box>
       <Divider sx={{ my: '0 !important' }} />
@@ -152,7 +170,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
           size="small"
           disabled={isPending}
         >
-          {isPending ? 'Logging out...' : 'Logout'}
+          {isPending ? t('common.loggingOut') : t('common.logout')}
         </Button>
       </Box>
     </Popover>

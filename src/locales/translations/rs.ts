@@ -38,6 +38,8 @@ export const rs = {
      [tokens.common.btnUpload]: 'Pošalji',
      [tokens.common.btnAdd]: 'Dodaj',
      [tokens.common.btnUpdate]: 'Izmeni',
+     [tokens.common.logout]: 'Odjava',
+     [tokens.common.loggingOut]: 'Odjavljujem...',
      [tokens.common.btnRemove]: 'Ukloni',
      [tokens.common.btnRemoveAll]: 'Ukloni sve',
      [tokens.common.btnSearch]: 'Traži',

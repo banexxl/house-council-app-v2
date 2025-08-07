@@ -38,6 +38,8 @@ export const en = {
   [tokens.common.btnUpload]: 'Upload',
   [tokens.common.btnAdd]: 'Add',
   [tokens.common.btnUpdate]: 'Update',
+  [tokens.common.logout]: 'Logout',
+  [tokens.common.loggingOut]: 'Logging out...',
   [tokens.common.btnRemove]: 'Remove',
   [tokens.common.btnRemoveAll]: 'Remove all',
   [tokens.common.btnSearch]: 'Search',

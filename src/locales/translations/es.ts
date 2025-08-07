@@ -38,6 +38,8 @@ export const es = {
   [tokens.common.btnUpload]: 'Subir',
   [tokens.common.btnAdd]: 'Añadir',
   [tokens.common.btnUpdate]: 'Actualizar',
+  [tokens.common.logout]: 'Cerrar sesión',
+  [tokens.common.loggingOut]: 'Cerrando sesión...',
   [tokens.common.btnRemove]: 'Quitar',
   [tokens.common.btnRemoveAll]: 'Quitar todo',
   [tokens.common.btnSearch]: 'Buscar',
