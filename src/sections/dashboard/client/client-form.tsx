@@ -78,7 +78,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
           const clientId = saveClientResponse.saveClientActionData?.id;
           if (!currentRoute.includes(clientId!)) {
             setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
-            router.push(paths.dashboard.clients.details + '/' + clientId);
+            if (showClientActions) {
+              router.push(paths.dashboard.clients.details + '/' + clientId);
+            } else (
+              router.push(paths.dashboard.account)
+            )
           }
           toast.success(t('clients.clientSaved'))
         } else if (saveClientResponse.saveClientActionError) {
