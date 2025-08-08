@@ -18,11 +18,11 @@ import { paths } from 'src/paths'
 import toast from 'react-hot-toast'
 import { Client, clientInitialValues, clientStatusMapping, clientTypeMapping, clientValidationSchema } from 'src/types/client'
 import { useTranslation } from 'react-i18next'
-import LocationAutocomplete, { AutocompleteRef } from '../locations/autocomplete'
+import LocationAutocomplete from '../locations/autocomplete'
 import { createOrUpdateClientAction, sendPasswordRecoveryEmail, sendMagicLink, removeAllMfaFactors, banUser, unbanUser } from 'src/app/actions/client/client-actions'
 import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
-import { useRouter, usePathname, notFound } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { PopupModal } from 'src/components/modal-dialog'
 import { CustomAutocomplete } from 'src/components/autocomplete-custom'
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
@@ -540,9 +540,13 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
             color="inherit"
             component={RouterLink}
             disabled={formik.isSubmitting}
-            href={paths.dashboard.clients.index}
+            href={
+              showClientActions ?
+                paths.dashboard.clients.index :
+                paths.dashboard.index
+            }
           >
-            Cancel
+            {t('common.btnCancel')}
           </Button>
         </Stack>
       </Card>
