@@ -26,7 +26,6 @@ export const resetTenantPassword = async (
           type: 'recovery',
           token_hash: token, // Use the token as the hash
      });
-     console.log('error', error);
 
      if (error) return { success: false, error: error.message };
 
@@ -225,7 +224,6 @@ export const createOrUpdateTenantAction = async (
           const { data: invitedUser, error: inviteError } = await adminSupabase.auth.resetPasswordForEmail(tenantData.email!, {
                redirectTo: process.env.NEXT_PUBLIC_SUPABASE_PASSWORD_RECOVERY_REDIRECT_URL,
           });
-          console.log('invitedUser', invitedUser, 'inviteError', inviteError);
 
           revalidatePath(`/dashboard/tenants/${insertedTenant.id}`);
           return {

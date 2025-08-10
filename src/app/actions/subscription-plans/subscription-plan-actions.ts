@@ -40,8 +40,6 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           const { error: featureInsertError } = await supabase
                .from("tblSubscriptionPlans_Features")
                .insert(featureEntries);
-          console.log(featureEntries);
-          console.log('error', featureInsertError);
 
           if (featureInsertError) {
                return {

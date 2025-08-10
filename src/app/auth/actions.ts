@@ -33,7 +33,6 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
           .select('id')
           .eq('email', email)
           .single();
-     console.log('Admin data:', admin);
 
      if (admin) {
           userType = 'admin';
@@ -48,7 +47,6 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
                .select('id')
                .eq('email', email)
                .single();
-          console.log('Client data:', client);
 
           if (client) {
                userType = 'client';
@@ -315,12 +313,6 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
           }
      }
-
-     // const { data, error } = await supabase.auth.admin.updateUserById('4c8d3043-33a0-47b7-8443-4818edbc49e6', {
-     //      password: 'Banned983983!'
-     // });
-     // console.log('User password updated:', data, error);
-
 
      const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({
           email: values.email,
