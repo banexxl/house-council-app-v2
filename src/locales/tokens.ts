@@ -494,6 +494,12 @@ export const tokens = {
     subscriptionPlanPricePerMonth: 'subscriptionPlans.subscriptionPlanPricePerMonth',
     subscriptionPlanMonthly: 'subscriptionPlans.subscriptionPlanMonthly',
     subscriptionPlanYearly: 'subscriptionPlans.subscriptionPlanYearly',
+    subscriptionPlanStatusPromo: 'subscriptionPlans.statusPromo',
+    subscriptionPlanStatusInactive: 'subscriptionPlans.statusInactive',
+    subscriptionPlanStatusArchived: 'subscriptionPlans.statusArchived',
+    subscriptionPlanStatusScheduled: 'subscriptionPlans.statusScheduled',
+    subscriptionPlanStatusTrial: 'subscriptionPlans.statusTrial',
+    subscriptionPlanStatusActive: 'subscriptionPlans.statusActive',
   },
   tenants: {
     tenantsList: 'tenants.tenantsList',

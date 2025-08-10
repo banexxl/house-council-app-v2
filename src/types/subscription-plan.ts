@@ -1,6 +1,15 @@
 import * as Yup from 'yup';
 
-export type SubscriptionStatus = 'trialing' | 'active' | 'canceled' | 'past_due'; // extend if needed
+export type SubscriptionStatus = 'promo' | 'inactive' | 'archived' | 'scheduled' | 'trial' | 'active';
+
+export const subscriptionPlanStatusOptions: { value: SubscriptionStatus, label: string }[] = [
+     { value: 'promo', label: 'subscriptionPlans.statusPromo' },
+     { value: 'inactive', label: 'subscriptionPlans.statusInactive' },
+     { value: 'archived', label: 'subscriptionPlans.statusArchived' },
+     { value: 'scheduled', label: 'subscriptionPlans.statusScheduled' },
+     { value: 'trial', label: 'subscriptionPlans.statusTrial' },
+     { value: 'active', label: 'subscriptionPlans.statusActive' }
+]
 
 export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
 
@@ -10,7 +19,7 @@ export type SubscriptionPlan = {
      updated_at: Date;
      name: string;
      description: string;
-     status_id: string;
+     status: string;
      is_billed_annually: boolean;
      annual_discount_percentage: number;
      is_discounted: boolean;
@@ -27,7 +36,7 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      updated_at: new Date(),
      name: '',
      description: '',
-     status_id: '',
+     status: '',
      is_billed_annually: false,
      annual_discount_percentage: 0,
      is_discounted: false,
@@ -42,7 +51,7 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
 export const subscriptionPlanValidationSchema = Yup.object({
      name: Yup.string().required("Required"),
      description: Yup.string(),
-     status_id: Yup.string().required("Required"),
+     status: Yup.string().required("Required"),
      is_billed_annually: Yup.boolean(),
      annual_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      is_discounted: Yup.boolean(),

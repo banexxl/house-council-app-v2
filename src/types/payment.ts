@@ -33,3 +33,21 @@ export const paymentMethodMapping: Record<PaymentMethod, string> = {
      credit_card: 'payments.lblPaymentMethodCreditCard',
 };
 
+export type Invoice = {
+     id?: string; // uuid
+     created_at: Date; // ISO timestamp
+     updated_at: Date; // ISO timestamp
+     total_paid: number;
+     invoice_number: string;
+     subscription_plan: string; // uuid
+     client: string; // uuid
+     billing_information: string; // uuid
+     status: string; // uuid
+     currency: string;
+     refunded_at: string | null;
+     is_recurring: boolean;
+     tax_percentage: number; // percentage value
+     notes?: string;
+     invoice_url?: string
+}
+

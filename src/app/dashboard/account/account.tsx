@@ -17,8 +17,9 @@ import { AccountNotificationsSettings } from 'src/sections/dashboard/account/acc
 import { AccountTeamSettings } from 'src/sections/dashboard/account/account-team-settings';
 import { AccountSecuritySettings } from 'src/sections/dashboard/account/account-security-settings';
 import { Client } from 'src/types/client';
-
-const now = new Date();
+import { SubscriptionPlan } from 'src/types/subscription-plan';
+import { ClientBillingInformation } from 'src/types/client-billing-information';
+import { Invoice } from 'src/types/payment';
 
 const tabs = [
      { label: 'General', value: 'general' },
@@ -29,10 +30,14 @@ const tabs = [
 ];
 
 export interface AccountProps {
-     client: Client
+     client: Client;
+     clientSubscriptionPlan: SubscriptionPlan | null;
+     clientBillingInfo: ClientBillingInformation[] | null;
+     clientInvoices: Invoice[] | undefined | null;
+     subscriptionPlans: SubscriptionPlan[] | null;
 }
 
-const Account = ({ client }: AccountProps) => {
+const Account = ({ client, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans }: AccountProps) => {
      const [currentTab, setCurrentTab] = useState<string>('general');
 
      const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
@@ -75,8 +80,10 @@ const Account = ({ client }: AccountProps) => {
                          )}
                          {currentTab === 'billing' && (
                               <AccountBillingSettings
-                                   plan="standard"
-                                   invoices={[]}
+                                   plan={clientSubscriptionPlan?.id!}
+                                   invoices={clientInvoices}
+                                   billingInfo={clientBillingInfo}
+                                   subscriptionPlans={subscriptionPlans}
                               />
                          )}
                          {currentTab === 'team' && (

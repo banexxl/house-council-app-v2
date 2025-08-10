@@ -2,11 +2,9 @@
 
 import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Table from '@mui/material/Table';
@@ -28,14 +26,12 @@ import { PopupModal } from 'src/components/modal-dialog';
 import { applySort } from 'src/utils/apply-sort';
 import { useRouter } from 'next/navigation';
 import { FilterBar } from '../client/table-filter';
-import { SubscriptionPlan } from 'src/types/subscription-plan';
+import { SubscriptionPlan, subscriptionPlanStatusOptions } from 'src/types/subscription-plan';
 import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plans/subscription-plan-actions';
 import toast from 'react-hot-toast';
-import { BaseEntity } from 'src/types/base-entity';
 
 interface SubscriptionPlanListTableProps {
      subscriptionPlans?: SubscriptionPlan[];
-     subscriptionPlanStatuses?: BaseEntity[];
 }
 
 interface DeleteSubscriptionPlanData {
@@ -105,7 +101,7 @@ const useSubscriptionPlanSearch = () => {
      };
 };
 
-export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscriptionPlans = [], subscriptionPlanStatuses }) => {
+export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscriptionPlans = [] }) => {
 
      const [count, setCount] = useState(subscriptionPlans.length);
      const subscriptionPlanIds = useMemo(() => subscriptionPlans.map((subscriptionPlan: SubscriptionPlan) => subscriptionPlan.id), [subscriptionPlans]);
@@ -277,7 +273,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                        </TableCell>
                                                        <TableCell sx={{ width: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                             {
-                                                                 subscriptionPlanStatuses?.find((cs) => cs.id === subscriptionPlan.status_id)?.name ?? ''
+                                                                 subscriptionPlanStatusOptions?.find((cs) => cs.value === subscriptionPlan.status)?.label ?? ''
                                                             }
                                                        </TableCell>
                                                        <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

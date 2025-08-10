@@ -549,6 +549,12 @@ export const es = {
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Precio con Descuento',
   [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Mensual',
   [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Anual',
+  [tokens.subscriptionPlans.subscriptionPlanStatusPromo]: 'Promoción',
+  [tokens.subscriptionPlans.subscriptionPlanStatusInactive]: 'Inactivo',
+  [tokens.subscriptionPlans.subscriptionPlanStatusArchived]: 'Archivado',
+  [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Programado',
+  [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Prueba',
+  [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Activo',
   //#endregion
   //#region Page Errors
   [tokens.errors.page.notFound]: 'Página no encontrada',

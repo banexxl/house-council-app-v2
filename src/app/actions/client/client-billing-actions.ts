@@ -127,3 +127,15 @@ export const readAllClientBillingInformation = async (): Promise<{
           readAllClientBillingInformationData: data as (ClientBillingInformation & { client: Client })[],
      };
 };
+
+export const readBillingInfoFromClientId = async (clientId: string): Promise<{ readClientBillingInformationSuccess: boolean; readClientBillingInformationData?: ClientBillingInformation[]; readClientBillingInformationError?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data, error } = await supabase
+          .from('tblBillingInformation')
+          .select('*')
+          .eq('client_id', clientId)
+     if (error) {
+          return { readClientBillingInformationSuccess: false, readClientBillingInformationError: error.message }
+     }
+     return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data }
+}

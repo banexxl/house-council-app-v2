@@ -546,6 +546,12 @@ export const en = {
   [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Discounted Price',
   [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Monthly',
   [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Yearly',
+  [tokens.subscriptionPlans.subscriptionPlanStatusPromo]: 'Promo',
+  [tokens.subscriptionPlans.subscriptionPlanStatusInactive]: 'Inactive',
+  [tokens.subscriptionPlans.subscriptionPlanStatusArchived]: 'Archived',
+  [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Scheduled',
+  [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Trial',
+  [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Active',
   //#endregion
   //#region Page Errors
   [tokens.errors.page.notFound]: 'Page not found',

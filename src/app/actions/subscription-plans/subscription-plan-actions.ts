@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { SubscriptionPlan } from "src/types/subscription-plan";
+import { log } from "node:console";
 
 export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):
      Promise<{
@@ -39,6 +40,8 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           const { error: featureInsertError } = await supabase
                .from("tblSubscriptionPlans_Features")
                .insert(featureEntries);
+          console.log(featureEntries);
+          console.log('error', featureInsertError);
 
           if (featureInsertError) {
                return {
@@ -226,15 +229,15 @@ export const readSubscriptionPlan = async (id: string): Promise<{
 
 /**
  * Reads all subscription plans from the database.
- * @returns {Promise<{readAllSubscriptionPlansSuccess: boolean, subscriptionPlanData?: SubscriptionPlan[], readAllSubscriptionPlansError?: string}>}
+ * @returns {Promise<{readAllSubscriptionPlansSuccess: boolean, subscriptionPlansData?: SubscriptionPlan[], readAllSubscriptionPlansError?: string}>}
  * A promise that resolves to an object with the following properties:
  * - `readAllSubscriptionPlansSuccess`: A boolean indicating whether the subscription plans were read successfully.
- * - `subscriptionPlanData`: An array of subscription plans, if successful.
+ * - `subscriptionPlansData`: An array of subscription plans, if successful.
  * - `readAllSubscriptionPlansError`: The error message, if any occurred during the reading process.
  */
 
 export const readAllSubscriptionPlans = async (): Promise<{
-     readAllSubscriptionPlansSuccess: boolean; subscriptionPlanData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
+     readAllSubscriptionPlansSuccess: boolean; subscriptionPlansData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
 }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -253,8 +256,9 @@ export const readAllSubscriptionPlans = async (): Promise<{
           return { readAllSubscriptionPlansSuccess: false, readAllSubscriptionPlansError: planError.message };
      }
 
-     return { readAllSubscriptionPlansSuccess: true, subscriptionPlanData: subscriptionPlans };  // Return the subscription plans
+     return { readAllSubscriptionPlansSuccess: true, subscriptionPlansData: subscriptionPlans };  // Return the subscription plans
 };
+
 export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ deleteSubscriptionPlansSuccess: boolean, deleteSubscriptionPlansError?: any }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -275,4 +279,104 @@ export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ del
 
      revalidatePath("/dashboard/subscriptions");
      return { deleteSubscriptionPlansSuccess: true };
+};
+
+export const readSubscriptionPlanFromClientId = async (clientId: string): Promise<{
+     readSubscriptionPlanFromClientIdSuccess: boolean;
+     subscriptionPlan?: SubscriptionPlan;
+     readSubscriptionPlanFromClientIdError?: string;
+}> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     // Fetch the subscription_id from tblClient_Subscription based on client_id
+     const { data: clientSubscription, error: clientSubscriptionError } = await supabase
+          .from("tblClient_Subscription")
+          .select("subscription_plan_id")
+          .eq("client_id", clientId)
+          .single();
+
+     if (clientSubscriptionError || !clientSubscription) {
+          return {
+               readSubscriptionPlanFromClientIdSuccess: false,
+               readSubscriptionPlanFromClientIdError: clientSubscriptionError?.message || "Client subscription not found."
+          };
+     }
+
+     // Now fetch the subscription plan using the subscription_id from tblSubscriptionPlans
+     const { data: subscriptionPlan, error: planError } = await supabase
+          .from("tblSubscriptionPlans")
+          .select(`*`)
+          .eq("id", clientSubscription.subscription_plan_id)
+          .single()
+
+     if (planError) {
+          return {
+               readSubscriptionPlanFromClientIdSuccess: false,
+               readSubscriptionPlanFromClientIdError: planError.message
+          };
+     }
+
+     return {
+          readSubscriptionPlanFromClientIdSuccess: true,
+          subscriptionPlan
+     };
+};
+
+export const readAllActiveSubscriptionPlans = async (): Promise<{
+     readAllActiveSubscriptionPlansSuccess: boolean;
+     activeSubscriptionPlansData?: SubscriptionPlan[];
+     readAllActiveSubscriptionPlansError?: string;
+}> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase
+          .from("tblSubscriptionPlans")
+          .select(`
+      *,
+      tblSubscriptionPlans_Features (
+        feature_id,
+        tblFeatures (*)
+      )
+    `)
+          .eq("status", "active");
+
+     if (error) {
+          return {
+               readAllActiveSubscriptionPlansSuccess: false,
+               readAllActiveSubscriptionPlansError: error.message,
+          };
+     }
+
+     // Map DB rows -> SubscriptionPlan with features: string[]
+     const activeSubscriptionPlansData: SubscriptionPlan[] =
+          (data ?? []).map((plan: any) => {
+               const {
+                    tblSubscriptionPlans_Features: relations = [],
+                    created_at,
+                    updated_at,
+                    ...rest
+               } = plan;
+
+               // Prefer a stable string field from tblFeatures; fall back sensibly
+               const features: string[] = relations
+                    .map((rel: any) =>
+                         rel?.tblFeatures?.key ??
+                         rel?.tblFeatures?.name ??
+                         String(rel?.feature_id)
+                    )
+                    .filter(Boolean);
+
+               return {
+                    ...rest,
+                    created_at: created_at ? new Date(created_at) : new Date(0),
+                    updated_at: updated_at ? new Date(updated_at) : new Date(0),
+                    features,
+               } as SubscriptionPlan;
+          });
+
+     return {
+          readAllActiveSubscriptionPlansSuccess: true,
+          activeSubscriptionPlansData,
+     };
 };

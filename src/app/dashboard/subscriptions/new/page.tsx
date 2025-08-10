@@ -7,7 +7,6 @@ import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 export default async function SubscriptionEditorPage() {
 
      const features = await readAllEntities<BaseEntity & FeatureExtension>('tblFeatures');
-     const subscriptionStatuses = await readAllEntities<BaseEntity>('tblSubscriptionPlanStatuses');
 
      return (
           <Box
@@ -21,7 +20,6 @@ export default async function SubscriptionEditorPage() {
                     <Stack spacing={4}>
                          <SubscriptionEditor
                               features={features || []}
-                              subscriptionStatuses={subscriptionStatuses || []}
                          />
                     </Stack>
                </Container>

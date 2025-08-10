@@ -1,14 +1,10 @@
 import { Box, Container, Stack } from "@mui/material";
-import { readAllEntities } from "src/app/actions/base-entity-actions";
 import { readAllSubscriptionPlans } from "src/app/actions/subscription-plans/subscription-plan-actions";
 import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
-import { BaseEntity } from "src/types/base-entity";
-
 
 export default async function Page() {
 
      const subscriptionPlans = await readAllSubscriptionPlans();
-     const subscriptionPlanStatuses = await readAllEntities<BaseEntity>('tblSubscriptionPlanStatuses');
 
      return (
           <Box
@@ -20,7 +16,9 @@ export default async function Page() {
           >
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <SubscriptionTable subscriptionPlans={subscriptionPlans.subscriptionPlanData} subscriptionPlanStatuses={subscriptionPlanStatuses} />
+                         <SubscriptionTable
+                              subscriptionPlans={subscriptionPlans.subscriptionPlansData}
+                         />
                     </Stack>
                </Container>
           </Box>

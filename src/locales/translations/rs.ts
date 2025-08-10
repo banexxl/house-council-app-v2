@@ -551,6 +551,12 @@ export const rs = {
      [tokens.subscriptionPlans.subscriptionPlanDiscountedPrice]: 'Cena sa popustom',
      [tokens.subscriptionPlans.subscriptionPlanMonthly]: 'Mesečno',
      [tokens.subscriptionPlans.subscriptionPlanYearly]: 'Godišnje',
+     [tokens.subscriptionPlans.subscriptionPlanStatusPromo]: 'Promocija',
+     [tokens.subscriptionPlans.subscriptionPlanStatusInactive]: 'Neaktivan',
+     [tokens.subscriptionPlans.subscriptionPlanStatusArchived]: 'Arhiviran',
+     [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Zakazan',
+     [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Probni',
+     [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Aktivan',
      //#endregion
      //#region Errors
      [tokens.errors.page.notFound]: 'Stranica nije pronađena',

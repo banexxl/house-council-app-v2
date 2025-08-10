@@ -4,7 +4,7 @@ import { Form, Formik, useFormik } from "formik"
 import * as Yup from "yup"
 import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, Box, } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
-import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
+import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanStatusOptions, subscriptionPlanValidationSchema, SubscriptionStatus } from "src/types/subscription-plan"
 import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plans/subscription-plan-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
@@ -16,26 +16,25 @@ import { updateFeature } from "src/app/actions/feature/feature-actions"
 import { useState } from "react"
 
 interface SubscriptionEditorProps {
-     subscriptionStatuses: BaseEntity[]
      features: (BaseEntity & FeatureExtension)[]
-     subscriptionPlanData?: SubscriptionPlan
+     subscriptionPlansData?: SubscriptionPlan
 }
 
-export default function SubscriptionEditor({ subscriptionStatuses, features, subscriptionPlanData, }: SubscriptionEditorProps) {
+export default function SubscriptionEditor({ features, subscriptionPlansData, }: SubscriptionEditorProps) {
 
      const { t } = useTranslation()
      const router = useRouter()
 
-     if (subscriptionPlanData?.id && !isUUIDv4(subscriptionPlanData?.id)) {
+     if (subscriptionPlansData?.id && !isUUIDv4(subscriptionPlansData?.id)) {
           notFound()
      }
 
      const formik = useFormik({
           initialValues: {
                ...subscriptionPlanInitialValues,
-               ...subscriptionPlanData,
-               base_price: subscriptionPlanData?.base_price || 0,
-               features: subscriptionPlanData?.features?.map((f: any) => f.id) || [],
+               ...subscriptionPlansData,
+               base_price: subscriptionPlansData?.base_price || 0,
+               features: subscriptionPlansData?.features?.map((f: any) => f.id) || [],
           },
           validationSchema: Yup.object().shape({
                ...subscriptionPlanValidationSchema.fields,
@@ -52,7 +51,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                try {
                     let response;
                     if (values.id && values.id !== '') {
-                         response = await updateSubscriptionPlan({ ...payload, id: subscriptionPlanData!.id });
+                         response = await updateSubscriptionPlan({ ...payload, id: subscriptionPlansData!.id });
                          if (response.updateSubscriptionPlanSuccess) {
                               toast.success("Subscription plan updated successfully!");
                               formik.resetForm({ values: { ...formik.values } });
@@ -104,7 +103,6 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           return { monthly_total_price, total_price_with_discounts };
      };
 
-
      const calculatePrices = () => getCalculatedPrices(formik.values, featurePrices);
 
      const updateCalculatedPrices = () => {
@@ -132,7 +130,7 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
 
                await updateSubscriptionPlan({
                     ...formik.values,
-                    id: subscriptionPlanData!.id,
+                    id: subscriptionPlansData!.id,
                     monthly_total_price: monthly_total_price,
                     total_price_with_discounts: total_price_with_discounts,
                });
@@ -141,14 +139,12 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
           }
      };
 
-
      return (
           <form onSubmit={formik.handleSubmit}>
-               <SubscriptionFormHeader subscriptionPlan={subscriptionPlanData} />
+               <SubscriptionFormHeader subscriptionPlan={subscriptionPlansData} />
                <Grid container spacing={3}>
                     <Grid size={{ xs: 12, md: 6 }}>
                          <Stack spacing={3}>
-
                               <Card>
                                    <CardContent>
                                         <TextField
@@ -181,15 +177,15 @@ export default function SubscriptionEditor({ subscriptionStatuses, features, sub
                                              <InputLabel id="status-label">{t("subscriptionPlans.subscriptionPlanStatus")}</InputLabel>
                                              <Select
                                                   labelId="status-label"
-                                                  id="status_id"
-                                                  name="status_id"
-                                                  value={formik.values.status_id}
+                                                  id="status"
+                                                  name="status"
+                                                  value={formik.values.status}
                                                   onChange={formik.handleChange}
                                                   label={t("subscriptionPlans.subscriptionPlanStatus")}
                                              >
-                                                  {subscriptionStatuses.map((status: BaseEntity) => (
-                                                       <MenuItem key={status.id} value={status.id}>
-                                                            {status.name}
+                                                  {subscriptionPlanStatusOptions.map((status) => (
+                                                       <MenuItem key={status.value} value={status.value}>
+                                                            {t(status.label)}
                                                        </MenuItem>
                                                   ))}
                                              </Select>
