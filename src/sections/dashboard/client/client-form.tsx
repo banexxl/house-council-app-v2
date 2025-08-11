@@ -175,58 +175,61 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
             folderName={formik.values.name}
             initialValue={clientData?.id == '' ? '' : clientData?.avatar}
           />
-          <Divider sx={{ my: 3 }} >{t('clients.clientFormSettings')}</Divider>
-          <Grid container spacing={3} sx={{ mb: 2 }}>
-            <Grid
-              size={{ xs: 12, md: 6 }}
-            >
-              <TextField
-                select
-                fullWidth
-                label={t('clients.clientType')}
-                name="client_type"
-                disabled={formik.isSubmitting}
-                value={formik.values.client_type || ''}
-                onChange={formik.handleChange} // Use onChange for handling selection
-                error={!!(formik.touched.client_type && formik.errors.client_type)}
-                helperText={formik.touched.client_type && formik.errors.client_type}
-              >
-                {Object.entries(clientTypeMapping).map(([key, label]) => (
-                  <MenuItem key={key} value={key}>
-                    {t(label)} {/* Translate the label */}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            {
-              showAdvancedSettings && (
-                <Grid
-                  size={{ xs: 12, md: 6 }}
-                >
-                  <TextField
-                    select
-                    fullWidth
-                    label={t('clients.clientStatus')}
-                    name="client_status"
-                    disabled={formik.isSubmitting}
-                    value={formik.values.client_status}
-                    onChange={formik.handleChange} // Use onChange for handling selection
-                    error={!!(formik.touched.client_status && formik.errors.client_status)}
-                    helperText={formik.touched.client_status && formik.errors.client_status}
+          {
+            showAdvancedSettings && (
+              <>
+                <Divider sx={{ my: 3 }} >{t('clients.clientFormSettings')}</Divider>
+                <Grid container spacing={3} sx={{ mb: 2 }}>
+                  <Grid
+                    size={{ xs: 12, md: 6 }}
                   >
-                    {Object.entries(clientStatusMapping).map(([key, label]) => (
-                      <MenuItem
-                        key={key} value={key}
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        {t(label)} {/* Translate the label */}
-                      </MenuItem >
-                    ))}
-                  </TextField>
+                    <TextField
+                      select
+                      fullWidth
+                      label={t('clients.clientType')}
+                      name="client_type"
+                      disabled={formik.isSubmitting}
+                      value={formik.values.client_type || ''}
+                      onChange={formik.handleChange} // Use onChange for handling selection
+                      error={!!(formik.touched.client_type && formik.errors.client_type)}
+                      helperText={formik.touched.client_type && formik.errors.client_type}
+                    >
+                      {Object.entries(clientTypeMapping).map(([key, label]) => (
+                        <MenuItem key={key} value={key}>
+                          {t(label)} {/* Translate the label */}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
+                  <Grid
+                    size={{ xs: 12, md: 6 }}
+                  >
+                    <TextField
+                      select
+                      fullWidth
+                      label={t('clients.clientStatus')}
+                      name="client_status"
+                      disabled={formik.isSubmitting}
+                      value={formik.values.client_status}
+                      onChange={formik.handleChange} // Use onChange for handling selection
+                      error={!!(formik.touched.client_status && formik.errors.client_status)}
+                      helperText={formik.touched.client_status && formik.errors.client_status}
+                    >
+                      {Object.entries(clientStatusMapping).map(([key, label]) => (
+                        <MenuItem
+                          key={key} value={key}
+                          sx={{ cursor: 'pointer' }}
+                        >
+                          {t(label)} {/* Translate the label */}
+                        </MenuItem >
+                      ))}
+                    </TextField>
+                  </Grid>
                 </Grid>
-              )
-            }
-          </Grid>
+              </>
+            )
+          }
           <Divider sx={{ my: 3 }} >{t('common.formBasicInfo')}</Divider>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 6 }}>

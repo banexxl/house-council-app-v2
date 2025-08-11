@@ -25,6 +25,7 @@ import { Invoice } from 'src/types/payment';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { GenericTable } from 'src/components/generic-table';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
+import { deleteClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
 
 interface Plan {
   id: string;
@@ -65,6 +66,16 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
 
   const { plan: currentPlan, invoices = [], billingInfo = [], subscriptionPlans = [] } = props;
   const [selectedPlan, setSelectedPlan] = useState<string>(currentPlan);
+
+  const handleDeleteConfirm = async (id: string) => {
+    const { deleteClientBillingInformationSuccess, deleteClientBillingInformationError } = await deleteClientBillingInformation([id]);
+    if (
+      !deleteClientBillingInformationSuccess
+    ) {
+      console.error(deleteClientBillingInformationError);
+      return;
+    }
+  }
 
   return (
     <Stack
@@ -220,6 +231,7 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                     },
                   ]
                 }
+                handleDeleteConfirm={() => handleDeleteConfirm}
               />
             }
           </Box>
