@@ -123,7 +123,15 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                           }}
                         >
                           {/* Placeholder for plan icon */}
-                          {/* {plan.icon} */}
+                          {
+                            plan.total_price_with_discounts >= 0 && plan.total_price_with_discounts < 300 ? (
+                              <AccountPlanIcon name='startup' />
+                            ) : plan.total_price_with_discounts >= 300 && plan.total_price_with_discounts < 400 ? (
+                              <AccountPlanIcon name='standard' />
+                            ) : (
+                              <AccountPlanIcon name='business' />
+                            )
+                          }
                         </Box>
                         <Box
                           sx={{
