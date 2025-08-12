@@ -1,5 +1,6 @@
 'use server';
 
+import { PostgrestError } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache"
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Client } from "src/types/client";
@@ -79,12 +80,12 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
      return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
 
-export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
+export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: Partial<PostgrestError> }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 
      if (ids?.length == 0) {
-          return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: "No IDs provided" };
+          return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: {} };
      }
 
      const { error } = await supabase
@@ -93,10 +94,14 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
           .in('id', ids!);
 
      if (error) {
-          return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: error.message };
+          if (error.code === '23503') {
+               return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: { code: '23503', message: 'billingInfoError.foreignKeyConstraint' } };
+          }
+          return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: { code: 'UNKNOWN_ERROR', message: error.message } };
      }
 
      revalidatePath('/dashboard/clients/billing-information');
+     revalidatePath('/dashboard/accounts');
      return { deleteClientBillingInformationSuccess: true };
 }
 

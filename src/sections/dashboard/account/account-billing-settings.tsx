@@ -26,34 +26,8 @@ import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { GenericTable } from 'src/components/generic-table';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { deleteClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
+import toast from 'react-hot-toast';
 
-interface Plan {
-  id: string;
-  icon: ReactNode;
-  name: string;
-  price: number;
-}
-
-const plans: Plan[] = [
-  {
-    id: 'startup',
-    icon: <AccountPlanIcon name="startup" />,
-    name: 'Startup',
-    price: 0,
-  },
-  {
-    id: 'standard',
-    icon: <AccountPlanIcon name="standard" />,
-    name: 'Standard',
-    price: 4.99,
-  },
-  {
-    id: 'business',
-    icon: <AccountPlanIcon name="business" />,
-    name: 'Business',
-    price: 29.99,
-  },
-];
 
 interface AccountBillingSettingsProps {
   plan: string;
@@ -69,11 +43,11 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
 
   const handleDeleteConfirm = async (id: string) => {
     const { deleteClientBillingInformationSuccess, deleteClientBillingInformationError } = await deleteClientBillingInformation([id]);
-    if (
-      !deleteClientBillingInformationSuccess
-    ) {
-      console.error(deleteClientBillingInformationError);
-      return;
+
+    if (deleteClientBillingInformationSuccess) {
+      toast.success('Billing information deleted successfully');
+    } else {
+      toast.error(deleteClientBillingInformationError?.message!);
     }
   }
 
@@ -239,7 +213,7 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                     },
                   ]
                 }
-                handleDeleteConfirm={() => handleDeleteConfirm}
+                handleDeleteConfirm={({ id }) => handleDeleteConfirm(id)}
               />
             }
           </Box>

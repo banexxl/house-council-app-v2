@@ -69,6 +69,7 @@ export const AccountPlanIcon: FC<PlanIconProps> = ({ name }) => {
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={`${name} plan`}
+      key={name}
     >
       {BaseHouse}
       {badges[name]}
