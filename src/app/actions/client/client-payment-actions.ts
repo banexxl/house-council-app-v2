@@ -58,7 +58,7 @@ export const createOrUpdateClientPayment = async (
      const { data, error } = result;
      if (error) {
           await logServerAction({
-               user_id: payment.client,
+               user_id: payment.client.id!,
                action: 'Create or Update Client Invoice - Error',
                payload: { payment },
                status: 'fail',
@@ -70,7 +70,7 @@ export const createOrUpdateClientPayment = async (
      }
 
      await logServerAction({
-          user_id: payment.client,
+          user_id: payment.client.id!,
           action: 'Create or Update Client Invoice - Success',
           payload: { payment },
           status: 'success',
@@ -151,7 +151,7 @@ export const readAllClientPayments = async (
 
      const { data, error } = await supabase
           .from('tblInvoices')
-          .select('*')
+          .select(`*, billing_information:tblBillingInformation (*), client:tblClients (*)`)
           .order('created_at', { ascending: false })
           .eq('client', clientId);
 

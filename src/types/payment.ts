@@ -1,3 +1,6 @@
+import { Client } from "./client";
+import { ClientBillingInformation } from "./client-billing-information";
+
 export type PaymentMethod =
      | 'not_selected'
      | 'cash'
@@ -40,8 +43,8 @@ export type Invoice = {
      total_paid: number;
      invoice_number: string;
      subscription_plan: string; // uuid
-     client: string; // uuid
-     billing_information: string; // uuid
+     client: Client
+     billing_information: ClientBillingInformation; // uuid
      status: string; // uuid
      currency: string;
      refunded_at: string | null;

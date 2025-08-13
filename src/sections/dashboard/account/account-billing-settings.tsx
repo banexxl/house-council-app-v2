@@ -256,6 +256,8 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
             <TableRow>
               <TableCell>Date</TableCell>
               <TableCell>Total (incl. tax)</TableCell>
+              <TableCell>Billing Information</TableCell>
+              <TableCell>Client</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -269,6 +271,8 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                   <TableRow key={invoice.id}>
                     <TableCell>{created_at}</TableCell>
                     <TableCell>{amount}</TableCell>
+                    <TableCell>{invoice.billing_information ? `**** ${String(invoice.billing_information.card_number).slice(-4)}` : 'N/A'}</TableCell>
+                    <TableCell>{invoice.client.name ? `${invoice.client.name}` : 'N/A'}</TableCell>
                     <TableCell align="right">
                       <Link
                         color="inherit"
