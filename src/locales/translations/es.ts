@@ -395,7 +395,6 @@ export const es = {
   [tokens.clients.clientTypeAgency]: 'Agencia',
   [tokens.clients.clientTypeBusiness]: 'Cliente Empresarial',
   [tokens.clients.clientTypeEnterprise]: 'Cliente Empresarial Grande',
-  [tokens.clients.clientTypeGovernment]: 'Cliente Gubernamental',
   [tokens.clients.clientTypeIndividual]: 'Cliente Individual',
   [tokens.clients.clientStatusCancelled]: 'Cancelado',
   [tokens.clients.clientStatusPendingActivation]: 'Activación Pendiente',

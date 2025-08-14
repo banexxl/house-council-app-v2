@@ -378,7 +378,6 @@ export const de = {
   [tokens.clients.clientTypeAgency]: 'Agentur',
   [tokens.clients.clientTypeBusiness]: 'Unternehmen',
   [tokens.clients.clientTypeEnterprise]: 'Konzern',
-  [tokens.clients.clientTypeGovernment]: 'Regierung',
   [tokens.clients.clientTypeIndividual]: 'Privatperson',
   [tokens.clients.clientStatusCancelled]: 'Abgebrochen',
   [tokens.clients.clientStatusPendingActivation]: 'Aktivierung ausstehend',

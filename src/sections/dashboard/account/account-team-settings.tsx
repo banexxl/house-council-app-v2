@@ -66,14 +66,16 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
               spacing={3}
             >
               <TextField
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SvgIcon>
-                        <Mail01Icon />
-                      </SvgIcon>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  htmlInput: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SvgIcon>
+                          <Mail01Icon />
+                        </SvgIcon>
+                      </InputAdornment>
+                    ),
+                  }
                 }}
                 label="Email address"
                 name="email"

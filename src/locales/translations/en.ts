@@ -396,7 +396,6 @@ export const en = {
   [tokens.clients.clientTypeAgency]: 'Agency',
   [tokens.clients.clientTypeBusiness]: 'Business',
   [tokens.clients.clientTypeEnterprise]: 'Enterprise',
-  [tokens.clients.clientTypeGovernment]: 'Government',
   [tokens.clients.clientTypeIndividual]: 'Individual',
   [tokens.clients.clientStatusCancelled]: 'Cancelled',
   [tokens.clients.clientStatusPendingActivation]: 'Pending Activation',

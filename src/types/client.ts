@@ -1,10 +1,11 @@
 import * as Yup from 'yup';
 
+export type ClientType = 'agency' | 'business' | 'enterprise' | 'individual' | 'team_member';
+
 export const clientTypeMapping = {
   agency: 'clients.lblClientTypeAgency',
   business: 'clients.lblClientTypeBusiness',
   enterprise: 'clients.lblClientTypeEnterprise',
-  government: 'clients.lblClientTypeGovernment',
   individual: 'clients.lblClientTypeIndividual',
 }
 
@@ -15,7 +16,7 @@ export const clientStatusMapping = {
   suspended: 'clients.lblClientStatusSuspended',
   trial: 'clients.lblClientStatusTrial',
   archived: 'clients.lblClientStatusArchived',
-  vip: 'clients.lblClientStatusVIP',
+  vip: 'clients.lblClientStatusVIP'
 };
 
 
@@ -29,7 +30,7 @@ export interface Client {
   phone?: string;
   address_1: string;
   contact_person: string;
-  client_type: string;
+  client_type: ClientType;
   client_status: string;
   notes?: string;
   address_2?: string;
@@ -102,7 +103,7 @@ export const clientInitialValues: Client = {
   email: '',
   address_1: '',
   contact_person: '',
-  client_type: '',
+  client_type: 'individual',
   client_status: '',
   address_2: '',
   phone: '',

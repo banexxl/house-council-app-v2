@@ -41,7 +41,8 @@ const Page = async () => {
       readSubscriptionPlanFromClientId(client.id),
       readBillingInfoFromClientId(client.id),
       readAllClientPayments(client.id),
-      readAllActiveSubscriptionPlans()
+      readAllActiveSubscriptionPlans(),
+
     ]);
 
     if (readSubscriptionPlanFromClientIdSuccess && subscriptionPlan) {

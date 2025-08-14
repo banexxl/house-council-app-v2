@@ -397,7 +397,6 @@ export const rs = {
      [tokens.clients.clientTypeAgency]: 'Agencija',
      [tokens.clients.clientTypeBusiness]: 'Poslovni klijent',
      [tokens.clients.clientTypeEnterprise]: 'Preduzeće',
-     [tokens.clients.clientTypeGovernment]: 'Ministarstvo',
      [tokens.clients.clientTypeIndividual]: 'Fizičko lice',
      [tokens.clients.clientStatusCancelled]: 'Otkazano',
      [tokens.clients.clientStatusPendingActivation]: 'Aktivacija na čekanju',

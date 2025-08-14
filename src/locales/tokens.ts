@@ -372,7 +372,6 @@ export const tokens = {
     clientTypeAgency: 'clients.lblClientTypeAgency',
     clientTypeBusiness: 'clients.lblClientTypeBusiness',
     clientTypeEnterprise: 'clients.lblClientTypeEnterprise',
-    clientTypeGovernment: 'clients.lblClientTypeGovernment',
     clientTypeIndividual: 'clients.lblClientTypeIndividual',
     clientStatusCancelled: 'clients.lblClientStatusCancelled',
     clientStatusPendingActivation: 'clients.lblClientStatusPendingActivation',
