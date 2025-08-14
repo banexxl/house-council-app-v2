@@ -1,15 +1,9 @@
 'use client'; // Ovaj mora biti use client zbog usesettings
 
-// import { addDays, subDays, subHours, subMinutes } from 'date-fns';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
-
-import { Seo } from 'src/components/seo';
 
 import { useSettings } from 'src/hooks/use-settings';
 import { OverviewBanner } from 'src/sections/dashboard/overview/overview-banner';
@@ -38,7 +32,6 @@ const Dashboard = () => {
 
   return (
     <>
-      <Seo title="Dashboard: Overview" />
       <Box
         component="main"
         sx={{

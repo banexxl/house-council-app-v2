@@ -4,7 +4,6 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 
 export type SignInFormValues = {
      email: string;
@@ -345,6 +344,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 }
 
 export const logout = async (): Promise<{ success: boolean; error?: string }> => {
+
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.auth.signOut();
 
