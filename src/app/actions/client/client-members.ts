@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { ClientMember } from "src/types/client";
 
@@ -60,6 +61,7 @@ export const deleteClientMember = async (id: string): Promise<{ deleteClientMemb
 };
 
 export const readAllClientTeamMembers = async (clientId: string): Promise<{ readAllClientTeamMembersSuccess: boolean; readAllClientTeamMembersData?: ClientMember[]; readAllClientTeamMembersError?: string }> => {
+     console.log('Fetching all team members for client:', clientId);
 
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -68,6 +70,7 @@ export const readAllClientTeamMembers = async (clientId: string): Promise<{ read
                .from('tblClientMembers')
                .select('*')
                .eq('client_id', clientId);
+          console.log('error:', error);
 
           if (error) throw error;
 
@@ -77,25 +80,23 @@ export const readAllClientTeamMembers = async (clientId: string): Promise<{ read
      }
 };
 
-export const inviteClientMemberByResettingPassword = async (email: string, client_id: string): Promise<{ inviteClientMemberSuccess: boolean; inviteClientMemberError?: string }> => {
-
-     const supabase = await useServerSideSupabaseAnonClient();
+export const addClientMember = async (email: string, name: string, client_id: string): Promise<{ inviteClientMemberSuccess: boolean; inviteClientMemberError?: string }> => {
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
-
-     const url = `${process.env.NEXT_PUBLIC_SUPABASE_PASSWORD_RECOVERY_REDIRECT_URL!}?role=client_member&client_id=${client_id}`;
-
+     const supabase = await useServerSideSupabaseAnonClient();
      try {
-          await adminSupabase.auth.admin.inviteUserByEmail(email)
-               .then(async ({ error: inviteError }) => {
-                    if (inviteError) throw inviteError;
-                    const { error: resetPasswordError } = await supabase.auth.resetPasswordForEmail(email, {
-                         redirectTo: url.toString(),
-                    });
-                    console.log('error:', resetPasswordError);
+          const { error: createUserError } = await adminSupabase.auth.admin.createUser({ email });
 
-                    if (resetPasswordError) throw resetPasswordError;
+          if (createUserError) throw createUserError;
+          const { error: insertError } = await supabase
+               .from('tblClientMembers')
+               .insert({
+                    email,
+                    name,
+                    client_id
                });
 
+          if (insertError) throw insertError;
+          revalidatePath(`/dashboard/account`);
           return { inviteClientMemberSuccess: true };
      } catch (error: any) {
           return { inviteClientMemberSuccess: false, inviteClientMemberError: error.message };

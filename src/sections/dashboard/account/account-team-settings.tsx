@@ -27,7 +27,7 @@ import Typography from '@mui/material/Typography';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Client, ClientMember, clientMemberValidationSchema } from 'src/types/client';
 import { Formik } from 'formik';
-import { inviteClientMemberByResettingPassword } from 'src/app/actions/client/client-members';
+import { addClientMember } from 'src/app/actions/client/client-members';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -54,7 +54,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
           validationSchema={clientMemberValidationSchema(t)}
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             setSubmitting(true);
-            const { inviteClientMemberSuccess } = await inviteClientMemberByResettingPassword(values.email!, client!.id!);
+            const { inviteClientMemberSuccess } = await addClientMember(values.email!, values.name, client!.id!);
             if (inviteClientMemberSuccess) {
               toast.success('Invitation sent successfully!');
               setSubmitting(false);
