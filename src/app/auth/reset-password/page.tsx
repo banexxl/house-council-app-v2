@@ -7,6 +7,8 @@ import * as Yup from "yup";
 import { useSearchParams } from "next/navigation";
 import { resetTenantPassword } from "src/app/actions/tenant/tenant-actions";
 import Link from "next/link";
+import { resetClientMemberPassword } from "src/app/actions/client/client-members";
+import toast from "react-hot-toast";
 
 
 export default function TenantPasswordResetPage() {
@@ -14,8 +16,9 @@ export default function TenantPasswordResetPage() {
      const [success, setSuccess] = useState(false);
      const [submitError, setSubmitError] = useState("");
      const searchParams = useSearchParams();
-     const emailFromUrl = searchParams.get("email") || "";
      const tokenFromUrl = searchParams.get("token") || "";
+     const clientIdFromUrl = searchParams.get("client_id") || "";
+     const isClientMember = searchParams.get("role") === "client_member";
 
      const validationSchema = Yup.object({
           email: Yup.string().email("Invalid email").required("Email is required"),
@@ -33,7 +36,7 @@ export default function TenantPasswordResetPage() {
 
      const formik = useFormik({
           initialValues: {
-               email: emailFromUrl,
+               email: '',
                newPassword: "",
                confirmPassword: "",
           },
@@ -43,12 +46,25 @@ export default function TenantPasswordResetPage() {
                setSubmitError("");
                setSuccess(false);
                startTransition(async () => {
-                    const result = await resetTenantPassword(values.email, values.newPassword, tokenFromUrl);
-                    if (result.success) {
-                         setSuccess(true);
-                         resetForm();
+                    if (isClientMember) {
+                         const { success, error } = await resetClientMemberPassword(values.email, values.newPassword, clientIdFromUrl);
+                         if (success) {
+                              toast.success("Password reset successfully!");
+                              setSuccess(success);
+                              resetForm();
+                         } else {
+                              toast.error(error || "Failed to reset password.");
+                              setSubmitError(error || "Failed to reset password.");
+                         }
                     } else {
-                         setSubmitError(result.error || "Failed to reset password.");
+                         const result = await resetTenantPassword(values.email, values.newPassword, tokenFromUrl);
+                         if (result.success) {
+                              toast.success("Password reset successfully!");
+                              setSuccess(true);
+                              resetForm();
+                         } else {
+                              setSubmitError(result.error || "Failed to reset password.");
+                         }
                     }
                });
           },
@@ -57,7 +73,9 @@ export default function TenantPasswordResetPage() {
      return (
           <Box sx={{ maxWidth: 400, mx: "auto", mt: 8, p: 3, border: "1px solid #eee", borderRadius: 2 }}>
                <Typography variant="h5" sx={{ mb: 2 }}>
-                    Tenant Password Reset
+                    {
+                         isClientMember ? <span>Client Member Password Reset</span> : <span>Tenant Password Reset</span>
+                    }
                </Typography>
                <form onSubmit={formik.handleSubmit} noValidate>
                     <Stack spacing={2}>
@@ -71,7 +89,6 @@ export default function TenantPasswordResetPage() {
                               helperText={formik.touched.email && formik.errors.email}
                               fullWidth
                               required
-                              disabled={!!emailFromUrl}
                          />
                          <TextField
                               label="New Password"

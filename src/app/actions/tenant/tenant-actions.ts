@@ -24,7 +24,8 @@ export const resetTenantPassword = async (
      // Use verifyOtp to complete the password reset
      const { error } = await supabase.auth.verifyOtp({
           type: 'recovery',
-          token_hash: token, // Use the token as the hash
+          token: token,
+          email: email,
      });
 
      if (error) return { success: false, error: error.message };

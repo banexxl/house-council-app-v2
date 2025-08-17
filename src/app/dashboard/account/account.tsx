@@ -10,13 +10,12 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-import { Seo } from 'src/components/seo';
 import { AccountBillingSettings } from 'src/sections/dashboard/account/account-billing-settings';
 import { AccountGeneralSettings } from 'src/sections/dashboard/account/account-general-settings';
 import { AccountNotificationsSettings } from 'src/sections/dashboard/account/account-notifications-settings';
 import { AccountTeamSettings } from 'src/sections/dashboard/account/account-team-settings';
 import { AccountSecuritySettings } from 'src/sections/dashboard/account/account-security-settings';
-import { Client } from 'src/types/client';
+import { Client, ClientMember } from 'src/types/client';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { Invoice } from 'src/types/payment';
@@ -35,9 +34,10 @@ export interface AccountProps {
      clientBillingInfo: ClientBillingInformation[] | null;
      clientInvoices: Invoice[] | undefined | null;
      subscriptionPlans: SubscriptionPlan[] | null;
+     allTeamMembers: ClientMember[] | null;
 }
 
-const Account = ({ client, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans }: AccountProps) => {
+const Account = ({ client, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans, allTeamMembers }: AccountProps) => {
      const [currentTab, setCurrentTab] = useState<string>('general');
 
      const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
@@ -46,7 +46,6 @@ const Account = ({ client, clientSubscriptionPlan, clientBillingInfo, clientInvo
 
      return (
           <>
-               <Seo title="Dashboard: Account" />
                <Box
                     component="main"
                     sx={{
@@ -87,7 +86,7 @@ const Account = ({ client, clientSubscriptionPlan, clientBillingInfo, clientInvo
                               />
                          )}
                          {currentTab === 'team' && (
-                              <AccountTeamSettings members={[]} />
+                              <AccountTeamSettings members={allTeamMembers || []} client={client} />
                          )}
                          {currentTab === 'notifications' && <AccountNotificationsSettings />}
                          {currentTab === 'security' && (

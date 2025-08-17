@@ -387,20 +387,3 @@ export const uploadClientLogoAndGetUrl = async (
           return { success: false, error: error.message };
      }
 };
-
-export const readAllClientTeamMembers = async (clientId: string): Promise<{ success: boolean; data?: Client[]; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          const { data, error } = await supabase
-               .from('tblClients')
-               .select('*')
-               .eq('client_type', 'team_member');
-
-          if (error) throw error;
-
-          return { success: true, data };
-     } catch (error: any) {
-          return { success: false, error: error.message };
-     }
-};

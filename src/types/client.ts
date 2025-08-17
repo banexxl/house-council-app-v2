@@ -2,6 +2,13 @@ import * as Yup from 'yup';
 
 export type ClientType = 'agency' | 'business' | 'enterprise' | 'individual' | 'team_member';
 
+export type ClientMember = {
+  id?: string;
+  client_id: string;
+  name: string;
+  email: string;
+}
+
 export const clientTypeMapping = {
   agency: 'clients.lblClientTypeAgency',
   business: 'clients.lblClientTypeBusiness',
@@ -18,7 +25,6 @@ export const clientStatusMapping = {
   archived: 'clients.lblClientStatusArchived',
   vip: 'clients.lblClientStatusVIP'
 };
-
 
 export interface Client {
   id: string;
@@ -95,7 +101,13 @@ export const clientValidationSchema = (t: (key: string) => string): Yup.ObjectSc
   })
 }
 
-// Add all iniitial values
+export const clientMemberValidationSchema = (t: (key: string) => string): Yup.ObjectSchema<any> => {
+  return Yup.object({
+    name: Yup.string().max(255).required(t('clients.clientNameRequired')),
+    email: Yup.string().email(t('clients.clientEmailMustBeValid')).max(255).required(t('clients.clientEmailRequired')),
+  });
+};
+
 export const clientInitialValues: Client = {
   id: '',
   user_id: '',

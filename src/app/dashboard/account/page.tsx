@@ -5,13 +5,14 @@ import Account from './account';
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
-import { Client } from 'src/types/client';
+import { Client, ClientMember } from 'src/types/client';
 import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plans/subscription-plan-actions';
 import { readBillingInfoFromClientId } from 'src/app/actions/client/client-billing-actions';
 import { readAllClientPayments } from 'src/app/actions/client/client-payment-actions';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { Invoice } from 'src/types/payment';
+import { readAllClientTeamMembers } from 'src/app/actions/client/client-members';
 
 const Page = async () => {
 
@@ -20,6 +21,7 @@ const Page = async () => {
   let clientBillingInfo: ClientBillingInformation[] | null = null
   let clientInvoices: Invoice[] | null = null
   let allSubscriptions: SubscriptionPlan[] | null = null;
+  let allTeamMembers: ClientMember[] | null = null;
 
   const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
 
@@ -36,13 +38,14 @@ const Page = async () => {
       { readClientBillingInformationSuccess, readClientBillingInformationData, readClientBillingInformationError },
       { readClientPaymentsSuccess, readClientPaymentsData, readClientPaymentsError },
       { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
+      { readAllClientTeamMembersSuccess, readAllClientTeamMembersError, readAllClientTeamMembersData },
     ] = await Promise.all([
       readClientByIdAction(client.id),
       readSubscriptionPlanFromClientId(client.id),
       readBillingInfoFromClientId(client.id),
       readAllClientPayments(client.id),
       readAllActiveSubscriptionPlans(),
-
+      readAllClientTeamMembers(client.id),
     ]);
 
     if (readSubscriptionPlanFromClientIdSuccess && subscriptionPlan) {
@@ -64,6 +67,10 @@ const Page = async () => {
     if (getClientByIdActionSuccess && getClientByIdActionData) {
       clientData = getClientByIdActionData;
     }
+
+    if (readAllClientTeamMembersSuccess && readAllClientTeamMembersData) {
+      allTeamMembers = readAllClientTeamMembersData;
+    }
   } else if (admin) {
     redirect('/dashboard');
   } else if (tenant) {
@@ -76,6 +83,7 @@ const Page = async () => {
     clientBillingInfo={clientBillingInfo}
     clientInvoices={clientInvoices}
     subscriptionPlans={allSubscriptions!}
+    allTeamMembers={allTeamMembers!}
   />;
 };
 
