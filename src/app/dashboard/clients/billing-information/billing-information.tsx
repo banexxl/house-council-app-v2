@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useCallback, ChangeEvent } from "react";
-import { Card } from "@mui/material";
+import { Button, Card } from "@mui/material";
 import { ClientBillingInformation, ClientBillingInformationStatus, clientBillingInformationStatusMapping } from "src/types/client-billing-information";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -204,8 +204,26 @@ const BillingInformationTable: React.FC<BillingInformationTableProps> = ({ data 
                     rowsPerPage={billingInfoSearch.state.rowsPerPage}
                     onPageChange={billingInfoSearch.handlePageChange}
                     onRowsPerPageChange={billingInfoSearch.handleRowsPerPageChange}
-                    handleDeleteConfirm={handleDeleteConfirm}
                     baseUrl="/dashboard/clients/billing-information"
+                    rowActions={[
+                         (row, openActionDialog) => (
+                              <Button
+                                   color="error"
+                                   variant="outlined"
+                                   size="small"
+                                   onClick={() => openActionDialog({
+                                        id: row.id,
+                                        title: t('warning.deleteWarningTitle'),
+                                        message: t('warning.deleteWarningMessage'),
+                                        confirmText: t('common.btnDelete'),
+                                        cancelText: t('common.btnClose'),
+                                        onConfirm: () => handleDeleteConfirm({ id: row.id })
+                                   })}
+                              >
+                                   {t('common.btnDelete')}
+                              </Button>
+                         )
+                    ]}
                />
           </Card>
      );

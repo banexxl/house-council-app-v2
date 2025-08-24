@@ -173,9 +173,25 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                              render: (val) => val ? t('common.lblYes') : t('common.lblNo')
                                         }
                                    ]}
-                                   handleDeleteConfirm={({ id }) => {
-                                        handleDeleteConfirm(id);
-                                   }}
+                                   rowActions={[
+                                        (tenant, openActionDialog) => (
+                                             <Button
+                                                  color="error"
+                                                  variant="outlined"
+                                                  size="small"
+                                                  onClick={() => openActionDialog({
+                                                       id: tenant.id,
+                                                       title: t('warning.deleteWarningTitle'),
+                                                       message: t('warning.deleteWarningMessage'),
+                                                       confirmText: t('common.btnDelete'),
+                                                       cancelText: t('common.btnClose'),
+                                                       onConfirm: () => deleteTenantByIDAction(tenant.id)
+                                                  })}
+                                             >
+                                                  {t('common.btnDelete')}
+                                             </Button>
+                                        )
+                                   ]}
                               />
                          </Card>
                     </Stack>

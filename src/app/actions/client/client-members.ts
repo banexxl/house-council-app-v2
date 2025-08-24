@@ -61,7 +61,6 @@ export const deleteClientMember = async (id: string): Promise<{ deleteClientMemb
 };
 
 export const readAllClientTeamMembers = async (clientId: string): Promise<{ readAllClientTeamMembersSuccess: boolean; readAllClientTeamMembersData?: ClientMember[]; readAllClientTeamMembersError?: string }> => {
-     console.log('Fetching all team members for client:', clientId);
 
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -106,10 +105,9 @@ export const addClientMember = async (email: string, name: string, client_id: st
 export const resetClientMemberPassword = async (
      email: string,
      newPassword: string,
-     client_id: string
 ): Promise<{ success: boolean; error?: string }> => {
+
      const supabase = await useServerSideSupabaseAnonClient();
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
 
      // Now update the password
      const { error: updateError } = await supabase.auth.updateUser({
@@ -117,16 +115,6 @@ export const resetClientMemberPassword = async (
           password: newPassword,
      });
      if (updateError) return { success: false, error: updateError.message };
-     //Insert into tblClientMembers name, email and client_id
-     const { error: insertError } = await adminSupabase
-          .from('tblClientMembers')
-          .insert({
-               name: email.split('@')[0],
-               email,
-               client_id
-          });
-
-     if (insertError) return { success: false, error: insertError.message };
 
      return { success: true };
 };

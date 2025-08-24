@@ -30,6 +30,7 @@ import { Formik } from 'formik';
 import { addClientMember } from 'src/app/actions/client/client-members';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { GenericTable } from 'src/components/generic-table';
 
 interface AccountTeamSettingsProps {
   members: ClientMember[];
@@ -45,6 +46,19 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
   console.log('client:', client);
 
   const { t } = useTranslation();
+
+
+  // Handler for deleting a member
+  const handleDeleteMember = async (id: string) => {
+    // TODO: Implement delete logic, e.g. call deleteClientMember(id)
+    // Show toast on success/error
+  };
+
+  // Handler for resetting a member's password
+  const handleResetPassword = async (member: ClientMember) => {
+    // TODO: Implement reset password logic, e.g. call sendClientMemberPasswordReset({ email: member.email, clientId: member.client_id })
+    // Show toast on success/error
+  };
 
   return (
     <Card>
@@ -132,7 +146,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                         </Typography>
                       }
                       sx={{ flexGrow: 1 }}
-                      type="email"
+                      type={t('lblEmail')}
                       slotProps={{
                         input: {
                           startAdornment: (
@@ -155,76 +169,57 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                       Send Invite
                     </Button>
                   </Box>
-
                 </Grid>
               </Grid>
             </form>
           )}
         </Formik>
       </CardContent>
-      <Scrollbar>
-        <Table sx={{ minWidth: 400 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Member</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {members.map((member, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <Stack
-                    alignItems="center"
-                    direction="row"
-                    spacing={1}
-                  >
-                    {/* <Avatar
-                      src={member.avatar}
-                      sx={{
-                        height: 40,
-                        width: 40,
-                      }}
-                    >
-                      <SvgIcon>
-                        <User01Icon />
-                      </SvgIcon>
-                    </Avatar> */}
-                    <div>
-                      <Typography variant="subtitle2">{member.name}</Typography>
-                      <Typography
-                        color="text.secondary"
-                        variant="body2"
-                      >
-                        {member.email}
-                      </Typography>
-                    </div>
-                  </Stack>
-                </TableCell>
-                {/* <TableCell>
-                  {member.role === 'Owner' ? (
-                    <SeverityPill>{member.role}</SeverityPill>
-                  ) : (
-                    member.role
-                  )}
-                </TableCell> */}
-                <TableCell align="right">
-                  <IconButton>
-                    <SvgIcon>
-                      <DotsHorizontalIcon />
-                    </SvgIcon>
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Scrollbar>
+      <Box sx={{ mt: 2 }}>
+        <GenericTable<ClientMember>
+          items={members}
+          columns={[
+            {
+              key: 'name',
+              label: t('common.fullName') || 'Name',
+              render: (value) => (
+                <Typography variant="subtitle2">{value as string}</Typography>
+              ),
+            },
+            {
+              key: 'email',
+              label: t('common.email') || 'Email',
+              render: (value) => (
+                <Typography color="text.secondary" variant="body2">{value as string}</Typography>
+              ),
+            },
+          ]}
+          rowActions={[
+            (member) => (
+              <Button
+                color="error"
+                variant="outlined"
+                size="small"
+                onClick={() => handleDeleteMember(member.id)}
+                key="delete"
+              >
+                {t('common.btnDelete')}
+              </Button>
+            ),
+            (member) => (
+              <Button
+                color="primary"
+                variant="outlined"
+                size="small"
+                onClick={() => handleResetPassword(member)}
+                key="reset"
+              >
+                {t('common.btnResetPassword', 'Reset Password')}
+              </Button>
+            ),
+          ]}
+        />
+      </Box>
     </Card>
   );
-};
-
-AccountTeamSettings.propTypes = {
-  members: PropTypes.array.isRequired,
-};
+}

@@ -35,8 +35,16 @@ interface GenericTableProps<T> {
      rowsPerPage?: number;
      onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, page: number) => void;
      onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-     handleDeleteConfirm?: (data: { id: string }) => void;
+     // handleDeleteConfirm removed; all actions now use openActionDialog
      baseUrl?: string;
+     rowActions?: Array<(item: T, openActionDialog: (options: {
+          id: string;
+          title?: string;
+          message?: string;
+          confirmText?: string;
+          cancelText?: string;
+          onConfirm?: () => void;
+     }) => void) => React.ReactNode>;
 }
 
 export const GenericTable = <T extends { id: string }>(
@@ -48,16 +56,31 @@ export const GenericTable = <T extends { id: string }>(
           rowsPerPage = 10,
           onPageChange = () => { },
           onRowsPerPageChange = () => { },
-          handleDeleteConfirm = () => { },
+          // handleDeleteConfirm removed
           baseUrl,
+          rowActions = [],
      }: GenericTableProps<T>
 ) => {
      const { t } = useTranslation();
-     const deleteDialog = useDialog<{ id: string }>();
+     // Generic dialog state: open, content, confirm callback
+     const actionDialog = useDialog<{
+          id: string;
+          title?: string;
+          message?: string;
+          confirmText?: string;
+          cancelText?: string;
+          onConfirm?: () => void;
+     }>();
 
-     const handleDelete = (data: { id: string }) => {
-          handleDeleteConfirm(data);
-          deleteDialog.handleClose();
+     const openActionDialog = (options: {
+          id: string;
+          title?: string;
+          message?: string;
+          confirmText?: string;
+          cancelText?: string;
+          onConfirm?: () => void;
+     }) => {
+          actionDialog.handleOpen(options);
      };
 
      return (
@@ -113,14 +136,13 @@ export const GenericTable = <T extends { id: string }>(
                                                   </TableCell>
                                              ))}
                                              <TableCell>
-                                                  <Button
-                                                       startIcon={<DeleteIcon />}
-                                                       onClick={() => deleteDialog.handleOpen({ id: item.id })}
-                                                       variant="outlined"
-                                                       color="error"
-                                                  >
-                                                       {t('common.btnDelete')}
-                                                  </Button>
+                                                  {rowActions.length > 0 ? (
+                                                       <Box sx={{ display: 'flex', gap: 1 }}>
+                                                            {rowActions.map((action, idx) => (
+                                                                 <span key={idx}>{action(item, openActionDialog)}</span>
+                                                            ))}
+                                                       </Box>
+                                                  ) : null}
                                              </TableCell>
                                         </TableRow>
                                    ))
@@ -151,15 +173,18 @@ export const GenericTable = <T extends { id: string }>(
                />
 
                <PopupModal
-                    isOpen={deleteDialog.open}
-                    onClose={deleteDialog.handleClose}
-                    onConfirm={() => deleteDialog.data && handleDelete(deleteDialog.data)}
-                    title={t('warning.deleteWarningTitle')}
-                    confirmText={t('common.btnDelete')}
-                    cancelText={t('common.btnClose')}
+                    isOpen={actionDialog.open}
+                    onClose={actionDialog.handleClose}
+                    onConfirm={() => {
+                         if (actionDialog.data?.onConfirm) actionDialog.data.onConfirm();
+                         actionDialog.handleClose();
+                    }}
+                    title={actionDialog.data?.title || t('warning.actionWarningTitle', 'Are you sure?')}
+                    confirmText={actionDialog.data?.confirmText || t('common.btnConfirm', 'Confirm')}
+                    cancelText={actionDialog.data?.cancelText || t('common.btnClose', 'Close')}
                     type="confirmation"
                >
-                    {t('warning.deleteWarningMessage')}
+                    {actionDialog.data?.message || t('warning.actionWarningMessage', 'Are you sure you want to perform this action?')}
                </PopupModal>
           </Box>
      );

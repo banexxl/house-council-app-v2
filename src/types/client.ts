@@ -2,8 +2,8 @@ import * as Yup from 'yup';
 
 export type ClientType = 'agency' | 'business' | 'enterprise' | 'individual' | 'team_member';
 
-export type ClientMember = {
-  id?: string;
+export interface ClientMember {
+  id: string;
   client_id: string;
   name: string;
   email: string;

@@ -168,9 +168,6 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
               onRowsPerPageChange={buildingSearch.handleRowsPerPageChange}
               count={filteredBuildings.length}
               baseUrl="/dashboard/buildings"
-              handleDeleteConfirm={({ id }) => {
-                handleDeleteConfirm(id);
-              }}
               columns={[
                 {
                   key: 'cover_image',
@@ -180,12 +177,13 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
                 {
                   key: 'building_location',
                   label: t('locations.locationCity'),
-                  render: (_, item) => item.building_location?.city ?? '-'
-                },
-                {
-                  key: 'building_location',
-                  label: t('locations.locationStreet'),
-                  render: (_, item) => `${item.building_location?.street_address ?? ''} ${item.building_location?.street_number ?? ''}`
+                  render: (_, item) => {
+                    const loc = item.building_location;
+                    if (!loc) return '-';
+                    const city = loc.city ?? '-';
+                    const street = `${loc.street_address ?? ''} ${loc.street_number ?? ''}`.trim();
+                    return `${city}${street ? ' / ' + street : ''}`;
+                  }
                 },
                 { key: 'building_status', label: t('buildings.buildingStatus') },
                 { key: 'has_bicycle_room', label: t('common.lblHasBicycleRoom') },
@@ -197,6 +195,25 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
                 { key: 'has_electric_heating', label: t('common.lblHasElectricHeating') },
                 { key: 'has_solar_power', label: t('common.lblHasSolarPower') },
                 { key: 'has_pre_heated_water', label: t('common.lblHasPreHeatedWater') },
+              ]}
+              rowActions={[
+                (building, openActionDialog) => (
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                    onClick={() => openActionDialog({
+                      id: building.id,
+                      title: t('warning.deleteWarningTitle'),
+                      message: t('warning.deleteWarningMessage'),
+                      confirmText: t('common.btnDelete'),
+                      cancelText: t('common.btnClose'),
+                      onConfirm: () => handleDeleteConfirm(building.id)
+                    })}
+                  >
+                    {t('common.btnDelete')}
+                  </Button>
+                )
               ]}
             />
           </Card>

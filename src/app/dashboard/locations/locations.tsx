@@ -165,7 +165,6 @@ const Locations = ({ locations }: LocationsProps) => {
                                    onPageChange={locationsSearch.handlePageChange}
                                    onRowsPerPageChange={locationsSearch.handleRowsPerPageChange}
                                    count={filteredLocations.length}
-                                   handleDeleteConfirm={({ id }) => handleDeleteLocationsConfirm(id)}
                                    columns={[
                                         { key: 'street_address', label: t('locations.locationStreet') },
                                         { key: 'street_number', label: t('locations.locationStreetNumber') },
@@ -178,7 +177,26 @@ const Locations = ({ locations }: LocationsProps) => {
                                              label: t('locations.locationTaken'),
                                              render: (value, _item) =>
                                                   isUUID(value as string) ? t('common.lblYes') : t('common.lblNo'),
-                                        }
+                                        },
+                                   ]}
+                                   rowActions={[
+                                        (location, openActionDialog) => (
+                                             <Button
+                                                  color="error"
+                                                  variant="outlined"
+                                                  size="small"
+                                                  onClick={() => openActionDialog({
+                                                       id: location.id,
+                                                       title: t('warning.deleteWarningTitle'),
+                                                       message: t('warning.deleteWarningMessage'),
+                                                       confirmText: t('common.btnDelete'),
+                                                       cancelText: t('common.btnClose'),
+                                                       onConfirm: () => handleDeleteLocationsConfirm(location.id)
+                                                  })}
+                                             >
+                                                  {t('common.btnDelete')}
+                                             </Button>
+                                        )
                                    ]}
                               />
                          </Card>

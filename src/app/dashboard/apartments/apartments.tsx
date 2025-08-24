@@ -114,7 +114,7 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
     return filteredApartments.slice(start, end);
   }, [filteredApartments, apartmentSearch.state.page, apartmentSearch.state.rowsPerPage]);
 
-  const handleDeleteConfirm = useCallback(async (apartmentId: string) => {
+  const handleDelete = useCallback(async (apartmentId: string) => {
     const deleteApartmentResponse = await deleteApartment(apartmentId);
     if (deleteApartmentResponse.success) {
       toast.success(t('common.actionDeleteSuccess'));
@@ -211,9 +211,25 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
                   label: t('apartments.lblSizeM2')
                 }
               ]}
-              handleDeleteConfirm={({ id }) => {
-                handleDeleteConfirm(id);
-              }}
+              rowActions={[
+                (apartment, openActionDialog) => (
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                    onClick={() => openActionDialog({
+                      id: apartment.id,
+                      title: t('warning.deleteWarningTitle'),
+                      message: t('warning.deleteWarningMessage'),
+                      confirmText: t('common.btnDelete'),
+                      cancelText: t('common.btnClose'),
+                      onConfirm: () => handleDelete(apartment.id)
+                    })}
+                  >
+                    {t('common.btnDelete')}
+                  </Button>
+                )
+              ]}
             />
 
           </Card>

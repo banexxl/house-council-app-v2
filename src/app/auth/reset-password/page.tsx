@@ -47,7 +47,7 @@ export default function TenantPasswordResetPage() {
                setSuccess(false);
                startTransition(async () => {
                     if (isClientMember) {
-                         const { success, error } = await resetClientMemberPassword(values.email, values.newPassword, clientIdFromUrl);
+                         const { success, error } = await resetClientMemberPassword(values.email, values.newPassword);
                          if (success) {
                               toast.success("Password reset successfully!");
                               setSuccess(success);
