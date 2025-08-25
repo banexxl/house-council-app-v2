@@ -43,10 +43,8 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { members, client } = props;
-  console.log('client:', client);
 
   const { t } = useTranslation();
-
 
   // Handler for deleting a member
   const handleDeleteMember = async (id: string) => {

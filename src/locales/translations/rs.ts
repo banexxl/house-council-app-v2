@@ -1,6 +1,12 @@
 import { tokens } from '../tokens';
 
 export const rs = {
+     [tokens.account.deleteAccount]: 'Obriši nalog',
+     [tokens.account.deleteAccountConfirmLabel]: 'Potvrdi brisanje',
+     [tokens.account.deleteAccountConfirmButton]: 'Potvrdi brisanje',
+     [tokens.account.deleteAccountConfirmInstruction]: 'Upišite "delete account" ispod da potvrdite brisanje.',
+     [tokens.account.deleteAccountError]: 'Morate uneti "delete account" da biste potvrdili.',
+     [tokens.account.deleteAccountSuccess]: 'Nalog je uspešno obrisan.',
      [tokens.locations.loadingLocation]: 'Učitavanje lokacije...',
      // ...existing code...
      // ...existing code...

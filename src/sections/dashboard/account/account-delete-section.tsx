@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { logout } from 'src/app/auth/actions';
+import { useTranslation } from 'react-i18next';
 
 export const DeleteAccountSection: FC<{ id?: string }> = ({ id }) => {
      const [showConfirm, setShowConfirm] = useState(false);
@@ -13,6 +14,8 @@ export const DeleteAccountSection: FC<{ id?: string }> = ({ id }) => {
      const [deleting, setDeleting] = useState(false);
      const [error, setError] = useState('');
      const [success, setSuccess] = useState(false);
+
+     const { t } = useTranslation();
 
      const handleDeleteClick = () => {
           setShowConfirm(true);
@@ -26,7 +29,7 @@ export const DeleteAccountSection: FC<{ id?: string }> = ({ id }) => {
 
      const handleDeleteAccount = async () => {
           if (confirmText !== 'delete account') {
-               setError('You must type "delete account" to confirm.');
+               setError(t('account.deleteAccountError'));
                return;
           }
           setDeleting(true);
@@ -37,38 +40,38 @@ export const DeleteAccountSection: FC<{ id?: string }> = ({ id }) => {
                logout();
                setSuccess(true);
           } else {
-               setError(result.deleteClientByIDsActionError || 'Failed to delete account.');
+               setError(result.deleteClientByIDsActionError || t('account.deleteAccountError'));
           }
      };
 
      return (
           <Stack alignItems="flex-start" spacing={3}>
                <Typography variant="subtitle1">
-                    Delete your account and all of your source data. This is irreversible.
+                    {t('account.deleteAccount')}
                </Typography>
                <Button color="error" variant="outlined" onClick={handleDeleteClick} disabled={deleting || success}>
-                    Delete account
+                    {t('common.btnDelete')}
                </Button>
                {showConfirm && !success && (
                     <Stack spacing={2} sx={{ mt: 2, width: '350px' }}>
                          <Typography color="error">
-                              Type <b>delete account</b> below to confirm deletion.
+                              {t('account.deleteAccountConfirmInstruction')}
                          </Typography>
                          <TextField
-                              label="Confirm deletion"
+                              label={t('account.deleteAccountConfirmLabel')}
                               value={confirmText}
                               onChange={handleConfirmChange}
                               fullWidth
                               disabled={deleting}
                          />
                          <Button color="error" variant="contained" onClick={handleDeleteAccount} disabled={deleting || confirmText !== 'delete account'}>
-                              Confirm Delete
+                              {t('account.deleteAccountConfirmButton')}
                          </Button>
                          {error && <Typography color="error">{error}</Typography>}
                     </Stack>
                )}
                {success && (
-                    <Typography color="success.main">Account deleted successfully.</Typography>
+                    <Typography color="success.main">{t('account.deleteAccountSuccess')}</Typography>
                )}
           </Stack>
      );

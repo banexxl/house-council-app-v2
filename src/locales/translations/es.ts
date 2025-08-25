@@ -1,6 +1,12 @@
 import { tokens } from '../tokens';
 
 export const es = {
+  [tokens.account.deleteAccount]: 'Eliminar cuenta',
+  [tokens.account.deleteAccountConfirmLabel]: 'Confirmar eliminación',
+  [tokens.account.deleteAccountConfirmButton]: 'Confirmar eliminación',
+  [tokens.account.deleteAccountConfirmInstruction]: 'Escriba "delete account" abajo para confirmar la eliminación.',
+  [tokens.account.deleteAccountError]: 'Debe escribir "delete account" para confirmar.',
+  [tokens.account.deleteAccountSuccess]: 'Cuenta eliminada con éxito.',
   [tokens.locations.loadingLocation]: 'Cargando ubicación...',
   // ...existing code...
   // ...existing code...

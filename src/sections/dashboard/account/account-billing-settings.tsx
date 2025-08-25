@@ -27,6 +27,7 @@ import { GenericTable } from 'src/components/generic-table';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { deleteClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 
 interface AccountBillingSettingsProps {
@@ -41,15 +42,16 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
   const { plan: currentPlan, invoices = [], billingInfo = [], subscriptionPlans = [] } = props;
   const [selectedPlan, setSelectedPlan] = useState<string>(currentPlan);
 
-  const handleDeleteConfirm = async (id: string) => {
-    const { deleteClientBillingInformationSuccess, deleteClientBillingInformationError } = await deleteClientBillingInformation([id]);
+  const { t } = useTranslation()
 
+  const handleDelete = async (id: string) => {
+    const { deleteClientBillingInformationSuccess, deleteClientBillingInformationError } = await deleteClientBillingInformation([id]);
     if (deleteClientBillingInformationSuccess) {
       toast.success('Billing information deleted successfully');
     } else {
       toast.error(deleteClientBillingInformationError?.message!);
     }
-  }
+  };
 
   return (
     <Stack
@@ -183,7 +185,6 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
               justifyContent: 'space-between',
             }}
           >
-            <Typography variant="h6">Billing details</Typography>
           </Box>
           <Box
             sx={{
@@ -198,22 +199,50 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
               <GenericTable
                 items={billingInfo}
                 count={billingInfo.length}
-                columns={
-                  [
-                    { key: 'contact_person', label: 'Billing name' },
-                    {
-                      key: 'card_number',
-                      label: 'Card number',
-                      render: (value: any) => value ? `**** ${String(value).slice(-4)}` : 'N/A'
-                    },
-                    {
-                      key: 'billing_address',
-                      label: 'Address',
-                      render: (value: any) => value ? `${value.split(',')[0]?.trim()}, ${value.split(',')[1]?.trim()}, ${value.split(',')[3]}` : 'N/A'
-                    },
-                  ]
-                }
-                handleDeleteConfirm={({ id }) => handleDeleteConfirm(id)}
+                columns={[
+                  { key: 'contact_person', label: 'Billing name' },
+                  {
+                    key: 'card_number',
+                    label: 'Card number',
+                    render: (value: any) => value ? `**** ${String(value).slice(-4)}` : 'N/A'
+                  },
+                  {
+                    key: 'billing_address',
+                    label: 'Address',
+                    render: (value: any) => value ? `${value.split(',')[0]?.trim()}, ${value.split(',')[1]?.trim()}, ${value.split(',')[3]}` : 'N/A'
+                  },
+                ]}
+                rowActions={[
+                  (row, openActionDialog) => (
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      size="small"
+                      onClick={() => openActionDialog({
+                        id: row.id,
+                        title: 'Delete Billing Info',
+                        message: 'Are you sure you want to delete this billing information?',
+                        confirmText: 'Delete',
+                        cancelText: 'Cancel',
+                        onConfirm: () => handleDelete(row.id)
+                      })}
+                    >
+                      {t('common.btnDelete')}
+                    </Button>
+                  ),
+                  () => (
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      size="small"
+                      href='https://nest-link.app/profile'
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t('common.btnEdit')}
+                    </Button>
+                  )
+                ]}
               />
             }
           </Box>

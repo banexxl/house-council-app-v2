@@ -135,6 +135,14 @@ export const tokens = {
     filterSearchByName: 'common.filterSearchByName',
     filterSearchByAddress: 'common.filterSearchByAddress',
   },
+  account: {
+    deleteAccount: 'account.deleteAccount',
+    deleteAccountConfirmLabel: 'account.deleteAccountConfirmLabel',
+    deleteAccountConfirmButton: 'account.deleteAccountConfirmButton',
+    deleteAccountConfirmInstruction: 'account.deleteAccountConfirmInstruction',
+    deleteAccountError: 'account.deleteAccountError',
+    deleteAccountSuccess: 'account.deleteAccountSuccess',
+  },
   nav: {
     home: 'nav.home',
     academy: 'nav.academy',
