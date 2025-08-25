@@ -47,7 +47,6 @@ export const readClientMember = async (id: string): Promise<{ readClientMemberSu
 };
 
 export const deleteClientMember = async (id: string): Promise<{ deleteClientMemberSuccess: boolean; deleteClientMemberError?: string }> => {
-     console.log('Deleting client member with ID:', id);
 
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
 
@@ -57,7 +56,6 @@ export const deleteClientMember = async (id: string): Promise<{ deleteClientMemb
                .select('user_id')
                .eq('id', id)
                .single();
-          console.log('error:', fetchError);
 
           if (fetchError) {
                return { deleteClientMemberSuccess: false, deleteClientMemberError: fetchError.message };
