@@ -144,6 +144,15 @@ export const tokens = {
     deleteAccountSuccess: 'account.deleteAccountSuccess',
     billingTableTitle: 'account.billingTableTitle',
     billingTableSubtitle: 'account.billingTableSubtitle',
+    team: {
+      membersTableTitle: 'account.team.membersTableTitle',
+      membersTableSubtitle: 'account.team.membersTableSubtitle',
+      inviteMembers: 'account.team.inviteMembers',
+      editorSeatsInfo: 'account.team.editorSeatsInfo',
+      sendInvite: 'account.team.sendInvite',
+      inviteSuccess: 'account.team.inviteSuccess',
+      inviteError: 'account.team.inviteError',
+    },
     billing: {
       billingName: 'account.billing.billingName',
       cardNumber: 'account.billing.cardNumber',

@@ -83,7 +83,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const supabase = await useServerSideSupabaseAnonClient();
      try {
-          const { error: createUserError } = await adminSupabase.auth.admin.createUser({ email });
+          const { data: addedUserData, error: createUserError } = await adminSupabase.auth.admin.createUser({ email });
 
           if (createUserError) throw createUserError;
           const { error: insertError } = await supabase
@@ -91,7 +91,8 @@ export const addClientMember = async (email: string, name: string, client_id: st
                .insert({
                     email,
                     name,
-                    client_id
+                    client_id,
+                    user_id: addedUserData.user.id!
                });
 
           if (insertError) throw insertError;

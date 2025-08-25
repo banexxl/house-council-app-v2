@@ -1,6 +1,15 @@
 import { tokens } from '../tokens';
 
 export const rs = {
+     [tokens.account.team.inviteSuccess]: 'Pozivnica je uspešno poslata!',
+     [tokens.account.team.inviteError]: 'Slanje pozivnice nije uspelo.',
+     [tokens.account.team.inviteMembers]: 'Pozovi članove',
+     [tokens.account.team.editorSeatsInfo]: 'Trenutno plaćate za 2 urednička mesta.',
+     [tokens.account.team.sendInvite]: 'Pošalji pozivnicu',
+     [tokens.account.team.membersTableTitle]: 'Članovi tima',
+     [tokens.account.team.membersTableSubtitle]: 'Upravljajte članovima tima ispod.',
+     [tokens.account.team.membersTableTitle]: 'Članovi tima',
+     [tokens.account.team.membersTableSubtitle]: 'Upravljajte članovima tima ispod.',
      [tokens.account.billing.billingName]: 'Ime za naplatu',
      [tokens.account.billing.cardNumber]: 'Broj kartice',
      [tokens.account.billing.billingAddress]: 'Adresa',

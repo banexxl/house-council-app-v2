@@ -1,6 +1,15 @@
 import { tokens } from '../tokens';
 
 export const de = {
+  [tokens.account.team.inviteSuccess]: 'Einladung erfolgreich gesendet!',
+  [tokens.account.team.inviteError]: 'Einladung konnte nicht gesendet werden.',
+  [tokens.account.team.inviteMembers]: 'Mitglieder einladen',
+  [tokens.account.team.editorSeatsInfo]: 'Sie zahlen derzeit für 2 Editor-Plätze.',
+  [tokens.account.team.sendInvite]: 'Einladung senden',
+  [tokens.account.team.membersTableTitle]: 'Teammitglieder',
+  [tokens.account.team.membersTableSubtitle]: 'Verwalten Sie Ihre Teammitglieder unten.',
+  [tokens.account.team.membersTableTitle]: 'Teammitglieder',
+  [tokens.account.team.membersTableSubtitle]: 'Verwalten Sie Ihre Teammitglieder unten.',
   [tokens.account.billing.billingName]: 'Rechnungsname',
   [tokens.account.billing.cardNumber]: 'Kartennummer',
   [tokens.account.billing.billingAddress]: 'Adresse',

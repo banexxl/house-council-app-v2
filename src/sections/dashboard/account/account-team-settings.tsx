@@ -3,32 +3,23 @@
 import type { FC } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import PropTypes from 'prop-types';
-import DotsHorizontalIcon from '@untitled-ui/icons-react/build/esm/DotsHorizontal';
 import Mail01Icon from '@untitled-ui/icons-react/build/esm/Mail01';
 import User01Icon from '@untitled-ui/icons-react/build/esm/User01';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { Box, Grid } from '@mui/material';;
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { Scrollbar } from 'src/components/scrollbar';
 import { Client, ClientMember, clientMemberValidationSchema } from 'src/types/client';
 import { Formik } from 'formik';
 import { addClientMember } from 'src/app/actions/client/client-members';
 import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 import toast from 'react-hot-toast';
 import { GenericTable } from 'src/components/generic-table';
 
@@ -68,11 +59,11 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
             setSubmitting(true);
             const { inviteClientMemberSuccess } = await addClientMember(values.email!, values.name, client!.id!);
             if (inviteClientMemberSuccess) {
-              toast.success('Invitation sent successfully!');
+              toast.success(t(tokens.account.team.inviteSuccess));
               setSubmitting(false);
               resetForm();
             } else {
-              toast.error('Failed to send invitation.');
+              toast.error(t(tokens.account.team.inviteError));
               setSubmitting(false);
             }
           }}
@@ -82,9 +73,9 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Stack spacing={1}>
-                    <Typography variant="h6">Invite members</Typography>
+                    <Typography variant="h6">{t('account.team.inviteMembers', 'Invite members')}</Typography>
                     <Typography color="text.secondary" variant="body2">
-                      You currently pay for 2 Editor Seats.
+                      {t('account.team.editorSeatsInfo', 'You currently pay for 2 Editor Seats.')}
                     </Typography>
                   </Stack>
                 </Grid>
@@ -98,7 +89,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                     }}
                   >
                     <TextField
-                      label="Name"
+                      label={t('common.fullName', 'Name')}
                       name="name"
                       fullWidth
                       value={values.name}
@@ -128,7 +119,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                     />
 
                     <TextField
-                      label="Email address"
+                      label={t('common.email', 'Email address')}
                       name="email"
                       fullWidth
                       value={values.email}
@@ -164,7 +155,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                       disabled={isSubmitting}
                       sx={{ mb: 4, width: isMobile ? '100%' : '250px' }}
                     >
-                      Send Invite
+                      {t('account.team.sendInvite', 'Send Invite')}
                     </Button>
                   </Box>
                 </Grid>
@@ -216,6 +207,8 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
               </Button>
             ),
           ]}
+          tableTitle={t('account.team.membersTableTitle')}
+          tableSubtitle={t('account.team.membersTableSubtitle')}
         />
       </Box>
     </Card>
