@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const es = {
+  [tokens.account.team.btnResetPassword]: 'Restablecer contraseña',
+  [tokens.account.team.memberDeleted]: 'Miembro eliminado correctamente.',
+  [tokens.account.team.memberDeleteError]: 'No se pudo eliminar el miembro.',
+  [tokens.account.team.passwordResetSent]: 'Correo de restablecimiento de contraseña enviado.',
+  [tokens.account.team.passwordResetError]: 'No se pudo enviar el correo de restablecimiento de contraseña.',
   [tokens.account.team.inviteSuccess]: '¡Invitación enviada con éxito!',
   [tokens.account.team.inviteError]: 'No se pudo enviar la invitación.',
   [tokens.account.team.inviteMembers]: 'Invitar miembros',

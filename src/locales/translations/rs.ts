@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const rs = {
+     [tokens.account.team.btnResetPassword]: 'Resetuj lozinku',
+     [tokens.account.team.memberDeleted]: 'Član je uspešno obrisan.',
+     [tokens.account.team.memberDeleteError]: 'Brisanje člana nije uspelo.',
+     [tokens.account.team.passwordResetSent]: 'Email za resetovanje lozinke je poslat.',
+     [tokens.account.team.passwordResetError]: 'Slanje emaila za resetovanje lozinke nije uspelo.',
      [tokens.account.team.inviteSuccess]: 'Pozivnica je uspešno poslata!',
      [tokens.account.team.inviteError]: 'Slanje pozivnice nije uspelo.',
      [tokens.account.team.inviteMembers]: 'Pozovi članove',

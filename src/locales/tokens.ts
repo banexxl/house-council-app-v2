@@ -145,6 +145,11 @@ export const tokens = {
     billingTableTitle: 'account.billingTableTitle',
     billingTableSubtitle: 'account.billingTableSubtitle',
     team: {
+      btnResetPassword: 'account.team.btnResetPassword',
+      memberDeleted: 'account.team.memberDeleted',
+      memberDeleteError: 'account.team.memberDeleteError',
+      passwordResetSent: 'account.team.passwordResetSent',
+      passwordResetError: 'account.team.passwordResetError',
       membersTableTitle: 'account.team.membersTableTitle',
       membersTableSubtitle: 'account.team.membersTableSubtitle',
       inviteMembers: 'account.team.inviteMembers',

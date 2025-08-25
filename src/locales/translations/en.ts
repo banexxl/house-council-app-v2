@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const en = {
+  [tokens.account.team.btnResetPassword]: 'Reset Password',
+  [tokens.account.team.memberDeleted]: 'Member deleted successfully.',
+  [tokens.account.team.memberDeleteError]: 'Failed to delete member.',
+  [tokens.account.team.passwordResetSent]: 'Password reset email sent.',
+  [tokens.account.team.passwordResetError]: 'Failed to send password reset email.',
   [tokens.account.team.inviteSuccess]: 'Invitation sent successfully!',
   [tokens.account.team.inviteError]: 'Failed to send invitation.',
   [tokens.account.team.inviteMembers]: 'Invite members',

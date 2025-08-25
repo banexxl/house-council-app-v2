@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const de = {
+  [tokens.account.team.btnResetPassword]: 'Passwort zurücksetzen',
+  [tokens.account.team.memberDeleted]: 'Mitglied erfolgreich gelöscht.',
+  [tokens.account.team.memberDeleteError]: 'Mitglied konnte nicht gelöscht werden.',
+  [tokens.account.team.passwordResetSent]: 'Passwort-Reset-E-Mail gesendet.',
+  [tokens.account.team.passwordResetError]: 'Passwort-Reset-E-Mail konnte nicht gesendet werden.',
   [tokens.account.team.inviteSuccess]: 'Einladung erfolgreich gesendet!',
   [tokens.account.team.inviteError]: 'Einladung konnte nicht gesendet werden.',
   [tokens.account.team.inviteMembers]: 'Mitglieder einladen',

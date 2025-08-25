@@ -17,11 +17,12 @@ import Typography from '@mui/material/Typography';
 
 import { Client, ClientMember, clientMemberValidationSchema } from 'src/types/client';
 import { Formik } from 'formik';
-import { addClientMember } from 'src/app/actions/client/client-members';
+import { addClientMember, deleteClientMember } from 'src/app/actions/client/client-members';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import toast from 'react-hot-toast';
 import { GenericTable } from 'src/components/generic-table';
+import { sendPasswordRecoveryEmail } from 'src/app/actions/client/client-actions';
 
 interface AccountTeamSettingsProps {
   members: ClientMember[];
@@ -39,14 +40,22 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
 
   // Handler for deleting a member
   const handleDeleteMember = async (id: string) => {
-    // TODO: Implement delete logic, e.g. call deleteClientMember(id)
-    // Show toast on success/error
+    const { deleteClientMemberSuccess, deleteClientMemberError } = await deleteClientMember(id);
+    if (deleteClientMemberSuccess) {
+      toast.success(t('account.team.memberDeleted'));
+    } else {
+      toast.error(t('account.team.memberDeleteError'));
+    }
   };
 
   // Handler for resetting a member's password
   const handleResetPassword = async (member: ClientMember) => {
-    // TODO: Implement reset password logic, e.g. call sendClientMemberPasswordReset({ email: member.email, clientId: member.client_id })
-    // Show toast on success/error
+    const { success, error } = await sendPasswordRecoveryEmail(member.email);
+    if (success) {
+      toast.success(t('account.team.passwordResetSent'));
+    } else {
+      toast.error(t('account.team.passwordResetError'));
+    }
   };
 
   return (
@@ -73,9 +82,9 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Stack spacing={1}>
-                    <Typography variant="h6">{t('account.team.inviteMembers', 'Invite members')}</Typography>
+                    <Typography variant="h6">{t('account.team.inviteMembers')}</Typography>
                     <Typography color="text.secondary" variant="body2">
-                      {t('account.team.editorSeatsInfo', 'You currently pay for 2 Editor Seats.')}
+                      {t('account.team.editorSeatsInfo')}
                     </Typography>
                   </Stack>
                 </Grid>
@@ -119,7 +128,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                     />
 
                     <TextField
-                      label={t('common.email', 'Email address')}
+                      label={t('common.email')}
                       name="email"
                       fullWidth
                       value={values.email}
@@ -153,9 +162,9 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                       type="submit"
                       variant="contained"
                       disabled={isSubmitting}
-                      sx={{ mb: 4, width: isMobile ? '100%' : '250px' }}
+                      sx={{ mb: 4, width: isMobile ? '100%' : '250px', height: '50px' }}
                     >
-                      {t('account.team.sendInvite', 'Send Invite')}
+                      {t('account.team.sendInvite')}
                     </Button>
                   </Box>
                 </Grid>
@@ -170,14 +179,14 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
           columns={[
             {
               key: 'name',
-              label: t('common.fullName') || 'Name',
+              label: t('common.fullName'),
               render: (value) => (
                 <Typography variant="subtitle2">{value as string}</Typography>
               ),
             },
             {
               key: 'email',
-              label: t('common.email') || 'Email',
+              label: t('common.lblEmail'),
               render: (value) => (
                 <Typography color="text.secondary" variant="body2">{value as string}</Typography>
               ),
@@ -203,7 +212,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                 onClick={() => handleResetPassword(member)}
                 key="reset"
               >
-                {t('common.btnResetPassword', 'Reset Password')}
+                {t('account.team.btnResetPassword')}
               </Button>
             ),
           ]}

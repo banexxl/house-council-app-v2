@@ -47,16 +47,40 @@ export const readClientMember = async (id: string): Promise<{ readClientMemberSu
 };
 
 export const deleteClientMember = async (id: string): Promise<{ deleteClientMemberSuccess: boolean; deleteClientMemberError?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     console.log('Deleting client member with ID:', id);
+
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+
      try {
-          const { error } = await supabase
+          const { data: tenantToDelete, error: fetchError } = await supabaseAdmin
                .from('tblClientMembers')
-               .delete()
-               .eq('id', id);
-          if (error) throw error;
+               .select('user_id')
+               .eq('id', id)
+               .single();
+          console.log('error:', fetchError);
+
+          if (fetchError) {
+               return { deleteClientMemberSuccess: false, deleteClientMemberError: fetchError.message };
+          }
+
+          const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(tenantToDelete.user_id);
+          if (deleteUserError) {
+               return { deleteClientMemberSuccess: false, deleteClientMemberError: deleteUserError.message };
+          }
+
+          const { error: deleteClientMemberError } = await supabaseAdmin.from('tblClientMembers').delete().eq('id', id);
+          if (deleteClientMemberError) {
+               return { deleteClientMemberSuccess: false, deleteClientMemberError: deleteClientMemberError.message };
+          }
+
+          revalidatePath('/dashboard/tenants');
+
           return { deleteClientMemberSuccess: true };
      } catch (error: any) {
-          return { deleteClientMemberSuccess: false, deleteClientMemberError: error.message };
+          return {
+               deleteClientMemberSuccess: false,
+               deleteClientMemberError: error.message,
+          };
      }
 };
 
@@ -69,7 +93,6 @@ export const readAllClientTeamMembers = async (clientId: string): Promise<{ read
                .from('tblClientMembers')
                .select('*')
                .eq('client_id', clientId);
-          console.log('error:', error);
 
           if (error) throw error;
 
