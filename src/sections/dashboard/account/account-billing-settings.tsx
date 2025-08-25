@@ -10,7 +10,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import { Grid, } from '@mui/material';;
+import Grid, { GridProps } from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -47,288 +47,211 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
   const handleDelete = async (id: string) => {
     const { deleteClientBillingInformationSuccess, deleteClientBillingInformationError } = await deleteClientBillingInformation([id]);
     if (deleteClientBillingInformationSuccess) {
-      toast.success('Billing information deleted successfully');
+      toast.success(t('account.billing.deleteSuccess'));
     } else {
       toast.error(deleteClientBillingInformationError?.message!);
     }
   };
 
   return (
-    <Stack
-      spacing={4}
-      {...props}
-    >
+    <Stack spacing={4} {...props}>
       <Card>
         <CardHeader
-          title="Change Plan"
-          subheader="You can upgrade and downgrade whenever you want"
+          title={t('account.billing.changePlanTitle')}
+          subheader={t('account.billing.changePlanSubheader')}
         />
         <CardContent sx={{ pt: 0 }}>
-
           <Grid container spacing={3}>
-            {
-              subscriptionPlans &&
-              subscriptionPlans?.map((plan: SubscriptionPlan) => {
-                const isSelected = plan.id === selectedPlan;
-                const isCurrent = plan.id === currentPlan;
-                const price = numeral(plan.total_price_with_discounts).format('$0,0.00');
-
-                return (
-                  <Grid key={plan.id} size={{ xs: 12, sm: 4 }}>
-                    <Card
-                      onClick={() => setSelectedPlan(plan.id!)}
-                      sx={{
-                        cursor: 'pointer',
-                        ...(isSelected && {
-                          borderColor: 'primary.main',
-                          borderWidth: 2,
-                          m: '-1px',
-                        }),
-                      }}
-                      variant="outlined"
-                    >
-                      <CardContent>
-                        <Box
-                          sx={{
-                            height: 52,
-                            width: 52,
-                            '& img': {
-                              height: 'auto',
-                              width: '100%',
-                            },
-                          }}
-                        >
-                          {/* Placeholder for plan icon */}
-                          {
-                            plan.total_price_with_discounts >= 0 && plan.total_price_with_discounts < 300 ? (
-                              <AccountPlanIcon name='startup' />
-                            ) : plan.total_price_with_discounts >= 300 && plan.total_price_with_discounts < 400 ? (
-                              <AccountPlanIcon name='standard' />
-                            ) : (
-                              <AccountPlanIcon name='business' />
-                            )
-                          }
-                        </Box>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            mb: 1,
-                            mt: 1,
-                          }}
-                        >
-                          <Typography variant="h5">{price}</Typography>
-                          <Typography
-                            color="text.secondary"
-                            sx={{
-                              mt: 'auto',
-                              ml: '4px',
-                            }}
-                            variant="body2"
-                          >
-                            /mo
+            {subscriptionPlans && subscriptionPlans.map((plan: SubscriptionPlan) => {
+              const isSelected = plan.id === selectedPlan;
+              const isCurrent = plan.id === currentPlan;
+              const price = numeral(plan.total_price_with_discounts).format('$0,0.00');
+              return (
+                <Grid key={plan.id} size={{ xs: 12, sm: 4 }}>
+                  <Card
+                    onClick={() => setSelectedPlan(plan.id!)}
+                    sx={{
+                      cursor: 'pointer',
+                      ...(isSelected && {
+                        borderColor: 'primary.main',
+                        borderWidth: 2,
+                        m: '-1px',
+                      }),
+                    }}
+                    variant="outlined"
+                  >
+                    <CardContent>
+                      <Box sx={{ height: 52, width: 52, '& img': { height: 'auto', width: '100%' } }}>
+                        {plan.total_price_with_discounts >= 0 && plan.total_price_with_discounts < 300 ? (
+                          <AccountPlanIcon name='startup' />
+                        ) : plan.total_price_with_discounts >= 300 && plan.total_price_with_discounts < 400 ? (
+                          <AccountPlanIcon name='standard' />
+                        ) : (
+                          <AccountPlanIcon name='business' />
+                        )}
+                      </Box>
+                      <Box sx={{ display: 'flex', mb: 1, mt: 1 }}>
+                        <Typography variant="h5">{price}</Typography>
+                        <Typography color="text.secondary" sx={{ mt: 'auto', ml: '4px' }} variant="body2">/mo</Typography>
+                      </Box>
+                      <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                        <Typography variant="overline">{plan.name}</Typography>
+                        {isCurrent && (
+                          <Typography color="primary.main" variant="caption">
+                            {t('account.billing.usingNow')}
                           </Typography>
-                        </Box>
-                        <Stack
-                          alignItems="center"
-                          direction="row"
-                          justifyContent="space-between"
-                          spacing={3}
-                        >
-                          <Typography variant="overline">{plan.name}</Typography>
-                          {isCurrent && (
-                            <Typography color="primary.main" variant="caption">
-                              Using now
-                            </Typography>
-                          )}
-                        </Stack>
-                        {/* Render features */}
-                        <Box sx={{ mt: 2 }}>
-                          {
-                            plan && plan.features &&
-                              plan.features.length > 0 ? (
-                              <Stack spacing={1}>
-                                {plan.features.map((feature) => (
-                                  <Typography key={feature} variant="body2" color="text.secondary">
-                                    {feature}
-                                  </Typography>
-                                ))}
-                                {!isCurrent && (
-                                  <Button
-                                    endIcon={<LinkIcon fontSize="small" />}
-                                    href={'https://nest-link.app/pricing'}
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                    variant="text"
-                                  >
-                                    Upgrade now
-                                  </Button>
-                                )}
-                              </Stack>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                No features available
+                        )}
+                      </Stack>
+                      <Box sx={{ mt: 2 }}>
+                        {plan && plan.features && plan.features.length > 0 ? (
+                          <Stack spacing={1}>
+                            {plan.features.map((feature) => (
+                              <Typography key={feature} variant="body2" color="text.secondary">
+                                {feature}
                               </Typography>
+                            ))}
+                            {!isCurrent && (
+                              <Button
+                                endIcon={<LinkIcon fontSize="small" />}
+                                href={'https://nest-link.app/pricing'}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                variant="text"
+                              >
+                                {t('account.billing.upgradeNow')}
+                              </Button>
                             )}
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                );
-              })}
+                          </Stack>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            {t('account.billing.noFeatures')}
+                          </Typography>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
-
           <Divider sx={{ my: 3 }} />
-          <Box
-            sx={{
-              alignItems: 'center',
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-          </Box>
-          <Box
-            sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              mt: 3,
-            }}
-          >
-            {
-              billingInfo && billingInfo.length > 0 &&
-              <GenericTable
-                items={billingInfo}
-                count={billingInfo.length}
-                columns={[
-                  { key: 'contact_person', label: 'Billing name' },
-                  {
-                    key: 'card_number',
-                    label: 'Card number',
-                    render: (value: any) => value ? `**** ${String(value).slice(-4)}` : 'N/A'
-                  },
-                  {
-                    key: 'billing_address',
-                    label: 'Address',
-                    render: (value: any) => value ? `${value.split(',')[0]?.trim()}, ${value.split(',')[1]?.trim()}, ${value.split(',')[3]}` : 'N/A'
-                  },
-                ]}
-                rowActions={[
-                  (row, openActionDialog) => (
-                    <Button
-                      color="error"
-                      variant="outlined"
-                      size="small"
-                      onClick={() => openActionDialog({
-                        id: row.id,
-                        title: 'Delete Billing Info',
-                        message: 'Are you sure you want to delete this billing information?',
-                        confirmText: 'Delete',
-                        cancelText: 'Cancel',
-                        onConfirm: () => handleDelete(row.id)
-                      })}
-                    >
-                      {t('common.btnDelete')}
-                    </Button>
-                  ),
-                  () => (
-                    <Button
-                      color="error"
-                      variant="outlined"
-                      size="small"
-                      href='https://nest-link.app/profile'
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {t('common.btnEdit')}
-                    </Button>
-                  )
-                ]}
-              />
-            }
-          </Box>
-          <Typography
-            color="text.secondary"
-            variant="body2"
-            sx={{ mt: 3 }}
-          >
-            We cannot refund once you purchased a subscription, but you can always
+          <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between' }} />
+          {billingInfo && billingInfo.length > 0 && (
+            <GenericTable
+              items={billingInfo}
+              count={billingInfo.length}
+              columns={[
+                { key: 'contact_person', label: t('account.billing.billingName') },
+                {
+                  key: 'card_number',
+                  label: t('account.billing.cardNumber'),
+                  render: (value: any) => value ? `**** ${String(value).slice(-4)}` : 'N/A'
+                },
+                {
+                  key: 'billing_address',
+                  label: t('account.billing.billingAddress'),
+                  render: (value: any) => value ? `${value.split(',')[0]?.trim()}, ${value.split(',')[1]?.trim()}, ${value.split(',')[3]}` : 'N/A'
+                },
+              ]}
+              rowActions={[
+                (row, openActionDialog) => (
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                    onClick={() => openActionDialog({
+                      id: row.id,
+                      title: t('account.billing.deleteTitle'),
+                      message: t('account.billing.deleteMessage'),
+                      confirmText: t('account.billing.deleteConfirm'),
+                      cancelText: t('account.billing.deleteCancel'),
+                      onConfirm: () => handleDelete(row.id)
+                    })}
+                  >
+                    {t('common.btnDelete')}
+                  </Button>
+                ),
+                () => (
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                    href='https://nest-link.app/profile'
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('common.btnEdit')}
+                  </Button>
+                )
+              ]}
+              tableTitle='account.billingTableTitle'
+              tableSubtitle='account.billingTableSubtitle'
+            />
+          )}
+          <Typography color="text.secondary" variant="body2" sx={{ mt: 3 }}>
+            {t('account.billing.refundNote')}
             <Link
               href="https://nest-link.app/profile"
               sx={{ ml: '4px' }}
               underline="none"
               variant="body2"
             >
-              Cancel
+              {t('account.billing.cancel')}
             </Link>
           </Typography>
           <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              mt: 3,
-            }}
+            sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}
             component={Link}
             href="https://nest-link.app/pricing"
             target="_blank"
           >
-            <Button variant="contained">Upgrade Plan</Button>
+            <Button variant="contained">{t('account.billing.upgradePlan')}</Button>
           </Box>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader
-          title="Invoice history"
-          subheader="You can view and download all your previous invoices here. If you’ve just made a payment, it may take a few hours for it to appear in the table below."
-        />
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Total (incl. tax)</TableCell>
-              <TableCell>Billing Information</TableCell>
-              <TableCell>Client</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
+        <GenericTable
+          items={invoices || []}
+          count={invoices ? invoices.length : 0}
+          columns={[
             {
-              invoices && invoices.length > 0 ? invoices.map((invoice) => {
-                const created_at = invoice.created_at ? format(new Date(invoice.created_at), 'dd MMM yyyy') : '';
-                const amount = numeral(invoice.total_paid).format('$0,0.00');
-
-                return (
-                  <TableRow key={invoice.id}>
-                    <TableCell>{created_at}</TableCell>
-                    <TableCell>{amount}</TableCell>
-                    <TableCell>{invoice.billing_information ? `**** ${String(invoice.billing_information.card_number).slice(-4)}` : 'N/A'}</TableCell>
-                    <TableCell>{invoice.client.name ? `${invoice.client.name}` : 'N/A'}</TableCell>
-                    <TableCell align="right">
-                      <Link
-                        color="inherit"
-                        underline="always"
-                        href="/"
-                      >
-                        View Invoice
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-                :
-                (
-                  <TableRow>
-                    <TableCell colSpan={3} align="center">
-                      No invoices found
-                    </TableCell>
-                  </TableRow>
-                )
-            }
-          </TableBody>
-        </Table>
+              key: 'created_at',
+              label: t('account.billing.invoiceDate'),
+              render: (value: any) => value ? format(new Date(value), 'dd MMM yyyy') : 'N/A',
+            },
+            {
+              key: 'total_paid',
+              label: t('account.billing.invoiceTotal'),
+              render: (value: any) => numeral(value).format('$0,0.00'),
+            },
+            {
+              key: 'billing_information',
+              label: t('account.billing.invoiceBillingInfo'),
+              render: (value: any) => value && value.card_number ? `**** ${String(value.card_number).slice(-4)}` : 'N/A',
+            },
+            {
+              key: 'client',
+              label: t('account.billing.invoiceClient'),
+              render: (value: any) => value && value.name ? value.name : 'N/A',
+            },
+            {
+              key: 'actions',
+              label: t('account.billing.invoiceView'),
+              render: (_: any, row: any) => (
+                <Link color="inherit" underline="always" href="/">
+                  {t('account.billing.invoiceView')}
+                </Link>
+              ),
+            },
+          ]}
+          tableTitle={t('account.billing.invoiceHistoryTitle')}
+          tableSubtitle={t('account.billing.invoiceHistorySubheader')}
+        />
       </Card>
     </Stack>
+
   );
-};
+}
 
 AccountBillingSettings.propTypes = {
   plan: PropTypes.string.isRequired,

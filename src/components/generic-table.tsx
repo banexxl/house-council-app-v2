@@ -2,7 +2,6 @@
 
 import {
      Box,
-     Button,
      Card,
      CardHeader,
      Table,
@@ -13,11 +12,10 @@ import {
      TableRow,
      Typography,
 } from '@mui/material';
-import { MouseEvent, ChangeEvent, FC } from 'react';
+import { MouseEvent, ChangeEvent, FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Scrollbar } from 'src/components/scrollbar';
 import { PopupModal } from 'src/components/modal-dialog';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useDialog } from 'src/hooks/use-dialog';
 import Link from 'next/link';
 import { CheckCircle as CheckCircleIcon, Cancel as CancelIcon } from '@mui/icons-material';
@@ -55,10 +53,10 @@ export const GenericTable = <T extends { id: string }>(
           columns,
           items = [],
           count = items.length,
-          page = 0,
-          rowsPerPage = 10,
-          onPageChange = () => { },
-          onRowsPerPageChange = () => { },
+          page: pageProp,
+          rowsPerPage: rowsPerPageProp,
+          onPageChange,
+          onRowsPerPageChange,
           baseUrl,
           rowActions = [],
           tableTitle,
@@ -66,6 +64,27 @@ export const GenericTable = <T extends { id: string }>(
      }: GenericTableProps<T>
 ) => {
      const { t } = useTranslation();
+
+     // Internal pagination state if not controlled
+     const [internalPage, setInternalPage] = useState(0);
+     const [internalRowsPerPage, setInternalRowsPerPage] = useState(5);
+
+     const page = typeof pageProp === 'number' ? pageProp : internalPage;
+     const rowsPerPage = typeof rowsPerPageProp === 'number' ? rowsPerPageProp : internalRowsPerPage;
+
+     const handlePageChange = (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+          if (onPageChange) onPageChange(event, newPage);
+          if (typeof pageProp !== 'number') setInternalPage(newPage);
+     };
+
+     const handleRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
+          if (onRowsPerPageChange) onRowsPerPageChange(event);
+          if (typeof rowsPerPageProp !== 'number') {
+               setInternalRowsPerPage(parseInt(event.target.value, 10));
+               setInternalPage(0);
+          }
+     };
+
      // Generic dialog state: open, content, confirm callback
      const actionDialog = useDialog<{
           id: string;
@@ -107,55 +126,57 @@ export const GenericTable = <T extends { id: string }>(
                               </TableHead>
                               <TableBody>
                                    {items.length > 0 ? (
-                                        items.map((item) => (
-                                             <TableRow
-                                                  hover
-                                                  key={item.id}
-                                                  sx={{ cursor: baseUrl ? 'pointer' : 'default' }}
-                                             >
-                                                  {columns.map((col) => (
-                                                       <TableCell key={String(col.key)}>
-                                                            {typeof item[col.key] === 'boolean' ? (
-                                                                 <SvgIcon>
-                                                                      {item[col.key] ? (
-                                                                           <CheckCircleIcon color="success" />
-                                                                      ) : (
-                                                                           <CancelIcon color="error" />
-                                                                      )}
-                                                                 </SvgIcon>
-                                                            ) : typeof item[col.key] === 'string' && /^https?:\/\//.test(item[col.key] as string) ? (
-                                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                      <img src={item[col.key] as string} alt="cell-img" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 4 }} />
+                                        items
+                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                             .map((item) => (
+                                                  <TableRow
+                                                       hover
+                                                       key={item.id}
+                                                       sx={{ cursor: baseUrl ? 'pointer' : 'default' }}
+                                                  >
+                                                       {columns.map((col) => (
+                                                            <TableCell key={String(col.key)}>
+                                                                 {typeof item[col.key] === 'boolean' ? (
+                                                                      <SvgIcon>
+                                                                           {item[col.key] ? (
+                                                                                <CheckCircleIcon color="success" />
+                                                                           ) : (
+                                                                                <CancelIcon color="error" />
+                                                                           )}
+                                                                      </SvgIcon>
+                                                                 ) : typeof item[col.key] === 'string' && /^https?:\/\//.test(item[col.key] as string) ? (
+                                                                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                           <img src={item[col.key] as string} alt="cell-img" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 4 }} />
+                                                                      </Box>
+                                                                 ) : (
+                                                                      <Box
+                                                                           component={Link}
+                                                                           href={baseUrl ? `${baseUrl}/${item.id}` : '#'}
+                                                                           sx={{
+                                                                                display: 'block',
+                                                                                color: 'inherit',
+                                                                                textDecoration: 'none',
+                                                                                pointerEvents: baseUrl ? 'auto' : 'none',
+                                                                           }}
+                                                                      >
+                                                                           {col.render
+                                                                                ? col.render(item[col.key], item)
+                                                                                : String(item[col.key])}
+                                                                      </Box>
+                                                                 )}
+                                                            </TableCell>
+                                                       ))}
+                                                       <TableCell>
+                                                            {rowActions.length > 0 ? (
+                                                                 <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                      {rowActions.map((action, idx) => (
+                                                                           <span key={idx}>{action(item, openActionDialog)}</span>
+                                                                      ))}
                                                                  </Box>
-                                                            ) : (
-                                                                 <Box
-                                                                      component={Link}
-                                                                      href={baseUrl ? `${baseUrl}/${item.id}` : '#'}
-                                                                      sx={{
-                                                                           display: 'block',
-                                                                           color: 'inherit',
-                                                                           textDecoration: 'none',
-                                                                           pointerEvents: baseUrl ? 'auto' : 'none',
-                                                                      }}
-                                                                 >
-                                                                      {col.render
-                                                                           ? col.render(item[col.key], item)
-                                                                           : String(item[col.key])}
-                                                                 </Box>
-                                                            )}
+                                                            ) : 'N/A'}
                                                        </TableCell>
-                                                  ))}
-                                                  <TableCell>
-                                                       {rowActions.length > 0 ? (
-                                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                 {rowActions.map((action, idx) => (
-                                                                      <span key={idx}>{action(item, openActionDialog)}</span>
-                                                                 ))}
-                                                            </Box>
-                                                       ) : null}
-                                                  </TableCell>
-                                             </TableRow>
-                                        ))
+                                                  </TableRow>
+                                             ))
                                    ) : (
                                         <TableRow>
                                              <TableCell colSpan={columns.length + 1} align="center">
@@ -173,8 +194,8 @@ export const GenericTable = <T extends { id: string }>(
                          component="div"
                          count={count}
                          page={page}
-                         onPageChange={onPageChange}
-                         onRowsPerPageChange={onRowsPerPageChange}
+                         onPageChange={handlePageChange}
+                         onRowsPerPageChange={handleRowsPerPageChange}
                          rowsPerPage={rowsPerPage}
                          rowsPerPageOptions={[5, 10, 25]}
                          showFirstButton
