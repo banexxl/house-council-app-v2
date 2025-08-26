@@ -3,7 +3,6 @@
 import { Box, Button, Card, CardContent, Typography, Stack, InputAdornment, TextField, LinearProgress, IconButton, CircularProgress, useTheme, Alert } from "@mui/material"
 import LockIcon from "@mui/icons-material/Lock"
 import { User } from "@supabase/supabase-js"
-import { createBrowserClient } from '@supabase/ssr'
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useEffect, useState } from "react"
@@ -167,6 +166,16 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
      useEffect(() => {
 
           setPasswordStrength(calculatePasswordStrength(formik.values.newPassword))
+
+          const factors = userData.session?.factors || []
+          const hasTotpFactor = factors.some(factor => factor.factor_type === 'totp' && factor.status === 'verified')
+
+          if (hasTotpFactor) {
+               const totp = factors.find(f => f.factor_type === 'totp')
+               setFactorId(totp?.id || null)
+               setIs2FAEnabled(true)
+               setStep("done") // Optional: show "Disable 2FA" UI by default
+          }
 
      }, [formik.values.newPassword, userData.session])
 

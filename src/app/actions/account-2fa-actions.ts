@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 
@@ -118,5 +119,6 @@ export async function disableTOTP(factorId: string, sessionUserId: string) {
           duration_ms: 0,
           type: 'auth'
      })
+     revalidatePath(`/dashboard/account`)
      return { success: true }
 }
