@@ -44,4 +44,5 @@ export const logServerAction = async ({
           duration_ms,
           type
      })
+
 }

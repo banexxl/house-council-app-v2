@@ -54,7 +54,6 @@ export const PasswordForm = ({ ipAddress }: PasswordFormProps) => {
                                    password: values.password,
                                    ip: ipAddress || '',
                               })
-                         console.log('signInError', signInError);
 
                          if (signInError) {
                               toast.error(signInError.details! || "Sign in failed")
@@ -88,8 +87,6 @@ export const PasswordForm = ({ ipAddress }: PasswordFormProps) => {
                                    setLoading(false)
                                    return
                               }
-
-                              console.log('challengeid', challenge.data?.id!);
 
                               setDoesRequire2FA(true)
                               setChallengeId(challenge.data?.id!)

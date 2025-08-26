@@ -22,6 +22,7 @@ export const MagicLinkForm = ({ ipAddress }: MagicLinkFormProps) => {
 
      const onSubmit = async (values: typeof initialValuesEmailOnly) => {
           const result = await magicLinkLogin(values.email, ipAddress || '')
+
           setMessage(result.error || null)
 
           if (result.error) {

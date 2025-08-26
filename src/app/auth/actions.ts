@@ -93,6 +93,32 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
           }
      }
 
+     // 4. If not found, check tblClientMembers
+     if (!userFound) {
+          const { data: clientMember, error: clientMemberError } = await supabase
+               .from('tblClientMembers')
+               .select('id')
+               .eq('email', email)
+               .single();
+
+          if (clientMember) {
+               userType = 'client';
+               userId = clientMember.id;
+               userFound = true;
+          } else if (clientMemberError && clientMemberError.code !== 'PGRST116') {
+               await logServerAction({
+                    user_id: null,
+                    action: 'NLA - Magic link client member lookup failed',
+                    payload: { email },
+                    status: 'fail',
+                    error: clientMemberError.message,
+                    duration_ms: 0,
+                    type: 'auth',
+               });
+               return { error: clientMemberError.message };
+          }
+     }
+
      if (!userFound || !userId) {
           await logServerAction({
                user_id: null,
@@ -143,7 +169,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
      await logServerAction({
           user_id: null,
           action: 'NLA - Magic link sent successfully',
-          payload: { email, ip: ipAddress || '' },
+          payload: JSON.stringify({ emailAddress: email, ip: ipAddress }),
           status: 'success',
           error: '',
           duration_ms: 0, // Duration can be calculated if needed
@@ -277,6 +303,40 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           }
      }
 
+     // 1. Check tblClientMembers
+     if (!userFound) {
+          const { data: clientMember, error: clientMemberError } = await supabase
+               .from('tblClientMembers')
+               .select('id')
+               .eq('email', values.email)
+               .single();
+          if (clientMember) {
+               userType = 'client';
+               userId = clientMember.id;
+               userFound = true;
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password - user found in tblClientMembers',
+                    payload: JSON.stringify(values),
+                    status: 'success',
+                    error: '',
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               });
+          } else if (clientMemberError && clientMemberError.code !== 'PGRST116') {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signing in with email and password client member lookup failed',
+                    payload: JSON.stringify(values),
+                    status: 'fail',
+                    error: clientMemberError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               });
+               return { success: false, error: { code: clientMemberError.code, details: clientMemberError.details, hint: clientMemberError.hint, message: clientMemberError.message } };
+          }
+     }
+
      if (!userFound || !userId) {
           await logServerAction({
                user_id: null,
@@ -332,7 +392,6 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           });
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
-     console.log('aaaaaaaaaaaaaa', values);
 
      await logServerAction({
           user_id: signInSession.user.id,
