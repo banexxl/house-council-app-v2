@@ -54,9 +54,10 @@ export const PasswordForm = ({ ipAddress }: PasswordFormProps) => {
                                    password: values.password,
                                    ip: ipAddress || '',
                               })
+                         console.log('signInError', signInError);
 
                          if (signInError) {
-                              toast.error(signInError.message!)
+                              toast.error(signInError.details! || "Sign in failed")
                               setLoading(false)
                               return
                          }
