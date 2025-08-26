@@ -168,16 +168,6 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
 
           setPasswordStrength(calculatePasswordStrength(formik.values.newPassword))
 
-          const factors = userData.session?.factors || []
-          const hasTotpFactor = factors.some(factor => factor.factor_type === 'totp' && factor.status === 'verified')
-
-          if (hasTotpFactor) {
-               const totp = factors.find(f => f.factor_type === 'totp')
-               setFactorId(totp?.id || null)
-               setIs2FAEnabled(true)
-               setStep("done") // Optional: show "Disable 2FA" UI by default
-          }
-
      }, [formik.values.newPassword, userData.session])
 
      return (
