@@ -4,11 +4,12 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { User } from '@supabase/supabase-js';
 
 export type SignInFormValues = {
      email: string;
      password: string;
-     ip?: string;
+     ip: string;
 };
 
 export type ErrorType = {
@@ -18,7 +19,7 @@ export type ErrorType = {
      message?: string;
 }
 
-export const magicLinkLogin = async (email: string): Promise<{ success?: boolean, error?: string }> => {
+export const magicLinkLogin = async (email: string, ipAddress: string): Promise<{ success?: boolean, error?: string }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -142,7 +143,7 @@ export const magicLinkLogin = async (email: string): Promise<{ success?: boolean
      await logServerAction({
           user_id: null,
           action: 'NLA - Magic link sent successfully',
-          payload: { email },
+          payload: { email, ip: ipAddress || '' },
           status: 'success',
           error: '',
           duration_ms: 0, // Duration can be calculated if needed
@@ -176,7 +177,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
      }
 };
 
-export const signInWithEmailAndPassword = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
+export const signInWithEmailAndPassword = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType, userData?: User }> => {
 
      const start = Date.now();
      const cookieStore = await cookies();
@@ -331,23 +332,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           });
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
-
-     if (signInSession.session.user!.factors?.length == 0) {
-          return { success: true };
-     }
-
-     if (signInSession.session && signInSession.user?.factors && signInSession.user?.factors?.length > 0) {
-          const factor = signInSession.user.factors.find(f => f.status === 'verified' && f.factor_type === 'totp')
-          if (!factor) {
-               return { success: false, error: { code: 'no_valid_factor', details: 'No valid 2FA factor found', message: '2FA required but no valid factor found.' } };
-          }
-
-          const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id })
-
-          if (challengeError || !challenge?.id) {
-               return { success: false, error: { code: 'mfa_challenge_failed', details: challengeError?.message || 'Unknown error', message: 'Failed to create 2FA challenge.' } };
-          }
-     }
+     console.log('aaaaaaaaaaaaaa', values);
 
      await logServerAction({
           user_id: signInSession.user.id,
@@ -358,7 +343,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           duration_ms: Date.now() - start,
           type: 'auth'
      });
-     return { success: true };
+     return { success: true, userData: signInSession.user };
 }
 
 export const logout = async (): Promise<{ success: boolean; error?: string }> => {

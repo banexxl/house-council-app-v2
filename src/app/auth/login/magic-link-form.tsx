@@ -12,12 +12,17 @@ import toast from "react-hot-toast"
 import { magicLinkLogin } from "../actions"
 import { Button } from "@mui/material"
 
-export const MagicLinkForm = () => {
+type MagicLinkFormProps = {
+     ipAddress: string | null;
+}
+
+export const MagicLinkForm = ({ ipAddress }: MagicLinkFormProps) => {
      const [message, setMessage] = useState<string | null>("")
      const [loginError, setLoginError] = useState<boolean>(false)
 
      const onSubmit = async (values: typeof initialValuesEmailOnly) => {
-          const result = await magicLinkLogin(values.email)
+          const result = await magicLinkLogin(values.email, ipAddress || '')
+          setMessage(result.error || null)
 
           if (result.error) {
                setLoginError(true)

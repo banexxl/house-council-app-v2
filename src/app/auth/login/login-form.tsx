@@ -71,6 +71,15 @@ const LoginForm = () => {
           setAuthMethod(newValue)
      }
 
+     const [ipAddress, setIpAddress] = useState<string | null>(null);
+
+     useEffect(() => {
+          fetch('/api/ip')
+               .then(res => res.json())
+               .then(data => setIpAddress(data.ip))
+               .catch(() => setIpAddress(null));
+     }, []);
+
      return (
           <div style={{ height: "400px" }}>
                <Stack sx={{ mb: 4 }} spacing={1}>
@@ -85,7 +94,7 @@ const LoginForm = () => {
                     <Tab value="magic_link" label="Magic Link" />
                </Tabs>
 
-               {authMethod === "password" && <PasswordForm />}
+               {authMethod === "password" && <PasswordForm ipAddress={ipAddress} />}
                {authMethod === "google" && (
                     <Box>
                          <Typography
@@ -140,7 +149,7 @@ const LoginForm = () => {
                          </Button>
                     </Box>
                )}
-               {authMethod === "magic_link" && <MagicLinkForm />}
+               {authMethod === "magic_link" && <MagicLinkForm ipAddress={ipAddress} />}
 
                <Divider sx={{ my: 3 }} />
                <Typography color="text.secondary" variant="body2" align="center">

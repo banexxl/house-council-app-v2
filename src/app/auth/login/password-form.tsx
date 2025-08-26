@@ -14,8 +14,13 @@ import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { Button } from "@mui/material"
 import { createBrowserClient } from "@supabase/ssr"
+import { signInWithEmailAndPassword } from "../actions"
 
-export const PasswordForm = () => {
+type PasswordFormProps = {
+     ipAddress: string | null;
+}
+
+export const PasswordForm = ({ ipAddress }: PasswordFormProps) => {
 
      const router = useRouter()
      const [doesRequire2FA, setDoesRequire2FA] = useState(false)
@@ -41,23 +46,23 @@ export const PasswordForm = () => {
                setLoading(true)
                try {
                     if (!doesRequire2FA) {
-                         console.log('NE treba 2fa');
 
                          // Phase 1: Email + Password login
-                         const { data, error: signInError } =
-                              await supabase.auth.signInWithPassword({
+                         const { userData, error: signInError } =
+                              await signInWithEmailAndPassword({
                                    email: values.email,
                                    password: values.password,
+                                   ip: ipAddress || '',
                               })
 
                          if (signInError) {
-                              toast.error(signInError.message)
+                              toast.error(signInError.message!)
                               setLoading(false)
                               return
                          }
 
                          // ✅ No MFA required → done
-                         if (!data.user.factors || data.user.factors?.length === 0) {
+                         if (!userData?.factors || userData.factors?.length === 0) {
                               toast.success("Sign in successful!")
                               handleNavClick("/")
                               formik.resetForm()
@@ -65,9 +70,9 @@ export const PasswordForm = () => {
                          }
 
                          // ✅ MFA required
-                         if (data.user.factors?.length! >= 1) {
+                         if (userData.factors?.length! >= 1) {
 
-                              const factor = data.user.factors?.find((f) => f.factor_type === 'totp');
+                              const factor = userData.factors?.find((f) => f.factor_type === 'totp');
 
                               const challenge = await supabase.auth.mfa.challenge({ factorId: factor?.id! });
 
@@ -77,7 +82,7 @@ export const PasswordForm = () => {
                                    return
                               }
 
-                              if (!data.user.factors) {
+                              if (!userData.factors) {
                                    toast.error("Failed to create 2FA challenge.")
                                    setLoading(false)
                                    return
@@ -95,7 +100,6 @@ export const PasswordForm = () => {
                               return
                          }
                     } else {
-                         console.log('Treba 2fa');
                          // Phase 2: MFA Verification
                          if (!values.otp) {
                               toast.error("Please enter your 2FA code.")
@@ -103,10 +107,11 @@ export const PasswordForm = () => {
                               return
                          }
 
-                         const { data: user, error: signInError } =
-                              await supabase.auth.signInWithPassword({
+                         const { userData, error: signInError } =
+                              await signInWithEmailAndPassword({
                                    email: values.email,
                                    password: values.password,
+                                   ip: ipAddress || '',
                               })
 
                          if (signInError) {
@@ -128,7 +133,7 @@ export const PasswordForm = () => {
                               return
                          }
 
-                         if (data.user) {
+                         if (userData) {
                               toast.success("2FA verified. You're now signed in!")
                               handleNavClick("/")
                          } else {
