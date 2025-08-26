@@ -14,7 +14,7 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const { admin, client, tenant, userData, role, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { admin, client, tenant, userData, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!admin && !client && !tenant) {
     logout()
   }
@@ -41,7 +41,7 @@ export default async function Page({ params }: {
           <BuildingFormHeader building={buildingData.success ? buildingData.data : undefined} />
           <BuildingCreateForm
             buildingData={buildingData.success ? buildingData.data : undefined}
-            userData={{ client, tenant, admin, userData, role, error }}
+            userData={{ client, tenant, admin, userData, error }}
             locationData={locationData.success ? locationData.data ?? [] : []}
           />
         </Stack>
