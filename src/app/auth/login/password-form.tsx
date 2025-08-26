@@ -14,11 +14,9 @@ import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { Button } from "@mui/material"
 import { createBrowserClient } from "@supabase/ssr"
-import { url } from "node:inspector/promises"
-import { AuthMFAAdminListFactorsParams } from "@supabase/supabase-js"
 
 export const PasswordForm = () => {
-     const [loginError, setLoginError] = useState<boolean>(false)
+
      const router = useRouter()
      const [doesRequire2FA, setDoesRequire2FA] = useState(false)
      const [challengeId, setChallengeId] = useState<string>("")
@@ -43,6 +41,8 @@ export const PasswordForm = () => {
                setLoading(true)
                try {
                     if (!doesRequire2FA) {
+                         console.log('NE treba 2fa');
+
                          // Phase 1: Email + Password login
                          const { data, error: signInError } =
                               await supabase.auth.signInWithPassword({
@@ -57,7 +57,7 @@ export const PasswordForm = () => {
                          }
 
                          // ✅ No MFA required → done
-                         if (data.user.factors?.length === 0) {
+                         if (!data.user.factors || data.user.factors?.length === 0) {
                               toast.success("Sign in successful!")
                               handleNavClick("/")
                               formik.resetForm()
@@ -95,7 +95,7 @@ export const PasswordForm = () => {
                               return
                          }
                     } else {
-
+                         console.log('Treba 2fa');
                          // Phase 2: MFA Verification
                          if (!values.otp) {
                               toast.error("Please enter your 2FA code.")
@@ -145,15 +145,10 @@ export const PasswordForm = () => {
 
      return (
           <Box sx={{ textAlign: "center", height: "auto" }}>
+
                <Typography color="text.secondary" variant="body2" sx={{ mb: 3 }}>
                     Sign in with your email and password
                </Typography>
-
-               {loginError && (
-                    <Typography color="error" sx={{ mb: 2 }}>
-                         Invalid login attempt.
-                    </Typography>
-               )}
 
                <form noValidate onSubmit={formik.handleSubmit}>
                     <Stack spacing={2}>
