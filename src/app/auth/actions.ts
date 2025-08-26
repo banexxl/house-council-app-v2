@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 export type SignInFormValues = {
      email: string;
      password: string;
+     ip?: string;
 };
 
 export type ErrorType = {
@@ -199,7 +200,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           await logServerAction({
                user_id: null,
                action: 'Signing in with email and password - user found in tblSuperAdmins',
-               payload: JSON.stringify(values),
+               payload: values,
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,

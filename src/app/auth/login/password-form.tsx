@@ -1,7 +1,7 @@
 "use client"
 
 import { useFormik } from "formik"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
@@ -9,7 +9,6 @@ import Box from "@mui/material/Box"
 import { initialValuesEmailAndPassword, validationSchemaEmailAndPassword } from "./login-schema"
 import toast from "react-hot-toast"
 import { signInWithEmailAndPassword } from "../actions"
-import { hashPassword } from "src/utils/bcrypt"
 import { useRouter } from "next/navigation"
 import { Button } from "@mui/material"
 
@@ -17,10 +16,18 @@ export const PasswordForm = () => {
      const [message, setMessage] = useState<string | null>("")
      const [loginError, setLoginError] = useState<boolean>(false)
      const router = useRouter();
+     const [ip, setIp] = useState<string>("");
+
+     useEffect(() => {
+          fetch("/api/ip")
+               .then((res) => res.json())
+               .then((data) => setIp(data.ip));
+     }, [])
+
 
      const onSubmit = async (values: typeof initialValuesEmailAndPassword) => {
 
-          const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: values.password })
+          const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: values.password, ip })
 
           if (error) {
                setLoginError(true)
