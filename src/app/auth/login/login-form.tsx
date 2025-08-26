@@ -64,6 +64,9 @@ const LoginForm = () => {
      const [authMethod, setAuthMethod] = useState<"password" | "google" | "magic_link">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
+     const ipAddress = typeof window !== "undefined" ? window.location.hostname : ""
+     console.log('ip', ipAddress);
+
      useSessionUpdater()
 
      const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google" | "magic_link") => {

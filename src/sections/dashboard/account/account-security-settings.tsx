@@ -1,5 +1,4 @@
 import type { FC } from 'react';
-import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
@@ -16,12 +15,13 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { DeleteAccountSection } from './account-delete-section';
 import { Client } from 'src/types/client';
+import PasswordReset from './account-security-password-reset';
+import { User } from '@supabase/supabase-js';
 
 interface LoginEvent {
   id: string;
@@ -34,15 +34,13 @@ interface LoginEvent {
 interface AccountSecuritySettingsProps {
   loginEvents: LoginEvent[];
   client: Client;
+  userData: User;
 }
 
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
-  const { loginEvents, client } = props;
-  const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  const handleEdit = useCallback((): void => {
-    setIsEditing((prevState) => !prevState);
-  }, []);
+  const { loginEvents, client, userData } = props;
+
 
   return (
     <Stack spacing={4}>
@@ -52,175 +50,9 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
             container
             spacing={3}
           >
-            <Grid
-              size={{ xs: 12, lg: 4 }}
-            >
-              <Typography variant="h6">Change password</Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 12, md: 8 }}
-            >
-              <Stack
-                alignItems="center"
-                direction="row"
-                spacing={3}
-              >
-                <TextField
-                  disabled={!isEditing}
-                  label="Password"
-                  type="password"
-                  defaultValue="Thebestpasswordever123#"
-                  sx={{
-                    flexGrow: 1,
-                    ...(!isEditing && {
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderStyle: 'dotted',
-                      },
-                    }),
-                  }}
-                />
-                <Button onClick={handleEdit}>{isEditing ? 'Save' : 'Edit'}</Button>
-              </Stack>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader title="Multi Factor Authentication" />
-        <CardContent sx={{ pt: 0 }}>
-          <Grid
-            container
-            spacing={4}
-          >
-            <Grid
-              size={{ xs: 12, sm: 6 }}
-            >
-              <Card
-                sx={{ height: '100%' }}
-                variant="outlined"
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: 'block',
-                      position: 'relative',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        '&::before': {
-                          backgroundColor: 'error.main',
-                          borderRadius: '50%',
-                          content: '""',
-                          display: 'block',
-                          height: 8,
-                          left: 4,
-                          position: 'absolute',
-                          top: 7,
-                          width: 8,
-                          zIndex: 1,
-                        },
-                      }}
-                    >
-                      <Typography
-                        color="error"
-                        sx={{ pl: 3 }}
-                        variant="body2"
-                      >
-                        Off
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant="subtitle2"
-                  >
-                    Authenticator App
-                  </Typography>
-                  <Typography
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                    variant="body2"
-                  >
-                    Use an authenticator app to generate one time security codes.
-                  </Typography>
-                  <Box sx={{ mt: 4 }}>
-                    <Button
-                      endIcon={
-                        <SvgIcon>
-                          <ArrowRightIcon />
-                        </SvgIcon>
-                      }
-                      variant="outlined"
-                    >
-                      Set Up
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 6 }}
-            >
-              <Card
-                sx={{ height: '100%' }}
-                variant="outlined"
-              >
-                <CardContent>
-                  <Box sx={{ position: 'relative' }}>
-                    <Box
-                      sx={{
-                        '&::before': {
-                          backgroundColor: 'error.main',
-                          borderRadius: '50%',
-                          content: '""',
-                          display: 'block',
-                          height: 8,
-                          left: 4,
-                          position: 'absolute',
-                          top: 7,
-                          width: 8,
-                          zIndex: 1,
-                        },
-                      }}
-                    >
-                      <Typography
-                        color="error"
-                        sx={{ pl: 3 }}
-                        variant="body2"
-                      >
-                        Off
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant="subtitle2"
-                  >
-                    Text Message
-                  </Typography>
-                  <Typography
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                    variant="body2"
-                  >
-                    Use your mobile phone to receive security codes via SMS.
-                  </Typography>
-                  <Box sx={{ mt: 4 }}>
-                    <Button
-                      endIcon={
-                        <SvgIcon>
-                          <ArrowRightIcon />
-                        </SvgIcon>
-                      }
-                      variant="outlined"
-                    >
-                      Set Up
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+
+            <PasswordReset userData={{ client, session: userData }} />
+
           </Grid>
         </CardContent>
       </Card>
@@ -263,10 +95,10 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
               })}
             </TableBody>
           </Table>
-          <Card sx={{ p: 3, mt: 2 }}>
-            <DeleteAccountSection id={client.id} />
-          </Card>
         </Scrollbar>
+      </Card>
+      <Card sx={{ p: 3, mt: 2 }}>
+        <DeleteAccountSection id={client.id} />
       </Card>
     </Stack>
   );

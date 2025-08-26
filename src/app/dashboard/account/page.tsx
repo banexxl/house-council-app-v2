@@ -16,21 +16,21 @@ import { readAllClientTeamMembers } from 'src/app/actions/client/client-members'
 
 const Page = async () => {
 
-  let clientData: Client | null = null;
+  let client: Client | null = null;
   let clientSubscriptionPlan: SubscriptionPlan | null = null
   let clientBillingInfo: ClientBillingInformation[] | null = null
   let clientInvoices: Invoice[] | null = null
   let allSubscriptions: SubscriptionPlan[] | null = null;
   let allTeamMembers: ClientMember[] | null = null;
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client: clientData, tenant, admin, userData } = await checkIfUserExistsAndReturnDataAndSessionObject();
 
-  if (!client && !tenant && !admin) {
+  if (!clientData && !tenant && !admin) {
     logout();
     return null;
   }
 
-  if (client) {
+  if (clientData) {
 
     const [
       { getClientByIdActionSuccess, getClientByIdActionData },
@@ -40,12 +40,12 @@ const Page = async () => {
       { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
       { readAllClientTeamMembersSuccess, readAllClientTeamMembersError, readAllClientTeamMembersData },
     ] = await Promise.all([
-      readClientByIdAction(client.id),
-      readSubscriptionPlanFromClientId(client.id),
-      readBillingInfoFromClientId(client.id),
-      readAllClientPayments(client.id),
+      readClientByIdAction(clientData.id),
+      readSubscriptionPlanFromClientId(clientData.id),
+      readBillingInfoFromClientId(clientData.id),
+      readAllClientPayments(clientData.id),
       readAllActiveSubscriptionPlans(),
-      readAllClientTeamMembers(client.id),
+      readAllClientTeamMembers(clientData.id),
     ]);
 
     if (readSubscriptionPlanFromClientIdSuccess && subscriptionPlan) {
@@ -65,7 +65,7 @@ const Page = async () => {
     }
 
     if (getClientByIdActionSuccess && getClientByIdActionData) {
-      clientData = getClientByIdActionData;
+      client = getClientByIdActionData;
     }
 
     if (readAllClientTeamMembersSuccess && readAllClientTeamMembersData) {
@@ -78,7 +78,8 @@ const Page = async () => {
   }
 
   return <Account
-    client={clientData!}
+    client={client!}
+    userData={userData!}
     clientSubscriptionPlan={clientSubscriptionPlan!}
     clientBillingInfo={clientBillingInfo}
     clientInvoices={clientInvoices}

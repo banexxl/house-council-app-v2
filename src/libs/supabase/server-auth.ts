@@ -11,7 +11,6 @@ export type UserDataCombined = {
      tenant: Tenant | null
      admin: Admin | null
      userData: User | null
-     role: 'client' | 'tenant' | 'admin' | null
      error?: string
 }
 
@@ -28,7 +27,6 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
                tenant: null,
                admin: null,
                userData: null,
-               role: null,
                error: userError?.message || 'Failed to authenticate user',
           };
      }
@@ -43,7 +41,7 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           .single();
 
      if (client) {
-          return { client, tenant: null, admin: null, userData: user, role: 'client' };
+          return { client, tenant: null, admin: null, userData: user };
      }
 
      if (clientError && clientError.code !== 'PGRST116') {
@@ -52,7 +50,6 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
                tenant: null,
                admin: null,
                userData: user,
-               role: null,
                error: clientError.message,
           };
      }
@@ -65,7 +62,7 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           .single();
 
      if (tenant) {
-          return { client: null, tenant, admin: null, userData: user, role: 'tenant' };
+          return { client: null, tenant, admin: null, userData: user };
      }
 
      if (tenantError && tenantError.code !== 'PGRST116') {
@@ -74,7 +71,6 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
                tenant: null,
                admin: null,
                userData: user,
-               role: null,
                error: tenantError.message,
           };
      }
@@ -87,7 +83,7 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           .single();
 
      if (admin) {
-          return { client: null, tenant: null, admin, userData: user, role: 'admin' };
+          return { client: null, tenant: null, admin, userData: user };
      }
 
      if (adminError && adminError.code !== 'PGRST116') {
@@ -96,10 +92,9 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
                tenant: null,
                admin: null,
                userData: user,
-               role: null,
                error: adminError.message,
           };
      }
 
-     return { client: null, tenant: null, admin: null, userData: user, role: null, error: 'User record not found' };
+     return { client: null, tenant: null, admin: null, userData: user, error: 'User record not found' };
 };
