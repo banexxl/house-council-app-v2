@@ -388,6 +388,9 @@ export const uploadClientLogoAndGetUrl = async (
 };
 
 export async function resetPasswordWithOldPassword(email: string, oldPassword: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
+     console.log('email', email);
+     console.log('oldPassword', oldPassword);
+     console.log('newPassword', newPassword);
 
      const startTime = Date.now();
 
@@ -416,7 +419,7 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
 
           return {
                success: false,
-               error: userError?.message || "User not found with the provided email address.",
+               error: "User not found with the provided email address.",
           }
      }
 
@@ -468,10 +471,42 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
                }
           }
 
+
           // Update the user's password
           const { error } = await supabase.auth.updateUser({ password: newPassword })
 
           if (error) {
+               let errorMsg = "Failed to reset password";
+               // Supabase error codes for password update
+               // See: https://github.com/supabase/gotrue-js/blob/master/src/lib/errors.ts
+               switch (error.status) {
+                    case 422:
+                         // Weak password
+                         errorMsg = "Password is too weak. Please choose a stronger password.";
+                         break;
+                    case 400:
+                         // Invalid password or request
+                         if (error.message && error.message.toLowerCase().includes('password')) {
+                              errorMsg = error.message;
+                         } else {
+                              errorMsg = "Invalid password or request.";
+                         }
+                         break;
+                    case 429:
+                         errorMsg = "Too many requests. Please try again later.";
+                         break;
+                    case 401:
+                         errorMsg = "Unauthorized. Please log in again.";
+                         break;
+                    case 403:
+                         errorMsg = "You do not have permission to perform this action.";
+                         break;
+                    default:
+                         if (error.message) {
+                              errorMsg = error.message;
+                         }
+                         break;
+               }
                logServerAction({
                     user_id: null,
                     action: 'Reset password - password update failed',
@@ -483,7 +518,7 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
                })
                return {
                     success: false,
-                    error: error?.message || "Failed to reset password",
+                    error: errorMsg,
                }
           }
 

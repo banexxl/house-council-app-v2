@@ -50,9 +50,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
             container
             spacing={3}
           >
-
             <PasswordReset userData={{ client, session: userData }} />
-
           </Grid>
         </CardContent>
       </Card>

@@ -1,21 +1,18 @@
 "use client"
 
 import { Box, Button, Card, CardContent, Typography, Stack, InputAdornment, TextField, LinearProgress, IconButton, CircularProgress, useTheme, Alert } from "@mui/material"
-import LogoutIcon from "@mui/icons-material/Logout"
 import LockIcon from "@mui/icons-material/Lock"
 import { User } from "@supabase/supabase-js"
 import { createBrowserClient } from '@supabase/ssr'
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { useFormik } from "formik"
 import { Client } from "src/types/client"
 import { challengeTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "src/app/actions/account-2fa-actions"
-import { deleteClientByIDsAction, resetPasswordWithOldPassword } from "src/app/actions/client/client-actions"
+import { resetPasswordWithOldPassword } from "src/app/actions/client/client-actions"
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "src/app/auth/reset-password/reset-password-utils"
-import { logout } from "src/app/auth/actions"
 
 interface PasswordResetProps {
      userData: { client: Client; session: User }
@@ -156,15 +153,16 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                setResetingPassword(true)
                try {
                     const resetPasswordResponse = await resetPasswordWithOldPassword(userData.client.email, values.oldPassword, values.newPassword);
+
                     if (resetPasswordResponse.success) {
                          toast.success("Password reset successfully.")
                          formik.resetForm()
                          setShowPasswordChange(false)
                     } else {
-                         toast.error("Error resetting password");
+                         toast.error("Error resetting password: " + resetPasswordResponse.error!);
                     }
                } catch (error) {
-                    toast.error("Error resetting password");
+                    toast.error("Error resetting password: " + (error.message || "Unknown error"));
                     formik.setErrors({ newPassword: "Failed to reset password. Please try again." })
                } finally {
                     setResetingPassword(false)

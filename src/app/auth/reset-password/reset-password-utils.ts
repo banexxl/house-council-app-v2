@@ -7,7 +7,7 @@ export const validationSchemaWithOldPassword = Yup.object({
           .min(8, "Password must be at least 8 characters")
           .required("Password is required")
           .matches(
-               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/,
                "Password must include an uppercase letter, lowercase letter, number, and special character.",
           ),
      confirmPassword: Yup.string()
@@ -21,7 +21,7 @@ export const validationSchemaNoOldPassword = Yup.object({
           .min(8, "Password must be at least 8 characters")
           .required("Password is required")
           .matches(
-               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/,
                "Password must include an uppercase letter, lowercase letter, number, and special character.",
           ),
      confirmPassword: Yup.string()
