@@ -90,7 +90,7 @@ const Account = ({ client, clientSubscriptionPlan, clientBillingInfo, clientInvo
                          )}
                          {currentTab === 'notifications' && <AccountNotificationsSettings />}
                          {currentTab === 'security' && (
-                              <AccountSecuritySettings loginEvents={[]} />
+                              <AccountSecuritySettings loginEvents={[]} client={client} />
                          )}
                     </Container>
                </Box>

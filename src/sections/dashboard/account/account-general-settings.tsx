@@ -14,9 +14,6 @@ export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = ({ client
   return (
     <Stack spacing={2}>
       <ClientForm clientData={client} />
-      <Card sx={{ p: 3, mt: 2 }}>
-        <DeleteAccountSection id={client.id} />
-      </Card>
     </Stack>
   );
 };

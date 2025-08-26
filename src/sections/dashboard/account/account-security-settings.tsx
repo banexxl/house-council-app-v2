@@ -20,6 +20,8 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { Scrollbar } from 'src/components/scrollbar';
+import { DeleteAccountSection } from './account-delete-section';
+import { Client } from 'src/types/client';
 
 interface LoginEvent {
   id: string;
@@ -31,10 +33,11 @@ interface LoginEvent {
 
 interface AccountSecuritySettingsProps {
   loginEvents: LoginEvent[];
+  client: Client;
 }
 
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
-  const { loginEvents } = props;
+  const { loginEvents, client } = props;
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const handleEdit = useCallback((): void => {
@@ -260,6 +263,9 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
               })}
             </TableBody>
           </Table>
+          <Card sx={{ p: 3, mt: 2 }}>
+            <DeleteAccountSection id={client.id} />
+          </Card>
         </Scrollbar>
       </Card>
     </Stack>
