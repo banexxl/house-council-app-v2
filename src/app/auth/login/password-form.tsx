@@ -1,61 +1,157 @@
 "use client"
 
 import { useFormik } from "formik"
-import { useEffect, useState } from "react"
+import { startTransition, useEffect, useState } from "react"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import Box from "@mui/material/Box"
-import { initialValuesEmailAndPassword, validationSchemaEmailAndPassword } from "./login-schema"
+import {
+     initialValuesEmailAndPassword,
+     validationSchemaEmailAndPassword,
+} from "./login-schema"
 import toast from "react-hot-toast"
-import { signInWithEmailAndPassword } from "../actions"
 import { useRouter } from "next/navigation"
 import { Button } from "@mui/material"
+import { createBrowserClient } from "@supabase/ssr"
+import { url } from "node:inspector/promises"
+import { AuthMFAAdminListFactorsParams } from "@supabase/supabase-js"
 
 export const PasswordForm = () => {
-     const [message, setMessage] = useState<string | null>("")
      const [loginError, setLoginError] = useState<boolean>(false)
-     const router = useRouter();
-     const [ip, setIp] = useState<string>("");
+     const router = useRouter()
+     const [doesRequire2FA, setDoesRequire2FA] = useState(false)
+     const [challengeId, setChallengeId] = useState<string>("")
+     const [factorId, setFactorId] = useState<string>("")
+     const [loading, setLoading] = useState<boolean>(false)
 
-     useEffect(() => {
-          fetch("/api/ip")
-               .then((res) => res.json())
-               .then((data) => setIp(data.ip));
-     }, [])
+     const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+     )
 
-
-     const onSubmit = async (values: typeof initialValuesEmailAndPassword) => {
-
-          const { success, error } = await signInWithEmailAndPassword({ email: values.email, password: values.password, ip })
-
-          if (error) {
-               setLoginError(true)
-               toast.error("Failed to authenticate with password")
-               setMessage(error.message ? error.message : '')
-          } else if (success) {
-               setLoginError(false)
-               toast.success("Successfully signed in")
-               router.push("/dashboard")
-               formik.resetForm() // Reset the form after successful submission
-          }
+     const handleNavClick = (path: string) => {
+          startTransition(() => {
+               router.push(path)
+          })
      }
 
      const formik = useFormik({
           initialValues: initialValuesEmailAndPassword,
           validationSchema: validationSchemaEmailAndPassword,
-          onSubmit,
+          onSubmit: async (values) => {
+               setLoading(true)
+               try {
+                    if (!doesRequire2FA) {
+                         // Phase 1: Email + Password login
+                         const { data, error: signInError } =
+                              await supabase.auth.signInWithPassword({
+                                   email: values.email,
+                                   password: values.password,
+                              })
+
+                         if (signInError) {
+                              toast.error(signInError.message)
+                              setLoading(false)
+                              return
+                         }
+
+                         // ✅ No MFA required → done
+                         if (data.user.factors?.length === 0) {
+                              toast.success("Sign in successful!")
+                              handleNavClick("/")
+                              formik.resetForm()
+                              return
+                         }
+
+                         // ✅ MFA required
+                         if (data.user.factors?.length! >= 1) {
+
+                              const factor = data.user.factors?.find((f) => f.factor_type === 'totp');
+
+                              const challenge = await supabase.auth.mfa.challenge({ factorId: factor?.id! });
+
+                              if (!factor) {
+                                   toast.error("2FA required but no valid factor found.")
+                                   setLoading(false)
+                                   return
+                              }
+
+                              if (!data.user.factors) {
+                                   toast.error("Failed to create 2FA challenge.")
+                                   setLoading(false)
+                                   return
+                              }
+
+                              console.log('challengeid', challenge.data?.id!);
+
+                              setDoesRequire2FA(true)
+                              setChallengeId(challenge.data?.id!)
+                              setFactorId(factor.id)
+                              toast("2FA required. Please enter your 6-digit code.")
+                              // Logout partial session before OTP
+                              await supabase.auth.signOut()
+                              setLoading(false)
+                              return
+                         }
+                    } else {
+
+                         // Phase 2: MFA Verification
+                         if (!values.otp) {
+                              toast.error("Please enter your 2FA code.")
+                              setLoading(false)
+                              return
+                         }
+
+                         const { data: user, error: signInError } =
+                              await supabase.auth.signInWithPassword({
+                                   email: values.email,
+                                   password: values.password,
+                              })
+
+                         if (signInError) {
+                              toast.error("Sign in failed: " + signInError.message)
+                              setLoading(false)
+                              return
+                         }
+
+                         const { data, error } = await supabase.auth.mfa.verify({
+                              factorId,
+                              challengeId,
+                              code: String(values.otp),
+                         })
+
+                         if (error) {
+                              await supabase.auth.signOut()
+                              toast.error("Invalid 2FA code: " + error.message)
+                              setLoading(false)
+                              return
+                         }
+
+                         if (data.user) {
+                              toast.success("2FA verified. You're now signed in!")
+                              handleNavClick("/")
+                         } else {
+                              toast.error("Verification failed — no session returned.")
+                         }
+                    }
+               } catch (err) {
+                    toast.error("Unexpected error during sign in. Please try again.")
+               } finally {
+                    setLoading(false)
+               }
+          },
      })
 
      return (
-          <Box sx={{ textAlign: "center", height: "300px" }}>
+          <Box sx={{ textAlign: "center", height: "auto" }}>
                <Typography color="text.secondary" variant="body2" sx={{ mb: 3 }}>
                     Sign in with your email and password
                </Typography>
 
                {loginError && (
                     <Typography color="error" sx={{ mb: 2 }}>
-                         {message}
+                         Invalid login attempt.
                     </Typography>
                )}
 
@@ -83,20 +179,45 @@ export const PasswordForm = () => {
                               onChange={formik.handleChange}
                               value={formik.values.password}
                          />
+
+                         {doesRequire2FA && (
+                              <TextField
+                                   fullWidth
+                                   label="6-digit code"
+                                   name="otp"
+                                   value={formik.values.otp || ""}
+                                   onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, "").slice(0, 6)
+                                        formik.setFieldValue("otp", val)
+                                   }}
+                                   slotProps={{
+                                        htmlInput: {
+                                             inputMode: "numeric",
+                                             pattern: "[0-9]*",
+                                             maxLength: 6,
+                                        },
+                                   }}
+                              />
+                         )}
                     </Stack>
+
                     <Button
                          fullWidth
                          sx={{ mt: 3 }}
                          size="large"
                          type="submit"
                          variant="contained"
-                         loading={formik.isSubmitting}
-                         disabled={!(formik.isValid && formik.dirty) || formik.errors.email == ""}
+                         disabled={loading || !(formik.isValid && formik.dirty)}
                     >
-                         Sign in
+                         {loading
+                              ? doesRequire2FA
+                                   ? "Verifying..."
+                                   : "Signing in..."
+                              : doesRequire2FA
+                                   ? "Verify OTP"
+                                   : "Sign in"}
                     </Button>
                </form>
           </Box>
      )
 }
-

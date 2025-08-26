@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useFormik } from "formik"
 import { Client } from "src/types/client"
-import { challengeTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "src/app/actions/account-2fa-actions"
+import { challengeTOTP, disableTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "src/app/actions/account-2fa-actions"
 import { resetPasswordWithOldPassword } from "src/app/actions/client/client-actions"
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "src/app/auth/reset-password/reset-password-utils"
 
@@ -20,7 +20,6 @@ interface PasswordResetProps {
 
 export default function PasswordReset({ userData }: PasswordResetProps) {
 
-     const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "");
      const [showPasswordChange, setShowPasswordChange] = useState(false);
      const [resetingPassword, setResetingPassword] = useState(false);
      const [is2FAEnabled, setIs2FAEnabled] = useState(false)
@@ -99,31 +98,25 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                }
 
                // 1. Trigger MFA challenge
-               const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-                    factorId,
-               })
+               const { success, challengeId, error } = await challengeTOTP(factorId, userData.session.id)
 
-               if (challengeError || !challengeData?.id) {
-                    toast.error("Challenge failed: " + (challengeError?.message || "Unknown error"))
+               if (error || !challengeId) {
+                    toast.error("Challenge failed: " + (error || "Unknown error"))
                     return
                }
 
                // 2. Verify using the 6-digit code entered by the user
-               const { error: verifyError } = await supabase.auth.mfa.verify({
-                    factorId,
-                    challengeId: challengeData.id,
-                    code: disableCode, // must come from your input field
-               })
+               const { success: verifySuccess, error: verifyError } = await verifyTOTPEnrollment(factorId, disableCode, challengeId, userData.session.id)
 
                if (verifyError) {
-                    toast.error("Verification failed: " + verifyError.message)
+                    toast.error("Verification failed: " + verifyError)
                     return
                }
 
                // 3. Unenroll TOTP factor
-               const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId })
+               const { error: unenrollError } = await disableTOTP(factorId, userData.session.id!)
                if (unenrollError) {
-                    toast.error("Disable failed: " + unenrollError.message)
+                    toast.error("Disable failed: " + unenrollError)
                     return
                }
 
@@ -159,10 +152,10 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                          formik.resetForm()
                          setShowPasswordChange(false)
                     } else {
-                         toast.error("Error resetting password: " + resetPasswordResponse.error!);
+                         toast.error(resetPasswordResponse.error!);
                     }
                } catch (error) {
-                    toast.error("Error resetting password: " + (error.message || "Unknown error"));
+                    toast.error(error.message || "Unknown error")
                     formik.setErrors({ newPassword: "Failed to reset password. Please try again." })
                } finally {
                     setResetingPassword(false)
@@ -172,6 +165,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
 
      // Update password strength when password changes
      useEffect(() => {
+
           setPasswordStrength(calculatePasswordStrength(formik.values.newPassword))
 
           const factors = userData.session?.factors || []

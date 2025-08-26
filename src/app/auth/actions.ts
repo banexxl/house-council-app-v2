@@ -332,6 +332,23 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
 
+     if (signInSession.session.user!.factors?.length == 0) {
+          return { success: true };
+     }
+
+     if (signInSession.session && signInSession.user?.factors && signInSession.user?.factors?.length > 0) {
+          const factor = signInSession.user.factors.find(f => f.status === 'verified' && f.factor_type === 'totp')
+          if (!factor) {
+               return { success: false, error: { code: 'no_valid_factor', details: 'No valid 2FA factor found', message: '2FA required but no valid factor found.' } };
+          }
+
+          const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id })
+
+          if (challengeError || !challenge?.id) {
+               return { success: false, error: { code: 'mfa_challenge_failed', details: challengeError?.message || 'Unknown error', message: 'Failed to create 2FA challenge.' } };
+          }
+     }
+
      await logServerAction({
           user_id: signInSession.user.id,
           action: 'Signed in with email and password',

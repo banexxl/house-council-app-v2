@@ -7,6 +7,7 @@ export interface ValuesEmailOnly {
 export interface ValuesEmailAndPassword {
      email: string;
      password: string;
+     otp?: number;
 }
 
 export const initialValuesEmailOnly: ValuesEmailOnly = {
@@ -16,6 +17,7 @@ export const initialValuesEmailOnly: ValuesEmailOnly = {
 export const initialValuesEmailAndPassword: ValuesEmailAndPassword = {
      email: '',
      password: '',
+     otp: undefined,
 };
 
 export const validationSchemaEmailOnly = Yup.object({

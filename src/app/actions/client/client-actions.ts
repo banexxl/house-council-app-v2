@@ -388,9 +388,6 @@ export const uploadClientLogoAndGetUrl = async (
 };
 
 export async function resetPasswordWithOldPassword(email: string, oldPassword: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
-     console.log('email', email);
-     console.log('oldPassword', oldPassword);
-     console.log('newPassword', newPassword);
 
      const startTime = Date.now();
 
