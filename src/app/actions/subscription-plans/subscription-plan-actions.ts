@@ -84,7 +84,7 @@ export const updateSubscriptionPlan = async (
           await logServerAction({
                user_id: null,
                action: 'Updating tblSubscriptionPlans successfull - ' + subscriptionPlan.id,
-               payload: JSON.stringify(subscriptionPlan),
+               payload: subscriptionPlan,
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
@@ -96,7 +96,7 @@ export const updateSubscriptionPlan = async (
           await logServerAction({
                user_id: null,
                action: 'Updating tblSubscriptionPlans failed - ' + subscriptionPlan.id,
-               payload: JSON.stringify(subscriptionPlan),
+               payload: subscriptionPlan,
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
@@ -129,7 +129,7 @@ export const updateSubscriptionPlan = async (
                await logServerAction({
                     user_id: null,
                     action: 'Updating tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: JSON.stringify(subscriptionPlan),
+                    payload: subscriptionPlan,
                     status: 'fail',
                     error: featureDeleteError.message,
                     duration_ms: Date.now() - start,
@@ -147,7 +147,7 @@ export const updateSubscriptionPlan = async (
                await logServerAction({
                     user_id: null,
                     action: 'Inserting into tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: JSON.stringify(subscriptionPlan),
+                    payload: subscriptionPlan,
                     status: 'fail',
                     error: featureInsertError.message,
                     duration_ms: Date.now() - start,
@@ -166,7 +166,7 @@ export const updateSubscriptionPlan = async (
                await logServerAction({
                     user_id: null,
                     action: 'Deleting from tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: JSON.stringify(subscriptionPlan),
+                    payload: subscriptionPlan,
                     status: 'fail',
                     error: featureDeleteError.message,
                     duration_ms: Date.now() - start,

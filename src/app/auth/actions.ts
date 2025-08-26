@@ -169,7 +169,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
      await logServerAction({
           user_id: null,
           action: 'NLA - Magic link sent successfully',
-          payload: JSON.stringify({ emailAddress: email, ip: ipAddress }),
+          payload: { emailAddress: email, ip: ipAddress },
           status: 'success',
           error: '',
           duration_ms: 0, // Duration can be calculated if needed
@@ -249,7 +249,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblClients',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
@@ -259,7 +259,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password client lookup failed',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'fail',
                     error: clientError.message,
                     duration_ms: Date.now() - start,
@@ -283,7 +283,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblTenants',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
@@ -293,7 +293,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password tenant lookup failed',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'fail',
                     error: tenantError.message,
                     duration_ms: Date.now() - start,
@@ -317,7 +317,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblClientMembers',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
@@ -327,7 +327,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password client member lookup failed',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'fail',
                     error: clientMemberError.message,
                     duration_ms: Date.now() - start,
@@ -341,7 +341,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           await logServerAction({
                user_id: null,
                action: 'Signing in with email and password failed',
-               payload: JSON.stringify(values),
+               payload: values,
                status: 'fail',
                error: 'User does not exist',
                duration_ms: Date.now() - start,
@@ -365,7 +365,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - no active subscription found',
-                    payload: JSON.stringify(values),
+                    payload: values,
                     status: 'fail',
                     error: subscriptionError ? subscriptionError.message : 'No active subscription found',
                     duration_ms: Date.now() - start,
@@ -384,7 +384,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           await logServerAction({
                user_id: null,
                action: 'User found but signing in with email and password failed',
-               payload: JSON.stringify(values),
+               payload: values,
                status: 'fail',
                error: signInError.message,
                duration_ms: Date.now() - start,
@@ -396,7 +396,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      await logServerAction({
           user_id: signInSession.user.id,
           action: 'Signed in with email and password',
-          payload: JSON.stringify(values),
+          payload: values,
           status: 'success',
           error: '',
           duration_ms: Date.now() - start,
