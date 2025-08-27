@@ -56,7 +56,7 @@ export const getAllLogsFromEmail = async (email: string): Promise<ServerLog[]> =
           .select("id, created_at, payload") // include other columns if you need them
           .filter("payload->>email", "eq", email)
           .order("created_at", { ascending: false })
-          .limit(10)
+          .limit(5)
 
      if (error) {
           console.error("Error fetching logs:", error);

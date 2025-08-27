@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
@@ -13,11 +13,6 @@ import Divider from '@mui/material/Divider';
 import Grid, { GridProps } from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
 import { AccountPlanIcon } from './account-plan-icon';
@@ -150,7 +145,7 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                 {
                   key: 'billing_address',
                   label: t('account.billing.billingAddress'),
-                  render: (value: any) => value ? `${value.split(',')[0]?.trim()}, ${value.split(',')[1]?.trim()}, ${value.split(',')[3]}` : 'N/A'
+                  render: (value: any) => value ? `${value.split(',')[0]?.trim()}, ${value.split(',')[1]?.trim()}, ${value.split(',')[3] ? value.split(',')[3]?.trim() : ''}` : 'N/A'
                 },
               ]}
               rowActions={[
