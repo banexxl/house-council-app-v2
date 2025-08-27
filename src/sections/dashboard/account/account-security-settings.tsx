@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -20,7 +21,6 @@ import { Client } from 'src/types/client';
 import PasswordReset from './account-security-password-reset';
 import { User } from '@supabase/supabase-js';
 import { ServerLog } from 'src/libs/supabase/server-logging';
-import { useTranslation } from 'react-i18next';
 
 interface AccountSecuritySettingsProps {
   loginEvents: ServerLog[];
@@ -30,7 +30,7 @@ interface AccountSecuritySettingsProps {
 
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
 
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const { loginEvents, client, userData } = props;
   // In-memory cache for IP locations (per session)
@@ -82,16 +82,16 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
       </Card>
       <Card>
         <CardHeader
-          title="Login history"
-          subheader="Your recent login activity"
+          title={t('account.security.loginHistoryTitle')}
+          subheader={t('account.security.loginHistorySubtitle')}
         />
         <Scrollbar>
           <Table sx={{ minWidth: 500 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Time</TableCell>
-                <TableCell>IP Address</TableCell>
-                <TableCell>Location</TableCell>
+                <TableCell>{t('account.security.loginHistoryTime')}</TableCell>
+                <TableCell>{t('account.security.loginHistoryIp')}</TableCell>
+                <TableCell>{t('account.security.loginHistoryLocation')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -123,7 +123,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
                   :
                   <TableRow>
                     <TableCell colSpan={3} align="center">
-                      No login events found.
+                      {t('account.security.noLoginEvents')}
                     </TableCell>
                   </TableRow>
               }

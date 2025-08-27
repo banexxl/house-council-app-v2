@@ -186,11 +186,11 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                <Card variant="outlined" sx={{ mb: 4 }}>
                     <CardContent>
                          <Typography variant="h6" gutterBottom>
-                              Change Password
+                              {t('account.security.changePassword')}
                          </Typography>
 
                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                              It's a good idea to use a strong password that you don't use elsewhere.
+                              {t('account.security.changePasswordHint')}
                          </Typography>
 
                          <Box>
@@ -271,7 +271,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                              {formik.values.newPassword && (
                                                   <Box sx={{ mt: 1, mb: 2 }}>
                                                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                                                            <Typography variant="caption">Password strength:</Typography>
+                                                            <Typography variant="caption">{t('account.security.passwordStrength')}</Typography>
                                                             <Typography variant="caption" sx={{ color: getStrengthColor(passwordStrength) }}>
                                                                  {getStrengthLabel(passwordStrength)}
                                                             </Typography>
@@ -295,7 +295,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                                   fullWidth
                                                   id="confirmPassword"
                                                   name="confirmPassword"
-                                                  label="Confirm New Password"
+                                                  label={t('account.security.confirmNewPassword')}
                                                   type={showConfirmPassword ? "text" : "password"}
                                                   margin="normal"
                                                   value={formik.values.confirmPassword}
@@ -321,8 +321,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                              />
 
                                              <Alert severity="info" sx={{ mt: 2, mb: 3 }}>
-                                                  Your password must be at least 8 characters long and include uppercase letters, lowercase letters,
-                                                  and numbers.
+                                                  {t('account.security.passwordRequirements')}
                                              </Alert>
 
                                              <Button
@@ -334,7 +333,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                                   sx={{ mt: 2 }}
                                                   loading={resetingPassword}
                                              >
-                                                  {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Reset Password"}
+                                                  {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('account.security.resetPassword')}
                                              </Button>
                                         </Box>
                                    </Box>
@@ -348,9 +347,9 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                <Card variant="outlined" sx={{ mb: 4 }}>
                     <CardContent>
                          <Box sx={{ mt: 2 }}>
-                              <Typography variant="h6" sx={{ mb: 2 }}>Two-Factor Authentication</Typography>
+                              <Typography variant="h6" sx={{ mb: 2 }}>{t('account.security.twoFactorAuth')}</Typography>
                               <Typography variant="body2" color="text.secondary" >
-                                   Add an extra layer of security to your account by requiring both your password and a verification code from your mobile phone.
+                                   {t('account.security.twoFactorAuthHint')}
                               </Typography>
 
                               {!is2FAEnabled && step === "init" && (
@@ -362,7 +361,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                              onClick={handleEnable}
                                              startIcon={<CheckCircleIcon />}
                                         >
-                                             {loading ? "Enabling..." : "Enable"}
+                                             {loading ? t('account.security.enabling') : t('account.security.enable2fa')}
                                         </Button>
                                    </Box>
                               )}
@@ -372,7 +371,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                         <img src={qrCode} alt="2FA QR Code" style={{ width: 200, height: 200 }} />
                                         <form onSubmit={handleVerify}>
                                              <TextField
-                                                  label="6-digit code"
+                                                  label={t('account.security.codeLabel')}
                                                   value={code}
                                                   onChange={(e) => {
                                                        const val = e.target.value.replace(/\D/g, '').slice(0, 6)
@@ -398,9 +397,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                                   variant="contained"
                                                   disabled={loading}
                                              >
-                                                  {
-                                                       loading ? "Verifying..." : "Verify"
-                                                  }
+                                                  {loading ? t('account.security.verifying') : t('account.security.verify')}
                                              </Button>
                                         </form>
                                    </Stack>
@@ -408,7 +405,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
 
                               {step === "done" && (
                                    <Stack spacing={2}>
-                                        <Alert severity="success">2FA is currently enabled for your account.</Alert>
+                                        <Alert severity="success">{t('account.security.twofaEnabled')}</Alert>
 
                                         {showDisableInput ? (
                                              <form onSubmit={handleDisable}>
@@ -434,7 +431,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                                        variant="contained"
                                                        disabled={loading}
                                                   >
-                                                       {loading ? "Disabling..." : "Confirm Disable"}
+                                                       {loading ? t('account.security.disabling') : t('account.security.confirmDisable')}
                                                   </Button>
                                              </form>
                                         ) : (
@@ -445,7 +442,7 @@ export default function PasswordReset({ userData }: PasswordResetProps) {
                                                   onClick={() => setShowDisableInput(true)}
                                                   disabled={loading}
                                              >
-                                                  {loading ? "Disabling..." : "Disable"}
+                                                  {loading ? t('account.security.disabling') : t('account.security.disable2fa')}
                                              </Button>
                                         )}
                                    </Stack>
