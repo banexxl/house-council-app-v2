@@ -4,7 +4,6 @@ I'mkoThis is a [Next.js](https://nextjs.org/) project bootstrapped with [`create
 
 First, run the development server:
 
-to gtfgggggg
 ```bash
 npm run dev
 # or
