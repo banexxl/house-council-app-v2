@@ -1,15 +1,12 @@
 import type { FC } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
-import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import { Grid } from '@mui/material';;
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -22,17 +19,10 @@ import { DeleteAccountSection } from './account-delete-section';
 import { Client } from 'src/types/client';
 import PasswordReset from './account-security-password-reset';
 import { User } from '@supabase/supabase-js';
-
-interface LoginEvent {
-  id: string;
-  created_at: number;
-  ip: string;
-  type: string;
-  userAgent: string;
-}
+import { ServerLog } from 'src/libs/supabase/server-logging';
 
 interface AccountSecuritySettingsProps {
-  loginEvents: LoginEvent[];
+  loginEvents: ServerLog[];
   client: Client;
   userData: User;
 }
@@ -40,6 +30,42 @@ interface AccountSecuritySettingsProps {
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
 
   const { loginEvents, client, userData } = props;
+
+
+  // In-memory cache for IP locations (per session)
+  const ipLocationCache: Record<string, string> = {};
+
+  function useIpLocation(ip: string): string {
+    const [location, setLocation] = useState<string>(() => ipLocationCache[ip] || 'Loading...');
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+      isMounted.current = true;
+      if (!ip) return;
+      if (ipLocationCache[ip]) {
+        setLocation(ipLocationCache[ip]);
+        return;
+      }
+      fetch(`/api/ip/get-location?ip=${ip}`)
+        .then(res => res.json())
+        .then(data => {
+          let loc = 'Unknown';
+          if (data && data.city && data.country_name) {
+            loc = `${data.city}, ${data.country_name}`;
+          } else if (data && data.country_name) {
+            loc = data.country_name;
+          }
+          ipLocationCache[ip] = loc;
+          if (isMounted.current) setLocation(loc);
+        })
+        .catch(() => {
+          ipLocationCache[ip] = 'Unknown';
+          if (isMounted.current) setLocation('Unknown');
+        });
+      return () => { isMounted.current = false; };
+    }, [ip]);
+    return location;
+  }
 
 
   return (
@@ -63,15 +89,15 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
           <Table sx={{ minWidth: 500 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Login type</TableCell>
+                <TableCell>Time</TableCell>
                 <TableCell>IP Address</TableCell>
-                <TableCell>Client</TableCell>
+                <TableCell>Location</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loginEvents.map((event) => {
-                const created_at = format(event.created_at, 'HH:mm a MM/dd/yyyy');
-
+                const created_at = format(new Date(event.created_at), 'HH:mm a MM/dd/yyyy');
+                const location = useIpLocation(event.payload.ip);
                 return (
                   <TableRow
                     key={event.id}
@@ -86,8 +112,8 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
                         on {created_at}
                       </Typography>
                     </TableCell>
-                    <TableCell>{event.ip}</TableCell>
-                    <TableCell>{event.userAgent}</TableCell>
+                    <TableCell>{event.payload.ip}</TableCell>
+                    <TableCell>{location}</TableCell>
                   </TableRow>
                 );
               })}

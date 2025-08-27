@@ -1,5 +1,3 @@
-
-
 import { readClientByIdAction } from 'src/app/actions/client/client-actions';
 import Account from './account';
 import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
@@ -13,6 +11,7 @@ import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { Invoice } from 'src/types/payment';
 import { readAllClientTeamMembers } from 'src/app/actions/client/client-members';
+import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging';
 
 const Page = async () => {
 
@@ -22,6 +21,7 @@ const Page = async () => {
   let clientInvoices: Invoice[] | null = null
   let allSubscriptions: SubscriptionPlan[] | null = null;
   let allTeamMembers: ClientMember[] | null = null;
+  let allLogsFromEmail: ServerLog[] | null = null;
 
   const { client: clientData, tenant, admin, userData } = await checkIfUserExistsAndReturnDataAndSessionObject();
 
@@ -39,6 +39,7 @@ const Page = async () => {
       { readClientPaymentsSuccess, readClientPaymentsData, readClientPaymentsError },
       { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
       { readAllClientTeamMembersSuccess, readAllClientTeamMembersError, readAllClientTeamMembersData },
+      clientLogs
     ] = await Promise.all([
       readClientByIdAction(clientData.id),
       readSubscriptionPlanFromClientId(clientData.id),
@@ -46,7 +47,12 @@ const Page = async () => {
       readAllClientPayments(clientData.id),
       readAllActiveSubscriptionPlans(),
       readAllClientTeamMembers(clientData.id),
+      getAllLogsFromEmail(clientData.email)
     ]);
+
+    if (clientLogs) {
+      allLogsFromEmail = clientLogs;
+    }
 
     if (readSubscriptionPlanFromClientIdSuccess && subscriptionPlan) {
       clientSubscriptionPlan = subscriptionPlan;
@@ -85,6 +91,7 @@ const Page = async () => {
     clientInvoices={clientInvoices}
     subscriptionPlans={allSubscriptions!}
     allTeamMembers={allTeamMembers!}
+    clientLogs={allLogsFromEmail! || []}
   />;
 };
 

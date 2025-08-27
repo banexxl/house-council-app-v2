@@ -20,6 +20,7 @@ import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { Invoice } from 'src/types/payment';
 import { User } from '@supabase/supabase-js';
+import { ServerLog } from 'src/libs/supabase/server-logging';
 
 const tabs = [
      { label: 'General', value: 'general' },
@@ -37,9 +38,10 @@ export interface AccountProps {
      clientInvoices: Invoice[] | undefined | null;
      subscriptionPlans: SubscriptionPlan[] | null;
      allTeamMembers: ClientMember[] | null;
+     clientLogs: ServerLog[] | null;
 }
 
-const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans, allTeamMembers }: AccountProps) => {
+const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans, allTeamMembers, clientLogs }: AccountProps) => {
      const [currentTab, setCurrentTab] = useState<string>('general');
 
      const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
@@ -92,7 +94,7 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                          )}
                          {currentTab === 'notifications' && <AccountNotificationsSettings />}
                          {currentTab === 'security' && (
-                              <AccountSecuritySettings loginEvents={[]} client={client} userData={userData} />
+                              <AccountSecuritySettings loginEvents={clientLogs || []} client={client} userData={userData} />
                          )}
                     </Container>
                </Box>

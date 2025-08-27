@@ -14,6 +14,7 @@ export type LogType =
      | 'unknown';
 
 export type ServerLog = {
+     created_at: Date;
      id?: string;
      user_id: string | null;
      action: string;
@@ -46,3 +47,26 @@ export const logServerAction = async ({
      })
 
 }
+
+export const getAllLogsFromEmail = async (email: string): Promise<ServerLog[]> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase
+          .from("tblServerLogs")
+          .select("id, created_at, payload") // include other columns if you need them
+          .filter("payload->>email", "eq", email); // ✅ JSON path filter
+
+     if (error) {
+          console.error("Error fetching logs:", error);
+          return [];
+     }
+
+     // Extract ip from payload for convenience
+     const result = data.map((row: any) => ({
+          ...row,
+          ip: row.payload?.ip ?? null,
+          email: row.payload?.email ?? null,
+     }));
+
+     return result as ServerLog[];
+};
