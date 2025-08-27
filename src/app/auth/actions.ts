@@ -227,7 +227,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           await logServerAction({
                user_id: null,
                action: 'Signing in with email and password - user found in tblSuperAdmins',
-               payload: values,
+               payload: values.email,
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
@@ -249,7 +249,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblClients',
-                    payload: values,
+                    payload: values.email,
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
@@ -283,7 +283,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblTenants',
-                    payload: values,
+                    payload: values.email,
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
@@ -317,7 +317,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblClientMembers',
-                    payload: values,
+                    payload: values.email,
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
@@ -394,6 +394,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      }
 
      await logServerAction({
+          created_at: new Date(),
           user_id: signInSession.user.id,
           action: 'Signed in with email and password',
           payload: values,

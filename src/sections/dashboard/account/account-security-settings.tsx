@@ -30,18 +30,15 @@ interface AccountSecuritySettingsProps {
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
 
   const { loginEvents, client, userData } = props;
-
-
   // In-memory cache for IP locations (per session)
   const ipLocationCache: Record<string, string> = {};
 
   function useIpLocation(ip: string): string {
     const [location, setLocation] = useState<string>(() => ipLocationCache[ip] || 'Loading...');
     const isMounted = useRef(true);
-
     useEffect(() => {
       isMounted.current = true;
-      if (!ip) return;
+      if (!ip) return setLocation('Unknown');
       if (ipLocationCache[ip]) {
         setLocation(ipLocationCache[ip]);
         return;
@@ -95,28 +92,38 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
               </TableRow>
             </TableHead>
             <TableBody>
-              {loginEvents.map((event) => {
-                const created_at = format(new Date(event.created_at!), 'HH:mm a MM/dd/yyyy');
-                const location = useIpLocation(event.payload.ip);
-                return (
-                  <TableRow
-                    key={event.id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell>
-                      <Typography variant="subtitle2">{event.type}</Typography>
-                      <Typography
-                        variant="body2"
-                        color="body2"
+              {
+                loginEvents.length > 0 ?
+                  loginEvents.map((event) => {
+                    const created_at = format(new Date(event.created_at!), 'HH:mm a MM/dd/yyyy');
+                    const location = useIpLocation(event.payload.ip);
+                    return (
+                      <TableRow
+                        key={event.id}
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                       >
-                        on {created_at}
-                      </Typography>
+                        <TableCell>
+                          <Typography variant="subtitle2">{event.type}</Typography>
+                          <Typography
+                            variant="body2"
+                            color="body2"
+                          >
+                            on {created_at}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{event.payload.ip}</TableCell>
+                        <TableCell>{location}</TableCell>
+                      </TableRow>
+                    );
+
+                  })
+                  :
+                  <TableRow>
+                    <TableCell colSpan={3} align="center">
+                      No login events found.
                     </TableCell>
-                    <TableCell>{event.payload.ip}</TableCell>
-                    <TableCell>{location}</TableCell>
                   </TableRow>
-                );
-              })}
+              }
             </TableBody>
           </Table>
         </Scrollbar>
