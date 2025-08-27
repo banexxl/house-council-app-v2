@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
           const response = await fetch(`https://api.apilayer.com/ip_to_location/${ip}`, {
                method: 'GET',
                headers: {
-                    'apikey': 'pQPGwsqQa0Nauo0dEh6er61D24TZtgPM',
+                    'apikey': process.env.API_LAYER_KEY!
                },
                redirect: 'follow',
           });
