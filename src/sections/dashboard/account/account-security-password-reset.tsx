@@ -12,6 +12,7 @@ import { Client } from "src/types/client"
 import { challengeTOTP, disableTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "src/app/actions/account-2fa-actions"
 import { resetPasswordWithOldPassword } from "src/app/actions/client/client-actions"
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "src/app/auth/reset-password/reset-password-utils"
+import { useTranslation } from "react-i18next"
 
 interface PasswordResetProps {
      userData: { client: Client; session: User }
@@ -19,6 +20,7 @@ interface PasswordResetProps {
 
 export default function PasswordReset({ userData }: PasswordResetProps) {
 
+     const { t } = useTranslation()
      const [showPasswordChange, setShowPasswordChange] = useState(false);
      const [resetingPassword, setResetingPassword] = useState(false);
      const [is2FAEnabled, setIs2FAEnabled] = useState(false)

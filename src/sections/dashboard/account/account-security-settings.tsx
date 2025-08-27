@@ -20,6 +20,7 @@ import { Client } from 'src/types/client';
 import PasswordReset from './account-security-password-reset';
 import { User } from '@supabase/supabase-js';
 import { ServerLog } from 'src/libs/supabase/server-logging';
+import { useTranslation } from 'react-i18next';
 
 interface AccountSecuritySettingsProps {
   loginEvents: ServerLog[];
@@ -28,6 +29,8 @@ interface AccountSecuritySettingsProps {
 }
 
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
+
+  const { t } = useTranslation()
 
   const { loginEvents, client, userData } = props;
   // In-memory cache for IP locations (per session)

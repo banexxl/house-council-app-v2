@@ -54,7 +54,9 @@ export const getAllLogsFromEmail = async (email: string): Promise<ServerLog[]> =
      const { data, error } = await supabase
           .from("tblServerLogs")
           .select("id, created_at, payload") // include other columns if you need them
-          .filter("payload->>email", "eq", email); // ✅ JSON path filter
+          .filter("payload->>email", "eq", email)
+          .order("created_at", { ascending: false })
+          .limit(10)
 
      if (error) {
           console.error("Error fetching logs:", error);
