@@ -14,7 +14,7 @@ export type LogType =
      | 'unknown';
 
 export type ServerLog = {
-     created_at: Date;
+     created_at?: Date;
      id?: string;
      user_id: string | null;
      action: string;

@@ -96,7 +96,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
             </TableHead>
             <TableBody>
               {loginEvents.map((event) => {
-                const created_at = format(new Date(event.created_at), 'HH:mm a MM/dd/yyyy');
+                const created_at = format(new Date(event.created_at!), 'HH:mm a MM/dd/yyyy');
                 const location = useIpLocation(event.payload.ip);
                 return (
                   <TableRow
