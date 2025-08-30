@@ -13,7 +13,7 @@ interface LayoutProps {
 export const Layout: FC<LayoutProps> = ((props) => {
 
   const settings = useSettings();
-  const [role, setRole] = useState<'admin' | 'client' | 'tenant'>('tenant');
+  const [role, setRole] = useState<'admin' | 'client' | 'clientMember' | 'tenant'>('tenant');
 
   useEffect(() => {
     const getRole = async () => {
@@ -21,7 +21,7 @@ export const Layout: FC<LayoutProps> = ((props) => {
       const email = data.session?.user?.email;
       if (!email) return;
 
-      const [adminRes, clientRes, tenantRes] = await Promise.all([
+      const [adminRes, clientRes, clientMemberRes, tenantRes] = await Promise.all([
         supabaseBrowserClient
           .from('tblSuperAdmins')
           .select('id')
@@ -29,6 +29,11 @@ export const Layout: FC<LayoutProps> = ((props) => {
           .single(),
         supabaseBrowserClient
           .from('tblClients')
+          .select('id')
+          .eq('email', email)
+          .single(),
+        supabaseBrowserClient
+          .from('tblClientMembers')
           .select('id')
           .eq('email', email)
           .single(),
@@ -45,6 +50,10 @@ export const Layout: FC<LayoutProps> = ((props) => {
       }
       if (clientRes.data) {
         setRole('client');
+        return;
+      }
+      if (clientMemberRes.data) {
+        setRole('clientMember');
         return;
       }
       if (tenantRes.data) {

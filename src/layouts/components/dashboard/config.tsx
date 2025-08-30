@@ -77,7 +77,7 @@ const useIsAdmin = () => {
   return isAdmin;
 };
 
-export const useSections = (role: 'client' | 'tenant' | 'admin') => {
+export const useSections = (role: 'client' | 'clientMember' | 'tenant' | 'admin') => {
   const { t } = useTranslation();
   const isAdmin = useIsAdmin();
 
@@ -509,7 +509,7 @@ export const useSections = (role: 'client' | 'tenant' | 'admin') => {
     ];
 
     let filtered = allSections;
-    if (role === 'client') {
+    if (role === 'client' || role === 'clientMember') {
       filtered = allSections.slice(1); // Exclude admin section
     } else if (role === 'tenant') {
       filtered = allSections.slice(-1); // Only show tenant section
