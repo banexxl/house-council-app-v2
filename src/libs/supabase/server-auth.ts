@@ -2,12 +2,13 @@
 
 import { User } from '@supabase/supabase-js'
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
-import { Client } from 'src/types/client'
+import { Client, ClientMember } from 'src/types/client'
 import { Tenant } from 'src/types/tenant'
 import { Admin } from 'src/types/admin'
 
 export type UserDataCombined = {
      client: Client | null
+     clientMember: ClientMember | null
      tenant: Tenant | null
      admin: Admin | null
      userData: User | null
@@ -24,6 +25,7 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
      if (userError || !userData?.user) {
           return {
                client: null,
+               clientMember: null,
                tenant: null,
                admin: null,
                userData: null,
@@ -41,16 +43,39 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           .single();
 
      if (client) {
-          return { client, tenant: null, admin: null, userData: user };
+          return { client, clientMember: null, tenant: null, admin: null, userData: user };
      }
 
      if (clientError && clientError.code !== 'PGRST116') {
           return {
                client: null,
+               clientMember: null,
                tenant: null,
                admin: null,
                userData: user,
                error: clientError.message,
+          };
+     }
+
+     // ✅ 2. Look up tblClientMembers by user_id
+     const { data: clientMember, error: clientMemberError } = await supabase
+          .from('tblClientMembers')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+     if (clientMember) {
+          return { client: null, clientMember, tenant: null, admin: null, userData: user };
+     }
+
+     if (clientMemberError && clientMemberError.code !== 'PGRST116') {
+          return {
+               client: null,
+               clientMember,
+               tenant: null,
+               admin: null,
+               userData: user,
+               error: clientMemberError.message,
           };
      }
 
@@ -62,12 +87,13 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           .single();
 
      if (tenant) {
-          return { client: null, tenant, admin: null, userData: user };
+          return { client: null, clientMember: null, tenant, admin: null, userData: user };
      }
 
      if (tenantError && tenantError.code !== 'PGRST116') {
           return {
                client: null,
+               clientMember: null,
                tenant: null,
                admin: null,
                userData: user,
@@ -83,12 +109,13 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           .single();
 
      if (admin) {
-          return { client: null, tenant: null, admin, userData: user };
+          return { client: null, clientMember: null, tenant: null, admin, userData: user };
      }
 
      if (adminError && adminError.code !== 'PGRST116') {
           return {
                client: null,
+               clientMember: null,
                tenant: null,
                admin: null,
                userData: user,
@@ -96,5 +123,5 @@ export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<
           };
      }
 
-     return { client: null, tenant: null, admin: null, userData: user, error: 'User record not found' };
+     return { client: null, clientMember: null, tenant: null, admin: null, userData: user, error: 'User record not found' };
 };

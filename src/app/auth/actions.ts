@@ -209,7 +209,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      const cookieStore = await cookies();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     let userType: 'client' | 'tenant' | 'admin' | null = null;
+     let userType: 'client' | 'client_member' | 'tenant' | 'admin' | null = null;
      let userId: string | null = null;
      let userFound = false;
 
@@ -311,7 +311,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                .eq('email', values.email)
                .single();
           if (clientMember) {
-               userType = 'client';
+               userType = 'client_member';
                userId = clientMember.id;
                userFound = true;
                await logServerAction({

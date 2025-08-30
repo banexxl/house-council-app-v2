@@ -9,9 +9,9 @@ import { logout } from "../auth/actions";
 
 const Page = async () => {
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin, clientMember } = await checkIfUserExistsAndReturnDataAndSessionObject();
 
-  if (!client && !tenant && !admin) {
+  if (!client && !tenant && !admin && !clientMember) {
     logout();
     redirect('/auth/login');
   }
