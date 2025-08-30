@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
@@ -21,14 +21,8 @@ import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { Invoice } from 'src/types/payment';
 import { User } from '@supabase/supabase-js';
 import { ServerLog } from 'src/libs/supabase/server-logging';
+import { useTranslation } from 'react-i18next';
 
-const tabs = [
-     { label: 'General', value: 'general' },
-     { label: 'Billing', value: 'billing' },
-     { label: 'Team', value: 'team' },
-     { label: 'Notifications', value: 'notifications' },
-     { label: 'Security', value: 'security' },
-];
 
 export interface AccountProps {
      client: Client;
@@ -42,11 +36,21 @@ export interface AccountProps {
 }
 
 const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans, allTeamMembers, clientLogs }: AccountProps) => {
+
+     const { t } = useTranslation();
      const [currentTab, setCurrentTab] = useState<string>('general');
 
      const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
           setCurrentTab(value);
      }, []);
+
+     const tabs = [
+          { label: t('account.lblGeneral'), value: 'general' },
+          { label: t('account.lblBilling'), value: 'billing' },
+          { label: t('account.lblTeam'), value: 'team' },
+          { label: t('account.lblNotifications'), value: 'notifications' },
+          { label: t('account.lblSecurity'), value: 'security' },
+     ];
 
      return (
           <>
@@ -59,7 +63,7 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                >
                     <Container maxWidth="xl">
                          <Stack spacing={3} sx={{ mb: 3 }}>
-                              <Typography variant="h4">Account</Typography>
+                              <Typography variant="h4">{t('nav.account')}</Typography>
                               <div>
                                    <Tabs
                                         indicatorColor="primary"

@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const en = {
+  [tokens.account.lblGeneral]: 'General',
+  [tokens.account.lblBilling]: 'Billing',
+  [tokens.account.lblTeam]: 'Team',
+  [tokens.account.lblNotifications]: 'Notifications',
+  [tokens.account.lblSecurity]: 'Security',
   [tokens.account.security.changePassword]: 'Change Password',
   [tokens.account.security.changePasswordHint]: 'It\'s a good idea to use a strong password that you don\'t use elsewhere.',
   [tokens.account.security.passwordStrength]: 'Password strength:',
@@ -83,8 +88,6 @@ export const en = {
   [tokens.account.deleteAccountError]: 'You must type "delete account" to confirm.',
   [tokens.account.deleteAccountSuccess]: 'Account deleted successfully.',
   [tokens.locations.loadingLocation]: 'Loading location...',
-  // ...existing code...
-  // ...existing code...
   [tokens.clients.clientUnassignedLocations]: 'Unassigned locations',
   //#region Common
   [tokens.common.languageChanged]: 'Language changed',

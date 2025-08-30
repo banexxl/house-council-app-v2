@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const rs = {
+     [tokens.account.lblGeneral]: 'Opšte',
+     [tokens.account.lblBilling]: 'Plaćanje',
+     [tokens.account.lblTeam]: 'Tim',
+     [tokens.account.lblNotifications]: 'Obaveštenja',
+     [tokens.account.lblSecurity]: 'Bezbednost',
      [tokens.account.security.changePassword]: 'Promeni lozinku',
      [tokens.account.security.changePasswordHint]: 'Preporučuje se jaka lozinka koju ne koristite na drugim mestima.',
      [tokens.account.security.passwordStrength]: 'Jačina lozinke:',
@@ -83,8 +88,6 @@ export const rs = {
      [tokens.account.deleteAccountError]: 'Morate uneti "delete account" da biste potvrdili.',
      [tokens.account.deleteAccountSuccess]: 'Nalog je uspešno obrisan.',
      [tokens.locations.loadingLocation]: 'Učitavanje lokacije...',
-     // ...existing code...
-     // ...existing code...
      [tokens.clients.clientUnassignedLocations]: 'Nepridružene lokacije',
      //#region Common
      [tokens.common.languageChanged]: 'Jezik promjenjen',

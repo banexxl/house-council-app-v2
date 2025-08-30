@@ -1,6 +1,11 @@
 import { tokens } from '../tokens';
 
 export const de = {
+  [tokens.account.lblGeneral]: 'Allgemein',
+  [tokens.account.lblBilling]: 'Abrechnung',
+  [tokens.account.lblTeam]: 'Team',
+  [tokens.account.lblNotifications]: 'Benachrichtigungen',
+  [tokens.account.lblSecurity]: 'Sicherheit',
   [tokens.account.security.changePassword]: 'Passwort ändern',
   [tokens.account.security.changePasswordHint]: 'Es ist ratsam, ein starkes Passwort zu verwenden, das Sie nicht anderswo nutzen.',
   [tokens.account.security.passwordStrength]: 'Passwortstärke:',
@@ -83,8 +88,6 @@ export const de = {
   [tokens.account.deleteAccountError]: 'Sie müssen "delete account" eingeben, um zu bestätigen.',
   [tokens.account.deleteAccountSuccess]: 'Konto erfolgreich gelöscht.',
   [tokens.locations.loadingLocation]: 'Standort wird geladen...',
-  // ...existing code...
-  // ...existing code...
   [tokens.clients.clientUnassignedLocations]: 'Nicht zugewiesene Standorte',
   //#region Common
   [tokens.common.languageChanged]: 'Sprache geändert',

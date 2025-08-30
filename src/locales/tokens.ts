@@ -29,6 +29,8 @@ export const tokens = {
     btnBack: 'common.btnBack',
     btnContinue: 'common.btnContinue',
     btnAccept: 'common.btnAccept',
+    lblGeneral: 'account.lblGeneral',
+    lblNotifications: 'account.lblNotifications',
     btnDecline: 'common.btnDecline',
     btnDownload: 'common.btnDownload',
     btnUpload: 'common.btnUpload',
@@ -137,6 +139,7 @@ export const tokens = {
   },
   account: {
     security: {
+      lblSecurity: 'account.security.lblSecurity',
       changePassword: 'account.security.changePassword',
       changePasswordHint: 'account.security.changePasswordHint',
       passwordStrength: 'account.security.passwordStrength',
@@ -173,6 +176,11 @@ export const tokens = {
       loginHistoryLocation: 'account.security.loginHistoryLocation',
       deleteAccountSection: 'account.security.deleteAccountSection',
     },
+    lblGeneral: 'account.lblGeneral',
+    lblBilling: 'account.lblBilling',
+    lblTeam: 'account.lblTeam',
+    lblNotifications: 'account.lblNotifications',
+    lblSecurity: 'account.lblSecurity',
     deleteAccount: 'account.deleteAccount',
     deleteAccountConfirmLabel: 'account.deleteAccountConfirmLabel',
     deleteAccountConfirmButton: 'account.deleteAccountConfirmButton',
@@ -182,6 +190,7 @@ export const tokens = {
     billingTableTitle: 'account.billingTableTitle',
     billingTableSubtitle: 'account.billingTableSubtitle',
     team: {
+      lblTeam: 'account.team.lblTeam',
       btnResetPassword: 'account.team.btnResetPassword',
       memberDeleted: 'account.team.memberDeleted',
       memberDeleteError: 'account.team.memberDeleteError',
@@ -196,6 +205,7 @@ export const tokens = {
       inviteError: 'account.team.inviteError',
     },
     billing: {
+      lblBilling: 'account.billing.lblBilling',
       billingName: 'account.billing.billingName',
       cardNumber: 'account.billing.cardNumber',
       billingAddress: 'account.billing.billingAddress',
