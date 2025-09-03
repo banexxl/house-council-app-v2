@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
      Box,
      Stack,
@@ -39,14 +39,8 @@ import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import QuillEditor from 'src/components/quill-editor';
-
-// Placeholder props, will refine later
-interface AnnouncementItem {
-     id: string;
-     title: string;
-     pinned?: boolean;
-     archived?: boolean;
-}
+import { useFormik } from 'formik';
+import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope } from 'src/types/announcement';
 
 interface AnnouncementProps {
      announcements: AnnouncementItem[];
@@ -56,72 +50,38 @@ interface AnnouncementProps {
      tenantGroups?: { id: string; name: string }[]; // optional for now
 }
 
-type VisibilityScope = 'building' | 'apartments' | 'tenants' | 'tenantGroups';
-
 export default function Announcement({ announcements, categories, tenants, apartments, tenantGroups = [] }: AnnouncementProps) {
-     // Form state
-     const [title, setTitle] = useState('');
-     const [message, setMessage] = useState('');
-     const [category, setCategory] = useState('');
-     const [visibility, setVisibility] = useState<VisibilityScope>('building');
-     const [selectedApartments, setSelectedApartments] = useState<string[]>([]);
-     const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
-     const [selectedTenantGroups, setSelectedTenantGroups] = useState<string[]>([]);
-     const [attachments, setAttachments] = useState<File[]>([]);
-     const [pin, setPin] = useState(false);
-     const [scheduleEnabled, setScheduleEnabled] = useState(false);
-     const [scheduleAt, setScheduleAt] = useState<string>('');
      // List state (would normally come from server via props & updates)
      const [rows, setRows] = useState<AnnouncementItem[]>(announcements || []);
 
-     const resetForm = () => {
-          setTitle('');
-          setMessage('');
-          setCategory('');
-          setVisibility('building');
-          setSelectedApartments([]);
-          setSelectedTenants([]);
-          setSelectedTenantGroups([]);
-          setAttachments([]);
-          setPin(false);
-          setScheduleEnabled(false);
-          setScheduleAt('');
-     };
+     const formik = useFormik({
+          initialValues: announcementInitialValues,
+          validationSchema: announcementValidationSchema,
+          onSubmit: (values) => {
+               // default to draft save
+               const newItem: AnnouncementItem = { id: Math.random().toString(36).slice(2), title: values.title || '(Untitled Draft)', pinned: values.pin, archived: false };
+               setRows(prev => [newItem, ...prev]);
+               formik.resetForm();
+          }
+     });
+
+     const setFieldArray = (field: string, value: string[]) => formik.setFieldValue(field, value);
 
      const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           if (e.target.files) {
-               setAttachments(Array.from(e.target.files));
+               const files = Array.from(e.target.files);
+               formik.setFieldValue('attachments', files);
           }
      };
 
-     const basePayload = () => ({
-          title,
-          message,
-          category,
-          visibility,
-          apartments: selectedApartments,
-          tenants: selectedTenants,
-          tenantGroups: selectedTenantGroups,
-          attachments,
-          pin,
-          scheduleAt: scheduleEnabled ? scheduleAt : null,
-          status: 'draft' as 'draft' | 'published'
-     });
-
      const handlePublish = () => {
-          const payload = { ...basePayload(), status: 'published' };
-          // TODO: API call
-          const newItem: AnnouncementItem = { id: Math.random().toString(36).slice(2), title: payload.title, pinned: pin, archived: false };
-          setRows(prev => [newItem, ...prev]);
-          resetForm();
+          formik.setFieldValue('status', 'published');
+          formik.handleSubmit();
      };
 
      const handleSaveDraft = () => {
-          const payload = basePayload();
-          // TODO: API call for draft
-          const newItem: AnnouncementItem = { id: Math.random().toString(36).slice(2), title: payload.title || '(Untitled Draft)', pinned: pin, archived: false };
-          setRows(prev => [newItem, ...prev]);
-          resetForm();
+          formik.setFieldValue('status', 'draft');
+          formik.handleSubmit();
      };
 
      const togglePin = (id: string) => {
@@ -146,46 +106,66 @@ export default function Announcement({ announcements, categories, tenants, apart
                               <Grid size={{ xs: 12, md: 7, lg: 8 }}>
                                    <Paper variant="outlined" sx={{ p: 3, position: 'relative' }}>
                                         <Stack spacing={2}>
-                                             <TextField label="Title" value={title} onChange={e => setTitle(e.target.value)} fullWidth required />
-                                             <QuillEditor />
+                                             <TextField
+                                                  label="Title"
+                                                  name="title"
+                                                  value={formik.values.title}
+                                                  onChange={formik.handleChange}
+                                                  onBlur={formik.handleBlur}
+                                                  error={formik.touched.title && Boolean(formik.errors.title)}
+                                                  helperText={formik.touched.title && formik.errors.title}
+                                                  fullWidth
+                                                  required={formik.values.status === 'published'}
+                                             />
+                                             <QuillEditor
+                                                  value={formik.values.message}
+                                                  onChange={(v) => formik.setFieldValue('message', v)}
+                                                  onBlur={() => formik.setFieldTouched('message', true)}
+                                             />
                                              <FormControl fullWidth>
                                                   <InputLabel id="category-label">Category</InputLabel>
                                                   <Select
                                                        labelId="category-label"
-                                                       value={category}
+                                                       name="category"
+                                                       value={formik.values.category}
                                                        label="Category"
-                                                       onChange={e => setCategory(e.target.value)}
+                                                       onChange={formik.handleChange}
+                                                       onBlur={formik.handleBlur}
                                                        fullWidth
                                                   >
                                                        {categories.map(cat => (
                                                             <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
                                                        ))}
                                                   </Select>
+                                                  {formik.touched.category && formik.errors.category && (
+                                                       <Typography variant="caption" color="error">{formik.errors.category}</Typography>
+                                                  )}
                                              </FormControl>
 
                                              <FormControl component="fieldset">
                                                   <FormLabel component="legend">Visibility</FormLabel>
                                                   <RadioGroup
                                                        row
-                                                       value={visibility}
-                                                       onChange={e => setVisibility(e.target.value as VisibilityScope)}
+                                                       name="visibility"
+                                                       value={formik.values.visibility}
+                                                       onChange={(e) => formik.setFieldValue('visibility', e.target.value as AnnouncementScope)}
                                                   >
                                                        <FormControlLabel value="building" control={<Radio />} label="Building-wide" />
                                                        <FormControlLabel value="apartments" control={<Radio />} label="Specific apartments" />
                                                        <FormControlLabel value="tenants" control={<Radio />} label="Specific tenants" />
-                                                       <FormControlLabel value="tenantGroups" control={<Radio />} label="Tenant groups" />
+                                                       <FormControlLabel value="tenant_groups" control={<Radio />} label="Tenant groups" />
                                                   </RadioGroup>
                                              </FormControl>
 
-                                             {visibility === 'apartments' && (
+                                             {formik.values.visibility === 'apartments' && (
                                                   <FormControl fullWidth>
                                                        <InputLabel id="apartments-label">Apartments</InputLabel>
                                                        <Select
                                                             labelId="apartments-label"
                                                             multiple
-                                                            value={selectedApartments}
+                                                            value={formik.values.apartments}
                                                             input={<OutlinedInput label="Apartments" />}
-                                                            onChange={e => setSelectedApartments(e.target.value as string[])}
+                                                            onChange={e => setFieldArray('apartments', e.target.value as string[])}
                                                             renderValue={(selected) => (
                                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                       {(selected as string[]).map(value => (
@@ -201,15 +181,15 @@ export default function Announcement({ announcements, categories, tenants, apart
                                                   </FormControl>
                                              )}
 
-                                             {visibility === 'tenants' && (
+                                             {formik.values.visibility === 'tenants' && (
                                                   <FormControl fullWidth>
                                                        <InputLabel id="tenants-label">Tenants</InputLabel>
                                                        <Select
                                                             labelId="tenants-label"
                                                             multiple
-                                                            value={selectedTenants}
+                                                            value={formik.values.tenants}
                                                             input={<OutlinedInput label="Tenants" />}
-                                                            onChange={e => setSelectedTenants(e.target.value as string[])}
+                                                            onChange={e => setFieldArray('tenants', e.target.value as string[])}
                                                             renderValue={(selected) => (
                                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                       {(selected as string[]).map(value => (
@@ -225,15 +205,15 @@ export default function Announcement({ announcements, categories, tenants, apart
                                                   </FormControl>
                                              )}
 
-                                             {visibility === 'tenantGroups' && (
+                                             {formik.values.visibility === 'tenant_groups' && (
                                                   <FormControl fullWidth>
                                                        <InputLabel id="tenant-groups-label">Tenant groups</InputLabel>
                                                        <Select
                                                             labelId="tenant-groups-label"
                                                             multiple
-                                                            value={selectedTenantGroups}
+                                                            value={formik.values.tenantGroups}
                                                             input={<OutlinedInput label="Tenant groups" />}
-                                                            onChange={e => setSelectedTenantGroups(e.target.value as string[])}
+                                                            onChange={e => setFieldArray('tenantGroups', e.target.value as string[])}
                                                             renderValue={(selected) => (
                                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                       {(selected as string[]).map(value => (
@@ -254,20 +234,20 @@ export default function Announcement({ announcements, categories, tenants, apart
                                                        Attach files
                                                        <input type="file" hidden multiple onChange={handleFileChange} />
                                                   </Button>
-                                                  {attachments.length > 0 && (
-                                                       <Typography variant="caption" color="text.secondary">{attachments.length} file(s) selected</Typography>
+                                                  {formik.values.attachments.length > 0 && (
+                                                       <Typography variant="caption" color="text.secondary">{formik.values.attachments.length} file(s) selected</Typography>
                                                   )}
                                              </Stack>
 
                                              <Stack direction="row" spacing={3}>
-                                                  <FormControlLabel control={<Checkbox checked={pin} onChange={e => setPin(e.target.checked)} />} label="Pin to top" />
-                                                  <FormControlLabel control={<Checkbox checked={scheduleEnabled} onChange={e => setScheduleEnabled(e.target.checked)} />} label="Schedule" />
-                                                  {scheduleEnabled && (
+                                                  <FormControlLabel control={<Checkbox checked={formik.values.pin} onChange={e => formik.setFieldValue('pin', e.target.checked)} />} label="Pin to top" />
+                                                  <FormControlLabel control={<Checkbox checked={formik.values.scheduleEnabled} onChange={e => formik.setFieldValue('scheduleEnabled', e.target.checked)} />} label="Schedule" />
+                                                  {formik.values.scheduleEnabled && (
                                                        <TextField
                                                             type="datetime-local"
                                                             label="Publish at"
-                                                            value={scheduleAt}
-                                                            onChange={e => setScheduleAt(e.target.value)}
+                                                            value={formik.values.scheduleAt}
+                                                            onChange={e => formik.setFieldValue('scheduleAt', e.target.value)}
                                                             InputLabelProps={{ shrink: true }}
                                                        />
                                                   )}
@@ -275,8 +255,8 @@ export default function Announcement({ announcements, categories, tenants, apart
 
                                              <Divider sx={{ my: 1 }} />
                                              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                                  <Button variant="outlined" onClick={handleSaveDraft} disabled={!title && !message}>Save as draft</Button>
-                                                  <Button variant="contained" onClick={handlePublish} disabled={!title || !message || !category}>Publish</Button>
+                                                  <Button variant="outlined" onClick={handleSaveDraft} disabled={!formik.values.title && !formik.values.message}>Save as draft</Button>
+                                                  <Button variant="contained" onClick={handlePublish} disabled={formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category)}>Publish</Button>
                                              </Stack>
                                         </Stack>
                                    </Paper>
