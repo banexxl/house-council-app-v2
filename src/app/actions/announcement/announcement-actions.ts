@@ -85,8 +85,6 @@ export async function upsertAnnouncement(input: Partial<AnnouncementRecord> & { 
           .upsert(record, { onConflict: 'id' })
           .select()
           .maybeSingle();
-     console.log('data:', data);
-     console.log('error:', error);
 
      if (error) {
           await logServerAction({ action: isUpdate ? 'updateAnnouncement' : 'createAnnouncement', duration_ms: Date.now() - time, error: error.message, payload: input, status: 'fail', type: 'db', user_id: '' });
