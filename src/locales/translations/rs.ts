@@ -237,6 +237,7 @@ export const rs = {
      [tokens.nav.account]: 'Nalog',
      [tokens.nav.adminDashboard]: 'Kontrolna tabla',
      [tokens.nav.analytics]: 'Analitika',
+     [tokens.nav.announcements]: 'Obaveštenja',
      [tokens.nav.auth]: 'Autentikacija',
      [tokens.nav.apartments]: 'Apartmani',
      [tokens.nav.apartment]: 'Apartman',

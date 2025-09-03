@@ -230,6 +230,7 @@ export const es = {
   [tokens.nav.account]: 'Cuenta',
   [tokens.nav.adminDashboard]: 'Dashboard',
   [tokens.nav.analytics]: 'Analítica',
+  [tokens.nav.announcements]: 'Anuncios',
   [tokens.nav.auth]: 'Autenticación',
   [tokens.nav.apartments]: 'Apartamentos',
   [tokens.nav.apartment]: 'Apartamento',

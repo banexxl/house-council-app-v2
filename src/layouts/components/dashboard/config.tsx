@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import Chip from "@mui/material/Chip";
 import SvgIcon from "@mui/material/SvgIcon";
 import ApartmentIcon from "@mui/icons-material/Apartment";
-import AlignLeft02Icon from "src/icons/untitled-ui/duocolor/align-left-02";
+import AnnouncementIcon from '@mui/icons-material/Announcement';
 import BarChartSquare02Icon from "src/icons/untitled-ui/duocolor/bar-chart-square-02";
 import Building04Icon from "src/icons/untitled-ui/duocolor/building-04";
 import CalendarIcon from "src/icons/untitled-ui/duocolor/calendar";
@@ -264,6 +264,15 @@ export const useSections = (role: 'client' | 'clientMember' | 'tenant' | 'admin'
                 path: paths.dashboard.tenants.new,
               },
             ],
+          },
+          {
+            title: t(tokens.nav.announcements),
+            path: paths.dashboard.announcements.index,
+            icon: (
+              <SvgIcon fontSize="small">
+                <AnnouncementIcon />
+              </SvgIcon>
+            ),
           },
           {
             title: t(tokens.nav.analytics),

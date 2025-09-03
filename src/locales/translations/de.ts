@@ -230,6 +230,7 @@ export const de = {
   [tokens.nav.account]: 'Konto',
   [tokens.nav.adminDashboard]: 'Dashboard',
   [tokens.nav.analytics]: 'Analytik',
+  [tokens.nav.announcements]: 'Ankündigungen',
   [tokens.nav.auth]: 'Authentifizierung',
   [tokens.nav.apartments]: 'Wohnungen',
   [tokens.nav.apartment]: 'Wohnung',

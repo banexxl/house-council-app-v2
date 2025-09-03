@@ -230,6 +230,7 @@ export const en = {
   [tokens.nav.academy]: 'Academy',
   [tokens.nav.account]: 'Account',
   [tokens.nav.analytics]: 'Analytics',
+  [tokens.nav.announcements]: 'Announcements',
   [tokens.nav.auth]: 'Auth',
   [tokens.nav.apartments]: 'Apartments',
   [tokens.nav.apartment]: 'Apartment',

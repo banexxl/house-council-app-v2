@@ -15,6 +15,9 @@ export const paths = {
     },
     account: '/dashboard/account',
     analytics: '/dashboard/analytics',
+    announcements: {
+      index: '/dashboard/announcements',
+    },
     apartments: {
       index: '/dashboard/apartments',
       new: '/dashboard/apartments/new',

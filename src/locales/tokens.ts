@@ -238,6 +238,7 @@ export const tokens = {
     account: 'nav.account',
     adminDashboard: 'nav.adminDashboard',
     analytics: 'nav.analytics',
+    announcements: 'nav.announcements',
     auth: 'nav.auth',
     apartments: 'nav.apartments',
     apartment: 'nav.apartment',
