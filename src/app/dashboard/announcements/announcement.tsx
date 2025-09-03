@@ -41,28 +41,57 @@ import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import QuillEditor from 'src/components/quill-editor';
 import { useFormik } from 'formik';
 import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope, ANNOUNCEMENT_CATEGORIES } from 'src/types/announcement';
+import { upsertAnnouncement } from 'src/app/actions/announcement/announcement-actions';
 
 interface AnnouncementProps {
      announcements: AnnouncementItem[];
      tenants: { id: string; name: string }[];
      apartments: { id: string; name: string }[];
-     tenantGroups?: { id: string; name: string }[]; // optional for now
+     tenant_groups?: { id: string; name: string }[]; // optional for now
 }
 
-export default function Announcement({ announcements, tenants, apartments, tenantGroups = [] }: AnnouncementProps) {
+export default function Announcement({ announcements, tenants, apartments, tenant_groups = [] }: AnnouncementProps) {
      // List state (would normally come from server via props & updates)
      const [rows, setRows] = useState<AnnouncementItem[]>(announcements || []);
 
      const formik = useFormik({
           initialValues: announcementInitialValues,
           validationSchema: announcementValidationSchema,
-          onSubmit: (values) => {
-               // default to draft save
-               console.log('values', values);
+          onSubmit: async (values, helpers) => {
+               console.log('values:', values);
 
-               const newItem: AnnouncementItem = { id: Math.random().toString(36).slice(2), title: values.title || '(Untitled Draft)', pinned: values.pin, archived: false };
-               setRows(prev => [newItem, ...prev]);
-               formik.resetForm();
+               helpers.setSubmitting(true);
+               // Build payload mapping to server expectations
+               const payload: any = {
+                    title: values.title.trim(),
+                    message: values.message,
+                    category: values.category || null,
+                    subcategory: values.subcategory || null,
+                    visibility: values.visibility,
+                    apartments: values.apartments,
+                    tenants: values.tenants,
+                    tenant_groups: values.tenant_groups,
+                    pin: values.pin,
+                    schedule_enabled: values.schedule_enabled,
+                    scheduleAt: values.schedule_enabled ? values.scheduleAt : null,
+                    status: values.status,
+               };
+
+               // (Attachments uploading not implemented yet) -> future enhancement
+
+               const result = await upsertAnnouncement(payload);
+               if (!result.success) {
+                    helpers.setSubmitting(false);
+                    helpers.setStatus({ error: result.error });
+                    return;
+               }
+
+               // Optimistically add to list (prepend). We only keep subset of fields for list display
+               if (result.data) {
+                    setRows(prev => [{ id: result.data.id!, title: result.data.title, pinned: result.data.pinned, archived: result.data.archived }, ...prev]);
+               }
+
+               helpers.resetForm();
           }
      });
 
@@ -243,18 +272,18 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                        <Select
                                                             labelId="tenant-groups-label"
                                                             multiple
-                                                            value={formik.values.tenantGroups}
+                                                            value={formik.values.tenant_groups}
                                                             input={<OutlinedInput label="Tenant groups" />}
-                                                            onChange={e => setFieldArray('tenantGroups', e.target.value as string[])}
+                                                            onChange={e => setFieldArray('tenant_groups', e.target.value as string[])}
                                                             renderValue={(selected) => (
                                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                       {(selected as string[]).map(value => (
-                                                                           <Chip key={value} label={tenantGroups.find(g => g.id === value)?.name || value} />
+                                                                           <Chip key={value} label={tenant_groups.find(g => g.id === value)?.name || value} />
                                                                       ))}
                                                                  </Box>
                                                             )}
                                                        >
-                                                            {tenantGroups.map(g => (
+                                                            {tenant_groups.map(g => (
                                                                  <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
                                                             ))}
                                                        </Select>
@@ -273,8 +302,8 @@ export default function Announcement({ announcements, tenants, apartments, tenan
 
                                              <Stack direction="row" spacing={3} height={40} alignItems="center">
                                                   <FormControlLabel control={<Checkbox checked={formik.values.pin} onChange={e => formik.setFieldValue('pin', e.target.checked)} />} label="Pin to top" />
-                                                  <FormControlLabel control={<Checkbox checked={formik.values.scheduleEnabled} onChange={e => formik.setFieldValue('scheduleEnabled', e.target.checked)} />} label="Schedule" />
-                                                  {formik.values.scheduleEnabled && (
+                                                  <FormControlLabel control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label="Schedule" />
+                                                  {formik.values.schedule_enabled && (
                                                        <TextField
                                                             type="datetime-local"
                                                             label="Publish at"
@@ -289,9 +318,30 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                              </Typography>
                                              <Divider sx={{ my: 1 }} />
                                              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                                  <Button variant="outlined" onClick={handleSaveDraft} disabled={!formik.values.title && !formik.values.message}>Save as draft</Button>
-                                                  <Button variant="contained" onClick={handlePublish} disabled={formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory)}>Publish</Button>
+                                                  <Button
+                                                       variant="outlined"
+                                                       onClick={handleSaveDraft}
+                                                       disabled={
+                                                            !formik.values.title.trim() ||
+                                                            !formik.values.message.trim() ||
+                                                            !formik.values.category ||
+                                                            (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
+                                                            Object.keys(formik.errors).length > 0
+                                                       }
+                                                       loading={formik.isSubmitting && formik.values.status === 'draft'}
+                                                  >
+                                                       Save as draft
+                                                  </Button>
+                                                  <Button
+                                                       variant="contained"
+                                                       onClick={handlePublish}
+                                                       disabled={formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory)}
+                                                       loading={formik.isSubmitting && formik.values.status === 'published'}
+                                                  >
+                                                       Publish
+                                                  </Button>
                                              </Stack>
+
                                         </Stack>
                                    </Paper>
                               </Grid>

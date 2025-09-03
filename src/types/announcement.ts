@@ -133,10 +133,10 @@ export interface AnnouncementFormValues {
      visibility: AnnouncementScope;
      apartments: string[];
      tenants: string[];
-     tenantGroups: string[];
+     tenant_groups: string[];
      attachments: File[];
      pin: boolean;
-     scheduleEnabled: boolean;
+     schedule_enabled: boolean;
      scheduleAt: Date | null;
      status: AnnouncementStatus;
 }
@@ -149,10 +149,10 @@ export const announcementInitialValues: AnnouncementFormValues = {
      visibility: 'building',
      apartments: [],
      tenants: [],
-     tenantGroups: [],
+     tenant_groups: [],
      attachments: [],
      pin: false,
-     scheduleEnabled: false,
+     schedule_enabled: false,
      scheduleAt: null,
      status: 'draft'
 };
@@ -171,17 +171,12 @@ export const announcementValidationSchema = Yup.object({
                then: s => s.trim().min(5, 'Message too short').required('Message required'),
                otherwise: s => s
           }),
-     category: Yup.string()
-          .when('status', {
-               is: 'published',
-               then: s => s.required('Category required'),
-               otherwise: s => s
-          }),
-     subcategory: Yup.string().when(['status', 'category'], {
-          is: (status: AnnouncementStatus, category: string) => {
-               if (status !== 'published' || !category) return false;
+     category: Yup.string().required('Category required'),
+     subcategory: Yup.string().when('category', {
+          is: (category: string) => {
+               if (!category) return false; // category itself not chosen yet (category validation will handle)
                const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === category);
-               return !!cat && cat.subcategories.length > 0; // require if category has subcategories
+               return !!cat && cat.subcategories.length > 0;
           },
           then: s => s.required('Subcategory required'),
           otherwise: s => s
@@ -197,15 +192,15 @@ export const announcementValidationSchema = Yup.object({
           then: s => s.min(1, 'Select at least one tenant'),
           otherwise: s => s
      }),
-     tenantGroups: Yup.array().of(Yup.string()).default([]).when('visibility', {
-          is: 'tenantGroups',
+     tenant_groups: Yup.array().of(Yup.string()).default([]).when('visibility', {
+          is: 'tenant_groups',
           then: s => s.min(1, 'Select at least one group'),
           otherwise: s => s
      }),
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),
      pin: Yup.boolean().default(false),
-     scheduleEnabled: Yup.boolean().default(false),
-     scheduleAt: Yup.date().nullable().when('scheduleEnabled', {
+     schedule_enabled: Yup.boolean().default(false),
+     scheduleAt: Yup.date().nullable().when('schedule_enabled', {
           is: true,
           then: s => s.typeError('Invalid date').required('Schedule time required'),
           otherwise: s => s.nullable()

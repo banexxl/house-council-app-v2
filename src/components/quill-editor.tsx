@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useEffect } from 'react'
+import React, { forwardRef, useImperativeHandle, useEffect, useRef } from 'react'
 import { useQuill } from 'react-quilljs'
 import 'quill/dist/quill.snow.css'
 import Box from '@mui/material/Box'
@@ -36,26 +36,50 @@ const QuillEditor = forwardRef<QuillEditorRef, QuillEditorProps>(
       getContents: () => quill?.root.innerHTML || '',
     }))
 
+    const currentValueRef = useRef<string | undefined>(value)
+    const textChangeHandlerRef = useRef<(() => void) | null>(null)
+    const blurHandlerRef = useRef<(() => void) | null>(null)
+
+    // Attach handlers once quill is ready
     useEffect(() => {
-      if (quill) {
-        quill.on('text-change', () => {
-          onChange && onChange(quill.root.innerHTML)
-        })
+      if (!quill) return
 
-        quill.root.addEventListener('blur', () => {
-          onBlur && onBlur()
-        })
+      const handleTextChange = () => {
+        if (!quill) return
+        const html = quill.root.innerHTML
+        // Only propagate if different from last known external value to avoid loops
+        if (html !== currentValueRef.current) {
+          currentValueRef.current = html
+          onChange && onChange(html)
+        }
+      }
+      const handleBlur = () => {
+        onBlur && onBlur()
+      }
+      textChangeHandlerRef.current = handleTextChange
+      blurHandlerRef.current = handleBlur
+      quill.on('text-change', handleTextChange)
+      quill.root.addEventListener('blur', handleBlur)
 
-        return () => {
-          quill.off('text-change')
-          quill.root.removeEventListener('blur', onBlur as EventListener)
+      return () => {
+        if (textChangeHandlerRef.current) {
+          quill.off('text-change', textChangeHandlerRef.current)
+        }
+        if (blurHandlerRef.current) {
+          quill.root.removeEventListener('blur', blurHandlerRef.current as EventListener)
         }
       }
     }, [quill, onChange, onBlur])
 
+    // Sync external value into editor when it changes (and is different)
     useEffect(() => {
-      if (quill && value !== undefined && value !== quill.root.innerHTML) {
-        quill.root.innerHTML = value
+      if (!quill) return
+      if (value !== undefined && value !== currentValueRef.current) {
+        // Update editor only if content truly differs
+        if (quill.root.innerHTML !== value) {
+          quill.root.innerHTML = value
+        }
+        currentValueRef.current = value
       }
     }, [quill, value])
 
