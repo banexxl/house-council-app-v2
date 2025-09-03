@@ -7,7 +7,6 @@ export default async function AnnouncementsPage() {
      return (
           <Announcement
                announcements={[]}
-               categories={[]}
                tenants={[]}
                apartments={[]}
           />

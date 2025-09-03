@@ -40,17 +40,16 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import QuillEditor from 'src/components/quill-editor';
 import { useFormik } from 'formik';
-import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope } from 'src/types/announcement';
+import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope, ANNOUNCEMENT_CATEGORIES } from 'src/types/announcement';
 
 interface AnnouncementProps {
      announcements: AnnouncementItem[];
-     categories: { id: string; name: string }[];
      tenants: { id: string; name: string }[];
      apartments: { id: string; name: string }[];
      tenantGroups?: { id: string; name: string }[]; // optional for now
 }
 
-export default function Announcement({ announcements, categories, tenants, apartments, tenantGroups = [] }: AnnouncementProps) {
+export default function Announcement({ announcements, tenants, apartments, tenantGroups = [] }: AnnouncementProps) {
      // List state (would normally come from server via props & updates)
      const [rows, setRows] = useState<AnnouncementItem[]>(announcements || []);
 
@@ -59,6 +58,8 @@ export default function Announcement({ announcements, categories, tenants, apart
           validationSchema: announcementValidationSchema,
           onSubmit: (values) => {
                // default to draft save
+               console.log('values', values);
+
                const newItem: AnnouncementItem = { id: Math.random().toString(36).slice(2), title: values.title || '(Untitled Draft)', pinned: values.pin, archived: false };
                setRows(prev => [newItem, ...prev]);
                formik.resetForm();
@@ -129,18 +130,49 @@ export default function Announcement({ announcements, categories, tenants, apart
                                                        name="category"
                                                        value={formik.values.category}
                                                        label="Category"
-                                                       onChange={formik.handleChange}
+                                                       onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            formik.setFieldValue('category', val);
+                                                            // reset subcategory when category changes
+                                                            formik.setFieldValue('subcategory', '');
+                                                       }}
                                                        onBlur={formik.handleBlur}
                                                        fullWidth
                                                   >
-                                                       {categories.map(cat => (
-                                                            <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                                                       {ANNOUNCEMENT_CATEGORIES.map(cat => (
+                                                            <MenuItem key={cat.id} value={cat.id}>{cat.label}</MenuItem>
                                                        ))}
                                                   </Select>
                                                   {formik.touched.category && formik.errors.category && (
                                                        <Typography variant="caption" color="error">{formik.errors.category}</Typography>
                                                   )}
                                              </FormControl>
+
+                                             {(() => {
+                                                  const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category);
+                                                  if (!cat || cat.subcategories.length === 0) return null;
+                                                  return (
+                                                       <FormControl fullWidth>
+                                                            <InputLabel id="subcategory-label">Subcategory</InputLabel>
+                                                            <Select
+                                                                 labelId="subcategory-label"
+                                                                 name="subcategory"
+                                                                 value={formik.values.subcategory}
+                                                                 label="Subcategory"
+                                                                 onChange={formik.handleChange}
+                                                                 onBlur={formik.handleBlur}
+                                                                 fullWidth
+                                                            >
+                                                                 {cat.subcategories.map(sc => (
+                                                                      <MenuItem key={sc.id} value={sc.id}>{sc.label}</MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                            {formik.touched.subcategory && formik.errors.subcategory && (
+                                                                 <Typography variant="caption" color="error">{formik.errors.subcategory as string}</Typography>
+                                                            )}
+                                                       </FormControl>
+                                                  );
+                                             })()}
 
                                              <FormControl component="fieldset">
                                                   <FormLabel component="legend">Visibility</FormLabel>
@@ -239,7 +271,7 @@ export default function Announcement({ announcements, categories, tenants, apart
                                                   )}
                                              </Stack>
 
-                                             <Stack direction="row" spacing={3}>
+                                             <Stack direction="row" spacing={3} height={40} alignItems="center">
                                                   <FormControlLabel control={<Checkbox checked={formik.values.pin} onChange={e => formik.setFieldValue('pin', e.target.checked)} />} label="Pin to top" />
                                                   <FormControlLabel control={<Checkbox checked={formik.values.scheduleEnabled} onChange={e => formik.setFieldValue('scheduleEnabled', e.target.checked)} />} label="Schedule" />
                                                   {formik.values.scheduleEnabled && (
@@ -252,11 +284,13 @@ export default function Announcement({ announcements, categories, tenants, apart
                                                        />
                                                   )}
                                              </Stack>
-
+                                             <Typography>
+                                                  {JSON.stringify(formik.errors)}
+                                             </Typography>
                                              <Divider sx={{ my: 1 }} />
                                              <Stack direction="row" spacing={2} justifyContent="flex-end">
                                                   <Button variant="outlined" onClick={handleSaveDraft} disabled={!formik.values.title && !formik.values.message}>Save as draft</Button>
-                                                  <Button variant="contained" onClick={handlePublish} disabled={formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category)}>Publish</Button>
+                                                  <Button variant="contained" onClick={handlePublish} disabled={formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory)}>Publish</Button>
                                              </Stack>
                                         </Stack>
                                    </Paper>
