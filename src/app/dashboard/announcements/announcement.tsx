@@ -44,6 +44,9 @@ import { announcementInitialValues, announcementValidationSchema, AnnouncementIt
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 interface AnnouncementProps {
      announcements: AnnouncementItem[];
@@ -350,13 +353,24 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                   <FormControlLabel control={<Checkbox checked={formik.values.pin} onChange={e => formik.setFieldValue('pin', e.target.checked)} />} label="Pin to top" />
                                                   <FormControlLabel control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label="Schedule" />
                                                   {formik.values.schedule_enabled && (
-                                                       <TextField
-                                                            type="datetime-local"
-                                                            label="Publish at"
-                                                            value={formik.values.scheduleAt}
-                                                            onChange={e => formik.setFieldValue('scheduleAt', e.target.value)}
-                                                            slotProps={{ inputLabel: { shrink: true } }}
-                                                       />
+                                                       <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                            <DatePicker
+                                                                 label={'Schedule at'}
+                                                                 value={formik.values.scheduleAt ? dayjs(formik.values.scheduleAt) : null}
+                                                                 onChange={(date) => {
+                                                                      formik.setFieldValue('scheduleAt', date ? date.toISOString() : null);
+                                                                 }}
+                                                                 slotProps={{
+                                                                      textField: {
+                                                                           name: 'scheduleAt',
+                                                                           error: !!(formik.touched.scheduleAt && formik.errors.scheduleAt),
+                                                                           helperText: formik.touched.scheduleAt && formik.errors.scheduleAt,
+                                                                      },
+                                                                 }}
+                                                                 disabled={!formik.values.schedule_enabled}
+                                                                 disableFuture={true}
+                                                            />
+                                                       </LocalizationProvider>
                                                   )}
                                              </Stack>
                                              <Divider sx={{ my: 1 }} />
@@ -373,12 +387,15 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                        }
                                                        loading={formik.isSubmitting && formik.values.status === 'draft'}
                                                   >
-                                                       Save as draft
+                                                       Save draft
                                                   </Button>
                                                   <Button
                                                        variant="contained"
                                                        onClick={handlePublish}
-                                                       disabled={formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory)}
+                                                       disabled={
+                                                            !editingId ||
+                                                            (formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory))
+                                                       }
                                                        loading={formik.isSubmitting && formik.values.status === 'published'}
                                                   >
                                                        Publish
@@ -409,7 +426,11 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                             </TableRow>
                                                        )}
                                                        {announcements.map(row => (
-                                                            <TableRow key={row.id} hover>
+                                                            <TableRow
+                                                                 key={row.id}
+                                                                 onClick={() => handleEdit(row.id)}
+                                                                 hover
+                                                                 sx={{ backgroundColor: editingId === row.id ? 'action.selected' : 'inherit', cursor: 'pointer' }}>
                                                                  <TableCell sx={{ maxWidth: 240 }}>
                                                                       <Stack direction="row" spacing={1} alignItems="center">
                                                                            {row.pinned && <PushPinIcon color="primary" fontSize="small" />}
