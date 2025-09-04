@@ -20,7 +20,7 @@ export const getAllApartments = async (): Promise<{ success: boolean; error?: st
                payload: {},
                status: "fail",
                type: "db",
-               user_id: "",
+               user_id: null,
           });
           return { success: false, error: error.message };
      }
@@ -32,7 +32,7 @@ export const getAllApartments = async (): Promise<{ success: boolean; error?: st
           payload: {},
           status: "success",
           type: "db",
-          user_id: "",
+          user_id: null,
      });
 
      return { success: true, data };
@@ -111,7 +111,7 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
                payload: { id },
                status: "fail",
                type: "db",
-               user_id: "",
+               user_id: null,
                id: "",
           });
           return { success: false, error: error.message };
@@ -124,7 +124,7 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
           payload: { id },
           status: "success",
           type: "db",
-          user_id: "",
+          user_id: null,
           id: "",
      });
 
@@ -170,7 +170,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
                     payload,
                     status: "fail",
                     type: "db",
-                    user_id: "",
+                    user_id: null,
                });
                return { success: false, error: error.message };
           }
@@ -188,7 +188,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
                payload,
                status: "success",
                type: "db",
-               user_id: "",
+               user_id: null,
           });
 
           return { success: true, data };
@@ -210,7 +210,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
                     payload,
                     status: "fail",
                     type: "db",
-                    user_id: "",
+                    user_id: null,
                     id: "",
                });
                return { success: false, error: "Failed to fetch building data." };
@@ -232,7 +232,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
                     payload,
                     status: "fail",
                     type: "db",
-                    user_id: "",
+                    user_id: null,
                     id: "",
                });
                return { success: false, error: "Failed to count apartments for building." };
@@ -260,7 +260,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
                     payload,
                     status: "fail",
                     type: "db",
-                    user_id: "",
+                    user_id: null,
                     id: "",
                });
                return { success: false, error: error.message };
@@ -282,7 +282,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
                payload,
                status: "success",
                type: "db",
-               user_id: "",
+               user_id: null,
                id: "",
           });
 
@@ -305,7 +305,7 @@ export async function deleteApartment(id: string) {
                payload: { id },
                status: "fail",
                type: "db",
-               user_id: "",
+               user_id: null,
           });
           return { success: false, error: error.message };
      }
@@ -317,7 +317,7 @@ export async function deleteApartment(id: string) {
           payload: { id },
           status: "success",
           type: "db",
-          user_id: "",
+          user_id: null,
      });
      revalidatePath('/dashboard/apartments');
      return { success: true, data: null };
@@ -346,7 +346,7 @@ export async function checkIfApartmentExistsInBuilding(buildingId: string, apart
                payload: { buildingId, apartmentNumber },
                status: "fail",
                type: "db",
-               user_id: "",
+               user_id: null,
           });
           return { exists: false };
      }

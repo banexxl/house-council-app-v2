@@ -11,7 +11,7 @@ export default async function Page({ params }: {
   params: Promise<{ apartmentid: string }>
 }) {
   const { apartmentid } = await params;
-  const { client, tenant, admin, userData, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, clientMember, tenant, admin, userData, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
   if (!client && !tenant && !admin) {
     logout();
   }
@@ -49,7 +49,7 @@ export default async function Page({ params }: {
           <ApartmentCreateForm
             buildings={buildings}
             apartmentData={apartment}
-            userData={{ client, tenant, admin, userData, error }}
+            userData={{ client, clientMember, tenant, admin, userData, error }}
           />
         </Stack>
       </Container>

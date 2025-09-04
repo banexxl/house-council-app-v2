@@ -30,7 +30,7 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
                payload: {},
                status: "fail",
                type: "db",
-               user_id: "",
+               user_id: null,
                id: "",
           });
           return { success: false, error: error.message };
@@ -43,7 +43,7 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
           payload: {},
           status: "success",
           type: "db",
-          user_id: "",
+          user_id: null,
           id: "",
      });
 
@@ -121,27 +121,27 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
 
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'getBuildingById',
                duration_ms: Date.now() - time,
                error: error.message,
                payload: { id },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
           });
           return { success: false, error: error.message };
      }
 
      await logServerAction({
+          user_id: null,
           action: 'getBuildingById',
           duration_ms: Date.now() - time,
           error: '',
           payload: { id },
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      });
 
      return {
@@ -173,14 +173,15 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
 
      if (insertError) {
           await logServerAction({
+               user_id: null,
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: insertError.message,
                payload: payloadData,
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return { success: false, error: insertError.message };
      }
@@ -201,14 +202,15 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
      if (fetchError) {
           await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
           await logServerAction({
+               user_id: null,
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: fetchError.message,
                payload: payloadData,
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return { success: false, error: 'Failed to verify building location' };
      }
@@ -216,14 +218,15 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
      if (existingLocation?.building_id) {
           await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
           await logServerAction({
+               user_id: null,
                action: 'createBuilding',
                duration_ms: Date.now() - time,
                error: 'Location is already assigned to another building',
                payload: payloadData,
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return { success: false, error: 'Location is already assigned to another building' };
      }
@@ -234,14 +237,15 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
           .match({ id: building_location_id });
 
      await logServerAction({
+          user_id: null,
           action: 'createBuilding',
           duration_ms: Date.now() - time,
           error: '',
           payload: payloadData,
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      });
 
      return { success: true, data: buildingData };
@@ -270,13 +274,14 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
 
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'updateBuilding',
                duration_ms: Date.now() - time,
                error: error.message,
                payload: { id, updates },
                status: 'fail',
                type: 'db',
-               user_id: '',
+
           });
           return { success: false, error: error.message };
      }
@@ -289,13 +294,14 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
      }
 
      await logServerAction({
+          user_id: null,
           action: 'updateBuilding',
           duration_ms: Date.now() - time,
           error: '',
           payload: { id, updates },
           status: 'success',
           type: 'db',
-          user_id: '',
+
      });
 
      return { success: true, data };
@@ -314,13 +320,14 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
 
      if (!success) {
           await logServerAction({
+               user_id: null,
                action: 'Delete Building - deleting images from SB S3 failed.',
                duration_ms: Date.now() - time,
                error: error!,
                payload: { id },
                status: 'fail',
                type: 'db',
-               user_id: '',
+
           })
      }
      // Delete related images
@@ -328,13 +335,14 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
 
      if (deleteImagesError) {
           await logServerAction({
+               user_id: null,
                action: 'Delete Building - deleting images from tblBuildingImages failed.',
                duration_ms: Date.now() - time,
                error: deleteImagesError.message,
                payload: { id },
                status: 'fail',
                type: 'db',
-               user_id: '',
+
           });
      }
      // Find linked location
@@ -346,13 +354,14 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
 
      if (locationError && locationError.code !== 'PGRST116') {
           await logServerAction({
+               user_id: null,
                action: 'Delete Building - failed to check building location',
                duration_ms: Date.now() - time,
                error: locationError.message,
                payload: { id },
                status: 'fail',
                type: 'db',
-               user_id: '',
+
           });
           return { success: false, error: 'Failed to check building location' };
      }
@@ -364,25 +373,27 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
      const { error: deleteError } = await supabase.from('tblBuildings').delete().eq('id', id);
      if (deleteError) {
           await logServerAction({
+               user_id: null,
                action: 'Delete Building - failed to delete building from tblBuildings',
                duration_ms: Date.now() - time,
                error: deleteError.message,
                payload: { id },
                status: 'fail',
                type: 'db',
-               user_id: '',
+
           });
           return { success: false, error: deleteError.message };
      }
 
      await logServerAction({
+          user_id: null,
           action: 'Delete Building - Success',
           duration_ms: Date.now() - time,
           error: '',
           payload: { id },
           status: 'success',
           type: 'db',
-          user_id: '',
+
      });
 
      return { success: true, data: null };

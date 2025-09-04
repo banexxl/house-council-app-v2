@@ -41,7 +41,8 @@ import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import QuillEditor from 'src/components/quill-editor';
 import { useFormik } from 'formik';
 import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope, ANNOUNCEMENT_CATEGORIES } from 'src/types/announcement';
-import { upsertAnnouncement } from 'src/app/actions/announcement/announcement-actions';
+import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction } from 'src/app/actions/announcement/announcement-actions';
+import toast from 'react-hot-toast';
 
 interface AnnouncementProps {
      announcements: AnnouncementItem[];
@@ -53,13 +54,13 @@ interface AnnouncementProps {
 export default function Announcement({ announcements, tenants, apartments, tenant_groups = [] }: AnnouncementProps) {
      // List state (would normally come from server via props & updates)
      const [rows, setRows] = useState<AnnouncementItem[]>(announcements || []);
+     const [editingId, setEditingId] = useState<string | null>(null);
+     const [rowBusy, setRowBusy] = useState<string | null>(null);
 
      const formik = useFormik({
           initialValues: announcementInitialValues,
           validationSchema: announcementValidationSchema,
           onSubmit: async (values, helpers) => {
-               console.log('values:', values);
-
                helpers.setSubmitting(true);
                // Build payload mapping to server expectations
                const payload: any = {
@@ -82,16 +83,23 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                const result = await upsertAnnouncement(payload);
                if (!result.success) {
                     helpers.setSubmitting(false);
+                    toast.error('Failed to save announcement');
                     helpers.setStatus({ error: result.error });
                     return;
                }
 
-               // Optimistically add to list (prepend). We only keep subset of fields for list display
                if (result.data) {
-                    setRows(prev => [{ id: result.data.id!, title: result.data.title, pinned: result.data.pinned, archived: result.data.archived }, ...prev]);
+                    toast.success('Announcement saved successfully');
+                    setRows(prev => {
+                         if (editingId) {
+                              return prev.map(r => r.id === editingId ? { id: result.data!.id!, title: result.data!.title, pinned: result.data!.pinned, archived: result.data!.archived } : r);
+                         }
+                         return [{ id: result.data.id!, title: result.data.title, pinned: result.data.pinned, archived: result.data.archived }, ...prev];
+                    });
                }
 
                helpers.resetForm();
+               setEditingId(null);
           }
      });
 
@@ -114,16 +122,54 @@ export default function Announcement({ announcements, tenants, apartments, tenan
           formik.handleSubmit();
      };
 
-     const togglePin = (id: string) => {
-          setRows(prev => prev.map(r => r.id === id ? { ...r, pinned: !r.pinned } : r));
+     const handleEdit = async (id: string) => {
+          const res = await getAnnouncementById(id);
+          if (!res.success || !res.data) return;
+          const a: any = res.data;
+          setEditingId(id);
+          formik.setValues({
+               title: a.title || '',
+               message: a.message || '',
+               category: a.category || '',
+               subcategory: a.subcategory || '',
+               visibility: a.visibility || 'building',
+               apartments: a.apartments || [],
+               tenants: a.tenants || [],
+               tenant_groups: a.tenant_groups || [],
+               attachments: [],
+               pin: !!a.pinned,
+               schedule_enabled: !!a.schedule_at,
+               scheduleAt: a.schedule_at || null,
+               status: a.status || 'draft'
+          });
      };
 
-     const toggleArchive = (id: string) => {
-          setRows(prev => prev.map(r => r.id === id ? { ...r, archived: !r.archived } : r));
+     const togglePin = async (id: string) => {
+          const row = rows.find(r => r.id === id);
+          if (!row) return;
+          setRowBusy(id);
+          const optimistic = !row.pinned;
+          setRows(prev => prev.map(r => r.id === id ? { ...r, pinned: optimistic } : r));
+          const res = await togglePinAction(id, optimistic);
+          if (!res.success) {
+               toast.error('Failed to update announcement');
+               setRows(prev => prev.map(r => r.id === id ? { ...r, pinned: !optimistic } : r));
+          }
+          toast.success('Announcement updated successfully');
+          setRowBusy(null);
      };
 
-     const handleArchiveCurrent = () => {
-          // Archive action for current (would need current editing context; placeholder)
+     const toggleArchive = async (id: string) => {
+          const row = rows.find(r => r.id === id);
+          if (!row) return;
+          setRowBusy(id);
+          const res = await deleteAnnouncement(id);
+
+          if (!res.success) {
+               toast.error('Failed to delete announcement');
+          }
+          toast.success('Announcement deleted successfully');
+          setRowBusy(null);
      };
 
      return (
@@ -309,13 +355,10 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                             label="Publish at"
                                                             value={formik.values.scheduleAt}
                                                             onChange={e => formik.setFieldValue('scheduleAt', e.target.value)}
-                                                            InputLabelProps={{ shrink: true }}
+                                                            slotProps={{ inputLabel: { shrink: true } }}
                                                        />
                                                   )}
                                              </Stack>
-                                             <Typography>
-                                                  {JSON.stringify(formik.errors)}
-                                             </Typography>
                                              <Divider sx={{ my: 1 }} />
                                              <Stack direction="row" spacing={2} justifyContent="flex-end">
                                                   <Button
@@ -374,16 +417,18 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                                       </Stack>
                                                                  </TableCell>
                                                                  <TableCell align="right">
-                                                                      <Tooltip title="Edit">
-                                                                           <IconButton size="small"><EditIcon fontSize="small" /></IconButton>
+                                                                      <Tooltip title={editingId === row.id ? 'Editing' : 'Edit'}>
+                                                                           <IconButton size="small" onClick={() => handleEdit(row.id)} color={editingId === row.id ? 'primary' : 'default'}>
+                                                                                <EditIcon fontSize="small" />
+                                                                           </IconButton>
                                                                       </Tooltip>
                                                                       <Tooltip title={row.pinned ? 'Unpin' : 'Pin'}>
-                                                                           <IconButton size="small" onClick={() => togglePin(row.id)}>
+                                                                           <IconButton size="small" onClick={() => togglePin(row.id)} disabled={rowBusy === row.id}>
                                                                                 {row.pinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
                                                                            </IconButton>
                                                                       </Tooltip>
                                                                       <Tooltip title={row.archived ? 'Unarchive' : 'Archive'}>
-                                                                           <IconButton size="small" onClick={() => toggleArchive(row.id)}>
+                                                                           <IconButton size="small" onClick={() => toggleArchive(row.id)} disabled={rowBusy === row.id}>
                                                                                 {row.archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
                                                                            </IconButton>
                                                                       </Tooltip>

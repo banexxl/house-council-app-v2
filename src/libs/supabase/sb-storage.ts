@@ -52,7 +52,7 @@ export const uploadBuildingImagesAndGetUrls = async (
                          payload: { client, address, buildingId },
                          status: 'fail',
                          type: 'db',
-                         user_id: '',
+                         user_id: null,
                     })
                     return {
                          success: false,
@@ -72,7 +72,7 @@ export const uploadBuildingImagesAndGetUrls = async (
                     payload: { imageUrl },
                     status: 'success',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                if (!imageUrl) {
                     await logServerAction({
@@ -82,7 +82,7 @@ export const uploadBuildingImagesAndGetUrls = async (
                          payload: { client, address, buildingId },
                          status: 'fail',
                          type: 'db',
-                         user_id: '',
+                         user_id: null,
                     })
                     return { success: false, error: 'Failed to retrieve public URL' };
                }
@@ -91,7 +91,7 @@ export const uploadBuildingImagesAndGetUrls = async (
                     .from('tblBuildingImages')
                     .insert({
                          building_id: buildingId,
-                         image_url: imageUrl,
+                         image_url: imageUrl, user_id: null,
                     });
 
                if (insertError) {
@@ -102,7 +102,7 @@ export const uploadBuildingImagesAndGetUrls = async (
                          payload: { client, address, buildingId },
                          status: 'fail',
                          type: 'db',
-                         user_id: '',
+                         user_id: null,
                     })
                     return { success: false, error: insertError.message };
                }
@@ -113,7 +113,7 @@ export const uploadBuildingImagesAndGetUrls = async (
                     payload: { imageUrl },
                     status: 'success',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                urls.push(imageUrl);
           }
@@ -160,7 +160,7 @@ export const removeBuildingImageFilePath = async (
                     payload: { buildingId, filePathOrUrl },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: deleteError.message };
           }
@@ -181,7 +181,7 @@ export const removeBuildingImageFilePath = async (
                     payload: { buildingId, filePathOrUrl },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: dbDeleteError.message };
           }
@@ -217,7 +217,7 @@ export const removeAllImagesFromBuilding = async (
                     payload: { buildingId },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: imagesError.message };
           }
@@ -258,7 +258,7 @@ export const removeAllImagesFromBuilding = async (
                     payload: { buildingId },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: dbDeleteError.message };
           }
@@ -270,7 +270,7 @@ export const removeAllImagesFromBuilding = async (
                payload: { buildingId },
                status: 'success',
                type: 'db',
-               user_id: '',
+               user_id: null,
           })
           revalidatePath(`/dashboard/buildings/${buildingId}`);
           return { success: true };
@@ -315,7 +315,7 @@ export const setAsBuildingCoverImage = async (
                     payload: { buildingId, imageURL },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: updateError.message };
           }
@@ -372,7 +372,7 @@ export const uploadApartmentImagesAndGetUrls = async (
                          payload: { client, address, apartmentid },
                          status: 'fail',
                          type: 'db',
-                         user_id: '',
+                         user_id: null,
                     })
                     return {
                          success: false,
@@ -392,7 +392,7 @@ export const uploadApartmentImagesAndGetUrls = async (
                     payload: { imageUrl },
                     status: 'success',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                if (!imageUrl) {
                     await logServerAction({
@@ -402,7 +402,7 @@ export const uploadApartmentImagesAndGetUrls = async (
                          payload: { client, address, apartmentid },
                          status: 'fail',
                          type: 'db',
-                         user_id: '',
+                         user_id: null,
                     })
                     return { success: false, error: 'Failed to retrieve public URL' };
                }
@@ -411,7 +411,7 @@ export const uploadApartmentImagesAndGetUrls = async (
                     .from('tblApartmentImages')
                     .insert({
                          apartment_id: apartmentid,
-                         image_url: imageUrl,
+                         image_url: imageUrl, user_id: null,
                     });
 
                if (insertError) {
@@ -422,7 +422,7 @@ export const uploadApartmentImagesAndGetUrls = async (
                          payload: { client, address, apartmentid },
                          status: 'fail',
                          type: 'db',
-                         user_id: '',
+                         user_id: null,
                     })
                     return { success: false, error: insertError.message };
                }
@@ -433,7 +433,7 @@ export const uploadApartmentImagesAndGetUrls = async (
                     payload: { imageUrl },
                     status: 'success',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                urls.push(imageUrl);
           }
@@ -480,7 +480,7 @@ export const removeApartmentImageFilePath = async (
                     payload: { apartmentid, filePathOrUrl },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: deleteError.message };
           }
@@ -501,7 +501,7 @@ export const removeApartmentImageFilePath = async (
                     payload: { apartmentid, filePathOrUrl },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: dbDeleteError.message };
           }
@@ -538,7 +538,7 @@ export const removeAllImagesFromApartment = async (apartmentid: string): Promise
                     payload: { apartmentid },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: imagesError.message };
           }
@@ -578,7 +578,7 @@ export const removeAllImagesFromApartment = async (apartmentid: string): Promise
                     payload: { apartmentid },
                     status: 'fail',
                     type: 'db',
-                    user_id: '',
+                    user_id: null,
                })
                return { success: false, error: dbDeleteError.message };
           }

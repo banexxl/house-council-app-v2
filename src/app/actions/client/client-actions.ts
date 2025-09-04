@@ -116,7 +116,7 @@ export const createOrUpdateClientAction = async (
                     payload: { clientId: id, clientData },
                     status: 'fail',
                     type: 'action',
-                    user_id: '',
+                    user_id: id,
                });
                return { saveClientActionSuccess: false, saveClientActionError: updateError };
           }
@@ -128,7 +128,7 @@ export const createOrUpdateClientAction = async (
                payload: { clientId: id, clientData },
                status: 'success',
                type: 'action',
-               user_id: '',
+               user_id: id,
           });
 
           if (unassigned_location_id) {
@@ -147,7 +147,7 @@ export const createOrUpdateClientAction = async (
                          payload: { clientId: id, unassignedLocationId: unassigned_location_id },
                          status: 'fail',
                          type: 'action',
-                         user_id: '',
+                         user_id: id,
                     });
                     return { saveClientActionSuccess: false, saveClientActionError: fetchError || 'Unassigned location not found' };
                }
@@ -166,7 +166,7 @@ export const createOrUpdateClientAction = async (
                          payload: { clientId: id, unassignedLocationId: unassigned_location_id },
                          status: 'fail',
                          type: 'action',
-                         user_id: '',
+                         user_id: id,
                     });
                     return { saveClientActionSuccess: false, saveClientActionError: reassignError };
                }
@@ -192,7 +192,7 @@ export const createOrUpdateClientAction = async (
                     payload: { email: clientData.email },
                     status: 'fail',
                     type: 'auth',
-                    user_id: '',
+                    user_id: null,
                });
 
                return {

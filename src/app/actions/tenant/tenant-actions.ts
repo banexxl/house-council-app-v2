@@ -76,13 +76,14 @@ export const createOrUpdateTenantAction = async (
 
           if (updateTenantError) {
                await logServerAction({
+                    user_id: null,
                     action: 'Update Tenant - Failed',
                     duration_ms: Date.now() - start,
                     error: updateTenantError.message,
                     payload: { id, tenantData },
                     status: 'fail',
                     type: 'action',
-                    user_id: '',
+
                });
 
                return { saveTenantActionSuccess: false, saveTenantActionError: updateTenantError };
@@ -96,13 +97,14 @@ export const createOrUpdateTenantAction = async (
 
           if (updateUserError) {
                await logServerAction({
+                    user_id: null,
                     action: 'Update Tenant Auth User - Failed',
                     duration_ms: Date.now() - start,
                     error: updateUserError.message,
                     payload: { email: tenantData.email },
                     status: 'fail',
                     type: 'auth',
-                    user_id: '',
+
                });
 
                return {
@@ -112,13 +114,14 @@ export const createOrUpdateTenantAction = async (
           }
 
           await logServerAction({
+               user_id: null,
                action: 'Update Tenant - Success',
                duration_ms: Date.now() - start,
                error: '',
                payload: { tenantData },
                status: 'success',
                type: 'action',
-               user_id: '',
+
           });
 
           revalidatePath(`/dashboard/tenants/${id}`);
@@ -139,13 +142,14 @@ export const createOrUpdateTenantAction = async (
 
           if (userError || !createdUser?.user) {
                await logServerAction({
+                    user_id: null,
                     action: 'Create Tenant Auth User - Failed',
                     duration_ms: Date.now() - start,
                     error: userError?.message ?? 'Unknown error',
                     payload: { email: tenantData.email },
                     status: 'fail',
                     type: 'auth',
-                    user_id: '',
+
                });
 
                return {
@@ -373,7 +377,7 @@ export const getAllTenantsFromClientsBuildings = async (
                status: 'fail',
                type: 'db',
                user_id: clientId,
-               id: '',
+
           });
           return { success: false, error: tenantsError.message };
      }

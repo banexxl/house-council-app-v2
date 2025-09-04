@@ -13,42 +13,45 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
 
      if (!table.trim()) {
           await logServerAction({
+               user_id: null,
                action: 'create-entity',
                duration_ms: Date.now() - duration_ms,
                error: 'clients.clientSettingsNoTableError',
                payload: { table, entity },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           })
           return { success: false, error: 'clients.clientSettingsNoTableError' };
      }
 
      if (!entity || Object.keys(entity).length === 0) {
           await logServerAction({
+               user_id: null,
                action: 'create-entity',
                duration_ms: Date.now() - duration_ms,
                error: 'clients.clientSettingsNoEntityError',
                payload: { table, entity },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           })
           return { success: false, error: 'clients.clientSettingsNoEntityError' };
      }
 
      if (entity.name.trim() === '') {
           await logServerAction({
+               user_id: null,
                action: 'create-entity',
                duration_ms: Date.now() - duration_ms,
                error: 'clients.clientSettingsNoNameError',
                payload: { table, entity },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           })
           return { success: false, error: 'clients.clientSettingsNoNameError' };
      }
@@ -63,14 +66,15 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
      // If an existing entity is found, return an error
      if (existingEntity) {
           await logServerAction({
+               user_id: null,
                action: 'create-entity',
                duration_ms: Date.now() - duration_ms,
                error: 'clients.clientSettingsAlreadyExists',
                payload: { table, entity },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           })
           return { success: false, error: 'clients.clientSettingsAlreadyExists' };
      }
@@ -84,27 +88,29 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
 
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'create-entity',
                duration_ms: Date.now() - duration_ms,
                error: error.message,
                payload: { table, entity },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           })
           return { success: false, error };
      }
 
      await logServerAction({
+          user_id: null,
           action: 'create-entity',
           duration_ms: Date.now() - duration_ms,
           error: '',
           payload: { table, entity },
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      })
      revalidatePath('/dashboard/clients/client-settings');
      return { success: true, createdEntity: data };
@@ -116,27 +122,29 @@ export const readEntity = async <T extends BaseEntity>(table: string, id: string
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'read-entity',
                duration_ms: Date.now(),
                error: error.message,
                payload: { table, id },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return { success: false, error: error.message };
      }
 
      await logServerAction({
+          user_id: null,
           action: 'read-entity',
           duration_ms: Date.now(),
           error: '',
           payload: { table, id },
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      });
 
      return { success: true, entity: data };
@@ -178,27 +186,29 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
 
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'update-entity',
                duration_ms: Date.now(),
                error: error.message,
                payload: { table, id, entity },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return { success: false, error };
      }
 
      await logServerAction({
+          user_id: null,
           action: 'update-entity',
           duration_ms: Date.now(),
           error: '',
           payload: { table, id, entity },
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      });
 
      revalidatePath('/dashboard/clients/client-settings');
@@ -212,27 +222,29 @@ export const deleteEntity = async (table: string, id: string): Promise<{ success
 
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'delete-entity',
                duration_ms: Date.now(),
                error: error.message,
                payload: { table, id },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return { success: false, error: error.message };
      }
 
      await logServerAction({
+          user_id: null,
           action: 'delete-entity',
           duration_ms: Date.now(),
           error: '',
           payload: { table, id },
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      });
 
      revalidatePath('/dashboard/clients/client-settings');
@@ -250,27 +262,29 @@ export const readAllEntities = async <T extends BaseEntity>(table: string): Prom
 
      if (error) {
           await logServerAction({
+               user_id: null,
                action: 'read-all-entities',
                duration_ms: Date.now(),
                error: error.message,
                payload: { table },
                status: 'fail',
                type: 'db',
-               user_id: '',
-               id: '',
+
+
           });
           return [];
      }
 
      await logServerAction({
+          user_id: null,
           action: 'read-all-entities',
           duration_ms: Date.now(),
           error: '',
           payload: { table },
           status: 'success',
           type: 'db',
-          user_id: '',
-          id: '',
+
+
      });
 
      return data;

@@ -24,7 +24,7 @@ const QuillEditor = forwardRef<QuillEditorRef, QuillEditorProps>(
         toolbar: [
           ['bold', 'italic', 'underline', 'strike'],
           [{ list: 'ordered' }, { list: 'bullet' }],
-          ['link', 'image'],
+          ['link'],
           ['clean'],
         ],
       },

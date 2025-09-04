@@ -144,8 +144,8 @@ export const HomeHero: FC = () => {
               pt: 2,
               px: 2,
               '& img': {
-                borderTopLeftRadius: (theme) => theme.shape.borderRadius * 2.5,
-                borderTopRightRadius: (theme) => theme.shape.borderRadius * 2.5,
+                borderTopLeftRadius: (theme: any) => theme.shape.borderRadius * 2.5,
+                borderTopRightRadius: (theme: any) => theme.shape.borderRadius * 2.5,
                 boxShadow: 16,
                 width: '100%',
               },

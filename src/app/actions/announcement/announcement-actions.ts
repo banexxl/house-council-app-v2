@@ -27,10 +27,20 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
 
      const { data, error } = await supabase.from(ANNOUNCEMENTS_TABLE).select('*').order('created_at', { ascending: false });
      if (error) {
-          await logServerAction({ action: 'getAnnouncements', duration_ms: Date.now() - time, error: error.message, payload: {}, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'getAnnouncements',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: {},
+               status: 'fail',
+               type: 'db'
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'getAnnouncements', duration_ms: Date.now() - time, error: '', payload: {}, status: 'success', type: 'db', user_id: '' });
+     await logServerAction({
+          user_id: null, action: 'getAnnouncements', duration_ms: Date.now() - time, error: '', payload: {}, status: 'success', type: 'db'
+     });
      return { success: true, data: data as AnnouncementRecord[] };
 }
 
@@ -40,10 +50,30 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from(ANNOUNCEMENTS_TABLE).select('*').eq('id', id).single();
      if (error) {
-          await logServerAction({ action: 'getAnnouncementById', duration_ms: Date.now() - time, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: '', id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'getAnnouncementById',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+
+               id: ''
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'getAnnouncementById', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db', user_id: '', id: '' });
+     await logServerAction({
+          user_id: null,
+          action: 'getAnnouncementById',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+
+          id: ''
+     });
      return { success: true, data: data as AnnouncementRecord };
 }
 
@@ -87,11 +117,27 @@ export async function upsertAnnouncement(input: Partial<AnnouncementRecord> & { 
           .maybeSingle();
 
      if (error) {
-          await logServerAction({ action: isUpdate ? 'updateAnnouncement' : 'createAnnouncement', duration_ms: Date.now() - time, error: error.message, payload: input, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               action: isUpdate ? 'updateAnnouncement' : 'createAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: input,
+               status: 'fail',
+               type: 'db',
+               user_id: null
+          });
           return { success: false, error: error.message };
      }
 
-     await logServerAction({ action: isUpdate ? 'updateAnnouncement' : 'createAnnouncement', duration_ms: Date.now() - time, error: '', payload: input, status: 'success', type: 'db', user_id: '' });
+     await logServerAction({
+          user_id: null,
+          action: isUpdate ? 'updateAnnouncement' : 'createAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: input,
+          status: 'success',
+          type: 'db',
+     });
      revalidatePath('/dashboard/announcements');
      return { success: true, data: data as AnnouncementRecord };
 }
@@ -101,25 +147,58 @@ export async function deleteAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).delete().eq('id', id);
+
      if (error) {
-          await logServerAction({ action: 'deleteAnnouncement', duration_ms: Date.now() - time, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'deleteAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'deleteAnnouncement', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db', user_id: '' });
      revalidatePath('/dashboard/announcements');
+     await logServerAction({
+          user_id: null,
+          action: 'deleteAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+     });
      return { success: true, data: null };
 }
 
 // ============================= PIN / ARCHIVE =============================
-export async function togglePin(id: string, pinned: boolean) {
+export async function togglePinAction(id: string, pinned: boolean) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ pinned, updated_at: new Date() }).eq('id', id);
      if (error) {
-          await logServerAction({ action: 'togglePinAnnouncement', duration_ms: Date.now() - time, error: error.message, payload: { id, pinned }, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'togglePinAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id, pinned },
+               status: 'fail',
+               type: 'db',
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'togglePinAnnouncement', duration_ms: Date.now() - time, error: '', payload: { id, pinned }, status: 'success', type: 'db', user_id: '' });
+     await logServerAction({
+          user_id: null,
+          action: 'togglePinAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id, pinned },
+          status: 'success',
+          type: 'db',
+     });
      revalidatePath('/dashboard/announcements');
      return { success: true };
 }
@@ -129,10 +208,26 @@ export async function toggleArchive(id: string, archived: boolean) {
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived, updated_at: new Date() }).eq('id', id);
      if (error) {
-          await logServerAction({ action: 'toggleArchiveAnnouncement', duration_ms: Date.now() - time, error: error.message, payload: { id, archived }, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'toggleArchiveAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id, archived },
+               status: 'fail',
+               type: 'db',
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'toggleArchiveAnnouncement', duration_ms: Date.now() - time, error: '', payload: { id, archived }, status: 'success', type: 'db', user_id: '' });
+     await logServerAction({
+          user_id: null,
+          action: 'toggleArchiveAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id, archived },
+          status: 'success',
+          type: 'db',
+     });
      revalidatePath('/dashboard/announcements');
      return { success: true };
 }
@@ -144,10 +239,26 @@ export async function publishAnnouncement(id: string) {
      const now = new Date();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'published', published_at: now, updated_at: now }).eq('id', id);
      if (error) {
-          await logServerAction({ action: 'publishAnnouncement', duration_ms: Date.now() - time, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'publishAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'publishAnnouncement', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db', user_id: '' });
+     await logServerAction({
+          user_id: null,
+          action: 'publishAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+     });
      revalidatePath('/dashboard/announcements');
      return { success: true };
 }
@@ -157,10 +268,26 @@ export async function revertToDraft(id: string) {
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'draft', published_at: null, updated_at: new Date() }).eq('id', id);
      if (error) {
-          await logServerAction({ action: 'revertAnnouncementToDraft', duration_ms: Date.now() - time, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: '' });
+          await logServerAction({
+               user_id: null,
+               action: 'revertAnnouncementToDraft',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+          });
           return { success: false, error: error.message };
      }
-     await logServerAction({ action: 'revertAnnouncementToDraft', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db', user_id: '' });
+     await logServerAction({
+          user_id: null,
+          action: 'revertAnnouncementToDraft',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+     });
      revalidatePath('/dashboard/announcements');
      return { success: true };
 }

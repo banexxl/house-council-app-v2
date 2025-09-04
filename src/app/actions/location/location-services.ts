@@ -188,7 +188,7 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
                     status: 'fail',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                })
                return { success: false, error: error };
           } else {
@@ -200,7 +200,6 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
                     status: 'success',
                     type: 'db',
                     user_id: null,
-                    id: '',
                })
                return { success: true, data };
           }
@@ -213,7 +212,7 @@ export const getAllAddedLocations = async (): Promise<{ success: boolean; error?
                status: 'fail',
                type: 'db',
                user_id: null,
-               id: '',
+
           })
           return { success: false, error };
      }
@@ -239,7 +238,7 @@ export const getAllAddedLocationsByClientId = async (
                     status: 'fail',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                });
                return { success: false, error };
           }
@@ -257,7 +256,7 @@ export const getAllAddedLocationsByClientId = async (
                status: 'success',
                type: 'db',
                user_id: null,
-               id: '',
+
           });
 
           return { success: true, data: enrichedData };
@@ -270,7 +269,7 @@ export const getAllAddedLocationsByClientId = async (
                status: 'fail',
                type: 'db',
                user_id: null,
-               id: '',
+
           });
           return { success: false, error };
      }
@@ -293,7 +292,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string):
                     status: 'fail',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                })
                return { success: false, error: error };
           } else {
@@ -305,7 +304,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string):
                     status: 'success',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                })
 
 
@@ -320,7 +319,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (client_id: string):
                status: 'fail',
                type: 'db',
                user_id: null,
-               id: '',
+
           })
           return { success: false, error };
      }
@@ -339,7 +338,7 @@ export const deleteLocationByID = async (id: string): Promise<{ success: boolean
                status: 'fail',
                type: 'db',
                user_id: null,
-               id: '',
+
           })
           return { success: false, error: { code: '400', details: null, hint: null, message: 'No location ID provided' } };
      }
@@ -355,7 +354,7 @@ export const deleteLocationByID = async (id: string): Promise<{ success: boolean
                     status: 'fail',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                })
                return { success: false, error: error };
           } else {
@@ -381,7 +380,7 @@ export const deleteLocationByID = async (id: string): Promise<{ success: boolean
                status: 'fail',
                type: 'db',
                user_id: null,
-               id: '',
+
           })
 
           return { success: false, error };
@@ -404,7 +403,7 @@ export const getAllAddedLocationsWithoutBuildingId = async (): Promise<{ success
                     status: 'fail',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                })
                return { success: false, error: error };
           } else {
@@ -416,7 +415,7 @@ export const getAllAddedLocationsWithoutBuildingId = async (): Promise<{ success
                     status: 'success',
                     type: 'db',
                     user_id: null,
-                    id: '',
+
                })
                return { success: true, data };
           }
@@ -429,7 +428,7 @@ export const getAllAddedLocationsWithoutBuildingId = async (): Promise<{ success
                status: 'fail',
                type: 'db',
                user_id: null,
-               id: '',
+
           })
           return { success: false, error };
      }
