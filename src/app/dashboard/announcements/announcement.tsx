@@ -38,11 +38,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import ArchiveIcon from '@mui/icons-material/Archive';
-import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
+import DeleteIcon from '@mui/icons-material/Delete';
 import QuillEditor from 'src/components/quill-editor';
+import { PopupModal } from 'src/components/modal-dialog';
 import { useFormik } from 'formik';
 import { announcementInitialValues, announcementValidationSchema, AnnouncementScope, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
-import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft } from 'src/app/actions/announcement/announcement-actions';
+import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -61,6 +63,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
      const [editingId, setEditingId] = useState<string | null>(null);
      const [rowBusy, setRowBusy] = useState<string | null>(null);
      const [imagesUploading, setImagesUploading] = useState(false);
+     const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images'; targetId?: string }>(null);
      const currentImages = React.useMemo(() => {
           if (!editingId) return [] as string[];
           const row = announcements.find(a => a.id === editingId);
@@ -202,9 +205,37 @@ export default function Announcements({ announcements, tenants, apartments, tena
 
      const handleRemoveAllImages = async () => {
           if (!editingId) return;
+          setModalState({ type: 'remove-all-images', targetId: editingId });
+     };
+
+     const performRemoveAllImages = async (id: string) => {
           const { removeAllAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
-          const res = await removeAllAnnouncementImages(editingId);
+          const res = await removeAllAnnouncementImages(id);
           if (!res.success) toast.error(res.error || 'Failed to remove images'); else { toast.success('All images removed'); router.refresh(); }
+     };
+
+     const toggleArchive = async (id: string) => {
+          const row = announcements.find(r => r.id === id);
+          if (!row) return;
+          setRowBusy(id);
+          const res = await toggleArchiveAction(id, !row.archived);
+          if (!res.success) toast.error('Archive toggle failed'); else { toast.success(!row.archived ? 'Archived' : 'Unarchived'); router.refresh(); }
+          setRowBusy(null);
+     };
+
+     const handleDelete = (id: string) => {
+          setModalState({ type: 'delete-announcement', targetId: id });
+     };
+
+     const performDelete = async (id: string) => {
+          setRowBusy(id);
+          const res = await deleteAnnouncement(id);
+          if (!res.success) toast.error('Delete failed'); else {
+               toast.success('Deleted');
+               if (editingId === id) { formik.resetForm(); setEditingId(null); }
+               router.refresh();
+          }
+          setRowBusy(null);
      };
 
      const togglePin = async (id: string) => {
@@ -215,25 +246,6 @@ export default function Announcements({ announcements, tenants, apartments, tena
           if (!res.success) toast.error('Failed to update announcement');
           else toast.success('Announcement updated successfully');
           router.refresh();
-          setRowBusy(null);
-     };
-
-     const toggleArchive = async (id: string) => {
-          const row = announcements.find(r => r.id === id);
-          if (!row) return;
-          setRowBusy(id);
-          const res = await deleteAnnouncement(id);
-          if (!res.success) {
-               toast.error('Failed to delete announcement');
-          } else {
-               toast.success('Announcement deleted successfully');
-               // If we were editing this one, reset the form
-               if (editingId === id) {
-                    formik.resetForm();
-                    setEditingId(null);
-               }
-               router.refresh();
-          }
           setRowBusy(null);
      };
 
@@ -553,11 +565,6 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                       </Stack>
                                                                  </TableCell>
                                                                  <TableCell align="right">
-                                                                      <Tooltip title={editingId === row.id ? 'Editing' : 'Edit'}>
-                                                                           <IconButton size="small" onClick={() => handleEdit(row.id)} color={editingId === row.id ? 'primary' : 'default'}>
-                                                                                <EditIcon fontSize="small" />
-                                                                           </IconButton>
-                                                                      </Tooltip>
                                                                       <Tooltip title={row.pinned ? 'Unpin' : 'Pin'}>
                                                                            <IconButton size="small" onClick={() => togglePin(row.id)} disabled={rowBusy === row.id}>
                                                                                 {row.pinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
@@ -565,7 +572,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                       </Tooltip>
                                                                       <Tooltip title={row.archived ? 'Unarchive' : 'Archive'}>
                                                                            <IconButton size="small" onClick={() => toggleArchive(row.id)} disabled={rowBusy === row.id}>
-                                                                                {row.archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
+                                                                                {row.archived ? <ArchiveIcon fontSize="small" /> : <ArchiveOutlinedIcon fontSize="small" />}
+                                                                           </IconButton>
+                                                                      </Tooltip>
+                                                                      <Tooltip title="Delete">
+                                                                           <IconButton size="small" color="error" onClick={() => handleDelete(row.id)} disabled={rowBusy === row.id}>
+                                                                                <DeleteIcon fontSize="small" />
                                                                            </IconButton>
                                                                       </Tooltip>
                                                                  </TableCell>
@@ -579,6 +591,44 @@ export default function Announcements({ announcements, tenants, apartments, tena
                          </Grid>
                     </Card>
                </Stack >
+               {/* Confirmation Modals */}
+               {
+                    modalState?.type === 'delete-announcement' && (
+                         <PopupModal
+                              isOpen
+                              onClose={() => setModalState(null)}
+                              onConfirm={async () => {
+                                   if (modalState.targetId) await performDelete(modalState.targetId);
+                                   setModalState(null);
+                              }}
+                              title="Delete announcement"
+                              type="confirmation"
+                              confirmText="Delete"
+                              cancelText="Cancel"
+                         >
+                              Are you sure you want to permanently delete this announcement? This action cannot be undone.
+                         </PopupModal>
+                    )
+               }
+               {
+                    modalState?.type === 'remove-all-images' && (
+                         <PopupModal
+                              isOpen
+                              onClose={() => setModalState(null)}
+                              onConfirm={async () => {
+                                   if (modalState.targetId) await performRemoveAllImages(modalState.targetId);
+                                   setModalState(null);
+                              }}
+                              title="Remove all images"
+                              type="confirmation"
+                              confirmText="Remove"
+                              cancelText="Cancel"
+                         >
+                              Remove all images for this announcement? This cannot be undone.
+                         </PopupModal>
+                    )
+               }
           </Container>
+
      );
 }

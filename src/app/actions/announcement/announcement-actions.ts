@@ -151,7 +151,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
      return { success: true, data: data as Announcement };
 }
 
-// ============================= DELETE =============================
+// ============================= DELETE/ARCHIVE =============================
 export async function deleteAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
@@ -180,6 +180,35 @@ export async function deleteAnnouncement(id: string) {
      });
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
+}
+
+export async function archiveAnnouncement(id: string) {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived: true, updated_at: new Date() }).eq('id', id);
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'archiveAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id },
+               status: 'fail',
+               type: 'db',
+          });
+          return { success: false, error: error.message };
+     }
+     await logServerAction({
+          user_id: null,
+          action: 'archiveAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id },
+          status: 'success',
+          type: 'db',
+     });
+     revalidatePath('/dashboard/announcements');
+     return { success: true };
 }
 
 // ============================= PIN =============================
@@ -265,6 +294,36 @@ export async function revertToDraft(id: string) {
           duration_ms: Date.now() - time,
           error: '',
           payload: { id },
+          status: 'success',
+          type: 'db',
+     });
+     revalidatePath('/dashboard/announcements');
+     return { success: true };
+}
+
+// ============================= ARCHIVE / UNARCHIVE =============================
+export async function toggleArchiveAction(id: string, archived: boolean) {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived, updated_at: new Date() }).eq('id', id);
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'toggleArchiveAnnouncement',
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { id, archived },
+               status: 'fail',
+               type: 'db',
+          });
+          return { success: false, error: error.message };
+     }
+     await logServerAction({
+          user_id: null,
+          action: 'toggleArchiveAnnouncement',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { id, archived },
           status: 'success',
           type: 'db',
      });
