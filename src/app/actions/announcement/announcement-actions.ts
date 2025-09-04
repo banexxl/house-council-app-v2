@@ -3,25 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { AnnouncementFormValues, AnnouncementStatus } from 'src/types/announcement';
+import { Announcement, AnnouncementStatus } from 'src/types/announcement';
 import { validate as isUUID } from 'uuid';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
 
-export interface AnnouncementRecord extends Omit<AnnouncementFormValues, 'attachments' | 'status' | 'schedule_enabled'> {
-     id?: string;
-     status: AnnouncementStatus;
-     created_at?: string | Date;
-     updated_at?: string | Date;
-     published_at?: string | Date | null;
-     pinned?: boolean;
-     archived?: boolean;
-     attachments?: string[]; // store URLs/paths
-}
-
 // ============================= READ OPERATIONS =============================
-export async function getAnnouncements(): Promise<{ success: boolean; error?: string; data?: AnnouncementRecord[] }> {
+export async function getAnnouncements(): Promise<{ success: boolean; error?: string; data?: Announcement[] }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -38,13 +27,36 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
           });
           return { success: false, error: error.message };
      }
+
+     // Attach images for all announcements in a single additional query
+     let enriched: Announcement[] = (data as any[]) as Announcement[];
+     try {
+          const ids = enriched.map(a => a.id).filter(Boolean);
+          if (ids.length > 0) {
+               const { data: imgRows, error: imgErr } = await supabase
+                    .from('tblAnnouncementImages')
+                    .select('announcement_id,image_url')
+                    .in('announcement_id', ids as string[]);
+               if (!imgErr && imgRows) {
+                    const map = new Map<string, string[]>();
+                    for (const row of imgRows) {
+                         const annId = (row as any).announcement_id as string;
+                         const url = (row as any).image_url as string;
+                         if (!map.has(annId)) map.set(annId, []);
+                         map.get(annId)!.push(url);
+                    }
+                    enriched = enriched.map(a => ({ ...a, images: map.get(a.id!) || [] }));
+               }
+          }
+     } catch { /* ignore image enrichment errors */ }
+
      await logServerAction({
-          user_id: null, action: 'getAnnouncements', duration_ms: Date.now() - time, error: '', payload: {}, status: 'success', type: 'db'
+          user_id: null, action: 'getAnnouncements', duration_ms: Date.now() - time, error: '', payload: { count: enriched.length }, status: 'success', type: 'db'
      });
-     return { success: true, data: data as AnnouncementRecord[] };
+     return { success: true, data: enriched };
 }
 
-export async function getAnnouncementById(id: string): Promise<{ success: boolean; error?: string; data?: AnnouncementRecord }> {
+export async function getAnnouncementById(id: string): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
      const supabase = await useServerSideSupabaseAnonClient();
@@ -63,6 +75,13 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
           });
           return { success: false, error: error.message };
      }
+     // Fetch related images (ignore errors to not block primary response)
+     let images: string[] = [];
+     try {
+          const { data: imgRows } = await supabase.from('tblAnnouncementImages').select('image_url').eq('announcement_id', id);
+          images = (imgRows || []).map(r => (r as any).image_url);
+     } catch { /* noop */ }
+
      await logServerAction({
           user_id: null,
           action: 'getAnnouncementById',
@@ -74,11 +93,13 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
 
           id: ''
      });
-     return { success: true, data: data as AnnouncementRecord };
+     const record: Announcement = { ...(data as any), images };
+     return { success: true, data: record };
 }
 
 // ============================= CREATE / UPDATE =============================
-export async function upsertAnnouncement(input: Partial<AnnouncementRecord> & { id?: string }) {
+export async function upsertAnnouncement(input: Partial<Announcement> & { id?: string }) {
+
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -96,18 +117,6 @@ export async function upsertAnnouncement(input: Partial<AnnouncementRecord> & { 
           } else {
                record.published_at = null;
           }
-     }
-
-     // Remove fields that shouldn't be persisted directly
-     delete record.schedule_enabled; // UI only flag
-     // Normalise field names coming from the client form
-     if (typeof record.pin !== 'undefined') {
-          record.pinned = record.pin; // DB column is 'pinned'
-          delete record.pin;
-     }
-     if (typeof record.schedule_at !== 'undefined') {
-          record.schedule_at = record.schedule_at; // assume DB column schedule_at
-          delete record.schedule_at;
      }
 
      const { data, error } = await supabase
@@ -139,7 +148,7 @@ export async function upsertAnnouncement(input: Partial<AnnouncementRecord> & { 
           type: 'db',
      });
      revalidatePath('/dashboard/announcements');
-     return { success: true, data: data as AnnouncementRecord };
+     return { success: true, data: data as Announcement };
 }
 
 // ============================= DELETE =============================

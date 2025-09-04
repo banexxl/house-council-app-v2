@@ -3,13 +3,6 @@ import * as Yup from 'yup';
 export type AnnouncementStatus = 'draft' | 'published';
 export type AnnouncementScope = 'building' | 'apartments' | 'tenants' | 'tenant_groups';
 
-export interface AnnouncementItem {
-     id: string;
-     title: string;
-     pinned?: boolean;
-     archived?: boolean;
-}
-
 // Category & Subcategory typing --------------------------------------------
 export interface AnnouncementSubcategory {
      id: string;
@@ -125,7 +118,8 @@ function extractSubcategoryIds() {
      return ANNOUNCEMENT_CATEGORIES.flatMap(c => c.subcategories.map(sc => sc.id)) as string[];
 }
 
-export interface AnnouncementFormValues {
+export interface Announcement {
+     id: string;
      title: string;
      message: string;
      category: AnnouncementCategoryId | '';
@@ -135,13 +129,18 @@ export interface AnnouncementFormValues {
      tenants: string[];
      tenant_groups: string[];
      attachments: File[];
-     pin: boolean;
+     pinned: boolean;
+     archived?: boolean;
      schedule_enabled: boolean;
      schedule_at: Date | null;
+     created_at: Date;
+     updated_at?: Date;
      status: AnnouncementStatus;
+     images?: string[]; // existing image URLs when editing
 }
 
-export const announcementInitialValues: AnnouncementFormValues = {
+export const announcementInitialValues: Announcement = {
+     id: '',
      title: '',
      message: '',
      category: '',
@@ -151,8 +150,9 @@ export const announcementInitialValues: AnnouncementFormValues = {
      tenants: [],
      tenant_groups: [],
      attachments: [],
-     pin: false,
+     pinned: false,
      schedule_enabled: false,
+     created_at: new Date(),
      schedule_at: null,
      status: 'draft'
 };
@@ -198,7 +198,7 @@ export const announcementValidationSchema = Yup.object({
           otherwise: s => s
      }),
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),
-     pin: Yup.boolean().default(false),
+     pinned: Yup.boolean().default(false),
      schedule_enabled: Yup.boolean().default(false),
      schedule_at: Yup.date().nullable().when('schedule_enabled', {
           is: true,
@@ -206,4 +206,4 @@ export const announcementValidationSchema = Yup.object({
           otherwise: s => s.nullable()
      }),
      status: Yup.mixed<AnnouncementStatus>().oneOf(['draft', 'published']).required()
-}) as Yup.ObjectSchema<AnnouncementFormValues>;
+}) as Yup.ObjectSchema<Announcement>;

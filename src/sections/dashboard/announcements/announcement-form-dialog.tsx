@@ -20,7 +20,7 @@ export default function AnnouncementFormDialog({ open, onClose, categories, tena
      const [selectedApartments, setSelectedApartments] = React.useState<string[]>([]);
      const [selectedTenants, setSelectedTenants] = React.useState<string[]>([]);
      const [attachments, setAttachments] = React.useState<File[]>([]);
-     const [pin, setPin] = React.useState(false);
+     const [pinned, setPinned] = React.useState(false);
      const [schedule, setSchedule] = React.useState<string>('');
 
      const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +30,7 @@ export default function AnnouncementFormDialog({ open, onClose, categories, tena
      };
 
      const handleSubmit = () => {
-          onSubmit({ title, message, category, visibility, selectedApartments, selectedTenants, attachments, pin, schedule });
+          onSubmit({ title, message, category, visibility, selectedApartments, selectedTenants, attachments, pinned, schedule });
           onClose();
      };
 
@@ -102,7 +102,7 @@ export default function AnnouncementFormDialog({ open, onClose, categories, tena
                               Attach Files
                               <input type="file" hidden multiple onChange={handleFileChange} />
                          </Button>
-                         <FormControlLabel control={<Checkbox checked={pin} onChange={e => setPin(e.target.checked)} />} label="Pin to top" />
+                         <FormControlLabel control={<Checkbox checked={pinned} onChange={e => setPinned(e.target.checked)} />} label="Pin to top" />
                          <TextField
                               label="Schedule (optional)"
                               type="datetime-local"

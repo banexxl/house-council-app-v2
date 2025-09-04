@@ -33,6 +33,7 @@ import {
      Card,
      CardHeader
 } from '@mui/material';
+import LinearProgress from '@mui/material/LinearProgress';
 import EditIcon from '@mui/icons-material/Edit';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
@@ -40,7 +41,7 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import QuillEditor from 'src/components/quill-editor';
 import { useFormik } from 'formik';
-import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope, ANNOUNCEMENT_CATEGORIES } from 'src/types/announcement';
+import { announcementInitialValues, announcementValidationSchema, AnnouncementScope, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -49,16 +50,23 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 
 interface AnnouncementProps {
-     announcements: AnnouncementItem[];
+     announcements: Announcement[];
      tenants: { id: string; name: string }[];
      apartments: { id: string; name: string }[];
      tenant_groups?: { id: string; name: string }[]; // optional for now
 }
 
-export default function Announcement({ announcements, tenants, apartments, tenant_groups = [] }: AnnouncementProps) {
+export default function Announcements({ announcements, tenants, apartments, tenant_groups = [] }: AnnouncementProps) {
      // Using server-provided announcements directly; any mutations trigger a router refresh.
      const [editingId, setEditingId] = useState<string | null>(null);
      const [rowBusy, setRowBusy] = useState<string | null>(null);
+     const [imagesUploading, setImagesUploading] = useState(false);
+     const currentImages = React.useMemo(() => {
+          if (!editingId) return [] as string[];
+          const row = announcements.find(a => a.id === editingId);
+          return row?.images || [];
+     }, [editingId, announcements]);
+     const formDisabled = imagesUploading; // disable interactions while images upload
      const router = useRouter();
 
      const formik = useFormik({
@@ -76,7 +84,7 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                     apartments: values.apartments,
                     tenants: values.tenants,
                     tenant_groups: values.tenant_groups,
-                    pin: values.pin,
+                    pinned: values.pinned,
                     schedule_enabled: values.schedule_enabled,
                     schedule_at: values.schedule_enabled ? values.schedule_at : null,
                     status: values.status,
@@ -105,13 +113,6 @@ export default function Announcement({ announcements, tenants, apartments, tenan
      });
 
      const setFieldArray = (field: string, value: string[]) => formik.setFieldValue(field, value);
-
-     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-          if (e.target.files) {
-               const files = Array.from(e.target.files);
-               formik.setFieldValue('attachments', files);
-          }
-     };
 
      const handlePublish = async () => {
           // New announcement (no editingId): use existing submit flow to create & publish
@@ -151,6 +152,7 @@ export default function Announcement({ announcements, tenants, apartments, tenan
           const a: any = res.data;
           setEditingId(id);
           formik.setValues({
+               id: id,
                title: a.title || '',
                message: a.message || '',
                category: a.category || '',
@@ -160,11 +162,49 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                tenants: a.tenants || [],
                tenant_groups: a.tenant_groups || [],
                attachments: [],
-               pin: !!a.pinned,
+               pinned: !!a.pinned,
                schedule_enabled: !!a.schedule_at,
+               created_at: a.created_at,
                schedule_at: a.schedule_at || null,
                status: a.status || 'draft'
           });
+     };
+
+     const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+          if (!editingId) {
+               toast.error('Save draft first before uploading images');
+               return;
+          }
+          if (!e.target.files || e.target.files.length === 0) return;
+          const fileList = Array.from(e.target.files);
+          try {
+               setImagesUploading(true);
+               const { uploadAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
+               const result = await uploadAnnouncementImages(fileList as any, editingId); // casting for server action transport
+               if (!result.success) {
+                    toast.error(result.error || 'Upload failed');
+               } else if (result.urls) {
+                    toast.success('Images uploaded');
+               }
+          } finally {
+               setImagesUploading(false);
+               e.target.value = '';
+               router.refresh();
+          }
+     };
+
+     const handleRemoveImage = async (url: string) => {
+          if (!editingId) return;
+          const { removeAnnouncementImage } = await import('src/app/actions/announcement/announcement-image-actions');
+          const res = await removeAnnouncementImage(editingId, url);
+          if (!res.success) toast.error(res.error || 'Failed to remove'); else { toast.success('Removed'); router.refresh(); }
+     };
+
+     const handleRemoveAllImages = async () => {
+          if (!editingId) return;
+          const { removeAllAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
+          const res = await removeAllAnnouncementImages(editingId);
+          if (!res.success) toast.error(res.error || 'Failed to remove images'); else { toast.success('All images removed'); router.refresh(); }
      };
 
      const togglePin = async (id: string) => {
@@ -200,238 +240,284 @@ export default function Announcement({ announcements, tenants, apartments, tenan
      return (
           <Container maxWidth="xl">
                <Stack spacing={4}>
-                    <Typography variant="h4" sx={{ mb: 3 }}>Announcements Management</Typography>
+                    <Box
+                         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                         <Typography variant="h4" sx={{ mb: 3 }}>Announcements Management</Typography>
+                         <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => {
+                                   formik.resetForm();
+                                   setEditingId(null);
+                              }}
+                         >
+                              Create New Announcement
+                         </Button>
+                    </Box>
                     <Card>
                          <Grid container>
                               {/* Form Column */}
                               <Grid size={{ xs: 12, md: 7, lg: 8 }}>
                                    <Paper variant="outlined" sx={{ p: 3, position: 'relative' }}>
-                                        <Stack spacing={2}>
-                                             <TextField
-                                                  label="Title"
-                                                  name="title"
-                                                  value={formik.values.title}
-                                                  onChange={formik.handleChange}
-                                                  onBlur={formik.handleBlur}
-                                                  error={formik.touched.title && Boolean(formik.errors.title)}
-                                                  helperText={formik.touched.title && formik.errors.title}
-                                                  fullWidth
-                                                  required={formik.values.status === 'published'}
-                                             />
-                                             <QuillEditor
-                                                  value={formik.values.message}
-                                                  onChange={(v) => formik.setFieldValue('message', v)}
-                                                  onBlur={() => formik.setFieldTouched('message', true)}
-                                             />
-                                             <FormControl fullWidth>
-                                                  <InputLabel id="category-label">Category</InputLabel>
-                                                  <Select
-                                                       labelId="category-label"
-                                                       name="category"
-                                                       value={formik.values.category}
-                                                       label="Category"
-                                                       onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            formik.setFieldValue('category', val);
-                                                            // reset subcategory when category changes
-                                                            formik.setFieldValue('subcategory', '');
-                                                       }}
+                                        {formDisabled && (
+                                             <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, bgcolor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                  <Typography variant="body2" color="text.secondary">Uploading images...</Typography>
+                                             </Box>
+                                        )}
+                                        <Box component="fieldset" disabled={formDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: formDisabled ? 'none' : 'auto', opacity: formDisabled ? 0.6 : 1 }}>
+                                             <Stack spacing={2}>
+                                                  <TextField
+                                                       label="Title"
+                                                       name="title"
+                                                       value={formik.values.title}
+                                                       onChange={formik.handleChange}
                                                        onBlur={formik.handleBlur}
+                                                       error={formik.touched.title && Boolean(formik.errors.title)}
+                                                       helperText={formik.touched.title && formik.errors.title}
                                                        fullWidth
-                                                  >
-                                                       {ANNOUNCEMENT_CATEGORIES.map(cat => (
-                                                            <MenuItem key={cat.id} value={cat.id}>{cat.label}</MenuItem>
-                                                       ))}
-                                                  </Select>
-                                                  {formik.touched.category && formik.errors.category && (
-                                                       <Typography variant="caption" color="error">{formik.errors.category}</Typography>
-                                                  )}
-                                             </FormControl>
-
-                                             {(() => {
-                                                  const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category);
-                                                  if (!cat || cat.subcategories.length === 0) return null;
-                                                  return (
-                                                       <FormControl fullWidth>
-                                                            <InputLabel id="subcategory-label">Subcategory</InputLabel>
+                                                       required={formik.values.status === 'published'}
+                                                       disabled={formDisabled}
+                                                  />
+                                                  <Box sx={{ pointerEvents: formDisabled ? 'none' : 'auto', opacity: formDisabled ? 0.7 : 1 }}>
+                                                       <QuillEditor
+                                                            value={formik.values.message}
+                                                            onChange={(v) => formik.setFieldValue('message', v)}
+                                                            onBlur={() => formik.setFieldTouched('message', true)}
+                                                       />
+                                                  </Box>
+                                                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
+                                                       <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={formDisabled}>
+                                                            <InputLabel id="category-label">Category</InputLabel>
                                                             <Select
-                                                                 labelId="subcategory-label"
-                                                                 name="subcategory"
-                                                                 value={formik.values.subcategory}
-                                                                 label="Subcategory"
-                                                                 onChange={formik.handleChange}
+                                                                 labelId="category-label"
+                                                                 name="category"
+                                                                 value={formik.values.category}
+                                                                 label="Category"
+                                                                 onChange={(e) => {
+                                                                      const val = e.target.value;
+                                                                      formik.setFieldValue('category', val);
+                                                                      // reset subcategory when category changes
+                                                                      formik.setFieldValue('subcategory', '');
+                                                                 }}
                                                                  onBlur={formik.handleBlur}
                                                                  fullWidth
+                                                                 disabled={formDisabled}
                                                             >
-                                                                 {cat.subcategories.map(sc => (
-                                                                      <MenuItem key={sc.id} value={sc.id}>{sc.label}</MenuItem>
+                                                                 {ANNOUNCEMENT_CATEGORIES.map(cat => (
+                                                                      <MenuItem key={cat.id} value={cat.id}>{cat.label}</MenuItem>
                                                                  ))}
                                                             </Select>
-                                                            {formik.touched.subcategory && formik.errors.subcategory && (
-                                                                 <Typography variant="caption" color="error">{formik.errors.subcategory as string}</Typography>
+                                                            {formik.touched.category && formik.errors.category && (
+                                                                 <Typography variant="caption" color="error">{formik.errors.category}</Typography>
                                                             )}
                                                        </FormControl>
-                                                  );
-                                             })()}
 
-                                             <FormControl component="fieldset">
-                                                  <FormLabel component="legend">Visibility</FormLabel>
-                                                  <RadioGroup
-                                                       row
-                                                       name="visibility"
-                                                       value={formik.values.visibility}
-                                                       onChange={(e) => formik.setFieldValue('visibility', e.target.value as AnnouncementScope)}
-                                                  >
-                                                       <FormControlLabel value="building" control={<Radio />} label="Building-wide" />
-                                                       <FormControlLabel value="apartments" control={<Radio />} label="Specific apartments" />
-                                                       <FormControlLabel value="tenants" control={<Radio />} label="Specific tenants" />
-                                                       <FormControlLabel value="tenant_groups" control={<Radio />} label="Tenant groups" />
-                                                  </RadioGroup>
-                                             </FormControl>
-
-                                             {formik.values.visibility === 'apartments' && (
-                                                  <FormControl fullWidth>
-                                                       <InputLabel id="apartments-label">Apartments</InputLabel>
-                                                       <Select
-                                                            labelId="apartments-label"
-                                                            multiple
-                                                            value={formik.values.apartments}
-                                                            input={<OutlinedInput label="Apartments" />}
-                                                            onChange={e => setFieldArray('apartments', e.target.value as string[])}
-                                                            renderValue={(selected) => (
-                                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                      {(selected as string[]).map(value => (
-                                                                           <Chip key={value} label={apartments.find(a => a.id === value)?.name || value} />
-                                                                      ))}
-                                                                 </Box>
-                                                            )}
+                                                       {(() => {
+                                                            const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category);
+                                                            if (!cat || cat.subcategories.length === 0) return null;
+                                                            return (
+                                                                 <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={formDisabled}>
+                                                                      <InputLabel id="subcategory-label">Subcategory</InputLabel>
+                                                                      <Select
+                                                                           labelId="subcategory-label"
+                                                                           name="subcategory"
+                                                                           value={formik.values.subcategory}
+                                                                           label="Subcategory"
+                                                                           onChange={formik.handleChange}
+                                                                           onBlur={formik.handleBlur}
+                                                                           fullWidth
+                                                                           disabled={formDisabled}
+                                                                      >
+                                                                           {cat.subcategories.map(sc => (
+                                                                                <MenuItem key={sc.id} value={sc.id}>{sc.label}</MenuItem>
+                                                                           ))}
+                                                                      </Select>
+                                                                      {formik.touched.subcategory && formik.errors.subcategory && (
+                                                                           <Typography variant="caption" color="error">{formik.errors.subcategory as string}</Typography>
+                                                                      )}
+                                                                 </FormControl>
+                                                            );
+                                                       })()}
+                                                  </Box>
+                                                  <FormControl component="fieldset" disabled={formDisabled}>
+                                                       <FormLabel component="legend">Visibility</FormLabel>
+                                                       <RadioGroup
+                                                            row
+                                                            name="visibility"
+                                                            value={formik.values.visibility}
+                                                            onChange={(e) => formik.setFieldValue('visibility', e.target.value as AnnouncementScope)}
                                                        >
-                                                            {apartments.map(ap => (
-                                                                 <MenuItem key={ap.id} value={ap.id}>{ap.name}</MenuItem>
-                                                            ))}
-                                                       </Select>
+                                                            <FormControlLabel value="building" control={<Radio />} label="Building-wide" />
+                                                            <FormControlLabel value="apartments" control={<Radio />} label="Specific apartments" />
+                                                            <FormControlLabel value="tenants" control={<Radio />} label="Specific tenants" />
+                                                            <FormControlLabel value="tenant_groups" control={<Radio />} label="Tenant groups" />
+                                                       </RadioGroup>
                                                   </FormControl>
-                                             )}
 
-                                             {formik.values.visibility === 'tenants' && (
-                                                  <FormControl fullWidth>
-                                                       <InputLabel id="tenants-label">Tenants</InputLabel>
-                                                       <Select
-                                                            labelId="tenants-label"
-                                                            multiple
-                                                            value={formik.values.tenants}
-                                                            input={<OutlinedInput label="Tenants" />}
-                                                            onChange={e => setFieldArray('tenants', e.target.value as string[])}
-                                                            renderValue={(selected) => (
-                                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                      {(selected as string[]).map(value => (
-                                                                           <Chip key={value} label={tenants.find(t => t.id === value)?.name || value} />
-                                                                      ))}
-                                                                 </Box>
-                                                            )}
-                                                       >
-                                                            {tenants.map(tn => (
-                                                                 <MenuItem key={tn.id} value={tn.id}>{tn.name}</MenuItem>
-                                                            ))}
-                                                       </Select>
-                                                  </FormControl>
-                                             )}
-
-                                             {formik.values.visibility === 'tenant_groups' && (
-                                                  <FormControl fullWidth>
-                                                       <InputLabel id="tenant-groups-label">Tenant groups</InputLabel>
-                                                       <Select
-                                                            labelId="tenant-groups-label"
-                                                            multiple
-                                                            value={formik.values.tenant_groups}
-                                                            input={<OutlinedInput label="Tenant groups" />}
-                                                            onChange={e => setFieldArray('tenant_groups', e.target.value as string[])}
-                                                            renderValue={(selected) => (
-                                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                      {(selected as string[]).map(value => (
-                                                                           <Chip key={value} label={tenant_groups.find(g => g.id === value)?.name || value} />
-                                                                      ))}
-                                                                 </Box>
-                                                            )}
-                                                       >
-                                                            {tenant_groups.map(g => (
-                                                                 <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
-                                                            ))}
-                                                       </Select>
-                                                  </FormControl>
-                                             )}
-
-                                             <Stack direction="row" spacing={2} alignItems="center">
-                                                  <Button variant="outlined" component="label">
-                                                       Attach files
-                                                       <input type="file" hidden multiple onChange={handleFileChange} />
-                                                  </Button>
-                                                  {formik.values.attachments.length > 0 && (
-                                                       <Typography variant="caption" color="text.secondary">{formik.values.attachments.length} file(s) selected</Typography>
+                                                  {formik.values.visibility === 'apartments' && (
+                                                       <FormControl fullWidth disabled={formDisabled}>
+                                                            <InputLabel id="apartments-label">Apartments</InputLabel>
+                                                            <Select
+                                                                 labelId="apartments-label"
+                                                                 multiple
+                                                                 value={formik.values.apartments}
+                                                                 input={<OutlinedInput label="Apartments" />}
+                                                                 onChange={e => setFieldArray('apartments', e.target.value as string[])}
+                                                                 renderValue={(selected) => (
+                                                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                                           {(selected as string[]).map(value => (
+                                                                                <Chip key={value} label={apartments.find(a => a.id === value)?.name || value} />
+                                                                           ))}
+                                                                      </Box>
+                                                                 )}
+                                                                 disabled={formDisabled}
+                                                            >
+                                                                 {apartments.map(ap => (
+                                                                      <MenuItem key={ap.id} value={ap.id}>{ap.name}</MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                       </FormControl>
                                                   )}
-                                             </Stack>
 
-                                             <Stack direction="row" spacing={3} height={40} alignItems="center">
-                                                  <FormControlLabel control={<Checkbox checked={formik.values.pin} onChange={e => formik.setFieldValue('pin', e.target.checked)} />} label="Pin to top" />
-                                                  <FormControlLabel control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label="Schedule" />
-                                                  {formik.values.schedule_enabled && (
-                                                       <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                            <DatePicker
-                                                                 label={'Schedule at'}
-                                                                 value={formik.values.schedule_at ? dayjs(formik.values.schedule_at) : null}
-                                                                 onChange={(date) => {
-                                                                      formik.setFieldValue('schedule_at', date ? date.toISOString() : null);
-                                                                 }}
-                                                                 slotProps={{
-                                                                      textField: {
-                                                                           name: 'schedule_at',
-                                                                           error: !!(formik.touched.schedule_at && formik.errors.schedule_at),
-                                                                           helperText: formik.touched.schedule_at && formik.errors.schedule_at,
-                                                                      },
-                                                                 }}
-                                                                 disabled={!formik.values.schedule_enabled}
-                                                                 disablePast={true}
-                                                            />
-                                                       </LocalizationProvider>
+                                                  {formik.values.visibility === 'tenants' && (
+                                                       <FormControl fullWidth disabled={formDisabled}>
+                                                            <InputLabel id="tenants-label">Tenants</InputLabel>
+                                                            <Select
+                                                                 labelId="tenants-label"
+                                                                 multiple
+                                                                 value={formik.values.tenants}
+                                                                 input={<OutlinedInput label="Tenants" />}
+                                                                 onChange={e => setFieldArray('tenants', e.target.value as string[])}
+                                                                 renderValue={(selected) => (
+                                                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                                           {(selected as string[]).map(value => (
+                                                                                <Chip key={value} label={tenants.find(t => t.id === value)?.name || value} />
+                                                                           ))}
+                                                                      </Box>
+                                                                 )}
+                                                                 disabled={formDisabled}
+                                                            >
+                                                                 {tenants.map(tn => (
+                                                                      <MenuItem key={tn.id} value={tn.id}>{tn.name}</MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                       </FormControl>
                                                   )}
-                                             </Stack>
-                                             <Divider sx={{ my: 1 }} />
-                                             <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                                  <Button
-                                                       variant="outlined"
-                                                       onClick={handleSaveDraft}
-                                                       disabled={
-                                                            !formik.values.title.trim() ||
-                                                            !formik.values.message.trim() ||
-                                                            !formik.values.category ||
-                                                            (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
-                                                            Object.keys(formik.errors).length > 0
-                                                       }
-                                                       loading={formik.isSubmitting && formik.values.status === 'draft'}
-                                                  >
-                                                       Save draft
-                                                  </Button>
-                                                  {formik.values.status === 'published' ? (
+
+                                                  {formik.values.visibility === 'tenant_groups' && (
+                                                       <FormControl fullWidth disabled={formDisabled}>
+                                                            <InputLabel id="tenant-groups-label">Tenant groups</InputLabel>
+                                                            <Select
+                                                                 labelId="tenant-groups-label"
+                                                                 multiple
+                                                                 value={formik.values.tenant_groups}
+                                                                 input={<OutlinedInput label="Tenant groups" />}
+                                                                 onChange={e => setFieldArray('tenant_groups', e.target.value as string[])}
+                                                                 renderValue={(selected) => (
+                                                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                                           {(selected as string[]).map(value => (
+                                                                                <Chip key={value} label={tenant_groups.find(g => g.id === value)?.name || value} />
+                                                                           ))}
+                                                                      </Box>
+                                                                 )}
+                                                                 disabled={formDisabled}
+                                                            >
+                                                                 {tenant_groups.map(g => (
+                                                                      <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                       </FormControl>
+                                                  )}
+
+                                                  {/* Images Section */}
+                                                  <Divider sx={{ my: 1 }} />
+                                                  <Stack spacing={1}>
+                                                       <Stack direction="row" alignItems="center" spacing={2}>
+                                                            <Button variant="outlined" component="label" disabled={!editingId || imagesUploading}>
+                                                                 {imagesUploading ? 'Uploading...' : 'Upload images'}
+                                                                 <input type="file" hidden multiple accept="image/*" onChange={handleImagesUpload} />
+                                                            </Button>
+                                                            <Button color="error" disabled={!editingId || currentImages.length === 0 || formDisabled} onClick={handleRemoveAllImages}>Remove all</Button>
+                                                            <Typography variant="caption" color="text.secondary">{currentImages.length} image(s)</Typography>
+                                                       </Stack>
+                                                       {currentImages.length > 0 && (
+                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                                 {currentImages.map(url => (
+                                                                      <Box key={url} sx={{ position: 'relative', width: 80, height: 80, borderRadius: 1, overflow: 'hidden', border: theme => `1px solid ${theme.palette.divider}` }}>
+                                                                           {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                           <img src={url} alt="ann-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                           <button type="button" onClick={() => handleRemoveImage(url)} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 10, padding: '2px 4px' }}>x</button>
+                                                                      </Box>
+                                                                 ))}
+                                                            </Box>
+                                                       )}
+                                                       {imagesUploading && <LinearProgress sx={{ mt: 1 }} />}
+                                                  </Stack>
+                                                  <Divider sx={{ my: 1 }} />
+                                                  <Stack direction="row" spacing={3} height={40} alignItems="center" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
+                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label="Pin to top" />
+                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label="Schedule" />
+                                                       {formik.values.schedule_enabled && (
+                                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                                 <DatePicker
+                                                                      label={'Schedule at'}
+                                                                      value={formik.values.schedule_at ? dayjs(formik.values.schedule_at) : null}
+                                                                      onChange={(date) => {
+                                                                           formik.setFieldValue('schedule_at', date ? date.toISOString() : null);
+                                                                      }}
+                                                                      slotProps={{
+                                                                           textField: {
+                                                                                name: 'schedule_at',
+                                                                                error: !!(formik.touched.schedule_at && formik.errors.schedule_at),
+                                                                                helperText: formik.touched.schedule_at && formik.errors.schedule_at,
+                                                                           },
+                                                                      }}
+                                                                      disabled={!formik.values.schedule_enabled || formDisabled}
+                                                                      disablePast={true}
+                                                                 />
+                                                            </LocalizationProvider>
+                                                       )}
+                                                  </Stack>
+                                                  <Divider sx={{ my: 1 }} />
+                                                  <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
                                                        <Button
-                                                            variant="contained"
-                                                            color="warning"
-                                                            onClick={handleUnpublish}
-                                                            disabled={!editingId || rowBusy === editingId}
+                                                            variant="outlined"
+                                                            onClick={handleSaveDraft}
+                                                            disabled={
+                                                                 formDisabled ||
+                                                                 !formik.values.title.trim() ||
+                                                                 !formik.values.message.trim() ||
+                                                                 !formik.values.category ||
+                                                                 (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
+                                                                 Object.keys(formik.errors).length > 0
+                                                            }
+                                                            loading={formik.isSubmitting && formik.values.status === 'draft'}
                                                        >
-                                                            Unpublish
+                                                            Save draft
                                                        </Button>
-                                                  ) : (
-                                                       <Button
-                                                            variant="contained"
-                                                            onClick={handlePublish}
-                                                            disabled={!editingId || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
-                                                            loading={formik.isSubmitting && formik.values.status !== 'draft'}>
-                                                            Publish
-                                                       </Button>
-                                                  )}
-                                             </Stack>
+                                                       {formik.values.status === 'published' ? (
+                                                            <Button
+                                                                 variant="contained"
+                                                                 color="warning"
+                                                                 onClick={handleUnpublish}
+                                                                 disabled={formDisabled || !editingId || rowBusy === editingId}
+                                                            >
+                                                                 Unpublish
+                                                            </Button>
+                                                       ) : (
+                                                            <Button
+                                                                 variant="contained"
+                                                                 onClick={handlePublish}
+                                                                 disabled={formDisabled || !editingId || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
+                                                                 loading={formik.isSubmitting && formik.values.status !== 'draft'}>
+                                                                 Publish
+                                                            </Button>
+                                                       )}
+                                                  </Stack>
 
-                                        </Stack>
+                                             </Stack>
+                                        </Box>
                                    </Paper>
                               </Grid>
                               {/* Table Column */}
