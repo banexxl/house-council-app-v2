@@ -327,7 +327,6 @@ export const setAsBuildingCoverImage = async (
      }
 }
 
-
 /**
  * Uploads one or more images to Supabase Storage and links them to an apartment in `tblApartmentImages`
  *
@@ -603,3 +602,4 @@ export const setAsApartmentCoverImage = async (apartmentid: string, url: string)
      revalidatePath(`/dashboard/apartments`);
      return { success: !dbError }
 }
+

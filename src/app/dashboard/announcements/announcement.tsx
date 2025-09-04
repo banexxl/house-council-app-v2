@@ -41,7 +41,7 @@ import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import QuillEditor from 'src/components/quill-editor';
 import { useFormik } from 'formik';
 import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope, ANNOUNCEMENT_CATEGORIES } from 'src/types/announcement';
-import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction } from 'src/app/actions/announcement/announcement-actions';
+import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -113,9 +113,31 @@ export default function Announcement({ announcements, tenants, apartments, tenan
           }
      };
 
-     const handlePublish = () => {
+     const handlePublish = async () => {
+          // New announcement (no editingId): use existing submit flow to create & publish
+          if (!editingId) return; // guarded by disabled state anyway
+          // Existing draft -> publish via server action so published_at is set
+          const res = await publishAnnouncement(editingId);
+          if (!res.success) {
+               toast.error('Failed to publish');
+               return;
+          }
+          toast.success('Published');
           formik.setFieldValue('status', 'published');
-          formik.handleSubmit();
+          // refresh list
+          router.refresh();
+     };
+
+     const handleUnpublish = async () => {
+          if (!editingId) return;
+          const res = await revertToDraft(editingId);
+          if (!res.success) {
+               toast.error('Failed to revert to draft');
+               return;
+          }
+          toast.success('Reverted to draft');
+          formik.setFieldValue('status', 'draft');
+          router.refresh();
      };
 
      const handleSaveDraft = () => {
@@ -368,7 +390,7 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                                       },
                                                                  }}
                                                                  disabled={!formik.values.schedule_enabled}
-                                                                 disableFuture={true}
+                                                                 disablePast={true}
                                                             />
                                                        </LocalizationProvider>
                                                   )}
@@ -389,17 +411,24 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                   >
                                                        Save draft
                                                   </Button>
-                                                  <Button
-                                                       variant="contained"
-                                                       onClick={handlePublish}
-                                                       disabled={
-                                                            !editingId ||
-                                                            (formik.values.status === 'published' && (!!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory))
-                                                       }
-                                                       loading={formik.isSubmitting && formik.values.status === 'published'}
-                                                  >
-                                                       Publish
-                                                  </Button>
+                                                  {formik.values.status === 'published' ? (
+                                                       <Button
+                                                            variant="contained"
+                                                            color="warning"
+                                                            onClick={handleUnpublish}
+                                                            disabled={!editingId || rowBusy === editingId}
+                                                       >
+                                                            Unpublish
+                                                       </Button>
+                                                  ) : (
+                                                       <Button
+                                                            variant="contained"
+                                                            onClick={handlePublish}
+                                                            disabled={!editingId || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
+                                                            loading={formik.isSubmitting && formik.values.status !== 'draft'}>
+                                                            Publish
+                                                       </Button>
+                                                  )}
                                              </Stack>
 
                                         </Stack>
