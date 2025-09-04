@@ -42,6 +42,7 @@ import QuillEditor from 'src/components/quill-editor';
 import { useFormik } from 'formik';
 import { announcementInitialValues, announcementValidationSchema, AnnouncementItem, AnnouncementScope, ANNOUNCEMENT_CATEGORIES } from 'src/types/announcement';
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction } from 'src/app/actions/announcement/announcement-actions';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 interface AnnouncementProps {
@@ -52,10 +53,10 @@ interface AnnouncementProps {
 }
 
 export default function Announcement({ announcements, tenants, apartments, tenant_groups = [] }: AnnouncementProps) {
-     // List state (would normally come from server via props & updates)
-     const [rows, setRows] = useState<AnnouncementItem[]>(announcements || []);
+     // Using server-provided announcements directly; any mutations trigger a router refresh.
      const [editingId, setEditingId] = useState<string | null>(null);
      const [rowBusy, setRowBusy] = useState<string | null>(null);
+     const router = useRouter();
 
      const formik = useFormik({
           initialValues: announcementInitialValues,
@@ -78,6 +79,11 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                     status: values.status,
                };
 
+               // Include id when editing so we update instead of creating a new row
+               if (editingId) {
+                    payload.id = editingId;
+               }
+
                // (Attachments uploading not implemented yet) -> future enhancement
 
                const result = await upsertAnnouncement(payload);
@@ -88,15 +94,7 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                     return;
                }
 
-               if (result.data) {
-                    toast.success('Announcement saved successfully');
-                    setRows(prev => {
-                         if (editingId) {
-                              return prev.map(r => r.id === editingId ? { id: result.data!.id!, title: result.data!.title, pinned: result.data!.pinned, archived: result.data!.archived } : r);
-                         }
-                         return [{ id: result.data.id!, title: result.data.title, pinned: result.data.pinned, archived: result.data.archived }, ...prev];
-                    });
-               }
+               if (result.data) toast.success('Announcement saved successfully');
 
                helpers.resetForm();
                setEditingId(null);
@@ -145,30 +143,32 @@ export default function Announcement({ announcements, tenants, apartments, tenan
      };
 
      const togglePin = async (id: string) => {
-          const row = rows.find(r => r.id === id);
+          const row = announcements.find(r => r.id === id);
           if (!row) return;
           setRowBusy(id);
-          const optimistic = !row.pinned;
-          setRows(prev => prev.map(r => r.id === id ? { ...r, pinned: optimistic } : r));
-          const res = await togglePinAction(id, optimistic);
-          if (!res.success) {
-               toast.error('Failed to update announcement');
-               setRows(prev => prev.map(r => r.id === id ? { ...r, pinned: !optimistic } : r));
-          }
-          toast.success('Announcement updated successfully');
+          const res = await togglePinAction(id, !row.pinned);
+          if (!res.success) toast.error('Failed to update announcement');
+          else toast.success('Announcement updated successfully');
+          router.refresh();
           setRowBusy(null);
      };
 
      const toggleArchive = async (id: string) => {
-          const row = rows.find(r => r.id === id);
+          const row = announcements.find(r => r.id === id);
           if (!row) return;
           setRowBusy(id);
           const res = await deleteAnnouncement(id);
-
           if (!res.success) {
                toast.error('Failed to delete announcement');
+          } else {
+               toast.success('Announcement deleted successfully');
+               // If we were editing this one, reset the form
+               if (editingId === id) {
+                    formik.resetForm();
+                    setEditingId(null);
+               }
+               router.refresh();
           }
-          toast.success('Announcement deleted successfully');
           setRowBusy(null);
      };
 
@@ -401,14 +401,14 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                        </TableRow>
                                                   </TableHead>
                                                   <TableBody>
-                                                       {rows.length === 0 && (
+                                                       {announcements.length === 0 && (
                                                             <TableRow>
                                                                  <TableCell colSpan={2}>
                                                                       <Typography variant="body2" color="text.secondary">No announcements yet.</Typography>
                                                                  </TableCell>
                                                             </TableRow>
                                                        )}
-                                                       {rows.map(row => (
+                                                       {announcements.map(row => (
                                                             <TableRow key={row.id} hover>
                                                                  <TableCell sx={{ maxWidth: 240 }}>
                                                                       <Stack direction="row" spacing={1} alignItems="center">

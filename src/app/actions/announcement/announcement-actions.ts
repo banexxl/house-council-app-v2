@@ -160,7 +160,6 @@ export async function deleteAnnouncement(id: string) {
           });
           return { success: false, error: error.message };
      }
-     revalidatePath('/dashboard/announcements');
      await logServerAction({
           user_id: null,
           action: 'deleteAnnouncement',
@@ -170,10 +169,11 @@ export async function deleteAnnouncement(id: string) {
           status: 'success',
           type: 'db',
      });
+     revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
 }
 
-// ============================= PIN / ARCHIVE =============================
+// ============================= PIN =============================
 export async function togglePinAction(id: string, pinned: boolean) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
@@ -196,35 +196,6 @@ export async function togglePinAction(id: string, pinned: boolean) {
           duration_ms: Date.now() - time,
           error: '',
           payload: { id, pinned },
-          status: 'success',
-          type: 'db',
-     });
-     revalidatePath('/dashboard/announcements');
-     return { success: true };
-}
-
-export async function toggleArchive(id: string, archived: boolean) {
-     const time = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived, updated_at: new Date() }).eq('id', id);
-     if (error) {
-          await logServerAction({
-               user_id: null,
-               action: 'toggleArchiveAnnouncement',
-               duration_ms: Date.now() - time,
-               error: error.message,
-               payload: { id, archived },
-               status: 'fail',
-               type: 'db',
-          });
-          return { success: false, error: error.message };
-     }
-     await logServerAction({
-          user_id: null,
-          action: 'toggleArchiveAnnouncement',
-          duration_ms: Date.now() - time,
-          error: '',
-          payload: { id, archived },
           status: 'success',
           type: 'db',
      });
