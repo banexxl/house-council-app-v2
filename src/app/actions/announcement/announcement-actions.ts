@@ -105,9 +105,9 @@ export async function upsertAnnouncement(input: Partial<AnnouncementRecord> & { 
           record.pinned = record.pin; // DB column is 'pinned'
           delete record.pin;
      }
-     if (typeof record.scheduleAt !== 'undefined') {
-          record.schedule_at = record.scheduleAt; // assume DB column schedule_at
-          delete record.scheduleAt;
+     if (typeof record.schedule_at !== 'undefined') {
+          record.schedule_at = record.schedule_at; // assume DB column schedule_at
+          delete record.schedule_at;
      }
 
      const { data, error } = await supabase

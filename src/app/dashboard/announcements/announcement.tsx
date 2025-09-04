@@ -78,7 +78,7 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                     tenant_groups: values.tenant_groups,
                     pin: values.pin,
                     schedule_enabled: values.schedule_enabled,
-                    scheduleAt: values.schedule_enabled ? values.scheduleAt : null,
+                    schedule_at: values.schedule_enabled ? values.schedule_at : null,
                     status: values.status,
                };
 
@@ -140,7 +140,7 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                attachments: [],
                pin: !!a.pinned,
                schedule_enabled: !!a.schedule_at,
-               scheduleAt: a.schedule_at || null,
+               schedule_at: a.schedule_at || null,
                status: a.status || 'draft'
           });
      };
@@ -356,15 +356,15 @@ export default function Announcement({ announcements, tenants, apartments, tenan
                                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                             <DatePicker
                                                                  label={'Schedule at'}
-                                                                 value={formik.values.scheduleAt ? dayjs(formik.values.scheduleAt) : null}
+                                                                 value={formik.values.schedule_at ? dayjs(formik.values.schedule_at) : null}
                                                                  onChange={(date) => {
-                                                                      formik.setFieldValue('scheduleAt', date ? date.toISOString() : null);
+                                                                      formik.setFieldValue('schedule_at', date ? date.toISOString() : null);
                                                                  }}
                                                                  slotProps={{
                                                                       textField: {
-                                                                           name: 'scheduleAt',
-                                                                           error: !!(formik.touched.scheduleAt && formik.errors.scheduleAt),
-                                                                           helperText: formik.touched.scheduleAt && formik.errors.scheduleAt,
+                                                                           name: 'schedule_at',
+                                                                           error: !!(formik.touched.schedule_at && formik.errors.schedule_at),
+                                                                           helperText: formik.touched.schedule_at && formik.errors.schedule_at,
                                                                       },
                                                                  }}
                                                                  disabled={!formik.values.schedule_enabled}

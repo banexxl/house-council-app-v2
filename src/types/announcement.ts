@@ -137,7 +137,7 @@ export interface AnnouncementFormValues {
      attachments: File[];
      pin: boolean;
      schedule_enabled: boolean;
-     scheduleAt: Date | null;
+     schedule_at: Date | null;
      status: AnnouncementStatus;
 }
 
@@ -153,7 +153,7 @@ export const announcementInitialValues: AnnouncementFormValues = {
      attachments: [],
      pin: false,
      schedule_enabled: false,
-     scheduleAt: null,
+     schedule_at: null,
      status: 'draft'
 };
 
@@ -200,7 +200,7 @@ export const announcementValidationSchema = Yup.object({
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),
      pin: Yup.boolean().default(false),
      schedule_enabled: Yup.boolean().default(false),
-     scheduleAt: Yup.date().nullable().when('schedule_enabled', {
+     schedule_at: Yup.date().nullable().when('schedule_enabled', {
           is: true,
           then: s => s.typeError('Invalid date').required('Schedule time required'),
           otherwise: s => s.nullable()
