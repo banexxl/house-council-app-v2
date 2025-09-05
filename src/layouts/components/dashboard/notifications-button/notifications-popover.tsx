@@ -249,7 +249,12 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
       </Stack>
       {isEmpty ? (
         <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2">There are no notifications</Typography>
+          <Typography variant="subtitle2">There are no new notifications</Typography>
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Link href="/dashboard/notifications" underline="always" variant="body2">
+              View all notifications
+            </Link>
+          </Box>
         </Box>
       ) : (
         <Scrollbar sx={{ maxHeight: 400 }}>
@@ -285,6 +290,11 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
               </ListItem>
             ))}
           </List>
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Link href="/dashboard/notifications" underline="always" variant="body2">
+              View all notifications
+            </Link>
+          </Box>
         </Scrollbar>
       )}
     </Popover>
