@@ -28,6 +28,7 @@ export function initTableRealtimeListener<TRow extends Record<string, unknown> =
      events: TableEventOrWildcard[] = ['*'],
      { schema = 'public', channelName, filter, onEvent, onStatusChange }: InitListenerOptions<TRow>
 ): () => Promise<void> {
+
      const resolvedEvents: TableEventOrWildcard[] = normalizeEvents(events);
      const name = channelName || `rt-${schema}-${table}-${Math.random().toString(36).slice(2, 9)}`;
      const channel: RealtimeChannel = supabaseBrowserClient.channel(name);
@@ -49,7 +50,6 @@ export function initTableRealtimeListener<TRow extends Record<string, unknown> =
 
      channel.subscribe((status) => {
           const statusStr = String(status);
-          console.log(`[realtime:${table}] status ->`, statusStr);
           onStatusChange?.(statusStr);
      });
 
@@ -84,7 +84,7 @@ function onPostgresChanges<TRow extends Record<string, unknown>>(
      filter: PostgresChangesFilter,
      cb: (payload: RealtimePostgresChangesPayload<TRow>) => void
 ) {
-     (channel as unknown as {
+     (channel as {
           on: (
                type: 'postgres_changes',
                filter: PostgresChangesFilter,

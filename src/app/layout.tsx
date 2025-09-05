@@ -18,14 +18,11 @@ const Layout = (props: LayoutProps) => {
   useEffect(() => {
     let unsubscribe: (() => Promise<void>) | undefined;
 
-    const init = async () => {
-      console.log('[announcements] init starting');
+    const init = () => {
       try {
-        unsubscribe = await initAnnouncementsRealtime((payload) => {
-          const tbl = (payload as any).table || (payload as any).new?.table || 'unknown-table';
-          console.log('[announcements] realtime event', tbl, payload.eventType, { new: payload.new, old: payload.old });
+        unsubscribe = initAnnouncementsRealtime((payload) => {
+          payload.table;
         });
-        console.log('[announcements] subscription created');
       } catch (err) {
         console.error('[announcements] realtime init failed', err);
       }
