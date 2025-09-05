@@ -21,8 +21,6 @@ import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { logout } from 'src/app/auth/actions';
-import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
-import { User } from '@supabase/supabase-js';
 import { Tooltip } from '@mui/material';
 import { checkIfUserExistsAndReturnDataAndSessionObject, UserDataCombined } from 'src/libs/supabase/server-auth';
 import { useTranslation } from 'react-i18next';

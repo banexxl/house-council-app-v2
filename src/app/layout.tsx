@@ -1,39 +1,46 @@
-import type { ReactNode } from 'react';
-import type { Metadata } from 'next';
+'use client'
 
-import 'src/global.css';
-
+import { useEffect, type ReactNode } from 'react';
 import { NProgress } from 'src/components/nprogress';
 import { Layout as RootLayout } from 'src/layouts/root';
-// Force-Dynamic is required otherwise all pages are marked as client-side
-// due to the usage of the "cookies" function.
-export const dynamic = 'force-dynamic';
+import { initAnnouncementsRealtime } from 'src/realtime/sb-realtime';
+import 'src/global.css';
 
-export const metadata: Metadata = {
-  title: 'House Council App',
-  // viewport: 'initial-scale=1, width=device-width', izaziva warning na serveru
-  icons: {
-    icon: [
-      { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
-      { rel: 'icon', url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
-      { rel: 'icon', url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
-    ],
-    apple: {
-      rel: 'apple-touch-icon.png',
-      url: '/apple-touch-icon.png',
-      type: 'image/png',
-      sizes: '180x180',
-    },
-  },
-};
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-const Layout = async (props: LayoutProps) => {
+const Layout = (props: LayoutProps) => {
 
   const { children } = props;
+
+  useEffect(() => {
+    let unsubscribe: (() => Promise<void>) | undefined;
+
+    const init = async () => {
+      console.log('[announcements] init starting');
+      try {
+        unsubscribe = await initAnnouncementsRealtime((payload) => {
+          const tbl = (payload as any).table || (payload as any).new?.table || 'unknown-table';
+          console.log('[announcements] realtime event', tbl, payload.eventType, { new: payload.new, old: payload.old });
+        });
+        console.log('[announcements] subscription created');
+      } catch (err) {
+        console.error('[announcements] realtime init failed', err);
+      }
+    };
+
+    init();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+          .then(() => console.log('[announcements] realtime unsubscribed'))
+          .catch((err) => console.error('[announcements] unsubscribe failed', err));
+      }
+    };
+  }, []);
 
   return (
     <html>

@@ -34,7 +34,6 @@ import {
      CardHeader
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import EditIcon from '@mui/icons-material/Edit';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import ArchiveIcon from '@mui/icons-material/Archive';
@@ -71,6 +70,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
      }, [editingId, announcements]);
      const formDisabled = imagesUploading; // disable interactions while images upload
      const router = useRouter();
+
 
      const formik = useFormik({
           initialValues: announcementInitialValues,
@@ -233,7 +233,6 @@ export default function Announcements({ announcements, tenants, apartments, tena
           if (!res.success) toast.error('Delete failed'); else {
                toast.success('Deleted');
                if (editingId === id) { formik.resetForm(); setEditingId(null); }
-               router.refresh();
           }
           setRowBusy(null);
      };
@@ -248,6 +247,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           router.refresh();
           setRowBusy(null);
      };
+
 
      return (
           <Container maxWidth="xl">
@@ -557,8 +557,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  key={row.id}
                                                                  onClick={() => handleEdit(row.id)}
                                                                  hover
-                                                                 sx={{ backgroundColor: editingId === row.id ? 'action.selected' : 'inherit', cursor: 'pointer' }}>
-                                                                 <TableCell sx={{ maxWidth: 240 }}>
+                                                                 sx={{ backgroundColor: editingId === row.id ? 'action.selected' : 'inherit' }}>
+                                                                 <TableCell sx={{ maxWidth: 240, cursor: 'pointer' }}>
                                                                       <Stack direction="row" spacing={1} alignItems="center">
                                                                            {row.pinned && <PushPinIcon color="primary" fontSize="small" />}
                                                                            <Typography variant="body2" noWrap title={row.title}>{row.title}</Typography>
