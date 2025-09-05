@@ -519,7 +519,8 @@ export const useSections = (role: 'client' | 'clientMember' | 'tenant' | 'admin'
 
     let filtered = allSections;
     if (role === 'client' || role === 'clientMember') {
-      filtered = allSections.slice(1); // Exclude admin section
+      // Exclude admin and tenant sections
+      filtered = allSections.slice(1, -1);
     } else if (role === 'tenant') {
       filtered = allSections.slice(-1); // Only show tenant section
     } // if admin, show all
