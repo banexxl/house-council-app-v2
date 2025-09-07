@@ -1,15 +1,9 @@
 'use client'
 
-<<<<<<< HEAD
-import { type ReactNode } from 'react';
-import { NProgress } from 'src/components/nprogress';
-import { Layout as RootLayout } from 'src/layouts/root';
-=======
 import { useEffect, type ReactNode } from 'react';
 import { NProgress } from 'src/components/nprogress';
 import { Layout as RootLayout } from 'src/layouts/root';
 import { initAnnouncementsRealtime } from 'src/realtime/sb-realtime';
->>>>>>> ova verzija RRAAADDIIIII
 import 'src/global.css';
 
 
@@ -21,9 +15,6 @@ const Layout = (props: LayoutProps) => {
 
   const { children } = props;
 
-<<<<<<< HEAD
-  // Realtime subscriptions moved to dashboard layout so auth pages don't subscribe.
-=======
   useEffect(() => {
     let unsubscribe: (() => Promise<void>) | undefined;
 
@@ -50,7 +41,6 @@ const Layout = (props: LayoutProps) => {
       }
     };
   }, []);
->>>>>>> ova verzija RRAAADDIIIII
 
   return (
     <html>

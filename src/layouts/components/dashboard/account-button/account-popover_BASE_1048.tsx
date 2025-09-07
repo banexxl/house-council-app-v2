@@ -17,13 +17,12 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/components/router-link';
+import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { logout } from 'src/app/auth/actions';
-<<<<<<< HEAD
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
-=======
->>>>>>> ova verzija RRAAADDIIIII
+import { User } from '@supabase/supabase-js';
 import { Tooltip } from '@mui/material';
 import { checkIfUserExistsAndReturnDataAndSessionObject, UserDataCombined } from 'src/libs/supabase/server-auth';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +36,7 @@ interface AccountPopoverProps {
 export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   const { anchorEl, onClose, open, ...other } = props;
   const router = useRouter();
+  const mockedUser = useMockedUser();
   const [user, setUser] = useState<UserDataCombined>();
   const [isPending, startTransition] = useTransition()
   const { t } = useTranslation();
@@ -50,25 +50,16 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   }, []);
 
   const handleLogout = () => {
-    // Proactively unsubscribe from all realtime channels to avoid stale events after logout
-    const channels = supabaseBrowserClient.getChannels?.() || [];
-    if (channels.length) {
-      Promise.all(channels.map(ch => supabaseBrowserClient.removeChannel(ch))).catch((e) => {
-        console.warn('[realtime] channel cleanup error', e);
-      });
-    }
-
     startTransition(async () => {
-      const { success, error } = await logout();
+      const { success, error } = await logout()
       if (success) {
-        router.push(paths.auth.login);
+        router.push(paths.auth.login)
       } else {
-        console.error('Logout error:', error);
+        console.error('Logout error:', error)
       }
-    });
-
-    onClose?.();
-  };
+    })
+    onClose?.()
+  }
 
   return (
     <Popover
