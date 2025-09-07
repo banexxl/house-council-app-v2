@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
+import { initAnnouncementsRealtime } from 'src/realtime/sb-realtime';
 import { useSettings } from 'src/hooks/use-settings';
 import { useSections } from './config';
 import { HorizontalLayout } from './horizontal-layout';
@@ -63,6 +64,13 @@ export const Layout: FC<LayoutProps> = ((props) => {
     };
 
     getRole();
+  }, []);
+
+  // Subscribe to announcements only while dashboard layout is mounted (i.e., user in protected area)
+  useEffect(() => {
+    let unsubscribe: (() => Promise<void>) | undefined;
+    unsubscribe = initAnnouncementsRealtime(() => { /* no-op or future UI refresh */ });
+    return () => { unsubscribe?.(); };
   }, []);
 
   const sections = useSections(role);
