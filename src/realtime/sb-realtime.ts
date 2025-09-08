@@ -55,7 +55,30 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
      const f = (filter && filter.trim()) ? { filter } : {};
      for (const ev of events) {
           (channel as AnyChannel).on("postgres_changes", { event: ev, ...base, ...f }, (payload: any) => {
-               // dev log
+               // Example payload structure:
+               // {
+               //   "schema": "public",
+               //   "table": "tblNotifications",
+               //   "commit_timestamp": "2025-09-08T19:40:08.889Z",
+               //   "eventType": "INSERT",
+               //   "new": {
+               //     "id": "e56fe9e5-4d71-4394-aef9-5d492efeaf71",
+               //     "title": "Announcement deleted",
+               //     "description": "Announcement 7d2bc3bf-6851-4302-8e29-38bb5c02bb6b was deleted",
+               //     "type": "announcement",
+               //     "announcement_id": null,
+               //     "user_id": "9a6cb857-acea-458a-a800-34acfb816117",
+               //     "is_read": false,
+               //     "is_scheduled": null,
+               //     "scheduled_for": null,
+               //     "sender_id": null,
+               //     "receiver_id": null,
+               //     "severity": null,
+               //     "created_at": "2025-09-08T19:40:10.931+00:00"
+               //   },
+               //   "old": {},
+               //   "errors": null
+               // }
                if (process.env.NODE_ENV !== "production") {
                     console.log(`[${table}] evt=${payload.eventType}`, { id: payload.new?.id ?? payload.old?.id, payload });
                }
