@@ -7,7 +7,7 @@ export interface BaseNotification {
      type: NotificationKind;
      title: string;
      description: string;
-     created_at: string; // ISO string from DB
+     created_at: Date; // ISO string from DB
      user_id: string | null;
      is_read: boolean;
 }

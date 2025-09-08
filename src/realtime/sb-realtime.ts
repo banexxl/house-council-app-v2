@@ -98,7 +98,7 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
 
 // Helpers (NO empty filter)
 export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"]) =>
-     initTableRealtimeListener("tblNotifications", ["INSERT", "UPDATE", "DELETE"], {
+     initTableRealtimeListener("tblNotifications", ["INSERT"], {
           schema: "public",
           channelName: "notifications_topic",
           onEvent,

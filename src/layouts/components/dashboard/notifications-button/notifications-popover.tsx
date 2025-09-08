@@ -20,168 +20,25 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import { Scrollbar } from 'src/components/scrollbar';
-
-import type { Notification } from './notifications';
+import { Notification } from 'src/types/notification';
 
 const renderContent = (notification: Notification): JSX.Element | null => {
-  switch (notification.type) {
-    case 'job_add': {
-      const created_at = format(notification.created_at, 'MMM dd, h:mm a');
-
-      return (
-        <>
-          <ListItemAvatar sx={{ mt: 0.5 }}>
-            <Avatar src={notification.avatar}>
-              <SvgIcon>
-                <User01Icon />
-              </SvgIcon>
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <Box
-                sx={{
-                  alignItems: 'center',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <Typography
-                  sx={{ mr: 0.5 }}
-                  variant="subtitle2"
-                >
-                  {notification.author}
-                </Typography>
-                <Typography
-                  sx={{ mr: 0.5 }}
-                  variant="body2"
-                >
-                  added a new job
-                </Typography>
-                <Link
-                  href="#"
-                  underline="always"
-                  variant="body2"
-                >
-                  {notification.job}
-                </Link>
-              </Box>
-            }
-            secondary={
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
-                {created_at}
-              </Typography>
-            }
-            sx={{ my: 0 }}
-          />
-        </>
-      );
-    }
-    case 'new_feature': {
-      const created_at = format(notification.created_at, 'MMM dd, h:mm a');
-
-      return (
-        <>
-          <ListItemAvatar sx={{ mt: 0.5 }}>
-            <Avatar>
-              <SvgIcon>
-                <MessageChatSquareIcon />
-              </SvgIcon>
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <Box
-                sx={{
-                  alignItems: 'center',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <Typography
-                  variant="subtitle2"
-                  sx={{ mr: 0.5 }}
-                >
-                  New feature!
-                </Typography>
-                <Typography variant="body2">{notification.description}</Typography>
-              </Box>
-            }
-            secondary={
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
-                {created_at}
-              </Typography>
-            }
-            sx={{ my: 0 }}
-          />
-        </>
-      );
-    }
-    case 'company_created': {
-      const created_at = format(notification.created_at, 'MMM dd, h:mm a');
-
-      return (
-        <>
-          <ListItemAvatar sx={{ mt: 0.5 }}>
-            <Avatar src={notification.avatar}>
-              <SvgIcon>
-                <User01Icon />
-              </SvgIcon>
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <Box
-                sx={{
-                  alignItems: 'center',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  m: 0,
-                }}
-              >
-                <Typography
-                  sx={{ mr: 0.5 }}
-                  variant="subtitle2"
-                >
-                  {notification.author}
-                </Typography>
-                <Typography
-                  sx={{ mr: 0.5 }}
-                  variant="body2"
-                >
-                  created
-                </Typography>
-                <Link
-                  href="#"
-                  underline="always"
-                  variant="body2"
-                >
-                  {notification.company}
-                </Link>
-              </Box>
-            }
-            secondary={
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
-                {created_at}
-              </Typography>
-            }
-            sx={{ my: 0 }}
-          />
-        </>
-      );
-    }
-    default:
-      return null;
-  }
+  const createdAt = notification.created_at instanceof Date ? notification.created_at : new Date(notification.created_at as any);
+  return (
+    <ListItemText
+      primary={
+        <Typography variant="subtitle2" sx={{ mb: 0.25 }}>
+          {notification.title}
+        </Typography>
+      }
+      secondary={
+        <Typography variant="caption" color="text.secondary">
+          {notification.type} • {format(createdAt, 'MMM dd, h:mm a')}
+        </Typography>
+      }
+      sx={{ my: 0 }}
+    />
+  );
 };
 
 interface NotificationsPopoverProps {
@@ -216,7 +73,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
       disableScrollLock
       onClose={onClose}
       open={open}
-      PaperProps={{ sx: { width: 380 } }}
+      slotProps={{ paper: { sx: { width: 380 } } }}
       {...other}
     >
       <Stack

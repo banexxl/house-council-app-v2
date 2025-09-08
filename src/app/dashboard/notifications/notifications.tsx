@@ -7,6 +7,7 @@ import { Notification } from 'src/types/notification';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteNotification, markNotificationRead } from 'src/app/actions/notification/notification-actions';
+import toast from 'react-hot-toast';
 
 interface NotificationsClientProps {
      initialNotifications: Notification[];
@@ -36,8 +37,12 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                { key: 'title', label: 'Title' },
                { key: 'description', label: 'Description', render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
                { key: 'created_at', label: 'Created', render: v => new Date(v as string).toLocaleString() },
-               { key: 'read', label: 'Read' }
+               { key: 'is_read', label: 'Read' }
           ];
+          if (type === 'reminder') {
+               base.splice(1, 0, { key: 'scheduled_for' as any, label: 'Scheduled For' });
+          }
+
           if (type === 'message') {
                // Cast to include potential sender/receiver fields
                base.splice(1, 0, { key: 'sender_id' as any, label: 'Sender' });
@@ -78,13 +83,29 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                         tableSubtitle="notifications.subtitle"
                                         rowActions={[(item, openDialog) => (
                                              <>
-                                                  <Tooltip title={item.read ? 'Mark as unread' : 'Mark as read'}>
-                                                       <IconButton size="small" onClick={() => markNotificationRead(item.id, !item.read)}>
-                                                            <DoneAllIcon fontSize="small" color={item.read ? 'success' : 'disabled'} />
+                                                  <Tooltip title={item.is_read ? 'Mark as unread' : 'Mark as is_read'}>
+                                                       <IconButton size="small" onClick={async () => {
+                                                            const data = await markNotificationRead(item.id, !item.is_read);
+                                                            if (data.success) {
+                                                                 toast.success(`Notification marked as ${!item.is_read ? 'read' : 'unread'}`);
+                                                                 setItems(prev => prev.map(n => n.id === item.id ? { ...n, is_read: !n.is_read } : n));
+                                                            }
+                                                       }}>
+                                                            <DoneAllIcon fontSize="small" color={item.is_read ? 'success' : 'disabled'} />
                                                        </IconButton>
                                                   </Tooltip>
                                                   <Tooltip title="Delete">
-                                                       <IconButton size="small" onClick={() => openDialog({ id: item.id, title: 'Delete notification?', onConfirm: async () => { await deleteNotification(item.id); setItems(prev => prev.filter(n => n.id !== item.id)); } })}>
+                                                       <IconButton size="small"
+                                                            onClick={() =>
+                                                                 openDialog({
+                                                                      id: item.id, title: 'Delete notification?', onConfirm: async () => {
+                                                                           const data = await deleteNotification(item.id);
+                                                                           if (data.success) {
+                                                                                toast.success('Notification deleted');
+                                                                           }
+                                                                           setItems(prev => prev.filter(n => n.id !== item.id));
+                                                                      }
+                                                                 })}>
                                                             <DeleteIcon fontSize="small" />
                                                        </IconButton>
                                                   </Tooltip>

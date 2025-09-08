@@ -157,7 +157,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                     type: 'announcement',
                     title: 'New announcement created',
                     description: (data as Announcement)?.title || 'A new announcement was created',
-                    created_at: new Date().toISOString(),
+                    created_at: new Date(),
                     user_id: (data as Notification)?.user_id ?? null,
                     is_read: false
                } as BaseNotification;
@@ -206,7 +206,7 @@ export async function deleteAnnouncement(id: string) {
                type: 'announcement',
                title: 'Announcement deleted',
                description: `Announcement ${id} was deleted`,
-               created_at: new Date().toISOString(),
+               created_at: new Date(),
                user_id: user_id ? user_id : null,
                is_read: false
           } as BaseNotification;
