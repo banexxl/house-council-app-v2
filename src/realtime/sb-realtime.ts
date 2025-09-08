@@ -79,9 +79,6 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
                //   "old": {},
                //   "errors": null
                // }
-               if (process.env.NODE_ENV !== "production") {
-                    console.log(`[${table}] evt=${payload.eventType}`, { id: payload.new?.id ?? payload.old?.id, payload });
-               }
                onEvent(payload as RealtimePostgresChangesPayload<T>);
           });
      }

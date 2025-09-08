@@ -19,7 +19,9 @@ const useNotifications = () => {
   useEffect(() => {
     let stop: undefined | (() => Promise<void>);
     (async () => {
-      stop = await initNotificationsRealtime(() => {
+      stop = await initNotificationsRealtime((payload) => {
+        console.log('payload', payload);
+
         // handle payload if you want
       });
     })();
