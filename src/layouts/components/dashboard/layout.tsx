@@ -68,18 +68,7 @@ export const Layout: FC<LayoutProps> = ((props) => {
     getRole();
   }, []);
 
-  useEffect(() => {
-    let stop: undefined | (() => Promise<void>);
-    (async () => {
-      stop = await initNotificationsRealtime(() => {
-        // handle payload if you want
-      });
-    })();
 
-    return () => {
-      if (stop) stop().catch(console.error);
-    };
-  }, []);
 
 
   const sections = useSections(role);
