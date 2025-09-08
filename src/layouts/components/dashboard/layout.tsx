@@ -68,30 +68,19 @@ export const Layout: FC<LayoutProps> = ((props) => {
     getRole();
   }, []);
 
-  // Subscribe to announcements only while dashboard layout is mounted (i.e., user in protected area)
   useEffect(() => {
-    let unsubscribe: (() => Promise<void>) | undefined;
-
-    const init = () => {
-      console.log('[notifications] init starting');
-      try {
-        unsubscribe = initNotificationsRealtime(() => { });
-        console.log('[notifications] init finished');
-      } catch (err) {
-        console.error('[notifications] init failed', err);
-      }
-    };
-
-    init();
+    let stop: undefined | (() => Promise<void>);
+    (async () => {
+      stop = await initNotificationsRealtime(() => {
+        // handle payload if you want
+      });
+    })();
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe()
-          .then(() => console.log('[announcements] realtime unsubscribed'))
-          .catch((err) => console.error('[announcements] unsubscribe failed', err));
-      }
+      if (stop) stop().catch(console.error);
     };
   }, []);
+
 
   const sections = useSections(role);
 
