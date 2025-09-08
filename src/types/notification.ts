@@ -8,8 +8,8 @@ export interface BaseNotification {
      title: string;
      description: string;
      created_at: string; // ISO string from DB
-     client_id: string | null;
-     read: boolean;
+     user_id: string | null;
+     is_read: boolean;
 }
 
 // Extended shapes depending on type
@@ -30,8 +30,8 @@ export const notificationInitialValues: Partial<Notification> = {
      title: '',
      description: '',
      type: 'system',
-     client_id: null,
-     read: false
+     user_id: null,
+     is_read: false
 };
 
 export const notificationValidationSchema = Yup.object({
@@ -39,5 +39,5 @@ export const notificationValidationSchema = Yup.object({
      description: Yup.string().trim().min(2).required(),
      type: Yup.mixed<NotificationKind>().oneOf(['system', 'message', 'reminder', 'alert']).required(),
      client_id: Yup.string().nullable(),
-     read: Yup.boolean().default(false)
+     is_read: Yup.boolean().default(false)
 });

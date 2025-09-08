@@ -1,6 +1,8 @@
+"use client";
+
 import type { FC, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { initAnnouncementsRealtime } from 'src/realtime/sb-realtime';
+import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { useSettings } from 'src/hooks/use-settings';
 import { useSections } from './config';
 import { HorizontalLayout } from './horizontal-layout';
@@ -69,8 +71,26 @@ export const Layout: FC<LayoutProps> = ((props) => {
   // Subscribe to announcements only while dashboard layout is mounted (i.e., user in protected area)
   useEffect(() => {
     let unsubscribe: (() => Promise<void>) | undefined;
-    unsubscribe = initAnnouncementsRealtime(() => { /* no-op or future UI refresh */ });
-    return () => { unsubscribe?.(); };
+
+    const init = () => {
+      console.log('[notifications] init starting');
+      try {
+        unsubscribe = initNotificationsRealtime(() => { });
+        console.log('[notifications] init finished');
+      } catch (err) {
+        console.error('[notifications] init failed', err);
+      }
+    };
+
+    init();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+          .then(() => console.log('[announcements] realtime unsubscribed'))
+          .catch((err) => console.error('[announcements] unsubscribe failed', err));
+      }
+    };
   }, []);
 
   const sections = useSections(role);

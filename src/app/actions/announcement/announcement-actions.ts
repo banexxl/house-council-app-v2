@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement, AnnouncementStatus } from 'src/types/announcement';
+import { BaseNotification, Notification } from 'src/types/notification';
 import { validate as isUUID } from 'uuid';
 
 // Table names (adjust if different in your DB schema)
@@ -29,7 +30,7 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
      }
 
      // Attach images for all announcements in a single additional query
-     let enriched: Announcement[] = (data as any[]) as Announcement[];
+     let enriched: Announcement[] = data as Announcement[];
      try {
           const ids = enriched.map(a => a.id).filter(Boolean);
           if (ids.length > 0) {
@@ -147,6 +148,27 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           status: 'success',
           type: 'db',
      });
+
+     // Create notification ONLY on new announcement insert (not on updates)
+     if (!isUpdate && data) {
+          try {
+               // Best-effort notification insert; ignore failure to not block announcement creation
+               const notification = {
+                    type: 'announcement',
+                    title: 'New announcement created',
+                    description: (data as Announcement)?.title || 'A new announcement was created',
+                    created_at: new Date().toISOString(),
+                    user_id: (data as Notification)?.user_id ?? null,
+                    is_read: false
+               } as BaseNotification;
+               const { error: notifErr } = await supabase.from('tblNotifications').insert(notification);
+               if (notifErr) {
+                    console.error('[announce->notification] insert failed', notifErr.message);
+               }
+          } catch (e: any) {
+               console.error('[announce->notification] unexpected error', e?.message || e);
+          }
+     }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: data as Announcement };
 }
@@ -156,10 +178,10 @@ export async function deleteAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).delete().eq('id', id);
-
+     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
      if (error) {
           await logServerAction({
-               user_id: null,
+               user_id: user_id ? user_id : null,
                action: 'deleteAnnouncement',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -170,7 +192,7 @@ export async function deleteAnnouncement(id: string) {
           return { success: false, error: error.message };
      }
      await logServerAction({
-          user_id: null,
+          user_id: user_id ? user_id : null,
           action: 'deleteAnnouncement',
           duration_ms: Date.now() - time,
           error: '',
@@ -178,6 +200,21 @@ export async function deleteAnnouncement(id: string) {
           status: 'success',
           type: 'db',
      });
+     // Fire-and-forget notification about deletion
+     try {
+          const notification = {
+               type: 'announcement',
+               title: 'Announcement deleted',
+               description: `Announcement ${id} was deleted`,
+               created_at: new Date().toISOString(),
+               user_id: user_id ? user_id : null,
+               is_read: false
+          } as BaseNotification;
+          const { error: notifErr } = await supabase.from('tblNotifications').insert(notification);
+          if (notifErr) console.error('[announce->notification] delete insert failed', notifErr.message);
+     } catch (e: any) {
+          console.error('[announce->notification] delete unexpected error', e?.message || e);
+     }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
 }
@@ -185,10 +222,11 @@ export async function deleteAnnouncement(id: string) {
 export async function archiveAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived: true, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
-               user_id: null,
+               user_id: user_id ? user_id : null,
                action: 'archiveAnnouncement',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -199,7 +237,7 @@ export async function archiveAnnouncement(id: string) {
           return { success: false, error: error.message };
      }
      await logServerAction({
-          user_id: null,
+          user_id: user_id ? user_id : null,
           action: 'archiveAnnouncement',
           duration_ms: Date.now() - time,
           error: '',
@@ -215,10 +253,11 @@ export async function archiveAnnouncement(id: string) {
 export async function togglePinAction(id: string, pinned: boolean) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ pinned, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
-               user_id: null,
+               user_id: user_id ? user_id : null,
                action: 'togglePinAnnouncement',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -229,7 +268,7 @@ export async function togglePinAction(id: string, pinned: boolean) {
           return { success: false, error: error.message };
      }
      await logServerAction({
-          user_id: null,
+          user_id: user_id ? user_id : null,
           action: 'togglePinAnnouncement',
           duration_ms: Date.now() - time,
           error: '',
@@ -245,11 +284,12 @@ export async function togglePinAction(id: string, pinned: boolean) {
 export async function publishAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
      const now = new Date();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'published', published_at: now, updated_at: now }).eq('id', id);
      if (error) {
           await logServerAction({
-               user_id: null,
+               user_id: user_id ? user_id : null,
                action: 'publishAnnouncement',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -260,7 +300,7 @@ export async function publishAnnouncement(id: string) {
           return { success: false, error: error.message };
      }
      await logServerAction({
-          user_id: null,
+          user_id: user_id ? user_id : null,
           action: 'publishAnnouncement',
           duration_ms: Date.now() - time,
           error: '',
@@ -275,10 +315,11 @@ export async function publishAnnouncement(id: string) {
 export async function revertToDraft(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'draft', published_at: null, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
-               user_id: null,
+               user_id: user_id ? user_id : null,
                action: 'revertAnnouncementToDraft',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -305,10 +346,11 @@ export async function revertToDraft(id: string) {
 export async function toggleArchiveAction(id: string, archived: boolean) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
-               user_id: null,
+               user_id: user_id ? user_id : null,
                action: 'toggleArchiveAnnouncement',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -319,7 +361,7 @@ export async function toggleArchiveAction(id: string, archived: boolean) {
           return { success: false, error: error.message };
      }
      await logServerAction({
-          user_id: null,
+          user_id: user_id ? user_id : null,
           action: 'toggleArchiveAnnouncement',
           duration_ms: Date.now() - time,
           error: '',
