@@ -22,21 +22,6 @@ export async function getNotifications(): Promise<{ success: boolean; data?: Not
      return { success: true, data: data as Notification[] };
 }
 
-export async function getNotificationById(id: string) {
-     const time = Date.now();
-     if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
-     const supabase = await useServerSideSupabaseAnonClient();
-     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
-     const { data, error } = await supabase.from(NOTIFICATIONS_TABLE).select('*').eq('id', id).single();
-     if (error) {
-          await logServerAction({ user_id, action: 'getNotificationById', duration_ms: Date.now() - time, error: error.message, payload: { id }, status: 'fail', type: 'db' });
-          return { success: false, error: error.message };
-     }
-     revalidatePath('/dashboard/notifications');
-     await logServerAction({ user_id, action: 'getNotificationById', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db' });
-     return { success: true, data: data as Notification };
-}
-
 export async function upsertNotification(input: Partial<Notification> & { id?: string }) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
@@ -53,8 +38,8 @@ export async function upsertNotification(input: Partial<Notification> & { id?: s
           await logServerAction({ user_id, action: isUpdate ? 'updateNotification' : 'createNotification', duration_ms: Date.now() - time, error: error.message, payload: input, status: 'fail', type: 'db' });
           return { success: false, error: error.message };
      }
-     await logServerAction({ user_id, action: isUpdate ? 'updateNotification' : 'createNotification', duration_ms: Date.now() - time, error: '', payload: input, status: 'success', type: 'db' });
      revalidatePath('/dashboard/notifications');
+     await logServerAction({ user_id, action: isUpdate ? 'updateNotification' : 'createNotification', duration_ms: Date.now() - time, error: '', payload: input, status: 'success', type: 'db' });
      return { success: true, data: data as Notification };
 }
 
@@ -68,8 +53,8 @@ export async function deleteNotification(id: string) {
           await logServerAction({ user_id, action: 'deleteNotification', duration_ms: Date.now() - time, error: error.message, payload: { id }, status: 'fail', type: 'db' });
           return { success: false, error: error.message };
      }
-     await logServerAction({ user_id, action: 'deleteNotification', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db' });
      revalidatePath('/dashboard/notifications');
+     await logServerAction({ user_id, action: 'deleteNotification', duration_ms: Date.now() - time, error: '', payload: { id }, status: 'success', type: 'db' });
      return { success: true };
 }
 
@@ -83,8 +68,8 @@ export async function markNotificationRead(id: string, read: boolean) {
           await logServerAction({ user_id, action: 'markNotificationRead', duration_ms: Date.now() - time, error: error.message, payload: { id, read }, status: 'fail', type: 'db' });
           return { success: false, error: error.message };
      }
-     await logServerAction({ user_id, action: 'markNotificationRead', duration_ms: Date.now() - time, error: '', payload: { id, read }, status: 'success', type: 'db' });
      revalidatePath('/dashboard/notifications');
+     await logServerAction({ user_id, action: 'markNotificationRead', duration_ms: Date.now() - time, error: '', payload: { id, read }, status: 'success', type: 'db' });
      return { success: true };
 }
 
