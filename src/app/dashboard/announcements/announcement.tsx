@@ -173,7 +173,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
                schedule_enabled: !!a.schedule_at,
                created_at: a.created_at,
                schedule_at: a.schedule_at || null,
-               status: a.status || 'draft'
+               status: a.status || 'draft',
+               user_id: a.user_id
           });
      };
 
@@ -321,7 +322,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  disabled={formDisabled}
                                                             >
                                                                  {ANNOUNCEMENT_CATEGORIES.map(cat => (
-                                                                      <MenuItem key={cat.id} value={cat.id}>{cat.label}</MenuItem>
+                                                                      <MenuItem key={cat.id} value={cat.id}>{t(tokens.announcements.categories[cat.id as keyof typeof tokens.announcements.categories])}</MenuItem>
                                                                  ))}
                                                             </Select>
                                                             {formik.touched.category && formik.errors.category && (
@@ -346,7 +347,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                            disabled={formDisabled}
                                                                       >
                                                                            {cat.subcategories.map(sc => (
-                                                                                <MenuItem key={sc.id} value={sc.id}>{sc.label}</MenuItem>
+                                                                                <MenuItem key={sc.id} value={sc.id}>{t(tokens.announcements.subcategories[sc.id as keyof typeof tokens.announcements.subcategories])}</MenuItem>
                                                                            ))}
                                                                       </Select>
                                                                       {formik.touched.subcategory && formik.errors.subcategory && (

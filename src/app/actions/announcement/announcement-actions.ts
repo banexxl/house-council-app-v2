@@ -124,7 +124,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           .from(ANNOUNCEMENTS_TABLE)
           .upsert(record, { onConflict: 'id' })
           .select()
-          .maybeSingle();
+          .maybeSingle<Announcement>();
 
      if (error) {
           await logServerAction({
@@ -155,10 +155,10 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                // Best-effort notification insert; ignore failure to not block announcement creation
                const notification = {
                     type: 'announcement',
-                    title: 'New announcement created',
-                    description: (data as Announcement)?.title || 'A new announcement was created',
+                    title: data.title,
+                    description: data.title || 'A new announcement was created',
                     created_at: new Date(),
-                    user_id: (data as Notification)?.user_id ?? null,
+                    user_id: data?.user_id ?? null,
                     is_read: false
                } as BaseNotification;
                const { error: notifErr } = await supabase.from('tblNotifications').insert(notification);
