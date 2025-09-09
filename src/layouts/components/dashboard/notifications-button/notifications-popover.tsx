@@ -21,6 +21,8 @@ import Typography from '@mui/material/Typography';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Notification } from 'src/types/notification';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 const renderContent = (notification: Notification): JSX.Element | null => {
   const createdAt = notification.created_at instanceof Date ? notification.created_at : new Date(notification.created_at as any);
@@ -62,6 +64,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
   } = props;
 
   const isEmpty = notifications.length === 0;
+  const { t } = useTranslation();
 
   return (
     <Popover
@@ -90,9 +93,9 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
           color="inherit"
           variant="h6"
         >
-          Notifications
+          {t(tokens.notifications.popoverTitle)}
         </Typography>
-        <Tooltip title="Mark all as read">
+        <Tooltip title={t(tokens.notifications.markAllAsRead)}>
           <IconButton
             onClick={onMarkAllAsRead}
             size="small"
@@ -106,10 +109,10 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
       </Stack>
       {isEmpty ? (
         <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2">There are no new notifications</Typography>
+          <Typography variant="subtitle2">{t(tokens.notifications.none)}</Typography>
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Link href="/dashboard/notifications" underline="always" variant="body2">
-              View all notifications
+              {t(tokens.notifications.viewAll)}
             </Link>
           </Box>
         </Box>
@@ -130,7 +133,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
                   },
                 }}
                 secondaryAction={
-                  <Tooltip title="Remove">
+                  <Tooltip title={t(tokens.notifications.remove)}>
                     <IconButton
                       edge="end"
                       onClick={() => onRemoveOne?.(notification.id)}
@@ -149,7 +152,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
           </List>
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Link href="/dashboard/notifications" underline="always" variant="body2">
-              View all notifications
+              {t(tokens.notifications.viewAll)}
             </Link>
           </Box>
         </Scrollbar>

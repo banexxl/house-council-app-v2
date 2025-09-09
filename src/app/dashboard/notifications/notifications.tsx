@@ -9,24 +9,27 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteNotification, markNotificationRead } from 'src/app/actions/notification/notification-actions';
 import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 interface NotificationsClientProps {
      initialNotifications: Notification[];
 }
 
-const NOTIFICATION_TYPES: { value: string; label: string }[] = [
-     { value: 'all', label: 'All' },
-     { value: 'system', label: 'System' },
-     { value: 'message', label: 'Messages' },
-     { value: 'reminder', label: 'Reminders' },
-     { value: 'alert', label: 'Alerts' },
-     { value: 'announcement', label: 'Announcements' },
-     { value: 'other', label: 'Other' }
-];
+const NOTIFICATION_TYPES = [
+     { value: 'all', labelToken: tokens.notifications.tabs.all },
+     { value: 'system', labelToken: tokens.notifications.tabs.system },
+     { value: 'message', labelToken: tokens.notifications.tabs.message },
+     { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
+     { value: 'alert', labelToken: tokens.notifications.tabs.alert },
+     { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
+     { value: 'other', labelToken: tokens.notifications.tabs.other }
+] as const;
 
 export default function NotificationsClient({ initialNotifications }: NotificationsClientProps) {
      const [type, setType] = useState<string>('all');
      const [items, setItems] = useState<Notification[]>(initialNotifications);
+     const { t } = useTranslation();
 
      const filtered = useMemo(() => {
           if (type === 'all') return items;
@@ -35,32 +38,32 @@ export default function NotificationsClient({ initialNotifications }: Notificati
 
      const columns: TableColumn<Notification>[] = useMemo(() => {
           const base: TableColumn<Notification>[] = [
-               { key: 'title', label: 'Title' },
-               { key: 'description', label: 'Description', render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
-               { key: 'created_at', label: 'Created', render: v => new Date(v as string).toLocaleString() },
-               { key: 'is_read', label: 'Read' }
+               { key: 'title', label: t(tokens.notifications.col.title) },
+               { key: 'description', label: t(tokens.notifications.col.description), render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
+               { key: 'created_at', label: t(tokens.notifications.col.created), render: v => new Date(v as string).toLocaleString() },
+               { key: 'is_read', label: t(tokens.notifications.col.read) }
           ];
           if (type === 'reminder') {
-               base.splice(1, 0, { key: 'scheduled_for' as any, label: 'Scheduled For' });
+               base.splice(1, 0, { key: 'scheduled_for' as any, label: t(tokens.notifications.col.scheduledFor) });
           }
 
           if (type === 'message') {
                // Cast to include potential sender/receiver fields
-               base.splice(1, 0, { key: 'sender_id' as any, label: 'Sender' });
-               base.splice(2, 0, { key: 'receiver_id' as any, label: 'Receiver' });
+               base.splice(1, 0, { key: 'sender_id' as any, label: t(tokens.notifications.col.sender) });
+               base.splice(2, 0, { key: 'receiver_id' as any, label: t(tokens.notifications.col.receiver) });
           }
           if (type === 'alert') {
-               base.splice(1, 0, { key: 'severity' as any, label: 'Severity' });
+               base.splice(1, 0, { key: 'severity' as any, label: t(tokens.notifications.col.severity) });
           }
           if (type !== 'all') {
-               base.unshift({ key: 'type', label: 'Type' });
+               base.unshift({ key: 'type', label: t(tokens.notifications.col.type) });
           }
           return base;
-     }, [type]);
+     }, [type, t]);
 
      return (
           <Container maxWidth="xl">
-               <Typography variant="h4" sx={{ mb: 3 }}>Notification Center</Typography>
+               <Typography variant="h4" sx={{ mb: 3 }}>{t(tokens.notifications.centerTitle)}</Typography>
                <Card>
                     <Stack spacing={4}>
                          <Box sx={{ display: 'flex', gap: 3 }}>
@@ -72,7 +75,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                         variant="scrollable"
                                    >
                                         {NOTIFICATION_TYPES.map(nt => (
-                                             <Tab key={nt.value} value={nt.value} label={nt.label} />
+                                             <Tab key={nt.value} value={nt.value} label={t(nt.labelToken)} />
                                         ))}
                                    </Tabs>
                               </Box>
@@ -80,29 +83,29 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                    <GenericTable
                                         columns={columns}
                                         items={filtered}
-                                        tableTitle="notifications.title"
-                                        tableSubtitle="notifications.subtitle"
+                                        tableTitle={t(tokens.notifications.tableTitle)}
+                                        tableSubtitle={t(tokens.notifications.tableSubtitle)}
                                         rowActions={[(item, openDialog) => (
                                              <>
-                                                  <Tooltip title={item.is_read ? 'Mark as unread' : 'Mark as read'}>
+                                                  <Tooltip title={item.is_read ? t(tokens.notifications.markUnread) : t(tokens.notifications.markRead)}>
                                                        <IconButton size="small" onClick={async () => {
                                                             const data = await markNotificationRead(item.id, !item.is_read);
                                                             if (data.success) {
-                                                                 toast.success(`Notification marked as ${!item.is_read ? 'read' : 'unread'}`);
+                                                                 toast.success(!item.is_read ? t(tokens.notifications.markedRead) : t(tokens.notifications.markedUnread));
                                                                  setItems(prev => prev.map(n => n.id === item.id ? { ...n, is_read: !n.is_read } : n));
                                                             }
                                                        }}>
                                                             <DoneAllIcon fontSize="small" color={item.is_read ? 'success' : 'disabled'} />
                                                        </IconButton>
                                                   </Tooltip>
-                                                  <Tooltip title="Delete">
+                                                  <Tooltip title={t(tokens.common.btnDelete)}>
                                                        <IconButton size="small"
                                                             onClick={() =>
                                                                  openDialog({
-                                                                      id: item.id, title: 'Delete notification?', onConfirm: async () => {
+                                                                      id: item.id, title: t(tokens.notifications.deleteConfirmTitle), onConfirm: async () => {
                                                                            const data = await deleteNotification(item.id);
                                                                            if (data.success) {
-                                                                                toast.success('Notification deleted');
+                                                                                toast.success(t(tokens.notifications.deleted));
                                                                            }
                                                                            setItems(prev => prev.filter(n => n.id !== item.id));
                                                                       }

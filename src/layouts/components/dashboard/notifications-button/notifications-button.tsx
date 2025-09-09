@@ -12,6 +12,8 @@ import { NotificationsPopover } from './notifications-popover';
 import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { Notification } from 'src/types/notification';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 const MAX_DISPLAY = 10;
 
@@ -133,10 +135,11 @@ export const NotificationsButton: FC = () => {
 
   const popover = usePopover<HTMLButtonElement>();
   const { handleRemoveOne, handleMarkAllAsRead, notifications, badgeContent } = useNotifications();
+  const { t } = useTranslation();
 
   return (
     <>
-      <Tooltip title="Notifications">
+      <Tooltip title={t(tokens.notifications.popoverTitle)}>
         <IconButton
           ref={popover.anchorRef}
           onClick={popover.handleOpen}
