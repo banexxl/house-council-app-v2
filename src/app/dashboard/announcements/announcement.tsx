@@ -64,13 +64,21 @@ export default function Announcements({ announcements, tenants, apartments, tena
      const [editingId, setEditingId] = useState<string | null>(null);
      const [rowBusy, setRowBusy] = useState<string | null>(null);
      const [imagesUploading, setImagesUploading] = useState(false);
-     const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images'; targetId?: string }>(null);
+     const [docsUploading, setDocsUploading] = useState(false);
+     const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents'; targetId?: string }>(null);
      const currentImages = React.useMemo(() => {
           if (!editingId) return [] as string[];
           const row = announcements.find(a => a.id === editingId);
           return row?.images || [];
      }, [editingId, announcements]);
-     const formDisabled = imagesUploading; // disable interactions while images upload
+     const currentDocuments = React.useMemo(() => {
+          if (!editingId) return [] as { url: string; name: string; mime?: string }[];
+          const row: any = announcements.find(a => a.id === editingId);
+          return row?.documents || [];
+     }, [editingId, announcements]);
+     console.log('currentDocuments', currentDocuments);
+
+     const formDisabled = imagesUploading || docsUploading; // disable interactions while uploads
      const router = useRouter();
 
 
@@ -211,6 +219,47 @@ export default function Announcements({ announcements, tenants, apartments, tena
      const handleRemoveAllImages = async () => {
           if (!editingId) return;
           setModalState({ type: 'remove-all-images', targetId: editingId });
+     };
+
+     const handleDocumentsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+          if (!editingId) {
+               toast.error(t(tokens.announcements.toasts.saveDraftBeforeImages));
+               return;
+          }
+          if (!e.target.files || e.target.files.length === 0) return;
+          const fileList = Array.from(e.target.files);
+          try {
+               setDocsUploading(true);
+               const { uploadAnnouncementDocuments } = await import('src/app/actions/announcement/announcement-document-actions');
+               const result = await uploadAnnouncementDocuments(fileList as any, editingId);
+               if (!result.success) {
+                    toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
+               } else if (result.urls) {
+                    toast.success(t(tokens.announcements.toasts.documentsUploaded || tokens.announcements.toasts.imagesUploaded));
+               }
+          } finally {
+               setDocsUploading(false);
+               e.target.value = '';
+               router.refresh();
+          }
+     };
+
+     const handleRemoveDocument = async (url: string) => {
+          if (!editingId) return;
+          const { removeAnnouncementDocument } = await import('src/app/actions/announcement/announcement-document-actions');
+          const res = await removeAnnouncementDocument(editingId, url);
+          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed)); else { toast.success(t(tokens.announcements.toasts.removeImageSuccess)); router.refresh(); }
+     };
+
+     const handleRemoveAllDocuments = async () => {
+          if (!editingId) return;
+          setModalState({ type: 'remove-all-documents', targetId: editingId });
+     };
+
+     const performRemoveAllDocuments = async (id: string) => {
+          const { removeAllAnnouncementDocuments } = await import('src/app/actions/announcement/announcement-document-actions');
+          const res = await removeAllAnnouncementDocuments(id);
+          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed)); else { toast.success(t(tokens.announcements.toasts.removeImagesSuccess)); router.refresh(); }
      };
 
      const performRemoveAllImages = async (id: string) => {
@@ -471,6 +520,32 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                        )}
                                                        {imagesUploading && <LinearProgress sx={{ mt: 1 }} />}
                                                   </Stack>
+                                                  {/* Documents Section */}
+                                                  <Divider sx={{ my: 2 }} />
+                                                  <Stack spacing={1}>
+                                                       <Stack direction="row" alignItems="center" spacing={2}>
+                                                            <Button variant="outlined" component="label" disabled={!editingId || docsUploading}>
+                                                                 {docsUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadDocuments || 'Upload documents')}
+                                                                 <input type="file" hidden multiple onChange={handleDocumentsUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.ppt,.pptx,.odt,.ods,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/zip" />
+                                                            </Button>
+                                                            <Button color="error" disabled={!editingId || currentDocuments.length === 0 || formDisabled} onClick={handleRemoveAllDocuments}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
+                                                            <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.documentsCount || 'Documents: {{count}}', { count: currentDocuments.length })}</Typography>
+                                                       </Stack>
+                                                       {currentDocuments.length > 0 && (
+                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                                 {currentDocuments.map((doc: any) => (
+                                                                      <Box key={doc.url} sx={{ position: 'relative', width: 140, p: 1, borderRadius: 1, border: theme => `1px solid ${theme.palette.divider}`, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                                           <Typography variant="caption" noWrap title={doc.name} sx={{ flexGrow: 1 }}>{doc.name}</Typography>
+                                                                           <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
+                                                                                <Button size="small" variant="text" onClick={() => window.open(doc.url, '_blank')}>{t(tokens.common.btnDownload)}</Button>
+                                                                                <IconButton size="small" onClick={() => handleRemoveDocument(doc.url)}><DeleteIcon fontSize="inherit" /></IconButton>
+                                                                           </Stack>
+                                                                      </Box>
+                                                                 ))}
+                                                            </Box>
+                                                       )}
+                                                       {docsUploading && <LinearProgress sx={{ mt: 1 }} />}
+                                                  </Stack>
                                                   <Divider sx={{ my: 1 }} />
                                                   <Stack direction="row" spacing={3} height={40} alignItems="center" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
                                                        <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label={t(tokens.announcements.form.pinToTop)} />
@@ -630,6 +705,24 @@ export default function Announcements({ announcements, tenants, apartments, tena
                               cancelText={t(tokens.common.btnCancel)}
                          >
                               {t(tokens.announcements.modals.removeImagesMessage)}
+                         </PopupModal>
+                    )
+               }
+               {
+                    modalState?.type === 'remove-all-documents' && (
+                         <PopupModal
+                              isOpen
+                              onClose={() => setModalState(null)}
+                              onConfirm={async () => {
+                                   if (modalState.targetId) await performRemoveAllDocuments(modalState.targetId);
+                                   setModalState(null);
+                              }}
+                              title={t(tokens.announcements.modals.removeDocumentsTitle || tokens.announcements.modals.removeImagesTitle)}
+                              type="confirmation"
+                              confirmText={t(tokens.common.btnRemove)}
+                              cancelText={t(tokens.common.btnCancel)}
+                         >
+                              {t(tokens.announcements.modals.removeDocumentsMessage || tokens.announcements.modals.removeImagesMessage)}
                          </PopupModal>
                     )
                }

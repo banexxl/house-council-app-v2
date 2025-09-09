@@ -692,6 +692,9 @@ export const tokens = {
       uploading: 'announcements.form.uploading',
       removeAllImages: 'announcements.form.removeAllImages',
       imagesCount: 'announcements.form.imagesCount',
+      uploadDocuments: 'announcements.form.uploadDocuments',
+      removeAllDocuments: 'announcements.form.removeAllDocuments',
+      documentsCount: 'announcements.form.documentsCount',
     },
     visibilityValues: {
       buildingWide: 'announcements.visibility.buildingWide',
@@ -720,6 +723,8 @@ export const tokens = {
       deleteMessage: 'announcements.modals.deleteMessage',
       removeImagesTitle: 'announcements.modals.removeImagesTitle',
       removeImagesMessage: 'announcements.modals.removeImagesMessage',
+      removeDocumentsTitle: 'announcements.modals.removeDocumentsTitle',
+      removeDocumentsMessage: 'announcements.modals.removeDocumentsMessage',
     },
     categories: {
       community_general: 'announcements.category.community_general',
@@ -786,6 +791,7 @@ export const tokens = {
       unpublishSuccess: 'announcements.toasts.unpublishSuccess',
       uploadFailed: 'announcements.toasts.uploadFailed',
       imagesUploaded: 'announcements.toasts.imagesUploaded',
+      documentsUploaded: 'announcements.toasts.documentsUploaded',
       removeImageFailed: 'announcements.toasts.removeImageFailed',
       removeImageSuccess: 'announcements.toasts.removeImageSuccess',
       removeImagesFailed: 'announcements.toasts.removeImagesFailed',

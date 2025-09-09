@@ -48,6 +48,21 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                     }
                     enriched = enriched.map(a => ({ ...a, images: map.get(a.id!) || [] }));
                }
+               // Documents enrichment
+               const { data: docRows, error: docErr } = await supabase
+                    .from('tblAnnouncementDocuments')
+                    .select('announcement_id,document_url,file_name,mime_type')
+                    .in('announcement_id', ids as string[]);
+               if (!docErr && docRows) {
+                    const docMap = new Map<string, { url: string; name: string; mime?: string }[]>();
+                    for (const row of docRows as any[]) {
+                         const annId = row.announcement_id as string;
+                         const doc = { url: row.document_url as string, name: row.file_name as string, mime: row.mime_type as string | undefined };
+                         if (!docMap.has(annId)) docMap.set(annId, []);
+                         docMap.get(annId)!.push(doc);
+                    }
+                    enriched = enriched.map(a => ({ ...a, documents: (docMap.get(a.id!) || []) }));
+               }
           }
      } catch { /* ignore image enrichment errors */ }
 
@@ -76,11 +91,16 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
           });
           return { success: false, error: error.message };
      }
-     // Fetch related images (ignore errors to not block primary response)
+     // Fetch related images & documents (ignore errors to not block primary response)
      let images: string[] = [];
+     let documents: { url: string; name: string; mime?: string }[] = [];
      try {
           const { data: imgRows } = await supabase.from('tblAnnouncementImages').select('image_url').eq('announcement_id', id);
           images = (imgRows || []).map(r => (r as any).image_url);
+     } catch { /* noop */ }
+     try {
+          const { data: docRows } = await supabase.from('tblAnnouncementDocuments').select('document_url,file_name,mime_type').eq('announcement_id', id);
+          documents = (docRows || []).map(r => ({ url: (r as any).document_url, name: (r as any).file_name, mime: (r as any).mime_type || undefined }));
      } catch { /* noop */ }
 
      await logServerAction({
@@ -94,7 +114,7 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
 
           id: ''
      });
-     const record: Announcement = { ...(data as any), images };
+     const record: Announcement = { ...(data as any), images, documents };
      return { success: true, data: record };
 }
 

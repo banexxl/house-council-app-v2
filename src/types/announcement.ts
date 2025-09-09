@@ -154,6 +154,7 @@ export interface Announcement {
      updated_at?: Date;
      status: AnnouncementStatus;
      images?: string[]; // existing image URLs when editing
+     documents?: { url: string; name: string; mime?: string }[]; // existing document URLs when editing
      user_id: string; // FK to auth.users
 }
 
@@ -174,6 +175,7 @@ export const announcementInitialValues: Announcement = {
      schedule_at: null,
      status: 'draft',
      images: [],
+     documents: [],
      user_id: ''
 };
 
