@@ -46,6 +46,8 @@ import { announcementInitialValues, announcementValidationSchema, AnnouncementSc
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -71,6 +73,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
      const formDisabled = imagesUploading; // disable interactions while images upload
      const router = useRouter();
 
+
+     const { t } = useTranslation();
 
      const formik = useFormik({
           initialValues: announcementInitialValues,
@@ -103,12 +107,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                const result = await upsertAnnouncement(payload);
                if (!result.success) {
                     helpers.setSubmitting(false);
-                    toast.error('Failed to save announcement');
+                    toast.error(t(tokens.announcements.toasts.saveError));
                     helpers.setStatus({ error: result.error });
                     return;
                }
 
-               if (result.data) toast.success('Announcement saved successfully');
+               if (result.data) toast.success(t(tokens.announcements.toasts.saveSuccess));
 
                helpers.resetForm();
                setEditingId(null);
@@ -123,10 +127,10 @@ export default function Announcements({ announcements, tenants, apartments, tena
           // Existing draft -> publish via server action so published_at is set
           const res = await publishAnnouncement(editingId);
           if (!res.success) {
-               toast.error('Failed to publish');
+               toast.error(t(tokens.announcements.toasts.publishError));
                return;
           }
-          toast.success('Published');
+          toast.success(t(tokens.announcements.toasts.publishSuccess));
           formik.setFieldValue('status', 'published');
           // refresh list
           router.refresh();
@@ -136,10 +140,10 @@ export default function Announcements({ announcements, tenants, apartments, tena
           if (!editingId) return;
           const res = await revertToDraft(editingId);
           if (!res.success) {
-               toast.error('Failed to revert to draft');
+               toast.error(t(tokens.announcements.toasts.unpublishError));
                return;
           }
-          toast.success('Reverted to draft');
+          toast.success(t(tokens.announcements.toasts.unpublishSuccess));
           formik.setFieldValue('status', 'draft');
           router.refresh();
      };
@@ -175,7 +179,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
 
      const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           if (!editingId) {
-               toast.error('Save draft first before uploading images');
+               toast.error(t(tokens.announcements.toasts.saveDraftBeforeImages));
                return;
           }
           if (!e.target.files || e.target.files.length === 0) return;
@@ -185,9 +189,9 @@ export default function Announcements({ announcements, tenants, apartments, tena
                const { uploadAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
                const result = await uploadAnnouncementImages(fileList as any, editingId); // casting for server action transport
                if (!result.success) {
-                    toast.error(result.error || 'Upload failed');
+                    toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
                } else if (result.urls) {
-                    toast.success('Images uploaded');
+                    toast.success(t(tokens.announcements.toasts.imagesUploaded));
                }
           } finally {
                setImagesUploading(false);
@@ -200,7 +204,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           if (!editingId) return;
           const { removeAnnouncementImage } = await import('src/app/actions/announcement/announcement-image-actions');
           const res = await removeAnnouncementImage(editingId, url);
-          if (!res.success) toast.error(res.error || 'Failed to remove'); else { toast.success('Removed'); router.refresh(); }
+          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed)); else { toast.success(t(tokens.announcements.toasts.removeImageSuccess)); router.refresh(); }
      };
 
      const handleRemoveAllImages = async () => {
@@ -211,7 +215,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
      const performRemoveAllImages = async (id: string) => {
           const { removeAllAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
           const res = await removeAllAnnouncementImages(id);
-          if (!res.success) toast.error(res.error || 'Failed to remove images'); else { toast.success('All images removed'); router.refresh(); }
+          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed)); else { toast.success(t(tokens.announcements.toasts.removeImagesSuccess)); router.refresh(); }
      };
 
      const toggleArchive = async (id: string) => {
@@ -219,7 +223,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           if (!row) return;
           setRowBusy(id);
           const res = await toggleArchiveAction(id, !row.archived);
-          if (!res.success) toast.error('Archive toggle failed'); else { toast.success(!row.archived ? 'Archived' : 'Unarchived'); router.refresh(); }
+          if (!res.success) toast.error(t(tokens.announcements.toasts.archiveToggleFailed)); else { toast.success(!row.archived ? t(tokens.announcements.toasts.archived) : t(tokens.announcements.toasts.unarchived)); router.refresh(); }
           setRowBusy(null);
      };
 
@@ -230,8 +234,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
      const performDelete = async (id: string) => {
           setRowBusy(id);
           const res = await deleteAnnouncement(id);
-          if (!res.success) toast.error('Delete failed'); else {
-               toast.success('Deleted');
+          if (!res.success) toast.error(t(tokens.announcements.toasts.deleteFailed)); else {
+               toast.success(t(tokens.announcements.toasts.deleted));
                if (editingId === id) { formik.resetForm(); setEditingId(null); }
           }
           setRowBusy(null);
@@ -242,8 +246,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
           if (!row) return;
           setRowBusy(id);
           const res = await togglePinAction(id, !row.pinned);
-          if (!res.success) toast.error('Failed to update announcement');
-          else toast.success('Announcement updated successfully');
+          if (!res.success) toast.error(t(tokens.announcements.toasts.updateFailed));
+          else toast.success(t(tokens.announcements.toasts.updateSuccess));
           router.refresh();
           setRowBusy(null);
      };
@@ -255,7 +259,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                     <Box
                          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                     >
-                         <Typography variant="h4" sx={{ mb: 3 }}>Announcements Management</Typography>
+                         <Typography variant="h4" sx={{ mb: 3 }}>{t(tokens.announcements.managementTitle)}</Typography>
                          <Button
                               variant="contained"
                               color="primary"
@@ -264,7 +268,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                    setEditingId(null);
                               }}
                          >
-                              Create New Announcement
+                              {t(tokens.announcements.createNew)}
                          </Button>
                     </Box>
                     <Card>
@@ -274,13 +278,13 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                    <Paper variant="outlined" sx={{ p: 3, position: 'relative' }}>
                                         {formDisabled && (
                                              <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, bgcolor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                  <Typography variant="body2" color="text.secondary">Uploading images...</Typography>
+                                                  <Typography variant="body2" color="text.secondary">{t(tokens.announcements.uploadingImages)}</Typography>
                                              </Box>
                                         )}
                                         <Box component="fieldset" disabled={formDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: formDisabled ? 'none' : 'auto', opacity: formDisabled ? 0.6 : 1 }}>
                                              <Stack spacing={2}>
                                                   <TextField
-                                                       label="Title"
+                                                       label={t(tokens.announcements.form.title)}
                                                        name="title"
                                                        value={formik.values.title}
                                                        onChange={formik.handleChange}
@@ -300,12 +304,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                   </Box>
                                                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
                                                        <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={formDisabled}>
-                                                            <InputLabel id="category-label">Category</InputLabel>
+                                                            <InputLabel id="category-label">{t(tokens.announcements.form.category)}</InputLabel>
                                                             <Select
                                                                  labelId="category-label"
                                                                  name="category"
                                                                  value={formik.values.category}
-                                                                 label="Category"
+                                                                 label={t(tokens.announcements.form.category)}
                                                                  onChange={(e) => {
                                                                       const val = e.target.value;
                                                                       formik.setFieldValue('category', val);
@@ -330,12 +334,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                             if (!cat || cat.subcategories.length === 0) return null;
                                                             return (
                                                                  <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={formDisabled}>
-                                                                      <InputLabel id="subcategory-label">Subcategory</InputLabel>
+                                                                      <InputLabel id="subcategory-label">{t(tokens.announcements.form.subcategory)}</InputLabel>
                                                                       <Select
                                                                            labelId="subcategory-label"
                                                                            name="subcategory"
                                                                            value={formik.values.subcategory}
-                                                                           label="Subcategory"
+                                                                           label={t(tokens.announcements.form.subcategory)}
                                                                            onChange={formik.handleChange}
                                                                            onBlur={formik.handleBlur}
                                                                            fullWidth
@@ -353,28 +357,28 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                        })()}
                                                   </Box>
                                                   <FormControl component="fieldset" disabled={formDisabled}>
-                                                       <FormLabel component="legend">Visibility</FormLabel>
+                                                       <FormLabel component="legend">{t(tokens.announcements.form.visibility)}</FormLabel>
                                                        <RadioGroup
                                                             row
                                                             name="visibility"
                                                             value={formik.values.visibility}
                                                             onChange={(e) => formik.setFieldValue('visibility', e.target.value as AnnouncementScope)}
                                                        >
-                                                            <FormControlLabel value="building" control={<Radio />} label="Building-wide" />
-                                                            <FormControlLabel value="apartments" control={<Radio />} label="Specific apartments" />
-                                                            <FormControlLabel value="tenants" control={<Radio />} label="Specific tenants" />
-                                                            <FormControlLabel value="tenant_groups" control={<Radio />} label="Tenant groups" />
+                                                            <FormControlLabel value="building" control={<Radio />} label={t(tokens.announcements.visibilityValues.buildingWide)} />
+                                                            <FormControlLabel value="apartments" control={<Radio />} label={t(tokens.announcements.visibilityValues.specificApartments)} />
+                                                            <FormControlLabel value="tenants" control={<Radio />} label={t(tokens.announcements.visibilityValues.specificTenants)} />
+                                                            <FormControlLabel value="tenant_groups" control={<Radio />} label={t(tokens.announcements.visibilityValues.tenantGroups)} />
                                                        </RadioGroup>
                                                   </FormControl>
 
                                                   {formik.values.visibility === 'apartments' && (
                                                        <FormControl fullWidth disabled={formDisabled}>
-                                                            <InputLabel id="apartments-label">Apartments</InputLabel>
+                                                            <InputLabel id="apartments-label">{t(tokens.announcements.form.apartments)}</InputLabel>
                                                             <Select
                                                                  labelId="apartments-label"
                                                                  multiple
                                                                  value={formik.values.apartments}
-                                                                 input={<OutlinedInput label="Apartments" />}
+                                                                 input={<OutlinedInput label={t(tokens.announcements.form.apartments)} />}
                                                                  onChange={e => setFieldArray('apartments', e.target.value as string[])}
                                                                  renderValue={(selected) => (
                                                                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -394,12 +398,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
 
                                                   {formik.values.visibility === 'tenants' && (
                                                        <FormControl fullWidth disabled={formDisabled}>
-                                                            <InputLabel id="tenants-label">Tenants</InputLabel>
+                                                            <InputLabel id="tenants-label">{t(tokens.announcements.form.tenants)}</InputLabel>
                                                             <Select
                                                                  labelId="tenants-label"
                                                                  multiple
                                                                  value={formik.values.tenants}
-                                                                 input={<OutlinedInput label="Tenants" />}
+                                                                 input={<OutlinedInput label={t(tokens.announcements.form.tenants)} />}
                                                                  onChange={e => setFieldArray('tenants', e.target.value as string[])}
                                                                  renderValue={(selected) => (
                                                                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -419,12 +423,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
 
                                                   {formik.values.visibility === 'tenant_groups' && (
                                                        <FormControl fullWidth disabled={formDisabled}>
-                                                            <InputLabel id="tenant-groups-label">Tenant groups</InputLabel>
+                                                            <InputLabel id="tenant-groups-label">{t(tokens.announcements.form.tenantGroups)}</InputLabel>
                                                             <Select
                                                                  labelId="tenant-groups-label"
                                                                  multiple
                                                                  value={formik.values.tenant_groups}
-                                                                 input={<OutlinedInput label="Tenant groups" />}
+                                                                 input={<OutlinedInput label={t(tokens.announcements.form.tenantGroups)} />}
                                                                  onChange={e => setFieldArray('tenant_groups', e.target.value as string[])}
                                                                  renderValue={(selected) => (
                                                                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -447,11 +451,11 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                   <Stack spacing={1}>
                                                        <Stack direction="row" alignItems="center" spacing={2}>
                                                             <Button variant="outlined" component="label" disabled={!editingId || imagesUploading}>
-                                                                 {imagesUploading ? 'Uploading...' : 'Upload images'}
+                                                                 {imagesUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadImages)}
                                                                  <input type="file" hidden multiple accept="image/*" onChange={handleImagesUpload} />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingId || currentImages.length === 0 || formDisabled} onClick={handleRemoveAllImages}>Remove all</Button>
-                                                            <Typography variant="caption" color="text.secondary">{currentImages.length} image(s)</Typography>
+                                                            <Button color="error" disabled={!editingId || currentImages.length === 0 || formDisabled} onClick={handleRemoveAllImages}>{t(tokens.announcements.form.removeAllImages)}</Button>
+                                                            <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.imagesCount, { count: currentImages.length })}</Typography>
                                                        </Stack>
                                                        {currentImages.length > 0 && (
                                                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -468,12 +472,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                   </Stack>
                                                   <Divider sx={{ my: 1 }} />
                                                   <Stack direction="row" spacing={3} height={40} alignItems="center" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
-                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label="Pin to top" />
-                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label="Schedule" />
+                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label={t(tokens.announcements.form.pinToTop)} />
+                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label={t(tokens.announcements.form.schedule)} />
                                                        {formik.values.schedule_enabled && (
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                                  <DatePicker
-                                                                      label={'Schedule at'}
+                                                                      label={t(tokens.announcements.form.scheduleAt)}
                                                                       value={formik.values.schedule_at ? dayjs(formik.values.schedule_at) : null}
                                                                       onChange={(date) => {
                                                                            formik.setFieldValue('schedule_at', date ? date.toISOString() : null);
@@ -506,7 +510,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                             }
                                                             loading={formik.isSubmitting && formik.values.status === 'draft'}
                                                        >
-                                                            Save draft
+                                                            {t(tokens.announcements.actions.saveDraft)}
                                                        </Button>
                                                        {formik.values.status === 'published' ? (
                                                             <Button
@@ -515,7 +519,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  onClick={handleUnpublish}
                                                                  disabled={formDisabled || !editingId || rowBusy === editingId}
                                                             >
-                                                                 Unpublish
+                                                                 {t(tokens.announcements.actions.unpublish)}
                                                             </Button>
                                                        ) : (
                                                             <Button
@@ -523,7 +527,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  onClick={handlePublish}
                                                                  disabled={formDisabled || !editingId || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
                                                                  loading={formik.isSubmitting && formik.values.status !== 'draft'}>
-                                                                 Publish
+                                                                 {t(tokens.announcements.actions.publish)}
                                                             </Button>
                                                        )}
                                                   </Stack>
@@ -535,20 +539,20 @@ export default function Announcements({ announcements, tenants, apartments, tena
                               {/* Table Column */}
                               <Grid size={{ xs: 12, md: 5, lg: 4 }}>
                                    <Paper variant="outlined" sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="h6" sx={{ mb: 2 }}>Announcements</Typography>
+                                        <Typography variant="h6" sx={{ mb: 2 }}>{t(tokens.announcements.table.heading)}</Typography>
                                         <TableContainer sx={{ flexGrow: 1 }}>
                                              <Table size="small">
                                                   <TableHead>
                                                        <TableRow>
-                                                            <TableCell>Title</TableCell>
-                                                            <TableCell align="right">Actions</TableCell>
+                                                            <TableCell>{t(tokens.announcements.table.colTitle)}</TableCell>
+                                                            <TableCell align="right">{t(tokens.announcements.table.colActions)}</TableCell>
                                                        </TableRow>
                                                   </TableHead>
                                                   <TableBody>
                                                        {announcements.length === 0 && (
                                                             <TableRow>
                                                                  <TableCell colSpan={2}>
-                                                                      <Typography variant="body2" color="text.secondary">No announcements yet.</Typography>
+                                                                      <Typography variant="body2" color="text.secondary">{t(tokens.announcements.table.noData)}</Typography>
                                                                  </TableCell>
                                                             </TableRow>
                                                        )}
@@ -565,17 +569,17 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                       </Stack>
                                                                  </TableCell>
                                                                  <TableCell align="right">
-                                                                      <Tooltip title={row.pinned ? 'Unpin' : 'Pin'}>
+                                                                      <Tooltip title={row.pinned ? t(tokens.announcements.table.unpin) : t(tokens.announcements.table.pin)}>
                                                                            <IconButton size="small" onClick={() => togglePin(row.id)} disabled={rowBusy === row.id}>
                                                                                 {row.pinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
                                                                            </IconButton>
                                                                       </Tooltip>
-                                                                      <Tooltip title={row.archived ? 'Unarchive' : 'Archive'}>
+                                                                      <Tooltip title={row.archived ? t(tokens.announcements.table.unarchive) : t(tokens.announcements.table.archive)}>
                                                                            <IconButton size="small" onClick={() => toggleArchive(row.id)} disabled={rowBusy === row.id}>
                                                                                 {row.archived ? <ArchiveIcon fontSize="small" /> : <ArchiveOutlinedIcon fontSize="small" />}
                                                                            </IconButton>
                                                                       </Tooltip>
-                                                                      <Tooltip title="Delete">
+                                                                      <Tooltip title={t(tokens.announcements.table.delete)}>
                                                                            <IconButton size="small" color="error" onClick={() => handleDelete(row.id)} disabled={rowBusy === row.id}>
                                                                                 <DeleteIcon fontSize="small" />
                                                                            </IconButton>
@@ -601,12 +605,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                    if (modalState.targetId) await performDelete(modalState.targetId);
                                    setModalState(null);
                               }}
-                              title="Delete announcement"
+                              title={t(tokens.announcements.modals.deleteTitle)}
                               type="confirmation"
-                              confirmText="Delete"
-                              cancelText="Cancel"
+                              confirmText={t(tokens.common.btnDelete)}
+                              cancelText={t(tokens.common.btnCancel)}
                          >
-                              Are you sure you want to permanently delete this announcement? This action cannot be undone.
+                              {t(tokens.announcements.modals.deleteMessage)}
                          </PopupModal>
                     )
                }
@@ -619,12 +623,12 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                    if (modalState.targetId) await performRemoveAllImages(modalState.targetId);
                                    setModalState(null);
                               }}
-                              title="Remove all images"
+                              title={t(tokens.announcements.modals.removeImagesTitle)}
                               type="confirmation"
-                              confirmText="Remove"
-                              cancelText="Cancel"
+                              confirmText={t(tokens.common.btnRemove)}
+                              cancelText={t(tokens.common.btnCancel)}
                          >
-                              Remove all images for this announcement? This cannot be undone.
+                              {t(tokens.announcements.modals.removeImagesMessage)}
                          </PopupModal>
                     )
                }
