@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export type AnnouncementStatus = 'draft' | 'published';
-export type AnnouncementScope = 'building' | 'apartments' | 'tenants' | 'tenant_groups';
+export type AnnouncementScope = 'building' | 'apartments' | 'tenants';
 
 // Category & Subcategory typing --------------------------------------------
 export interface AnnouncementSubcategory {
@@ -144,7 +144,6 @@ export interface Announcement {
      visibility: AnnouncementScope;
      apartments: string[];
      tenants: string[];
-     tenant_groups: string[];
      attachments: File[];
      pinned: boolean;
      archived?: boolean;
@@ -167,7 +166,6 @@ export const announcementInitialValues: Announcement = {
      visibility: 'building',
      apartments: [],
      tenants: [],
-     tenant_groups: [],
      attachments: [],
      pinned: false,
      schedule_enabled: false,
@@ -203,7 +201,7 @@ export const announcementValidationSchema = Yup.object({
           then: s => s.required('Subcategory required'),
           otherwise: s => s
      }),
-     visibility: Yup.mixed<AnnouncementScope>().oneOf(['building', 'apartments', 'tenants', 'tenant_groups']).required('Visibility required'),
+     visibility: Yup.mixed<AnnouncementScope>().oneOf(['building', 'apartments', 'tenants']).required('Visibility required'),
      apartments: Yup.array().of(Yup.string()).default([]).when('visibility', {
           is: 'apartments',
           then: s => s.min(1, 'Select at least one apartment'),
@@ -212,11 +210,6 @@ export const announcementValidationSchema = Yup.object({
      tenants: Yup.array().of(Yup.string()).default([]).when('visibility', {
           is: 'tenants',
           then: s => s.min(1, 'Select at least one tenant'),
-          otherwise: s => s
-     }),
-     tenant_groups: Yup.array().of(Yup.string()).default([]).when('visibility', {
-          is: 'tenant_groups',
-          then: s => s.min(1, 'Select at least one group'),
           otherwise: s => s
      }),
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),

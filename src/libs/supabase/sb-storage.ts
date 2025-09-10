@@ -25,7 +25,7 @@ export const uploadBuildingImagesAndGetUrls = async (
 ): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
      const urls: string[] = [];
 
      try {
@@ -134,7 +134,7 @@ export const removeBuildingImageFilePath = async (
 ): Promise<{ success: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
      try {
           // Extract the file path relative to the bucket
@@ -201,7 +201,7 @@ export const removeAllImagesFromBuilding = async (
 ): Promise<{ success: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
      try {
           const { data: images, error: imagesError } = await supabase
@@ -344,7 +344,7 @@ export const uploadApartmentImagesAndGetUrls = async (
 ): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
      const urls: string[] = [];
 
      try {
@@ -453,7 +453,7 @@ export const removeApartmentImageFilePath = async (
 ): Promise<{ success: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
      try {
           // Extract the file path relative to the bucket
@@ -520,7 +520,7 @@ export const removeApartmentImageFilePath = async (
 export const removeAllImagesFromApartment = async (apartmentid: string): Promise<{ success: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
      try {
           // 1. Get all images for the apartment

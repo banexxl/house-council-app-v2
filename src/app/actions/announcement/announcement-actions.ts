@@ -55,7 +55,7 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                     .in('announcement_id', ids as string[]);
                if (!docErr && docRows) {
                     const docMap = new Map<string, { url: string; name: string; mime?: string }[]>();
-                    for (const row of docRows as any[]) {
+                    for (const row of docRows) {
                          const annId = row.announcement_id as string;
                          const doc = { url: row.document_url as string, name: row.file_name as string, mime: row.mime_type as string | undefined };
                          if (!docMap.has(annId)) docMap.set(annId, []);

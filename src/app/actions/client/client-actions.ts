@@ -357,7 +357,7 @@ export const uploadClientLogoAndGetUrl = async (
      client: string
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
      try {
           const encodedFilePath = ['Clients', sanitizeSegmentForS3(client), 'logo', sanitizeSegmentForS3(file.name)].join('/');

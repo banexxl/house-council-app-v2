@@ -7,7 +7,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 const ANNOUNCEMENT_IMAGES_TABLE = 'tblAnnouncementImages';
 
 // Re-use same bucket env var as other image features
-const getBucket = () => process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+const getBucket = () => process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
 const sanitizeSegmentForS3 = (segment: string): string => {
      return segment
@@ -27,19 +27,23 @@ export interface AnnouncementImageRecord {
 
 /**
  * Upload images for an announcement. Returns public URLs inserted into tblAnnouncementImages.
- * Images are stored under Announcements/<announcementId>/<filename>
+ * Preferred path: clients/<client_name>/images/announcements/<filename>
+ * Fallback path (if clientName not provided): Announcements/<announcementId>/<filename>
  */
-export async function uploadAnnouncementImages(files: File[], announcementId: string): Promise<{ success: boolean; urls?: string[]; error?: string }> {
+export async function uploadAnnouncementImages(files: File[], announcementId: string, client_name: string, announcement_title?: string): Promise<{ success: boolean; urls?: string[]; error?: string }> {
      const supabase = await useServerSideSupabaseAnonClient();
      const bucket = getBucket();
      const urls: string[] = [];
      try {
           for (const file of files) {
                const encodedFilePath = [
-                    'Announcements',
-                    sanitizeSegmentForS3(announcementId),
+                    'clients',
+                    client_name,
+                    'announcements',
+                    sanitizeSegmentForS3(announcement_title || 'untitled'),
+                    'images',
                     sanitizeSegmentForS3(file.name)
-               ].join('/');
+               ].join('/')
 
                const { error: uploadError } = await supabase.storage.from(bucket).upload(encodedFilePath, file, { cacheControl: '3600', upsert: true });
                if (uploadError) {

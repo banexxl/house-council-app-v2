@@ -51,32 +51,37 @@ import { tokens } from 'src/locales/tokens';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { Client } from 'src/types/client';
+import { Building } from 'src/types/building';
+import { Tenant } from 'src/types/tenant';
+import { Apartment } from 'src/types/apartment';
 
 interface AnnouncementProps {
      announcements: Announcement[];
-     tenants: { id: string; name: string }[];
-     apartments: { id: string; name: string }[];
-     tenant_groups?: { id: string; name: string }[]; // optional for now
+     client: Client
+     buildings: Building[]
 }
 
-export default function Announcements({ announcements, tenants, apartments, tenant_groups = [] }: AnnouncementProps) {
+export default function Announcements({ client, announcements, buildings }: AnnouncementProps) {
+
      // Using server-provided announcements directly; any mutations trigger a router refresh.
-     const [editingId, setEditingId] = useState<string | null>(null);
+     const [editingEntity, setEditingEntity] = useState<Announcement | null>(null);
+     const [apartments, setApartments] = useState<Apartment[]>([]);
+     const [tenants, setTenants] = useState<Tenant[]>([]);
      const [rowBusy, setRowBusy] = useState<string | null>(null);
      const [imagesUploading, setImagesUploading] = useState(false);
      const [docsUploading, setDocsUploading] = useState(false);
      const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents'; targetId?: string }>(null);
      const currentImages = React.useMemo(() => {
-          if (!editingId) return [] as string[];
-          const row = announcements.find(a => a.id === editingId);
+          if (!editingEntity) return [] as string[];
+          const row = announcements.find(a => a.id === editingEntity.id);
           return row?.images || [];
-     }, [editingId, announcements]);
+     }, [editingEntity, announcements]);
      const currentDocuments = React.useMemo(() => {
-          if (!editingId) return [] as { url: string; name: string; mime?: string }[];
-          const row: any = announcements.find(a => a.id === editingId);
+          if (!editingEntity) return [] as { url: string; name: string; mime?: string }[];
+          const row: any = announcements.find(a => a.id === editingEntity.id);
           return row?.documents || [];
-     }, [editingId, announcements]);
-     console.log('currentDocuments', currentDocuments);
+     }, [editingEntity, announcements]);
 
      const formDisabled = imagesUploading || docsUploading; // disable interactions while uploads
      const router = useRouter();
@@ -98,7 +103,6 @@ export default function Announcements({ announcements, tenants, apartments, tena
                     visibility: values.visibility,
                     apartments: values.apartments,
                     tenants: values.tenants,
-                    tenant_groups: values.tenant_groups,
                     pinned: values.pinned,
                     schedule_enabled: values.schedule_enabled,
                     schedule_at: values.schedule_enabled ? values.schedule_at : null,
@@ -106,8 +110,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
                };
 
                // Include id when editing so we update instead of creating a new row
-               if (editingId) {
-                    payload.id = editingId;
+               if (editingEntity) {
+                    payload.id = editingEntity.id;
                }
 
                // (Attachments uploading not implemented yet) -> future enhancement
@@ -123,17 +127,17 @@ export default function Announcements({ announcements, tenants, apartments, tena
                if (result.data) toast.success(t(tokens.announcements.toasts.saveSuccess));
 
                helpers.resetForm();
-               setEditingId(null);
+               setEditingEntity(null);
           }
      });
 
      const setFieldArray = (field: string, value: string[]) => formik.setFieldValue(field, value);
 
      const handlePublish = async () => {
-          // New announcement (no editingId): use existing submit flow to create & publish
-          if (!editingId) return; // guarded by disabled state anyway
+          // New announcement (no editingEntity): use existing submit flow to create & publish
+          if (!editingEntity) return; // guarded by disabled state anyway
           // Existing draft -> publish via server action so published_at is set
-          const res = await publishAnnouncement(editingId);
+          const res = await publishAnnouncement(editingEntity.id);
           if (!res.success) {
                toast.error(t(tokens.announcements.toasts.publishError));
                return;
@@ -145,8 +149,8 @@ export default function Announcements({ announcements, tenants, apartments, tena
      };
 
      const handleUnpublish = async () => {
-          if (!editingId) return;
-          const res = await revertToDraft(editingId);
+          if (!editingEntity) return;
+          const res = await revertToDraft(editingEntity.id);
           if (!res.success) {
                toast.error(t(tokens.announcements.toasts.unpublishError));
                return;
@@ -165,7 +169,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           const res = await getAnnouncementById(id);
           if (!res.success || !res.data) return;
           const a: any = res.data;
-          setEditingId(id);
+          setEditingEntity(a);
           formik.setValues({
                id: id,
                title: a.title || '',
@@ -175,7 +179,6 @@ export default function Announcements({ announcements, tenants, apartments, tena
                visibility: a.visibility || 'building',
                apartments: a.apartments || [],
                tenants: a.tenants || [],
-               tenant_groups: a.tenant_groups || [],
                attachments: [],
                pinned: !!a.pinned,
                schedule_enabled: !!a.schedule_at,
@@ -187,7 +190,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
      };
 
      const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-          if (!editingId) {
+          if (!editingEntity) {
                toast.error(t(tokens.announcements.toasts.saveDraftBeforeImages));
                return;
           }
@@ -196,7 +199,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           try {
                setImagesUploading(true);
                const { uploadAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
-               const result = await uploadAnnouncementImages(fileList as any, editingId); // casting for server action transport
+               const result = await uploadAnnouncementImages(fileList as any, editingEntity.id, client.name, editingEntity.title); // casting for server action transport
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
                } else if (result.urls) {
@@ -210,19 +213,19 @@ export default function Announcements({ announcements, tenants, apartments, tena
      };
 
      const handleRemoveImage = async (url: string) => {
-          if (!editingId) return;
+          if (!editingEntity) return;
           const { removeAnnouncementImage } = await import('src/app/actions/announcement/announcement-image-actions');
-          const res = await removeAnnouncementImage(editingId, url);
+          const res = await removeAnnouncementImage(editingEntity.id, url);
           if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed)); else { toast.success(t(tokens.announcements.toasts.removeImageSuccess)); router.refresh(); }
      };
 
      const handleRemoveAllImages = async () => {
-          if (!editingId) return;
-          setModalState({ type: 'remove-all-images', targetId: editingId });
+          if (!editingEntity) return;
+          setModalState({ type: 'remove-all-images', targetId: editingEntity.id });
      };
 
      const handleDocumentsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-          if (!editingId) {
+          if (!editingEntity) {
                toast.error(t(tokens.announcements.toasts.saveDraftBeforeImages));
                return;
           }
@@ -231,7 +234,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           try {
                setDocsUploading(true);
                const { uploadAnnouncementDocuments } = await import('src/app/actions/announcement/announcement-document-actions');
-               const result = await uploadAnnouncementDocuments(fileList as any, editingId);
+               const result = await uploadAnnouncementDocuments(fileList as any, editingEntity.id, client.name, editingEntity.title); // casting for server action transport
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
                } else if (result.urls) {
@@ -245,15 +248,15 @@ export default function Announcements({ announcements, tenants, apartments, tena
      };
 
      const handleRemoveDocument = async (url: string) => {
-          if (!editingId) return;
+          if (!editingEntity) return;
           const { removeAnnouncementDocument } = await import('src/app/actions/announcement/announcement-document-actions');
-          const res = await removeAnnouncementDocument(editingId, url);
+          const res = await removeAnnouncementDocument(editingEntity.id, url);
           if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed)); else { toast.success(t(tokens.announcements.toasts.removeImageSuccess)); router.refresh(); }
      };
 
      const handleRemoveAllDocuments = async () => {
-          if (!editingId) return;
-          setModalState({ type: 'remove-all-documents', targetId: editingId });
+          if (!editingEntity) return;
+          setModalState({ type: 'remove-all-documents', targetId: editingEntity.id });
      };
 
      const performRemoveAllDocuments = async (id: string) => {
@@ -286,7 +289,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
           const res = await deleteAnnouncement(id);
           if (!res.success) toast.error(t(tokens.announcements.toasts.deleteFailed)); else {
                toast.success(t(tokens.announcements.toasts.deleted));
-               if (editingId === id) { formik.resetForm(); setEditingId(null); }
+               if (editingEntity!.id === id!) { formik.resetForm(); setEditingEntity(null); }
           }
           setRowBusy(null);
      };
@@ -315,7 +318,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                               color="primary"
                               onClick={() => {
                                    formik.resetForm();
-                                   setEditingId(null);
+                                   setEditingEntity(null);
                               }}
                          >
                               {t(tokens.announcements.createNew)}
@@ -417,7 +420,6 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                             <FormControlLabel value="building" control={<Radio />} label={t(tokens.announcements.visibilityValues.buildingWide)} />
                                                             <FormControlLabel value="apartments" control={<Radio />} label={t(tokens.announcements.visibilityValues.specificApartments)} />
                                                             <FormControlLabel value="tenants" control={<Radio />} label={t(tokens.announcements.visibilityValues.specificTenants)} />
-                                                            <FormControlLabel value="tenant_groups" control={<Radio />} label={t(tokens.announcements.visibilityValues.tenantGroups)} />
                                                        </RadioGroup>
                                                   </FormControl>
 
@@ -433,14 +435,14 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  renderValue={(selected) => (
                                                                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                            {(selected as string[]).map(value => (
-                                                                                <Chip key={value} label={apartments.find(a => a.id === value)?.name || value} />
+                                                                                <Chip key={value} label={apartments.find(a => a.id === value)?.id || value} />
                                                                            ))}
                                                                       </Box>
                                                                  )}
                                                                  disabled={formDisabled}
                                                             >
                                                                  {apartments.map(ap => (
-                                                                      <MenuItem key={ap.id} value={ap.id}>{ap.name}</MenuItem>
+                                                                      <MenuItem key={ap.id} value={ap.id}>{ap.apartment_number}</MenuItem>
                                                                  ))}
                                                             </Select>
                                                        </FormControl>
@@ -458,39 +460,14 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  renderValue={(selected) => (
                                                                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                            {(selected as string[]).map(value => (
-                                                                                <Chip key={value} label={tenants.find(t => t.id === value)?.name || value} />
+                                                                                <Chip key={value} label={tenants.find(t => t.id === value)?.id || value} />
                                                                            ))}
                                                                       </Box>
                                                                  )}
                                                                  disabled={formDisabled}
                                                             >
                                                                  {tenants.map(tn => (
-                                                                      <MenuItem key={tn.id} value={tn.id}>{tn.name}</MenuItem>
-                                                                 ))}
-                                                            </Select>
-                                                       </FormControl>
-                                                  )}
-
-                                                  {formik.values.visibility === 'tenant_groups' && (
-                                                       <FormControl fullWidth disabled={formDisabled}>
-                                                            <InputLabel id="tenant-groups-label">{t(tokens.announcements.form.tenantGroups)}</InputLabel>
-                                                            <Select
-                                                                 labelId="tenant-groups-label"
-                                                                 multiple
-                                                                 value={formik.values.tenant_groups}
-                                                                 input={<OutlinedInput label={t(tokens.announcements.form.tenantGroups)} />}
-                                                                 onChange={e => setFieldArray('tenant_groups', e.target.value as string[])}
-                                                                 renderValue={(selected) => (
-                                                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                           {(selected as string[]).map(value => (
-                                                                                <Chip key={value} label={tenant_groups.find(g => g.id === value)?.name || value} />
-                                                                           ))}
-                                                                      </Box>
-                                                                 )}
-                                                                 disabled={formDisabled}
-                                                            >
-                                                                 {tenant_groups.map(g => (
-                                                                      <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+                                                                      <MenuItem key={tn.id} value={tn.id}>{tn.first_name + ' ' + tn.last_name}</MenuItem>
                                                                  ))}
                                                             </Select>
                                                        </FormControl>
@@ -500,11 +477,11 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                   <Divider sx={{ my: 1 }} />
                                                   <Stack spacing={1}>
                                                        <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Button variant="outlined" component="label" disabled={!editingId || imagesUploading}>
+                                                            <Button variant="outlined" component="label" disabled={!editingEntity || imagesUploading}>
                                                                  {imagesUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadImages)}
                                                                  <input type="file" hidden multiple accept="image/*" onChange={handleImagesUpload} />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingId || currentImages.length === 0 || formDisabled} onClick={handleRemoveAllImages}>{t(tokens.announcements.form.removeAllImages)}</Button>
+                                                            <Button color="error" disabled={!editingEntity || currentImages.length === 0 || formDisabled} onClick={handleRemoveAllImages}>{t(tokens.announcements.form.removeAllImages)}</Button>
                                                             <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.imagesCount, { count: currentImages.length })}</Typography>
                                                        </Stack>
                                                        {currentImages.length > 0 && (
@@ -524,11 +501,11 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                   <Divider sx={{ my: 2 }} />
                                                   <Stack spacing={1}>
                                                        <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Button variant="outlined" component="label" disabled={!editingId || docsUploading}>
+                                                            <Button variant="outlined" component="label" disabled={!editingEntity || docsUploading}>
                                                                  {docsUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadDocuments || 'Upload documents')}
                                                                  <input type="file" hidden multiple onChange={handleDocumentsUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.ppt,.pptx,.odt,.ods,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/zip" />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingId || currentDocuments.length === 0 || formDisabled} onClick={handleRemoveAllDocuments}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
+                                                            <Button color="error" disabled={!editingEntity?.id || currentDocuments.length === 0 || formDisabled} onClick={handleRemoveAllDocuments}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
                                                             <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.documentsCount || 'Documents: {{count}}', { count: currentDocuments.length })}</Typography>
                                                        </Stack>
                                                        {currentDocuments.length > 0 && (
@@ -593,7 +570,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  variant="contained"
                                                                  color="warning"
                                                                  onClick={handleUnpublish}
-                                                                 disabled={formDisabled || !editingId || rowBusy === editingId}
+                                                                 disabled={formDisabled || !editingEntity?.id || rowBusy === editingEntity?.id}
                                                             >
                                                                  {t(tokens.announcements.actions.unpublish)}
                                                             </Button>
@@ -601,7 +578,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                             <Button
                                                                  variant="contained"
                                                                  onClick={handlePublish}
-                                                                 disabled={formDisabled || !editingId || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
+                                                                 disabled={formDisabled || !editingEntity?.id || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
                                                                  loading={formik.isSubmitting && formik.values.status !== 'draft'}>
                                                                  {t(tokens.announcements.actions.publish)}
                                                             </Button>
@@ -637,7 +614,7 @@ export default function Announcements({ announcements, tenants, apartments, tena
                                                                  key={row.id}
                                                                  onClick={() => handleEdit(row.id)}
                                                                  hover
-                                                                 sx={{ backgroundColor: editingId === row.id ? 'action.selected' : 'inherit' }}>
+                                                                 sx={{ backgroundColor: editingEntity?.id === row.id ? 'action.selected' : 'inherit' }}>
                                                                  <TableCell sx={{ maxWidth: 240, cursor: 'pointer' }}>
                                                                       <Stack direction="row" spacing={1} alignItems="center">
                                                                            {row.pinned && <PushPinIcon color="primary" fontSize="small" />}

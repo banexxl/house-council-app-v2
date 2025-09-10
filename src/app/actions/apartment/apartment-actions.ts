@@ -6,7 +6,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
 
-export const getAllApartments = async (): Promise<{ success: boolean; error?: string; data?: Apartment[] }> => {
+export async function getAllApartments(): Promise<{ success: boolean; error?: string; data?: Apartment[] }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -91,6 +91,40 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      });
 
      return { success: true, data: { apartments: apartments ?? [], building_images: imageRecords ?? [] } };
+}
+
+export async function getApartmentsFromClientsBuilding(clientid: string, buildingid: string): Promise<{ success: boolean; error?: string; data?: Apartment[] }> {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase.from("tblApartments").select("*").eq("building_id", buildingid);
+
+     if (error) {
+          await logServerAction({
+               action: "getApartmentsFromClientsBuilding",
+               duration_ms: Date.now() - time,
+               error: error.message,
+               payload: { clientid, buildingid },
+               status: "fail",
+               type: "db",
+               user_id: clientid,
+               id: buildingid,
+          });
+          return { success: false, error: error.message };
+     }
+
+     await logServerAction({
+          action: "getApartmentsFromClientsBuilding",
+          duration_ms: Date.now() - time,
+          error: "",
+          payload: { clientid, buildingid },
+          status: "success",
+          type: "db",
+          user_id: clientid,
+          id: buildingid,
+     });
+
+     return { success: true, data };
 }
 
 export async function getApartmentById(id: string): Promise<{ success: boolean; error?: string; data?: Apartment }> {

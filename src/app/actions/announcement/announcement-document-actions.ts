@@ -5,7 +5,7 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 
 // Prefer a dedicated documents bucket if provided, else fall back to images bucket
-const getBucket = () => process.env.SUPABASE_S3_CLIENT_DOCS_BUCKET || process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+const getBucket = () => process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
 const ANNOUNCEMENT_DOCUMENTS_TABLE = 'tblAnnouncementDocuments';
 
@@ -29,7 +29,8 @@ export interface AnnouncementDocumentRecord {
 
 /**
  * Upload documents for an announcement. Stores metadata in tblAnnouncementDocuments.
- * Path: Announcements/<announcementId>/docs/<filename>
+ * New storage path pattern (preferred): clients/<client_name>/docs/announcements/<filename>
+ * If clientName not provided, falls back to: Announcements/<announcementId>/docs/<filename>
  */
 // Allowed document extensions & mime types (ext mapped for quick validation)
 const ALLOWED_DOC_EXTENSIONS: Record<string, string> = {
@@ -49,7 +50,8 @@ const ALLOWED_DOC_EXTENSIONS: Record<string, string> = {
 
 const MAX_DOC_SIZE_BYTES = 15 * 1024 * 1024; // 15MB safeguard
 
-export async function uploadAnnouncementDocuments(files: File[], announcementId: string): Promise<{ success: boolean; urls?: { url: string; name: string; mime: string }[]; error?: string }> {
+export async function uploadAnnouncementDocuments(files: File[], announcementId: string, client_name: string, announcement_title?: string): Promise<{ success: boolean; urls?: { url: string; name: string; mime: string }[]; error?: string }> {
+
      const supabase = await useServerSideSupabaseAnonClient();
      const bucket = getBucket();
      const urls: { url: string; name: string; mime: string }[] = [];
@@ -71,16 +73,19 @@ export async function uploadAnnouncementDocuments(files: File[], announcementId:
                // Some browsers may give a generic or empty type for certain office docs; fallback to ext mapping
                const finalMime = (file as any).type && (file as any).type !== '' ? (file as any).type : mimeFromExt;
 
+
                const encodedFilePath = [
-                    'Announcements',
-                    sanitizeSegmentForS3(announcementId),
+                    'clients',
+                    client_name,
+                    'announcements',
+                    sanitizeSegmentForS3(announcement_title || 'untitled'),
                     'docs',
-                    // Ensure we keep extension (sanitize base then append extension)
+                    sanitizeSegmentForS3(file.name),
                     (() => {
                          const base = sanitizeSegmentForS3(originalName.replace(/\.[^.]+$/, '')) || 'file';
                          return `${base}.${ext}`;
                     })()
-               ].join('/');
+               ].join('/')
 
                // Some storage backends may reject certain Office Open XML MIME types; provide safe fallback logic.
                const SAFE_CONTENT_TYPES = new Set([
