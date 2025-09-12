@@ -11,6 +11,7 @@ export type LogType =
      | 'external'
      | 'internal'
      | 'system'
+     | 'storage'
      | 'unknown';
 
 export type ServerLog = {

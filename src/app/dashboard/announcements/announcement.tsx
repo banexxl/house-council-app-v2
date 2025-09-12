@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
      Box,
      Stack,
@@ -66,22 +66,10 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      // Using server-provided announcements directly; any mutations trigger a router refresh.
      const [editingEntity, setEditingEntity] = useState<Announcement | null>(null);
-     const [apartments, setApartments] = useState<Apartment[]>([]);
-     const [tenants, setTenants] = useState<Tenant[]>([]);
      const [rowBusy, setRowBusy] = useState<string | null>(null);
      const [imagesUploading, setImagesUploading] = useState(false);
      const [docsUploading, setDocsUploading] = useState(false);
      const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents'; targetId?: string }>(null);
-     const currentImages = React.useMemo(() => {
-          if (!editingEntity) return [] as string[];
-          const row = announcements.find(a => a.id === editingEntity.id);
-          return row?.images || [];
-     }, [editingEntity, announcements]);
-     const currentDocuments = React.useMemo(() => {
-          if (!editingEntity) return [] as { url: string; name: string; mime?: string }[];
-          const row: any = announcements.find(a => a.id === editingEntity.id);
-          return row?.documents || [];
-     }, [editingEntity, announcements]);
 
      const formDisabled = imagesUploading || docsUploading; // disable interactions while uploads
      const router = useRouter();
@@ -101,8 +89,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     category: values.category || null,
                     subcategory: values.subcategory || null,
                     visibility: values.visibility,
-                    apartments: values.apartments,
-                    tenants: values.tenants,
+                    buildings: values.buildings || [],
                     pinned: values.pinned,
                     schedule_enabled: values.schedule_enabled,
                     schedule_at: values.schedule_enabled ? values.schedule_at : null,
@@ -130,6 +117,21 @@ export default function Announcements({ client, announcements, buildings }: Anno
                setEditingEntity(null);
           }
      });
+
+     // Derive current images/documents from formik for immediate reflection of optimistic updates;
+     // fall back to editingEntity data if formik arrays are empty but entity has media.
+     const currentImages = useMemo(() => {
+          if (!editingEntity) return [] as string[];
+          const formImages = (formik.values.images || []) as string[];
+          if (formImages.length > 0) return formImages;
+          return editingEntity.images || [];
+     }, [editingEntity, formik.values.images]);
+     const currentDocuments = useMemo(() => {
+          if (!editingEntity) return [] as { url: string; name: string; mime?: string }[];
+          const formDocs = (formik.values.documents || []) as { url: string; name: string; mime?: string }[];
+          if (formDocs.length > 0) return formDocs;
+          return editingEntity.documents || [];
+     }, [editingEntity, formik.values.documents]);
 
      const setFieldArray = (field: string, value: string[]) => formik.setFieldValue(field, value);
 
@@ -167,8 +169,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const handleEdit = async (id: string) => {
           const res = await getAnnouncementById(id);
+
           if (!res.success || !res.data) return;
-          const a: any = res.data;
+          const a: Announcement = res.data;
           setEditingEntity(a);
           formik.setValues({
                id: id,
@@ -177,15 +180,16 @@ export default function Announcements({ client, announcements, buildings }: Anno
                category: a.category || '',
                subcategory: a.subcategory || '',
                visibility: a.visibility || 'building',
-               apartments: a.apartments || [],
-               tenants: a.tenants || [],
+               buildings: a.buildings || [],
                attachments: [],
                pinned: !!a.pinned,
                schedule_enabled: !!a.schedule_at,
                created_at: a.created_at,
                schedule_at: a.schedule_at || null,
                status: a.status || 'draft',
-               user_id: a.user_id
+               user_id: a.user_id,
+               images: (a.images && a.images.length ? a.images : []),
+               documents: (a.documents && a.documents.length ? a.documents : []),
           });
      };
 
@@ -204,10 +208,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
                } else if (result.urls) {
                     toast.success(t(tokens.announcements.toasts.imagesUploaded));
+                    // Immediate optimistic update of form images
+                    const current = formik.values.images || [];
+                    formik.setFieldValue('images', [...current, ...result.urls]);
                }
           } finally {
                setImagesUploading(false);
                e.target.value = '';
+               // Optional server refresh for persistence; keep to ensure consistency
                router.refresh();
           }
      };
@@ -216,7 +224,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
           if (!editingEntity) return;
           const { removeAnnouncementImage } = await import('src/app/actions/announcement/announcement-image-actions');
           const res = await removeAnnouncementImage(editingEntity.id, url);
-          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed)); else { toast.success(t(tokens.announcements.toasts.removeImageSuccess)); router.refresh(); }
+          if (!res.success) {
+               toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed));
+          } else {
+               toast.success(t(tokens.announcements.toasts.removeImageSuccess));
+               // Optimistically remove from formik
+               formik.setFieldValue('images', (formik.values.images || []).filter(i => i !== url));
+               router.refresh();
+          }
      };
 
      const handleRemoveAllImages = async () => {
@@ -239,6 +254,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
                } else if (result.urls) {
                     toast.success(t(tokens.announcements.toasts.documentsUploaded || tokens.announcements.toasts.imagesUploaded));
+                    // Optimistically append documents to formik
+                    const current = formik.values.documents || [];
+                    formik.setFieldValue('documents', [...current, ...result.urls]);
                }
           } finally {
                setDocsUploading(false);
@@ -251,7 +269,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
           if (!editingEntity) return;
           const { removeAnnouncementDocument } = await import('src/app/actions/announcement/announcement-document-actions');
           const res = await removeAnnouncementDocument(editingEntity.id, url);
-          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed)); else { toast.success(t(tokens.announcements.toasts.removeImageSuccess)); router.refresh(); }
+          if (!res.success) {
+               toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed));
+          } else {
+               toast.success(t(tokens.announcements.toasts.removeImageSuccess));
+               formik.setFieldValue('documents', (formik.values.documents || []).filter((d: any) => d.url !== url));
+               router.refresh();
+          }
      };
 
      const handleRemoveAllDocuments = async () => {
@@ -262,13 +286,25 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const performRemoveAllDocuments = async (id: string) => {
           const { removeAllAnnouncementDocuments } = await import('src/app/actions/announcement/announcement-document-actions');
           const res = await removeAllAnnouncementDocuments(id);
-          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed)); else { toast.success(t(tokens.announcements.toasts.removeImagesSuccess)); router.refresh(); }
+          if (!res.success) {
+               toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed));
+          } else {
+               toast.success(t(tokens.announcements.toasts.removeImagesSuccess));
+               formik.setFieldValue('documents', []);
+               router.refresh();
+          }
      };
 
      const performRemoveAllImages = async (id: string) => {
           const { removeAllAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
           const res = await removeAllAnnouncementImages(id);
-          if (!res.success) toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed)); else { toast.success(t(tokens.announcements.toasts.removeImagesSuccess)); router.refresh(); }
+          if (!res.success) {
+               toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed));
+          } else {
+               toast.success(t(tokens.announcements.toasts.removeImagesSuccess));
+               formik.setFieldValue('images', []);
+               router.refresh();
+          }
      };
 
      const toggleArchive = async (id: string) => {
@@ -409,69 +445,45 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             );
                                                        })()}
                                                   </Box>
-                                                  <FormControl component="fieldset" disabled={formDisabled}>
-                                                       <FormLabel component="legend">{t(tokens.announcements.form.visibility)}</FormLabel>
-                                                       <RadioGroup
-                                                            row
-                                                            name="visibility"
-                                                            value={formik.values.visibility}
-                                                            onChange={(e) => formik.setFieldValue('visibility', e.target.value as AnnouncementScope)}
+                                                  {/* Buildings multi-select (replaces simple building visibility radio) */}
+                                                  <FormControl fullWidth disabled={formDisabled}>
+                                                       <InputLabel id="buildings-label">{t('buildings.buildingsTitle')}</InputLabel>
+                                                       <Select
+                                                            labelId="buildings-label"
+                                                            multiple
+                                                            name="buildings"
+                                                            value={formik.values.buildings || []}
+                                                            onChange={(e) => formik.setFieldValue('buildings', e.target.value)}
+                                                            input={<OutlinedInput label={t('buildings.buildingsTitle')} />}
+                                                            renderValue={(selected) => (
+                                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                                      {(selected as string[]).map((id) => {
+                                                                           const b = buildings.find(b => b.id === id);
+                                                                           let label = id;
+                                                                           if (b?.building_location) {
+                                                                                const loc: any = b.building_location as any;
+                                                                                const parts = [loc.street_address, loc.street_number, loc.city].filter(Boolean);
+                                                                                if (parts.length) label = parts.join(' ');
+                                                                           }
+                                                                           return <Chip key={id} label={label} size="small" />;
+                                                                      })}
+                                                                 </Box>
+                                                            )}
                                                        >
-                                                            <FormControlLabel value="building" control={<Radio />} label={t(tokens.announcements.visibilityValues.buildingWide)} />
-                                                            <FormControlLabel value="apartments" control={<Radio />} label={t(tokens.announcements.visibilityValues.specificApartments)} />
-                                                            <FormControlLabel value="tenants" control={<Radio />} label={t(tokens.announcements.visibilityValues.specificTenants)} />
-                                                       </RadioGroup>
+                                                            {buildings.map(b => (
+                                                                 <MenuItem key={b.id} value={b.id}>
+                                                                      <Checkbox checked={(formik.values.buildings || []).indexOf(b.id) > -1} />
+                                                                      <Typography variant="body2">
+                                                                           {b.building_location ? [b.building_location.street_address, b.building_location.street_number, b.building_location.city].filter(Boolean).join(' ') : b.id}
+                                                                      </Typography>
+                                                                 </MenuItem>
+                                                            ))}
+                                                       </Select>
+                                                       <Typography variant="caption" color="text.secondary">
+                                                            {t(tokens.announcements.form.visibility)}: {t(tokens.announcements.visibilityValues.buildingWide)}
+                                                       </Typography>
                                                   </FormControl>
 
-                                                  {formik.values.visibility === 'apartments' && (
-                                                       <FormControl fullWidth disabled={formDisabled}>
-                                                            <InputLabel id="apartments-label">{t(tokens.announcements.form.apartments)}</InputLabel>
-                                                            <Select
-                                                                 labelId="apartments-label"
-                                                                 multiple
-                                                                 value={formik.values.apartments}
-                                                                 input={<OutlinedInput label={t(tokens.announcements.form.apartments)} />}
-                                                                 onChange={e => setFieldArray('apartments', e.target.value as string[])}
-                                                                 renderValue={(selected) => (
-                                                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                           {(selected as string[]).map(value => (
-                                                                                <Chip key={value} label={apartments.find(a => a.id === value)?.id || value} />
-                                                                           ))}
-                                                                      </Box>
-                                                                 )}
-                                                                 disabled={formDisabled}
-                                                            >
-                                                                 {apartments.map(ap => (
-                                                                      <MenuItem key={ap.id} value={ap.id}>{ap.apartment_number}</MenuItem>
-                                                                 ))}
-                                                            </Select>
-                                                       </FormControl>
-                                                  )}
-
-                                                  {formik.values.visibility === 'tenants' && (
-                                                       <FormControl fullWidth disabled={formDisabled}>
-                                                            <InputLabel id="tenants-label">{t(tokens.announcements.form.tenants)}</InputLabel>
-                                                            <Select
-                                                                 labelId="tenants-label"
-                                                                 multiple
-                                                                 value={formik.values.tenants}
-                                                                 input={<OutlinedInput label={t(tokens.announcements.form.tenants)} />}
-                                                                 onChange={e => setFieldArray('tenants', e.target.value as string[])}
-                                                                 renderValue={(selected) => (
-                                                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                           {(selected as string[]).map(value => (
-                                                                                <Chip key={value} label={tenants.find(t => t.id === value)?.id || value} />
-                                                                           ))}
-                                                                      </Box>
-                                                                 )}
-                                                                 disabled={formDisabled}
-                                                            >
-                                                                 {tenants.map(tn => (
-                                                                      <MenuItem key={tn.id} value={tn.id}>{tn.first_name + ' ' + tn.last_name}</MenuItem>
-                                                                 ))}
-                                                            </Select>
-                                                       </FormControl>
-                                                  )}
 
                                                   {/* Images Section */}
                                                   <Divider sx={{ my: 1 }} />

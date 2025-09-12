@@ -164,7 +164,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                         onMouseEnter={() => setHoveredImageIndex(index)}
                         onMouseLeave={() => setHoveredImageIndex(null)}
                       >
-                        <Tooltip title={image ? image.split('/').pop() : ''} placement="top">
+                        <Tooltip title={image ? image.split('/').pop()?.split('?')[0] : ''} placement="top">
                           <img
                             src={image}
                             alt={`Uploaded ${index + 1}`}

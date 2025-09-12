@@ -3,19 +3,72 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { Announcement, AnnouncementStatus } from 'src/types/announcement';
-import { BaseNotification, Notification } from 'src/types/notification';
+import { Announcement } from 'src/types/announcement';
+import { BaseNotification } from 'src/types/notification';
 import { validate as isUUID } from 'uuid';
+import { toStorageRef } from 'src/utils/sb-bucket';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
+
+// ===== Signing helpers (internal) =====
+const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
+const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
+
+type Ref = { bucket: string; path: string };
+
+function makeRef(
+     bucketMaybe: string | null | undefined,
+     pathMaybe: string | null | undefined,
+     legacyUrl?: string | null
+): Ref | null {
+     if (pathMaybe) return { bucket: bucketMaybe ?? DEFAULT_BUCKET, path: pathMaybe };
+     if (legacyUrl) {
+          const parsed = toStorageRef(legacyUrl);
+          if (parsed) return parsed;
+     }
+     return null;
+}
+
+async function signMany(
+     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
+     refs: Ref[]
+) {
+     const out = new Map<string, string>();
+     if (!refs?.length) return out;
+
+     // Group & dedupe by bucket
+     const byBucket = new Map<string, string[]>();
+     for (const r of refs) {
+          const arr = byBucket.get(r.bucket) ?? [];
+          if (!arr.includes(r.path)) arr.push(r.path);
+          byBucket.set(r.bucket, arr);
+     }
+
+     for (const [bucket, paths] of byBucket) {
+          if (!paths.length) continue;
+          const { data, error } = await supabase.storage
+               .from(bucket)
+               .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
+          if (error || !data) continue;
+          data.forEach((d, i) => {
+               if (d?.signedUrl) out.set(`${bucket}::${paths[i]}`, d.signedUrl);
+          });
+     }
+
+     return out;
+}
 
 // ============================= READ OPERATIONS =============================
 export async function getAnnouncements(): Promise<{ success: boolean; error?: string; data?: Announcement[] }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data, error } = await supabase.from(ANNOUNCEMENTS_TABLE).select('*').order('created_at', { ascending: false });
+     const { data, error } = await supabase
+          .from(ANNOUNCEMENTS_TABLE)
+          .select('*')
+          .order('created_at', { ascending: false });
+
      if (error) {
           await logServerAction({
                user_id: null,
@@ -24,59 +77,142 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                error: error.message,
                payload: {},
                status: 'fail',
-               type: 'db'
+               type: 'db',
           });
           return { success: false, error: error.message };
      }
 
-     // Attach images for all announcements in a single additional query
      let enriched: Announcement[] = data as Announcement[];
+
+     // ---- Enrich with signed images + docs + buildings (best effort) ----
      try {
-          const ids = enriched.map(a => a.id).filter(Boolean);
+          const ids = enriched.map(a => a.id).filter(Boolean) as string[];
           if (ids.length > 0) {
-               const { data: imgRows, error: imgErr } = await supabase
-                    .from('tblAnnouncementImages')
-                    .select('announcement_id,image_url')
-                    .in('announcement_id', ids as string[]);
-               if (!imgErr && imgRows) {
-                    const map = new Map<string, string[]>();
-                    for (const row of imgRows) {
-                         const annId = (row as any).announcement_id as string;
-                         const url = (row as any).image_url as string;
-                         if (!map.has(annId)) map.set(annId, []);
-                         map.get(annId)!.push(url);
+               // Images + Docs (new columns + legacy)
+               const [{ data: imgRows }, { data: docRows }] = await Promise.all([
+                    supabase
+                         .from('tblAnnouncementImages')
+                         .select('announcement_id, storage_bucket, storage_path, image_url')
+                         .in('announcement_id', ids),
+                    supabase
+                         .from('tblAnnouncementDocuments')
+                         .select('announcement_id, storage_bucket, storage_path, document_url, file_name, mime_type')
+                         .in('announcement_id', ids),
+               ]);
+
+               // Build refs to sign
+               const imageRefs: Ref[] = (imgRows ?? [])
+                    .map(r =>
+                         makeRef((r as any).storage_bucket, (r as any).storage_path, (r as any).image_url)
+                    )
+                    .filter(Boolean) as Ref[];
+
+               const docRefs: Ref[] = (docRows ?? [])
+                    .map(r =>
+                         makeRef((r as any).storage_bucket, (r as any).storage_path, (r as any).document_url)
+                    )
+                    .filter(Boolean) as Ref[];
+
+               const signedMap = await signMany(supabase, [...imageRefs, ...docRefs]);
+
+               // Map announcement_id → signed image urls
+               const imagesMap = new Map<string, string[]>();
+               for (const r of imgRows ?? []) {
+                    const bucket = (r as any).storage_bucket ?? DEFAULT_BUCKET;
+                    const path = (r as any).storage_path;
+                    let key: string | null = null;
+
+                    if (path) key = `${bucket}::${path}`;
+                    else if ((r as any).image_url) {
+                         const parsed = toStorageRef((r as any).image_url);
+                         if (parsed) key = `${parsed.bucket}::${parsed.path}`;
                     }
-                    enriched = enriched.map(a => ({ ...a, images: map.get(a.id!) || [] }));
+
+                    if (!key) continue;
+                    const signed = signedMap.get(key);
+                    if (!signed) continue;
+
+                    const annId = (r as any).announcement_id as string;
+                    const arr = imagesMap.get(annId) ?? [];
+                    arr.push(signed);
+                    imagesMap.set(annId, arr);
                }
-               // Documents enrichment
-               const { data: docRows, error: docErr } = await supabase
-                    .from('tblAnnouncementDocuments')
-                    .select('announcement_id,document_url,file_name,mime_type')
-                    .in('announcement_id', ids as string[]);
-               if (!docErr && docRows) {
-                    const docMap = new Map<string, { url: string; name: string; mime?: string }[]>();
-                    for (const row of docRows) {
-                         const annId = row.announcement_id as string;
-                         const doc = { url: row.document_url as string, name: row.file_name as string, mime: row.mime_type as string | undefined };
-                         if (!docMap.has(annId)) docMap.set(annId, []);
-                         docMap.get(annId)!.push(doc);
+
+               // Map announcement_id → signed doc items
+               const docsMap = new Map<string, { url: string; name: string; mime?: string }[]>();
+               for (const r of docRows ?? []) {
+                    const bucket = (r as any).storage_bucket ?? DEFAULT_BUCKET;
+                    const path = (r as any).storage_path;
+                    let key: string | null = null;
+
+                    if (path) key = `${bucket}::${path}`;
+                    else if ((r as any).document_url) {
+                         const parsed = toStorageRef((r as any).document_url);
+                         if (parsed) key = `${parsed.bucket}::${parsed.path}`;
                     }
-                    enriched = enriched.map(a => ({ ...a, documents: (docMap.get(a.id!) || []) }));
+
+                    if (!key) continue;
+                    const signed = signedMap.get(key);
+                    if (!signed) continue;
+
+                    const annId = (r as any).announcement_id as string;
+                    const item = {
+                         url: signed,
+                         name: (r as any).file_name as string,
+                         mime: ((r as any).mime_type as string) || undefined,
+                    };
+                    const arr = docsMap.get(annId) ?? [];
+                    arr.push(item);
+                    docsMap.set(annId, arr);
                }
+
+               // Attach to each announcement
+               enriched = enriched.map(a => ({
+                    ...a,
+                    images: imagesMap.get(a.id!) || [],
+                    documents: docsMap.get(a.id!) || [],
+               }));
+
+               // Buildings enrichment (many-to-many pivot) — unchanged
+               try {
+                    const { data: buildingRows, error: bErr } = await supabase
+                         .from('tblBuilding_Announcement')
+                         .select('announcement_id,building_id')
+                         .in('announcement_id', ids);
+                    if (!bErr && buildingRows) {
+                         const bMap = new Map<string, string[]>();
+                         for (const row of buildingRows as any[]) {
+                              const annId = row.announcement_id as string;
+                              const bId = row.building_id as string;
+                              if (!bMap.has(annId)) bMap.set(annId, []);
+                              bMap.get(annId)!.push(bId);
+                         }
+                         enriched = enriched.map(a => ({ ...a, buildings: bMap.get(a.id!) || [] }));
+                    }
+               } catch { /* ignore buildings enrichment errors */ }
           }
-     } catch { /* ignore image enrichment errors */ }
+     } catch { /* ignore enrichment errors */ }
 
      await logServerAction({
-          user_id: null, action: 'getAnnouncements', duration_ms: Date.now() - time, error: '', payload: { count: enriched.length }, status: 'success', type: 'db'
+          user_id: null,
+          action: 'getAnnouncements',
+          duration_ms: Date.now() - time,
+          error: '',
+          payload: { count: enriched.length },
+          status: 'success',
+          type: 'db',
      });
      return { success: true, data: enriched };
 }
 
+// Single by ID, with enrichment
 export async function getAnnouncementById(id: string): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
+
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from(ANNOUNCEMENTS_TABLE).select('*').eq('id', id).single();
+
      if (error) {
           await logServerAction({
                user_id: null,
@@ -86,21 +222,75 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
                payload: { id },
                status: 'fail',
                type: 'db',
-
-               id: ''
+               id: '',
           });
           return { success: false, error: error.message };
      }
-     // Fetch related images & documents (ignore errors to not block primary response)
+
+     // ---- Fetch & sign related images, documents, and buildings ----
      let images: string[] = [];
      let documents: { url: string; name: string; mime?: string }[] = [];
+     let buildings: string[] = [];
+
      try {
-          const { data: imgRows } = await supabase.from('tblAnnouncementImages').select('image_url').eq('announcement_id', id);
-          images = (imgRows || []).map(r => (r as any).image_url);
-     } catch { /* noop */ }
-     try {
-          const { data: docRows } = await supabase.from('tblAnnouncementDocuments').select('document_url,file_name,mime_type').eq('announcement_id', id);
-          documents = (docRows || []).map(r => ({ url: (r as any).document_url, name: (r as any).file_name, mime: (r as any).mime_type || undefined }));
+          const [{ data: imgRows }, { data: docRows }] = await Promise.all([
+               supabase
+                    .from('tblAnnouncementImages')
+                    .select('storage_bucket, storage_path')
+                    .eq('announcement_id', id),
+               supabase
+                    .from('tblAnnouncementDocuments')
+                    .select('storage_bucket, storage_path, file_name, mime_type')
+                    .eq('announcement_id', id),
+          ]);
+
+          // Build refs (dedupe) and sign
+          const imgRefs: Array<{ bucket: string; path: string }> = [];
+          const seen = new Set<string>();
+          for (const r of imgRows ?? []) {
+               const bucket = (r as any).storage_bucket
+               const path = (r as any).storage_path as string | null;
+               if (!path) continue;
+               const key = `${bucket}::${path}`;
+               if (seen.has(key)) continue;
+               seen.add(key);
+               imgRefs.push({ bucket, path });
+          }
+
+          const docEntries: Array<{ bucket: string; path: string; name: string; mime?: string | null }> = [];
+          for (const r of docRows ?? []) {
+               const bucket = (r as any).storage_bucket
+               const path = (r as any).storage_path as string | null;
+               if (!path) continue;
+               docEntries.push({
+                    bucket,
+                    path,
+                    name: (r as any).file_name as string,
+                    mime: ((r as any).mime_type as string) || null,
+               });
+          }
+
+          const signedMap = await signMany(supabase, [...imgRefs, ...docEntries.map(d => ({ bucket: d.bucket, path: d.path }))]);
+
+          images = imgRefs
+               .map(ref => signedMap.get(`${ref.bucket}::${ref.path}`))
+               .filter(Boolean) as string[];
+
+          documents = docEntries
+               .map(d => {
+                    const url = signedMap.get(`${d.bucket}::${d.path}`);
+                    return url ? { url, name: d.name, mime: d.mime || undefined } : null;
+               })
+               .filter(Boolean) as { url: string; name: string; mime?: string }[];
+
+          // Buildings (unchanged)
+          try {
+               const { data: buildingRows } = await supabase
+                    .from('tblBuilding_Announcement')
+                    .select('building_id')
+                    .eq('announcement_id', id);
+               buildings = (buildingRows || []).map(r => (r as any).building_id);
+          } catch { /* noop */ }
      } catch { /* noop */ }
 
      await logServerAction({
@@ -111,29 +301,35 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
           payload: { id },
           status: 'success',
           type: 'db',
-
-          id: ''
+          id: '',
      });
-     const record: Announcement = { ...(data as any), images, documents };
+
+     const record: Announcement = { ...(data as any), images, documents, buildings };
+
      return { success: true, data: record };
 }
 
+
 // ============================= CREATE / UPDATE =============================
 export async function upsertAnnouncement(input: Partial<Announcement> & { id?: string }) {
-
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      const now = new Date();
      const isUpdate = !!input.id;
      const record: any = { ...input };
+     // 'buildings' is a pivot relation; remove from base record before upsert
+     const buildingIdsInput = Array.isArray(record.buildings)
+          ? [...new Set(record.buildings.filter((id: any) => typeof id === 'string'))]
+          : [];
+     delete record.buildings;
 
      if (isUpdate) {
           record.updated_at = now;
      } else {
           record.created_at = now;
           record.updated_at = now;
-          if (record.status === 'published') {
+          if (record.status === 'draft') {
                record.published_at = now;
           } else {
                record.published_at = null;
@@ -145,6 +341,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           .upsert(record, { onConflict: 'id' })
           .select()
           .maybeSingle<Announcement>();
+     console.log('upsert result', { data, error });
 
      if (error) {
           await logServerAction({
@@ -154,7 +351,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                payload: input,
                status: 'fail',
                type: 'db',
-               user_id: null
+               user_id: null,
           });
           return { success: false, error: error.message };
      }
@@ -169,26 +366,74 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           type: 'db',
      });
 
+     // Sync buildings pivot table (best-effort; log error but don't fail the whole request)
+     if (data && buildingIdsInput) {
+          const announcementId = (data as any).id;
+          try {
+               // Clear existing links
+               const { error: clearErr } = await supabase
+                    .from('tblBuilding_Announcement')
+                    .delete()
+                    .eq('announcement_id', announcementId);
+               if (clearErr) {
+                    await logServerAction({
+                         user_id: null,
+                         action: 'syncAnnouncementBuildings',
+                         duration_ms: 0,
+                         error: clearErr.message,
+                         payload: { announcementId, buildingIds: buildingIdsInput },
+                         status: 'fail',
+                         type: 'db',
+                    });
+               }
+               if (buildingIdsInput.length > 0) {
+                    const pivotRows = buildingIdsInput.map(bid => ({ building_id: bid, announcement_id: announcementId }));
+                    const { error: pivotErr } = await supabase.from('tblBuilding_Announcement').insert(pivotRows);
+                    if (pivotErr) {
+                         await logServerAction({
+                              user_id: null,
+                              action: 'syncAnnouncementBuildings',
+                              duration_ms: 0,
+                              error: pivotErr.message,
+                              payload: { announcementId, buildingIds: buildingIdsInput },
+                              status: 'fail',
+                              type: 'db',
+                         });
+                         return { success: false, error: pivotErr };
+                    } else {
+                         (data as any).buildings = buildingIdsInput;
+                    }
+               } else {
+                    (data as any).buildings = [];
+               }
+          } catch (e: any) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'syncAnnouncementBuildingsUnexpected',
+                    duration_ms: 0,
+                    error: e?.message || 'unexpected',
+                    payload: { announcementId, buildingIds: buildingIdsInput },
+                    status: 'fail',
+                    type: 'db',
+               });
+          }
+     }
+
      // Create notification ONLY on new announcement insert (not on updates)
      if (!isUpdate && data) {
           try {
-               // Best-effort notification insert; ignore failure to not block announcement creation
                const notification = {
                     type: 'announcement',
-                    title: data.title,
-                    description: data.title || 'A new announcement was created',
+                    title: (data as any).title,
+                    description: (data as any).title || 'A new announcement was created',
                     created_at: new Date(),
-                    user_id: data?.user_id ?? null,
-                    is_read: false
+                    user_id: (data as any)?.user_id ?? null,
+                    is_read: false,
                } as BaseNotification;
-               const { error: notifErr } = await supabase.from('tblNotifications').insert(notification);
-               if (notifErr) {
-                    console.error('[announce->notification] insert failed', notifErr.message);
-               }
-          } catch (e: any) {
-               console.error('[announce->notification] unexpected error', e?.message || e);
-          }
+               await supabase.from('tblNotifications').insert(notification);
+          } catch { /* best effort */ }
      }
+
      revalidatePath('/dashboard/announcements');
      return { success: true, data: data as Announcement };
 }
@@ -228,13 +473,10 @@ export async function deleteAnnouncement(id: string) {
                description: `Announcement ${id} was deleted`,
                created_at: new Date(),
                user_id: user_id ? user_id : null,
-               is_read: false
+               is_read: false,
           } as BaseNotification;
-          const { error: notifErr } = await supabase.from('tblNotifications').insert(notification);
-          if (notifErr) console.error('[announce->notification] delete insert failed', notifErr.message);
-     } catch (e: any) {
-          console.error('[announce->notification] delete unexpected error', e?.message || e);
-     }
+          await supabase.from('tblNotifications').insert(notification);
+     } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
 }

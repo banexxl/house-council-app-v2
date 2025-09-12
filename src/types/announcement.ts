@@ -142,8 +142,8 @@ export interface Announcement {
      category: AnnouncementCategoryId | '';
      subcategory: string; // optional; required only if category has subcategories & publishing
      visibility: AnnouncementScope;
-     apartments: string[];
-     tenants: string[];
+     // Newly added: supports assigning an announcement to multiple buildings
+     buildings?: string[];
      attachments: File[];
      pinned: boolean;
      archived?: boolean;
@@ -164,8 +164,7 @@ export const announcementInitialValues: Announcement = {
      category: '',
      subcategory: '',
      visibility: 'building',
-     apartments: [],
-     tenants: [],
+     buildings: [],
      attachments: [],
      pinned: false,
      schedule_enabled: false,
@@ -202,16 +201,8 @@ export const announcementValidationSchema = Yup.object({
           otherwise: s => s
      }),
      visibility: Yup.mixed<AnnouncementScope>().oneOf(['building', 'apartments', 'tenants']).required('Visibility required'),
-     apartments: Yup.array().of(Yup.string()).default([]).when('visibility', {
-          is: 'apartments',
-          then: s => s.min(1, 'Select at least one apartment'),
-          otherwise: s => s
-     }),
-     tenants: Yup.array().of(Yup.string()).default([]).when('visibility', {
-          is: 'tenants',
-          then: s => s.min(1, 'Select at least one tenant'),
-          otherwise: s => s
-     }),
+     // buildings are optional for now; if you want to enforce at least one when visibility==='building', uncomment below:
+     // buildings: Yup.array().of(Yup.string().uuid('Invalid building id')).when('visibility', { is: 'building', then: s => s.min(1, 'Select at least one building') }),
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),
      pinned: Yup.boolean().default(false),
      schedule_enabled: Yup.boolean().default(false),

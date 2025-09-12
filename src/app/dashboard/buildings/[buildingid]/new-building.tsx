@@ -32,7 +32,6 @@ import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
 import { removeAllImagesFromBuilding, removeBuildingImageFilePath, setAsBuildingCoverImage, uploadBuildingImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
-import { validate } from 'uuid';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -114,9 +113,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
       // Start upload
       const uploadResponse = await uploadBuildingImagesAndGetUrls(
         newFiles,
-        userData.client?.name!,
-        buildingData?.building_location?.city! + ' ' + buildingData?.building_location?.street_address! + ' ' + buildingData?.building_location?.street_number,
-        buildingData?.id!
+        userData.userData?.id!,
+        buildingData?.id!,
       );
 
       // Stop progress simulation
