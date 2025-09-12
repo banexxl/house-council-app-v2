@@ -1,7 +1,7 @@
 
 import Announcements from 'src/app/dashboard/announcements/announcement';
 import { getAnnouncements } from 'src/app/actions/announcement/announcement-actions';
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
@@ -9,7 +9,7 @@ import { getApartmentsFromClientsBuilding } from 'src/app/actions/apartment/apar
 
 export default async function AnnouncementsPage() {
 
-     const { client, tenant, admin, clientMember } = await checkIfUserExistsAndReturnDataAndSessionObject();
+     const { client, tenant, admin, clientMember } = await getViewer();
 
      if (!client && !tenant && !admin && !clientMember) {
           logout();

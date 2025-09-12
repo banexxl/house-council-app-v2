@@ -1,6 +1,6 @@
 import { Container, Typography } from '@mui/material';
 import { getAllTenantsFromClientsBuildings, getAllTenants } from 'src/app/actions/tenant/tenant-actions';
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import Tenants from './tenants';
 import { redirect } from 'next/navigation';
 import { logout } from 'src/app/auth/actions';
@@ -8,7 +8,7 @@ import { logout } from 'src/app/auth/actions';
 
 export default async function TenantsPage() {
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin } = await getViewer();
 
   if (!client && !tenant && !admin) {
     logout();

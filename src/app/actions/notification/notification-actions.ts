@@ -32,8 +32,6 @@ export async function upsertNotification(input: Partial<Notification> & { id?: s
           record.created_at = new Date();
      }
      const { data, error } = await supabase.from(NOTIFICATIONS_TABLE).upsert(record, { onConflict: 'id' }).select().maybeSingle();
-     console.log('error', error);
-
      if (error) {
           await logServerAction({ user_id, action: isUpdate ? 'updateNotification' : 'createNotification', duration_ms: Date.now() - time, error: error.message, payload: input, status: 'fail', type: 'db' });
           return { success: false, error: error.message };

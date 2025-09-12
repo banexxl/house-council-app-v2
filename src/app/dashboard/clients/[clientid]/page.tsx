@@ -6,7 +6,7 @@ import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth'
+import { getViewer } from 'src/libs/supabase/server-auth'
 import { logout } from 'src/app/auth/actions'
 import { redirect } from 'next/navigation'
 
@@ -14,7 +14,7 @@ export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
 }) {
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin } = await getViewer();
 
   if (!admin || tenant || client) {
     logout()

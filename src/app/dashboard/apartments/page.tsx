@@ -2,7 +2,7 @@
 
 import { getAllApartments, getAllApartmentsFromClientsBuildings } from "src/app/actions/apartment/apartment-actions";
 import Apartments from "./apartments";
-import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
+import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { Apartment } from "src/types/apartment";
@@ -10,7 +10,7 @@ import { Apartment } from "src/types/apartment";
 export default async function Page() {
 
   let apartments: Apartment[] = [];
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin } = await getViewer();
   if (!client && !tenant && !admin) {
     logout();
   }

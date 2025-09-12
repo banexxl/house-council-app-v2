@@ -1,10 +1,11 @@
 "use server";
 
-import { User } from '@supabase/supabase-js'
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
+import { Session, User } from '@supabase/supabase-js'
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { Client, ClientMember } from 'src/types/client'
 import { Tenant } from 'src/types/tenant'
 import { Admin } from 'src/types/admin'
+import { cache } from 'react';
 
 export type UserDataCombined = {
      client: Client | null
@@ -15,113 +16,58 @@ export type UserDataCombined = {
      error?: string
 }
 
-export const checkIfUserExistsAndReturnDataAndSessionObject = async (): Promise<UserDataCombined> => {
+/**
+ * One call per request; all RSCs share via React's cache()
+ * - Reads session/user from cookie-bound client (auth)
+ * - Uses your service-role client for cross-table lookups
+ * - Runs role lookups in parallel, prefers first non-null in priority order
+ */
+export const getViewer = cache(async (): Promise<UserDataCombined> => {
+     // Auth (cookie-aware) — do NOT use service role for reading the session
+     const authSb = await useServerSideSupabaseAnonClient();
+     const { data: { user }, error: userErr } = await authSb.auth.getUser();
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-
-     // ✅ 1. Get current user from Supabase Auth
-     const { data: userData, error: userError } = await supabase.auth.getUser();
-
-     if (userError || !userData?.user) {
+     if (userErr || !user) {
           return {
-               client: null,
-               clientMember: null,
-               tenant: null,
-               admin: null,
+               client: null, clientMember: null, tenant: null, admin: null,
                userData: null,
-               error: userError?.message || 'Failed to authenticate user',
+               error: userErr?.message || 'Failed to authenticate user',
           };
      }
 
-     const user = userData.user;
+     // DB lookups (you already use service role; keep it if you need to bypass RLS)
+     const db = await useServerSideSupabaseServiceRoleClient();
 
-     // ✅ 2. Look up tblClients by user_id
-     const { data: client, error: clientError } = await supabase
-          .from('tblClients')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+     // Helper that returns null instead of throwing for "no rows"
+     const maybeSingle = <T,>(q: any) =>
+          q.single().then((r: any) => r.data as T).catch((e: any) => {
+               // PGRST116 = No rows found
+               if (e?.code === 'PGRST116') return null;
+               throw e;
+          });
 
-     if (client) {
-          return { client, clientMember: null, tenant: null, admin: null, userData: user };
+     // Run in parallel
+     const [client, clientMember, tenant, admin] = await Promise.all([
+          maybeSingle(db.from('tblClients').select('*').eq('user_id', user.id)),
+          maybeSingle(db.from('tblClientMembers').select('*').eq('user_id', user.id)),
+          maybeSingle(db.from('tblTenants').select('*').eq('user_id', user.id)),
+          maybeSingle(db.from('tblSuperAdmins').select('*').eq('user_id', user.id)),
+     ]).catch((err) => {
+          return [null, null, null, null] as const;
+     });
+
+     // Choose the first matching role by your preferred priority
+     const result: UserDataCombined = {
+          client,
+          clientMember,
+          tenant,
+          admin,
+          userData: user,
+     };
+
+     if (!client && !clientMember && !tenant && !admin) {
+          result.error = 'User record not found';
      }
 
-     if (clientError && clientError.code !== 'PGRST116') {
-          return {
-               client: null,
-               clientMember: null,
-               tenant: null,
-               admin: null,
-               userData: user,
-               error: clientError.message,
-          };
-     }
-
-     // ✅ 2. Look up tblClientMembers by user_id
-     const { data: clientMember, error: clientMemberError } = await supabase
-          .from('tblClientMembers')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-     if (clientMember) {
-          return { client: null, clientMember, tenant: null, admin: null, userData: user };
-     }
-
-     if (clientMemberError && clientMemberError.code !== 'PGRST116') {
-          return {
-               client: null,
-               clientMember,
-               tenant: null,
-               admin: null,
-               userData: user,
-               error: clientMemberError.message,
-          };
-     }
-
-     // ✅ 3. Look up tblTenants by user_id
-     const { data: tenant, error: tenantError } = await supabase
-          .from('tblTenants')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-     if (tenant) {
-          return { client: null, clientMember: null, tenant, admin: null, userData: user };
-     }
-
-     if (tenantError && tenantError.code !== 'PGRST116') {
-          return {
-               client: null,
-               clientMember: null,
-               tenant: null,
-               admin: null,
-               userData: user,
-               error: tenantError.message,
-          };
-     }
-
-     // ✅ 4. Look up tblSuperAdmins by user_id
-     const { data: admin, error: adminError } = await supabase
-          .from('tblSuperAdmins')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-     if (admin) {
-          return { client: null, clientMember: null, tenant: null, admin, userData: user };
-     }
-
-     if (adminError && adminError.code !== 'PGRST116') {
-          return {
-               client: null,
-               clientMember: null,
-               tenant: null,
-               admin: null,
-               userData: user,
-               error: adminError.message,
-          };
-     }
-
-     return { client: null, clientMember: null, tenant: null, admin: null, userData: user, error: 'User record not found' };
-};
+     return result;
+});

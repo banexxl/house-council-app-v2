@@ -1,6 +1,6 @@
 import { getAllBuildingsFromClient, getBuildingById, getAllBuildings } from "src/app/actions/building/building-actions";
 import { getApartmentById } from "src/app/actions/apartment/apartment-actions";
-import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
+import { getViewer } from "src/libs/supabase/server-auth";
 import { Box, Container, Stack } from "@mui/material";
 import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment-form-header";
 import { ApartmentCreateForm } from "./new-apartment";
@@ -11,7 +11,7 @@ export default async function Page({ params }: {
   params: Promise<{ apartmentid: string }>
 }) {
   const { apartmentid } = await params;
-  const { client, clientMember, tenant, admin, userData, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, clientMember, tenant, admin, userData, error } = await getViewer();
   if (!client && !tenant && !admin) {
     logout();
   }

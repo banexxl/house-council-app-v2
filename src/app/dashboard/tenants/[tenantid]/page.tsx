@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 import { Seo } from 'src/components/seo';
 import { getAllBuildingsWithApartmentsForClient, readTenantByIdAction } from 'src/app/actions/tenant/tenant-actions';
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { TenantFormHeader } from 'src/sections/dashboard/tenant/tenant-form-header';
 import { TenantForm } from 'src/app/dashboard/tenants/[tenantid]/tenant-form';
@@ -14,7 +14,7 @@ export default async function Page({ params }: {
   params: Promise<{ tenantid: string }>
 }) {
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin } = await getViewer();
   if (!client && !tenant && !admin) {
     logout();
   }
@@ -23,7 +23,7 @@ export default async function Page({ params }: {
 
   const [{ getTenantByIdActionSuccess, getTenantByIdActionData }, session, buildingsResult] = await Promise.all([
     readTenantByIdAction(tenantid),
-    checkIfUserExistsAndReturnDataAndSessionObject(),
+    getViewer(),
     getAllBuildingsWithApartmentsForClient(client!.id),
   ]);
 

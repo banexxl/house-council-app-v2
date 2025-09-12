@@ -1,14 +1,14 @@
 'use server'
 
 import { getAllAddedLocationsByClientId, getAllLocations } from 'src/app/actions/location/location-services';
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import Locations from './locations';
 
 const Page = async () => {
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin } = await getViewer();
   if (!client && !tenant && !admin) {
     logout();
     redirect('/auth/login');

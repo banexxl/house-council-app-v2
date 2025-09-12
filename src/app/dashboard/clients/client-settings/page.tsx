@@ -4,13 +4,13 @@ import { Box, Container, Stack } from "@mui/material"
 import { redirect } from "next/navigation";
 import { createEntity, deleteEntity, updateEntity, readAllEntities } from "src/app/actions/base-entity-actions"
 import { logout } from "src/app/auth/actions";
-import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
+import { getViewer } from "src/libs/supabase/server-auth";
 import GenericTableEditor from "src/sections/dashboard/client/client-components/client-components"
 import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 
 export default async function TableEditorPage() {
 
-     const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+     const { client, tenant, admin } = await getViewer();
      if (!client && !tenant && !admin) {
           logout()
      };

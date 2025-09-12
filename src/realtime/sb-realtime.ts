@@ -86,7 +86,7 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
      // 4) Subscribe (with status logs)
      channel.subscribe((status) => {
           if (process.env.NODE_ENV !== "production") {
-               console.log(`[${table}] channel status: ${status}`);
+               console.log(`Channel status: ${status}`);
           }
      });
 

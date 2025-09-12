@@ -222,7 +222,6 @@ export const removeAllImagesFromBuilding = async (
                .from('tblBuildingImages')
                .select('storage_path, storage_bucket, storage_path')
                .eq('building_id', buildingId);
-          console.log('err', imagesError);
 
           if (imagesError) {
                await logServerAction({
@@ -268,8 +267,6 @@ export const removeAllImagesFromBuilding = async (
           for (const [bucket, paths] of byBucket) {
                if (!paths.length) continue;
                const { error: delErr } = await supabase.storage.from(bucket).remove(paths);
-               console.log('delErr', delErr);
-
                if (delErr) {
                     await logServerAction({
                          action: 'Delete All Images - Storage remove failed',
@@ -289,8 +286,6 @@ export const removeAllImagesFromBuilding = async (
                .from('tblBuildingImages')
                .delete()
                .eq('building_id', buildingId);
-          console.log('dbDeleteError', dbDeleteError);
-
           if (dbDeleteError) {
                await logServerAction({
                     action: 'Delete All Images - DB rows delete failed',

@@ -3,7 +3,7 @@ import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
 import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
 import { getAllNotOcupiedLocationsAddedByClient } from "src/app/actions/location/location-services";
-import { checkIfUserExistsAndReturnDataAndSessionObject } from "src/libs/supabase/server-auth";
+import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 
@@ -14,7 +14,7 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const { admin, client, tenant, clientMember, userData, error } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { admin, client, tenant, clientMember, userData, error } = await getViewer();
   if (!admin && !client && !tenant) {
     logout()
   }

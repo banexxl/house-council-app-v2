@@ -22,7 +22,7 @@ import { paths } from 'src/paths';
 import { logout } from 'src/app/auth/actions';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { Tooltip } from '@mui/material';
-import { checkIfUserExistsAndReturnDataAndSessionObject, UserDataCombined } from 'src/libs/supabase/server-auth';
+import { getViewer, UserDataCombined } from 'src/libs/supabase/server-auth';
 import { useTranslation } from 'react-i18next';
 
 interface AccountPopoverProps {
@@ -40,7 +40,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
 
   useEffect(() => {
     const getUser = async () => {
-      const userData = await checkIfUserExistsAndReturnDataAndSessionObject();
+      const userData = await getViewer();
       setUser(userData);
     }
     getUser();

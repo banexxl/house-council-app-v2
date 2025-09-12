@@ -1,6 +1,6 @@
 import { readClientByIdAction } from 'src/app/actions/client/client-actions';
 import Account from './account';
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import { Client, ClientMember } from 'src/types/client';
@@ -23,7 +23,7 @@ const Page = async () => {
   let allTeamMembers: ClientMember[] | null = null;
   let allLogsFromEmail: ServerLog[] | null = null;
 
-  const { client: clientData, tenant, admin, userData } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client: clientData, tenant, admin, userData } = await getViewer();
 
   if (!clientData && !tenant && !admin) {
     logout();

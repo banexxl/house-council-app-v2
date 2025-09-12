@@ -50,8 +50,6 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
           toast.error(response.error || 'Error');
           return;
         }
-        console.log(response.data?.id);
-
         toast.success(t('common.actionSaveSuccess'));
         router.push(
           paths.dashboard.apartments.index + '/' + (response.data?.id)

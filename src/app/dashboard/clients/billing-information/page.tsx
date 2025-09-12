@@ -5,14 +5,14 @@ import { ClientBillingInformationTableHeader } from 'src/sections/dashboard/clie
 import BillingInformationTable from 'src/app/dashboard/clients/billing-information/billing-information';
 import { readAllClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
 import { readAllClientsAction } from 'src/app/actions/client/client-actions';
-import { checkIfUserExistsAndReturnDataAndSessionObject } from 'src/libs/supabase/server-auth';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 
 
 const Page = async () => {
 
-  const { client, tenant, admin } = await checkIfUserExistsAndReturnDataAndSessionObject();
+  const { client, tenant, admin } = await getViewer();
   if (!client && !tenant && !admin) {
     logout()
   };

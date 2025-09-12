@@ -341,7 +341,6 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           .upsert(record, { onConflict: 'id' })
           .select()
           .maybeSingle<Announcement>();
-     console.log('upsert result', { data, error });
 
      if (error) {
           await logServerAction({

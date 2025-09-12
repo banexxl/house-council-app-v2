@@ -49,7 +49,6 @@ const useNotifications = () => {
     let stop: undefined | (() => Promise<void>);
     (async () => {
       stop = await initNotificationsRealtime((payload: any) => {
-        console.log('payload', payload);
         const evt = payload.eventType;
         const rowNew = payload.new;
         const rowOld = payload.old;
