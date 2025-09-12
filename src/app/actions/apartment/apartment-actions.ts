@@ -276,7 +276,7 @@ export async function deleteApartment(id: string) {
      // 1) fetch image refs
      const { data: imgs } = await supabase
           .from("tblApartmentImages")
-          .select("storage_bucket, storage_path, image_url")
+          .select("storage_bucket, storage_path")
           .eq("apartment_id", id);
 
      // 2) remove from storage (group by bucket)

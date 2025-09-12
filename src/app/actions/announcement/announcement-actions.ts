@@ -92,18 +92,18 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                const [{ data: imgRows }, { data: docRows }] = await Promise.all([
                     supabase
                          .from('tblAnnouncementImages')
-                         .select('announcement_id, storage_bucket, storage_path, image_url')
+                         .select('announcement_id, storage_bucket, storage_path')
                          .in('announcement_id', ids),
                     supabase
                          .from('tblAnnouncementDocuments')
-                         .select('announcement_id, storage_bucket, storage_path, document_url, file_name, mime_type')
+                         .select('announcement_id, storage_bucket, storage_path, file_name, mime_type')
                          .in('announcement_id', ids),
                ]);
 
                // Build refs to sign
                const imageRefs: Ref[] = (imgRows ?? [])
                     .map(r =>
-                         makeRef((r as any).storage_bucket, (r as any).storage_path, (r as any).image_url)
+                         makeRef((r as any).storage_bucket, (r as any).storage_path)
                     )
                     .filter(Boolean) as Ref[];
 
@@ -123,10 +123,6 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                     let key: string | null = null;
 
                     if (path) key = `${bucket}::${path}`;
-                    else if ((r as any).image_url) {
-                         const parsed = toStorageRef((r as any).image_url);
-                         if (parsed) key = `${parsed.bucket}::${parsed.path}`;
-                    }
 
                     if (!key) continue;
                     const signed = signedMap.get(key);

@@ -197,7 +197,7 @@ export async function removeAnnouncementImage(
           const { error: deleteError } = await supabase.storage.from(bkt).remove([path]);
           if (deleteError) return { success: false, error: deleteError.message };
 
-          // delete DB row by new columns; fallback to legacy image_url
+          // delete DB row by new columns
           const { error: dbDeleteNewErr } = await supabase
                .from(ANNOUNCEMENT_IMAGES_TABLE)
                .delete()
@@ -207,7 +207,7 @@ export async function removeAnnouncementImage(
                const { error: dbDeleteLegacyErr } = await supabase
                     .from(ANNOUNCEMENT_IMAGES_TABLE)
                     .delete()
-                    .match({ announcement_id: announcementId, image_url: filePathOrUrl });
+                    .match({ announcement_id: announcementId });
                if (dbDeleteLegacyErr) return { success: false, error: dbDeleteLegacyErr.message };
           }
 
@@ -225,22 +225,18 @@ export async function removeAllAnnouncementImages(announcementId: string): Promi
      try {
           const { data: images, error: imagesError } = await supabase
                .from(ANNOUNCEMENT_IMAGES_TABLE)
-               .select('storage_bucket, storage_path, image_url')
+               .select('storage_bucket, storage_path')
                .eq('announcement_id', announcementId);
 
           if (imagesError) return { success: false, error: imagesError.message };
           if (!images?.length) return { success: true };
 
-          // group by bucket; resolve legacy image_url if needed
+          // group by bucket;
           const byBucket = new Map<string, string[]>();
           for (const row of images) {
                let bkt = row.storage_bucket ?? getBucket();
                let pth = row.storage_path;
 
-               if (!pth && row.image_url) {
-                    const parsed = toStorageRef(row.image_url);
-                    if (parsed) { bkt = parsed.bucket; pth = parsed.path; }
-               }
                if (!pth) continue;
 
                const arr = byBucket.get(bkt) ?? [];

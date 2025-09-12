@@ -181,7 +181,6 @@ export const removeBuildingImageFilePath = async (
                .match({ building_id: buildingId, storage_bucket: bkt, storage_path: path });
 
           if (dbDeleteNewErr) {
-               // Try legacy column as a fallback (old rows with image_url)
                const { error: dbDeleteLegacyErr } = await supabase
                     .from('tblBuildingImages')
                     .delete()
@@ -525,7 +524,7 @@ export const removeApartmentImageFilePath = async (
                return { success: false, error: deleteError.message };
           }
 
-          // delete DB row (new columns); fallback to legacy image_url
+          // delete DB row (new columns);
           const { error: dbDeleteNewErr } = await supabase
                .from('tblApartmentImages')
                .delete()
@@ -535,7 +534,7 @@ export const removeApartmentImageFilePath = async (
                const { error: dbDeleteLegacyErr } = await supabase
                     .from('tblApartmentImages')
                     .delete()
-                    .match({ apartment_id: apartmentid, image_url: filePathOrUrl });
+                    .match({ apartment_id: apartmentid });
 
                if (dbDeleteLegacyErr) {
                     await logServerAction({
@@ -572,7 +571,7 @@ export const removeAllImagesFromApartment = async (
           // fetch both new & legacy fields
           const { data: images, error: imagesError } = await supabase
                .from('tblApartmentImages')
-               .select('storage_bucket, storage_path, image_url')
+               .select('storage_bucket, storage_path')
                .eq('apartment_id', apartmentid);
 
           if (imagesError) {
@@ -596,10 +595,6 @@ export const removeAllImagesFromApartment = async (
                let bkt = row.storage_bucket ?? process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
                let pth = row.storage_path;
 
-               if (!pth && row.image_url) {
-                    const ref = toStorageRef(row.image_url);
-                    if (ref) { bkt = ref.bucket; pth = ref.path; }
-               }
                if (!pth) continue;
 
                const arr = byBucket.get(bkt) ?? [];
