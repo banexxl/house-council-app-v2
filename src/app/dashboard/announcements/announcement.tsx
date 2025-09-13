@@ -132,8 +132,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
           return editingEntity.documents || [];
      }, [editingEntity, formik.values.documents]);
 
-     const setFieldArray = (field: string, value: string[]) => formik.setFieldValue(field, value);
-
      const handlePublish = async () => {
           // New announcement (no editingEntity): use existing submit flow to create & publish
           if (!editingEntity) return; // guarded by disabled state anyway
@@ -625,10 +623,17 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  onClick={() => handleEdit(row.id)}
                                                                  hover
                                                                  sx={{ backgroundColor: editingEntity?.id === row.id ? 'action.selected' : 'inherit' }}>
-                                                                 <TableCell sx={{ maxWidth: 240, cursor: 'pointer' }}>
+                                                                 <TableCell sx={{ maxWidth: 240 }}>
                                                                       <Stack direction="row" spacing={1} alignItems="center">
                                                                            {row.pinned && <PushPinIcon color="primary" fontSize="small" />}
-                                                                           <Typography variant="body2" noWrap title={row.title}>{row.title}</Typography>
+                                                                           <Typography
+                                                                                variant="body2"
+                                                                                noWrap
+                                                                                title={row.title}
+                                                                                sx={{ cursor: 'pointer' }}
+                                                                           >
+                                                                                {row.title}
+                                                                           </Typography>
                                                                       </Stack>
                                                                  </TableCell>
                                                                  <TableCell align="right">

@@ -516,8 +516,6 @@ export async function deleteAnnouncement(id: string) {
                is_read: false,
           } as BaseNotification;
           const { error: notificationError } = await supabase.from(NOTIFICATIONS_TABLE).insert(notification);
-          console.log('notification error', notificationError);
-
      } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
