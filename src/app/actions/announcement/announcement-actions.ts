@@ -10,6 +10,7 @@ import { toStorageRef } from 'src/utils/sb-bucket';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
+const NOTIFICATIONS_TABLE = 'tblNotifications';
 const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuilding_Announcement';
 
 // ===== Signing helpers (internal) =====
@@ -315,7 +316,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
      const now = new Date();
      const isUpdate = !!input.id;
      const record: any = { ...input };
-     // 'buildings' is a pivot relation; remove from base record before upsert
+
      const buildingIdsInput = Array.isArray(record.buildings)
           ? [...new Set(record.buildings.filter((id: any) => typeof id === 'string'))]
           : [];
@@ -426,8 +427,47 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                     user_id: (data as any)?.user_id ?? null,
                     is_read: false,
                } as BaseNotification;
-               await supabase.from('tblNotifications').insert(notification);
-          } catch { /* best effort */ }
+
+               const { error: notificationError, data: notificationData } = await supabase
+                    .from(NOTIFICATIONS_TABLE)
+                    .insert(notification)
+                    .select()
+
+               if (notificationError) {
+                    logServerAction({
+                         user_id: null,
+                         action: 'createAnnouncementNotification',
+                         duration_ms: 0,
+                         error: notificationError.message,
+                         payload: { notification },
+                         status: 'fail',
+                         type: 'db',
+                    })
+                    return { success: false, error: notificationError.message }
+               }
+               // Insert into pivot table tblBuildings_Notifications
+               if (notificationData && notificationData[0] && buildingIdsInput.length > 0) {
+                    const { error: pivotError } = await supabase.from('tblBuilding_Notification').insert(
+                         buildingIdsInput.map(bid => ({
+                              building_id: bid,
+                              notification_id: notificationData[0].id!,
+                         }))
+                    );
+                    if (pivotError) {
+                         logServerAction({
+                              user_id: null,
+                              action: 'createAnnouncementNotificationPivot',
+                              duration_ms: 0,
+                              error: pivotError.message,
+                              payload: { buildingIds: buildingIdsInput, notificationId: notificationData[0].id },
+                              status: 'fail',
+                              type: 'db',
+                         });
+                    }
+               }
+          } catch {
+               /* best effort */
+          }
      }
 
      revalidatePath('/dashboard/announcements');
@@ -471,7 +511,9 @@ export async function deleteAnnouncement(id: string) {
                user_id: user_id ? user_id : null,
                is_read: false,
           } as BaseNotification;
-          await supabase.from('tblNotifications').insert(notification);
+          const { error: notificationError } = await supabase.from(NOTIFICATIONS_TABLE).insert(notification);
+          console.log('notification error', notificationError);
+
      } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
