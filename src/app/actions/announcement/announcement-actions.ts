@@ -10,8 +10,11 @@ import { toStorageRef } from 'src/utils/sb-bucket';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
+const ANNOUNCEMENT_IMAGES_TABLE = 'tblAnnouncementImages';
+const ANNOUNCEMENT_DOCUMENTS_TABLE = 'tblAnnouncementDocuments';
 const NOTIFICATIONS_TABLE = 'tblNotifications';
-const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuilding_Announcement';
+const BUILDINGS_NOTIFICATIONS_PIVOT_TABLE = 'tblBuildings_Notifications';
+const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuildings_Announcements';
 
 // ===== Signing helpers (internal) =====
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
@@ -93,11 +96,11 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                // Images + Docs (new columns + legacy)
                const [{ data: imgRows }, { data: docRows }] = await Promise.all([
                     supabase
-                         .from('tblAnnouncementImages')
+                         .from(ANNOUNCEMENT_IMAGES_TABLE)
                          .select('announcement_id, storage_bucket, storage_path')
                          .in('announcement_id', ids),
                     supabase
-                         .from('tblAnnouncementDocuments')
+                         .from(ANNOUNCEMENT_DOCUMENTS_TABLE)
                          .select('announcement_id, storage_bucket, storage_path, file_name, mime_type')
                          .in('announcement_id', ids),
                ]);
@@ -174,7 +177,7 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                // Buildings enrichment (many-to-many pivot) — unchanged
                try {
                     const { data: buildingRows, error: bErr } = await supabase
-                         .from('tblBuilding_Announcement')
+                         .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
                          .select('announcement_id,building_id')
                          .in('announcement_id', ids);
                     if (!bErr && buildingRows) {
@@ -233,11 +236,11 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
      try {
           const [{ data: imgRows }, { data: docRows }] = await Promise.all([
                supabase
-                    .from('tblAnnouncementImages')
+                    .from(ANNOUNCEMENT_IMAGES_TABLE)
                     .select('storage_bucket, storage_path')
                     .eq('announcement_id', id),
                supabase
-                    .from('tblAnnouncementDocuments')
+                    .from(ANNOUNCEMENT_DOCUMENTS_TABLE)
                     .select('storage_bucket, storage_path, file_name, mime_type')
                     .eq('announcement_id', id),
           ]);
@@ -284,7 +287,7 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
           // Buildings (unchanged)
           try {
                const { data: buildingRows } = await supabase
-                    .from('tblBuilding_Announcement')
+                    .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
                     .select('building_id')
                     .eq('announcement_id', id);
                buildings = (buildingRows || []).map(r => (r as any).building_id);
@@ -309,7 +312,7 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
 
 
 // ============================= CREATE / UPDATE =============================
-export async function upsertAnnouncement(input: Partial<Announcement> & { id?: string }) {
+export async function upsertAnnouncement(input: Partial<Announcement> & { id?: string }): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -396,7 +399,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                               status: 'fail',
                               type: 'db',
                          });
-                         return { success: false, error: pivotErr };
+                         return { success: false, error: pivotErr.message };
                     } else {
                          (data as any).buildings = buildingIdsInput;
                     }
@@ -447,7 +450,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                }
                // Insert into pivot table tblBuildings_Notifications
                if (notificationData && notificationData[0] && buildingIdsInput.length > 0) {
-                    const { error: pivotError } = await supabase.from('tblBuilding_Notification').insert(
+                    const { error: pivotError } = await supabase.from(BUILDINGS_NOTIFICATIONS_PIVOT_TABLE).insert(
                          buildingIdsInput.map(bid => ({
                               building_id: bid,
                               notification_id: notificationData[0].id!,
@@ -463,10 +466,11 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                               status: 'fail',
                               type: 'db',
                          });
+                         return { success: false, error: pivotError.message };
                     }
                }
           } catch {
-               /* best effort */
+               return { success: false }; // best effort
           }
      }
 
