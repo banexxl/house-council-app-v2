@@ -516,6 +516,17 @@ export async function deleteAnnouncement(id: string) {
                is_read: false,
           } as BaseNotification;
           const { error: notificationError } = await supabase.from(NOTIFICATIONS_TABLE).insert(notification);
+          if (notificationError) {
+               logServerAction({
+                    user_id: user_id ? user_id : null,
+                    action: 'deleteAnnouncementNotification',
+                    duration_ms: 0,
+                    error: notificationError.message,
+                    payload: { id },
+                    status: 'fail',
+                    type: 'db',
+               });
+          }
      } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
