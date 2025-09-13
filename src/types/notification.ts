@@ -10,6 +10,7 @@ export interface BaseNotification {
      created_at: Date; // ISO string from DB
      user_id: string | null;
      is_read: boolean;
+     building_id: string;
 }
 
 // Extended shapes depending on type

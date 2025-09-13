@@ -10,6 +10,7 @@ import { toStorageRef } from 'src/utils/sb-bucket';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
+const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuilding_Announcement';
 
 // ===== Signing helpers (internal) =====
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
@@ -367,7 +368,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           try {
                // Clear existing links
                const { error: clearErr } = await supabase
-                    .from('tblBuilding_Announcement')
+                    .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
                     .delete()
                     .eq('announcement_id', announcementId);
                if (clearErr) {
@@ -383,7 +384,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                }
                if (buildingIdsInput.length > 0) {
                     const pivotRows = buildingIdsInput.map(bid => ({ building_id: bid, announcement_id: announcementId }));
-                    const { error: pivotErr } = await supabase.from('tblBuilding_Announcement').insert(pivotRows);
+                    const { error: pivotErr } = await supabase.from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE).insert(pivotRows);
                     if (pivotErr) {
                          await logServerAction({
                               user_id: null,

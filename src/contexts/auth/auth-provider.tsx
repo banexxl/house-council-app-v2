@@ -1,7 +1,7 @@
 // components/AuthProvider.tsx
 'use client';
 
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
@@ -24,11 +24,16 @@ export default function AuthProvider({
      );
 
      // Subscribe once; on login/logout, refresh the tree (server fetches fresh viewer)
-     useMemo(() => {
+     useEffect(() => {
+          // Guard just in case (should only run client-side)
+          if (!supabase) return;
           const { data: sub } = supabase.auth.onAuthStateChange(() => {
-               router.refresh();
+               // Defer refresh to next tick to avoid sync render issues
+               setTimeout(() => router.refresh(), 0);
           });
-          return () => sub.subscription.unsubscribe();
+          return () => {
+               try { sub.subscription.unsubscribe(); } catch { /* noop */ }
+          };
      }, [supabase, router]);
 
      return <AuthCtx.Provider value={initialViewer}>{children}</AuthCtx.Provider>;

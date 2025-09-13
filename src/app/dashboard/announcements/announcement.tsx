@@ -42,7 +42,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import QuillEditor from 'src/components/quill-editor';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useFormik } from 'formik';
-import { announcementInitialValues, announcementValidationSchema, AnnouncementScope, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
+import { announcementInitialValues, announcementValidationSchema, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -88,7 +88,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     message: values.message,
                     category: values.category || null,
                     subcategory: values.subcategory || null,
-                    visibility: values.visibility,
                     buildings: values.buildings || [],
                     pinned: values.pinned,
                     schedule_enabled: values.schedule_enabled,
@@ -179,8 +178,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                message: a.message || '',
                category: a.category || '',
                subcategory: a.subcategory || '',
-               visibility: a.visibility || 'building',
-               buildings: a.buildings || [],
+               buildings: a.buildings,
                attachments: [],
                pinned: !!a.pinned,
                schedule_enabled: !!a.schedule_at,
@@ -479,9 +477,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  </MenuItem>
                                                             ))}
                                                        </Select>
-                                                       <Typography variant="caption" color="text.secondary">
+                                                       {/* <Typography variant="caption" color="text.secondary">
                                                             {t(tokens.announcements.form.visibility)}: {t(tokens.announcements.visibilityValues.buildingWide)}
-                                                       </Typography>
+                                                       </Typography> */}
                                                   </FormControl>
 
 
