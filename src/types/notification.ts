@@ -11,6 +11,7 @@ export interface BaseNotification {
      user_id: string | null;
      is_read: boolean;
      building_id: string;
+     is_for_tenant: boolean;
 }
 
 // Extended shapes depending on type
@@ -40,5 +41,8 @@ export const notificationValidationSchema = Yup.object({
      description: Yup.string().trim().min(2).required(),
      type: Yup.mixed<NotificationKind>().oneOf(['system', 'message', 'reminder', 'alert']).required(),
      client_id: Yup.string().nullable(),
-     is_read: Yup.boolean().default(false)
+     is_read: Yup.boolean().default(false),
+     building_id: Yup.string().required(),
+     user_id: Yup.string().nullable(),
+     is_for_tenant: Yup.boolean().default(false)
 });

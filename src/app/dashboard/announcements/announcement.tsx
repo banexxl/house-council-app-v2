@@ -53,8 +53,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { Client } from 'src/types/client';
 import { Building } from 'src/types/building';
-import { Tenant } from 'src/types/tenant';
-import { Apartment } from 'src/types/apartment';
 
 interface AnnouncementProps {
      announcements: Announcement[];
@@ -73,7 +71,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const formDisabled = imagesUploading || docsUploading; // disable interactions while uploads
      const router = useRouter();
-
 
      const { t } = useTranslation();
 
@@ -101,6 +98,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                }
 
                // (Attachments uploading not implemented yet) -> future enhancement
+               console.log('payload', payload);
 
                const result = await upsertAnnouncement(payload);
                if (!result.success) {

@@ -320,3 +320,45 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
      await logServerAction({ user_id: null, action: 'Delete Building - Success', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db' });
      return { success: true, data: null };
 }
+
+export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ success: boolean; error?: string; data?: string[] }> => {
+     const t0 = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+     try {
+          // 1) Find tenant → apartment(s)
+          const { data: tenantRows, error: tenantErr } = await supabase
+               .from('tblTenants')
+               .select('apartment_id')
+               .eq('user_id', user_id);
+          if (tenantErr) {
+               await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: tenantErr.message, payload: { user_id }, status: 'fail', type: 'db', user_id: null, id: '' });
+               return { success: false, error: tenantErr.message };
+          }
+          const apartmentIds = (tenantRows || []).map(r => r.apartment_id).filter(Boolean);
+          if (apartmentIds.length === 0) {
+               await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: '', payload: { user_id, apartments: 0 }, status: 'success', type: 'db', user_id: null, id: '' });
+               return { success: true, data: [] };
+          }
+
+          // 2) Fetch apartments → building ids
+          const { data: apartmentRows, error: aptErr } = await supabase
+               .from('tblApartments')
+               .select('id, building_id')
+               .in('id', apartmentIds);
+          if (aptErr) {
+               await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: aptErr.message, payload: { user_id, apartmentIds }, status: 'fail', type: 'db', user_id: null, id: '' });
+               return { success: false, error: aptErr.message };
+          }
+          const buildingIds = Array.from(new Set((apartmentRows || []).map(r => r.building_id).filter(Boolean)));
+          if (buildingIds.length === 0) {
+               await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: '', payload: { user_id, apartments: apartmentIds.length, buildings: 0 }, status: 'success', type: 'db', user_id: null, id: '' });
+               return { success: true, data: [] };
+          }
+
+          await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: '', payload: { user_id, buildingCount: (buildingIds || []).length }, status: 'success', type: 'db', user_id: null, id: '' });
+          return { success: true, data: buildingIds };
+     } catch (e: any) {
+          await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: e?.message || 'unexpected', payload: { user_id }, status: 'fail', type: 'db', user_id: null, id: '' });
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+}

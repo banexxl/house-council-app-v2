@@ -7,13 +7,13 @@ import { Announcement } from 'src/types/announcement';
 import { BaseNotification } from 'src/types/notification';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
+import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
 const ANNOUNCEMENT_IMAGES_TABLE = 'tblAnnouncementImages';
 const ANNOUNCEMENT_DOCUMENTS_TABLE = 'tblAnnouncementDocuments';
 const NOTIFICATIONS_TABLE = 'tblNotifications';
-const BUILDINGS_NOTIFICATIONS_PIVOT_TABLE = 'tblBuildings_Notifications';
 const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuildings_Announcements';
 
 // ===== Signing helpers (internal) =====
@@ -312,7 +312,9 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
 
 
 // ============================= CREATE / UPDATE =============================
-export async function upsertAnnouncement(input: Partial<Announcement> & { id?: string }): Promise<{ success: boolean; error?: string; data?: Announcement }> {
+export async function upsertAnnouncement(
+     input: Partial<Announcement> & { id?: string }
+): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -320,8 +322,8 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
      const isUpdate = !!input.id;
      const record: any = { ...input };
 
-     const buildingIdsInput = Array.isArray(record.buildings)
-          ? [...new Set(record.buildings.filter((id: any) => typeof id === 'string'))]
+     const buildingIdsInput: string[] = Array.isArray(record.buildings)
+          ? [...new Set(record.buildings.filter((id: any) => typeof id === 'string'))] as string[]
           : [];
      delete record.buildings;
 
@@ -330,11 +332,7 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
      } else {
           record.created_at = now;
           record.updated_at = now;
-          if (record.status === 'draft') {
-               record.published_at = now;
-          } else {
-               record.published_at = null;
-          }
+          record.published_at = record.status === 'draft' ? now : null;
      }
 
      const { data, error } = await supabase
@@ -366,15 +364,15 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           type: 'db',
      });
 
-     // Sync buildings pivot table (best-effort; log error but don't fail the whole request)
+     // ---- Sync announcement <-> buildings pivot (unchanged) ----
      if (data && buildingIdsInput) {
           const announcementId = (data as any).id;
           try {
-               // Clear existing links
                const { error: clearErr } = await supabase
                     .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
                     .delete()
                     .eq('announcement_id', announcementId);
+
                if (clearErr) {
                     await logServerAction({
                          user_id: null,
@@ -386,9 +384,11 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
                          type: 'db',
                     });
                }
+
                if (buildingIdsInput.length > 0) {
-                    const pivotRows = buildingIdsInput.map(bid => ({ building_id: bid, announcement_id: announcementId }));
+                    const pivotRows = buildingIdsInput.map((bid) => ({ building_id: bid, announcement_id: announcementId }));
                     const { error: pivotErr } = await supabase.from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE).insert(pivotRows);
+
                     if (pivotErr) {
                          await logServerAction({
                               user_id: null,
@@ -419,62 +419,72 @@ export async function upsertAnnouncement(input: Partial<Announcement> & { id?: s
           }
      }
 
-     // Create notification ONLY on new announcement insert (not on updates)
-     if (!isUpdate && data) {
+     // ---- NEW: Create per-user notifications (only on create, not update) ----
+     if (!isUpdate && data && buildingIdsInput.length > 0) {
+          const announcementId = (data as any).id;
           try {
-               const notification = {
-                    type: 'announcement',
-                    title: (data as any).title,
-                    description: (data as any).title || 'A new announcement was created',
-                    created_at: new Date(),
-                    user_id: (data as any)?.user_id ?? null,
-                    is_read: false,
-               } as BaseNotification;
+               // 1) Resolve all user_ids that belong to any of the selected buildings
+               const { data: userIds } = await readAllTenantsFromBuildingIds(buildingIdsInput);
 
-               const { error: notificationError, data: notificationData } = await supabase
-                    .from(NOTIFICATIONS_TABLE)
-                    .insert(notification)
-                    .select()
-
-               if (notificationError) {
-                    logServerAction({
-                         user_id: null,
-                         action: 'createAnnouncementNotification',
-                         duration_ms: 0,
-                         error: notificationError.message,
-                         payload: { notification },
-                         status: 'fail',
-                         type: 'db',
-                    })
-                    return { success: false, error: notificationError.message }
+               if (userIds && userIds.length === 0) {
+                    // Nothing to notify (not an error)
+                    revalidatePath('/dashboard/');
+                    return { success: true, data: data as Announcement };
                }
-               // Insert into pivot table tblBuildings_Notifications
-               if (notificationData && notificationData[0] && buildingIdsInput.length > 0) {
-                    const { error: pivotError } = await supabase.from(BUILDINGS_NOTIFICATIONS_PIVOT_TABLE).insert(
-                         buildingIdsInput.map(bid => ({
-                              building_id: bid,
-                              notification_id: notificationData[0].id!,
-                         }))
-                    );
-                    if (pivotError) {
-                         logServerAction({
-                              user_id: null,
-                              action: 'createAnnouncementNotificationPivot',
-                              duration_ms: 0,
-                              error: pivotError.message,
-                              payload: { buildingIds: buildingIdsInput, notificationId: notificationData[0].id },
-                              status: 'fail',
-                              type: 'db',
-                         });
-                         return { success: false, error: pivotError.message };
+
+               // 2) Build rows (one per user). We keep per-user read state via is_read=false initially.
+               const baseTitle = (data as any).title ?? 'New announcement';
+               const baseDescription = (data as any).title || 'A new announcement was created';
+               const createdAtISO = new Date().toISOString();
+
+               const rows = userIds && userIds!.map((uid) => ({
+                    type: 'announcement',
+                    title: baseTitle,
+                    description: baseDescription,
+                    created_at: createdAtISO,
+                    user_id: uid, // <- per-user
+                    is_read: false,
+                    announcement_id: announcementId,
+                    is_for_tenant: true,
+               })) as unknown as BaseNotification[];
+
+               // 3) Insert in batches (avoid payload limits)
+               if (rows && rows.length > 0) {
+                    const BATCH = 500;
+                    for (let i = 0; i < rows.length; i += BATCH) {
+                         const slice = rows.slice(i, i + BATCH);
+                         const { error: nErr } = await supabase.from(NOTIFICATIONS_TABLE).insert(slice);
+                         console.log('error', nErr);
+
+                         if (nErr) {
+                              await logServerAction({
+                                   user_id: null,
+                                   action: 'createAnnouncementNotificationsBulk',
+                                   duration_ms: 0,
+                                   error: nErr.message,
+                                   payload: { count: slice.length, announcementId },
+                                   status: 'fail',
+                                   type: 'db',
+                              });
+                              return { success: false, error: nErr.message };
+                         }
                     }
                }
-          } catch {
-               return { success: false }; // best effort
+          } catch (e: any) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'createAnnouncementNotificationsBulkUnexpected',
+                    duration_ms: 0,
+                    error: e?.message || 'unexpected',
+                    payload: { buildingIds: buildingIdsInput, announcementId: (data as any).id },
+                    status: 'fail',
+                    type: 'db',
+               });
+               return { success: false, error: e?.message || 'Unexpected error while creating notifications' };
           }
      }
 
-     revalidatePath('/dashboard/announcements');
+     revalidatePath('/dashboard/');
      return { success: true, data: data as Announcement };
 }
 

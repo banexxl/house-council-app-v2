@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Box, Tabs, Tab, IconButton, Tooltip, Container, Stack, Typography, Card } from '@mui/material';
 import { GenericTable, TableColumn } from 'src/components/generic-table';
 import { Notification } from 'src/types/notification';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteNotification, markNotificationRead } from 'src/app/actions/notification/notification-actions';
-import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';

@@ -434,3 +434,42 @@ export const getAllBuildingsWithApartmentsForClient = async (
           data: buildings,
      };
 };
+
+export const readAllTenantsFromBuildingIds = async (
+     buildingIds: string[]
+): Promise<{ success: boolean; data?: string[]; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data: buildings, error } = await supabase
+          .from('tblBuildings')
+          .select('id')
+          .in('id', buildingIds);
+     if (error) {
+          return { success: false, error: error.message };
+     }
+     const validBuildingIds = buildings.map((b) => b.id);
+     if (validBuildingIds.length === 0) {
+          return { success: true, data: [] };
+     }
+     // 2. Get apartments in those buildings
+     const { data: apartments, error: apartmentsError } = await supabase
+          .from('tblApartments')
+          .select('id')
+          .in('building_id', validBuildingIds);
+     if (apartmentsError) {
+          return { success: false, error: apartmentsError.message };
+     }
+     const apartmentIds = apartments.map((a) => a.id);
+     if (apartmentIds.length === 0) {
+          return { success: true, data: [] };
+     }
+     // 3. Get tenants in those apartments
+     const { data: tenants, error: tenantsError } = await supabase
+          .from('tblTenants')
+          .select('user_id')
+          .in('apartment_id', apartmentIds);
+
+     if (tenantsError) {
+          return { success: false, error: tenantsError.message };
+     }
+     return { success: true, data: tenants ? tenants.map((t) => t.user_id) : [] };
+};

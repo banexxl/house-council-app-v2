@@ -9,117 +9,165 @@ import Tooltip from '@mui/material/Tooltip';
 import { usePopover } from 'src/hooks/use-popover';
 
 import { NotificationsPopover } from './notifications-popover';
-import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { Notification } from 'src/types/notification';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
+import { markNotificationRead } from 'src/app/actions/notification/notification-actions';
 
 const MAX_DISPLAY = 10;
 
-const useNotifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]); // all unread
+type UUID = string;
 
-  // Initial fetch of unread notifications
+async function getSignedInUserId(): Promise<UUID | null> {
+  const { data, error } = await supabaseBrowserClient.auth.getUser();
+  if (error) {
+    console.error('[notifications] getUser failed', error.message);
+    return null;
+  }
+  return data.user?.id ?? null;
+}
+
+export function useNotifications() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [userId, setUserId] = useState<UUID | null>(null);
+
+  // 1) Resolve the current user id once
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data, error } = await supabaseBrowserClient
-        .from('tblNotifications')
-        .select('*')
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
-        .limit(MAX_DISPLAY + 1); // fetch one extra to know if more exist
+      const uid = await getSignedInUserId();
       if (!active) return;
-      if (error) {
-        console.error('[notifications] fetch unread failed', error.message);
-        return;
-      }
-      const mapped: Notification[] = (data || []).map((r: any) => ({
-        ...r,
-        created_at: new Date(r.created_at)
-      }));
-      setNotifications(mapped); // we keep full (<= 11) for badge logic
+      setUserId(uid);
     })();
     return () => { active = false; };
   }, []);
 
-  // Realtime subscription for unread changes
+  // 2) Initial fetch of unread notifications scoped to this user
   useEffect(() => {
-    let stop: undefined | (() => Promise<void>);
+    if (!userId) return;
+    let active = true;
+
     (async () => {
-      stop = await initNotificationsRealtime((payload: any) => {
-        const evt = payload.eventType;
-        const rowNew = payload.new;
-        const rowOld = payload.old;
-        // INSERT: add if still unread
-        if (evt === 'INSERT' && rowNew && rowNew.is_read === false) {
-          setNotifications(prev => {
-            if (prev.find(n => n.id === rowNew.id)) return prev; // dedupe
-            return [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
-          });
-        }
-        // UPDATE: handle read flag transitions
-        if (evt === 'UPDATE' && rowNew) {
-          setNotifications(prev => {
-            const idx = prev.findIndex(n => n.id === rowNew.id);
-            const isUnread = rowNew.is_read === false;
-            if (idx === -1) {
-              // became unread (rare) -> add
-              if (isUnread) return [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
-              return prev;
-            }
-            // existed
-            if (!isUnread) {
-              // mark as read -> remove from unread list
+      const { data, error } = await supabaseBrowserClient
+        .from('tblNotifications')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(MAX_DISPLAY + 1); // fetch one extra for "+" badge logic
+
+      if (!active) return;
+      if (error) {
+        console.error('[notifications] initial fetch failed', error.message);
+        return;
+      }
+
+      const mapped: Notification[] = (data ?? []).map((r: any) => ({
+        ...r,
+        created_at: new Date(r.created_at),
+      }));
+
+      setNotifications(mapped);
+    })();
+
+    return () => { active = false; };
+  }, [userId]);
+
+  // 3) Realtime: listen only to this user's notifications
+  useEffect(() => {
+    if (!userId) return;
+
+    const channelName = `notif_user_${userId}`;
+
+    const channel = supabaseBrowserClient
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tblNotifications', filter: `user_id=eq.${userId}` },
+        (payload: any) => {
+          const evt = payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE';
+          const rowNew = payload.new;
+          const rowOld = payload.old;
+
+          // Keep only UNREAD items in state
+          if (evt === 'INSERT' && rowNew?.is_read === false) {
+            setNotifications(prev => {
+              if (prev.some(n => n.id === rowNew.id)) return prev;
+              const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
+              return next.slice(0, MAX_DISPLAY + 1);
+            });
+          }
+
+          if (evt === 'UPDATE' && rowNew) {
+            setNotifications(prev => {
+              const idx = prev.findIndex(n => n.id === rowNew.id);
+              const isUnread = rowNew.is_read === false;
+
+              if (!isUnread) {
+                // Became read -> remove if present
+                if (idx === -1) return prev;
+                const clone = [...prev];
+                clone.splice(idx, 1);
+                return clone;
+              }
+
+              // Still unread -> upsert
+              if (idx === -1) {
+                const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
+                return next.slice(0, MAX_DISPLAY + 1);
+              }
               const clone = [...prev];
-              clone.splice(idx, 1);
+              clone[idx] = { ...clone[idx], ...rowNew, created_at: new Date(rowNew.created_at) };
               return clone;
-            }
-            // still unread -> update
-            const clone = [...prev];
-            clone[idx] = { ...clone[idx], ...rowNew, created_at: new Date(rowNew.created_at) };
-            return clone;
-          });
+            });
+          }
+
+          if (evt === 'DELETE' && rowOld?.id) {
+            setNotifications(prev => prev.filter(n => n.id !== rowOld.id));
+          }
         }
-        // DELETE: remove if present
-        if (evt === 'DELETE' && rowOld?.id) {
-          setNotifications(prev => prev.filter(n => n.id !== rowOld.id));
+      )
+      .subscribe((status) => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[${channelName}] status: ${status}`);
         }
       });
-    })();
-    return () => { if (stop) stop().catch(console.error); };
-  }, []);
 
-  const totalUnread = notifications.length; // may be > MAX_DISPLAY (we fetched MAX_DISPLAY+1)
+    return () => {
+      supabaseBrowserClient.removeChannel(channel).catch(console.error);
+    };
+  }, [userId]);
+
+  // 4) Derived UI values
+  const totalUnread = notifications.length;
   const displayNotifications = useMemo(() => notifications.slice(0, MAX_DISPLAY), [notifications]);
   const badgeContent = totalUnread > MAX_DISPLAY ? `${MAX_DISPLAY}+` : totalUnread;
 
-  const handleRemoveOne = useCallback((notificationId: string): void => {
-    // mark single as read (optimistic)
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    supabaseBrowserClient
-      .from('tblNotifications')
-      .update({ is_read: true })
-      .eq('id', notificationId)
-      .then(({ error }) => {
-        if (error) console.error('[notifications] mark single read failed', error.message);
-      });
-  }, []);
+  // 5) Actions (per-user rows → include user_id in UPDATE for safety)
+  const handleRemoveOne = useCallback(async (notificationId: string): Promise<void> => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId)); // optimistic
+    if (!userId) return;
+    const { success, error } = await markNotificationRead(notificationId, true)
+    console.log('success', success, 'error', error);
+
+
+  }, [userId]);
 
   const handleMarkAllAsRead = useCallback((): void => {
-    // optimistic clear
     const ids = notifications.map(n => n.id);
-    setNotifications([]);
-    if (ids.length === 0) return;
+    setNotifications([]); // optimistic
+    if (!userId || ids.length === 0) return;
+
     supabaseBrowserClient
       .from('tblNotifications')
       .update({ is_read: true })
       .in('id', ids)
+      .eq('user_id', userId)
       .then(({ error }) => {
         if (error) console.error('[notifications] mark all read failed', error.message);
       });
-  }, [notifications]);
+  }, [userId, notifications]);
 
   return {
     handleMarkAllAsRead,
@@ -128,8 +176,7 @@ const useNotifications = () => {
     badgeContent,
     totalUnread,
   };
-};
-
+}
 export const NotificationsButton: FC = () => {
 
   const popover = usePopover<HTMLButtonElement>();
