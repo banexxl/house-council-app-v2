@@ -11,6 +11,7 @@ import { usePopover } from 'src/hooks/use-popover';
 import { NotificationsPopover } from './notifications-popover';
 import { Notification } from 'src/types/notification';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import { markNotificationRead } from 'src/app/actions/notification/notification-actions';
@@ -74,69 +75,25 @@ export function useNotifications() {
     return () => { active = false; };
   }, [userId]);
 
-  // 3) Realtime: listen only to this user's notifications
+  // 3) Realtime: only listen for INSERT (no UPDATE/DELETE expected)
   useEffect(() => {
     if (!userId) return;
-
-    const channelName = `notif_user_${userId}`;
-
-    const channel = supabaseBrowserClient
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tblNotifications', filter: `user_id=eq.${userId}` },
-        (payload: any) => {
-          const evt = payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE';
-          const rowNew = payload.new;
-          const rowOld = payload.old;
-
-          // Keep only UNREAD items in state
-          if (evt === 'INSERT' && rowNew?.is_read === false) {
-            setNotifications(prev => {
-              if (prev.some(n => n.id === rowNew.id)) return prev;
-              const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
-              return next.slice(0, MAX_DISPLAY + 1);
-            });
-          }
-
-          if (evt === 'UPDATE' && rowNew) {
-            setNotifications(prev => {
-              const idx = prev.findIndex(n => n.id === rowNew.id);
-              const isUnread = rowNew.is_read === false;
-
-              if (!isUnread) {
-                // Became read -> remove if present
-                if (idx === -1) return prev;
-                const clone = [...prev];
-                clone.splice(idx, 1);
-                return clone;
-              }
-
-              // Still unread -> upsert
-              if (idx === -1) {
-                const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
-                return next.slice(0, MAX_DISPLAY + 1);
-              }
-              const clone = [...prev];
-              clone[idx] = { ...clone[idx], ...rowNew, created_at: new Date(rowNew.created_at) };
-              return clone;
-            });
-          }
-
-          if (evt === 'DELETE' && rowOld?.id) {
-            setNotifications(prev => prev.filter(n => n.id !== rowOld.id));
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`[${channelName}] status: ${status}`);
-        }
+    let cleanup: (() => Promise<void>) | null = null;
+    (async () => {
+      cleanup = await initNotificationsRealtime((payload: any) => {
+        if (payload.eventType !== 'INSERT') return; // ignore other events by contract
+        const rowNew = payload.new;
+        if (!rowNew) return;
+        if (rowNew.user_id !== userId) return; // safety filter
+        if (rowNew.is_read !== false) return; // only unread
+        setNotifications(prev => {
+          if (prev.some(n => n.id === rowNew.id)) return prev;
+          const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
+          return next.slice(0, MAX_DISPLAY + 1);
+        });
       });
-
-    return () => {
-      supabaseBrowserClient.removeChannel(channel).catch(console.error);
-    };
+    })();
+    return () => { if (cleanup) cleanup().catch(console.error); };
   }, [userId]);
 
   // 4) Derived UI values

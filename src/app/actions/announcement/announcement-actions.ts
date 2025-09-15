@@ -484,7 +484,7 @@ export async function upsertAnnouncement(
           }
      }
 
-     revalidatePath('/dashboard/');
+     revalidatePath('/dashboard');
      return { success: true, data: data as Announcement };
 }
 

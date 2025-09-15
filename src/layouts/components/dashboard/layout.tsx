@@ -2,7 +2,6 @@
 
 import type { FC, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { useSettings } from 'src/hooks/use-settings';
 import { useSections } from './config';
 import { HorizontalLayout } from './horizontal-layout';
@@ -67,9 +66,6 @@ export const Layout: FC<LayoutProps> = ((props) => {
 
     getRole();
   }, []);
-
-
-
 
   const sections = useSections(role);
 
