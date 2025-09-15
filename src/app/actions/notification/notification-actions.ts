@@ -36,25 +36,6 @@ export async function getNotificationsForClient(): Promise<{ success: boolean; d
      return { success: true, data: data as Notification[] };
 }
 
-export async function upsertNotification(input: Partial<Notification> & { id?: string }) {
-     const time = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
-     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
-     const isUpdate = !!input.id;
-     const record: any = { ...input };
-     if (!isUpdate) {
-          record.created_at = new Date();
-     }
-     const { data, error } = await supabase.from(NOTIFICATIONS_TABLE).upsert(record, { onConflict: 'id' }).select().maybeSingle();
-     if (error) {
-          await logServerAction({ user_id, action: isUpdate ? 'updateNotification' : 'createNotification', duration_ms: Date.now() - time, error: error.message, payload: input, status: 'fail', type: 'db' });
-          return { success: false, error: error.message };
-     }
-     revalidatePath('/dashboard/');
-     await logServerAction({ user_id, action: isUpdate ? 'updateNotification' : 'createNotification', duration_ms: Date.now() - time, error: '', payload: input, status: 'success', type: 'db' });
-     return { success: true, data: data as Notification };
-}
-
 export async function deleteNotification(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();

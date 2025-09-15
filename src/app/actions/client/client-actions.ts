@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
+import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
 
 // --- Supabase Auth Actions for Client Management ---
@@ -387,7 +388,7 @@ export const uploadClientLogoAndGetUrl = async (
      }
 };
 
-export async function resetPasswordWithOldPassword(email: string, oldPassword: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
+export const resetPasswordWithOldPassword = async (email: string, oldPassword: string, newPassword: string): Promise<{ success: boolean, error?: string }> => {
 
      const startTime = Date.now();
 
@@ -548,4 +549,17 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
           }
      }
 }
+
+// Returns true if the provided userId corresponds to a Client record; false if tenant or not found.
+export const isClientUserId = async (userId: string): Promise<boolean> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data: client, error: clientError } = await supabase.from('tblClients').select('id').eq('user_id', userId).single();
+     if (client && isUUIDv4(client.id) && !clientError) return true;
+     const { data: clientMember, error: clientMemberError } = await supabase.from('tblClientMemebers').select('id').eq('user_id', userId).single();
+     if (clientMember && isUUIDv4(clientMember.id) && !clientMemberError) return true;
+     const { data: tenant, error: tenantError } = await supabase.from('tblTenants').select('id').eq('user_id', userId).single();
+     if (tenant && isUUIDv4(tenant.id) && !tenantError) return false;
+     return !!tenant;
+}
+
 

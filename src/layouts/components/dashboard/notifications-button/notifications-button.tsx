@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import { markNotificationRead } from 'src/app/actions/notification/notification-actions';
 import toast from 'react-hot-toast';
+import { isClientUserId } from 'src/app/actions/client/client-actions';
 
 const MAX_DISPLAY = 10;
 
@@ -77,24 +78,79 @@ export function useNotifications() {
     return () => { active = false; };
   }, [userId]);
 
-  // 3) Realtime: only listen for INSERT (no UPDATE/DELETE expected)
+  // 3) Realtime: non-clients => INSERT only; clients => INSERT/UPDATE/DELETE
   useEffect(() => {
     if (!userId) return;
     let cleanup: (() => Promise<void>) | null = null;
     (async () => {
+      const isUserClient = await isClientUserId(userId);
+
       cleanup = await initNotificationsRealtime((payload: any) => {
-        if (payload.eventType !== 'INSERT') return; // ignore other events by contract
+        const eventType = payload.eventType;
+
+        // Always sanity-check row references depending on event type
         const rowNew = payload.new;
-        if (!rowNew) return;
-        if (rowNew.user_id !== userId) return; // safety filter
-        if (rowNew.is_read !== false) return; // only unread
-        setNotifications(prev => {
-          if (prev.some(n => n.id === rowNew.id)) return prev;
-          const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
-          return next.slice(0, MAX_DISPLAY + 1);
-        });
+        const rowOld = payload.old;
+
+        // Helper: add (only unread) if not already present
+        const addIfNeeded = (row: any) => {
+          if (!row) return;
+          if (row.user_id !== userId) return;
+          if (row.is_read !== false) return; // we store only unread
+          setNotifications(prev => {
+            if (prev.some(n => n.id === row.id)) return prev;
+            const next = [{ ...row, created_at: new Date(row.created_at) }, ...prev];
+            return next.slice(0, MAX_DISPLAY + 1);
+          });
+        };
+
+        if (!isUserClient) {
+          // Non-client users: only process INSERT events
+          if (eventType !== 'INSERT') return;
+          addIfNeeded(rowNew);
+          return;
+        }
+
+        // Client users: handle INSERT, UPDATE, DELETE
+        switch (eventType) {
+          case 'INSERT': {
+            addIfNeeded(rowNew);
+            break;
+          }
+          case 'UPDATE': {
+            if (!rowNew) return;
+            console.debug('[notifications] UPDATE event', { rowNew, rowOld, userId, isUserClient });
+            if (rowNew.user_id !== userId) return;
+            if (rowNew.is_read === true) {
+              // Always remove if now read (even if not currently in list)
+              setNotifications(prev => prev.filter(n => n.id !== rowNew.id));
+              break;
+            }
+            // If still unread, update existing or add
+            setNotifications(prev => {
+              const idx = prev.findIndex(n => n.id === rowNew.id);
+              if (idx === -1) {
+                const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
+                return next.slice(0, MAX_DISPLAY + 1);
+              }
+              const clone = [...prev];
+              clone[idx] = { ...clone[idx], ...rowNew, created_at: new Date(rowNew.created_at) };
+              return clone;
+            });
+            break;
+          }
+          case 'DELETE': {
+            const deleted = rowOld;
+            if (!deleted || deleted.user_id !== userId) return;
+            setNotifications(prev => prev.filter(n => n.id !== deleted.id));
+            break;
+          }
+          default:
+            break;
+        }
       });
     })();
+
     return () => { if (cleanup) cleanup().catch(() => toast.error('Failed to clean up notifications')); };
   }, [userId]);
 
