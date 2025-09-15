@@ -78,7 +78,7 @@ export function useNotifications() {
     return () => { active = false; };
   }, [userId]);
 
-  // 3) Realtime: non-clients => INSERT only; clients => INSERT/UPDATE/DELETE
+  // 3) Realtime: non-clients => INSERT only; clients => DELETE
   useEffect(() => {
     if (!userId) return;
     let cleanup: (() => Promise<void>) | null = null;
@@ -111,32 +111,10 @@ export function useNotifications() {
           return;
         }
 
-        // Client users: handle INSERT, UPDATE, DELETE
+        // Client users: handle INSERT, DELETE
         switch (eventType) {
           case 'INSERT': {
             addIfNeeded(rowNew);
-            break;
-          }
-          case 'UPDATE': {
-            if (!rowNew) return;
-            console.debug('[notifications] UPDATE event', { rowNew, rowOld, userId, isUserClient });
-            if (rowNew.user_id !== userId) return;
-            if (rowNew.is_read === true) {
-              // Always remove if now read (even if not currently in list)
-              setNotifications(prev => prev.filter(n => n.id !== rowNew.id));
-              break;
-            }
-            // If still unread, update existing or add
-            setNotifications(prev => {
-              const idx = prev.findIndex(n => n.id === rowNew.id);
-              if (idx === -1) {
-                const next = [{ ...rowNew, created_at: new Date(rowNew.created_at) }, ...prev];
-                return next.slice(0, MAX_DISPLAY + 1);
-              }
-              const clone = [...prev];
-              clone[idx] = { ...clone[idx], ...rowNew, created_at: new Date(rowNew.created_at) };
-              return clone;
-            });
             break;
           }
           case 'DELETE': {
