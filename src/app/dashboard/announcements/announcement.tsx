@@ -97,9 +97,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     payload.id = editingEntity.id;
                }
 
-               // (Attachments uploading not implemented yet) -> future enhancement
-               console.log('payload', payload);
-
                const result = await upsertAnnouncement(payload);
                if (!result.success) {
                     helpers.setSubmitting(false);

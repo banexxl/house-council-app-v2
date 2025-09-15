@@ -454,7 +454,6 @@ export async function upsertAnnouncement(
                     for (let i = 0; i < rows.length; i += BATCH) {
                          const slice = rows.slice(i, i + BATCH);
                          const { error: nErr } = await supabase.from(NOTIFICATIONS_TABLE).insert(slice);
-                         console.log('error', nErr);
 
                          if (nErr) {
                               await logServerAction({
