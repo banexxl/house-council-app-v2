@@ -75,10 +75,7 @@ export async function markNotificationRead(id: string, read: boolean): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
-     console.log('id, read', id, read);
-
-     const { error } = await supabase.from(NOTIFICATIONS_TABLE).update({ is_read: read }).eq('id', id);
-     console.log('error', error);
+     const { error } = await supabase.from(NOTIFICATIONS_TABLE).update({ 'is_read': read }).eq('id', id);
 
      if (error) {
           await logServerAction({ user_id, action: 'markNotificationRead', duration_ms: Date.now() - time, error: error.message, payload: { id, read }, status: 'fail', type: 'db' });

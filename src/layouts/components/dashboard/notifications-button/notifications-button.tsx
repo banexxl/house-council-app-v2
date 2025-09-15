@@ -15,6 +15,7 @@ import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import { markNotificationRead } from 'src/app/actions/notification/notification-actions';
+import toast from 'react-hot-toast';
 
 const MAX_DISPLAY = 10;
 
@@ -23,13 +24,14 @@ type UUID = string;
 async function getSignedInUserId(): Promise<UUID | null> {
   const { data, error } = await supabaseBrowserClient.auth.getUser();
   if (error) {
-    console.error('[notifications] getUser failed', error.message);
+    toast.error('Failed to get user info');
     return null;
   }
   return data.user?.id ?? null;
 }
 
 export function useNotifications() {
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userId, setUserId] = useState<UUID | null>(null);
 
@@ -60,7 +62,7 @@ export function useNotifications() {
 
       if (!active) return;
       if (error) {
-        console.error('[notifications] initial fetch failed', error.message);
+        toast.error('Failed to fetch notifications');
         return;
       }
 
@@ -93,7 +95,7 @@ export function useNotifications() {
         });
       });
     })();
-    return () => { if (cleanup) cleanup().catch(console.error); };
+    return () => { if (cleanup) cleanup().catch(() => toast.error('Failed to clean up notifications')); };
   }, [userId]);
 
   // 4) Derived UI values
@@ -105,10 +107,10 @@ export function useNotifications() {
   const handleRemoveOne = useCallback(async (notificationId: string): Promise<void> => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId)); // optimistic
     if (!userId) return;
-    const { success, error } = await markNotificationRead(notificationId, true)
-    console.log('success', success, 'error', error);
-
-
+    const { success } = await markNotificationRead(notificationId, true)
+    if (!success) {
+      toast.error('Failed to mark notification as read');
+    }
   }, [userId]);
 
   const handleMarkAllAsRead = useCallback((): void => {
@@ -122,7 +124,7 @@ export function useNotifications() {
       .in('id', ids)
       .eq('user_id', userId)
       .then(({ error }) => {
-        if (error) console.error('[notifications] mark all read failed', error.message);
+        if (error) toast.error('Failed to mark all notifications as read');
       });
   }, [userId, notifications]);
 
