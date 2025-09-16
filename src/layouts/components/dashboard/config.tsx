@@ -309,6 +309,15 @@ export const useSections = (role: 'client' | 'clientMember' | 'tenant' | 'admin'
         subheader: t(tokens.nav.tenants),
         items: [
           {
+            title: t(tokens.announcements.managementTitle),
+            path: paths.dashboard.announcements.tenant,
+            icon: (
+              <SvgIcon fontSize="small">
+                <AnnouncementIcon />
+              </SvgIcon>
+            ),
+          },
+          {
             title: t(tokens.nav.productList),
             path: paths.dashboard.products.index,
             icon: (

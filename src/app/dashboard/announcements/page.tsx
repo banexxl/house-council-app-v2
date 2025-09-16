@@ -3,9 +3,8 @@ import Announcements from 'src/app/dashboard/announcements/announcement';
 import { getAnnouncements } from 'src/app/actions/announcement/announcement-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
-import { getApartmentsFromClientsBuilding } from 'src/app/actions/apartment/apartment-actions';
+import { redirect } from 'next/navigation';
 
 export default async function AnnouncementsPage() {
 
@@ -13,6 +12,10 @@ export default async function AnnouncementsPage() {
 
      if (!client && !tenant && !admin && !clientMember) {
           logout();
+     }
+
+     if (!client && !clientMember) {
+          redirect('/dashboard');
      }
 
      // Parallel fetching. Only buildings constrained by client (foreign key). Others full unless you choose to filter later.

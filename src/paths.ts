@@ -17,6 +17,7 @@ export const paths = {
     analytics: '/dashboard/analytics',
     announcements: {
       index: '/dashboard/announcements',
+      tenant: '/dashboard/announcements/tenant',
     },
     apartments: {
       index: '/dashboard/apartments',

@@ -310,6 +310,119 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
      return { success: true, data: record };
 }
 
+// Published announcements for given building ids (with enrichment) – tenant consumption
+export async function getPublishedAnnouncementsForBuildings(buildingIds: string[]): Promise<{ success: boolean; error?: string; data?: Announcement[]; buildings?: Record<string, any> }> {
+     const time = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+     if (!Array.isArray(buildingIds) || buildingIds.length === 0) return { success: true, data: [], buildings: {} };
+
+     try {
+          // 1) Pivot to announcement ids
+          const { data: pivotRows, error: pivotErr } = await supabase
+               .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+               .select('announcement_id, building_id')
+               .in('building_id', buildingIds);
+          if (pivotErr) return { success: false, error: pivotErr.message };
+
+          const annIds = Array.from(new Set((pivotRows || []).map(r => (r as any).announcement_id))).filter(Boolean);
+          if (annIds.length === 0) return { success: true, data: [], buildings: {} };
+
+          // 2) Fetch announcements in bulk (filter published)
+          const { data: annRows, error: annErr } = await supabase
+               .from(ANNOUNCEMENTS_TABLE)
+               .select('*')
+               .in('id', annIds)
+               .eq('status', 'published')
+               .order('created_at', { ascending: false });
+          if (annErr) return { success: false, error: annErr.message };
+
+          let enriched: Announcement[] = annRows as any as Announcement[];
+
+          // 3) Attach building arrays per announcement from pivot
+          const annToBuildings = new Map<string, string[]>();
+          for (const pr of (pivotRows || []) as any[]) {
+               const aId = pr.announcement_id as string; const bId = pr.building_id as string;
+               if (!annToBuildings.has(aId)) annToBuildings.set(aId, []);
+               if (!annToBuildings.get(aId)!.includes(bId)) annToBuildings.get(aId)!.push(bId);
+          }
+
+          // 4) Media enrichment (reuse logic: fetch images + documents for annIds)
+          try {
+               const [{ data: imgRows }, { data: docRows }] = await Promise.all([
+                    supabase
+                         .from(ANNOUNCEMENT_IMAGES_TABLE)
+                         .select('announcement_id, storage_bucket, storage_path')
+                         .in('announcement_id', annIds),
+                    supabase
+                         .from(ANNOUNCEMENT_DOCUMENTS_TABLE)
+                         .select('announcement_id, storage_bucket, storage_path, file_name, mime_type')
+                         .in('announcement_id', annIds),
+               ]);
+
+               const imageRefs: Ref[] = (imgRows || []).map(r => makeRef((r as any).storage_bucket, (r as any).storage_path)).filter(Boolean) as Ref[];
+               const docRefs: Ref[] = (docRows || []).map(r => makeRef((r as any).storage_bucket, (r as any).storage_path, (r as any).document_url)).filter(Boolean) as Ref[];
+               const signedMap = await signMany(supabase, [...imageRefs, ...docRefs]);
+
+               const imagesMap = new Map<string, string[]>();
+               for (const r of (imgRows || []) as any[]) {
+                    const bucket = r.storage_bucket ?? DEFAULT_BUCKET; const path = r.storage_path; if (!path) continue;
+                    const key = `${bucket}::${path}`; const signed = signedMap.get(key); if (!signed) continue;
+                    const aId = r.announcement_id as string; const arr = imagesMap.get(aId) ?? []; arr.push(signed); imagesMap.set(aId, arr);
+               }
+               const docsMap = new Map<string, { url: string; name: string; mime?: string }[]>();
+               for (const r of (docRows || []) as any[]) {
+                    const bucket = r.storage_bucket ?? DEFAULT_BUCKET; const path = r.storage_path; if (!path) continue;
+                    const key = `${bucket}::${path}`; const signed = signedMap.get(key); if (!signed) continue;
+                    const aId = r.announcement_id as string;
+                    const item = { url: signed, name: r.file_name as string, mime: (r.mime_type as string) || undefined };
+                    const arr = docsMap.get(aId) ?? []; arr.push(item); docsMap.set(aId, arr);
+               }
+
+               enriched = enriched.map(a => ({
+                    ...a,
+                    buildings: annToBuildings.get(a.id) || [],
+                    images: imagesMap.get(a.id) || [],
+                    documents: docsMap.get(a.id) || [],
+               }));
+          } catch { /* ignore enrichment errors */ }
+
+          // 5) Fetch building records (for label display)
+          let buildingsMap: Record<string, any> = {};
+          try {
+               const uniqueBIds = Array.from(new Set(buildingIds));
+               if (uniqueBIds.length > 0) {
+                    const { data: bRows } = await supabase
+                         .from('tblBuildings')
+                         .select('id, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (street_address, street_number, city)')
+                         .in('id', uniqueBIds);
+                    for (const b of (bRows || []) as any[]) buildingsMap[b.id] = b;
+               }
+          } catch { /* ignore building fetch errors */ }
+
+          await logServerAction({
+               user_id: null,
+               action: 'getPublishedAnnouncementsForBuildings',
+               duration_ms: Date.now() - time,
+               error: '',
+               payload: { count: enriched.length },
+               status: 'success',
+               type: 'db',
+          });
+
+          return { success: true, data: enriched, buildings: buildingsMap };
+     } catch (e: any) {
+          await logServerAction({
+               user_id: null,
+               action: 'getPublishedAnnouncementsForBuildings',
+               duration_ms: Date.now() - time,
+               error: e?.message || 'unexpected',
+               payload: { buildingIdsLength: buildingIds.length },
+               status: 'fail',
+               type: 'db',
+          });
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+}
 
 // ============================= CREATE / UPDATE =============================
 export async function upsertAnnouncement(
@@ -332,7 +445,7 @@ export async function upsertAnnouncement(
      } else {
           record.created_at = now;
           record.updated_at = now;
-          record.published_at = record.status === 'draft' ? now : null;
+          record.published_at = record.status === 'draft' ? null : now;
      }
 
      const { data, error } = await supabase
