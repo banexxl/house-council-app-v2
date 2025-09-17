@@ -69,7 +69,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const [docsUploading, setDocsUploading] = useState(false);
      const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents'; targetId?: string }>(null);
 
-     const formDisabled = imagesUploading || docsUploading; // disable interactions while uploads
+     const uploadingBusy = imagesUploading || docsUploading; // only busy during media uploads
      const router = useRouter();
 
      const { t } = useTranslation();
@@ -105,12 +105,43 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     return;
                }
 
-               if (result.data) toast.success(t(tokens.announcements.toasts.saveSuccess));
-
-               helpers.resetForm();
-               setEditingEntity(null);
+               if (result.data) {
+                    toast.success(t(tokens.announcements.toasts.saveSuccess));
+                    // Keep editing; reset form to saved values and preserve media arrays locally
+                    const saved = result.data as Announcement;
+                    const updated: Announcement = {
+                         ...saved,
+                         images: (editingEntity?.images || []),
+                         documents: (editingEntity?.documents || []),
+                    } as any;
+                    setEditingEntity(updated);
+                    formik.resetForm({
+                         values: {
+                              id: updated.id!,
+                              title: updated.title || '',
+                              message: updated.message || '',
+                              category: updated.category || '',
+                              subcategory: updated.subcategory || '',
+                              buildings: updated.buildings || [],
+                              attachments: [],
+                              pinned: !!updated.pinned,
+                              schedule_enabled: !!updated.schedule_at,
+                              created_at: updated.created_at,
+                              schedule_at: updated.schedule_at || null,
+                              status: (updated as any).status ?? ((updated as any).published_at ? 'published' : 'draft'),
+                              user_id: updated.user_id,
+                              images: (updated.images && updated.images.length ? updated.images : []),
+                              documents: (updated.documents && updated.documents.length ? updated.documents : []),
+                         }
+                    });
+                    // Make sure the list/table reflects latest changes
+                    router.refresh();
+               }
           }
      });
+
+     const isDraft = formik.values.status === 'draft';
+     const inputsDisabled = uploadingBusy || !isDraft;
 
      // Derive current images/documents from formik for immediate reflection of optimistic updates;
      // fall back to editingEntity data if formik arrays are empty but entity has media.
@@ -179,7 +210,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     schedule_enabled: !!a.schedule_at,
                     created_at: a.created_at,
                     schedule_at: a.schedule_at || null,
-                    status: a.status || 'draft',
+                    status: a.status ?? ((a as any).published_at ? 'published' : 'draft'),
                     user_id: a.user_id,
                     images: (a.images && a.images.length ? a.images : []),
                     documents: (a.documents && a.documents.length ? a.documents : []),
@@ -347,8 +378,10 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               variant="contained"
                               color="primary"
                               onClick={() => {
-                                   formik.resetForm();
                                    setEditingEntity(null);
+                                   formik.resetForm({
+                                        values: { ...announcementInitialValues, created_at: new Date() }
+                                   });
                               }}
                          >
                               {t(tokens.announcements.createNew)}
@@ -359,12 +392,12 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               {/* Form Column */}
                               <Grid size={{ xs: 12, md: 7, lg: 8 }}>
                                    <Paper variant="outlined" sx={{ p: 3, position: 'relative' }}>
-                                        {formDisabled && (
+                                        {uploadingBusy && (
                                              <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, bgcolor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                   <Typography variant="body2" color="text.secondary">{t(tokens.announcements.uploadingImages)}</Typography>
                                              </Box>
                                         )}
-                                        <Box component="fieldset" disabled={formDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: formDisabled ? 'none' : 'auto', opacity: formDisabled ? 0.6 : 1 }}>
+                                        <Box component="fieldset" disabled={inputsDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.6 : 1 }}>
                                              <Stack spacing={2}>
                                                   <TextField
                                                        label={t(tokens.announcements.form.title)}
@@ -376,9 +409,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        helperText={formik.touched.title && formik.errors.title}
                                                        fullWidth
                                                        required={formik.values.status === 'published'}
-                                                       disabled={formDisabled}
+                                                       disabled={inputsDisabled}
                                                   />
-                                                  <Box sx={{ pointerEvents: formDisabled ? 'none' : 'auto', opacity: formDisabled ? 0.7 : 1 }}>
+                                                  <Box sx={{ pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.7 : 1 }}>
                                                        <QuillEditor
                                                             value={formik.values.message}
                                                             onChange={(v) => formik.setFieldValue('message', v)}
@@ -386,7 +419,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        />
                                                   </Box>
                                                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
-                                                       <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={formDisabled}>
+                                                       <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={inputsDisabled}>
                                                             <InputLabel id="category-label">{t(tokens.announcements.form.category)}</InputLabel>
                                                             <Select
                                                                  labelId="category-label"
@@ -401,7 +434,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  }}
                                                                  onBlur={formik.handleBlur}
                                                                  fullWidth
-                                                                 disabled={formDisabled}
+                                                                 disabled={inputsDisabled}
                                                             >
                                                                  {ANNOUNCEMENT_CATEGORIES.map(cat => (
                                                                       <MenuItem key={cat.id} value={cat.id}>{t(tokens.announcements.categories[cat.id as keyof typeof tokens.announcements.categories])}</MenuItem>
@@ -416,7 +449,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category);
                                                             if (!cat || cat.subcategories.length === 0) return null;
                                                             return (
-                                                                 <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={formDisabled}>
+                                                                 <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={inputsDisabled}>
                                                                       <InputLabel id="subcategory-label">{t(tokens.announcements.form.subcategory)}</InputLabel>
                                                                       <Select
                                                                            labelId="subcategory-label"
@@ -426,7 +459,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                            onChange={formik.handleChange}
                                                                            onBlur={formik.handleBlur}
                                                                            fullWidth
-                                                                           disabled={formDisabled}
+                                                                           disabled={inputsDisabled}
                                                                       >
                                                                            {cat.subcategories.map(sc => (
                                                                                 <MenuItem key={sc.id} value={sc.id}>{t(tokens.announcements.subcategories[sc.id as keyof typeof tokens.announcements.subcategories])}</MenuItem>
@@ -440,7 +473,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        })()}
                                                   </Box>
                                                   {/* Buildings multi-select (replaces simple building visibility radio) */}
-                                                  <FormControl fullWidth disabled={formDisabled}>
+                                                  <FormControl fullWidth disabled={inputsDisabled}>
                                                        <InputLabel id="buildings-label">{t('buildings.buildingsTitle')}</InputLabel>
                                                        <Select
                                                             labelId="buildings-label"
@@ -483,11 +516,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   <Divider sx={{ my: 1 }} />
                                                   <Stack spacing={1}>
                                                        <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Button variant="outlined" component="label" disabled={!editingEntity || imagesUploading}>
+                                                            <Button variant="outlined" component="label" disabled={!editingEntity || imagesUploading || !isDraft}>
                                                                  {imagesUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadImages)}
                                                                  <input type="file" hidden multiple accept="image/*" onChange={handleImagesUpload} />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingEntity || currentImages.length === 0 || formDisabled} onClick={handleRemoveAllImages}>{t(tokens.announcements.form.removeAllImages)}</Button>
+                                                            <Button color="error" disabled={!editingEntity || currentImages.length === 0 || inputsDisabled} onClick={handleRemoveAllImages}>{t(tokens.announcements.form.removeAllImages)}</Button>
                                                             <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.imagesCount, { count: currentImages.length })}</Typography>
                                                        </Stack>
                                                        {currentImages.length > 0 && (
@@ -496,7 +529,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                       <Box key={url} sx={{ position: 'relative', width: 80, height: 80, borderRadius: 1, overflow: 'hidden', border: theme => `1px solid ${theme.palette.divider}` }}>
                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                            <img src={url} alt="ann-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                           <button type="button" onClick={() => handleRemoveImage(url)} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 10, padding: '2px 4px' }}>x</button>
+                                                                           {isDraft && (
+                                                                                <button type="button" onClick={() => handleRemoveImage(url)} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 10, padding: '2px 4px' }}>x</button>
+                                                                           )}
                                                                       </Box>
                                                                  ))}
                                                             </Box>
@@ -507,11 +542,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   <Divider sx={{ my: 2 }} />
                                                   <Stack spacing={1}>
                                                        <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Button variant="outlined" component="label" disabled={!editingEntity || docsUploading}>
+                                                            <Button variant="outlined" component="label" disabled={!editingEntity || docsUploading || !isDraft}>
                                                                  {docsUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadDocuments || 'Upload documents')}
                                                                  <input type="file" hidden multiple onChange={handleDocumentsUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.ppt,.pptx,.odt,.ods,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/zip" />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingEntity?.id || currentDocuments.length === 0 || formDisabled} onClick={handleRemoveAllDocuments}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
+                                                            <Button color="error" disabled={!editingEntity?.id || currentDocuments.length === 0 || inputsDisabled} onClick={handleRemoveAllDocuments}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
                                                             <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.documentsCount || 'Documents: {{count}}', { count: currentDocuments.length })}</Typography>
                                                        </Stack>
                                                        {currentDocuments.length > 0 && (
@@ -521,7 +556,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                            <Typography variant="caption" noWrap title={doc.name} sx={{ flexGrow: 1 }}>{doc.name}</Typography>
                                                                            <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
                                                                                 <Button size="small" variant="text" onClick={() => window.open(doc.url, '_blank')}>{t(tokens.common.btnDownload)}</Button>
-                                                                                <IconButton size="small" onClick={() => handleRemoveDocument(doc.url)}><DeleteIcon fontSize="inherit" /></IconButton>
+                                                                                {isDraft && (
+                                                                                     <IconButton size="small" onClick={() => handleRemoveDocument(doc.url)}><DeleteIcon fontSize="inherit" /></IconButton>
+                                                                                )}
                                                                            </Stack>
                                                                       </Box>
                                                                  ))}
@@ -530,9 +567,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        {docsUploading && <LinearProgress sx={{ mt: 1 }} />}
                                                   </Stack>
                                                   <Divider sx={{ my: 1 }} />
-                                                  <Stack direction="row" spacing={3} height={40} alignItems="center" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
-                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label={t(tokens.announcements.form.pinToTop)} />
-                                                       <FormControlLabel disabled={formDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label={t(tokens.announcements.form.schedule)} />
+                                                  <Stack direction="row" spacing={3} height={40} alignItems="center" sx={{ opacity: inputsDisabled ? 0.6 : 1 }}>
+                                                       <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label={t(tokens.announcements.form.pinToTop)} />
+                                                       <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label={t(tokens.announcements.form.schedule)} />
                                                        {formik.values.schedule_enabled && (
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                                  <DatePicker
@@ -548,52 +585,51 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                                 helperText: formik.touched.schedule_at && formik.errors.schedule_at,
                                                                            },
                                                                       }}
-                                                                      disabled={!formik.values.schedule_enabled || formDisabled}
+                                                                      disabled={!formik.values.schedule_enabled || inputsDisabled}
                                                                       disablePast={true}
                                                                  />
                                                             </LocalizationProvider>
                                                        )}
                                                   </Stack>
-                                                  <Divider sx={{ my: 1 }} />
-                                                  <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
-                                                       <Button
-                                                            variant="outlined"
-                                                            onClick={handleSave}
-                                                            disabled={
-                                                                 formDisabled ||
-                                                                 !formik.dirty ||
-                                                                 !formik.values.title.trim() ||
-                                                                 !formik.values.message.trim() ||
-                                                                 !formik.values.category ||
-                                                                 (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
-                                                                 Object.keys(formik.errors).length > 0
-                                                            }
-                                                            loading={formik.isSubmitting}
-                                                       >
-                                                            {formik.values.status === 'published' ? t(tokens.common.btnSave) : t(tokens.announcements.actions.saveDraft)}
-                                                       </Button>
-                                                       {formik.values.status === 'published' ? (
-                                                            <Button
-                                                                 variant="contained"
-                                                                 color="warning"
-                                                                 onClick={handleUnpublish}
-                                                                 disabled={formDisabled || !editingEntity?.id || rowBusy === editingEntity?.id}
-                                                            >
-                                                                 {t(tokens.announcements.actions.unpublish)}
-                                                            </Button>
-                                                       ) : (
-                                                            <Button
-                                                                 variant="contained"
-                                                                 onClick={handlePublish}
-                                                                 disabled={formDisabled || !editingEntity?.id || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
-                                                                 loading={formik.isSubmitting && formik.values.status !== 'draft'}>
-                                                                 {t(tokens.announcements.actions.publish)}
-                                                            </Button>
-                                                       )}
-                                                  </Stack>
-
                                              </Stack>
                                         </Box>
+                                        <Divider sx={{ my: 1 }} />
+                                        <Stack direction="row" spacing={2} justifyContent="flex-end">
+                                             <Button
+                                                  variant="outlined"
+                                                  onClick={handleSave}
+                                                  disabled={
+                                                       !isDraft ||
+                                                       !formik.dirty ||
+                                                       !formik.values.title.trim() ||
+                                                       !formik.values.message.trim() ||
+                                                       !formik.values.category ||
+                                                       (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
+                                                       Object.keys(formik.errors).length > 0
+                                                  }
+                                                  loading={formik.isSubmitting}
+                                             >
+                                                  {formik.values.status === 'published' ? t(tokens.common.btnSave) : t(tokens.announcements.actions.saveDraft)}
+                                             </Button>
+                                             {formik.values.status === 'published' ? (
+                                                  <Button
+                                                       variant="contained"
+                                                       color="warning"
+                                                       onClick={handleUnpublish}
+                                                       disabled={!editingEntity?.id || rowBusy === editingEntity?.id}
+                                                  >
+                                                       {t(tokens.announcements.actions.unpublish)}
+                                                  </Button>
+                                             ) : (
+                                                  <Button
+                                                       variant="contained"
+                                                       onClick={handlePublish}
+                                                       disabled={!editingEntity?.id || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
+                                                       loading={formik.isSubmitting && formik.values.status !== 'draft'}>
+                                                       {t(tokens.announcements.actions.publish)}
+                                                  </Button>
+                                             )}
+                                        </Stack>
                                    </Paper>
                               </Grid>
                               {/* Table Column */}

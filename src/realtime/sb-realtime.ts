@@ -103,3 +103,44 @@ export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"
           channelName: "notifications_topic",
           onEvent,
      });
+
+/**
+ * Listen to announcements being published, and notify only when they target any of the provided building ids.
+ * This subscribes to tblAnnouncements UPDATE events and filters for transitions to published.
+ */
+export async function initAnnouncementsRealtimeForBuildings(
+     buildingIds: string[],
+     onEvent: InitListenerOptions["onEvent"]
+): Promise<() => Promise<void>> {
+     if (!Array.isArray(buildingIds) || buildingIds.length === 0) {
+          return async () => { };
+     }
+
+     const buildingSet = new Set(buildingIds);
+
+     const cleanup = await initTableRealtimeListener("tblAnnouncements", ["UPDATE"], {
+          schema: "public",
+          channelName: "announcements_updates",
+          // server-side filter to reduce noise; client will still verify transition
+          filter: "status=eq.published",
+          onEvent: async (payload: any) => {
+               const oldStatus = payload?.old?.status;
+               const newStatus = payload?.new?.status;
+               // Only react to transitions to published
+               if (newStatus !== "published" || oldStatus === "published") return;
+               const announcementId = payload?.new?.id;
+               if (!announcementId) return;
+               // Check pivot: is this announcement linked to any of our buildings?
+               const { data, error } = await supabaseBrowserClient
+                    .from("tblBuildings_Announcements")
+                    .select("building_id")
+                    .eq("announcement_id", announcementId);
+               if (error) return;
+               const targetsTenant = (data || []).some((r: any) => buildingSet.has(r.building_id));
+               if (!targetsTenant) return;
+               onEvent(payload);
+          },
+     });
+
+     return cleanup;
+}

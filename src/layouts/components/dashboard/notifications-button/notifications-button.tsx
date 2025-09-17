@@ -36,6 +36,7 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userId, setUserId] = useState<UUID | null>(null);
 
+
   // 1) Resolve the current user id once
   useEffect(() => {
     let active = true;
@@ -51,7 +52,6 @@ export function useNotifications() {
   useEffect(() => {
     if (!userId) return;
     let active = true;
-
     (async () => {
       const { data, error } = await supabaseBrowserClient
         .from('tblNotifications')
@@ -59,7 +59,7 @@ export function useNotifications() {
         .eq('user_id', userId)
         .eq('is_read', false)
         .order('created_at', { ascending: false })
-        .limit(MAX_DISPLAY + 1); // fetch one extra for "+" badge logic
+        .limit(MAX_DISPLAY + 1);
 
       if (!active) return;
       if (error) {
@@ -74,7 +74,6 @@ export function useNotifications() {
 
       setNotifications(mapped);
     })();
-
     return () => { active = false; };
   }, [userId]);
 
@@ -113,10 +112,7 @@ export function useNotifications() {
 
         // Client users: handle INSERT, DELETE
         switch (eventType) {
-          case 'INSERT': {
-            addIfNeeded(rowNew);
-            break;
-          }
+          case 'INSERT': { addIfNeeded(rowNew); break; }
           case 'DELETE': {
             const deleted = rowOld;
             if (!deleted || deleted.user_id !== userId) return;

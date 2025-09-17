@@ -333,6 +333,7 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
                .select('*')
                .in('id', annIds)
                .eq('status', 'published')
+               .eq('archived', false)
                .order('created_at', { ascending: false });
           if (annErr) return { success: false, error: annErr.message };
 
@@ -442,6 +443,9 @@ export async function upsertAnnouncement(
      delete record.buildings;
 
      if (isUpdate) {
+          // Preserve publish status on updates (managed via publish/unpublish actions)
+          delete record.status;
+          delete record.published_at;
           record.updated_at = now;
      } else {
           record.created_at = now;
@@ -597,8 +601,12 @@ export async function upsertAnnouncement(
           }
      }
 
+     // Ensure a sensible status in the returned payload if DB stores null
+     const ret: any = data as any;
+     if (ret && (ret.status == null)) ret.status = ret.published_at ? 'published' : 'draft';
+
      revalidatePath('/dashboard');
-     return { success: true, data: data as Announcement };
+     return { success: true, data: ret as Announcement };
 }
 
 // ============================= DELETE/ARCHIVE =============================
@@ -734,6 +742,50 @@ export async function publishAnnouncement(id: string) {
                type: 'db',
           });
           return { success: false, error: error.message };
+     }
+
+     // Create notifications for tenants of targeted buildings on publish (realtime INSERT consumers pick this up)
+     try {
+          // 1) Resolve targeted buildings from pivot
+          const { data: bRows, error: bErr } = await supabase
+               .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+               .select('building_id')
+               .eq('announcement_id', id);
+          if (!bErr && bRows && bRows.length > 0) {
+               const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
+               if (buildingIds.length > 0) {
+                    // 2) Get all tenant user ids for those buildings
+                    const { data: userIds } = await readAllTenantsFromBuildingIds(buildingIds);
+                    // 3) Fetch announcement for title/description
+                    const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title').eq('id', id).maybeSingle();
+                    const baseTitle = annRow?.title ?? 'New announcement';
+                    const baseDescription = annRow?.title || 'A new announcement was published';
+                    const createdAtISO = new Date().toISOString();
+                    const rows = (userIds || []).map((uid) => ({
+                         type: 'announcement',
+                         title: baseTitle,
+                         description: baseDescription,
+                         created_at: createdAtISO,
+                         user_id: uid,
+                         is_read: false,
+                         announcement_id: id,
+                         is_for_tenant: true,
+                    })) as unknown as BaseNotification[];
+                    if (rows.length > 0) {
+                         const BATCH = 500;
+                         for (let i = 0; i < rows.length; i += BATCH) {
+                              const slice = rows.slice(i, i + BATCH);
+                              const { error: nErr } = await supabase.from(NOTIFICATIONS_TABLE).insert(slice);
+                              if (nErr) {
+                                   await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: nErr.message, payload: { count: slice.length, id }, status: 'fail', type: 'db' });
+                                   break;
+                              }
+                         }
+                    }
+               }
+          }
+     } catch (e: any) {
+          await logServerAction({ user_id: null, action: 'publishAnnouncementNotificationsUnexpected', duration_ms: 0, error: e?.message || 'unexpected', payload: { id }, status: 'fail', type: 'db' });
      }
      await logServerAction({
           user_id: user_id ? user_id : null,
