@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useCallback } from 'react';
-import { Announcement } from 'src/types/announcement';
+import { Announcement, announcementCategoryLabelMap, announcementSubcategoryLabelMap } from 'src/types/announcement';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
@@ -20,7 +21,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Badge from '@mui/material/Badge';
-import Skeleton from '@mui/material/Skeleton';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -38,11 +38,20 @@ interface Props {
 }
 
 export default function TenantAnnouncementsViewer({ announcements, buildings = {} }: Props) {
+     const { t } = useTranslation();
+     const trPref = useCallback((k1: string, k2?: string, raw?: string) => {
+          const v1 = t(k1 as any);
+          if (v1 !== k1) return v1;
+          if (k2) {
+               const v2 = t(k2 as any);
+               if (v2 !== k2) return v2;
+          }
+          return raw ?? k2 ?? k1;
+     }, [t]);
      const [selectedId, setSelectedId] = useState<string | null>(announcements[0]?.id || null);
      const [search, setSearch] = useState('');
      const [category, setCategory] = useState<string>('');
      const [buildingFilter, setBuildingFilter] = useState<string>('');
-     const [showPinnedOnly, setShowPinnedOnly] = useState(false);
      const [lightbox, setLightbox] = useState<{ open: boolean; url?: string }>({ open: false });
 
      const categories = useMemo(() => Array.from(new Set(announcements.map(a => a.category).filter(Boolean))) as string[], [announcements]);
@@ -55,7 +64,6 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
      const filtered = useMemo(() => {
           const searchLower = search.trim().toLowerCase();
           return announcements.filter(a => {
-               if (showPinnedOnly && !a.pinned) return false;
                if (category && a.category !== category) return false;
                if (buildingFilter && !(a.buildings || []).includes(buildingFilter)) return false;
                if (!searchLower) return true;
@@ -64,25 +72,36 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                     (a.message || '').toLowerCase().includes(searchLower)
                );
           });
-     }, [announcements, search, category, buildingFilter, showPinnedOnly]);
+     }, [announcements, search, category, buildingFilter]);
+
+     // Order: pinned first, then newest by created_at
+     const ordered = useMemo(() => {
+          const arr = [...filtered];
+          arr.sort((a: Announcement, b: Announcement) => {
+               if (!!a.pinned !== !!b.pinned) return b.pinned ? 1 : -1; // true first
+               const at = new Date(a.created_at).getTime();
+               const bt = new Date(b.created_at).getTime();
+               return bt - at; // newest first
+          });
+          return arr;
+     }, [filtered]);
 
      const selected = useMemo(
-          () => filtered.find(a => a.id === selectedId) || filtered[0] || null,
-          [filtered, selectedId]
+          () => ordered.find(a => a.id === selectedId) || ordered[0] || null,
+          [ordered, selectedId]
      );
 
      // Keep selection valid when filter changes
      useMemo(() => {
-          if (selected && filtered.some(a => a.id === selected.id)) return;
-          if (filtered.length) setSelectedId(filtered[0].id!);
+          if (selected && ordered.some(a => a.id === selected.id)) return;
+          if (ordered.length) setSelectedId(ordered[0].id!);
           else setSelectedId(null);
-     }, [filtered, selected]);
+     }, [ordered, selected]);
 
      const clearFilters = useCallback(() => {
           setSearch('');
           setCategory('');
           setBuildingFilter('');
-          setShowPinnedOnly(false);
      }, []);
 
      const openLightbox = useCallback((url: string) => setLightbox({ open: true, url }), []);
@@ -92,18 +111,27 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
           <Container maxWidth="xl">
                <Stack spacing={3}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <Typography variant="h4">Tenant Announcements</Typography>
+                         <Typography variant="h4">{t('announcements.tenant.title')}</Typography>
                     </Box>
-                    <Card sx={{ p: 2 }}>
-                         <Box display="flex" gap={2} sx={{ width: '100%', alignItems: 'stretch' }}>
+                    <Card sx={{ p: 2, maxWidth: { xs: '100%', md: 1000, lg: 1200 }, mx: 'auto' }}>
+                         <Box
+                              display="flex"
+                              gap={2}
+                              sx={{
+                                   width: '100%',
+                                   alignItems: 'stretch',
+                                   flexDirection: { xs: 'column', sm: 'row' },
+                                   flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                              }}
+                         >
                               {/* Left Pane */}
-                              <Paper variant="outlined" sx={{ width: 360, display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
-                                   <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                              <Paper variant="outlined" sx={{ width: { xs: '100%', sm: '33.333%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
+                                   <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                        <Stack direction="row" spacing={1} alignItems="center">
                                              <TextField
                                                   size="small"
                                                   fullWidth
-                                                  placeholder="Search announcements..."
+                                                  placeholder={t('announcements.searchPlaceholder')}
                                                   value={search}
                                                   onChange={e => setSearch(e.target.value)}
                                                   InputProps={{
@@ -114,58 +142,51 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                        )
                                                   }}
                                              />
-                                             {(search || category || buildingFilter || showPinnedOnly) && (
-                                                  <Tooltip title="Clear filters">
+                                             {(search || category || buildingFilter) && (
+                                                  <Tooltip title={t('common.clearFilters')}>
                                                        <IconButton size="small" onClick={clearFilters}>
                                                             <FilterAltOffIcon fontSize="small" />
                                                        </IconButton>
                                                   </Tooltip>
                                              )}
                                         </Stack>
-                                        <Stack direction="row" spacing={1} flexWrap="wrap">
-                                             <TextField
-                                                  select
-                                                  label="Category"
-                                                  size="small"
-                                                  value={category}
-                                                  onChange={e => setCategory(e.target.value)}
-                                                  sx={{ minWidth: 120 }}
-                                             >
-                                                  <MenuItem value="">All</MenuItem>
-                                                  {categories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-                                             </TextField>
-                                             <TextField
-                                                  select
-                                                  label="Building"
-                                                  size="small"
-                                                  value={buildingFilter}
-                                                  onChange={e => setBuildingFilter(e.target.value)}
-                                                  sx={{ minWidth: 140 }}
-                                             >
-                                                  <MenuItem value="">All</MenuItem>
-                                                  {buildingOptions.map(b => {
-                                                       const bd = buildings[b];
-                                                       let label = b;
-                                                       if (bd?.building_location) {
-                                                            const loc = bd.building_location || {};
-                                                            label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ');
-                                                       }
-                                                       return <MenuItem key={b} value={b}>{label}</MenuItem>;
-                                                  })}
-                                             </TextField>
-                                             <Chip
-                                                  size="small"
-                                                  color={showPinnedOnly ? 'warning' : 'default'}
-                                                  variant={showPinnedOnly ? 'filled' : 'outlined'}
-                                                  icon={<PushPinIcon fontSize="small" />}
-                                                  label={showPinnedOnly ? 'Pinned Only' : 'All'}
-                                                  onClick={() => setShowPinnedOnly(p => !p)}
-                                             />
-                                        </Stack>
+                                        <TextField
+                                             select
+                                             label={t('announcements.fields.category')}
+                                             size="small"
+                                             value={category}
+                                             onChange={e => setCategory(e.target.value)}
+                                             fullWidth
+                                        >
+                                             <MenuItem value="">{t('common.all')}</MenuItem>
+                                             {categories.map(c => {
+                                                  const label = trPref(`announcements.categories.${c}`, announcementCategoryLabelMap[c] ?? c, c);
+                                                  return <MenuItem key={c} value={c}>{label}</MenuItem>;
+                                             })}
+                                        </TextField>
+                                        <TextField
+                                             select
+                                             label={t('announcements.fields.building')}
+                                             size="small"
+                                             value={buildingFilter}
+                                             onChange={e => setBuildingFilter(e.target.value)}
+                                             fullWidth
+                                        >
+                                             <MenuItem value="">{t('common.all')}</MenuItem>
+                                             {buildingOptions.map(b => {
+                                                  const bd = buildings[b];
+                                                  let label = b;
+                                                  if (bd?.building_location) {
+                                                       const loc = bd.building_location || {};
+                                                       label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ');
+                                                  }
+                                                  return <MenuItem key={b} value={b}>{label}</MenuItem>;
+                                             })}
+                                        </TextField>
                                    </Box>
                                    <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
                                         <List disablePadding>
-                                             {filtered.map((a: Announcement) => {
+                                             {ordered.map((a: Announcement) => {
                                                   const imagesCount = Array.isArray(a.images) ? a.images.length : 0;
                                                   const docsCount = Array.isArray(a.documents) ? a.documents.length : 0;
                                                   return (
@@ -183,22 +204,22 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                             <ListItemText
                                                                  primary={
                                                                       <Stack direction="row" spacing={1} alignItems="center" sx={{ maxWidth: '100%' }}>
-                                                                           <Typography variant="subtitle2" noWrap sx={{ flexGrow: 1 }}>{a.title || 'Untitled'}</Typography>
-                                                                           {a.pinned && <Tooltip title="Pinned"><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
+                                                                           <Typography variant="subtitle2" noWrap sx={{ flexGrow: 1 }}>{a.title || t('common.untitled')}</Typography>
+                                                                           {a.pinned && <Tooltip title={t('announcements.pinned')}><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
                                                                            {a.schedule_enabled && a.schedule_at && (
-                                                                                <Tooltip title={`Scheduled: ${new Date(a.schedule_at).toLocaleString()}`}>
+                                                                                <Tooltip title={t('announcements.scheduledAt', { date: new Date(a.schedule_at).toLocaleString() })}>
                                                                                      <ScheduleIcon color="info" fontSize="small" />
                                                                                 </Tooltip>
                                                                            )}
                                                                            {imagesCount > 0 && (
-                                                                                <Tooltip title={`${imagesCount} image${imagesCount === 1 ? '' : 's'}`}>
+                                                                                <Tooltip title={t('announcements.imagesCount', { count: imagesCount })}>
                                                                                      <Badge badgeContent={imagesCount} color="primary" max={9}>
                                                                                           <ImageIcon fontSize="small" />
                                                                                      </Badge>
                                                                                 </Tooltip>
                                                                            )}
                                                                            {docsCount > 0 && (
-                                                                                <Tooltip title={`${docsCount} document${docsCount === 1 ? '' : 's'}`}>
+                                                                                <Tooltip title={t('announcements.documentsCount', { count: docsCount })}>
                                                                                      <Badge badgeContent={docsCount} color="secondary" max={9}>
                                                                                           <DescriptionIcon fontSize="small" />
                                                                                      </Badge>
@@ -208,7 +229,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                  }
                                                                  secondary={
                                                                       <Typography variant="caption" color="text.secondary" noWrap>
-                                                                           {new Date(a.created_at).toLocaleString()} · {(a.buildings || []).length} bldgs
+                                                                           {new Date(a.created_at).toLocaleString()} · {(a.buildings || []).length} {t('announcements.buildingsShort', { count: (a.buildings || []).length })}
                                                                       </Typography>
                                                                  }
                                                             />
@@ -217,22 +238,22 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                              })}
                                              {filtered.length === 0 && (
                                                   <Box sx={{ p: 3, textAlign: 'center' }}>
-                                                       <Typography variant="body2" color="text.secondary">No announcements match your filters.</Typography>
+                                                       <Typography variant="body2" color="text.secondary">{t('announcements.noneMatch')}</Typography>
                                                   </Box>
                                              )}
                                         </List>
                                    </Box>
                                    <Divider />
                                    <Box sx={{ p: 1, textAlign: 'right' }}>
-                                        <Typography variant="caption" color="text.secondary">{filtered.length} / {announcements.length} shown</Typography>
+                                        <Typography variant="caption" color="text.secondary">{t('announcements.countShown', { shown: ordered.length, total: announcements.length })}</Typography>
                                    </Box>
                               </Paper>
 
                               {/* Right Pane */}
-                              <Paper variant="outlined" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
+                              <Paper variant="outlined" sx={{ flexGrow: 1, width: { xs: '100%', sm: '66.666%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh', minWidth: 0 }}>
                                    {!selected && (
                                         <Box sx={{ p: 4, textAlign: 'center' }}>
-                                             <Typography variant="body2" color="text.secondary">Select an announcement.</Typography>
+                                             <Typography variant="body2" color="text.secondary">{t('announcements.selectPrompt')}</Typography>
                                         </Box>
                                    )}
                                    {selected && (
@@ -242,17 +263,29 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                                                             <Typography variant="h5" sx={{ mb: 1, pr: 1 }} noWrap>{selected.title}</Typography>
                                                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                                                 {selected.pinned && <Chip size="small" color="warning" label="Pinned" />}
-                                                                 <Chip size="small" label={selected.status === 'published' ? 'Published' : 'Draft'} color={selected.status === 'published' ? 'success' : 'default'} />
-                                                                 {selected.category && <Chip size="small" label={selected.category} variant="outlined" />}
-                                                                 {selected.subcategory && <Chip size="small" label={selected.subcategory} variant="outlined" />}
-                                                                 {selected.schedule_enabled && selected.schedule_at && <Chip size="small" color="info" label={`Scheduled ${new Date(selected.schedule_at).toLocaleString()}`} />}
+                                                                 {selected.pinned && <Chip size="small" color="warning" label={t('announcements.pinned')} />}
+                                                                 <Chip size="small" label={selected.status === 'published' ? t('announcements.status.published') : t('announcements.status.draft')} color={selected.status === 'published' ? 'success' : 'default'} />
+                                                                 {selected.category && (
+                                                                      <Chip
+                                                                           size="small"
+                                                                           label={trPref(`announcements.categories.${selected.category}`, announcementCategoryLabelMap[selected.category] ?? selected.category, selected.category)}
+                                                                           variant="outlined"
+                                                                      />
+                                                                 )}
+                                                                 {selected.subcategory && (
+                                                                      <Chip
+                                                                           size="small"
+                                                                           label={trPref(`announcements.subcategories.${selected.subcategory}`, announcementSubcategoryLabelMap[selected.subcategory] ?? selected.subcategory, selected.subcategory)}
+                                                                           variant="outlined"
+                                                                      />
+                                                                 )}
+                                                                 {selected.schedule_enabled && selected.schedule_at && <Chip size="small" color="info" label={t('announcements.scheduledAt', { date: new Date(selected.schedule_at).toLocaleString() })} />}
                                                                  {(selected.images?.length || 0) > 0 && (
                                                                       <Chip
                                                                            size="small"
                                                                            variant="outlined"
                                                                            icon={<ImageIcon fontSize="small" />}
-                                                                           label={`${selected.images?.length ?? 0} image${(selected.images?.length ?? 0) === 1 ? '' : 's'}`}
+                                                                           label={t('announcements.imagesCount', { count: selected.images?.length ?? 0 })}
                                                                       />
                                                                  )}
                                                                  {Array.isArray(selected.documents) && selected.documents.length > 0 && (
@@ -260,15 +293,15 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                            size="small"
                                                                            variant="outlined"
                                                                            icon={<DescriptionIcon fontSize="small" />}
-                                                                           label={`${selected.documents.length} doc${selected.documents.length === 1 ? '' : 's'}`}
+                                                                           label={t('announcements.documentsCount', { count: selected.documents.length })}
                                                                       />
                                                                  )}
                                                             </Stack>
                                                        </Box>
                                                        <Stack spacing={0.5} sx={{ textAlign: 'right' }}>
-                                                            <Typography variant="caption" color="text.secondary">Created {new Date(selected.created_at).toLocaleString()}</Typography>
+                                                            <Typography variant="caption" color="text.secondary">{`${t('common.createdAt')} ${new Date(selected.created_at).toLocaleString()}`}</Typography>
                                                             {selected.updated_at && (
-                                                                 <Typography variant="caption" color="text.secondary">Updated {new Date(selected.updated_at).toLocaleString()}</Typography>
+                                                                 <Typography variant="caption" color="text.secondary">{`${t('common.updatedAt')} ${new Date(selected.updated_at).toLocaleString()}`}</Typography>
                                                             )}
                                                        </Stack>
                                                   </Stack>
@@ -292,7 +325,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                   )}
                                                   {Array.isArray(selected.images) && selected.images.length > 0 && (
                                                        <Box sx={{ mb: 4 }}>
-                                                            <Typography variant="subtitle1" gutterBottom>Images</Typography>
+                                                            <Typography variant="subtitle1" gutterBottom>{t('announcements.images')}</Typography>
                                                             <Box
                                                                  sx={{
                                                                       display: 'grid',
@@ -332,12 +365,12 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                   )}
                                                   {Array.isArray(selected.documents) && selected.documents.length > 0 && (
                                                        <Box sx={{ mb: 4 }}>
-                                                            <Typography variant="subtitle1" gutterBottom>Documents</Typography>
+                                                            <Typography variant="subtitle1" gutterBottom>{t('announcements.documents')}</Typography>
                                                             <List dense>
                                                                  {selected.documents.map((d: any, i: number) => (
                                                                       <ListItemButton key={i} component="a" href={d.url} target="_blank" rel="noopener noreferrer" sx={{ borderRadius: 1 }}>
                                                                            <ListItemText
-                                                                                primary={<Typography variant="body2">{d.name || `Document ${i + 1}`}</Typography>}
+                                                                                primary={<Typography variant="body2">{d.name || t('announcements.documentWithIndex', { index: i + 1 })}</Typography>}
                                                                                 secondary={<Typography variant="caption" color="text.secondary">{d.mime}</Typography>}
                                                                            />
                                                                       </ListItemButton>
@@ -351,8 +384,8 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                               </Paper>
                               <Dialog open={lightbox.open} onClose={closeLightbox} maxWidth="md" fullWidth>
                                    <DialogTitle sx={{ pr: 5 }}>
-                                        Image Preview
-                                        <IconButton aria-label="close" onClick={closeLightbox} sx={{ position: 'absolute', right: 8, top: 8 }}>
+                                        {t('announcements.lightbox.imagePreview')}
+                                        <IconButton aria-label={t('common.close')} onClick={closeLightbox} sx={{ position: 'absolute', right: 8, top: 8 }}>
                                              <CloseIcon />
                                         </IconButton>
                                    </DialogTitle>

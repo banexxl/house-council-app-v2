@@ -803,4 +803,30 @@ export const de = {
   [tokens.errors.unauthorized.subheader]: 'Autorisierungsfehler',
   [tokens.errors.unauthorized.description]: 'Sie haben keine Berechtigung diese Seite zu besuchen.',
   //#endregion
+  // Tenant Announcements Viewer
+  'announcements.tenant.title': 'Mieterankündigungen',
+  'announcements.searchPlaceholder': 'Ankündigungen suchen...',
+  'announcements.fields.category': 'Kategorie',
+  'announcements.fields.building': 'Gebäude',
+  'announcements.pinned': 'Angeheftet',
+  'announcements.scheduledAt': 'Geplant: {{date}}',
+  'announcements.imagesCount': '{{count}} Bild(er)',
+  'announcements.documentsCount': '{{count}} Dokument(e)',
+  'announcements.buildingsShort': 'Geb.',
+  'announcements.noneMatch': 'Keine Ankündigungen entsprechen Ihren Filtern.',
+  'announcements.countShown': '{{shown}} / {{total}} angezeigt',
+  'announcements.selectPrompt': 'Wählen Sie eine Ankündigung aus.',
+  'announcements.status.published': 'Veröffentlicht',
+  'announcements.status.draft': 'Entwurf',
+  'announcements.images': 'Bilder',
+  'announcements.documents': 'Dokumente',
+  'announcements.documentWithIndex': 'Dokument {{index}}',
+  'announcements.lightbox.imagePreview': 'Bildvorschau',
+  'common.clearFilters': 'Filter löschen',
+  'common.close': 'Schließen',
+  'common.untitled': 'Ohne Titel',
+  'common.createdAt': 'Erstellt am',
+  'common.updatedAt': 'Aktualisiert am',
 };
+
+// (viewer keys merged into main de export)

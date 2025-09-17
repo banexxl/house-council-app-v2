@@ -369,6 +369,7 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
                     const key = `${bucket}::${path}`; const signed = signedMap.get(key); if (!signed) continue;
                     const aId = r.announcement_id as string; const arr = imagesMap.get(aId) ?? []; arr.push(signed); imagesMap.set(aId, arr);
                }
+
                const docsMap = new Map<string, { url: string; name: string; mime?: string }[]>();
                for (const r of (docRows || []) as any[]) {
                     const bucket = r.storage_bucket ?? DEFAULT_BUCKET; const path = r.storage_path; if (!path) continue;

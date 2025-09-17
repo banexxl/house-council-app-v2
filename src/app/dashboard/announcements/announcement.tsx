@@ -154,8 +154,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
           router.refresh();
      };
 
-     const handleSaveDraft = () => {
-          formik.setFieldValue('status', 'draft');
+     const handleSave = () => {
+          // Preserve current status; submission will not flip published↔draft
           formik.handleSubmit();
      };
 
@@ -165,22 +165,25 @@ export default function Announcements({ client, announcements, buildings }: Anno
           if (!res.success || !res.data) return;
           const a: Announcement = res.data;
           setEditingEntity(a);
-          formik.setValues({
-               id: id,
-               title: a.title || '',
-               message: a.message || '',
-               category: a.category || '',
-               subcategory: a.subcategory || '',
-               buildings: a.buildings,
-               attachments: [],
-               pinned: !!a.pinned,
-               schedule_enabled: !!a.schedule_at,
-               created_at: a.created_at,
-               schedule_at: a.schedule_at || null,
-               status: a.status || 'draft',
-               user_id: a.user_id,
-               images: (a.images && a.images.length ? a.images : []),
-               documents: (a.documents && a.documents.length ? a.documents : []),
+          // Reset form to loaded values so dirty=false until user changes something
+          formik.resetForm({
+               values: {
+                    id: id,
+                    title: a.title || '',
+                    message: a.message || '',
+                    category: a.category || '',
+                    subcategory: a.subcategory || '',
+                    buildings: a.buildings,
+                    attachments: [],
+                    pinned: !!a.pinned,
+                    schedule_enabled: !!a.schedule_at,
+                    created_at: a.created_at,
+                    schedule_at: a.schedule_at || null,
+                    status: a.status || 'draft',
+                    user_id: a.user_id,
+                    images: (a.images && a.images.length ? a.images : []),
+                    documents: (a.documents && a.documents.length ? a.documents : []),
+               }
           });
      };
 
@@ -555,18 +558,19 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ opacity: formDisabled ? 0.6 : 1 }}>
                                                        <Button
                                                             variant="outlined"
-                                                            onClick={handleSaveDraft}
+                                                            onClick={handleSave}
                                                             disabled={
                                                                  formDisabled ||
+                                                                 !formik.dirty ||
                                                                  !formik.values.title.trim() ||
                                                                  !formik.values.message.trim() ||
                                                                  !formik.values.category ||
                                                                  (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
                                                                  Object.keys(formik.errors).length > 0
                                                             }
-                                                            loading={formik.isSubmitting && formik.values.status === 'draft'}
+                                                            loading={formik.isSubmitting}
                                                        >
-                                                            {t(tokens.announcements.actions.saveDraft)}
+                                                            {formik.values.status === 'published' ? t(tokens.common.btnSave) : t(tokens.announcements.actions.saveDraft)}
                                                        </Button>
                                                        {formik.values.status === 'published' ? (
                                                             <Button

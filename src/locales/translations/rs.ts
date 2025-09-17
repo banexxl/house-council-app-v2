@@ -815,4 +815,30 @@ export const rs = {
      [tokens.errors.unauthorized.subheader]: 'Greška autorizacije',
      [tokens.errors.unauthorized.description]: 'Nemate dozvolu za pristup ovoj stranici',
      //#endregion
+     // Tenant Announcements Viewer
+     'announcements.tenant.title': 'Objave za stanare',
+     'announcements.searchPlaceholder': 'Pretraži objave...',
+     'announcements.fields.category': 'Kategorija',
+     'announcements.fields.building': 'Zgrada',
+     'announcements.pinned': 'Zakačeno',
+     'announcements.scheduledAt': 'Zakazano: {{date}}',
+     'announcements.imagesCount': '{{count}} slika',
+     'announcements.documentsCount': '{{count}} dokument(a)',
+     'announcements.buildingsShort': 'zgr.',
+     'announcements.noneMatch': 'Nijedna objava ne odgovara filterima.',
+     'announcements.countShown': 'Prikazano {{shown}} / {{total}}',
+     'announcements.selectPrompt': 'Izaberite objavu.',
+     'announcements.status.published': 'Objavljeno',
+     'announcements.status.draft': 'Nacrt',
+     'announcements.images': 'Slike',
+     'announcements.documents': 'Dokumenti',
+     'announcements.documentWithIndex': 'Dokument {{index}}',
+     'announcements.lightbox.imagePreview': 'Pregled slike',
+     'common.clearFilters': 'Očisti filtere',
+     'common.close': 'Zatvori',
+     'common.untitled': 'Bez naslova',
+     'common.createdAt': 'Kreirano',
+     'common.updatedAt': 'Ažurirano',
 };
+
+
