@@ -26,17 +26,18 @@ const NOTIFICATION_TYPES = [
 ] as const;
 
 export default function NotificationsClient({ initialNotifications }: NotificationsClientProps) {
+     type Row = Notification & { id: string; created_at: string };
      const [type, setType] = useState<string>('all');
-     const [items, setItems] = useState<Notification[]>(initialNotifications);
+     const [items, setItems] = useState<Row[]>(initialNotifications as unknown as Row[]);
      const { t } = useTranslation();
 
-     const filtered = useMemo(() => {
+     const filtered = useMemo<Row[]>(() => {
           if (type === 'all') return items;
           return items.filter(n => n.type === type);
      }, [items, type]);
 
-     const columns: TableColumn<Notification>[] = useMemo(() => {
-          const base: TableColumn<Notification>[] = [
+     const columns: TableColumn<Row>[] = useMemo(() => {
+          const base: TableColumn<Row>[] = [
                { key: 'title', label: t(tokens.notifications.col.title) },
                { key: 'description', label: t(tokens.notifications.col.description), render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
                { key: 'created_at', label: t(tokens.notifications.col.created), render: v => new Date(v as string).toLocaleString() },
@@ -79,7 +80,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                    </Tabs>
                               </Box>
                               <Box sx={{ flex: 1 }}>
-                                   <GenericTable
+                                   <GenericTable<Row>
                                         columns={columns}
                                         items={filtered}
                                         tableTitle={t(tokens.notifications.tableTitle)}
@@ -91,7 +92,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                                             const data = await markNotificationRead(item.id, !item.is_read);
                                                             if (data.success) {
                                                                  toast.success(!item.is_read ? t(tokens.notifications.markedRead) : t(tokens.notifications.markedUnread));
-                                                                 setItems(prev => prev.map(n => n.id === item.id ? { ...n, is_read: !n.is_read } : n));
+                                                                 setItems(prev => prev.map(n => n.id === item.id ? { ...n, is_read: !n.is_read } as Row : n));
                                                             }
                                                        }}>
                                                             <DoneAllIcon fontSize="small" color={item.is_read ? 'success' : 'disabled'} />

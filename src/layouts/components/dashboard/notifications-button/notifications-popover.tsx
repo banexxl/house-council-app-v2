@@ -136,7 +136,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
                   <Tooltip title={t(tokens.notifications.remove)}>
                     <IconButton
                       edge="end"
-                      onClick={() => onRemoveOne?.(notification.id)}
+                      onClick={() => onRemoveOne?.(notification.id!)}
                       size="small"
                     >
                       <SvgIcon>

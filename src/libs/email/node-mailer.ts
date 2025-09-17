@@ -3,6 +3,7 @@
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import { logServerAction } from '../supabase/server-logging';
 import { readClientSubscriptionPlanFromClientId } from 'src/app/dashboard/subscriptions/subscription-plan-actions';
+import { BaseNotification } from 'src/types/notification';
 
 
 const transporter = nodemailer.createTransport({
@@ -503,4 +504,22 @@ export const sendClientContactMessageToSupport = async (clientEmail: string, con
 
   return sendEmailToSupport
 
+}
+
+// Lightweight generic sender for notification emails
+export const sendNotificationEmail = async (to: string, subject: string, html: string, textFallback?: string): Promise<{ ok: boolean; error?: string }> => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.NOTIFICATIONS_EMAIL_FROM || 'Nest Link <no-reply@nest-link.app>',
+      to,
+      subject,
+      html,
+      text: textFallback,
+    });
+    if ((info as any)?.response) return { ok: true };
+    if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || 'sendMail failed' };
+  }
 }

@@ -473,3 +473,30 @@ export const readAllTenantsFromBuildingIds = async (
      }
      return { success: true, data: tenants ? tenants.map((t) => t.user_id) : [] };
 };
+
+// Lightweight contact lookup for notifications fanout
+export const readTenantContactByUserIds = async (
+     userIds: string[]
+): Promise<{ success: boolean; data: Record<string, { email?: string | null; phone_number?: string | null; email_opt_in?: boolean | null; sms_opt_in?: boolean | null }>; error?: string }> => {
+     try {
+          if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, data: {} };
+          const supabase = await useServerSideSupabaseAnonClient();
+          const { data, error } = await supabase
+               .from('tblTenants')
+               .select('user_id, email, phone_number, email_opt_in, sms_opt_in')
+               .in('user_id', userIds);
+          if (error) return { success: false, error: error.message, data: {} as any };
+          const map: Record<string, { email?: string | null; phone_number?: string | null; email_opt_in?: boolean | null; sms_opt_in?: boolean | null }> = {};
+          for (const row of (data || []) as any[]) {
+               map[row.user_id] = {
+                    email: row.email ?? null,
+                    phone_number: row.phone_number ?? null,
+                    email_opt_in: row.email_opt_in ?? null,
+                    sms_opt_in: row.sms_opt_in ?? null,
+               };
+          }
+          return { success: true, data: map };
+     } catch (e: any) {
+          return { success: false, error: e?.message || 'Unexpected error', data: {} as any };
+     }
+}
