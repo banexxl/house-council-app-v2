@@ -2,16 +2,29 @@ import * as Yup from 'yup';
 
 export type NotificationKind = 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'other';
 
+export const NOTIFICATION_TYPES = [
+     'system',
+     'message',
+     'reminder',
+     'alert',
+     'announcement',
+     'other',
+] as const;
+
 export interface BaseNotification {
-     id: string;
+     id?: string;
      type: NotificationKind;
      title: string;
      description: string;
-     created_at: Date; // ISO string from DB
+     // Accept either Date or ISO string to match DB/client usage
+     created_at: string | Date;
      user_id: string | null;
      is_read: boolean;
-     building_id: string;
-     is_for_tenant: boolean;
+     // Optional foreign keys, present depending on notification kind
+     building_id?: string | null;
+     client_id?: string | null;
+     announcement_id?: string | null;
+     is_for_tenant?: boolean;
 }
 
 // Extended shapes depending on type
@@ -39,10 +52,11 @@ export const notificationInitialValues: Partial<Notification> = {
 export const notificationValidationSchema = Yup.object({
      title: Yup.string().trim().min(2).max(200).required(),
      description: Yup.string().trim().min(2).required(),
-     type: Yup.mixed<NotificationKind>().oneOf(['system', 'message', 'reminder', 'alert']).required(),
+     type: Yup.mixed<NotificationKind>().oneOf(NOTIFICATION_TYPES as unknown as NotificationKind[]).required(),
      client_id: Yup.string().nullable(),
      is_read: Yup.boolean().default(false),
-     building_id: Yup.string().required(),
+     building_id: Yup.string().nullable(),
      user_id: Yup.string().nullable(),
-     is_for_tenant: Yup.boolean().default(false)
+     is_for_tenant: Yup.boolean().default(false),
+     announcement_id: Yup.string().nullable(),
 });

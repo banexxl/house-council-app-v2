@@ -5,6 +5,7 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement } from 'src/types/announcement';
 import { BaseNotification } from 'src/types/notification';
+import { emitNotifications } from '../notification/notification-actions';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
@@ -537,69 +538,7 @@ export async function upsertAnnouncement(
           }
      }
 
-     // ---- NEW: Create per-user notifications (only on create, not update) ----
-     if (!isUpdate && data && buildingIdsInput.length > 0) {
-          const announcementId = (data as any).id;
-          try {
-               // 1) Resolve all user_ids that belong to any of the selected buildings
-               const { data: userIds } = await readAllTenantsFromBuildingIds(buildingIdsInput);
-
-               if (userIds && userIds.length === 0) {
-                    // Nothing to notify (not an error)
-                    revalidatePath('/dashboard/');
-                    return { success: true, data: data as Announcement };
-               }
-
-               // 2) Build rows (one per user). We keep per-user read state via is_read=false initially.
-               const baseTitle = (data as any).title ?? 'New announcement';
-               const baseDescription = (data as any).title || 'A new announcement was created';
-               const createdAtISO = new Date().toISOString();
-
-               const rows = userIds && userIds!.map((uid) => ({
-                    type: 'announcement',
-                    title: baseTitle,
-                    description: baseDescription,
-                    created_at: createdAtISO,
-                    user_id: uid, // <- per-user
-                    is_read: false,
-                    announcement_id: announcementId,
-                    is_for_tenant: true,
-               })) as unknown as BaseNotification[];
-
-               // 3) Insert in batches (avoid payload limits)
-               if (rows && rows.length > 0) {
-                    const BATCH = 500;
-                    for (let i = 0; i < rows.length; i += BATCH) {
-                         const slice = rows.slice(i, i + BATCH);
-                         const { error: nErr } = await supabase.from(NOTIFICATIONS_TABLE).insert(slice);
-
-                         if (nErr) {
-                              await logServerAction({
-                                   user_id: null,
-                                   action: 'createAnnouncementNotificationsBulk',
-                                   duration_ms: 0,
-                                   error: nErr.message,
-                                   payload: { count: slice.length, announcementId },
-                                   status: 'fail',
-                                   type: 'db',
-                              });
-                              return { success: false, error: nErr.message };
-                         }
-                    }
-               }
-          } catch (e: any) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'createAnnouncementNotificationsBulkUnexpected',
-                    duration_ms: 0,
-                    error: e?.message || 'unexpected',
-                    payload: { buildingIds: buildingIdsInput, announcementId: (data as any).id },
-                    status: 'fail',
-                    type: 'db',
-               });
-               return { success: false, error: e?.message || 'Unexpected error while creating notifications' };
-          }
-     }
+     // Notifications are emitted on publish only (see publishAnnouncement)
 
      // Ensure a sensible status in the returned payload if DB stores null
      const ret: any = data as any;
@@ -642,17 +581,18 @@ export async function deleteAnnouncement(id: string) {
                type: 'announcement',
                title: 'Announcement deleted',
                description: `Announcement ${id} was deleted`,
-               created_at: new Date(),
+               created_at: new Date().toISOString(),
                user_id: user_id ? user_id : null,
                is_read: false,
           } as BaseNotification;
-          const { error: notificationError } = await supabase.from(NOTIFICATIONS_TABLE).insert(notification);
+          const emitted = await emitNotifications([notification]);
+          const notificationError = emitted.success ? null : emitted.error ? { message: emitted.error } as any : null;
           if (notificationError) {
                logServerAction({
                     user_id: user_id ? user_id : null,
                     action: 'deleteAnnouncementNotification',
                     duration_ms: 0,
-                    error: notificationError.message,
+                    error: (notificationError as any).message,
                     payload: { id },
                     status: 'fail',
                     type: 'db',
@@ -772,14 +712,9 @@ export async function publishAnnouncement(id: string) {
                          is_for_tenant: true,
                     })) as unknown as BaseNotification[];
                     if (rows.length > 0) {
-                         const BATCH = 500;
-                         for (let i = 0; i < rows.length; i += BATCH) {
-                              const slice = rows.slice(i, i + BATCH);
-                              const { error: nErr } = await supabase.from(NOTIFICATIONS_TABLE).insert(slice);
-                              if (nErr) {
-                                   await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: nErr.message, payload: { count: slice.length, id }, status: 'fail', type: 'db' });
-                                   break;
-                              }
+                         const emitted = await emitNotifications(rows);
+                         if (!emitted.success) {
+                              await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: emitted.error || 'unknown', payload: { count: rows.length, id }, status: 'fail', type: 'db' });
                          }
                     }
                }
