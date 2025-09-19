@@ -1,6 +1,13 @@
+import { tokens } from 'src/locales/tokens';
 import * as Yup from 'yup';
 
-export type NotificationKind = 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'other';
+export type NotificationType =
+     'system' |
+     'message' |
+     'reminder' |
+     'alert' |
+     'announcement' |
+     'other';
 
 export const NOTIFICATION_TYPES = [
      'system',
@@ -11,9 +18,19 @@ export const NOTIFICATION_TYPES = [
      'other',
 ] as const;
 
+export const NOTIFICATION_TYPES_MAP = [
+     { value: 'all', labelToken: tokens.notifications.tabs.all },
+     { value: 'system', labelToken: tokens.notifications.tabs.system },
+     { value: 'message', labelToken: tokens.notifications.tabs.message },
+     { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
+     { value: 'alert', labelToken: tokens.notifications.tabs.alert },
+     { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
+     { value: 'other', labelToken: tokens.notifications.tabs.other }
+] as const;
+
 export interface BaseNotification {
      id?: string;
-     type: NotificationKind;
+     type: NotificationType;
      title: string;
      description: string;
      // Accept either Date or ISO string to match DB/client usage
@@ -52,7 +69,7 @@ export const notificationInitialValues: Partial<Notification> = {
 export const notificationValidationSchema = Yup.object({
      title: Yup.string().trim().min(2).max(200).required(),
      description: Yup.string().trim().min(2).required(),
-     type: Yup.mixed<NotificationKind>().oneOf(NOTIFICATION_TYPES as unknown as NotificationKind[]).required(),
+     type: Yup.mixed<NotificationType>().oneOf(NOTIFICATION_TYPES as unknown as NotificationType[]).required(),
      client_id: Yup.string().nullable(),
      is_read: Yup.boolean().default(false),
      building_id: Yup.string().nullable(),

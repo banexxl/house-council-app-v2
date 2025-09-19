@@ -159,6 +159,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      }, [editingEntity, formik.values.documents]);
 
      const handlePublish = async () => {
+          formik.setSubmitting(true);
           // New announcement (no editingEntity): use existing submit flow to create & publish
           if (!editingEntity) return; // guarded by disabled state anyway
           // Existing draft -> publish via server action so published_at is set
@@ -169,11 +170,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
           }
           toast.success(t(tokens.announcements.toasts.publishSuccess));
           formik.setFieldValue('status', 'published');
+          formik.setSubmitting(false);
           // refresh list
           router.refresh();
      };
 
      const handleUnpublish = async () => {
+          formik.setSubmitting(true);
           if (!editingEntity) return;
           const res = await revertToDraft(editingEntity.id);
           if (!res.success) {
@@ -182,6 +185,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
           }
           toast.success(t(tokens.announcements.toasts.unpublishSuccess));
           formik.setFieldValue('status', 'draft');
+          formik.setSubmitting(false);
           router.refresh();
      };
 
@@ -321,6 +325,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      };
 
      const performRemoveAllImages = async (id: string) => {
+          formik.setSubmitting(true);
           const { removeAllAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
           const res = await removeAllAnnouncementImages(id);
           if (!res.success) {
@@ -328,6 +333,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
           } else {
                toast.success(t(tokens.announcements.toasts.removeImagesSuccess));
                formik.setFieldValue('images', []);
+               formik.setSubmitting(false);
                router.refresh();
           }
      };
@@ -346,12 +352,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
      };
 
      const performDelete = async (id: string) => {
+          formik.setSubmitting(true);
           setRowBusy(id);
           const res = await deleteAnnouncement(id);
           if (!res.success) toast.error(t(tokens.announcements.toasts.deleteFailed)); else {
                toast.success(t(tokens.announcements.toasts.deleted));
                if (editingEntity!.id === id!) { formik.resetForm(); setEditingEntity(null); }
           }
+          formik.setSubmitting(false);
           setRowBusy(null);
      };
 
@@ -617,6 +625,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        color="warning"
                                                        onClick={handleUnpublish}
                                                        disabled={!editingEntity?.id || rowBusy === editingEntity?.id}
+                                                       loading={formik.isSubmitting}
                                                   >
                                                        {t(tokens.announcements.actions.unpublish)}
                                                   </Button>
@@ -625,7 +634,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        variant="contained"
                                                        onClick={handlePublish}
                                                        disabled={!editingEntity?.id || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
-                                                       loading={formik.isSubmitting && formik.values.status !== 'draft'}>
+                                                       loading={formik.isSubmitting}>
                                                        {t(tokens.announcements.actions.publish)}
                                                   </Button>
                                              )}

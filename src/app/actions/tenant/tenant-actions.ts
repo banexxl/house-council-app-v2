@@ -93,6 +93,7 @@ export const createOrUpdateTenantAction = async (
           const { data: updatedUser, error: updateUserError } = await adminSupabase.auth.admin.updateUserById(tenant.user_id!, {
                email: tenantData.email!,
                email_confirm: true,
+               phone: tenantData.phone_number,
           });
 
           if (updateUserError) {

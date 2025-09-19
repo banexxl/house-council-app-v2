@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Box, Tabs, Tab, IconButton, Tooltip, Container, Stack, Typography, Card } from '@mui/material';
 import { GenericTable, TableColumn } from 'src/components/generic-table';
-import { Notification } from 'src/types/notification';
+import { Notification, NOTIFICATION_TYPES_MAP } from 'src/types/notification';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteNotification, markNotificationRead } from 'src/app/actions/notification/notification-actions';
@@ -15,17 +15,8 @@ interface NotificationsClientProps {
      initialNotifications: Notification[];
 }
 
-const NOTIFICATION_TYPES = [
-     { value: 'all', labelToken: tokens.notifications.tabs.all },
-     { value: 'system', labelToken: tokens.notifications.tabs.system },
-     { value: 'message', labelToken: tokens.notifications.tabs.message },
-     { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
-     { value: 'alert', labelToken: tokens.notifications.tabs.alert },
-     { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
-     { value: 'other', labelToken: tokens.notifications.tabs.other }
-] as const;
-
 export default function NotificationsClient({ initialNotifications }: NotificationsClientProps) {
+
      type Row = Notification & { id: string; created_at: string };
      const [type, setType] = useState<string>('all');
      const [items, setItems] = useState<Row[]>(initialNotifications as unknown as Row[]);
@@ -39,7 +30,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
      const columns: TableColumn<Row>[] = useMemo(() => {
           const base: TableColumn<Row>[] = [
                { key: 'title', label: t(tokens.notifications.col.title) },
-               { key: 'description', label: t(tokens.notifications.col.description), render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
+               { key: 'description', label: t(tokens.notifications.col.message), render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
                { key: 'created_at', label: t(tokens.notifications.col.created), render: v => new Date(v as string).toLocaleString() },
                { key: 'is_read', label: t(tokens.notifications.col.read) }
           ];
@@ -74,7 +65,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                         onChange={(_, v) => setType(v)}
                                         variant="scrollable"
                                    >
-                                        {NOTIFICATION_TYPES.map(nt => (
+                                        {NOTIFICATION_TYPES_MAP.map(nt => (
                                              <Tab key={nt.value} value={nt.value} label={t(nt.labelToken)} />
                                         ))}
                                    </Tabs>

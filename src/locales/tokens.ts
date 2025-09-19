@@ -663,7 +663,7 @@ export const tokens = {
     },
     col: {
       title: 'notifications.col.title',
-      description: 'notifications.col.description',
+      message: 'notifications.col.message',
       created: 'notifications.col.created',
       read: 'notifications.col.read',
       type: 'notifications.col.type',

@@ -696,10 +696,10 @@ export async function publishAnnouncement(id: string) {
                if (buildingIds.length > 0) {
                     // 2) Get all tenant user ids for those buildings
                     const { data: userIds } = await readAllTenantsFromBuildingIds(buildingIds);
-                    // 3) Fetch announcement for title/description
-                    const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title').eq('id', id).maybeSingle();
+                    // 3) Fetch announcement for title/message
+                    const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title, message').eq('id', id).maybeSingle();
                     const baseTitle = annRow?.title ?? 'New announcement';
-                    const baseDescription = annRow?.title || 'A new announcement was published';
+                    const baseDescription = annRow?.message || 'A new announcement was published';
                     const createdAtISO = new Date().toISOString();
                     const rows = (userIds || []).map((uid) => ({
                          type: 'announcement',
