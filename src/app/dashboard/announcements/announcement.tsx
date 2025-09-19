@@ -357,7 +357,12 @@ export default function Announcements({ client, announcements, buildings }: Anno
           const res = await deleteAnnouncement(id);
           if (!res.success) toast.error(t(tokens.announcements.toasts.deleteFailed)); else {
                toast.success(t(tokens.announcements.toasts.deleted));
-               if (editingEntity!.id === id!) { formik.resetForm(); setEditingEntity(null); }
+               if (editingEntity!.id === id!) {
+                    formik.resetForm({
+                         values: { ...announcementInitialValues, created_at: new Date() }
+                    });
+                    setEditingEntity(null);
+               }
           }
           formik.setSubmitting(false);
           setRowBusy(null);

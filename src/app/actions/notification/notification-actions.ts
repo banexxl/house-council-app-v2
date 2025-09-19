@@ -46,6 +46,8 @@ export async function emitNotifications(
           }
 
           const contactsRes = await readTenantContactByUserIds(userIds);
+          console.log('contactsRes', contactsRes);
+
           const contacts = contactsRes.success ? (contactsRes as any).data : {};
 
           let smsSent = 0; let smsErrors = 0;
@@ -58,7 +60,6 @@ export async function emitNotifications(
                     continue;
                }
                const list = byUser.get(uid)!;
-               console.log('list', list);
 
                const lines = list.map(n => `• ${n.title}: ${n.description}`).join('\n');
                let title: string;
@@ -76,6 +77,7 @@ export async function emitNotifications(
                }
                try {
                     const msg = await createMessage(contact.phone_number, title, body, notificationType);
+
                     if (msg && (msg.sid || msg.status)) {
                          smsSent++;
                     } else {

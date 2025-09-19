@@ -14,7 +14,6 @@ import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
 const ANNOUNCEMENT_IMAGES_TABLE = 'tblAnnouncementImages';
 const ANNOUNCEMENT_DOCUMENTS_TABLE = 'tblAnnouncementDocuments';
-const NOTIFICATIONS_TABLE = 'tblNotifications';
 const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuildings_Announcements';
 
 // ===== Signing helpers (internal) =====
@@ -586,6 +585,7 @@ export async function deleteAnnouncement(id: string) {
                is_read: false,
           } as BaseNotification;
           const emitted = await emitNotifications([notification]);
+          console.log('Notification emitted:', emitted);
           const notificationError = emitted.success ? null : emitted.error ? { message: emitted.error } as any : null;
           if (notificationError) {
                logServerAction({
