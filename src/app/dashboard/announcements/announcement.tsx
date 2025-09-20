@@ -53,6 +53,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { Client } from 'src/types/client';
 import { Building } from 'src/types/building';
+import { NOTIFICATION_TYPES_MAP } from 'src/types/notification';
 
 interface AnnouncementProps {
      announcements: Announcement[];
@@ -163,7 +164,12 @@ export default function Announcements({ client, announcements, buildings }: Anno
           // New announcement (no editingEntity): use existing submit flow to create & publish
           if (!editingEntity) return; // guarded by disabled state anyway
           // Existing draft -> publish via server action so published_at is set
-          const res = await publishAnnouncement(editingEntity.id);
+          const typeInfo = {
+               value: 'announcement' as const,
+               labelToken: t(tokens.notifications.tabs.announcement),
+          };
+          const res = await publishAnnouncement(editingEntity.id, typeInfo);
+
           if (!res.success) {
                toast.error(t(tokens.announcements.toasts.publishError));
                return;
@@ -364,6 +370,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     setEditingEntity(null);
                }
           }
+          formik.resetForm();
           formik.setSubmitting(false);
           setRowBusy(null);
      };

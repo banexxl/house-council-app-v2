@@ -18,8 +18,12 @@ export const NOTIFICATION_TYPES = [
      'other',
 ] as const;
 
-export const NOTIFICATION_TYPES_MAP = [
-     { value: 'all', labelToken: tokens.notifications.tabs.all },
+export type NotificationTypeMap = {
+     value: NotificationType;
+     labelToken: string;
+}
+
+export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'system', labelToken: tokens.notifications.tabs.system },
      { value: 'message', labelToken: tokens.notifications.tabs.message },
      { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
@@ -30,7 +34,7 @@ export const NOTIFICATION_TYPES_MAP = [
 
 export interface BaseNotification {
      id?: string;
-     type: NotificationType;
+     type: NotificationTypeMap;
      title: string;
      description: string;
      // Accept either Date or ISO string to match DB/client usage
@@ -46,13 +50,13 @@ export interface BaseNotification {
 
 // Extended shapes depending on type
 export interface MessageNotification extends BaseNotification {
-     type: 'message';
+     type: NotificationTypeMap;
      sender_id: string;
      receiver_id: string;
 }
 
 export interface AlertNotification extends BaseNotification {
-     type: 'alert';
+     type: NotificationTypeMap;
      severity?: 'low' | 'medium' | 'high';
 }
 
@@ -61,7 +65,7 @@ export type Notification = BaseNotification | MessageNotification | AlertNotific
 export const notificationInitialValues: Partial<Notification> = {
      title: '',
      description: '',
-     type: 'system',
+     type: NOTIFICATION_TYPES_MAP[0],
      user_id: null,
      is_read: false
 };

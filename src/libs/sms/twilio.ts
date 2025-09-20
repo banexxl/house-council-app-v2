@@ -1,13 +1,13 @@
 import twilio from "twilio";
 import { logServerAction } from "../supabase/server-logging";
-import { NotificationType } from "src/types/notification";
+import { NotificationType, NotificationTypeMap } from "src/types/notification";
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_API_TOKEN;
 const numberFrom = process.env.TWILIO_SENDER_PHONE_NUMBER;
 const client = twilio(accountSid, authToken);
 
-export const createMessage = async (to: string, title: string, body: string, notificationType: NotificationType): Promise<any> => {
+export const createMessage = async (to: string, title: string, body: string, notificationType: NotificationTypeMap): Promise<any> => {
 
      const start = Date.now();
 
@@ -34,43 +34,47 @@ export const createMessage = async (to: string, title: string, body: string, not
           };
 
           const toWa = `whatsapp:${normalize(to)}`;
+          const fromEnv = process.env.TWILIO_SENDER_WHATSAPP_NUMBER || numberFrom || '';
+          const fromWa = fromEnv.startsWith('whatsapp:') ? fromEnv : `whatsapp:${normalize(fromEnv)}`;
 
 
           let header = '';
           let messageBody = body;
-          switch (notificationType) {
+
+          switch (notificationType.value) {
                case 'alert':
-                    header = '🚨 *ALERT*';
+                    header = `🚨 *${notificationType.labelToken || 'ALERT'}*`;
                     messageBody = `*${body}*`;
                     break;
                case 'announcement':
-                    header = '📢 *Announcement*';
+                    header = `📢 *${notificationType.labelToken || 'Announcement'}*`;
                     break;
                case 'reminder':
-                    header = '⏰ *Reminder*';
+                    header = `⏰ *${notificationType.labelToken || 'Reminder'}*`;
                     messageBody = `_${body}_`;
                     break;
                case 'message':
-                    header = '💬 *New Message*';
+                    header = `💬 *${notificationType.labelToken || 'New Message'}*`;
                     messageBody = `_${body}_`;
                     break;
                case 'system':
-                    header = '🛠️ *System Update*';
+                    header = `🛠️ *${notificationType.labelToken || 'System Update'}*`;
                     break;
                default:
-                    header = '🔔 *Notification*';
+                    header = `🔔 *${notificationType.labelToken || 'Notification'}*`;
           }
 
-          const titleLine = title ? `*${title}*` : '';
-          const parts = [header, titleLine, messageBody].filter(Boolean);
+          const parts = [header, title, messageBody].filter(Boolean);
           const completeMessage = parts.join('\n\n');
 
 
           const waResponse = await client.messages.create({
                body: completeMessage,
-               from: process.env.TWILIO_SENDER_WHATSAPP_NUMBER!,
+               from: fromWa,
                to: toWa,
           });
+          console.log('waResponse', waResponse);
+
           if (!waResponse || !(waResponse as any)?.sid) {
                logServerAction({
                     action: 'Twilio WhatsApp Send',

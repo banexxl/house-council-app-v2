@@ -61,7 +61,7 @@ export const es = {
   [tokens.notifications.tabs.announcement]: 'Anuncios',
   [tokens.notifications.tabs.other]: 'Otros',
   [tokens.notifications.col.title]: 'Título',
-  [tokens.notifications.col.description]: 'Descripción',
+  [tokens.notifications.col.message]: 'Descripción',
   [tokens.notifications.col.created]: 'Creado',
   [tokens.notifications.col.read]: 'Leído',
   [tokens.notifications.col.type]: 'Tipo',

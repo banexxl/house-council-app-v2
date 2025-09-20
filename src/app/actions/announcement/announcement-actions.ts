@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement } from 'src/types/announcement';
-import { BaseNotification } from 'src/types/notification';
+import { BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
 import { emitNotifications } from '../notification/notification-actions';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
@@ -553,6 +553,7 @@ export async function deleteAnnouncement(id: string) {
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).delete().eq('id', id);
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
+
      if (error) {
           await logServerAction({
                user_id: user_id ? user_id : null,
@@ -577,15 +578,15 @@ export async function deleteAnnouncement(id: string) {
      // Fire-and-forget notification about deletion
      try {
           const notification = {
-               type: 'announcement',
+               type: { value: 'announcement', labelToken: 'Delete Announcement' } as NotificationTypeMap,
                title: 'Announcement deleted',
                description: `Announcement ${id} was deleted`,
                created_at: new Date().toISOString(),
                user_id: user_id ? user_id : null,
                is_read: false,
+               is_for_tenant: false
           } as BaseNotification;
           const emitted = await emitNotifications([notification]);
-          console.log('Notification emitted:', emitted);
           const notificationError = emitted.success ? null : emitted.error ? { message: emitted.error } as any : null;
           if (notificationError) {
                logServerAction({
@@ -665,7 +666,9 @@ export async function togglePinAction(id: string, pinned: boolean) {
 }
 
 // ============================= PUBLISH STATUS CHANGE =============================
-export async function publishAnnouncement(id: string) {
+export async function publishAnnouncement(id: string, typeInfo?: NotificationTypeMap) {
+     console.log('typeInfo', typeInfo);
+
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
@@ -698,19 +701,18 @@ export async function publishAnnouncement(id: string) {
                     const { data: userIds } = await readAllTenantsFromBuildingIds(buildingIds);
                     // 3) Fetch announcement for title/message
                     const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title, message').eq('id', id).maybeSingle();
-                    const baseTitle = annRow?.title ?? 'New announcement';
-                    const baseDescription = annRow?.message || 'A new announcement was published';
                     const createdAtISO = new Date().toISOString();
                     const rows = (userIds || []).map((uid) => ({
-                         type: 'announcement',
-                         title: baseTitle,
-                         description: baseDescription,
+                         type: typeInfo as NotificationTypeMap,
+                         title: annRow?.title,
+                         description: annRow?.message,
                          created_at: createdAtISO,
                          user_id: uid,
                          is_read: false,
                          announcement_id: id,
                          is_for_tenant: true,
                     })) as unknown as BaseNotification[];
+
                     if (rows.length > 0) {
                          const emitted = await emitNotifications(rows);
                          if (!emitted.success) {

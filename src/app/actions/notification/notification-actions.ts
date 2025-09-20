@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { Notification, BaseNotification, NotificationType } from 'src/types/notification';
+import { Notification, BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
 import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { createMessage } from 'src/libs/sms/twilio';
@@ -14,6 +14,7 @@ const NOTIFICATIONS_TABLE = 'tblNotifications';
 export async function emitNotifications(
      rows: BaseNotification[]
 ): Promise<{ success: boolean; error?: string; inserted?: number }> {
+
      const time = Date.now();
      if (!rows || rows.length === 0) return { success: true, inserted: 0 };
      try {
@@ -23,7 +24,13 @@ export async function emitNotifications(
           let inserted = 0;
           for (let i = 0; i < rows.length; i += BATCH) {
                const slice = rows.slice(i, i + BATCH);
-               const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(slice as any);
+               const dbSlice = slice.map((r) => ({
+                    ...r,
+                    type: r.type.value as NotificationType,
+               }));
+               const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(dbSlice as any);
+               console.log('insert error', error);
+
                if (error) {
                     await logServerAction({ user_id: null, action: 'emitNotificationsInsert', duration_ms: Date.now() - time, error: error.message, payload: { count: slice.length }, status: 'fail', type: 'db' });
                     return { success: false, error: error.message };
@@ -46,7 +53,6 @@ export async function emitNotifications(
           }
 
           const contactsRes = await readTenantContactByUserIds(userIds);
-          console.log('contactsRes', contactsRes);
 
           const contacts = contactsRes.success ? (contactsRes as any).data : {};
 
@@ -61,22 +67,23 @@ export async function emitNotifications(
                }
                const list = byUser.get(uid)!;
 
-               const lines = list.map(n => `• ${n.title}: ${n.description}`).join('\n');
+
                let title: string;
                let body: string;
-               let notificationType: NotificationType;
+               let notificationType: NotificationTypeMap;
                if (list.length === 1) {
                     title = list[0].title;
                     body = list[0].description;
-                    notificationType = list[0].type as NotificationType;
+                    notificationType = list[0].type;
                } else {
                     title = `${list.length} new notifications`;
-                    body = lines;
-                    const uniqueTypes = Array.from(new Set(list.map(n => n.type)));
-                    notificationType = uniqueTypes.length === 1 ? (list[0].type as NotificationType) : 'system';
+                    body = list.map(n => `${n.description}`).join('\n');
+                    // const uniqueTypes = Array.from(new Set(list.map(n => n.type.value)));
+                    notificationType = (list[0].type)
                }
                try {
                     const msg = await createMessage(contact.phone_number, title, body, notificationType);
+                    console.log('message', msg);
 
                     if (msg && (msg.sid || msg.status)) {
                          smsSent++;
