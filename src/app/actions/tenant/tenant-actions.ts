@@ -438,7 +438,7 @@ export const getAllBuildingsWithApartmentsForClient = async (
 
 export const readAllTenantsFromBuildingIds = async (
      buildingIds: string[]
-): Promise<{ success: boolean; data?: string[]; error?: string }> => {
+): Promise<{ success: boolean; data?: Tenant[]; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: buildings, error } = await supabase
           .from('tblBuildings')
@@ -466,13 +466,13 @@ export const readAllTenantsFromBuildingIds = async (
      // 3. Get tenants in those apartments
      const { data: tenants, error: tenantsError } = await supabase
           .from('tblTenants')
-          .select('user_id')
+          .select('*')
           .in('apartment_id', apartmentIds);
 
      if (tenantsError) {
           return { success: false, error: tenantsError.message };
      }
-     return { success: true, data: tenants ? tenants.map((t) => t.user_id) : [] };
+     return { success: true, data: tenants ? tenants : [] };
 };
 
 // Lightweight contact lookup for notifications fanout

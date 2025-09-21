@@ -9,6 +9,7 @@ import { emitNotifications } from '../notification/notification-actions';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
+import { sendNotificationEmail } from 'src/libs/email/node-mailer';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
@@ -670,12 +671,12 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
+     const user = await supabase.auth.getUser()
      const now = new Date();
      const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'published', published_at: now, updated_at: now }).eq('id', id);
      if (error) {
           await logServerAction({
-               user_id: user_id ? user_id : null,
+               user_id: user ? user.data.user?.id! : null,
                action: 'publishAnnouncement',
                duration_ms: Date.now() - time,
                error: error.message,
@@ -697,16 +698,18 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
                if (buildingIds.length > 0) {
                     // 2) Get all tenant user ids for those buildings
-                    const { data: userIds } = await readAllTenantsFromBuildingIds(buildingIds);
+                    const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
+                    console.log(tenants);
+
                     // 3) Fetch announcement for title/message
                     const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title, message').eq('id', id).maybeSingle();
                     const createdAtISO = new Date().toISOString();
-                    const rows = (userIds || []).map((uid) => ({
+                    const rows = (tenants || []).map((tenant) => ({
                          type: typeInfo as NotificationTypeMap,
                          title: annRow?.title,
                          description: annRow?.message,
                          created_at: createdAtISO,
-                         user_id: uid,
+                         user_id: tenant.user_id,
                          is_read: false,
                          announcement_id: id,
                          is_for_tenant: true,
@@ -714,8 +717,17 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
 
                     if (rows.length > 0) {
                          const emitted = await emitNotifications(rows);
+
                          if (!emitted.success) {
                               await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: emitted.error || 'unknown', payload: { count: rows.length, id }, status: 'fail', type: 'db' });
+                         } else {
+                              const { ok, error } = await sendNotificationEmail(tenants!.map(t => t.email!),
+                                   `New announcement: ${annRow?.title}`,
+                                   `<p>${annRow?.message}</p>`,
+                                   `New announcement: ${annRow?.title}\n\n${annRow?.message}`
+                              );
+                              console.log('error', error);
+
                          }
                     }
                }
@@ -724,7 +736,7 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
           await logServerAction({ user_id: null, action: 'publishAnnouncementNotificationsUnexpected', duration_ms: 0, error: e?.message || 'unexpected', payload: { id }, status: 'fail', type: 'db' });
      }
      await logServerAction({
-          user_id: user_id ? user_id : null,
+          user_id: user ? user.data.user?.id! : null,
           action: 'publishAnnouncement',
           duration_ms: Date.now() - time,
           error: '',
