@@ -35,7 +35,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
       }
       secondary={
         <Typography variant="caption" color="text.secondary">
-          {notification.type} • {format(createdAt, 'MMM dd, h:mm a')}
+          {notification.type.labelToken} • {format(createdAt, 'MMM dd, h:mm a')}
         </Typography>
       }
       sx={{ my: 0 }}
