@@ -41,6 +41,7 @@ export const createMessage = async (to: string, title: string, body: string, not
           let header = '';
           let messageBody = body;
 
+
           switch (notificationType.value) {
                case 'alert':
                     header = `🚨 *${notificationType.labelToken || 'ALERT'}*`;
@@ -73,7 +74,6 @@ export const createMessage = async (to: string, title: string, body: string, not
                from: fromWa,
                to: toWa,
           });
-          console.log('waResponse', waResponse);
 
           if (!waResponse || !(waResponse as any)?.sid) {
                logServerAction({

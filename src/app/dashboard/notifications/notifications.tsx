@@ -24,7 +24,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
 
      const filtered = useMemo<Row[]>(() => {
           if (type === 'all') return items;
-          return items.filter(n => n.type === type);
+          return items.filter(n => n.type.value === type);
      }, [items, type]);
 
      const columns: TableColumn<Row>[] = useMemo(() => {

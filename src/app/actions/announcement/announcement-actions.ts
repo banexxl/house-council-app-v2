@@ -667,7 +667,6 @@ export async function togglePinAction(id: string, pinned: boolean) {
 
 // ============================= PUBLISH STATUS CHANGE =============================
 export async function publishAnnouncement(id: string, typeInfo?: NotificationTypeMap) {
-     console.log('typeInfo', typeInfo);
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();

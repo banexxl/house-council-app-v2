@@ -90,8 +90,44 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
           }
      });
 
+     // 4b) When tab regains focus/visibility or network returns, try to re-subscribe
+     const tryResubscribe = () => {
+          const state = (channel as any)?.state;
+          if (document.visibilityState !== 'visible') return;
+          if (process.env.NODE_ENV !== 'production') {
+               console.log('[Realtime] Focus/online/visible; channel state:', state);
+          }
+          // If not joined or has errored/closed, attempt subscribe again
+          if (state && (state === 'closed' || state === 'errored' || state === 'leaving' || state === 'closed')) {
+               (channel as AnyChannel).subscribe((status) => {
+                    if (process.env.NODE_ENV !== 'production') {
+                         console.log(`[Realtime] Re-subscribe status: ${status}`);
+                    }
+               });
+          }
+     };
+
+     const onFocus = () => tryResubscribe();
+     const onVisible = () => tryResubscribe();
+     const onOnline = () => tryResubscribe();
+
+     if (typeof window !== 'undefined') {
+          window.addEventListener('focus', onFocus);
+          window.addEventListener('online', onOnline);
+     }
+     if (typeof document !== 'undefined') {
+          document.addEventListener('visibilitychange', onVisible);
+     }
+
      // 5) Cleanup
      return async () => {
+          if (typeof window !== 'undefined') {
+               window.removeEventListener('focus', onFocus);
+               window.removeEventListener('online', onOnline);
+          }
+          if (typeof document !== 'undefined') {
+               document.removeEventListener('visibilitychange', onVisible);
+          }
           await supabaseBrowserClient.removeChannel(channel);
      };
 }

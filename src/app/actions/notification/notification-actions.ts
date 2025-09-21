@@ -7,6 +7,7 @@ import { Notification, BaseNotification, NotificationType, NotificationTypeMap }
 import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { createMessage } from 'src/libs/sms/twilio';
+import { htmlToPlainText } from 'src/utils/html-tags-remover';
 
 const NOTIFICATIONS_TABLE = 'tblNotifications';
 
@@ -29,7 +30,6 @@ export async function emitNotifications(
                     type: r.type.value as NotificationType,
                }));
                const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(dbSlice as any);
-               console.log('insert error', error);
 
                if (error) {
                     await logServerAction({ user_id: null, action: 'emitNotificationsInsert', duration_ms: Date.now() - time, error: error.message, payload: { count: slice.length }, status: 'fail', type: 'db' });
@@ -73,17 +73,16 @@ export async function emitNotifications(
                let notificationType: NotificationTypeMap;
                if (list.length === 1) {
                     title = list[0].title;
-                    body = list[0].description;
+                    body = htmlToPlainText(list[0].description);
                     notificationType = list[0].type;
                } else {
                     title = `${list.length} new notifications`;
-                    body = list.map(n => `${n.description}`).join('\n');
+                    body = list.map(n => htmlToPlainText(n.description)).join('\n');
                     // const uniqueTypes = Array.from(new Set(list.map(n => n.type.value)));
                     notificationType = (list[0].type)
                }
                try {
                     const msg = await createMessage(contact.phone_number, title, body, notificationType);
-                    console.log('message', msg);
 
                     if (msg && (msg.sid || msg.status)) {
                          smsSent++;
