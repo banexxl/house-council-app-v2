@@ -699,8 +699,6 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                if (buildingIds.length > 0) {
                     // 2) Get all tenant user ids for those buildings
                     const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
-                    console.log(tenants);
-
                     // 3) Fetch announcement for title/message
                     const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title, message').eq('id', id).maybeSingle();
                     const createdAtISO = new Date().toISOString();
@@ -721,13 +719,19 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                          if (!emitted.success) {
                               await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: emitted.error || 'unknown', payload: { count: rows.length, id }, status: 'fail', type: 'db' });
                          } else {
-                              const { ok, error } = await sendNotificationEmail(tenants!.map(t => t.email!),
-                                   `New announcement: ${annRow?.title}`,
-                                   `<p>${annRow?.message}</p>`,
-                                   `New announcement: ${annRow?.title}\n\n${annRow?.message}`
-                              );
-                              console.log('error', error);
-
+                              const typeLabel = typeInfo?.labelToken ? String(typeInfo.labelToken) : 'Announcement';
+                              const recipients = (tenants || []).map(t => t.email).filter(Boolean) as string[];
+                              if (recipients.length) {
+                                   const { ok, error } = await sendNotificationEmail(
+                                        recipients,
+                                        `${typeLabel}: ${annRow?.title || ''}`,
+                                        `<p><strong>${typeLabel}</strong></p><p>${annRow?.message || ''}</p>`,
+                                        `${typeLabel}: ${annRow?.title || ''}\n\n${annRow?.message || ''}`
+                                   );
+                                   if (!ok) {
+                                        await logServerAction({ user_id: null, action: 'publishAnnouncementEmail', duration_ms: 0, error: error || 'unknown', payload: { id, recipients: recipients.length }, status: 'fail', type: 'external' });
+                                   }
+                              }
                          }
                     }
                }

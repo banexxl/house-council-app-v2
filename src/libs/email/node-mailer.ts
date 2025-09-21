@@ -1,22 +1,22 @@
 'use server';
 
 import nodemailer from 'nodemailer';
+import { SentMessageInfo } from 'nodemailer/lib/sendmail-transport';
 import { logServerAction } from '../supabase/server-logging';
 import { readClientSubscriptionPlanFromClientId } from 'src/app/dashboard/subscriptions/subscription-plan-actions';
-import { SentMessageInfo } from 'nodemailer/lib/sendmail-transport';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SMTP_HOST,
   port: 465,
-  secure: true, // true for 465, false for other ports
+  secure: true,
   auth: {
-    user: process.env.EMAIL_SMTP_USER, // generated ethereal user
-    pass: process.env.EMAIL_SMTP_PASS, // generated ethereal password
+    user: process.env.EMAIL_SMTP_USER,
+    pass: process.env.EMAIL_SMTP_PASS,
   },
   tls: {
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+  },
 });
 
 type SendEndingSubscriptionEmail = {
@@ -184,7 +184,7 @@ export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTr
                   </tr>
                 </table>
               </td>
-            </tr>
+      to: Array.isArray(to) ? to.join(', ') : to,
           </table>
         </td>
       </tr>
@@ -514,8 +514,6 @@ export const sendNotificationEmail = async (
   textFallback?: string
 ): Promise<{ ok: boolean; error?: string }> => {
 
-  console.log('to', to);
-
   const injected = html ? `<p style="font-size: 16px;">${html}</p>` : '';
 
   const htmlContent = `
@@ -684,7 +682,6 @@ export const sendNotificationEmail = async (
       html: htmlContent,
       text: textFallback || htmlToPlainText(html),
     });
-    console.log('info', info);
 
     if ((info as any)?.response) return { ok: true };
     if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };
