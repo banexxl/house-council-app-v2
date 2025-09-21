@@ -98,6 +98,7 @@ export const createOrUpdateClientAction = async (
      saveClientActionError?: any;
 }> => {
      const adminSupabase = await useServerSideSupabaseAnonClient();
+
      const { id, unassigned_location_id, ...clientData } = client;
 
      if (id && id !== '') {

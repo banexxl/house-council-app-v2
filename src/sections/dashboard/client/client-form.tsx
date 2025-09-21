@@ -74,31 +74,31 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       client_type: initialValues?.client_type || clientInitialValues.client_type || '', // Ensure type is valid
       client_status: initialValues?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
       subscription_plan_id: clientSubscription?.subscription_plan_id || '',
-      subscription_expiration: clientSubscription?.next_payment_date ? dayjs(clientSubscription.next_payment_date) : null as Dayjs | null,
+      next_payment_date: clientSubscription?.next_payment_date ? dayjs(clientSubscription.next_payment_date) : null as Dayjs | null,
     },
     validationSchema: clientValidationSchema(t),
 
     onSubmit: async (values, { setSubmitting }) => {
+      // Separate client vs subscription values before calling server actions
+      const { subscription_plan_id, next_payment_date, ...clientOnly } = values as any;
 
       try {
-
-        const saveClientResponse = await createOrUpdateClientAction(values as Client)
-        // Update subscription plan and expiration if client exists and fields are present
-        if (saveClientResponse.saveClientActionSuccess && clientData?.id) {
-          const newPlanId = (values as any).subscription_plan_id as string;
-          const newExpiry = (values as any).subscription_expiration as Dayjs | null;
+        const saveClientResponse = await createOrUpdateClientAction(clientOnly as Client)
+        // After save, update subscription plan and expiration if changed or provided
+        if (saveClientResponse.saveClientActionSuccess) {
+          const newPlanId = subscription_plan_id as string;
+          const newExpiry = next_payment_date as Dayjs | null;
+          const savedClientId = saveClientResponse.saveClientActionData?.id || clientData?.id;
           const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_plan_id || '');
           const hasExpiryChanged = (clientSubscription?.next_payment_date || null) !== (newExpiry ? newExpiry.toISOString() : null);
-          if (newPlanId && (hasPlanChanged || hasExpiryChanged)) {
+          if (savedClientId && newPlanId && (hasPlanChanged || hasExpiryChanged)) {
             const { success, error } = await updateClientSubscriptionForClient(
-              clientData.id!,
+              savedClientId,
               newPlanId,
               { nextPaymentDate: newExpiry ? newExpiry.toISOString() : null }
             );
             if (!success) {
               toast.error(t('common.error') + ': ' + (error || 'Failed to update subscription'))
-            } else {
-              toast.success(t('clients.clientSaved'))
             }
           }
         }
@@ -409,8 +409,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={t('clients.clientCardExpirationDate')}
-                      value={(formik.values as any).subscription_expiration as Dayjs | null}
-                      onChange={(val) => formik.setFieldValue('subscription_expiration', val)}
+                      value={(formik.values as any).next_payment_date as Dayjs | null}
+                      onChange={(val) => formik.setFieldValue('next_payment_date', val)}
                       slotProps={{ textField: { fullWidth: true, disabled: formik.isSubmitting } }}
                     />
                   </LocalizationProvider>
