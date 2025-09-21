@@ -789,6 +789,8 @@ export const es = {
   [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Programado',
   [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Prueba',
   [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Activo',
+  [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Plan actual',
+  [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Fecha de expiración',
   //#endregion
   //#region Page Errors
   [tokens.errors.page.notFound]: 'Página no encontrada',

@@ -27,7 +27,7 @@ import { applySort } from 'src/utils/apply-sort';
 import { useRouter } from 'next/navigation';
 import { FilterBar } from '../client/table-filter';
 import { SubscriptionPlan, subscriptionPlanStatusOptions } from 'src/types/subscription-plan';
-import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plans/subscription-plan-actions';
+import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 import toast from 'react-hot-toast';
 
 interface SubscriptionPlanListTableProps {

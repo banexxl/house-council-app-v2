@@ -3,12 +3,12 @@
 import nodemailer from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer/lib/sendmail-transport';
 import { logServerAction } from '../supabase/server-logging';
-import { readClientSubscriptionPlanFromClientId } from 'src/app/dashboard/subscriptions/subscription-plan-actions';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
 import { buildTrialEndingEmailHtml } from './messages/trial-ending';
 import { buildSubscriptionEndingSupportHtml } from './messages/subscription-ending-support';
 import { buildSuccessfulRegistrationHtml, buildClientContactMessageHtml } from './messages/support-registration';
 import { buildNotificationGenericHtml } from './messages/notification-generic';
+import { readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SMTP_HOST!,

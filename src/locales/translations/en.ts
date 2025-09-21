@@ -636,6 +636,8 @@ export const en = {
   [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Scheduled',
   [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Trial',
   [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Active',
+  [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Current Plan',
+  [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Expiration Date',
   //#endregion
   //#region Page Errors
   [tokens.errors.page.notFound]: 'Page not found',

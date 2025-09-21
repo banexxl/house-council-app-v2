@@ -2,33 +2,39 @@ import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import Stack from '@mui/material/Stack'
 
-import { Seo } from 'src/components/seo'
 import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
 import { getViewer } from 'src/libs/supabase/server-auth'
 import { logout } from 'src/app/auth/actions'
-import { redirect } from 'next/navigation'
+import { ClientSubscription, SubscriptionPlan } from 'src/types/subscription-plan'
+import { readAllSubscriptionPlans, readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 
 export default async function Page({ params }: {
   params: Promise<{ clientid: string }>
 }) {
 
+  const { clientid } = await params
+
   const { client, tenant, admin } = await getViewer();
 
+  let clientSubscription: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
+  let availableSubscriptions: SubscriptionPlan[] = []
+
+  // Only admin can access this page
   if (!admin || tenant || client) {
     logout()
   };
 
-  if (client) {
-    redirect('/dashboard/account');
+  if (admin) {
+    const [clientSubscriptionResult, availableSubscriptionsResult] = await Promise.all([
+      readClientSubscriptionPlanFromClientId(clientid),
+      readAllSubscriptionPlans()
+    ]);
+    clientSubscription = clientSubscriptionResult.clientSubscriptionPlanData ?? null;
+    availableSubscriptions = availableSubscriptionsResult.subscriptionPlansData ?? [];
   }
 
-  if (tenant) {
-    redirect('/dashboard/products');
-  }
-
-  const { clientid } = await params
   const [{ getClientByIdActionSuccess, getClientByIdActionData, getClientByIdActionError }] = await Promise.all([
     readClientByIdAction(clientid),
   ]);
@@ -45,7 +51,13 @@ export default async function Page({ params }: {
         <Container maxWidth="lg">
           <Stack spacing={4}>
             <ClientFormHeader client={getClientByIdActionData} />
-            <ClientForm clientData={getClientByIdActionData} showAdvancedSettings showClientActions />
+            <ClientForm
+              clientData={getClientByIdActionData}
+              clientSubscription={clientSubscription!}
+              availableSubscriptions={availableSubscriptions}
+              showAdvancedSettings
+              showClientActions
+            />
           </Stack>
         </Container>
       </Box>

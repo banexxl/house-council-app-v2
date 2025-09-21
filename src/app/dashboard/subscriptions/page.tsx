@@ -1,5 +1,5 @@
 import { Box, Container, Stack } from "@mui/material";
-import { readAllSubscriptionPlans } from "src/app/actions/subscription-plans/subscription-plan-actions";
+import { readAllSubscriptionPlans } from "src/app/actions/subscription-plan/subscription-plan-actions";
 import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
 
 export default async function Page() {

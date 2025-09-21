@@ -790,6 +790,8 @@ export const rs = {
      [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Zakazan',
      [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Probni',
      [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Aktivan',
+     [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Trenutni plan',
+     [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Datum isteka',
      //#endregion
      //#region Errors
      [tokens.errors.page.notFound]: 'Stranica nije pronađena',

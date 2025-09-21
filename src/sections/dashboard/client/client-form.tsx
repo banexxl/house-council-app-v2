@@ -27,14 +27,22 @@ import { PopupModal } from 'src/components/modal-dialog'
 import { CustomAutocomplete } from 'src/components/autocomplete-custom'
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
+import { ClientSubscription, SubscriptionPlan } from 'src/types/subscription-plan'
+import dayjs, { Dayjs } from 'dayjs'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { updateClientSubscriptionForClient } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 
 interface ClientNewFormProps {
   clientData?: Client
+  clientSubscription?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
+  availableSubscriptions?: SubscriptionPlan[]
   showAdvancedSettings?: boolean;
   showClientActions?: boolean;
 }
 
-export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSettings, showClientActions }) => {
+export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscription, availableSubscriptions, showAdvancedSettings, showClientActions }) => {
 
   // Modal state for admin actions
   const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
@@ -65,6 +73,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
       ...initialValues, // Overwrite with existing client data if editing
       client_type: initialValues?.client_type || clientInitialValues.client_type || '', // Ensure type is valid
       client_status: initialValues?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
+      subscription_plan_id: clientSubscription?.subscription_plan_id || '',
+      subscription_expiration: clientSubscription?.next_payment_date ? dayjs(clientSubscription.next_payment_date) : null as Dayjs | null,
     },
     validationSchema: clientValidationSchema(t),
 
@@ -73,6 +83,25 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
       try {
 
         const saveClientResponse = await createOrUpdateClientAction(values as Client)
+        // Update subscription plan and expiration if client exists and fields are present
+        if (saveClientResponse.saveClientActionSuccess && clientData?.id) {
+          const newPlanId = (values as any).subscription_plan_id as string;
+          const newExpiry = (values as any).subscription_expiration as Dayjs | null;
+          const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_plan_id || '');
+          const hasExpiryChanged = (clientSubscription?.next_payment_date || null) !== (newExpiry ? newExpiry.toISOString() : null);
+          if (newPlanId && (hasPlanChanged || hasExpiryChanged)) {
+            const { success, error } = await updateClientSubscriptionForClient(
+              clientData.id!,
+              newPlanId,
+              { nextPaymentDate: newExpiry ? newExpiry.toISOString() : null }
+            );
+            if (!success) {
+              toast.error(t('common.error') + ': ' + (error || 'Failed to update subscription'))
+            } else {
+              toast.success(t('clients.clientSaved'))
+            }
+          }
+        }
         if (saveClientResponse.saveClientActionSuccess) {
           setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
           const clientId = saveClientResponse.saveClientActionData?.id;
@@ -354,6 +383,48 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, showAdvancedSet
               )
             }
           </Grid>
+          {clientData && (
+            <>
+              <Divider sx={{ my: 3 }}>{t('clients.clientSubscriptionPlan')}</Divider>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('clients.clientSubscriptionPlan')}
+                    name="subscription_plan_id"
+                    disabled={formik.isSubmitting}
+                    value={(formik.values as any).subscription_plan_id || ''}
+                    onChange={formik.handleChange}
+                    defaultValue={formik.values.subscription_plan_id || ''}
+                  >
+                    {(availableSubscriptions || []).map((plan) => (
+                      <MenuItem key={plan.id} value={plan.id!}>
+                        {plan.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label={t('clients.clientCardExpirationDate')}
+                      value={(formik.values as any).subscription_expiration as Dayjs | null}
+                      onChange={(val) => formik.setFieldValue('subscription_expiration', val)}
+                      slotProps={{ textField: { fullWidth: true, disabled: formik.isSubmitting } }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+              </Grid>
+              {clientSubscription && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('subscriptionPlans.currentPlan')}: {clientSubscription.subscription_plan?.name} {clientSubscription.next_payment_date ? `— ${t('subscriptionPlans.expirationDate')}: ${dayjs(clientSubscription.next_payment_date).format('YYYY-MM-DD')}` : ''}
+                  </Typography>
+                </Box>
+              )}
+            </>
+          )}
           {
             showAdvancedSettings && (
               <>

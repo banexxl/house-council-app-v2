@@ -597,6 +597,8 @@ export const tokens = {
     subscriptionPlanStatusScheduled: 'subscriptionPlans.statusScheduled',
     subscriptionPlanStatusTrial: 'subscriptionPlans.statusTrial',
     subscriptionPlanStatusActive: 'subscriptionPlans.statusActive',
+    subscriptionPlanCurrentPlan: 'subscriptionPlans.currentPlan',
+    subscriptionPlanExpirationDate: 'subscriptionPlans.expirationDate',
   },
   tenants: {
     tenantsList: 'tenants.tenantsList',
