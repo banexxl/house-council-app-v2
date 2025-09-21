@@ -356,6 +356,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                .from('tblClient_Subscription')
                .select('*')
                .eq('client_id', userId)
+               .eq('status', 'active')
                .single();
 
           if (subscriptionError || !subscriptionData) {

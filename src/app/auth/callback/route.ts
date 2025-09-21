@@ -97,6 +97,7 @@ export async function GET(request: Request) {
       .from("tblClient_Subscription")
       .select("*")
       .eq("client_id", userId!)
+      .eq("status", "active")
       .maybeSingle();
 
     if (subscriptionError || !subscription) {

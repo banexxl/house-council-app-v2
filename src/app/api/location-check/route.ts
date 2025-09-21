@@ -1,4 +1,3 @@
-// app/api/subscription/check-expired/route.ts
 import { NextResponse } from 'next/server'
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
