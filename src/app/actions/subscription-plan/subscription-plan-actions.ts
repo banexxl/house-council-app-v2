@@ -710,15 +710,24 @@ export const updateClientSubscriptionForClient = async (
 
      const nowIso = new Date().toISOString();
      const nextPaymentDate = opts?.nextPaymentDate ?? null;
+     const subscriptionStatus = (nextPaymentDate && !Number.isNaN(new Date(nextPaymentDate).getTime()) && new Date(nextPaymentDate).getTime() > Date.now())
+          ? 'active'
+          : 'canceled';
 
      if (existing?.id) {
+          const updatePayload: any = {
+               subscription_plan_id: subscriptionPlanId,
+               next_payment_date: nextPaymentDate,
+               updated_at: nowIso,
+          };
+
+          if (subscriptionStatus) {
+               updatePayload.status = subscriptionStatus;
+          }
+
           const { error: updErr } = await supabase
                .from('tblClient_Subscription')
-               .update({
-                    subscription_plan_id: subscriptionPlanId,
-                    next_payment_date: nextPaymentDate,
-                    updated_at: nowIso,
-               })
+               .update(updatePayload)
                .eq('id', existing.id);
 
           if (updErr) {
@@ -752,7 +761,7 @@ export const updateClientSubscriptionForClient = async (
           .insert({
                client_id: clientId,
                subscription_plan_id: subscriptionPlanId,
-               status: 'active',
+               status: subscriptionStatus ?? 'active',
                created_at: nowIso,
                updated_at: nowIso,
                is_auto_renew: true,
