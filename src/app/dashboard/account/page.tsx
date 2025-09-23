@@ -15,7 +15,6 @@ import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging
 
 const Page = async () => {
 
-  let client: Client | null = null;
   let clientSubscriptionPlan: SubscriptionPlan | null = null
   let clientBillingInfo: ClientBillingInformation[] | null = null
   let clientInvoices: Invoice[] | null = null
@@ -23,14 +22,15 @@ const Page = async () => {
   let allTeamMembers: ClientMember[] | null = null;
   let allLogsFromEmail: ServerLog[] | null = null;
 
-  const { client: clientData, tenant, admin, userData } = await getViewer();
+  const { client, tenant, admin, userData } = await getViewer();
+  console.log('account Page', client, tenant, admin, userData);
 
-  if (!clientData && !tenant && !admin) {
+  if (!client && !tenant && !admin) {
     logout();
     return null;
   }
 
-  if (clientData) {
+  if (client) {
 
     const [
       { getClientByIdActionSuccess, getClientByIdActionData },
@@ -41,13 +41,13 @@ const Page = async () => {
       { readAllClientTeamMembersSuccess, readAllClientTeamMembersError, readAllClientTeamMembersData },
       clientLogs
     ] = await Promise.all([
-      readClientByIdAction(clientData.id),
-      readSubscriptionPlanFromClientId(clientData.id),
-      readBillingInfoFromClientId(clientData.id),
-      readAllClientPayments(clientData.id),
+      readClientByIdAction(client.id),
+      readSubscriptionPlanFromClientId(client.id),
+      readBillingInfoFromClientId(client.id),
+      readAllClientPayments(client.id),
       readAllActiveSubscriptionPlans(),
-      readAllClientTeamMembers(clientData.id),
-      getAllLogsFromEmail(clientData.email)
+      readAllClientTeamMembers(client.id),
+      getAllLogsFromEmail(client.email)
     ]);
 
     if (clientLogs) {
@@ -68,10 +68,6 @@ const Page = async () => {
 
     if (readAllActiveSubscriptionPlansSuccess && activeSubscriptionPlansData) {
       allSubscriptions = activeSubscriptionPlansData;
-    }
-
-    if (getClientByIdActionSuccess && getClientByIdActionData) {
-      client = getClientByIdActionData;
     }
 
     if (readAllClientTeamMembersSuccess && readAllClientTeamMembersData) {

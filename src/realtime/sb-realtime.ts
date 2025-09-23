@@ -139,3 +139,16 @@ export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"
           channelName: "notifications_topic",
           onEvent,
      });
+
+export const initClientSubscriptionRealtime = (clientIds: string[], onEvent: InitListenerOptions["onEvent"]) => {
+     const filter = Array.isArray(clientIds) && clientIds.length > 1
+          ? `client_id=in.(${clientIds.join(',')})`
+          : (clientIds[0] ? `client_id=eq.${clientIds[0]}` : undefined);
+
+     return initTableRealtimeListener("tblClient_Subscription", ["UPDATE", "DELETE"], {
+          schema: "public",
+          channelName: `client_${clientIds.join(",")}_subscriptions`,
+          filter,
+          onEvent,
+     });
+}

@@ -5,8 +5,8 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
 export async function POST() {
+
      const supabase = await useServerSideSupabaseAnonClient()
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient()
 
      await logServerAction({
           user_id: null,
@@ -90,36 +90,6 @@ export async function POST() {
 
                     if (!updateError) {
                          updatedCount++
-
-                         // Server-side logout of the user associated with this client
-                         const { data: clientUserRow, error: clientUserError } = await supabase
-                              .from('tblClients')
-                              .select('user_id')
-                              .eq('id', sub.client_id)
-                              .single();
-
-                         if (clientUserError) {
-                              await logServerAction({
-                                   user_id: null,
-                                   action: 'Fetch client user_id for sign-out - Error',
-                                   payload: { clientId: sub.client_id },
-                                   status: 'fail',
-                                   error: clientUserError.message,
-                                   duration_ms: 0,
-                                   type: 'db'
-                              });
-                         } else if (clientUserRow?.user_id) {
-                              const { error: signOutError } = await adminSupabase.auth.admin.signOut(clientUserRow.user_id);
-                              await logServerAction({
-                                   user_id: clientUserRow.user_id,
-                                   action: 'Force sign-out due to past_due subscription',
-                                   payload: { clientId: sub.client_id, subscriptionId: sub.id },
-                                   status: signOutError ? 'fail' : 'success',
-                                   error: signOutError?.message || '',
-                                   duration_ms: 0,
-                                   type: 'action'
-                              })
-                         }
                     }
                }
 

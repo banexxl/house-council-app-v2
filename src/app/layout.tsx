@@ -4,6 +4,7 @@ import { Layout as RootLayout } from 'src/layouts/root';
 import 'src/global.css';
 import AuthProvider from 'src/contexts/auth/auth-provider';
 import { getViewer } from 'src/libs/supabase/server-auth';
+import ClientSubscriptionWatcher from 'src/realtime/client-subscription-watcher';
 
 
 interface LayoutProps {
@@ -23,6 +24,8 @@ export default async function Layout({ children }: { children: React.ReactNode }
         <AuthProvider initialViewer={viewer}>
           <RootLayout >
             {children}
+            {/* Client-side realtime watcher: logout on non-active subscription */}
+            <ClientSubscriptionWatcher />
             <NProgress />
           </RootLayout>
         </AuthProvider>

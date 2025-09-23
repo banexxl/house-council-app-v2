@@ -383,7 +383,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
               )
             }
           </Grid>
-          {clientData && (
+          {clientData && clientSubscription && (
             <>
               <Divider sx={{ my: 3 }}>{t('clients.clientSubscriptionPlan')}</Divider>
               <Grid container spacing={3}>
