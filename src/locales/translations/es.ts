@@ -760,6 +760,7 @@ export const es = {
   [tokens.warning.deleteWarningMessage]: '¿Desea eliminar este elemento?',
   //#endregion
   //#region Subscription Plans
+  [tokens.subscriptionPlans.status]: 'Estado',
   [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Crear Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Editar Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Eliminar Plan de Suscripción',
@@ -789,6 +790,8 @@ export const es = {
   [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Programado',
   [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Prueba',
   [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Activo',
+  [tokens.subscriptionPlans.subscriptionPlanStatusPastDue]: 'Vencido',
+  [tokens.subscriptionPlans.subscriptionPlanStatusCanceled]: 'Cancelado',
   [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Plan actual',
   [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Fecha de expiración',
   //#endregion

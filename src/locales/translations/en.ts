@@ -607,6 +607,7 @@ export const en = {
   [tokens.warning.deleteWarningMessage]: 'Are you sure you want to delete this entry?',
   //#endregion
   //#region Subscription Plans
+  [tokens.subscriptionPlans.status]: 'Status',
   [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Create Subscription Plan',
   [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Subscription Plan Edit',
   [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Subscription Plan Delete',
@@ -636,6 +637,8 @@ export const en = {
   [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Scheduled',
   [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Trial',
   [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Active',
+  [tokens.subscriptionPlans.subscriptionPlanStatusPastDue]: 'Past due',
+  [tokens.subscriptionPlans.subscriptionPlanStatusCanceled]: 'Canceled',
   [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Current Plan',
   [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Expiration Date',
   //#endregion

@@ -678,7 +678,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
 export const updateClientSubscriptionForClient = async (
      clientId: string,
      subscriptionPlanId: string,
-     opts?: { nextPaymentDate?: string | null }
+     opts?: { nextPaymentDate?: string | null; status?: 'trialing' | 'active' | 'past_due' | 'canceled' }
 ): Promise<{ success: boolean; error?: string }> => {
 
      if (!clientId || !subscriptionPlanId) {
@@ -710,9 +710,10 @@ export const updateClientSubscriptionForClient = async (
 
      const nowIso = new Date().toISOString();
      const nextPaymentDate = opts?.nextPaymentDate ?? null;
-     const subscriptionStatus = (nextPaymentDate && !Number.isNaN(new Date(nextPaymentDate).getTime()) && new Date(nextPaymentDate).getTime() > Date.now())
+     const computedStatus = (nextPaymentDate && !Number.isNaN(new Date(nextPaymentDate).getTime()) && new Date(nextPaymentDate).getTime() > Date.now())
           ? 'active'
           : 'canceled';
+     const subscriptionStatus = opts?.status ?? computedStatus;
 
      if (existing?.id) {
           const updatePayload: any = {

@@ -11,6 +11,16 @@ export const subscriptionPlanStatusOptions: { value: SubscriptionStatus, label: 
      { value: 'active', label: 'subscriptionPlans.statusActive' }
 ]
 
+// Client-specific subscription status options (DB values for client subscriptions)
+export type ClientSubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled';
+
+export const clientSubscriptionStatusOptions: { value: ClientSubscriptionStatus; label: string }[] = [
+     { value: 'trialing', label: 'subscriptionPlans.statusTrial' },
+     { value: 'active', label: 'subscriptionPlans.statusActive' },
+     { value: 'past_due', label: 'subscriptionPlans.statusPastDue' },
+     { value: 'canceled', label: 'subscriptionPlans.statusCanceled' }
+];
+
 export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
 
 export type SubscriptionPlan = {

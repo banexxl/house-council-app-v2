@@ -26,6 +26,7 @@ export default function ClientSubscriptionWatcher() {
           let cleanup: (() => Promise<void>) | null = null;
           let cancelled = false;
           let intervalId: any = null;
+          let signingOut = false;
 
           async function start() {
                if (!clientId) return;
@@ -66,7 +67,14 @@ export default function ClientSubscriptionWatcher() {
                     return;
                }
 
-               cleanup = await initClientSubscriptionRealtime([clientId], async (payload: RealtimePostgresChangesPayload<any>) => {
+               cleanup = await initClientSubscriptionRealtime(clientId, async (payload: RealtimePostgresChangesPayload<any>) => {
+                    if (process.env.NODE_ENV !== 'production') {
+                         console.log('[ClientSubscriptionWatcher] Realtime payload', {
+                              eventType: (payload as any).eventType,
+                              new: (payload as any).new,
+                              old: (payload as any).old,
+                         });
+                    }
                     try {
                          const raw = (payload.new || payload.old || {}) as Partial<ClientSubscriptionRow>;
                          const row: ClientSubscriptionRow | null = (raw && typeof raw === 'object')
@@ -78,60 +86,62 @@ export default function ClientSubscriptionWatcher() {
                               }
                               : null;
                          if (!row) return;
-                         console.log('row', row);
 
                          const status = row.status;
                          const affectedClientId = row.client_id;
 
                          if (affectedClientId !== clientId) return;
 
-                         if (payload.eventType === "DELETE") {
-                              // On delete of subscription for this client -> sign out
-                              await supabaseBrowserClient.auth.signOut();
-                              router.push('/auth/login');
-                              return;
-                         }
-
-                         if (payload.eventType === "UPDATE") {
-                              console.log('usao u apdejt');
-
-                              if (status && status !== "active") {
-                                   console.log('aaaaaaaaaaaaaaaa');
-
-                                   // If status is not active -> sign out
+                         if ((payload.eventType === "DELETE") || (payload.eventType === "UPDATE" && status && status !== 'active')) {
+                              if (!signingOut) {
+                                   signingOut = true;
+                                   if (process.env.NODE_ENV !== 'production') {
+                                        console.warn('[ClientSubscriptionWatcher] Realtime triggered sign-out', {
+                                             eventType: (payload as any).eventType,
+                                             status
+                                        });
+                                   }
                                    await supabaseBrowserClient.auth.signOut();
-                                   return;
+                                   router.push('/auth/login');
                               }
+                              return;
                          }
                     } catch (e) {
                          if (process.env.NODE_ENV !== "production") {
                               console.error("[ClientSubscriptionWatcher] error handling payload", e);
                          }
                     }
-               });
+               }, { debug: true });
 
                // 1) Polling fallback every 15s in case realtime misses events
-               // intervalId = setInterval(async () => {
-               //      console.log('i am in');
-               //      try {
-               //           const { data: current, error: readErr } = await supabaseBrowserClient
-               //                .from('tblClient_Subscription')
-               //                .select('status')
-               //                .eq('client_id', clientId)
-               //                .single();
-               //           if (!readErr) {
-               //                const statusNow = (current as any)?.status as string | undefined;
-               //                if (!statusNow || statusNow !== 'active') {
-               //                     if (process.env.NODE_ENV !== 'production') {
-               //                          console.warn('[ClientSubscriptionWatcher] Poll detected non-active; signing out', { statusNow });
-               //                     }
-               //                     await supabaseBrowserClient.auth.signOut();
-               //                }
-               //           }
-               //      } catch (_e) {
-               //           // ignore; rely on next tick
-               //      }
-               // }, 15000);
+               intervalId = setInterval(async () => {
+                    if (signingOut) return; // already processing sign-out
+                    if (process.env.NODE_ENV !== 'production') {
+                         console.log('[ClientSubscriptionWatcher] Poll tick');
+                    }
+                    try {
+                         const { data: current, error: readErr } = await supabaseBrowserClient
+                              .from('tblClient_Subscription')
+                              .select('status')
+                              .eq('client_id', clientId)
+                              .single();
+                         if (!readErr) {
+                              const statusNow = (current as any)?.status as string | undefined;
+                              if (!statusNow || statusNow !== 'active') {
+                                   if (process.env.NODE_ENV !== 'production') {
+                                        console.warn('[ClientSubscriptionWatcher] Poll detected non-active; signing out', { statusNow });
+                                   }
+                                   if (!signingOut) {
+                                        signingOut = true;
+                                        await supabaseBrowserClient.auth.signOut();
+                                        router.push('/auth/login');
+                                   }
+                              }
+                         }
+                    } catch (_e) {
+                         // ignore; rely on next tick
+                    }
+               }, 15000);
           }
 
           start();

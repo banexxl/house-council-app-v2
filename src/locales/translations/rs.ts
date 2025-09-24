@@ -761,6 +761,7 @@ export const rs = {
      [tokens.warning.deleteWarningMessage]: 'Da li želite da obrišete odabrano?',
      //#endregion
      //#region Subscription Plans
+     [tokens.subscriptionPlans.status]: 'Status',
      [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Kreiraj plan pretplate',
      [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Izmeni plan pretplate',
      [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Obriši plan pretplate',
@@ -790,6 +791,8 @@ export const rs = {
      [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Zakazan',
      [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Probni',
      [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Aktivan',
+     [tokens.subscriptionPlans.subscriptionPlanStatusPastDue]: 'Istekao',
+     [tokens.subscriptionPlans.subscriptionPlanStatusCanceled]: 'Otkazano',
      [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Trenutni plan',
      [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Datum isteka',
      //#endregion

@@ -27,7 +27,7 @@ import { PopupModal } from 'src/components/modal-dialog'
 import { CustomAutocomplete } from 'src/components/autocomplete-custom'
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
-import { ClientSubscription, SubscriptionPlan } from 'src/types/subscription-plan'
+import { ClientSubscription, SubscriptionPlan, clientSubscriptionStatusOptions } from 'src/types/subscription-plan'
 import dayjs, { Dayjs } from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -75,12 +75,13 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       client_status: initialValues?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
       subscription_plan_id: clientSubscription?.subscription_plan_id || '',
       next_payment_date: clientSubscription?.next_payment_date ? dayjs(clientSubscription.next_payment_date) : null as Dayjs | null,
+      subscription_status: clientSubscription?.status || 'active',
     },
     validationSchema: clientValidationSchema(t),
 
     onSubmit: async (values, { setSubmitting }) => {
       // Separate client vs subscription values before calling server actions
-      const { subscription_plan_id, next_payment_date, ...clientOnly } = values as any;
+      const { subscription_plan_id, next_payment_date, subscription_status, ...clientOnly } = values as any;
 
       try {
         const saveClientResponse = await createOrUpdateClientAction(clientOnly as Client)
@@ -91,11 +92,12 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
           const savedClientId = saveClientResponse.saveClientActionData?.id || clientData?.id;
           const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_plan_id || '');
           const hasExpiryChanged = (clientSubscription?.next_payment_date || null) !== (newExpiry ? newExpiry.toISOString() : null);
-          if (savedClientId && newPlanId && (hasPlanChanged || hasExpiryChanged)) {
+          const hasStatusChanged = (clientSubscription?.status || 'active') !== (subscription_status || 'active');
+          if (savedClientId && newPlanId && (hasPlanChanged || hasExpiryChanged || hasStatusChanged)) {
             const { success, error } = await updateClientSubscriptionForClient(
               savedClientId,
               newPlanId,
-              { nextPaymentDate: newExpiry ? newExpiry.toISOString() : null }
+              { nextPaymentDate: newExpiry ? newExpiry.toISOString() : null, status: subscription_status }
             );
             if (!success) {
               toast.error(t('common.error') + ': ' + (error || 'Failed to update subscription'))
@@ -383,11 +385,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
               )
             }
           </Grid>
-          {clientData && clientSubscription && (
+          {clientSubscription && (
             <>
               <Divider sx={{ my: 3 }}>{t('clients.clientSubscriptionPlan')}</Divider>
               <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     select
                     fullWidth
@@ -405,7 +407,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={t('clients.clientCardExpirationDate')}
@@ -415,6 +417,23 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     />
                   </LocalizationProvider>
                 </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('subscriptionPlans.status')}
+                    name="subscription_status"
+                    disabled={formik.isSubmitting}
+                    value={(formik.values as any).subscription_status || 'active'}
+                    onChange={formik.handleChange}
+                    defaultValue={(formik.values as any).subscription_status || 'active'}
+                  >
+                    {clientSubscriptionStatusOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>{t(opt.label)}</MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
               </Grid>
               {clientSubscription && (
                 <Box sx={{ mt: 2 }}>

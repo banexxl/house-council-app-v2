@@ -140,15 +140,35 @@ export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"
           onEvent,
      });
 
-export const initClientSubscriptionRealtime = (clientIds: string[], onEvent: InitListenerOptions["onEvent"]) => {
-     const filter = Array.isArray(clientIds) && clientIds.length > 1
-          ? `client_id=in.(${clientIds.join(',')})`
-          : (clientIds[0] ? `client_id=eq.${clientIds[0]}` : undefined);
+export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitListenerOptions["onEvent"], opts?: { debug?: boolean }) => {
+     // Enforce a non-empty filter; if missing, no-op with safe cleanup
+     if (!clientId) {
+          if (process.env.NODE_ENV !== 'production') {
+               console.warn('[Realtime] initClientSubscriptionRealtime called without clientId; skipping subscribe.');
+          }
+          return Promise.resolve(async () => { /* noop */ });
+     }
 
-     return initTableRealtimeListener("tblClient_Subscription", ["UPDATE", "DELETE"], {
+     // Correct Postgres filter syntax requires operator (eq.)
+     const filter = `client_id=eq.${clientId}`;
+     const debug = !!opts?.debug && process.env.NODE_ENV !== 'production';
+     if (debug) {
+          console.log('[Realtime] Subscribing to tblClient_Subscription', { clientId, filter });
+     }
+
+     return initTableRealtimeListener("tblClient_Subscription", ["INSERT", "UPDATE", "DELETE"], {
           schema: "public",
-          channelName: `client_${clientIds.join(",")}_subscriptions`,
+          channelName: `client_${clientId}_subscription`,
           filter,
-          onEvent,
+          onEvent: (payload) => {
+               if (debug) {
+                    console.log('[Realtime] Client subscription event', {
+                         eventType: (payload as any).eventType,
+                         new: (payload as any).new,
+                         old: (payload as any).old
+                    });
+               }
+               onEvent(payload);
+          },
      });
 }

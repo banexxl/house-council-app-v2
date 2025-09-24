@@ -566,6 +566,7 @@ export const tokens = {
     userUnbanned: 'clients.userUnbanned',
   },
   subscriptionPlans: {
+    status: 'subscriptionPlans.status',
     subscriptionPlansList: 'subscriptionPlans.subscriptionPlansList',
     subscriptionPlanDetails: 'subscriptionPlans.subscriptionPlanDetails',
     subscriptionPlanCreate: 'subscriptionPlans.subscriptionPlanCreate',
@@ -596,7 +597,9 @@ export const tokens = {
     subscriptionPlanStatusArchived: 'subscriptionPlans.statusArchived',
     subscriptionPlanStatusScheduled: 'subscriptionPlans.statusScheduled',
     subscriptionPlanStatusTrial: 'subscriptionPlans.statusTrial',
+    subscriptionPlanStatusPastDue: 'subscriptionPlans.statusPastDue',
     subscriptionPlanStatusActive: 'subscriptionPlans.statusActive',
+    subscriptionPlanStatusCanceled: 'subscriptionPlans.statusCanceled',
     subscriptionPlanCurrentPlan: 'subscriptionPlans.currentPlan',
     subscriptionPlanExpirationDate: 'subscriptionPlans.expirationDate',
   },

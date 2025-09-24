@@ -23,7 +23,6 @@ const Page = async () => {
   let allLogsFromEmail: ServerLog[] | null = null;
 
   const { client, tenant, admin, userData } = await getViewer();
-  console.log('account Page', client, tenant, admin, userData);
 
   if (!client && !tenant && !admin) {
     logout();

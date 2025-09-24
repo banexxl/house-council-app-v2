@@ -743,6 +743,7 @@ export const de = {
   [tokens.warning.deleteWarningMessage]: 'Möchten Sie diesen Eintrag wirklich löschen?',
   //#endregion
   //#region Subscription Plans
+  [tokens.subscriptionPlans.status]: 'Status',
   [tokens.subscriptionPlans.subscriptionPlanCreate]: 'Abonnementplan Erstellen',
   [tokens.subscriptionPlans.subscriptionPlanEdit]: 'Abonnementplan Bearbeiten',
   [tokens.subscriptionPlans.subscriptionPlanDelete]: 'Abonnementplan Löschen',
@@ -772,6 +773,8 @@ export const de = {
   [tokens.subscriptionPlans.subscriptionPlanStatusScheduled]: 'Geplant',
   [tokens.subscriptionPlans.subscriptionPlanStatusTrial]: 'Testphase',
   [tokens.subscriptionPlans.subscriptionPlanStatusActive]: 'Aktiv',
+  [tokens.subscriptionPlans.subscriptionPlanStatusPastDue]: 'Überfällig',
+  [tokens.subscriptionPlans.subscriptionPlanStatusCanceled]: 'Storniert',
   [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Aktueller Plan',
   [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Ablaufdatum',
   //#endregion
