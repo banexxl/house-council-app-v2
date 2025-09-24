@@ -22,6 +22,62 @@ export const createComponents = (): Components => {
         root: {
           borderRadius: '12px',
           textTransform: 'none',
+          position: 'relative',
+          fontWeight: 600,
+          // Base 'physical' shadow (a flat drop to simulate a raised block)
+          boxShadow: '0 4px 0 0 rgba(0,0,0,0.15)',
+          transform: 'translateY(0)',
+          transition: muiTheme.transitions.create(['transform', 'box-shadow'], { duration: 110, easing: muiTheme.transitions.easing.easeOut }),
+          // Smooth out color/elevation changes on hover
+          '&:hover': {
+            boxShadow: '0 4px 0 0 rgba(0,0,0,0.18)',
+            transform: 'translateY(0)',
+          },
+          // Active press: move button down exactly the shadow height so it looks "pressed in"
+          '&:active:not(.Mui-disabled)': {
+            transform: 'translateY(4px)',
+            boxShadow: '0 0 0 0 rgba(0,0,0,0.15)',
+          },
+          // Keyboard focus keeps elevation but adds outline for accessibility
+          '&:focus-visible': {
+            outline: '2px solid rgba(0,0,0,0.35)',
+            outlineOffset: '2px',
+          },
+          '&.Mui-disabled': {
+            boxShadow: 'none',
+            transform: 'none',
+            opacity: 0.5,
+          },
+          // Contained variant tweaks (retain background + pressed effect synergy)
+          '&.MuiButton-contained': {
+            boxShadow: '0 4px 0 0 rgba(0,0,0,0.15) !important',
+            '&:hover': {
+              boxShadow: '0 4px 0 0 rgba(0,0,0,0.18) !important',
+            },
+            '&:active:not(.Mui-disabled)': {
+              boxShadow: '0 0 0 0 rgba(0,0,0,0.18) !important',
+            },
+          },
+          // Outlined variant: add a subtle fill when pressed
+          '&.MuiButton-outlined': {
+            boxShadow: '0 4px 0 0 rgba(0,0,0,0.12)',
+            '&:hover': {
+              backgroundColor: 'rgba(0,0,0,0.03)',
+            },
+            '&:active:not(.Mui-disabled)': {
+              backgroundColor: 'rgba(0,0,0,0.06)',
+            },
+          },
+          // Text variant: lighter shadow
+          '&.MuiButton-text': {
+            boxShadow: '0 3px 0 0 rgba(0,0,0,0.10)',
+            '&:hover': {
+              boxShadow: '0 3px 0 0 rgba(0,0,0,0.14)',
+            },
+            '&:active:not(.Mui-disabled)': {
+              boxShadow: '0 0 0 0 rgba(0,0,0,0.14)',
+            },
+          },
         },
         sizeSmall: {
           padding: '6px 16px',
@@ -41,6 +97,7 @@ export const createComponents = (): Components => {
         textSizeLarge: {
           padding: '12px 16px',
         },
+
       },
     },
     MuiCard: {
