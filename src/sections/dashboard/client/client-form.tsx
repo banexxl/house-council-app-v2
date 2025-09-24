@@ -79,7 +79,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     },
     validationSchema: clientValidationSchema(t),
 
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
       // Separate client vs subscription values before calling server actions
       const { subscription_plan_id, next_payment_date, subscription_status, ...clientOnly } = values as any;
 
@@ -116,6 +116,16 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             )
           }
           toast.success(t('clients.clientSaved'))
+
+          // After a successful save ensure form is no longer dirty so submit button disables
+          const refreshedValues = {
+            ...values,
+            ...saveClientResponse.saveClientActionData,
+            subscription_plan_id: subscription_plan_id,
+            next_payment_date: next_payment_date,
+            subscription_status: subscription_status,
+          };
+          resetForm({ values: refreshedValues });
         } else if (saveClientResponse.saveClientActionError) {
           saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueEmailViolation'))
             : saveClientResponse.saveClientActionError.code === '23503' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.foreignKeyViolation'))
@@ -424,9 +434,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     label={t('subscriptionPlans.status')}
                     name="subscription_status"
                     disabled={formik.isSubmitting}
-                    value={(formik.values as any).subscription_status || 'active'}
+                    value={formik.values.subscription_status}
                     onChange={formik.handleChange}
-                    defaultValue={(formik.values as any).subscription_status || 'active'}
+                    defaultValue={formik.values.subscription_status}
                   >
                     {clientSubscriptionStatusOptions.map((opt) => (
                       <MenuItem key={opt.value} value={opt.value}>{t(opt.label)}</MenuItem>
