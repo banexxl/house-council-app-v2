@@ -1,7 +1,7 @@
 {
   "name": "house-council-app",
   "version": "0.0.1",
-  "author": "Branislav Damjanovic & Nikola Terzic",
+  "author": "Branislav Damjanovic",
   "homepage": "https://house-council-app.vercel.app",
   "private": true,
   "scripts": {
@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "export": "next export",
+    "turbopack": "next dev --turbopack",
     "lint": "next lint",
     "lint-fix": "next lint --fix",
     "format:write": "prettier --write \"**/*.{js,jsx,ts,tsx,mdx}\" --cache",
@@ -20,9 +21,6 @@
     "@emotion/react": "^11.14.0",
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.1",
-    "@fontsource/inter": "^5.0.4",
-    "@fontsource/plus-jakarta-sans": "^5.0.4",
-    "@fontsource/roboto-mono": "^5.0.4",
     "@fullcalendar/core": "^6.1.8",
     "@fullcalendar/daygrid": "^6.1.8",
     "@fullcalendar/interaction": "^6.1.8",

@@ -13,30 +13,16 @@ import {
      Button,
      Typography,
      CircularProgress,
-     styled,
-     Tooltip,
 } from "@mui/material"
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { uploadClientLogoAndGetUrl } from "src/app/actions/client/client-actions"
 
-const VisuallyHiddenInput = styled("input")`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
-`
-
 type ImageUploadProps = {
      buttonDisabled: boolean
      onUploadSuccess: (url: string) => void
-     clientId: string | null | undefined
+     userId: string | null | undefined
      initialValue?: string
      sx?: any
 }
@@ -46,7 +32,7 @@ export type ImageUploadRef = {
 }
 
 export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
-     ({ buttonDisabled, onUploadSuccess, clientId, initialValue, sx }, ref) => {
+     ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx }, ref) => {
           const [avatarUrl, setAvatarUrl] = useState<string>(initialValue !== undefined && initialValue !== "" ? initialValue : "")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
@@ -80,25 +66,24 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                          formData.append("title", title)
                          formData.append("extension", fileExtension)
                          formData.append("fileName", selectedFile.name)
-                         // Provide the client id (preferred) to server action so storage path = clients/<clientId>/logos/<file>
-                         if (!clientId) {
-                              toast.error('Client must be saved before uploading a logo');
+                         // Provide the client id (preferred) to server action so storage path = clients/<userId>/logos/<file>
+                         if (!userId) {
+                              toast.error('Client must be saved before uploading an image');
                               setLoading(false);
                               return;
                          }
-                         const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(selectedFile, clientId);
+                         const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(selectedFile, userId);
 
                          if (success && url) {
                               setAvatarUrl(url);
-                              toast.success("Logo uploaded successfully");
+                              toast.success("Image uploaded successfully");
                               onUploadSuccess(url);
                          } else {
-                              toast.error(imageUploadResponse || "Failed to upload logo");
+                              toast.error(imageUploadResponse || "Failed to upload image");
                               onUploadSuccess("");
                          }
                     }
                } catch (error) {
-                    console.error("Error uploading image:", error)
                     toast.error("Failed to upload image")
                     onUploadSuccess("")
                } finally {
@@ -168,11 +153,23 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                          >
                               {loading ? "Uploading..." : "Select"}
                          </Button>
-                         <VisuallyHiddenInput
+                         <input
                               ref={fileInputRef}
                               type="file"
                               accept="image/png, image/jpeg"
                               onChange={handleFileSelect}
+                              style={{
+                                   display: "none",
+                                   clip: 'rect(0 0 0 0)',
+                                   clipPath: 'inset(50%)',
+                                   height: '1px',
+                                   overflow: 'hidden',
+                                   position: 'absolute',
+                                   bottom: 0,
+                                   left: 0,
+                                   whiteSpace: 'nowrap',
+                                   width: '1px',
+                              }}
                          />
                     </Box>
                </Box>

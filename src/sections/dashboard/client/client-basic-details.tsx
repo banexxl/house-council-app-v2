@@ -29,7 +29,7 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
       <ImageUpload
         buttonDisabled={true}
         onUploadSuccess={() => toast.success('Image uploaded successfully')}
-        clientId={''}
+        userId={''}
         sx={{ mt: 2, ml: 2 }}
       />
       <CardHeader title="Basic Details" />

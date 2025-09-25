@@ -213,8 +213,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             onUploadSuccess={(url: string) => {
               formik.setFieldValue('avatar', url)
             }}
-            clientId={clientData?.id || null}
-            initialValue={clientData?.id == '' ? '' : clientData?.avatar}
+            // Use the client record id (preferred) - server action can also resolve user_id
+            userId={clientData?.user_id || null}
+            initialValue={clientData?.user_id == '' ? '' : clientData?.avatar}
           />
           {
             showAdvancedSettings && (

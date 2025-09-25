@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react';
 import { NProgress } from 'src/components/nprogress';
 import { Layout as RootLayout } from 'src/layouts/root';
-import 'src/global.css';
 import AuthProvider from 'src/contexts/auth/auth-provider';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import ClientSubscriptionWatcher from 'src/realtime/client-subscription-watcher';

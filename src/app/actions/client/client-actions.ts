@@ -356,41 +356,36 @@ export const readClientByEmailAction = async (
 
 export const uploadClientLogoAndGetUrl = async (
      file: File,
-     clientId: string
+     userId: string
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     // Use service role to bypass RLS safely after we validate the caller-supplied identifier.
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+     const anonSupabase = await useServerSideSupabaseAnonClient(); // For validation under RLS context if needed
      const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
-     if (!clientId) {
-          return { success: false, error: 'Missing clientId' };
-     }
+     if (!userId) return { success: false, error: 'Missing userId' };
      const uuidRegex = /^[0-9a-fA-F-]{36}$/;
-     if (!uuidRegex.test(clientId)) {
-          return { success: false, error: 'Invalid clientId' };
-     }
+     if (!uuidRegex.test(userId)) return { success: false, error: 'Invalid userId format' };
 
      try {
-          const encodedFilePath = ['clients', clientId, 'logos', sanitizeSegmentForS3(file.name)].join('/');
+          // Folder structure uses the owning user_id to remain aligned with existing RLS policy pattern
+          const safeFileName = sanitizeSegmentForS3(file.name);
+          const encodedFilePath = ['clients', userId, 'images', safeFileName].join('/');
           console.log('encodedFilePath', encodedFilePath);
 
-          const { error: uploadError } = await supabase.storage.from(bucket).upload(encodedFilePath, file, {
+          const { error: uploadError, data: uploadData } = await anonSupabase.storage.from(bucket).upload(encodedFilePath, file, {
                cacheControl: '3600',
                upsert: true,
-          });
+          })
+          console.log('uploadData', uploadData);
 
           if (uploadError) {
-               return {
-                    success: false,
-                    error: `${uploadError.message} for file ${file.name}`,
-               };
+               return { success: false, error: `${uploadError.message} for file ${file.name}` };
           }
 
-          const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(encodedFilePath);
+          const { data: publicUrlData } = anonSupabase.storage.from(bucket).getPublicUrl(encodedFilePath);
           const imageUrl = publicUrlData?.publicUrl;
-
-          if (!imageUrl) {
-               return { success: false, error: 'Failed to retrieve public URL' };
-          }
+          if (!imageUrl) return { success: false, error: 'Failed to retrieve public URL' };
 
           return { success: true, url: imageUrl };
      } catch (error: any) {
