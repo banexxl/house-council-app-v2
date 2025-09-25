@@ -1,7 +1,7 @@
 // app/api/subscription/check-past_due/route.ts
 import { NextResponse } from 'next/server'
 import { sendSubscriptionEndingNotificationToSupport, sendTrialEndingEmailToClient } from 'src/libs/email/node-mailer'
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
 export async function POST() {
@@ -48,7 +48,24 @@ export async function POST() {
 
           const now = new Date()
           let updatedCount = 0
-          const results: { clientId: string; susbcriptionStatus: string; past_due: boolean }[] = []
+          const results: Array<{
+               clientId: string
+               previousStatus: string
+               newStatus: string
+               nextPaymentDate: string | null
+               action: 'expired->past_due' | 'reactivated' | 'canceled' | 'no-change'
+          }> = []
+
+          const allowedStatuses = new Set(['trialing', 'active', 'past_due', 'canceled'])
+          const stats = {
+               total: 0,
+               skippedUnknown: 0,
+               toPastDue: 0,
+               reactivated: 0,
+               alreadyPastDue: 0,
+               canceled: 0,
+               noChange: 0
+          }
 
           for (const sub of client_subscriptions || []) {
                await logServerAction({
@@ -62,39 +79,80 @@ export async function POST() {
                })
                const nextPaymentDate = sub.next_payment_date ? new Date(sub.next_payment_date) : null
 
-               // Determine if the subscription is past_due
-               const isExpired =
-                    sub.status === 'canceled' ||
-                    (!!nextPaymentDate && nextPaymentDate < now)
+               if (!allowedStatuses.has(sub.status)) {
+                    stats.skippedUnknown++
+                    results.push({
+                         clientId: sub.client_id,
+                         previousStatus: sub.status,
+                         newStatus: sub.status,
+                         nextPaymentDate: nextPaymentDate ? nextPaymentDate.toISOString() : null,
+                         action: 'no-change'
+                    })
+                    continue
+               }
 
-               // If past_due, soft-delete by updating status to 'past_due'
-               if (isExpired) {
+               let newStatus = sub.status
+               let action: typeof results[number]['action'] = 'no-change'
+
+               const isExpired = !!nextPaymentDate && nextPaymentDate < now
+
+               // Transition rules:
+               // trialing/active + expired => past_due
+               if ((sub.status === 'trialing' || sub.status === 'active') && isExpired) {
+                    newStatus = 'past_due'
+                    action = 'expired->past_due'
+               }
+               // past_due but now has a future payment date => reactivate to active
+               else if (sub.status === 'past_due' && nextPaymentDate && nextPaymentDate >= now) {
+                    newStatus = 'active'
+                    action = 'reactivated'
+               }
+               // canceled stays canceled (no auto change)
+               else if (sub.status === 'canceled') {
+                    action = 'canceled'
+               } else if (sub.status === 'past_due') {
+                    // still past due, no future date
+                    action = 'no-change'
+               }
+
+               if (newStatus !== sub.status) {
                     const { error: updateError } = await supabase
                          .from('tblClient_Subscription')
-                         .update({
-                              status: 'past_due',
-                              updated_at: now.toISOString()
-                         })
+                         .update({ status: newStatus, updated_at: now.toISOString() })
                          .eq('id', sub.id)
 
-                    // Log the expiration action
+                    if (action === 'expired->past_due') {
+                         console.log('[check-subscription] -> past_due', {
+                              subscriptionId: sub.id,
+                              clientId: sub.client_id,
+                              from: sub.status,
+                              to: newStatus,
+                              nextPaymentDate: nextPaymentDate?.toISOString() || null
+                         })
+                    }
+
                     await logServerAction({
                          user_id: null,
-                         action: 'Auto-expire subscription for client',
-                         payload: { subscriptionId: sub.id, clientId: sub.client_id },
+                         action: 'Subscription status transition',
+                         payload: { subscriptionId: sub.id, clientId: sub.client_id, from: sub.status, to: newStatus, action },
                          status: updateError ? 'fail' : 'success',
                          error: updateError?.message || '',
                          duration_ms: 0,
                          type: 'db'
                     })
-
                     if (!updateError) {
                          updatedCount++
+                         if (action === 'expired->past_due') stats.toPastDue++
+                         if (action === 'reactivated') stats.reactivated++
                     }
+               } else {
+                    if (newStatus === 'past_due') stats.alreadyPastDue++
+                    else if (newStatus === 'canceled') stats.canceled++
+                    else stats.noChange++
                }
 
-               // Log if subscription is set to expire in exactly 7, 3, or 1 days
-               if (nextPaymentDate && sub.status !== 'past_due') {
+               // Log if subscription is set to expire in exactly 7, 3, or 1 days (only for trialing/active)
+               if (nextPaymentDate && (newStatus === 'trialing' || newStatus === 'active')) {
                     const daysUntilExpiration = Math.ceil(
                          (nextPaymentDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
                     )
@@ -196,11 +254,12 @@ export async function POST() {
                     }
                }
 
-               // Add result to summary array
                results.push({
                     clientId: sub.client_id,
-                    susbcriptionStatus: isExpired ? 'past_due' : sub.status,
-                    past_due: isExpired
+                    previousStatus: sub.status,
+                    newStatus,
+                    nextPaymentDate: nextPaymentDate ? nextPaymentDate.toISOString() : null,
+                    action
                })
           }
 
@@ -219,6 +278,7 @@ export async function POST() {
                success: true,
                checked: results.length,
                updated: updatedCount,
+               stats,
                results
           })
      } catch (e: any) {

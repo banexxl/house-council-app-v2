@@ -356,13 +356,22 @@ export const readClientByEmailAction = async (
 
 export const uploadClientLogoAndGetUrl = async (
      file: File,
-     client: string
+     clientId: string
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
+     if (!clientId) {
+          return { success: false, error: 'Missing clientId' };
+     }
+     const uuidRegex = /^[0-9a-fA-F-]{36}$/;
+     if (!uuidRegex.test(clientId)) {
+          return { success: false, error: 'Invalid clientId' };
+     }
+
      try {
-          const encodedFilePath = ['Clients', sanitizeSegmentForS3(client), 'logo', sanitizeSegmentForS3(file.name)].join('/');
+          const encodedFilePath = ['clients', clientId, 'logos', sanitizeSegmentForS3(file.name)].join('/');
+          console.log('encodedFilePath', encodedFilePath);
 
           const { error: uploadError } = await supabase.storage.from(bucket).upload(encodedFilePath, file, {
                cacheControl: '3600',

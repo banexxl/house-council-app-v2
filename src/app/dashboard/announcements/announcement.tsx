@@ -42,6 +42,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import QuillEditor from 'src/components/quill-editor';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useFormik } from 'formik';
+import { uploadAnnouncementImages } from 'src/app/actions/announcement/announcement-image-actions'
 import { announcementInitialValues, announcementValidationSchema, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
@@ -53,7 +54,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { Client } from 'src/types/client';
 import { Building } from 'src/types/building';
-import { NOTIFICATION_TYPES_MAP } from 'src/types/notification';
 
 interface AnnouncementProps {
      announcements: Announcement[];
@@ -237,7 +237,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
           const fileList = Array.from(e.target.files);
           try {
                setImagesUploading(true);
-               const { uploadAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
                const result = await uploadAnnouncementImages(fileList as any, editingEntity.id, client.name, editingEntity.title); // casting for server action transport
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));

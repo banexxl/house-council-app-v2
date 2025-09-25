@@ -49,8 +49,8 @@ async function signMany(
 export async function uploadAnnouncementImages(
      files: File[],
      announcementId: string,
-     _client_name: string,               // kept for compat; not used
-     _announcement_title?: string        // kept for compat; not used
+     client_name: string,               // kept for compat; not used
+     announcement_title?: string        // kept for compat; not used
 ): Promise<{ success: boolean; urls?: string[]; error?: string }> {
      const supabase = await useServerSideSupabaseAnonClient();
      const bucket = getBucket();

@@ -20,7 +20,7 @@ import { Client, clientInitialValues, clientStatusMapping, clientTypeMapping, cl
 import { useTranslation } from 'react-i18next'
 import LocationAutocomplete from '../locations/autocomplete'
 import { createOrUpdateClientAction, sendPasswordRecoveryEmail, sendMagicLink, removeAllMfaFactors, banUser, unbanUser } from 'src/app/actions/client/client-actions'
-import { AvatarUpload, AvatarUploadRef } from 'src/sections/dashboard/client/uplod-image'
+import { ImageUpload, ImageUploadRef } from 'src/sections/dashboard/client/uplod-image'
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname } from 'next/navigation'
 import { PopupModal } from 'src/components/modal-dialog'
@@ -51,7 +51,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
   const [unassignedLocations, setUnassignedLocations] = useState<any[]>([]);
   const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
-  const avatarUploadRef = useRef<AvatarUploadRef>(null)
+  const ImageUploadRef = useRef<ImageUploadRef>(null)
   const router = useRouter()
   const currentRoute = usePathname()
 
@@ -207,13 +207,13 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       <Card>
         <CardHeader title={t('common.formBasicInfo')} />
         <CardContent sx={{ pt: 0 }}>
-          <AvatarUpload
+          <ImageUpload
             buttonDisabled={initialValues?.id == '' ? true : false}
-            ref={avatarUploadRef}
+            ref={ImageUploadRef}
             onUploadSuccess={(url: string) => {
               formik.setFieldValue('avatar', url)
             }}
-            folderName={formik.values.name}
+            clientId={clientData?.id || null}
             initialValue={clientData?.id == '' ? '' : clientData?.avatar}
           />
           {

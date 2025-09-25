@@ -33,20 +33,20 @@ const VisuallyHiddenInput = styled("input")`
   width: 1px;
 `
 
-type AvatarUploadProps = {
+type ImageUploadProps = {
      buttonDisabled: boolean
      onUploadSuccess: (url: string) => void
-     folderName: string
+     clientId: string | null | undefined
      initialValue?: string
      sx?: any
 }
 
-export type AvatarUploadRef = {
+export type ImageUploadRef = {
      clearImage: () => void
 }
 
-export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
-     ({ buttonDisabled, onUploadSuccess, folderName, initialValue, sx }, ref) => {
+export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
+     ({ buttonDisabled, onUploadSuccess, clientId, initialValue, sx }, ref) => {
           const [avatarUrl, setAvatarUrl] = useState<string>(initialValue !== undefined && initialValue !== "" ? initialValue : "")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
@@ -80,12 +80,13 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
                          formData.append("title", title)
                          formData.append("extension", fileExtension)
                          formData.append("fileName", selectedFile.name)
-                         formData.append("folderName", folderName)
-
-                         const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(
-                              selectedFile,
-                              folderName // e.g. userData.client?.name
-                         );
+                         // Provide the client id (preferred) to server action so storage path = clients/<clientId>/logos/<file>
+                         if (!clientId) {
+                              toast.error('Client must be saved before uploading a logo');
+                              setLoading(false);
+                              return;
+                         }
+                         const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(selectedFile, clientId);
 
                          if (success && url) {
                               setAvatarUrl(url);
@@ -179,4 +180,4 @@ export const AvatarUpload = forwardRef<AvatarUploadRef, AvatarUploadProps>(
      }
 )
 
-AvatarUpload.displayName = "AvatarUpload"
+ImageUpload.displayName = "ImageUpload"

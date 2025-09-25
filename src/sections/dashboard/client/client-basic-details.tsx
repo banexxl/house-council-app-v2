@@ -9,7 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 
 import { PropertyList } from 'src/components/property-list';
 import { PropertyListItem } from 'src/components/property-list-item';
-import { AvatarUpload } from 'src/sections/dashboard/client/uplod-image';
+import { ImageUpload } from 'src/sections/dashboard/client/uplod-image';
 import toast from 'react-hot-toast';
 
 interface ClientBasicDetailsProps {
@@ -26,10 +26,10 @@ export const ClientBasicDetails: FC<ClientBasicDetailsProps> = (props) => {
 
   return (
     <Card {...other} sx={{ width: '100%' }}>
-      <AvatarUpload
-        buttonDisabled={false}
+      <ImageUpload
+        buttonDisabled={true}
         onUploadSuccess={() => toast.success('Image uploaded successfully')}
-        folderName={'aa'}
+        clientId={''}
         sx={{ mt: 2, ml: 2 }}
       />
       <CardHeader title="Basic Details" />
