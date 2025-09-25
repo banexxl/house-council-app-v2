@@ -17,6 +17,151 @@ const sanitizeSegmentForS3 = (segment: string): string => {
           .replace(/^_+|_+$/g, '');
 };
 
+// ===================== CLIENT IMAGES (LOGO / PROFILE) =====================
+// These helpers mirror the building/apartment patterns but target a per-client
+// images folder: clients/<clientId>/images/<file>
+// They intentionally rely on the anon client so existing RLS path rules that
+// key off auth.uid() (when clientId == user id) still apply. If later you allow
+// staff to upload on behalf of a client you can swap in service-role after
+// validating authorization.
+
+export const uploadClientImagesAndGetUrls = async (
+     files: File[],
+     clientId: string
+): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
+     const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
+
+     if (!clientId) return { success: false, error: 'Missing clientId' };
+
+     try {
+          const { data: userData, error: userErr } = await supabase.auth.getUser();
+          if (userErr || !userData?.user) {
+               await logServerAction({
+                    action: 'Upload Client Images - Missing auth user',
+                    duration_ms: 0,
+                    error: userErr?.message ?? 'No user in session',
+                    payload: { clientId },
+                    status: 'fail',
+                    type: 'auth',
+                    user_id: null,
+               });
+               return { success: false, error: 'Not signed in' };
+          }
+
+          const storagePaths: string[] = [];
+
+          for (const file of files) {
+               const storagePath = [
+                    'clients',
+                    clientId,
+                    'images',
+                    'logos',
+                    sanitizeSegmentForS3(file.name)
+               ].join('/');
+
+               const { error: uploadError } = await supabase.storage
+                    .from(bucket)
+                    .upload(storagePath, file, {
+                         cacheControl: '3600',
+                         upsert: true,
+                    });
+
+               if (uploadError) {
+                    await logServerAction({
+                         action: 'Upload Client Image - Storage upload failed',
+                         duration_ms: 0,
+                         error: uploadError.message,
+                         payload: { bucket, storagePath, clientId },
+                         status: 'fail',
+                         type: 'db',
+                         user_id: userData.user.id,
+                    });
+                    return { success: false, error: `${uploadError.message} for file ${file.name}` };
+               }
+
+               storagePaths.push(storagePath);
+          }
+
+          // Generate signed URLs so UI can display immediately (if you prefer public URLs,
+          // switch to getPublicUrl like in uploadClientLogoAndGetUrl)
+          const { data: signedArr, error: signErr } = await supabase.storage
+               .from(bucket)
+               .createSignedUrls(storagePaths, SIGNED_URL_TTL_SECONDS);
+          console.log('signedArr', signErr);
+
+          if (signErr || !signedArr) {
+               await logServerAction({
+                    action: 'Upload Client Images - signing failed',
+                    duration_ms: 0,
+                    error: signErr?.message ?? 'No signed URLs',
+                    payload: { bucket, clientId, count: storagePaths.length },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: userData.user.id,
+               });
+               return { success: false, error: 'Failed to create signed URLs' };
+          }
+
+          const urls = signedArr.map(x => x.signedUrl).filter(Boolean) as string[];
+
+          await logServerAction({
+               action: 'Upload Client Images - Success',
+               duration_ms: 0,
+               error: '',
+               payload: { clientId, count: urls.length },
+               status: 'success',
+               type: 'db',
+               user_id: userData.user.id,
+          });
+
+          return { success: true, urls };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};
+
+export const removeClientImageFilePath = async (
+     clientId: string,
+     filePathOrUrl: string
+): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
+     try {
+          const ref = toStorageRef(filePathOrUrl) ?? { bucket, path: filePathOrUrl };
+          const bkt = ref.bucket ?? bucket;
+          const path = ref.path;
+
+          const { error: deleteError } = await supabase.storage.from(bkt).remove([path]);
+          if (deleteError) {
+               await logServerAction({
+                    action: 'Delete Client Image - Storage remove failed',
+                    duration_ms: 0,
+                    error: deleteError.message,
+                    payload: { clientId, bucket: bkt, path },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+               });
+               return { success: false, error: deleteError.message };
+          }
+
+          await logServerAction({
+               action: 'Delete Client Image - Success',
+               duration_ms: 0,
+               error: '',
+               payload: { clientId, bucket: bkt },
+               status: 'success',
+               type: 'db',
+               user_id: null,
+          });
+          return { success: true };
+     } catch (error: any) {
+          return { success: false, error: error.message };
+     }
+};
+
 /**
  * Uploads one or more images to Supabase Storage and links them to a building in `tblBuildingImages`
  */
@@ -661,4 +806,6 @@ export const setAsApartmentCoverImage = async (apartmentid: string, url: string)
      revalidatePath(`/dashboard/apartments`);
      return { success: !dbError }
 }
+
+
 

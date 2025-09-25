@@ -17,7 +17,7 @@ import {
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
-import { uploadClientLogoAndGetUrl } from "src/app/actions/client/client-actions"
+import { uploadClientImagesAndGetUrls } from "src/libs/supabase/sb-storage"
 
 type ImageUploadProps = {
      buttonDisabled: boolean
@@ -72,12 +72,13 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               setLoading(false);
                               return;
                          }
-                         const { success, url, error: imageUploadResponse } = await uploadClientLogoAndGetUrl(selectedFile, userId);
+                         const { success, urls, error: imageUploadResponse } = await uploadClientImagesAndGetUrls([selectedFile], userId);
 
-                         if (success && url) {
-                              setAvatarUrl(url);
+                         if (success && urls && urls[0]) {
+                              const firstUrl = urls[0];
+                              setAvatarUrl(firstUrl);
                               toast.success("Image uploaded successfully");
-                              onUploadSuccess(url);
+                              onUploadSuccess(firstUrl);
                          } else {
                               toast.error(imageUploadResponse || "Failed to upload image");
                               onUploadSuccess("");
