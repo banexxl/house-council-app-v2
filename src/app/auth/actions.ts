@@ -235,20 +235,33 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           });
      }
 
-     // 2. If not found, check tblClients
+     // 2. If not found, check tblClients (and enforce status gate)
      if (!userFound) {
-          const { data: client, error: clientError } = await supabase
+          const { data: clientRow, error: clientError } = await supabase
                .from('tblClients')
-               .select('id')
+               .select('id,client_status')
                .eq('email', values.email)
                .single();
-          if (client) {
+
+          if (clientRow) {
+               if (clientRow.client_status !== 'active') {
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in blocked - client status not active',
+                         payload: { email: values.email, status: clientRow.client_status },
+                         status: 'fail',
+                         error: 'Client status not active',
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    });
+                    return { success: false, error: { code: 'client_inactive', details: `Client status is non active`, message: 'Your account is not active. Please contact support.' } };
+               }
                userType = 'client';
-               userId = client.id;
+               userId = clientRow.id;
                userFound = true;
                await logServerAction({
                     user_id: null,
-                    action: 'Signing in with email and password - user found in tblClients',
+                    action: 'Signing in with email and password - active client found',
                     payload: values.email,
                     status: 'success',
                     error: '',

@@ -27,6 +27,7 @@ export default function ClientSubscriptionWatcher() {
 
      useEffect(() => { // Core effect: sets up initial validation, realtime listener, and polling fallback
           let cleanup: (() => Promise<void>) | null = null; // Function to unsubscribe realtime channel
+          let clientStatusChannel: ReturnType<typeof supabaseBrowserClient.channel> | null = null; // separate channel for client status
 
           let cancelled = false;
           let intervalId: any = null; // ID of polling interval
@@ -119,6 +120,48 @@ export default function ClientSubscriptionWatcher() {
                     }
                }, { debug: true });
 
+               // Additional realtime listener for tblClients status (account status gate separate from subscription)
+               try {
+                    clientStatusChannel = supabaseBrowserClient
+                         .channel(`client-status-${clientId}`)
+                         .on('postgres_changes', {
+                              event: '*',
+                              schema: 'public',
+                              table: 'tblClients',
+                              filter: `id=eq.${clientId}`,
+                         }, async (payload: any) => {
+                              if (signingOut) return;
+                              try {
+                                   const newRow = payload.new || payload.old;
+                                   const client_status = newRow?.client_status;
+                                   if (process.env.NODE_ENV !== 'production') {
+                                        console.log('[ClientSubscriptionWatcher] Client status realtime', { client_status, eventType: payload.eventType });
+                                   }
+                                   if (client_status && client_status !== 'active') {
+                                        signingOut = true;
+                                        if (process.env.NODE_ENV !== 'production') {
+                                             console.warn('[ClientSubscriptionWatcher] Client status changed to non-active; signing out', { status });
+                                        }
+                                        await supabaseBrowserClient.auth.signOut();
+                                        router.push('/auth/login');
+                                   }
+                              } catch (e) {
+                                   if (process.env.NODE_ENV !== 'production') {
+                                        console.error('[ClientSubscriptionWatcher] Error handling client status payload', e);
+                                   }
+                              }
+                         })
+                         .subscribe(status => {
+                              if (process.env.NODE_ENV !== 'production') {
+                                   console.log('[ClientSubscriptionWatcher] Client status channel subscribed', status);
+                              }
+                         });
+               } catch (e) {
+                    if (process.env.NODE_ENV !== 'production') {
+                         console.error('[ClientSubscriptionWatcher] Failed to init client status channel', e);
+                    }
+               }
+
                // Polling fallback: executes every 15s to cover missed realtime events or network hiccups
                intervalId = setInterval(async () => {
                     if (signingOut) return; // already processing sign-out
@@ -157,6 +200,9 @@ export default function ClientSubscriptionWatcher() {
                cancelled = true;
                if (cleanup) cleanup().catch(() => { });
                if (intervalId) clearInterval(intervalId);
+               if (clientStatusChannel) {
+                    try { supabaseBrowserClient.removeChannel(clientStatusChannel); } catch { }
+               }
           };
      }, [clientId]);
 
