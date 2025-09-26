@@ -89,7 +89,6 @@ export const uploadClientImagesAndGetUrls = async (
           const { data: signedArr, error: signErr } = await supabase.storage
                .from(bucket)
                .createSignedUrls(storagePaths, SIGNED_URL_TTL_SECONDS);
-          console.log('signedArr', signErr);
 
           if (signErr || !signedArr) {
                await logServerAction({
