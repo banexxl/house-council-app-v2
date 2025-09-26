@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type FC } from 'react'
+import { useEffect, useMemo, useRef, useState, type FC } from 'react'
 import { useFormik } from 'formik'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -66,17 +66,27 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     fetchBuildingLocations();
   }, [clientData?.id]);
 
+  const initialFormikValues = useMemo(() => {
+    const base = {
+      ...clientInitialValues,
+      ...initialValues,
+      client_type: initialValues?.client_type || clientInitialValues.client_type || '',
+      client_status: initialValues?.client_status || clientInitialValues.client_status || '',
+      subscription_plan_id: clientSubscription?.subscription_plan_id || '',
+      // ✅ store as ISO string or null so it's stable
+      next_payment_date: clientSubscription?.next_payment_date
+        ? dayjs(clientSubscription.next_payment_date)
+        : null,
+      subscription_status: clientSubscription?.status || 'active',
+    };
+    return base;
+    // only recompute when these truly change
+  }, [clientInitialValues, initialValues, clientSubscription]);
+
 
   const formik = useFormik({
-    initialValues: {
-      ...clientInitialValues, // Default values for new clients
-      ...initialValues, // Overwrite with existing client data if editing
-      client_type: initialValues?.client_type || clientInitialValues.client_type || '', // Ensure type is valid
-      client_status: initialValues?.client_status || clientInitialValues.client_status || '', // Ensure status is valid
-      subscription_plan_id: clientSubscription?.subscription_plan_id || '',
-      next_payment_date: clientSubscription?.next_payment_date ? dayjs(clientSubscription.next_payment_date) : null as Dayjs | null,
-      subscription_status: clientSubscription?.status || 'active',
-    },
+    initialValues: initialFormikValues,
+    enableReinitialize: true,
     validationSchema: clientValidationSchema(t),
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
@@ -212,6 +222,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             ref={ImageUploadRef}
             onUploadSuccess={(url: string) => {
               formik.setFieldValue('avatar', url)
+              formik.setFieldTouched('avatar', true, false)
             }}
             // Use the client record id (preferred) - server action can also resolve user_id
             userId={clientData?.user_id || null}
@@ -309,6 +320,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                 label={t('clients.clientAddress1')}
                 onAddressSelected={(e: any) => {
                   formik.setFieldValue('address_1', transliterateCyrillicToLatin(e.matching_place_name));
+                  formik.setFieldTouched('address_1', true, false)
+                }}
+                onClear={() => {
+                  formik.setFieldValue('address_1', '');
+                  formik.setFieldTouched('address_1', true, false)
                 }}
                 initialValue={initialValues?.id == '' ? '' : initialValues?.address_1}
               />
@@ -320,6 +336,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                 label={t('clients.clientAddress2')}
                 onAddressSelected={(e: any) => {
                   formik.setFieldValue('address_2', transliterateCyrillicToLatin(e.matching_place_name));
+                  formik.setFieldTouched('address_2', true, false)
+                }}
+                onClear={() => {
+                  formik.setFieldValue('address_2', '');
+                  formik.setFieldTouched('address_2', true, false)
                 }}
                 initialValue={initialValues?.id == '' ? '' : initialValues?.address_2}
               />

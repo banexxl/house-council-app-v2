@@ -17,13 +17,14 @@ interface AutocompleteProps {
      onAddressSelected: (feature: any) => void;
      label: string;
      initialValue?: string
+     onClear?: () => void;
 }
 
 export interface AutocompleteRef {
      clearField: () => void; // Expose the clear method
 }
 
-const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label, initialValue }, ref) => {
+const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label, initialValue, onClear }, ref) => {
 
      const [inputValue, setInputValue] = useState(initialValue || "");
      const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -76,6 +77,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
      const handleClear = () => {
           setInputValue("");
           setSuggestions([]);
+          onClear && onClear();
      };
 
      return (
