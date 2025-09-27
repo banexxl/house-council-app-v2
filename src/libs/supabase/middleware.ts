@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from "./sb-server";
+import { useServerSideSupabaseAnonClient } from "./sb-server";
 
 /**
  * @function updateSession
