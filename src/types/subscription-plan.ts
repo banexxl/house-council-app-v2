@@ -39,6 +39,7 @@ export type SubscriptionPlan = {
      monthly_total_price: number;
      total_price_with_discounts: number;
      max_number_of_apartments: number;
+     max_number_of_team_members: number;
 };
 
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
@@ -55,7 +56,8 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      base_price: 0,
      monthly_total_price: 0,
      total_price_with_discounts: 0,
-     max_number_of_apartments: 1
+     max_number_of_apartments: 1,
+     max_number_of_team_members: 0,
 };
 
 export const subscriptionPlanValidationSchema = Yup.object({
@@ -69,7 +71,8 @@ export const subscriptionPlanValidationSchema = Yup.object({
      base_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
      monthly_total_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
      total_price_with_discounts: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
-     max_number_of_apartments: Yup.number().min(0, "Must be positive").required("Required")
+     max_number_of_apartments: Yup.number().min(0, "Must be positive").required("Required"),
+     max_number_of_team_members: Yup.number().min(0, "Must be positive").required("Required"),
 })
 
 export interface ClientSubscription {

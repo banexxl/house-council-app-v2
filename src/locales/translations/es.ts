@@ -779,6 +779,7 @@ export const es = {
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Característica del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Estado del Plan de Suscripción',
   [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments]: 'Máximo de Habitaciones del Plan de Suscripción',
+  [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfTeamMembers]: 'Máximo de Miembros del Equipo del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Estados del Plan de Suscripción',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Descuento Anual',
   [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Facturación Anual',

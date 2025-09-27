@@ -626,6 +626,7 @@ export const en = {
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Feature',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Feature Status',
   [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments]: 'Max Number Of Appartments',
+  [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfTeamMembers]: 'Max Number Of Team Members',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Subscription Plan Statuses',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Yearly Discount',
   [tokens.subscriptionPlans.subscriptionPlanYearlyBilling]: 'Yearly Billing',

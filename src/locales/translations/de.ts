@@ -761,6 +761,7 @@ export const de = {
   [tokens.subscriptionPlans.subscriptionPlanFeatures]: 'Funktionen',
   [tokens.subscriptionPlans.subscriptionPlanStatus]: 'Status',
   [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments]: 'Maximale Anzahl der Wohnungen',
+  [tokens.subscriptionPlans.susbcriptionPlanMaxNumberOfTeamMembers]: 'Maximale Anzahl der Teammitglieder',
   [tokens.subscriptionPlans.subscriptionPlanStatusesTableName]: 'Abonnementplanstatus',
   [tokens.subscriptionPlans.subscriptionPlanFeature]: 'Funktion',
   [tokens.subscriptionPlans.subscriptionPlanYearlyDiscount]: 'Jahresrabatt',

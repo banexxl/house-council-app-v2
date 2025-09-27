@@ -105,11 +105,11 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
 
      const calculatePrices = () => getCalculatedPrices(formik.values, featurePrices);
 
-     const updateCalculatedPrices = () => {
-          const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-          formik.setFieldValue('monthly_total_price', monthly_total_price);
-          formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-     };
+     // const updateCalculatedPrices = () => {
+     //      const { monthly_total_price, total_price_with_discounts } = calculatePrices();
+     //      formik.setFieldValue('monthly_total_price', monthly_total_price);
+     //      formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
+     // };
 
      const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
           Object.fromEntries(features.map((f) => [f.id!, f.price_per_month]))
@@ -201,7 +201,21 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                              error={formik.touched.max_number_of_apartments && Boolean(formik.errors.max_number_of_apartments)}
                                              helperText={formik.touched.max_number_of_apartments && formik.errors.max_number_of_apartments}
                                              margin="normal"
-                                             InputProps={{ inputProps: { min: 0, max: 1000000, step: "1" } }}
+                                             slotProps={{ htmlInput: { min: 0, max: 1000000, step: "1" } }}
+                                             onBlur={formik.handleBlur}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             id="max_number_of_team_members"
+                                             name="max_number_of_team_members"
+                                             label={t("subscriptionPlans.susbcriptionPlanMaxNumberOfTeamMembers")}
+                                             type="number"
+                                             value={formik.values.max_number_of_team_members}
+                                             onChange={formik.handleChange}
+                                             error={formik.touched.max_number_of_team_members && Boolean(formik.errors.max_number_of_team_members)}
+                                             helperText={formik.touched.max_number_of_team_members && formik.errors.max_number_of_team_members}
+                                             margin="normal"
+                                             slotProps={{ htmlInput: { min: 0, max: 1000000, step: "1" } }}
                                              onBlur={formik.handleBlur}
                                         />
                                         <TextField

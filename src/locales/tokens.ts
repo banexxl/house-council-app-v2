@@ -585,6 +585,7 @@ export const tokens = {
     subscriptionPlanCurrency: 'subscriptionPlans.subscriptionPlanCurrency',
     subscriptionPlanStatus: 'subscriptionPlans.subscriptionPlanStatus',
     susbcriptionPlanMaxNumberOfAppartments: 'subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments',
+    susbcriptionPlanMaxNumberOfTeamMembers: 'subscriptionPlans.susbcriptionPlanMaxNumberOfTeamMembers',
     subscriptionPlanFeatures: 'subscriptionPlans.subscriptionPlanFeatures',
     subscriptionPlanFeature: 'subscriptionPlans.subscriptionPlanFeature',
     subscriptionPlanYearlyDiscount: 'subscriptionPlans.subscriptionPlanYearlyDiscount',
