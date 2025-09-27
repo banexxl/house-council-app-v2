@@ -144,7 +144,7 @@ export const de = {
   [tokens.account.team.inviteSuccess]: 'Einladung erfolgreich gesendet!',
   [tokens.account.team.inviteError]: 'Einladung konnte nicht gesendet werden.',
   [tokens.account.team.inviteMembers]: 'Mitglieder einladen',
-  [tokens.account.team.editorSeatsInfo]: 'Sie zahlen derzeit für 2 Editor-Plätze.',
+  [tokens.account.team.editorSeatsInfo]: 'Sie zahlen derzeit für bis zu {{max}} Editor-Plätze.',
   [tokens.account.team.sendInvite]: 'Einladung senden',
   [tokens.account.team.membersTableTitle]: 'Teammitglieder',
   [tokens.account.team.membersTableSubtitle]: 'Verwalten Sie Ihre Teammitglieder unten.',

@@ -49,7 +49,7 @@ export const en = {
   [tokens.account.team.inviteSuccess]: 'Invitation sent successfully!',
   [tokens.account.team.inviteError]: 'Failed to send invitation.',
   [tokens.account.team.inviteMembers]: 'Invite members',
-  [tokens.account.team.editorSeatsInfo]: 'You currently pay for 2 Editor Seats.',
+  [tokens.account.team.editorSeatsInfo]: 'You currently pay for up to {{max}} editor seats.',
   [tokens.account.team.sendInvite]: 'Send Invite',
   [tokens.account.team.membersTableTitle]: 'Team members',
   [tokens.account.team.membersTableSubtitle]: 'Manage your team members below.',

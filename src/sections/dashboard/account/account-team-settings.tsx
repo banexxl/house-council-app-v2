@@ -23,10 +23,12 @@ import { tokens } from 'src/locales/tokens';
 import toast from 'react-hot-toast';
 import { GenericTable } from 'src/components/generic-table';
 import { sendPasswordRecoveryEmail } from 'src/app/actions/client/client-actions';
+import { SubscriptionPlan } from 'src/types/subscription-plan';
 
 interface AccountTeamSettingsProps {
   members: ClientMember[];
-  client: Client
+  client: Client;
+  clientSubscriptionPlan: SubscriptionPlan | null;
 }
 
 export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
@@ -34,7 +36,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { members, client } = props;
+  const { members, client, clientSubscriptionPlan } = props;
 
   const { t } = useTranslation();
 
@@ -84,7 +86,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                   <Stack spacing={1}>
                     <Typography variant="h6">{t('account.team.inviteMembers')}</Typography>
                     <Typography color="text.secondary" variant="body2">
-                      {t('account.team.editorSeatsInfo')}
+                      {t('account.team.editorSeatsInfo', { max: clientSubscriptionPlan?.max_number_of_team_members ?? 0 })}
                     </Typography>
                   </Stack>
                 </Grid>

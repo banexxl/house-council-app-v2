@@ -104,6 +104,48 @@ export const addClientMember = async (email: string, name: string, client_id: st
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const supabase = await useServerSideSupabaseAnonClient();
      try {
+          // 1. Fetch client's subscription_plan_id
+          const { data: clientSubscription, error: clientSubError } = await adminSupabase
+               .from('tblClient_Subscription')
+               .select('subscription_plan_id')
+               .eq('client_id', client_id)
+               .single();
+
+          if (clientSubError) {
+               return { inviteClientMemberSuccess: false, inviteClientMemberError: clientSubError.message };
+          }
+
+          if (!clientSubscription?.subscription_plan_id) {
+               return { inviteClientMemberSuccess: false, inviteClientMemberError: 'Client subscription not found' };
+          }
+
+          // 2. Fetch subscription plan to read max_number_of_team_members
+          const { data: subscriptionPlan, error: planError } = await adminSupabase
+               .from('tblSubscriptionPlans')
+               .select('id, max_number_of_team_members')
+               .eq('id', clientSubscription.subscription_plan_id)
+               .single();
+
+          if (planError) {
+               return { inviteClientMemberSuccess: false, inviteClientMemberError: planError.message };
+          }
+
+          // 3. Count existing client members
+          const { count: currentCount, error: countError } = await adminSupabase
+               .from('tblClientMembers')
+               .select('id', { count: 'exact', head: true })
+               .eq('client_id', client_id);
+
+          if (countError) {
+               return { inviteClientMemberSuccess: false, inviteClientMemberError: countError.message };
+          }
+
+          const maxMembers = subscriptionPlan?.max_number_of_team_members ?? 0;
+          if (maxMembers > 0 && (currentCount ?? 0) >= maxMembers) {
+               return { inviteClientMemberSuccess: false, inviteClientMemberError: 'Maximum number of team members reached for current subscription plan' };
+          }
+
+          // 4. Proceed to create auth user & insert member row
           const { data: addedUserData, error: createUserError } = await adminSupabase.auth.admin.createUser({ email });
 
           if (createUserError) throw createUserError;

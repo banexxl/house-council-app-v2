@@ -94,7 +94,7 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                               />
                          )}
                          {currentTab === 'team' && (
-                              <AccountTeamSettings members={allTeamMembers || []} client={client} />
+                              <AccountTeamSettings members={allTeamMembers || []} client={client} clientSubscriptionPlan={clientSubscriptionPlan} />
                          )}
                          {currentTab === 'notifications' && <AccountNotificationsSettings />}
                          {currentTab === 'security' && (
