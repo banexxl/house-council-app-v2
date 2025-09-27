@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 
 export async function GET(request: Request) {
+
   const cookieStore = await cookies();
   const supabase = await useServerSideSupabaseServiceRoleClient();
 

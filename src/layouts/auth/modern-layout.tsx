@@ -60,6 +60,8 @@ export const Layout: FC<LayoutProps> = (props) => {
             alt="Background"
             fill
             priority
+            // Use responsive sizes: full width on mobile, about 55% viewport width on md+ (remaining width taken by the auth panel ~600px)
+            sizes="(max-width: 899px) 100vw, (min-width: 900px) calc(100vw - 600px)"
             style={{ objectFit: 'cover', objectPosition: 'center' }}
           />
         </Box>
