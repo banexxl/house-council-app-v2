@@ -15,7 +15,7 @@ interface LayoutProps {
 export const Layout: FC<LayoutProps> = (props) => {
 
   const { children } = props;
-  console.log('process.env.NODE_ENV', process.env.NODE_ENV);
+
   const theme = useTheme();
 
   return (
