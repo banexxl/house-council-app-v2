@@ -128,7 +128,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                     />
 
                     <TextField
-                      label={t('common.email')}
+                      label={t('common.lblEmail')}
                       name="email"
                       fullWidth
                       value={values.email}

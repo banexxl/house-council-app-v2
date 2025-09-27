@@ -273,7 +273,7 @@ export const SubscriptionTable: FC<SubscriptionPlanListTableProps> = ({ subscrip
                                                        </TableCell>
                                                        <TableCell sx={{ width: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                             {
-                                                                 subscriptionPlanStatusOptions?.find((cs) => cs.value === subscriptionPlan.status)?.label ?? ''
+                                                                 t(subscriptionPlanStatusOptions?.find((cs) => cs.value === subscriptionPlan.status)?.label ?? '')
                                                             }
                                                        </TableCell>
                                                        <TableCell sx={{ width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
