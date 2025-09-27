@@ -1,11 +1,32 @@
-import twilio from "twilio";
+// Server-only Twilio helper. Avoid static imports so that this file never gets
+// pulled into an Edge runtime bundle (Twilio needs Node core modules).
+import 'server-only';
 import { logServerAction } from "../supabase/server-logging";
-import { NotificationType, NotificationTypeMap } from "src/types/notification";
+import { NotificationTypeMap } from "src/types/notification";
+
+// We lazy-load the library so Next.js / Vercel won't attempt to resolve the
+// internal twilio ../lib path in an unsupported runtime.
+let _twilioClient: any | null = null;
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_API_TOKEN;
+// NOTE: The canonical env var name is usually TWILIO_AUTH_TOKEN; the project uses TWILIO_API_TOKEN.
+// Ensure the prod environment actually sets TWILIO_API_TOKEN (or alias it below).
+const authToken = process.env.TWILIO_API_TOKEN || process.env.TWILIO_AUTH_TOKEN;
 const numberFrom = process.env.TWILIO_SENDER_PHONE_NUMBER;
-const client = twilio(accountSid, authToken);
+
+async function getTwilioClient() {
+     if (_twilioClient) return _twilioClient;
+     if (!accountSid || !authToken) {
+          // We still return null; caller will log a more specific message.
+          return null;
+     }
+     // Dynamic import keeps it out of edge bundles and fixes the '../lib/index.js' production resolution error.
+     const twilioModule: any = await import('twilio');
+     // Twilio v5 default export vs named: handle both defensively.
+     const TwilioCtor = twilioModule?.Twilio || twilioModule?.default || twilioModule;
+     _twilioClient = new TwilioCtor(accountSid, authToken);
+     return _twilioClient;
+}
 
 export const createMessage = async (to: string, title: string, body: string, notificationType: NotificationTypeMap): Promise<any> => {
 
@@ -13,16 +34,21 @@ export const createMessage = async (to: string, title: string, body: string, not
 
      try {
           if (!accountSid || !authToken || !numberFrom) {
-               logServerAction({
+               await logServerAction({
                     action: 'Twilio WhatsApp Send',
-                    error: 'Missing Twilio WhatsApp env variables',
+                    error: 'Missing Twilio env variables (TWILIO_ACCOUNT_SID / TWILIO_API_TOKEN / TWILIO_SENDER_PHONE_NUMBER)',
                     payload: null,
                     status: 'fail',
                     type: 'external',
                     user_id: null,
                     created_at: new Date(),
                     duration_ms: 0,
-               })
+               });
+               throw new Error('Twilio configuration missing');
+          }
+          const client = await getTwilioClient();
+          if (!client) {
+               throw new Error('Twilio client not initialized');
           }
           const normalize = (p: string) => {
                const cleaned = p.replace(/\s+/g, '');
