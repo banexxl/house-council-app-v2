@@ -14,7 +14,7 @@ export const config = {
           * Feel free to modify this pattern to include more paths.
      */
      matcher: [
-          '/((?!_next/|favicon.ico|robots.txt|sitemap.xml|images/|public/).*)',
+          '/((?!_next/|favicon.ico|robots.txt|sitemap.xml|assets/).*)',
           '/auth/(.*)',
           '/dashboard/(.*)',
      ],
