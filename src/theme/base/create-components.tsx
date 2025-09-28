@@ -34,6 +34,34 @@ export const createComponents = (): Components => {
             boxShadow: '0 4px 0 0 rgba(0,0,0,0.18)',
             transform: 'translateY(0)',
           },
+          // Generic loading state (apply className "hc-loading")
+          '&.hc-loading': {
+            pointerEvents: 'none',
+            // Keep button in raised position
+            transform: 'translateY(0) !important',
+            // Preserve original shadow to avoid layout jump
+            boxShadow: '0 4px 0 0 rgba(0,0,0,0.15) !important',
+            color: 'transparent !important', // hide label text while keeping width
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: 16,
+              height: 16,
+              marginTop: -8,
+              marginLeft: -8,
+              borderRadius: '50%',
+              border: '2px solid currentColor',
+              borderColor: 'currentColor transparent currentColor transparent',
+              animation: 'hc-btn-spin 0.8s linear infinite',
+            },
+            // Prevent press styles while loading
+            '&:active': {
+              transform: 'translateY(0)',
+              boxShadow: '0 4px 0 0 rgba(0,0,0,0.15)',
+            },
+          },
           // Active press: move button down exactly the shadow height so it looks "pressed in"
           '&:active:not(.Mui-disabled)': {
             transform: 'translateY(4px)',
@@ -139,6 +167,11 @@ export const createComponents = (): Components => {
           boxSizing: 'border-box',
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE/Edge legacy
+        },
+        // Spinner animation for generic button loading state
+        '@keyframes hc-btn-spin': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
         },
         '::-webkit-scrollbar': { width: 0, height: 0 },
         '::-webkit-scrollbar-track': { background: 'transparent' },
