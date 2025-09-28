@@ -9,7 +9,7 @@ import { logout } from 'src/app/auth/actions';
 export default async function TenantsPage() {
 
   const { client, clientMember, tenant, admin } = await getViewer();
-
+  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
   if (!client && !clientMember && !tenant && !admin) {
     logout();
   }
@@ -19,8 +19,8 @@ export default async function TenantsPage() {
   if (admin) {
     const { success, data } = await getAllTenants();
     tenants = Array.isArray(data) ? data : [];
-  } else if (client && 'id' in client) {
-    const { data } = await getAllTenantsFromClientsBuildings((client as { id: string }).id);
+  } else if (client || clientMember) {
+    const { data } = await getAllTenantsFromClientsBuildings(client_id!);
     tenants = Array.isArray(data) ? data : [];
   } else if (tenant) {
     // Redirect tenant to products page
