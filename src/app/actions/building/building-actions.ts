@@ -2,6 +2,7 @@
 
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
+import { resolveClientId } from "../_shared/resolve-client-id";
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
@@ -89,13 +90,14 @@ export async function getAllBuildingsFromClient(
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
+     const resolvedClientId = await resolveClientId(client_id);
      const { data: buildings, error } = await supabase
           .from("tblBuildings")
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
-          .eq("client_id", client_id);
+          .eq("client_id", resolvedClientId);
 
      if (error) {
-          await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: error.message, payload: { client_id }, status: "fail", type: "db", user_id: client_id, id: "" });
+          await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: error.message, payload: { client_id: resolvedClientId }, status: "fail", type: "db", user_id: resolvedClientId, id: "" });
           return { success: false, error: error.message };
      }
 
@@ -127,7 +129,7 @@ export async function getAllBuildingsFromClient(
           building_images: imagesByBuilding.get(b.id) ?? [],
      }));
 
-     await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: "", payload: { client_id }, status: "success", type: "db", user_id: client_id, id: "" });
+     await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: "", payload: { client_id: resolvedClientId }, status: "success", type: "db", user_id: resolvedClientId, id: "" });
      return { success: true, data };
 }
 

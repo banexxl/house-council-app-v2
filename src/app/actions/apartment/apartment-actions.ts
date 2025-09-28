@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
+import { resolveClientId } from "../_shared/resolve-client-id";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
@@ -77,19 +78,19 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
 export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-
+     const resolvedClientId = await resolveClientId(clientid);
      const { data: buildings, error: buildingsError } = await supabase
           .from("tblBuildings")
           .select("*")
-          .eq("client_id", clientid);
+          .eq("client_id", resolvedClientId);
 
      if (buildingsError) {
-          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: buildingsError.message, payload: { clientid }, status: "fail", type: "db", user_id: clientid, id: "" });
+          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: buildingsError.message, payload: { clientid: resolvedClientId }, status: "fail", type: "db", user_id: resolvedClientId, id: "" });
           return { success: false, error: buildingsError.message };
      }
 
      if (!buildings?.length) {
-          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: "", payload: { clientid }, status: "success", type: "db", user_id: clientid, id: "" });
+          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: "", payload: { clientid: resolvedClientId }, status: "success", type: "db", user_id: resolvedClientId, id: "" });
           return { success: true, data: { apartments: [], building_images: [] } }; // keep shape
      }
 

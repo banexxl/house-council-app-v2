@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { BuildingLocation } from 'src/types/location'
+import { readClientFromClientMemberID } from '../client/client-members';
+import { resolveClientId } from '../_shared/resolve-client-id';
 
 type ErrorResponse = {
      code: string;
@@ -29,6 +31,9 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
      const startTime = Date.now();
      const supabase = await useServerSideSupabaseAnonClient()
 
+     const { data: clientData } = await readClientFromClientMemberID(values.client_id)
+     const client_id = clientData?.id ? clientData.id : await resolveClientId(values.client_id);
+
      if (
           !values ||
           values.location_id.trim() === '' ||
@@ -36,7 +41,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
           values.city.trim() === '' ||
           values.country.trim() === '' ||
           values.street_number.trim() === '' ||
-          values.client_id.trim() === '') {
+          client_id.trim() === '') {
           await logServerAction({
                action: 'insertLocationAction',
                duration_ms: Date.now() - startTime,
@@ -117,7 +122,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
                .from('tblBuildingLocations')
                .insert(
                     {
-                         client_id: values.client_id,
+                         client_id,
                          location_id: values.location_id,
                          street_address: values.street_address,
                          city: values.city,
@@ -131,6 +136,7 @@ export const insertLocationAction = async (values: BuildingLocation): Promise<{ 
                     }
                )
                .select('*');
+          console.log('error', error);
 
           if (error) {
                await logServerAction({
