@@ -5,7 +5,6 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import Locations from './locations';
-import { readClientFromClientMemberID } from 'src/app/actions/client/client-members';
 
 const Page = async () => {
 
@@ -23,11 +22,11 @@ const Page = async () => {
     const { data } = await getAllAddedLocationsByClientId(client.id);
     locations = data ?? [];
   } else if (clientMember) {
-    const { success, data } = await readClientFromClientMemberID(clientMember.id);
-    const { success: success2, data: data2 } = await getAllAddedLocationsByClientId(typeof data === 'string' ? data : data?.id!);
-    locations = success2 ? data2! : [];
+    const { success, data } = await getAllAddedLocationsByClientId(clientMember.id);
+    locations = success && data ? data : [];
   } else if (tenant) {
     locations = [];
+    redirect('/dashboard/products');
   }
 
   return (

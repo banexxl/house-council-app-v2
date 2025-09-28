@@ -6,7 +6,7 @@ import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment
 import { ApartmentCreateForm } from "./new-apartment";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
-import { readClientFromClientMemberID } from "src/app/actions/client/client-members";
+import { readClientOrClientIDFromClientMemberID } from "src/app/actions/client/client-members";
 
 export default async function Page({ params }: {
   params: Promise<{ apartmentid: string }>
@@ -38,7 +38,7 @@ export default async function Page({ params }: {
     apartment = apartmentRes.success ? apartmentRes.data : undefined;
   } else if (clientMember) {
     // For client, fetch only their buildings and the apartment by id
-    const { success, data } = await readClientFromClientMemberID(clientMember.id);
+    const { success, data } = await readClientOrClientIDFromClientMemberID(clientMember.id);
     if (!success || !data) {
       redirect('/dashboard/apartments');
     }

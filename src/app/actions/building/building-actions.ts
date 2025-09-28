@@ -2,7 +2,7 @@
 
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { resolveClientId } from "../client/client-members";
+import { readClientOrClientIDFromClientMemberID } from "../client/client-members";
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
@@ -90,7 +90,8 @@ export async function getAllBuildingsFromClient(
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const resolvedClientId = await resolveClientId(client_id);
+     const { data: resolvedClientData } = await readClientOrClientIDFromClientMemberID(client_id);
+     const resolvedClientId = typeof resolvedClientData === 'string' ? resolvedClientData : resolvedClientData?.id || client_id;
      const { data: buildings, error } = await supabase
           .from("tblBuildings")
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)

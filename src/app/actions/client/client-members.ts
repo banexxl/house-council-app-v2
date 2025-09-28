@@ -158,40 +158,36 @@ export const resetClientMemberPassword = async (
 
 // Unified resolver: accept an id that may be either a client member id or already a client id.
 // Returns the Client row when found, otherwise returns the original id string as data.
-export const readClientFromClientMemberID = async (
-     possibleId: string
+export const readClientOrClientIDFromClientMemberID = async (
+     client_id: string
 ): Promise<{ success: boolean; data?: Client | string; error?: string }> => {
-     if (!possibleId || possibleId.trim() === '') {
+
+     if (!client_id || client_id.trim() === '') {
           return { success: false, error: 'Invalid client/member ID' };
      }
+
      const supabase = await useServerSideSupabaseAnonClient();
-
-     // Attempt to treat id as a client member id first
-     const { data: memberRow } = await supabase
-          .from('tblClientMembers')
-          .select('client_id')
-          .eq('id', possibleId)
-          .single();
-
-     const candidateClientId = memberRow?.client_id || possibleId; // fall back to original (assume it's already client id)
 
      const { data: clientData, error: clientError } = await supabase
           .from('tblClients')
           .select('*')
-          .eq('id', candidateClientId)
+          .eq('id', client_id)
           .single();
 
-     if (clientError || !clientData) {
-          // If we cannot find a client row, just return original id string.
-          return { success: true, data: possibleId };
+     if (!clientError && clientData) {
+          // If we found the client_id just return it
+          return { success: true, data: clientData };
+     }
+     // Attempt to treat id as a client member id second
+     const { data: memberRow } = await supabase
+          .from('tblClientMembers')
+          .select('client_id')
+          .eq('id', client_id)
+          .single();
+
+     if (!memberRow?.client_id) {
+          return { success: false, error: 'Client member nor client not found' };
      }
 
-     return { success: true, data: clientData };
-};
-
-// Convenience helper returning only a canonical client_id string
-export const resolveClientId = async (possibleId: string): Promise<string> => {
-     const { data } = await readClientFromClientMemberID(possibleId);
-     if (typeof data === 'string') return data; // original id if not resolved to Client row
-     return data?.id ?? possibleId;
+     return { success: true, data: memberRow.client_id };
 };
