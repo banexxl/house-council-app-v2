@@ -8,9 +8,9 @@ import { logout } from 'src/app/auth/actions';
 
 export default async function TenantsPage() {
 
-  const { client, tenant, admin } = await getViewer();
+  const { client, clientMember, tenant, admin } = await getViewer();
 
-  if (!client && !tenant && !admin) {
+  if (!client && !clientMember && !tenant && !admin) {
     logout();
   }
 

@@ -2,34 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
-import { ClientMember } from "src/types/client";
-
-export const createOrUpdateClientMember = async (member: ClientMember): Promise<{ createOrUpdateClientMemberSuccess: boolean; createdOrUpdatedMember?: ClientMember; createOrUpdateClientMemberError?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-     try {
-          let data, error;
-          if (member.id) {
-               // Update existing member
-               ({ data, error } = await supabase
-                    .from('tblClientMembers')
-                    .update(member)
-                    .eq('id', member.id)
-                    .select()
-                    .single());
-          } else {
-               // Create new member
-               ({ data, error } = await supabase
-                    .from('tblClientMembers')
-                    .insert(member)
-                    .select()
-                    .single());
-          }
-          if (error) throw error;
-          return { createOrUpdateClientMemberSuccess: true, createdOrUpdatedMember: data };
-     } catch (error: any) {
-          return { createOrUpdateClientMemberSuccess: false, createOrUpdateClientMemberError: error.message };
-     }
-};
+import { Client, ClientMember } from "src/types/client";
 
 export const readClientMember = async (id: string): Promise<{ readClientMemberSuccess: boolean; readClientMemberData?: ClientMember; readClientMemberError?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
@@ -181,4 +154,31 @@ export const resetClientMemberPassword = async (
      if (updateError) return { success: false, error: updateError.message };
 
      return { success: true };
+};
+
+export const readClientFromClientMemberID = async (clientMemberId: string): Promise<{ success: boolean; data?: Client; error?: string }> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase
+          .from('tblClientMembers')
+          .select('client_id')
+          .eq('id', clientMemberId)
+          .single();
+
+     if (error) {
+          return { success: false, error: error.message };
+     }
+
+     const { data: clientData, error: clientError } = await supabase
+          .from('tblClients')
+          .select('*')
+          .eq('id', data.client_id)
+          .single();
+
+     if (clientError) {
+          return { success: false, error: clientError.message };
+     }
+
+     return { success: true, data: clientData };
 };

@@ -10,8 +10,8 @@ import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 
 export default async function TableEditorPage() {
 
-     const { client, tenant, admin } = await getViewer();
-     if (!client && !tenant && !admin) {
+     const { client, clientMember, tenant, admin } = await getViewer();
+     if (!client && !clientMember && !tenant && !admin) {
           logout()
      };
 
@@ -19,7 +19,7 @@ export default async function TableEditorPage() {
           redirect('/dashboard/products');
      }
 
-     if (client) {
+     if (client || clientMember) {
           redirect('/dashboard/account');
      }
 

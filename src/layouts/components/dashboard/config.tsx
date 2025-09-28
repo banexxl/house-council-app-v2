@@ -527,9 +527,15 @@ export const useSections = (role: 'client' | 'clientMember' | 'tenant' | 'admin'
     ];
 
     let filtered = allSections;
-    if (role === 'client' || role === 'clientMember') {
+    if (role === 'client') {
       // Exclude admin and tenant sections
       filtered = allSections.slice(1, -1);
+    } else if (role === 'clientMember') {
+      // Exclude admin and tenant sections and account
+      filtered = allSections.slice(1, -1).map(section => ({
+        ...section,
+        items: section.items.filter(item => item.title !== t(tokens.nav.account))
+      }));
     } else if (role === 'tenant') {
       filtered = allSections.slice(-1); // Only show tenant section
     } // if admin, show all

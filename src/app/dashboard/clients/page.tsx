@@ -12,8 +12,8 @@ import { redirect } from 'next/navigation';
 
 const Page = async () => {
 
-  const { client, tenant, admin } = await getViewer();
-  if (!client && !tenant && !admin) {
+  const { client, tenant, admin, clientMember } = await getViewer();
+  if (!client && !tenant && !admin && !clientMember) {
     logout()
   };
 

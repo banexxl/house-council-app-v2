@@ -6,12 +6,13 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { Apartment } from "src/types/apartment";
+import { readClientFromClientMemberID } from "src/app/actions/client/client-members";
 
 export default async function Page() {
 
   let apartments: Apartment[] = [];
-  const { client, tenant, admin } = await getViewer();
-  if (!client && !tenant && !admin) {
+  const { client, clientMember, tenant, admin } = await getViewer();
+  if (!client && !tenant && !admin && !clientMember) {
     logout();
   }
 
@@ -24,6 +25,12 @@ export default async function Page() {
     const { success, data } = await getAllApartmentsFromClientsBuildings(client.id);
     if (success && data) {
       apartments = data.apartments;
+    }
+  } else if (clientMember) {
+    const { success, data } = await readClientFromClientMemberID(clientMember.id);
+    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(data!.id);
+    if (success2 && data2) {
+      apartments = data2.apartments;
     }
   } else if (tenant) {
     redirect('/dashboard/products');

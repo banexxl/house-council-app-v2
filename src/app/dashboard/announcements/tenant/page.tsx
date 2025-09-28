@@ -8,9 +8,9 @@ import { logout } from 'src/app/auth/actions';
 // Server component: lists published announcements for the tenant's building(s)
 export default async function TenantAnnouncementsPage() {
 
-     const { tenant, client, clientMember } = await getViewer();
+     const { admin, tenant, client, clientMember } = await getViewer();
 
-     if (!client && !tenant && !clientMember) {
+     if (!admin && !client && !tenant && !clientMember) {
           logout();
      }
 

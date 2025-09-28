@@ -22,11 +22,15 @@ const Page = async () => {
   let allTeamMembers: ClientMember[] | null = null;
   let allLogsFromEmail: ServerLog[] | null = null;
 
-  const { client, tenant, admin, userData } = await getViewer();
+  const { client, tenant, admin, clientMember, userData } = await getViewer();
 
-  if (!client && !tenant && !admin) {
+  if (!client && !tenant && !admin && !clientMember) {
     logout();
     return null;
+  }
+
+  if (clientMember) {
+    redirect('/dashboard');
   }
 
   if (client) {

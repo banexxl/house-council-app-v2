@@ -16,13 +16,13 @@ export default async function Page({ params }: {
 
   const { clientid } = await params
 
-  const { client, tenant, admin, userData } = await getViewer();
+  const { client, clientMember, tenant, admin, userData } = await getViewer();
 
   let clientSubscription: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
   let availableSubscriptions: SubscriptionPlan[] = []
 
   // Only admin can access this page
-  if (!admin || tenant || client) {
+  if (!admin || tenant || client || clientMember) {
     logout()
   };
 

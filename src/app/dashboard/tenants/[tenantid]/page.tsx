@@ -14,8 +14,8 @@ export default async function Page({ params }: {
   params: Promise<{ tenantid: string }>
 }) {
 
-  const { client, tenant, admin } = await getViewer();
-  if (!client && !tenant && !admin) {
+  const { client, clientMember, tenant, admin } = await getViewer();
+  if (!client && !clientMember && !tenant && !admin) {
     logout();
   }
 

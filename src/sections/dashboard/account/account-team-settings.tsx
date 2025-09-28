@@ -166,7 +166,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                       disabled={isSubmitting}
                       sx={{ mb: 4, width: isMobile ? '100%' : '250px', height: '50px' }}
                     >
-                      {t('account.team.sendInvite')}
+                      {t('common.btnAdd')}
                     </Button>
                   </Box>
                 </Grid>

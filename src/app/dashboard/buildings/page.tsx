@@ -11,8 +11,8 @@ import { Building } from "src/types/building";
 export default async function Page() {
 
   let buildings: Building[] = [];
-  const { client, tenant, admin } = await getViewer();
-  if (!client && !tenant && !admin) {
+  const { client, clientMember, tenant, admin } = await getViewer();
+  if (!client && !clientMember && !tenant && !admin) {
     logout();
   }
 

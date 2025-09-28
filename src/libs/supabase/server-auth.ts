@@ -29,7 +29,10 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
 
      if (userErr || !user) {
           return {
-               client: null, clientMember: null, tenant: null, admin: null,
+               client: null,
+               clientMember: null,
+               tenant: null,
+               admin: null,
                userData: null,
                error: userErr?.message || 'Failed to authenticate user',
           };
