@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { resolveClientId } from "../_shared/resolve-client-id";
+import { resolveClientId } from "../client/client-members";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";

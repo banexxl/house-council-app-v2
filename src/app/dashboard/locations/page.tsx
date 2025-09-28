@@ -24,7 +24,7 @@ const Page = async () => {
     locations = data ?? [];
   } else if (clientMember) {
     const { success, data } = await readClientFromClientMemberID(clientMember.id);
-    const { success: success2, data: data2 } = await getAllAddedLocationsByClientId(data!.id);
+    const { success: success2, data: data2 } = await getAllAddedLocationsByClientId(typeof data === 'string' ? data : data?.id!);
     locations = success2 ? data2! : [];
   } else if (tenant) {
     locations = [];

@@ -25,7 +25,7 @@ export default async function Page() {
     buildings = success ? data! : [];
   } else if (clientMember) {
     const { success, data } = await readClientFromClientMemberID(clientMember.id);
-    const { success: success2, data: data2 } = await getAllBuildingsFromClient(data!.id);
+    const { success: success2, data: data2 } = await getAllBuildingsFromClient(typeof data === 'string' ? data : data?.id!);
     buildings = success2 ? data2! : [];
   } else if (tenant) {
     buildings = [];

@@ -19,6 +19,7 @@ interface MarkerProps {
 }
 
 const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, location_id, map }) => {
+
      const { t } = useTranslation();
      const markerEl = useRef<HTMLDivElement>(null);
      const popupEl = useRef<HTMLDivElement>(null);

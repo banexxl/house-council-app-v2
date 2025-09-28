@@ -28,7 +28,7 @@ export default async function Page() {
     }
   } else if (clientMember) {
     const { success, data } = await readClientFromClientMemberID(clientMember.id);
-    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(data!.id);
+    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(typeof data === 'string' ? data : data?.id!);
     if (success2 && data2) {
       apartments = data2.apartments;
     }

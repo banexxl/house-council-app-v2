@@ -79,7 +79,6 @@ export const updateSubscriptionPlan = async (
           .eq("id", subscriptionPlan.id)
           .select()
           .single();
-     console.log(data, error);
 
      if (data) {
           await logServerAction({

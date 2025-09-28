@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { getAllAddedLocationsByClientId } from 'src/app/actions/location/location-services';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
@@ -18,15 +17,16 @@ import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 import { BuildingLocation } from 'src/types/location';
 
-type NewLoctionProps = {
+type NewLocationProps = {
      mapBoxAccessToken?: string;
+     clientLocations: BuildingLocation[];
      userData?: UserDataCombined;
 }
 
-const NewLocation = ({ mapBoxAccessToken, userData }: NewLoctionProps) => {
+const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocationProps) => {
 
      const { t } = useTranslation();
-     const [locationsData, setLocationsData] = useState<BuildingLocation[]>([]);
+     const [locationsData, setLocationsData] = useState<BuildingLocation[]>(clientLocations);
      const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null);
 
 
@@ -47,24 +47,19 @@ const NewLocation = ({ mapBoxAccessToken, userData }: NewLoctionProps) => {
                toast.success(t('locations.geoLocationAvailable'));
                didSet = true;
           }
-          getAllAddedLocationsByClientId(userData?.client?.id!).then((res) => {
-               if (res.success && res.data) {
-                    setLocationsData(res.data.length > 0 ? res.data : []);
-                    if (!didSet && res.data.length > 0) {
-                         const firstLoc = res.data[0];
-                         if (firstLoc.latitude && firstLoc.longitude) {
-                              setClientCoords({
-                                   latitude: firstLoc.latitude,
-                                   longitude: firstLoc.longitude,
-                              });
-                         }
+          if (clientLocations && clientLocations.length > 0) {
+               setLocationsData(clientLocations);
+               if (!didSet) {
+                    const firstLoc = clientLocations[0];
+                    if (firstLoc.latitude && firstLoc.longitude) {
+                         setClientCoords({ latitude: firstLoc.latitude, longitude: firstLoc.longitude });
                     }
                }
-          });
+          }
           if (!coords && !isGeolocationEnabled) {
                toast.error(t('locations.geoLocationNotAvailable'));
           }
-     }, [userData?.client?.id, coords, isGeolocationEnabled, t]);
+     }, [clientLocations, coords, isGeolocationEnabled, t]);
 
      return (
           <Box

@@ -16,8 +16,6 @@ const publicBaseUrl = process.env.PUBLIC_BASE_URL!; // e.g. https://your-domain.
  * We'll read the raw text, turn into URLSearchParams, and validate with twilio.validateRequest.
  */
 export async function POST(req: Request) {
-     console.log('req', req);
-
      try {
           const twilioSignature = req.headers.get('x-twilio-signature');
           if (!twilioSignature) {
@@ -80,7 +78,9 @@ export async function POST(req: Request) {
                     // queued/sent/etc.
                     break;
           }
-          console.log('[twilio-status] callback', { messageSid, messageStatus, to, from, errorCode, errorMessage });
+          if (process.env.NODE_ENV === 'development') {
+               console.log('[twilio-status] callback', { messageSid, messageStatus, to, from, errorCode, errorMessage });
+          }
           return NextResponse.json({ ok: true });
      } catch (err: any) {
           console.error('[twilio-status] error:', err?.message ?? err);

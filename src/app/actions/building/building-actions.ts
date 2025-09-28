@@ -2,7 +2,7 @@
 
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { resolveClientId } from "../_shared/resolve-client-id";
+import { resolveClientId } from "../client/client-members";
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";

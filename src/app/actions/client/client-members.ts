@@ -156,29 +156,42 @@ export const resetClientMemberPassword = async (
      return { success: true };
 };
 
-export const readClientFromClientMemberID = async (clientMemberId: string): Promise<{ success: boolean; data?: Client; error?: string }> => {
-
+// Unified resolver: accept an id that may be either a client member id or already a client id.
+// Returns the Client row when found, otherwise returns the original id string as data.
+export const readClientFromClientMemberID = async (
+     possibleId: string
+): Promise<{ success: boolean; data?: Client | string; error?: string }> => {
+     if (!possibleId || possibleId.trim() === '') {
+          return { success: false, error: 'Invalid client/member ID' };
+     }
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data, error } = await supabase
+     // Attempt to treat id as a client member id first
+     const { data: memberRow } = await supabase
           .from('tblClientMembers')
           .select('client_id')
-          .eq('id', clientMemberId)
+          .eq('id', possibleId)
           .single();
 
-     if (error) {
-          return { success: false, error: error.message };
-     }
+     const candidateClientId = memberRow?.client_id || possibleId; // fall back to original (assume it's already client id)
 
      const { data: clientData, error: clientError } = await supabase
           .from('tblClients')
           .select('*')
-          .eq('id', data.client_id)
+          .eq('id', candidateClientId)
           .single();
 
-     if (clientError) {
-          return { success: false, error: clientError.message };
+     if (clientError || !clientData) {
+          // If we cannot find a client row, just return original id string.
+          return { success: true, data: possibleId };
      }
 
      return { success: true, data: clientData };
+};
+
+// Convenience helper returning only a canonical client_id string
+export const resolveClientId = async (possibleId: string): Promise<string> => {
+     const { data } = await readClientFromClientMemberID(possibleId);
+     if (typeof data === 'string') return data; // original id if not resolved to Client row
+     return data?.id ?? possibleId;
 };
