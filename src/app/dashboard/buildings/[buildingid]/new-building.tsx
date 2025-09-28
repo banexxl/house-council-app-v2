@@ -60,7 +60,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           // ✏️ EDIT MODE
           const { success, error } = await updateBuilding(buildingData.id, {
             ...values,
-            client_id: userData.client?.id!
+            client_id: userData.client?.id! ? userData.client?.id! : userData.clientMember?.client_id!
           });
 
           if (!success) {
@@ -75,7 +75,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           // ➕ CREATE MODE
           const { success, data, error } = await createBuilding({
             ...values,
-            client_id: userData.client?.id!
+            client_id: userData.client?.id ? userData.client.id : userData.clientMember?.client_id!
           });
 
           if (!success) {

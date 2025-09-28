@@ -13,7 +13,8 @@ export default async function Page({ params }: {
 }) {
   const { apartmentid } = await params;
   const { client, clientMember, tenant, admin, userData, error } = await getViewer();
-  if (!client && !tenant && !admin) {
+  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  if (!client && !clientMember && !tenant && !admin) {
     logout();
   }
 
@@ -31,14 +32,14 @@ export default async function Page({ params }: {
   } else if (client) {
     // For client, fetch only their buildings and the apartment by id
     const [buildingsRes, apartmentRes] = await Promise.all([
-      getAllBuildingsFromClient(client.id),
+      getAllBuildingsFromClient(client_id!),
       apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
     ]);
     buildings = buildingsRes.success ? buildingsRes.data : undefined;
     apartment = apartmentRes.success ? apartmentRes.data : undefined;
   } else if (clientMember) {
     // For client, fetch only their buildings and the apartment by id
-    const { success, data } = await readClientOrClientIDFromClientMemberID(clientMember.id);
+    const { success, data } = await readClientOrClientIDFromClientMemberID(client_id!);
     if (!success || !data) {
       redirect('/dashboard/apartments');
     }

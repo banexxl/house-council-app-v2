@@ -12,6 +12,7 @@ export default async function Page() {
 
   let apartments: Apartment[] = [];
   const { client, clientMember, tenant, admin } = await getViewer();
+  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
   if (!client && !tenant && !admin && !clientMember) {
     logout();
   }
@@ -22,13 +23,13 @@ export default async function Page() {
       apartments = data;
     }
   } else if (client) {
-    const { success, data } = await getAllApartmentsFromClientsBuildings(client.id);
+    const { success, data } = await getAllApartmentsFromClientsBuildings(client_id!);
     if (success && data) {
       apartments = data.apartments;
     }
   } else if (clientMember) {
-    const { success, data } = await readClientOrClientIDFromClientMemberID(clientMember.id);
-    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(typeof data === 'string' ? data : data?.id!);
+    const { success, data } = await readClientOrClientIDFromClientMemberID(client_id!);
+    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(client_id!);
     if (success2 && data2) {
       apartments = data2.apartments;
     }

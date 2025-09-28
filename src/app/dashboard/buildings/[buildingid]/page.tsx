@@ -7,7 +7,6 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 
-
 export default async function Page({ params }: {
   params: Promise<{ buildingid: string }>
 }) {
@@ -15,7 +14,8 @@ export default async function Page({ params }: {
   const { buildingid } = await params
 
   const { admin, client, tenant, clientMember, userData, error } = await getViewer();
-  if (!admin && !client && !tenant) {
+  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  if (!admin && !client && !clientMember && !tenant) {
     logout()
   }
 
@@ -25,7 +25,7 @@ export default async function Page({ params }: {
 
   const [buildingData, locationData] = await Promise.all([
     getBuildingById(buildingid as string),
-    getAllNotOcupiedLocationsAddedByClient(client?.id!)
+    getAllNotOcupiedLocationsAddedByClient(client_id!)
   ]);
 
   return (
