@@ -44,7 +44,7 @@ export default async function Page({ params }: {
       redirect('/dashboard/apartments');
     }
     const [buildingsRes, apartmentRes] = await Promise.all([
-      getAllBuildingsFromClient(typeof data === 'string' ? data : data?.id!),
+      getAllBuildingsFromClient(client_id!),
       apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
     ]);
     buildings = buildingsRes.success ? buildingsRes.data : undefined;

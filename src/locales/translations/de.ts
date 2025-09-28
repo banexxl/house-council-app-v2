@@ -686,6 +686,9 @@ export const de = {
   //#region Errors Apartment
   [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'Zimmernummer muss alphanumerisch sein',
   [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'Zimmernummer muss eindeutig sein',
+  [tokens.errors.apartment.apartmentFloorTooHigh]: 'Wohnungsetage überschreitet Gebäudehöhe',
+  [tokens.errors.apartment.apartmentRoomCountTooHigh]: 'Zimmeranzahl ist zu hoch',
+  [tokens.errors.apartment.apartmentInvalidImageUrl]: 'Wohnungsbild-URL muss gültig sein',
   //#endregion
   // Announcement Categories
   [tokens.announcements.categories.community_general]: 'Gemeinschaft & Allgemeines',

@@ -604,6 +604,9 @@ export const en = {
   //#region Errors Apartment
   [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'Apartment number must be alphanumeric',
   [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'Apartment number must be unique',
+  [tokens.errors.apartment.apartmentFloorTooHigh]: 'Apartment floor exceeds building height',
+  [tokens.errors.apartment.apartmentRoomCountTooHigh]: 'Apartment room count is too high',
+  [tokens.errors.apartment.apartmentInvalidImageUrl]: 'Apartment image URL must be a valid URL',
   //#endregion
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Delete Warning',

@@ -407,10 +407,7 @@ export const tokens = {
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
     tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected',
     loadingLocation: 'locations.loadingLocation',
-    // Apartment validation
-    apartmentFloorTooHigh: 'apartments.errors.apartmentFloorTooHigh',
-    apartmentRoomCountTooHigh: 'apartments.errors.apartmentRoomCountTooHigh',
-    apartmentInvalidImageUrl: 'apartments.errors.apartmentInvalidImageUrl',
+    // Apartment validation (moved to errors.apartment namespace below)
     required: 'common.required',
   },
   clients: {
@@ -824,6 +821,9 @@ export const tokens = {
     apartment: {
       apartmentNumberMustBeAlphaNumeric: 'errors.apartment.apartmentNumberMustBeAlphaNumeric',
       apartmentNumberMustBeUnique: 'errors.apartment.apartmentNumberMustBeUnique',
+      apartmentFloorTooHigh: 'errors.apartment.apartmentFloorTooHigh',
+      apartmentRoomCountTooHigh: 'errors.apartment.apartmentRoomCountTooHigh',
+      apartmentInvalidImageUrl: 'errors.apartment.apartmentInvalidImageUrl',
     },
     client: {
       clientPaymentMethodError: 'errors.client.clientPaymentMethodError',
