@@ -9,7 +9,7 @@ export const runtime = 'nodejs';          // ensure Node (not Edge)
 export const dynamic = 'force-dynamic';   // avoid caching for cron
 
 function isAuthorized(req: NextRequest): boolean {
-     const expected = process.env.API_CRON_SECRET;
+     const expected = process.env.MY_CRON_API_KEY;
      const got = req.headers.get('x-cron-secret');
      return !!expected && got === expected;
 }
