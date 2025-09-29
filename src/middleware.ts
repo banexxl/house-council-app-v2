@@ -18,6 +18,7 @@ export const config = {
           '/auth/(.*)',
           '/dashboard/(.*)',
           '/api/check-subscription/(.*)',
+          '/api/location-check/(.*)',
      ],
 }
 
