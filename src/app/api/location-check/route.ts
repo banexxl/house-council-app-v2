@@ -1,8 +1,22 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
-export async function POST() {
+export const runtime = 'nodejs';          // ensure Node (not Edge)
+export const dynamic = 'force-dynamic';   // avoid caching for cron
+
+function isAuthorized(req: NextRequest): boolean {
+     const auth = req.headers.get('authorization') || '';
+     const [scheme, token] = auth.split(' ');
+     return scheme?.toLowerCase() === 'bearer' && !!token && token === process.env.API_CRON_KEY;
+}
+
+export async function POST(req: NextRequest) {
+
+     // 1) Bearer auth for cron
+     if (!isAuthorized(req)) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+     }
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
 

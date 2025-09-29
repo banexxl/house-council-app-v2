@@ -14,9 +14,10 @@ export const config = {
           * Feel free to modify this pattern to include more paths.
      */
      matcher: [
-          '/((?!_next/|favicon.ico|robots.txt|sitemap.xml|assets/).*)',
+          '/((?!_next/|favicon.ico|robots.txt|sitemap.xml|assets/|api/).*)',
           '/auth/(.*)',
           '/dashboard/(.*)',
+          '/api/check-subscription/(.*)',
      ],
 }
 
