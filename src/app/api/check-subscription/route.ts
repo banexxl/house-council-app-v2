@@ -10,18 +10,12 @@ export const dynamic = 'force-dynamic';   // avoid caching for cron
 
 function isAuthorized(req: NextRequest): boolean {
      const expected = process.env.MY_CRON_API_KEY;
-     console.log('expected', expected);
-
      const got = req.headers.get('X-Job-Secret');
-     console.log('got', got);
-
      return !!expected && got === expected;
 }
 
 export async function POST(req: NextRequest) {
      const authorized = isAuthorized(req);
-     console.log('authorized', authorized);
-
      if (!authorized) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
      }
