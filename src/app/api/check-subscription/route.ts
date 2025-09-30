@@ -1,4 +1,4 @@
-// app/api/subscription/check-past_due/route.ts
+// app/api/subscription/check-subscription/route.ts
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { sendSubscriptionEndingNotificationToSupport, sendTrialEndingEmailToClient } from 'src/libs/email/node-mailer';
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';   // avoid caching for cron
 
 function isAuthorized(req: NextRequest): boolean {
      const expected = process.env.MY_CRON_API_KEY;
-     const got = req.headers.get('Authorization');
+     const got = req.headers.get('X-Job-Secret');
      return !!expected && got === expected;
 }
 
