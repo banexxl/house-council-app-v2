@@ -5,7 +5,7 @@ import { sendSubscriptionEndingNotificationToSupport, sendTrialEndingEmailToClie
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 
-export const runtime = 'nodejs';          // ensure Node (not Edge)
+export const runtime = 'nodejs'          // ensure Node (not Edge)
 export const dynamic = 'force-dynamic';   // avoid caching for cron
 
 function isAuthorized(req: NextRequest): boolean {
