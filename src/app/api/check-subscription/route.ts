@@ -19,9 +19,10 @@ function isAuthorized(req: NextRequest): boolean {
 }
 
 export async function POST(req: NextRequest) {
-     console.log('req', req.headers);
+     const authorized = isAuthorized(req);
+     console.log('authorized', authorized);
 
-     if (!isAuthorized(req)) {
+     if (!authorized) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
      }
 
