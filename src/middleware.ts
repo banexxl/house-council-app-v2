@@ -17,8 +17,6 @@ export const config = {
           '/((?!_next/|favicon.ico|robots.txt|sitemap.xml|assets/|api/).*)',
           '/auth/(.*)',
           '/dashboard/(.*)',
-          '/api/check-subscription/(.*)',
-          '/api/location-check/(.*)',
      ],
 }
 
@@ -31,6 +29,8 @@ const PUBLIC_ROUTES = [
      '/auth/error',
      '/auth/callback',
      '/auth/reset-password',
+     '/api/check-subscription',
+     '/api/location-check',
 ] as const
 
 function getSupabaseToken(req: NextRequest): string | null {
