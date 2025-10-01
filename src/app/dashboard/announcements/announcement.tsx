@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
      Box,
      Stack,
@@ -94,6 +94,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     pinned: values.pinned,
                     schedule_enabled: values.schedule_enabled,
                     scheduled_at: values.schedule_enabled ? values.scheduled_at : null,
+                    scheduled_timezone: values.schedule_enabled ? values.scheduled_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone : null,
                     status: values.status,
                };
 
@@ -133,6 +134,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               schedule_enabled: !!updated.scheduled_at,
                               created_at: updated.created_at,
                               scheduled_at: updated.scheduled_at || null,
+                              scheduled_timezone: (updated as any).scheduled_timezone || null,
                               status: (updated as any).status ?? ((updated as any).published_at ? 'published' : 'draft'),
                               user_id: updated.user_id,
                               images: (updated.images && updated.images.length ? updated.images : []),
@@ -146,7 +148,17 @@ export default function Announcements({ client, announcements, buildings }: Anno
      });
 
      const isDraft = formik.values.status === 'draft';
+     const hasErrors = Object.keys(formik.errors).length > 0;
+     const canSaveDraft = isDraft && formik.dirty && !hasErrors;
      const inputsDisabled = uploadingBusy || !isDraft;
+
+     // Auto-fill timezone if scheduling is enabled and timezone not yet captured
+     useEffect(() => {
+          if (formik.values.schedule_enabled && !formik.values.scheduled_timezone) {
+               const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+               formik.setFieldValue('scheduled_timezone', tz, false);
+          }
+     }, [formik.values.schedule_enabled, formik.values.scheduled_timezone]);
 
      // Derive current images/documents from formik for immediate reflection of optimistic updates;
      // fall back to editingEntity data if formik arrays are empty but entity has media.
@@ -204,27 +216,28 @@ export default function Announcements({ client, announcements, buildings }: Anno
           formik.handleSubmit();
      };
 
-     const hydrateScheduledAt = (iso: string | null | undefined) => {
-          if (!iso) {
+     const hydrateScheduledAt = (localTs: string | null | undefined) => {
+          if (!localTs) {
                setScheduledDate(null);
                setScheduledTime(null);
                return;
           }
-          const d = dayjs(iso);
+          // Accept legacy ISO or new naive local (no Z)
+          const d = dayjs(localTs);
           if (!d.isValid()) return;
           setScheduledDate(d.startOf('day'));
           setScheduledTime(d);
      };
 
-     const composeScheduledISO = (dateVal: Dayjs | null, timeVal: Dayjs | null) => {
+     const composeScheduledLocal = (dateVal: Dayjs | null, timeVal: Dayjs | null) => {
           if (!dateVal || !timeVal) return null;
-          // Combine date (Y-M-D) with time (H:m:s) in local timezone then to ISO
           const combined = dateVal
                .hour(timeVal.hour())
                .minute(timeVal.minute())
                .second(0)
                .millisecond(0);
-          return combined.toISOString();
+          // Return naive local string without timezone designator
+          return combined.format('YYYY-MM-DDTHH:mm:ss');
      };
 
      const handleEdit = async (id: string) => {
@@ -247,6 +260,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     schedule_enabled: !!a.scheduled_at,
                     created_at: a.created_at,
                     scheduled_at: a.scheduled_at || null,
+                    scheduled_timezone: (a as any).scheduled_timezone || null,
                     status: a.status ?? ((a as any).published_at ? 'published' : 'draft'),
                     user_id: a.user_id,
                     images: (a.images && a.images.length ? a.images : []),
@@ -257,9 +271,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                a.scheduled_at
                     ? (typeof a.scheduled_at === 'string'
                          ? a.scheduled_at
-                         : (a.scheduled_at instanceof Date
-                              ? a.scheduled_at.toISOString()
-                              : null))
+                         : ((a as any).scheduled_at instanceof Date ? dayjs((a as any).scheduled_at).format('YYYY-MM-DDTHH:mm:ss') : null))
                     : null
           );
      };
@@ -631,6 +643,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  setScheduledDate(null);
                                                                  setScheduledTime(null);
                                                                  formik.setFieldValue('scheduled_at', null);
+                                                                 formik.setFieldValue('scheduled_timezone', null);
                                                             } else if (!scheduledDate) {
                                                                  // initialize to now rounded to next 15 min
                                                                  const now = dayjs();
@@ -638,7 +651,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  const rounded = minute % 15 === 0 ? now : now.add(15 - (minute % 15), 'minute');
                                                                  setScheduledDate(rounded.startOf('day'));
                                                                  setScheduledTime(rounded);
-                                                                 formik.setFieldValue('scheduled_at', rounded.toISOString());
+                                                                 formik.setFieldValue('scheduled_at', rounded.format('YYYY-MM-DDTHH:mm:ss'));
+                                                                 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+                                                                 formik.setFieldValue('scheduled_timezone', tz);
                                                             }
                                                        }} />} label={t(tokens.announcements.form.schedule)} />
 
@@ -650,8 +665,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                            value={scheduledDate}
                                                                            onChange={(newDate) => {
                                                                                 setScheduledDate(newDate);
-                                                                                const iso = composeScheduledISO(newDate, scheduledTime);
-                                                                                formik.setFieldValue('scheduled_at', iso);
+                                                                                const local = composeScheduledLocal(newDate, scheduledTime);
+                                                                                formik.setFieldValue('scheduled_at', local);
                                                                            }}
                                                                            disablePast
                                                                            slotProps={{
@@ -667,8 +682,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                            value={scheduledTime}
                                                                            onChange={(newTime) => {
                                                                                 setScheduledTime(newTime);
-                                                                                const iso = composeScheduledISO(scheduledDate, newTime);
-                                                                                formik.setFieldValue('scheduled_at', iso);
+                                                                                const local = composeScheduledLocal(scheduledDate, newTime);
+                                                                                formik.setFieldValue('scheduled_at', local);
                                                                            }}
                                                                            minutesStep={5}
                                                                            slotProps={{
@@ -697,15 +712,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                              <Button
                                                   variant="outlined"
                                                   onClick={handleSave}
-                                                  disabled={
-                                                       !isDraft ||
-                                                       !formik.dirty ||
-                                                       !formik.values.title.trim() ||
-                                                       !formik.values.message.trim() ||
-                                                       !formik.values.category ||
-                                                       (!!ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category && c.subcategories.length > 0) && !formik.values.subcategory) ||
-                                                       Object.keys(formik.errors).length > 0
-                                                  }
+                                                  disabled={!canSaveDraft}
                                                   loading={formik.isSubmitting}
                                                   sx={{ width: { xs: '100%', sm: 'auto' } }}
                                              >

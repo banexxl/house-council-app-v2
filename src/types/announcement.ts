@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import dayjs from 'dayjs';
 
 export type AnnouncementStatus = 'draft' | 'published';
 
@@ -145,7 +146,10 @@ export interface Announcement {
      pinned: boolean;
      archived?: boolean;
      schedule_enabled: boolean;
-     scheduled_at: Date | null;
+     // Naive local timestamp (no timezone / Z) in format YYYY-MM-DDTHH:mm:ss when scheduled
+     scheduled_at: string | null;
+     // IANA timezone identifier captured from the user's browser when scheduling
+     scheduled_timezone?: string | null;
      created_at: Date;
      updated_at?: Date;
      status: AnnouncementStatus;
@@ -166,6 +170,7 @@ export const announcementInitialValues: Announcement = {
      schedule_enabled: false,
      created_at: new Date(),
      scheduled_at: null,
+     scheduled_timezone: null,
      status: 'draft',
      images: [],
      documents: [],
@@ -200,9 +205,28 @@ export const announcementValidationSchema = Yup.object({
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),
      pinned: Yup.boolean().default(false),
      schedule_enabled: Yup.boolean().default(false),
-     scheduled_at: Yup.date().nullable().when('schedule_enabled', {
+     scheduled_timezone: Yup.string().nullable().when('schedule_enabled', {
           is: true,
-          then: s => s.typeError('Invalid date').required('Schedule time required'),
+          then: s => s.required('Timezone required'),
+          otherwise: s => s.nullable()
+     }),
+     scheduled_at: Yup.string().nullable().when(['schedule_enabled', 'scheduled_timezone'], {
+          is: (enabled: boolean) => enabled,
+          then: s => s
+               .required('Schedule time required')
+               .test('valid-format', 'Invalid date', (value) => {
+                    if (!value) return false;
+                    // Accept both naive local (YYYY-MM-DDTHH:mm:ss) and ISO (legacy) for backward compatibility
+                    const asDay = dayjs(value);
+                    if (asDay.isValid()) return true;
+                    return false;
+               })
+               .test('future', 'Schedule must be in the future', (value) => {
+                    if (!value) return false; // already required
+                    const d = dayjs(value);
+                    if (!d.isValid()) return false;
+                    return d.isAfter(dayjs().subtract(1, 'minute')); // 1 min grace
+               }),
           otherwise: s => s.nullable()
      }),
      status: Yup.mixed<AnnouncementStatus>().oneOf(['draft', 'published']).required()
