@@ -206,8 +206,8 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                       <Stack direction="row" spacing={1} alignItems="center" sx={{ maxWidth: '100%' }}>
                                                                            <Typography variant="subtitle2" noWrap sx={{ flexGrow: 1 }}>{a.title || t('common.untitled')}</Typography>
                                                                            {a.pinned && <Tooltip title={t('announcements.pinned')}><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
-                                                                           {a.schedule_enabled && a.schedule_at && (
-                                                                                <Tooltip title={t('announcements.scheduledAt', { date: new Date(a.schedule_at).toLocaleString() })}>
+                                                                           {a.schedule_enabled && a.scheduled_at && (
+                                                                                <Tooltip title={t('announcements.scheduledAt', { date: new Date(a.scheduled_at).toLocaleString() })}>
                                                                                      <ScheduleIcon color="info" fontSize="small" />
                                                                                 </Tooltip>
                                                                            )}
@@ -279,7 +279,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                            variant="outlined"
                                                                       />
                                                                  )}
-                                                                 {selected.schedule_enabled && selected.schedule_at && <Chip size="small" color="info" label={t('announcements.scheduledAt', { date: new Date(selected.schedule_at).toLocaleString() })} />}
+                                                                 {selected.schedule_enabled && selected.scheduled_at && <Chip size="small" color="info" label={t('announcements.scheduledAt', { date: new Date(selected.scheduled_at).toLocaleString() })} />}
                                                                  {(selected.images?.length || 0) > 0 && (
                                                                       <Chip
                                                                            size="small"

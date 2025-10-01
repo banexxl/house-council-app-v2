@@ -145,7 +145,7 @@ export interface Announcement {
      pinned: boolean;
      archived?: boolean;
      schedule_enabled: boolean;
-     schedule_at: Date | null;
+     scheduled_at: Date | null;
      created_at: Date;
      updated_at?: Date;
      status: AnnouncementStatus;
@@ -165,7 +165,7 @@ export const announcementInitialValues: Announcement = {
      pinned: false,
      schedule_enabled: false,
      created_at: new Date(),
-     schedule_at: null,
+     scheduled_at: null,
      status: 'draft',
      images: [],
      documents: [],
@@ -200,7 +200,7 @@ export const announcementValidationSchema = Yup.object({
      attachments: Yup.array().of(Yup.mixed<File>()).default([]),
      pinned: Yup.boolean().default(false),
      schedule_enabled: Yup.boolean().default(false),
-     schedule_at: Yup.date().nullable().when('schedule_enabled', {
+     scheduled_at: Yup.date().nullable().when('schedule_enabled', {
           is: true,
           then: s => s.typeError('Invalid date').required('Schedule time required'),
           otherwise: s => s.nullable()

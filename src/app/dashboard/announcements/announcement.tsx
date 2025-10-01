@@ -49,9 +49,9 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { Client } from 'src/types/client';
 import { Building } from 'src/types/building';
 
@@ -75,6 +75,10 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const { t } = useTranslation();
 
+     // Local UI state for separate date & time pickers (avoid partial invalid ISO writes)
+     const [scheduledDate, setScheduledDate] = useState<Dayjs | null>(null);
+     const [scheduledTime, setScheduledTime] = useState<Dayjs | null>(null);
+
      const formik = useFormik({
           initialValues: announcementInitialValues,
           validationSchema: announcementValidationSchema,
@@ -89,7 +93,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     buildings: values.buildings || [],
                     pinned: values.pinned,
                     schedule_enabled: values.schedule_enabled,
-                    schedule_at: values.schedule_enabled ? values.schedule_at : null,
+                    scheduled_at: values.schedule_enabled ? values.scheduled_at : null,
                     status: values.status,
                };
 
@@ -126,9 +130,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               buildings: updated.buildings || [],
                               attachments: [],
                               pinned: !!updated.pinned,
-                              schedule_enabled: !!updated.schedule_at,
+                              schedule_enabled: !!updated.scheduled_at,
                               created_at: updated.created_at,
-                              schedule_at: updated.schedule_at || null,
+                              scheduled_at: updated.scheduled_at || null,
                               status: (updated as any).status ?? ((updated as any).published_at ? 'published' : 'draft'),
                               user_id: updated.user_id,
                               images: (updated.images && updated.images.length ? updated.images : []),
@@ -200,6 +204,29 @@ export default function Announcements({ client, announcements, buildings }: Anno
           formik.handleSubmit();
      };
 
+     const hydrateScheduledAt = (iso: string | null | undefined) => {
+          if (!iso) {
+               setScheduledDate(null);
+               setScheduledTime(null);
+               return;
+          }
+          const d = dayjs(iso);
+          if (!d.isValid()) return;
+          setScheduledDate(d.startOf('day'));
+          setScheduledTime(d);
+     };
+
+     const composeScheduledISO = (dateVal: Dayjs | null, timeVal: Dayjs | null) => {
+          if (!dateVal || !timeVal) return null;
+          // Combine date (Y-M-D) with time (H:m:s) in local timezone then to ISO
+          const combined = dateVal
+               .hour(timeVal.hour())
+               .minute(timeVal.minute())
+               .second(0)
+               .millisecond(0);
+          return combined.toISOString();
+     };
+
      const handleEdit = async (id: string) => {
           const res = await getAnnouncementById(id);
 
@@ -217,15 +244,24 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     buildings: a.buildings,
                     attachments: [],
                     pinned: !!a.pinned,
-                    schedule_enabled: !!a.schedule_at,
+                    schedule_enabled: !!a.scheduled_at,
                     created_at: a.created_at,
-                    schedule_at: a.schedule_at || null,
+                    scheduled_at: a.scheduled_at || null,
                     status: a.status ?? ((a as any).published_at ? 'published' : 'draft'),
                     user_id: a.user_id,
                     images: (a.images && a.images.length ? a.images : []),
                     documents: (a.documents && a.documents.length ? a.documents : []),
                }
           });
+          hydrateScheduledAt(
+               a.scheduled_at
+                    ? (typeof a.scheduled_at === 'string'
+                         ? a.scheduled_at
+                         : (a.scheduled_at instanceof Date
+                              ? a.scheduled_at.toISOString()
+                              : null))
+                    : null
+          );
      };
 
      const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -437,7 +473,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             onBlur={() => formik.setFieldTouched('message', true)}
                                                        />
                                                   </Box>
-                                                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
+                                                  <Box sx={{ display: 'flex', gap: { xs: 1.5, sm: 2 }, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
                                                        <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={inputsDisabled}>
                                                             <InputLabel id="category-label">{t(tokens.announcements.form.category)}</InputLabel>
                                                             <Select
@@ -534,13 +570,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   {/* Images Section */}
                                                   <Divider sx={{ my: 1 }} />
                                                   <Stack spacing={1}>
-                                                       <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Button variant="outlined" component="label" disabled={!editingEntity || imagesUploading || !isDraft}>
+                                                       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={{ xs: 1.5, sm: 2 }}>
+                                                            <Button variant="outlined" component="label" disabled={!editingEntity || imagesUploading || !isDraft} sx={{ width: { xs: '100%', sm: 'auto' } }}>
                                                                  {imagesUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadImages)}
                                                                  <input type="file" hidden multiple accept="image/*" onChange={handleImagesUpload} />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingEntity || currentImages.length === 0 || inputsDisabled} onClick={handleRemoveAllImages}>{t(tokens.announcements.form.removeAllImages)}</Button>
-                                                            <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.imagesCount, { count: currentImages.length })}</Typography>
+                                                            <Button color="error" disabled={!editingEntity || currentImages.length === 0 || inputsDisabled} onClick={handleRemoveAllImages} sx={{ width: { xs: '100%', sm: 'auto' } }}>{t(tokens.announcements.form.removeAllImages)}</Button>
+                                                            <Typography variant="caption" color="text.secondary" sx={{ width: { xs: '100%', sm: 'auto' } }}>{t(tokens.announcements.form.imagesCount, { count: currentImages.length })}</Typography>
                                                        </Stack>
                                                        {currentImages.length > 0 && (
                                                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -560,13 +596,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   {/* Documents Section */}
                                                   <Divider sx={{ my: 2 }} />
                                                   <Stack spacing={1}>
-                                                       <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Button variant="outlined" component="label" disabled={!editingEntity || docsUploading || !isDraft}>
+                                                       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={{ xs: 1.5, sm: 2 }}>
+                                                            <Button variant="outlined" component="label" disabled={!editingEntity || docsUploading || !isDraft} sx={{ width: { xs: '100%', sm: 'auto' } }}>
                                                                  {docsUploading ? t(tokens.announcements.form.uploading) : t(tokens.announcements.form.uploadDocuments || 'Upload documents')}
                                                                  <input type="file" hidden multiple onChange={handleDocumentsUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.ppt,.pptx,.odt,.ods,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/zip" />
                                                             </Button>
-                                                            <Button color="error" disabled={!editingEntity?.id || currentDocuments.length === 0 || inputsDisabled} onClick={handleRemoveAllDocuments}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
-                                                            <Typography variant="caption" color="text.secondary">{t(tokens.announcements.form.documentsCount || 'Documents: {{count}}', { count: currentDocuments.length })}</Typography>
+                                                            <Button color="error" disabled={!editingEntity?.id || currentDocuments.length === 0 || inputsDisabled} onClick={handleRemoveAllDocuments} sx={{ width: { xs: '100%', sm: 'auto' } }}>{t(tokens.announcements.form.removeAllDocuments || 'Remove all documents')}</Button>
+                                                            <Typography variant="caption" color="text.secondary" sx={{ width: { xs: '100%', sm: 'auto' } }}>{t(tokens.announcements.form.documentsCount || 'Documents: {{count}}', { count: currentDocuments.length })}</Typography>
                                                        </Stack>
                                                        {currentDocuments.length > 0 && (
                                                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -586,34 +622,78 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        {docsUploading && <LinearProgress sx={{ mt: 1 }} />}
                                                   </Stack>
                                                   <Divider sx={{ my: 1 }} />
-                                                  <Stack direction="row" spacing={3} height={40} alignItems="center" sx={{ opacity: inputsDisabled ? 0.6 : 1 }}>
+                                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 3 }} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ opacity: inputsDisabled ? 0.6 : 1 }}>
                                                        <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label={t(tokens.announcements.form.pinToTop)} />
-                                                       <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => formik.setFieldValue('schedule_enabled', e.target.checked)} />} label={t(tokens.announcements.form.schedule)} />
+                                                       <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => {
+                                                            const enabled = e.target.checked;
+                                                            formik.setFieldValue('schedule_enabled', enabled);
+                                                            if (!enabled) {
+                                                                 setScheduledDate(null);
+                                                                 setScheduledTime(null);
+                                                                 formik.setFieldValue('scheduled_at', null);
+                                                            } else if (!scheduledDate) {
+                                                                 // initialize to now rounded to next 15 min
+                                                                 const now = dayjs();
+                                                                 const minute = now.minute();
+                                                                 const rounded = minute % 15 === 0 ? now : now.add(15 - (minute % 15), 'minute');
+                                                                 setScheduledDate(rounded.startOf('day'));
+                                                                 setScheduledTime(rounded);
+                                                                 formik.setFieldValue('scheduled_at', rounded.toISOString());
+                                                            }
+                                                       }} />} label={t(tokens.announcements.form.schedule)} />
+
                                                        {formik.values.schedule_enabled && (
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                                 <DatePicker
-                                                                      label={t(tokens.announcements.form.scheduleAt)}
-                                                                      value={formik.values.schedule_at ? dayjs(formik.values.schedule_at) : null}
-                                                                      onChange={(date) => {
-                                                                           formik.setFieldValue('schedule_at', date ? date.toISOString() : null);
-                                                                      }}
-                                                                      slotProps={{
-                                                                           textField: {
-                                                                                name: 'schedule_at',
-                                                                                error: !!(formik.touched.schedule_at && formik.errors.schedule_at),
-                                                                                helperText: formik.touched.schedule_at && formik.errors.schedule_at,
-                                                                           },
-                                                                      }}
-                                                                      disabled={!formik.values.schedule_enabled || inputsDisabled}
-                                                                      disablePast={true}
-                                                                 />
+                                                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ width: '100%' }}>
+                                                                      <DatePicker
+                                                                           label={t(tokens.announcements.form.scheduleAt) + ' (Date)'}
+                                                                           value={scheduledDate}
+                                                                           onChange={(newDate) => {
+                                                                                setScheduledDate(newDate);
+                                                                                const iso = composeScheduledISO(newDate, scheduledTime);
+                                                                                formik.setFieldValue('scheduled_at', iso);
+                                                                           }}
+                                                                           disablePast
+                                                                           slotProps={{
+                                                                                textField: {
+                                                                                     name: 'scheduled_date',
+                                                                                     fullWidth: true,
+                                                                                     size: 'small',
+                                                                                },
+                                                                           }}
+                                                                      />
+                                                                      <TimePicker
+                                                                           label={t(tokens.announcements.form.scheduleAt) + ' (Time)'}
+                                                                           value={scheduledTime}
+                                                                           onChange={(newTime) => {
+                                                                                setScheduledTime(newTime);
+                                                                                const iso = composeScheduledISO(scheduledDate, newTime);
+                                                                                formik.setFieldValue('scheduled_at', iso);
+                                                                           }}
+                                                                           minutesStep={5}
+                                                                           slotProps={{
+                                                                                textField: {
+                                                                                     name: 'scheduled_time',
+                                                                                     fullWidth: true,
+                                                                                     size: 'small',
+                                                                                     error: !!(formik.touched.scheduled_at && formik.errors.scheduled_at),
+                                                                                     helperText: formik.touched.scheduled_at && formik.errors.scheduled_at,
+                                                                                },
+                                                                                popper: {
+                                                                                     sx: {
+                                                                                          '& .MuiPaper-root': { width: { xs: 220, sm: 260 }, padding: 1 },
+                                                                                     }
+                                                                                }
+                                                                           }}
+                                                                      />
+                                                                 </Stack>
                                                             </LocalizationProvider>
                                                        )}
                                                   </Stack>
                                              </Stack>
                                         </Box>
                                         <Divider sx={{ my: 1 }} />
-                                        <Stack direction="row" spacing={2} justifyContent="flex-end">
+                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end" alignItems={{ xs: 'stretch', sm: 'center' }}>
                                              <Button
                                                   variant="outlined"
                                                   onClick={handleSave}
@@ -627,6 +707,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        Object.keys(formik.errors).length > 0
                                                   }
                                                   loading={formik.isSubmitting}
+                                                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                                              >
                                                   {formik.values.status === 'published' ? t(tokens.common.btnSave) : t(tokens.announcements.actions.saveDraft)}
                                              </Button>
@@ -637,6 +718,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        onClick={handleUnpublish}
                                                        disabled={!editingEntity?.id || rowBusy === editingEntity?.id}
                                                        loading={formik.isSubmitting}
+                                                       sx={{ width: { xs: '100%', sm: 'auto' } }}
                                                   >
                                                        {t(tokens.announcements.actions.unpublish)}
                                                   </Button>
