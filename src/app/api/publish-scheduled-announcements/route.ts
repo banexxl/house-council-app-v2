@@ -6,7 +6,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 // Expect a secret in header: x-cron-secret
 const CRON_SECRET = process.env.X_CRON_SECRET_SHEDULER;
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
      const started = Date.now();
      const provided = req.headers.get('x-cron-secret');
      if (!CRON_SECRET || provided !== CRON_SECRET) {
