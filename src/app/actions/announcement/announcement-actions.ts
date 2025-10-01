@@ -429,21 +429,21 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
 
 export const getAllAutoPublishReadyAnnouncements = async (): Promise<Announcement[]> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const now = new Date();
-
+     const now = Date.now();
+     // Fetch draft announcements that have scheduling fields set
      const { data, error } = await supabase
           .from(ANNOUNCEMENTS_TABLE)
           .select('*')
           .eq('status', 'draft')
-          .lt('published_at', now)
-          .order('created_at', { ascending: false });
-     console.log('getAllAutoPublishReadyAnnouncements', data, error);
+          .not('scheduled_at', 'is', null)
+          .not('scheduled_timezone', 'is', null)
+          .eq('schedule_enabled', true);
 
      if (error) {
           await logServerAction({
                user_id: null,
                action: 'getAllAutoPublishReadyAnnouncements',
-               duration_ms: Date.now() - now.getTime(),
+               duration_ms: Date.now() - now,
                error: error.message,
                payload: {},
                status: 'fail',
@@ -452,7 +452,7 @@ export const getAllAutoPublishReadyAnnouncements = async (): Promise<Announcemen
           return [];
      }
 
-     return data as Announcement[];
+     return (data || []) as Announcement[];
 };
 
 // ============================= CREATE / UPDATE =============================
