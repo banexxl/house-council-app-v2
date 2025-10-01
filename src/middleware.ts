@@ -20,9 +20,6 @@ export const config = {
      ],
 }
 
-// 🔐 Your auth cookie base name (with Supabase split cookie support)
-const TOKEN_BASE = 'sb-sorklznvftjmhkaejkej-auth-token'
-
 // Public routes that do NOT require authentication
 const PUBLIC_ROUTES = [
      '/auth/login',
@@ -31,24 +28,8 @@ const PUBLIC_ROUTES = [
      '/auth/reset-password',
      '/api/check-subscription',
      '/api/location-check',
-     // Cron / system endpoints (header-key protected internally)
      '/api/cron/publish-scheduled',
 ] as const
-
-function getSupabaseToken(req: NextRequest): string | null {
-     // 1) try single cookie
-     const single = req.cookies.get(TOKEN_BASE)?.value
-     if (single) return single
-
-     // 2) try split cookies: TOKEN_BASE.0, TOKEN_BASE.1, ...
-     const parts: string[] = []
-     for (let i = 0; ; i++) {
-          const part = req.cookies.get(`${TOKEN_BASE}.${i}`)?.value
-          if (!part) break
-          parts.push(part)
-     }
-     return parts.length ? parts.join('') : null
-}
 
 async function isTokenValid(jwt: string | null): Promise<boolean> {
      try {
@@ -60,10 +41,6 @@ async function isTokenValid(jwt: string | null): Promise<boolean> {
      } catch {
           return false;
      }
-}
-
-function isAuthPage(pathname: string) {
-     return PUBLIC_ROUTES.some((r) => pathname.startsWith(r))
 }
 
 export async function middleware(req: NextRequest) {
