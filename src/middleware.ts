@@ -31,6 +31,8 @@ const PUBLIC_ROUTES = [
      '/auth/reset-password',
      '/api/check-subscription',
      '/api/location-check',
+     // Cron / system endpoints (header-key protected internally)
+     '/api/cron/publish-scheduled',
 ] as const
 
 function getSupabaseToken(req: NextRequest): string | null {
@@ -76,6 +78,15 @@ export async function middleware(req: NextRequest) {
      if (isAuthPage) {
           if (authed) return NextResponse.redirect(new URL('/dashboard', req.url));
           return NextResponse.next();
+     }
+
+     // Allow cron route with secret header even if not authed
+     if (pathname.startsWith('/api/cron/publish-scheduled')) {
+          const provided = req.headers.get('x-cron-secret');
+          if (provided && provided === process.env.CRON_PUBLISH_SECRET) {
+               return NextResponse.next();
+          }
+          // Fall through to normal auth handling if header missing/invalid
      }
 
      if (!authed) {
