@@ -753,6 +753,7 @@ export const updateClientSubscriptionForClient = async (
                duration_ms: 0,
                type: 'db'
           });
+          revalidatePath(`/dashboard/clients/${clientId}`);
           return { success: true };
      }
 
@@ -792,5 +793,6 @@ export const updateClientSubscriptionForClient = async (
           duration_ms: 0,
           type: 'db'
      });
+     revalidatePath(`/dashboard/clients/${clientId}`);
      return { success: true };
 };

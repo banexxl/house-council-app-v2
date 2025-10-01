@@ -77,7 +77,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       next_payment_date: clientSubscription?.next_payment_date
         ? dayjs(clientSubscription.next_payment_date)
         : null,
-      subscription_status: clientSubscription?.status || 'active',
+      subscription_status: clientSubscription?.status || '',
     };
     return base;
     // only recompute when these truly change
@@ -428,7 +428,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     label={t('clients.clientSubscriptionPlan')}
                     name="subscription_plan_id"
                     disabled={formik.isSubmitting}
-                    value={(formik.values as any).subscription_plan_id || ''}
+                    value={formik.values.subscription_plan_id || ''}
                     onChange={formik.handleChange}
                     defaultValue={formik.values.subscription_plan_id || ''}
                   >
@@ -443,7 +443,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={t('clients.clientCardExpirationDate')}
-                      value={(formik.values as any).next_payment_date as Dayjs | null}
+                      name='next_payment_date'
+                      value={formik.values.next_payment_date as Dayjs | null}
                       onChange={(val) => formik.setFieldValue('next_payment_date', val)}
                       slotProps={{ textField: { fullWidth: true, disabled: formik.isSubmitting } }}
                     />
