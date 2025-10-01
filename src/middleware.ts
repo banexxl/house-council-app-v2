@@ -28,7 +28,7 @@ const PUBLIC_ROUTES = [
      '/auth/reset-password',
      '/api/check-subscription',
      '/api/location-check',
-     '/api/cron/publish-scheduled',
+     '/api/publish-scheduled-announcements',
 ] as const
 
 async function isTokenValid(jwt: string | null): Promise<boolean> {
