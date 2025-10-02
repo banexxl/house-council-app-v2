@@ -680,6 +680,10 @@ export const tokens = {
     }
   },
   announcements: {
+    status: {
+      published: 'announcements.status.published',
+      draft: 'announcements.status.draft',
+    },
     managementTitle: 'announcements.managementTitle',
     createNew: 'announcements.createNew',
     uploadingImages: 'announcements.uploadingImages',

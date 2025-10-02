@@ -36,6 +36,8 @@ import {
 import LinearProgress from '@mui/material/LinearProgress';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import AnnouncementIcon from '@mui/icons-material/Announcement';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -796,6 +798,16 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                                 <DeleteIcon fontSize="small" />
                                                                            </IconButton>
                                                                       </Tooltip>
+                                                                      <Tooltip title={row.status === 'published' ? t(tokens.announcements.status.published) : t(tokens.announcements.status.draft)}>
+                                                                           <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: 4 }}>
+                                                                                {row.status === 'published' ? (
+                                                                                     <AnnouncementIcon color="success" fontSize="small" />
+                                                                                ) : (
+                                                                                     <RadioButtonUncheckedIcon color="disabled" fontSize="small" />
+                                                                                )}
+                                                                           </span>
+                                                                      </Tooltip>
+
                                                                  </TableCell>
                                                             </TableRow>
                                                        ))}

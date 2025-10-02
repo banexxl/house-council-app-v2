@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
                status: 'success',
                type: 'db'
           });
-          revalidatePath('/');
+          revalidatePath('/dashboard/announcements');
           return NextResponse.json({
                success: true,
                checked: drafts.length,
