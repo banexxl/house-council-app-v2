@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
           const drafts = await getAllAutoPublishReadyAnnouncements();
           const now = dayjs();
           let toPublish: string[] = [];
+          const skippedFuture: { id: string; scheduled_at: string; tz?: string }[] = [];
 
           const nowWithGrace = now.add(FORWARD_GRACE_SECONDS, 'second');
           const lookbackCutoff = now.subtract(LOOKBACK_MINUTES, 'minute');
@@ -57,10 +58,25 @@ export async function POST(req: NextRequest) {
                // (lookbackCutoff is informational; we still publish items older than lookback to avoid missing due items.)
                if (scheduledMoment.isBefore(nowWithGrace) || scheduledMoment.isSame(nowWithGrace)) {
                     toPublish.push(ann.id);
+               } else if (scheduledMoment.isAfter(nowWithGrace)) {
+                    skippedFuture.push({ id: ann.id, scheduled_at: scheduledAt, tz: tzid || undefined });
                }
           }
           if (toPublish.length) {
                console.log('[cron publish] due announcements:', toPublish);
+          }
+          if (skippedFuture.length) {
+               console.log('[cron publish] skipped future announcements (outside grace):', skippedFuture.map(s => s.id));
+               // Log detailed metadata (truncate if very large)
+               await logServerAction({
+                    user_id: null,
+                    action: 'cronPublishScheduledSkipFuture',
+                    duration_ms: 0,
+                    error: '',
+                    payload: { count: skippedFuture.length, sample: skippedFuture.slice(0, 25) },
+                    status: 'success',
+                    type: 'db'
+               });
           }
 
           const results: { id: string; success: boolean; error?: string }[] = [];
@@ -87,6 +103,7 @@ export async function POST(req: NextRequest) {
                publishAttempts: toPublish.length,
                published: results.filter(r => r.success),
                failed: results.filter(r => !r.success),
+               skippedFuture: skippedFuture,
                forwardGraceSeconds: FORWARD_GRACE_SECONDS,
                lookbackMinutes: LOOKBACK_MINUTES
           });
