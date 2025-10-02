@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import dayjs from 'dayjs';
 import { getAllAutoPublishReadyAnnouncements, publishAnnouncement } from 'src/app/actions/announcement/announcement-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { useTranslation } from 'react-i18next';
 import { revalidatePath } from 'next/cache';
+import { tokens } from 'src/locales/tokens';
 
 // Expect a secret in header: x-cron-secret
 const CRON_SECRET = process.env.X_CRON_SECRET_SHEDULER;
-const { t } = useTranslation();
 
 export async function POST(req: NextRequest) {
      const started = Date.now();
@@ -44,7 +43,7 @@ export async function POST(req: NextRequest) {
 
           const results: { id: string; success: boolean; error?: string }[] = [];
           for (const id of toPublish) {
-               const res = await publishAnnouncement(id, { value: 'announcement', labelToken: t('tokens.notifications.tabs.announcement') } as any);
+               const res = await publishAnnouncement(id, { value: 'announcement', labelToken: tokens.notifications.tabs.announcement } as any);
                console.log('publish result', id, res);
 
                if (!res.success) results.push({ id, success: false, error: res.error }); else results.push({ id, success: true });
