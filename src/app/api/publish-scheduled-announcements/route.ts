@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { getAllAutoPublishReadyAnnouncements, publishAnnouncement } from 'src/app/actions/announcement/announcement-actions';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { revalidatePath } from 'next/cache';
 import { tokens } from 'src/locales/tokens';
 
+// Extend dayjs with timezone support (safe to call repeatedly)
+if (!(dayjs as any)._tzExtended) {
+     dayjs.extend(utc); // add UTC first
+     dayjs.extend(timezone);
+     (dayjs as any)._tzExtended = true; // mark so we don't extend twice in hot reload
+}
+
 // Expect a secret in header: x-cron-secret
 const CRON_SECRET = process.env.X_CRON_SECRET_SHEDULER;
+// Grace forward seconds: publish if scheduled_at is within this many seconds in the future
+const FORWARD_GRACE_SECONDS = parseInt(process.env.CRON_FORWARD_GRACE_SECONDS || '30', 10); // small clock drift allowance
+// (Optional) Lookback window minutes - mainly informational since we publish anything already past
+const LOOKBACK_MINUTES = parseInt(process.env.CRON_LOOKBACK_MINUTES || '15', 10);
 
 export async function POST(req: NextRequest) {
      const started = Date.now();
@@ -26,19 +39,28 @@ export async function POST(req: NextRequest) {
 
      try {
           const drafts = await getAllAutoPublishReadyAnnouncements();
-          console.log('drafts', drafts);
-
           const now = dayjs();
           let toPublish: string[] = [];
 
+          const nowWithGrace = now.add(FORWARD_GRACE_SECONDS, 'second');
+          const lookbackCutoff = now.subtract(LOOKBACK_MINUTES, 'minute');
+
           for (const ann of drafts) {
                const scheduledAt = (ann as any).scheduled_at as string | null;
+               const tzid = (ann as any).scheduled_timezone as string | null;
                const enabled = (ann as any).schedule_enabled;
                if (!enabled || !scheduledAt) continue;
-               // Treat stored naive local timestamp as local server time (approximation) since tz plugin not enabled here.
-               const scheduledMoment = dayjs(scheduledAt);
+               // Parse naive local timestamp in provided timezone if available; fallback to local.
+               let scheduledMoment = tzid ? dayjs.tz(scheduledAt, tzid) : dayjs(scheduledAt);
                if (!scheduledMoment.isValid()) continue;
-               if (scheduledMoment.isBefore(now) || scheduledMoment.isSame(now)) toPublish.push(ann.id);
+               // If it's before now (including far past) OR within the forward grace window, publish.
+               // (lookbackCutoff is informational; we still publish items older than lookback to avoid missing due items.)
+               if (scheduledMoment.isBefore(nowWithGrace) || scheduledMoment.isSame(nowWithGrace)) {
+                    toPublish.push(ann.id);
+               }
+          }
+          if (toPublish.length) {
+               console.log('[cron publish] due announcements:', toPublish);
           }
 
           const results: { id: string; success: boolean; error?: string }[] = [];
@@ -64,7 +86,9 @@ export async function POST(req: NextRequest) {
                checked: drafts.length,
                publishAttempts: toPublish.length,
                published: results.filter(r => r.success),
-               failed: results.filter(r => !r.success)
+               failed: results.filter(r => !r.success),
+               forwardGraceSeconds: FORWARD_GRACE_SECONDS,
+               lookbackMinutes: LOOKBACK_MINUTES
           });
      } catch (e: any) {
           await logServerAction({
