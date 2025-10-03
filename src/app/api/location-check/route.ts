@@ -2,20 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
-export const runtime = 'nodejs';          // ensure Node (not Edge)
-export const dynamic = 'force-dynamic';   // avoid caching for cron
-
-function isAuthorized(req: NextRequest): boolean {
-     const auth = req.headers.get('authorization') || '';
-     const [scheme, token] = auth.split(' ');
-     return scheme?.toLowerCase() === 'bearer' && !!token && token === process.env.API_CRON_KEY;
-}
+// Expect a secret in header: x-cron-secret
+const CRON_SECRET = process.env.X_CRON_SECRET_SHEDULER;
 
 export async function POST(req: NextRequest) {
 
-     // 1) Bearer auth for cron
-     if (!isAuthorized(req)) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+     const started = Date.now();
+     const provided = req.headers.get('x-cron-secret');
+     if (!CRON_SECRET || provided !== CRON_SECRET) {
+          await logServerAction({
+               user_id: null,
+               action: 'cronPublishScheduledAuthFail',
+               duration_ms: Date.now() - started,
+               error: 'Unauthorized',
+               payload: {},
+               status: 'fail',
+               type: 'auth'
+          });
+          return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient()
@@ -25,7 +29,6 @@ export async function POST(req: NextRequest) {
           .from('tblBuildingLocations')
           .select('*')
           .is('building_id', null)
-
 
      // if there are no locations without building_id, that means all locations are taken
      if (error) {
