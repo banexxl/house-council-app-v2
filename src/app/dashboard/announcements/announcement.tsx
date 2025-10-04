@@ -756,7 +756,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                              {formik.values.status === 'published' ? (
                                                   <Button
                                                        variant="contained"
-                                                       color="warning"
+                                                       color="primary"
                                                        onClick={handleUnpublish}
                                                        disabled={!editingEntity?.id || rowBusy === editingEntity?.id}
                                                        loading={formik.isSubmitting}
