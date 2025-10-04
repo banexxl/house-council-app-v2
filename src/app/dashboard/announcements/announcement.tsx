@@ -818,25 +818,25 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  <TableCell align="right">
                                                                       <Tooltip title={row.pinned ? t(tokens.announcements.table.unpin) : t(tokens.announcements.table.pin)}>
                                                                            <IconButton size="small" onClick={() => togglePin(row.id)} disabled={rowBusy === row.id}>
-                                                                                {row.pinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
+                                                                                {row.pinned ? <PushPinIcon fontSize="small" color="primary" /> : <PushPinOutlinedIcon fontSize="small" color="primary" />}
                                                                            </IconButton>
                                                                       </Tooltip>
                                                                       <Tooltip title={row.archived ? t(tokens.announcements.table.unarchive) : t(tokens.announcements.table.archive)}>
                                                                            <IconButton size="small" onClick={() => toggleArchive(row.id)} disabled={rowBusy === row.id}>
-                                                                                {row.archived ? <ArchiveIcon fontSize="small" /> : <ArchiveOutlinedIcon fontSize="small" />}
+                                                                                {row.archived ? <ArchiveIcon fontSize="small" color="primary" /> : <ArchiveOutlinedIcon fontSize="small" color="primary" />}
                                                                            </IconButton>
                                                                       </Tooltip>
                                                                       <Tooltip title={t(tokens.announcements.table.delete)}>
-                                                                           <IconButton size="small" color="error" onClick={() => handleDelete(row.id)} disabled={rowBusy === row.id}>
-                                                                                <DeleteIcon fontSize="small" />
+                                                                           <IconButton size="small" onClick={() => handleDelete(row.id)} disabled={rowBusy === row.id}>
+                                                                                <DeleteIcon fontSize="small" color="primary" />
                                                                            </IconButton>
                                                                       </Tooltip>
                                                                       <Tooltip title={row.status === 'published' ? t(tokens.announcements.status.published) : t(tokens.announcements.status.draft)}>
                                                                            <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: 4 }}>
                                                                                 {row.status === 'published' ? (
-                                                                                     <AnnouncementIcon color="success" fontSize="small" />
+                                                                                     <AnnouncementIcon fontSize="small" color="primary" />
                                                                                 ) : (
-                                                                                     <RadioButtonUncheckedIcon color="disabled" fontSize="small" />
+                                                                                     <RadioButtonUncheckedIcon fontSize="small" color="primary" />
                                                                                 )}
                                                                            </span>
                                                                       </Tooltip>
