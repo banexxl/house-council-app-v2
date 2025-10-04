@@ -45,7 +45,7 @@ import QuillEditor from 'src/components/quill-editor';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useFormik } from 'formik';
 import { uploadAnnouncementImages } from 'src/app/actions/announcement/announcement-image-actions'
-import { announcementInitialValues, announcementValidationSchema, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
+import { announcementInitialValues, buildAnnouncementValidationSchema, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -83,7 +83,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const formik = useFormik({
           initialValues: announcementInitialValues,
-          validationSchema: announcementValidationSchema,
+          validationSchema: buildAnnouncementValidationSchema(t),
           onSubmit: async (values, helpers) => {
                helpers.setSubmitting(true);
                // Build payload mapping to server expectations
@@ -478,24 +478,33 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                         )}
                                         <Box component="fieldset" disabled={inputsDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.6 : 1 }}>
                                              <Stack spacing={2}>
-                                                  <TextField
-                                                       label={t(tokens.announcements.form.title)}
-                                                       name="title"
-                                                       value={formik.values.title}
-                                                       onChange={formik.handleChange}
-                                                       onBlur={formik.handleBlur}
-                                                       error={formik.touched.title && Boolean(formik.errors.title)}
-                                                       helperText={formik.touched.title && formik.errors.title}
-                                                       fullWidth
-                                                       required={formik.values.status === 'published'}
-                                                       disabled={inputsDisabled}
-                                                  />
-                                                  <Box sx={{ pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.7 : 1 }}>
+                                                  {/* Title Field with reserved helper space */}
+                                                  <Box>
+                                                       <TextField
+                                                            label={t(tokens.announcements.form.title)}
+                                                            name="title"
+                                                            value={formik.values.title}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.title && Boolean(formik.errors.title)}
+                                                            helperText={formik.touched.title && formik.errors.title ? formik.errors.title : ' '}
+                                                            slotProps={{ formHelperText: { sx: { minHeight: 18, mt: 0.5 } } }}
+                                                            fullWidth
+                                                            required={formik.values.status === 'published'}
+                                                            disabled={inputsDisabled}
+                                                       />
+                                                  </Box>
+                                                  <Box sx={{ pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.7 : 1, gap: 1 }}>
                                                        <QuillEditor
                                                             value={formik.values.message}
                                                             onChange={(v) => formik.setFieldValue('message', v)}
                                                             onBlur={() => formik.setFieldTouched('message', true)}
                                                        />
+                                                       <Box sx={{ minHeight: 25, mt: 0.5 }}>
+                                                            {formik.touched.message && formik.errors.message ? (
+                                                                 <Typography variant="caption" color="error">{formik.errors.message}</Typography>
+                                                            ) : ' '}
+                                                       </Box>
                                                   </Box>
                                                   <Box sx={{ display: 'flex', gap: { xs: 1.5, sm: 2 }, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
                                                        <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={inputsDisabled}>
@@ -519,9 +528,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                       <MenuItem key={cat.id} value={cat.id}>{t(tokens.announcements.categories[cat.id as keyof typeof tokens.announcements.categories])}</MenuItem>
                                                                  ))}
                                                             </Select>
-                                                            {formik.touched.category && formik.errors.category && (
-                                                                 <Typography variant="caption" color="error">{formik.errors.category}</Typography>
-                                                            )}
+                                                            <Box sx={{ minHeight: 25, mt: 0.5 }}>
+                                                                 {formik.touched.category && formik.errors.category ? (
+                                                                      <Typography variant="caption" color="error">{formik.errors.category}</Typography>
+                                                                 ) : ' '}
+                                                            </Box>
                                                        </FormControl>
 
                                                        {(() => {
@@ -544,9 +555,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                                 <MenuItem key={sc.id} value={sc.id}>{t(tokens.announcements.subcategories[sc.id as keyof typeof tokens.announcements.subcategories])}</MenuItem>
                                                                            ))}
                                                                       </Select>
-                                                                      {formik.touched.subcategory && formik.errors.subcategory && (
-                                                                           <Typography variant="caption" color="error">{formik.errors.subcategory as string}</Typography>
-                                                                      )}
+                                                                      <Box sx={{ minHeight: 25, mt: 0.5 }}>
+                                                                           {formik.touched.subcategory && formik.errors.subcategory ? (
+                                                                                <Typography variant="caption" color="error">{formik.errors.subcategory as string}</Typography>
+                                                                           ) : ' '}
+                                                                      </Box>
                                                                  </FormControl>
                                                             );
                                                        })()}
@@ -559,7 +572,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             multiple
                                                             name="buildings"
                                                             value={formik.values.buildings || []}
-                                                            onChange={(e) => formik.setFieldValue('buildings', e.target.value)}
+                                                            onChange={(e) => {
+                                                                 formik.setFieldValue('buildings', e.target.value);
+                                                                 if (!formik.touched.buildings) {
+                                                                      formik.setFieldTouched('buildings', true, false);
+                                                                 }
+                                                            }}
+                                                            onBlur={() => formik.setFieldTouched('buildings', true)}
                                                             input={<OutlinedInput label={t('buildings.buildingsTitle')} />}
                                                             renderValue={(selected) => (
                                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -575,6 +594,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                       })}
                                                                  </Box>
                                                             )}
+                                                            sx={{ mb: 1 }}
                                                        >
                                                             {buildings.map(b => (
                                                                  <MenuItem key={b.id} value={b.id}>
@@ -585,9 +605,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  </MenuItem>
                                                             ))}
                                                        </Select>
-                                                       {/* <Typography variant="caption" color="text.secondary">
-                                                            {t(tokens.announcements.form.visibility)}: {t(tokens.announcements.visibilityValues.buildingWide)}
-                                                       </Typography> */}
+                                                       <Box sx={{ minHeight: 18, mt: 0.5 }}>
+                                                            {formik.touched.buildings && formik.errors.buildings ? (
+                                                                 <Typography variant="caption" color="error">{formik.errors.buildings as any}</Typography>
+                                                            ) : ' '}
+                                                       </Box>
                                                   </FormControl>
 
 
@@ -704,7 +726,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                                      fullWidth: true,
                                                                                      size: 'small',
                                                                                      error: !!(formik.touched.scheduled_at && formik.errors.scheduled_at),
-                                                                                     helperText: formik.touched.scheduled_at && formik.errors.scheduled_at,
+                                                                                     helperText: formik.touched.scheduled_at && formik.errors.scheduled_at ? formik.errors.scheduled_at : ' ',
+                                                                                     FormHelperTextProps: { sx: { minHeight: 18, mt: 0.5 } },
                                                                                 },
                                                                                 popper: {
                                                                                      sx: {

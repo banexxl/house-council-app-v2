@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import dayjs from 'dayjs';
+import { tokens } from 'src/locales/tokens';
 
 export type AnnouncementStatus = 'draft' | 'published';
 
@@ -177,57 +178,72 @@ export const announcementInitialValues: Announcement = {
      user_id: ''
 };
 
-export const announcementValidationSchema = Yup.object({
-     title: Yup.string()
-          .trim()
-          .when('status', {
-               is: (val: AnnouncementStatus) => val === 'published',
-               then: s => s.min(3, 'Title too short').required('Title required'),
-               otherwise: s => s.max(200, 'Max 200 chars')
-          }),
-     message: Yup.string()
-          .when('status', {
-               is: 'published',
-               then: s => s.trim().min(5, 'Message too short').required('Message required'),
+const isHtmlEmpty = (html?: string) => {
+     const text = (html ?? '')
+          .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+          .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+          .replace(/<[^>]*>/g, '')        // strip tags
+          .replace(/&nbsp;|&#160;/gi, ' ') // nbsp to space
+          .trim();
+     return text.length === 0;
+};
+
+
+export const buildAnnouncementValidationSchema = (t: (key: string) => string) => {
+     return Yup.object({
+          title: Yup.string()
+               .trim()
+               .when('status', {
+                    is: (val: AnnouncementStatus) => val === 'published',
+                    then: s => s.min(3, t(tokens.announcements.validation.titleTooShort)).required(t(tokens.announcements.validation.titleRequired)),
+                    otherwise: s => s.max(200, t(tokens.announcements.validation.titleMax))
+               }).required(t(tokens.announcements.validation.titleRequired)),
+          message: Yup.string()
+               .transform(v => (isHtmlEmpty(v) ? '' : v))
+               .required(t(tokens.announcements.validation.messageRequired))
+               .test('not-empty-html', t(tokens.announcements.validation.messageRequired), v => !isHtmlEmpty(v)),
+          category: Yup.string().required(t(tokens.announcements.validation.categoryRequired)),
+          subcategory: Yup.string().when('category', {
+               is: (category: string) => {
+                    if (!category) return false;
+                    const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === category);
+                    return !!cat && cat.subcategories.length > 0;
+               },
+               then: s => s.required(t(tokens.announcements.validation.subcategoryRequired)),
                otherwise: s => s
           }),
-     category: Yup.string().required('Category required'),
-     subcategory: Yup.string().when('category', {
-          is: (category: string) => {
-               if (!category) return false; // category itself not chosen yet (category validation will handle)
-               const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === category);
-               return !!cat && cat.subcategories.length > 0;
-          },
-          then: s => s.required('Subcategory required'),
-          otherwise: s => s
-     }),
-     buildings: Yup.array().of(Yup.string()).min(1, 'Select at least one building').required('Buildings required'),
-     attachments: Yup.array().of(Yup.mixed<File>()).default([]),
-     pinned: Yup.boolean().default(false),
-     schedule_enabled: Yup.boolean().default(false),
-     scheduled_timezone: Yup.string().nullable().when('schedule_enabled', {
-          is: true,
-          then: s => s.required('Timezone required'),
-          otherwise: s => s.nullable()
-     }),
-     scheduled_at: Yup.string().nullable().when(['schedule_enabled', 'scheduled_timezone'], {
-          is: (enabled: boolean) => enabled,
-          then: s => s
-               .required('Schedule time required')
-               .test('valid-format', 'Invalid date', (value) => {
-                    if (!value) return false;
-                    // Accept both naive local (YYYY-MM-DDTHH:mm:ss) and ISO (legacy) for backward compatibility
-                    const asDay = dayjs(value);
-                    if (asDay.isValid()) return true;
-                    return false;
-               })
-               .test('future', 'Schedule must be in the future', (value) => {
-                    if (!value) return false; // already required
-                    const d = dayjs(value);
-                    if (!d.isValid()) return false;
-                    return d.isAfter(dayjs().subtract(1, 'minute')); // 1 min grace
-               }),
-          otherwise: s => s.nullable()
-     }),
-     status: Yup.mixed<AnnouncementStatus>().oneOf(['draft', 'published']).required()
-}) as Yup.ObjectSchema<Announcement>;
+          buildings: Yup.array().of(Yup.string())
+               .min(1, t(tokens.announcements.validation.buildingsMin))
+               .required(t(tokens.announcements.validation.buildingsRequired)),
+          attachments: Yup.array().of(Yup.mixed<File>()).default([]),
+          pinned: Yup.boolean().default(false),
+          schedule_enabled: Yup.boolean().default(false),
+          scheduled_timezone: Yup.string().nullable().when('schedule_enabled', {
+               is: true,
+               then: s => s.required(t(tokens.announcements.validation.timezoneRequired)),
+               otherwise: s => s.nullable()
+          }),
+          scheduled_at: Yup.string().nullable().when(['schedule_enabled', 'scheduled_timezone'], {
+               is: (enabled: boolean) => enabled,
+               then: s => s
+                    .required(t(tokens.announcements.validation.scheduleRequired))
+                    .test('valid-format', t(tokens.announcements.validation.scheduleInvalid), (value) => {
+                         if (!value) return false;
+                         const asDay = dayjs(value);
+                         if (asDay.isValid()) return true;
+                         return false;
+                    })
+                    .test('future', t(tokens.announcements.validation.scheduleFuture), (value) => {
+                         if (!value) return false;
+                         const d = dayjs(value);
+                         if (!d.isValid()) return false;
+                         return d.isAfter(dayjs().subtract(1, 'minute'));
+                    }),
+               otherwise: s => s.nullable()
+          }),
+          status: Yup.mixed<AnnouncementStatus>().oneOf(['draft', 'published']).required(t(tokens.announcements.validation.statusRequired))
+     }) as Yup.ObjectSchema<Announcement>;
+};
+
+// Default (legacy) schema export using identity translator so existing imports keep working.
+export const announcementValidationSchema = buildAnnouncementValidationSchema((k) => k);
