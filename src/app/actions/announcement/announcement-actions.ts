@@ -722,6 +722,8 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
                .select('building_id')
                .eq('announcement_id', id);
+          console.log('bRows', bRows, bErr);
+
           if (!bErr && bRows && bRows.length > 0) {
                const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
                if (buildingIds.length > 0) {
@@ -740,9 +742,11 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                          announcement_id: id,
                          is_for_tenant: true,
                     })) as unknown as BaseNotification[];
+                    console.log('rows', rows);
 
                     if (rows.length > 0) {
                          const emitted = await emitNotifications(rows);
+                         console.log('emitted', emitted);
 
                          if (!emitted.success) {
                               await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: emitted.error || 'unknown', payload: { count: rows.length, id }, status: 'fail', type: 'db' });

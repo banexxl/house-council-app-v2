@@ -218,17 +218,27 @@ export default function Announcements({ client, announcements, buildings }: Anno
           formik.handleSubmit();
      };
 
-     const hydrateScheduledAt = (localTs: string | null | undefined) => {
-          if (!localTs) {
+     const hydrateScheduledAt = (raw: string | null | undefined) => {
+          if (!raw) {
                setScheduledDate(null);
                setScheduledTime(null);
                return;
           }
-          // Accept legacy ISO or new naive local (no Z)
-          const d = dayjs(localTs);
+          let normalized = raw.trim();
+          // If legacy ISO with Z or offset, convert to naive local wall time string by taking date+time components only
+          // Examples: 2025-10-03T09:30:00Z or 2025-10-03T09:30:00+02:00 -> 2025-10-03T09:30:00
+          const isoMatch = normalized.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
+          if (isoMatch) {
+               normalized = isoMatch[1];
+          }
+          const d = dayjs(normalized, 'YYYY-MM-DDTHH:mm:ss');
           if (!d.isValid()) return;
           setScheduledDate(d.startOf('day'));
           setScheduledTime(d);
+          // Also push normalized value back into form if it differs (avoid marking dirty if same)
+          if (formik.values.scheduled_at !== normalized) {
+               formik.setFieldValue('scheduled_at', normalized, false);
+          }
      };
 
      const composeScheduledLocal = (dateVal: Dayjs | null, timeVal: Dayjs | null) => {

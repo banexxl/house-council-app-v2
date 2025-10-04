@@ -21,7 +21,7 @@ export default async function AnnouncementsPage() {
      // Parallel fetching. Only buildings constrained by client (foreign key). Others full unless you choose to filter later.
      const [annRes, buildingsRes] = await Promise.all([
           getAnnouncements(),
-          getAllBuildingsFromClient(client?.id!),
+          getAllBuildingsFromClient(client?.id! || clientMember?.client_id!),
      ]);
 
      const announcements = annRes.success && annRes.data ? annRes.data : [];

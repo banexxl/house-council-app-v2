@@ -82,8 +82,6 @@ export async function POST(req: NextRequest) {
           const results: { id: string; success: boolean; error?: string }[] = [];
           for (const id of toPublish) {
                const res = await publishAnnouncement(id, { value: 'announcement', labelToken: tokens.notifications.tabs.announcement } as any);
-               console.log('publish result', id, res);
-
                if (!res.success) results.push({ id, success: false, error: res.error }); else results.push({ id, success: true });
           }
 
