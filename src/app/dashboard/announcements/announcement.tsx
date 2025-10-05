@@ -506,8 +506,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             ) : ' '}
                                                        </Box>
                                                   </Box>
-                                                  <Box sx={{ display: 'flex', gap: { xs: 1.5, sm: 2 }, flexWrap: 'wrap', flexDirection: { xs: 'column', lg: 'row' } }}>
-                                                       <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={inputsDisabled}>
+                                                  {/* Category / Subcategory row now fluid: always row with wrap so they shrink before stacking */}
+                                                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                                                       <FormControl sx={{ flex: '1 1 240px', minWidth: 220 }} disabled={inputsDisabled}>
                                                             <InputLabel id="category-label">{t(tokens.announcements.form.category)}</InputLabel>
                                                             <Select
                                                                  labelId="category-label"
@@ -539,7 +540,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category);
                                                             if (!cat || cat.subcategories.length === 0) return null;
                                                             return (
-                                                                 <FormControl sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 } }} disabled={inputsDisabled}>
+                                                                 <FormControl sx={{ flex: '1 1 240px', minWidth: 220 }} disabled={inputsDisabled}>
                                                                       <InputLabel id="subcategory-label">{t(tokens.announcements.form.subcategory)}</InputLabel>
                                                                       <Select
                                                                            labelId="subcategory-label"
@@ -668,75 +669,122 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        {docsUploading && <LinearProgress sx={{ mt: 1 }} />}
                                                   </Stack>
                                                   <Divider sx={{ my: 1 }} />
-                                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 3 }} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ opacity: inputsDisabled ? 0.6 : 1 }}>
-                                                       <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.pinned} onChange={e => formik.setFieldValue('pinned', e.target.checked)} />} label={t(tokens.announcements.form.pinToTop)} />
-                                                       <FormControlLabel disabled={inputsDisabled} control={<Checkbox checked={formik.values.schedule_enabled} onChange={e => {
-                                                            const enabled = e.target.checked;
-                                                            formik.setFieldValue('schedule_enabled', enabled);
-                                                            if (!enabled) {
-                                                                 setScheduledDate(null);
-                                                                 setScheduledTime(null);
-                                                                 formik.setFieldValue('scheduled_at', null);
-                                                                 formik.setFieldValue('scheduled_timezone', null);
-                                                            } else if (!scheduledDate) {
-                                                                 // initialize to now rounded to next 15 min
-                                                                 const now = dayjs();
-                                                                 const minute = now.minute();
-                                                                 const rounded = minute % 15 === 0 ? now : now.add(15 - (minute % 15), 'minute');
-                                                                 setScheduledDate(rounded.startOf('day'));
-                                                                 setScheduledTime(rounded);
-                                                                 formik.setFieldValue('scheduled_at', rounded.format('YYYY-MM-DDTHH:mm:ss'));
-                                                                 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
-                                                                 formik.setFieldValue('scheduled_timezone', tz);
+                                                  {/* Pin / Schedule + Date Time pickers: make layout fluid with wrap */}
+                                                  <Stack
+                                                       direction="row"
+                                                       alignItems="flex-start"
+                                                       flexWrap={{ xs: 'wrap', md: 'nowrap' }}
+                                                       gap={2}
+                                                       sx={{ opacity: inputsDisabled ? 0.6 : 1 }}
+                                                  >
+                                                       <FormControlLabel
+                                                            sx={{ flexShrink: 0, mb: 1 }} // same bottom space as pickers
+                                                            disabled={inputsDisabled}
+                                                            control={
+                                                                 <Checkbox
+                                                                      checked={formik.values.pinned}
+                                                                      onChange={e => formik.setFieldValue('pinned', e.target.checked)}
+                                                                 />
                                                             }
-                                                       }} />} label={t(tokens.announcements.form.schedule)} />
+                                                            label={t(tokens.announcements.form.pinToTop)}
+                                                       />
+
+                                                       <FormControlLabel
+                                                            sx={{ flexShrink: 0, mb: 1 }}
+                                                            disabled={inputsDisabled}
+                                                            control={
+                                                                 <Checkbox
+                                                                      checked={formik.values.schedule_enabled}
+                                                                      onChange={e => {
+                                                                           const enabled = e.target.checked;
+                                                                           formik.setFieldValue('schedule_enabled', enabled);
+                                                                           if (!enabled) {
+                                                                                setScheduledDate(null);
+                                                                                setScheduledTime(null);
+                                                                                formik.setFieldValue('scheduled_at', null);
+                                                                                formik.setFieldValue('scheduled_timezone', null);
+                                                                           } else if (!scheduledDate) {
+                                                                                const now = dayjs();
+                                                                                const minute = now.minute();
+                                                                                const rounded =
+                                                                                     minute % 15 === 0 ? now : now.add(15 - (minute % 15), 'minute');
+                                                                                setScheduledDate(rounded.startOf('day'));
+                                                                                setScheduledTime(rounded);
+                                                                                formik.setFieldValue('scheduled_at', rounded.format('YYYY-MM-DDTHH:mm:ss'));
+                                                                                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+                                                                                formik.setFieldValue('scheduled_timezone', tz);
+                                                                           }
+                                                                      }}
+                                                                 />
+                                                            }
+                                                            label={t(tokens.announcements.form.schedule)}
+                                                       />
 
                                                        {formik.values.schedule_enabled && (
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ width: '100%' }}>
-                                                                      <DatePicker
-                                                                           label={t(tokens.announcements.form.scheduleAt) + ' (Date)'}
-                                                                           value={scheduledDate}
-                                                                           onChange={(newDate) => {
-                                                                                setScheduledDate(newDate);
-                                                                                const local = composeScheduledLocal(newDate, scheduledTime);
-                                                                                formik.setFieldValue('scheduled_at', local);
-                                                                           }}
-                                                                           disablePast
-                                                                           slotProps={{
-                                                                                textField: {
-                                                                                     name: 'scheduled_date',
-                                                                                     fullWidth: true,
-                                                                                     size: 'small',
-                                                                                },
-                                                                           }}
-                                                                      />
-                                                                      <TimePicker
-                                                                           label={t(tokens.announcements.form.scheduleAt) + ' (Time)'}
-                                                                           value={scheduledTime}
-                                                                           onChange={(newTime) => {
-                                                                                setScheduledTime(newTime);
-                                                                                const local = composeScheduledLocal(scheduledDate, newTime);
-                                                                                formik.setFieldValue('scheduled_at', local);
-                                                                           }}
-                                                                           minutesStep={5}
-                                                                           slotProps={{
-                                                                                textField: {
-                                                                                     name: 'scheduled_time',
-                                                                                     fullWidth: true,
-                                                                                     size: 'small',
-                                                                                     error: !!(formik.touched.scheduled_at && formik.errors.scheduled_at),
-                                                                                     helperText: formik.touched.scheduled_at && formik.errors.scheduled_at ? formik.errors.scheduled_at : ' ',
-                                                                                     FormHelperTextProps: { sx: { minHeight: 18, mt: 0.5 } },
-                                                                                },
-                                                                                popper: {
-                                                                                     sx: {
-                                                                                          '& .MuiPaper-root': { width: { xs: 220, sm: 260 }, padding: 1 },
-                                                                                     }
-                                                                                }
-                                                                           }}
-                                                                      />
-                                                                 </Stack>
+                                                                 <Box
+                                                                      sx={{
+                                                                           display: 'flex',
+                                                                           alignItems: 'flex-start',
+                                                                           flexWrap: { xs: 'wrap', md: 'nowrap' },
+                                                                           gap: 1.5,
+                                                                           flexGrow: 1,
+                                                                           minWidth: 0,
+                                                                      }}
+                                                                 >
+                                                                      <Box sx={{ flex: '1 1 240px', minWidth: { xs: '100%', sm: 240 } }}>
+                                                                           <DatePicker
+                                                                                label={t(tokens.announcements.form.scheduleAt) + ' (Date)'}
+                                                                                value={scheduledDate}
+                                                                                onChange={(newDate) => {
+                                                                                     setScheduledDate(newDate);
+                                                                                     const local = composeScheduledLocal(newDate, scheduledTime);
+                                                                                     formik.setFieldValue('scheduled_at', local);
+                                                                                }}
+                                                                                disablePast
+                                                                                slotProps={{
+                                                                                     textField: {
+                                                                                          name: 'scheduled_date',
+                                                                                          fullWidth: true,
+                                                                                          size: 'small',
+                                                                                          helperText: ' ',
+                                                                                          FormHelperTextProps: { sx: { minHeight: 20, mt: 0.5 } },
+                                                                                          sx: { mb: 1 }, // equalize with checkboxes
+                                                                                     },
+                                                                                }}
+                                                                           />
+                                                                      </Box>
+
+                                                                      <Box sx={{ flex: '1 1 200px', minWidth: { xs: '100%', sm: 200 } }}>
+                                                                           <TimePicker
+                                                                                label={t(tokens.announcements.form.scheduleAt) + ' (Time)'}
+                                                                                value={scheduledTime}
+                                                                                onChange={(newTime) => {
+                                                                                     setScheduledTime(newTime);
+                                                                                     const local = composeScheduledLocal(scheduledDate, newTime);
+                                                                                     formik.setFieldValue('scheduled_at', local);
+                                                                                }}
+                                                                                minutesStep={5}
+                                                                                slotProps={{
+                                                                                     textField: {
+                                                                                          name: 'scheduled_at',
+                                                                                          fullWidth: true,
+                                                                                          size: 'small',
+                                                                                          error: !!(formik.touched.scheduled_at && formik.errors.scheduled_at),
+                                                                                          helperText:
+                                                                                               formik.touched.scheduled_at && formik.errors.scheduled_at
+                                                                                                    ? formik.errors.scheduled_at
+                                                                                                    : ' ',
+                                                                                          FormHelperTextProps: { sx: { minHeight: 20, mt: 0.5 } },
+                                                                                          sx: { mb: 1 },
+                                                                                     },
+                                                                                     popper: {
+                                                                                          sx: { '& .MuiPaper-root': { width: { xs: 220, sm: 260 }, p: 1 } },
+                                                                                     },
+                                                                                }}
+                                                                           />
+                                                                      </Box>
+                                                                 </Box>
                                                             </LocalizationProvider>
                                                        )}
                                                   </Stack>

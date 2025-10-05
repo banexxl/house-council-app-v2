@@ -725,6 +725,8 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
           console.log('bRows', bRows, bErr);
 
           if (!bErr && bRows && bRows.length > 0) {
+               console.log('usao gde treba');
+
                const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
                if (buildingIds.length > 0) {
                     // 2) Get all tenant user ids for those buildings
