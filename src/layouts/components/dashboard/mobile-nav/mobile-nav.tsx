@@ -128,12 +128,14 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
       anchor="left"
       onClose={onClose}
       open={open}
-      PaperProps={{
-        sx: {
-          ...cssVars,
-          backgroundColor: 'var(--nav-bg)',
-          color: 'var(--nav-color)',
-          width: MOBILE_NAV_WIDTH,
+      slotProps={{
+        paper: {
+          sx: {
+            ...cssVars,
+            backgroundColor: 'var(--nav-bg)',
+            color: 'var(--nav-color)',
+            width: MOBILE_NAV_WIDTH,
+          },
         },
       }}
       variant="temporary"

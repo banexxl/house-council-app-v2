@@ -166,15 +166,17 @@ export const SideNav: FC<SideNavProps> = (props) => {
     <Drawer
       anchor="left"
       open
-      PaperProps={{
-        sx: {
-          ...cssVars,
-          backgroundColor: 'var(--nav-bg)',
-          borderRightColor: 'var(--nav-border-color)',
-          borderRightStyle: 'solid',
-          borderRightWidth: 1,
-          color: 'var(--nav-color)',
-          width: SIDE_NAV_WIDTH,
+      slotProps={{
+        paper: {
+          sx: {
+            ...cssVars,
+            backgroundColor: 'var(--nav-bg)',
+            borderRightColor: 'var(--nav-border-color)',
+            borderRightStyle: 'solid',
+            borderRightWidth: 1,
+            color: 'var(--nav-color)',
+            width: SIDE_NAV_WIDTH,
+          },
         },
       }}
       variant="permanent"
@@ -197,7 +199,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
             spacing={2}
             sx={{ p: 3 }}
           >
-            <Box
+            {/* <Box
               component={RouterLink}
               href={paths.index}
               sx={{
@@ -212,7 +214,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
               }}
             >
               <Logo />
-            </Box>
+            </Box> */}
             <TenantSwitch sx={{ flexGrow: 1 }} />
           </Stack>
           <Stack

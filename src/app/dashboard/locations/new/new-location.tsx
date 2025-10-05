@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@mui/material';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Container from '@mui/material/Container';
@@ -72,7 +73,12 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                <Container maxWidth="xl">
                     <Stack spacing={3}>
                          <Stack spacing={1}>
-                              <Typography variant="h4">{t('locations.locationCreate')}</Typography>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                   <Typography variant="h4">{t('locations.locationCreate')}</Typography>
+                                   <Button LinkComponent={RouterLink} href='/dashboard/locations'>
+                                        {t('locations.locationsTitle')}
+                                   </Button>
+                              </Box>
                               <Breadcrumbs separator={<BreadcrumbsSeparator />}>
                                    <Link
                                         color="text.primary"
