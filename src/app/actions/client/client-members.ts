@@ -191,3 +191,31 @@ export const readClientOrClientIDFromClientMemberID = async (
 
      return { success: true, data: memberRow.client_id };
 };
+
+export const readClientFromClientMemberID = async (
+     clientMemberID: string
+): Promise<{ success: boolean; data?: Client; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data: memberRow, error: memberError } = await supabase
+          .from('tblClientMembers')
+          .select('client_id')
+          .eq('id', clientMemberID)
+          .single();
+
+     if (memberError || !memberRow) {
+          return { success: false, error: memberError?.message || 'Client member not found' };
+     }
+
+     const { data: clientData, error: clientError } = await supabase
+          .from('tblClients')
+          .select('*')
+          .eq('id', memberRow.client_id)
+          .single();
+
+     if (clientError || !clientData) {
+          return { success: false, error: clientError?.message || 'Client not found' };
+     }
+
+     return { success: true, data: clientData };
+};

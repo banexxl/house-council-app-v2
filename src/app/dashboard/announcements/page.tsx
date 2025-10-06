@@ -5,6 +5,7 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import { redirect } from 'next/navigation';
+import { readClientFromClientMemberID, readClientOrClientIDFromClientMemberID } from 'src/app/actions/client/client-members';
 
 export default async function AnnouncementsPage() {
 
@@ -19,9 +20,10 @@ export default async function AnnouncementsPage() {
      }
 
      // Parallel fetching. Only buildings constrained by client (foreign key). Others full unless you choose to filter later.
-     const [annRes, buildingsRes] = await Promise.all([
+     const [annRes, buildingsRes, clientRes] = await Promise.all([
           getAnnouncements(),
           getAllBuildingsFromClient(client?.id! || clientMember?.client_id!),
+          readClientFromClientMemberID(clientMember?.id!)
      ]);
 
      const announcements = annRes.success && annRes.data ? annRes.data : [];
@@ -30,7 +32,7 @@ export default async function AnnouncementsPage() {
      return (
           <Announcements
                announcements={announcements}
-               client={client!}
+               client={client ? client : clientRes.data!}
                buildings={buildings}
           />
      );
