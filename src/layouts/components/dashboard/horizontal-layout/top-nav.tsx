@@ -219,7 +219,7 @@ export const TopNav: FC<TopNavProps> = (props) => {
               width: 40,
             }}
           >
-            <Logo />
+            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
           </Box>
           <TenantSwitch />
         </Stack>

@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
@@ -18,8 +20,8 @@ import { paths } from 'src/paths';
 import type { NavColor } from 'src/types/settings';
 
 import type { Section } from '../config';
-import { TenantSwitch } from '../tenant-switch';
 import { SideNavSection } from './side-nav-section';
+import { useTranslation } from 'react-i18next';
 
 const SIDE_NAV_WIDTH = 280;
 
@@ -161,6 +163,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
   const { color = 'evident', sections = [] } = props;
   const pathname = usePathname();
   const cssVars = useCssVars(color);
+  const { t } = useTranslation();
 
   return (
     <Drawer
@@ -181,7 +184,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
       }}
       variant="permanent"
     >
-      <Scrollbar
+      {/* <Scrollbar
         sx={{
           height: '100%',
           '& .simplebar-content': {
@@ -191,75 +194,85 @@ export const SideNav: FC<SideNavProps> = (props) => {
             background: 'var(--nav-scrollbar-color)',
           },
         }}
-      >
-        <Stack sx={{ height: '100%' }}>
-          <Stack
-            alignItems="center"
-            direction="row"
-            spacing={2}
-            sx={{ p: 3 }}
-          >
-            {/* <Box
-              component={RouterLink}
-              href={paths.index}
-              sx={{
-                borderColor: 'var(--nav-logo-border)',
-                borderRadius: 1,
-                borderStyle: 'solid',
-                borderWidth: 1,
-                display: 'flex',
-                height: 40,
-                p: '4px',
-                width: 40,
-              }}
-            >
-              <Logo />
-            </Box> */}
-            <TenantSwitch sx={{ flexGrow: 1 }} />
-          </Stack>
-          <Stack
-            component="nav"
-            spacing={2}
+      > */}
+      <Stack sx={{ height: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            gap: 0, // slightly increased gap for clarity, but you can set to 0 or a smaller value
+          }}
+        >
+          <Logo
+            url="/assets/logo-icons/1-01.png"
+            alt="/assets/no-image.png"
+            style={{
+              width: '100%',
+              height: 'auto',
+              objectFit: 'fill',
+            }}
+          />
+          <Typography
+            variant="h5"
             sx={{
-              flexGrow: 1,
-              px: 2,
+              fontWeight: 700,
+              color: 'primary.main',
+              letterSpacing: 0.3,
+              textAlign: 'center',
+              lineHeight: 1.2,
+              mb: '20px', // reduced margin-bottom for less space below
             }}
           >
-            {sections.map((section, index) => (
-              <SideNavSection
-                items={section.items}
-                key={index}
-                pathname={pathname}
-                subheader={section.subheader}
-              />
-            ))}
-          </Stack>
-          <Box sx={{ p: 3 }}>
-            <Typography variant="subtitle1">Need help?</Typography>
-            <Typography
-              color="neutral.400"
-              sx={{ mb: 2 }}
-              variant="body2"
-            >
-              Please check our docs.
-            </Typography>
-            <Button
-              component="a"
-              fullWidth
-              href={paths.docs}
-              startIcon={
-                <SvgIcon>
-                  <File04Icon />
-                </SvgIcon>
-              }
-              target="_blank"
-              variant="contained"
-            >
-              Documentation
-            </Button>
-          </Box>
+            {t('common.title')}
+          </Typography>
+        </Box>
+
+        <Stack
+          component="nav"
+
+          spacing={2}
+          sx={{
+            flexGrow: 1,
+            px: 2,
+          }}
+        >
+          {sections.map((section, index) => (
+            <SideNavSection
+              items={section.items}
+              key={index}
+              pathname={pathname}
+              subheader={section.subheader}
+            />
+          ))}
         </Stack>
-      </Scrollbar>
+        <Box sx={{ p: 3 }}>
+          <Typography variant="subtitle1">Need help?</Typography>
+          <Typography
+            color="neutral.400"
+            sx={{ mb: 2 }}
+            variant="body2"
+          >
+            Please check our docs.
+          </Typography>
+          <Button
+            component="a"
+            fullWidth
+            href={paths.docs}
+            startIcon={
+              <SvgIcon>
+                <File04Icon />
+              </SvgIcon>
+            }
+            target="_blank"
+            variant="contained"
+          >
+            Documentation
+          </Button>
+        </Box>
+      </Stack>
+      {/* </Scrollbar> */}
     </Drawer>
   );
 };

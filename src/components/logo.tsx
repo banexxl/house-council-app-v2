@@ -1,38 +1,37 @@
-import type { FC } from 'react';
-import { useTheme } from '@mui/material/styles';
+import type { FC, CSSProperties } from 'react';
+import Image, { ImageProps } from 'next/image';
+import { Box } from '@mui/material';
 
-export const Logo: FC = () => {
-  const theme = useTheme();
-  const fillColor = theme.palette.primary.main;
+export interface LogoProps {
+  url: string;
+  alt?: string;
+  width?: number; // default 120
+  height?: number; // default 40
+  priority?: boolean;
+  style?: CSSProperties;
+  imageProps?: Omit<ImageProps, 'src' | 'alt' | 'width' | 'height'>; // for advanced usage (sizes, placeholder, etc.)
+}
 
+export const Logo: FC<LogoProps> = ({
+  url,
+  alt = 'Logo',
+  width = 120,
+  height = 40,
+  priority = false,
+  style,
+  imageProps
+}) => {
   return (
-    <svg
-      fill="none"
-      height="100%"
-      viewBox="0 0 24 24"
-      width="100%"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Building Base */}
-      <rect
-        x="4"
-        y="2"
-        width="16"
-        height="20"
-        fill={fillColor}
+    <Box sx={{ display: 'inline-flex', lineHeight: 0 }} >
+      <Image
+        src={url}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        style={{ width: 'auto', height: 'auto', maxWidth: '100%', ...style }}
+        {...imageProps}
       />
-      {/* Windows */}
-      <rect x="6" y="6" width="3" height="3" fill="#FFFFFF" />
-      <rect x="11" y="6" width="3" height="3" fill="#FFFFFF" />
-      <rect x="16" y="6" width="3" height="3" fill="#FFFFFF" />
-      <rect x="6" y="11" width="3" height="3" fill="#FFFFFF" />
-      <rect x="11" y="11" width="3" height="3" fill="#FFFFFF" />
-      <rect x="16" y="11" width="3" height="3" fill="#FFFFFF" />
-      <rect x="6" y="16" width="3" height="3" fill="#FFFFFF" />
-      <rect x="11" y="16" width="3" height="3" fill="#FFFFFF" />
-      <rect x="16" y="16" width="3" height="3" fill="#FFFFFF" />
-      {/* Door */}
-      <rect x="10" y="16" width="4" height="5" fill="#FFFFFF" />
-    </svg>
+    </Box>
   );
 };

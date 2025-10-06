@@ -27,7 +27,7 @@ export const SplashScreen: FC = () => (
         width: 48,
       }}
     >
-      <Logo />
+      <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
     </Box>
   </Box>
 );

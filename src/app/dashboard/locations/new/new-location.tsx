@@ -75,7 +75,7 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                          <Stack spacing={1}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                    <Typography variant="h4">{t('locations.locationCreate')}</Typography>
-                                   <Button LinkComponent={RouterLink} href='/dashboard/locations'>
+                                   <Button LinkComponent={RouterLink} href='/dashboard/locations' sx={{ backgroundColor: 'primary.main', color: 'common.white' }}>
                                         {t('locations.locationsTitle')}
                                    </Button>
                               </Box>

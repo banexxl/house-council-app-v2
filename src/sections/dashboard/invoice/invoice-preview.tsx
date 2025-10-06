@@ -49,7 +49,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
               width: 24,
             }}
           >
-            <Logo />
+            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
           </Box>
           <Typography variant="subtitle2">www.devias.io</Typography>
         </div>

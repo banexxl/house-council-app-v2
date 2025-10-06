@@ -42,7 +42,7 @@ const options: Option[] = [
                 width: 12,
               }}
             >
-              <Logo />
+              <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
             </Box>
             <Box
               sx={{
@@ -127,7 +127,7 @@ const options: Option[] = [
                 width: 12,
               }}
             >
-              <Logo />
+              <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
             </Box>
             <Box
               sx={{

@@ -134,7 +134,7 @@ export const Layout: FC<LayoutProps> = (props) => {
                   width: 24,
                 }}
               >
-                <Logo />
+                <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
               </Box>
               <Box
                 sx={{

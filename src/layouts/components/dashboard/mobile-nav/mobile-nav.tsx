@@ -172,7 +172,7 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
                 width: 40,
               }}
             >
-              <Logo />
+              <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
             </Box>
             <TenantSwitch sx={{ flexGrow: 1 }} />
           </Stack>
