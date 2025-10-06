@@ -112,6 +112,8 @@ export const es = {
   [tokens.announcements.modals.removeImagesMessage]: '¿Eliminar todas las imágenes de este anuncio? Esto no se puede deshacer.',
   [tokens.announcements.modals.removeDocumentsTitle]: 'Eliminar todos los documentos',
   [tokens.announcements.modals.removeDocumentsMessage]: '¿Eliminar todos los documentos de este anuncio? Esto no se puede deshacer.',
+  [tokens.announcements.modals.publishTitle]: 'Publicar anuncio',
+  [tokens.announcements.modals.publishMessage]: '¿Seguro que deseas publicar este anuncio ahora? El horario programado (si existe) será ignorado.',
   [tokens.announcements.toasts.saveError]: 'No se pudo guardar el anuncio',
   [tokens.announcements.toasts.saveSuccess]: 'Anuncio guardado correctamente',
   [tokens.announcements.toasts.publishError]: 'No se pudo publicar',

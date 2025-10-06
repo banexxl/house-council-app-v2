@@ -112,6 +112,8 @@ export const de = {
   [tokens.announcements.modals.removeImagesMessage]: 'Alle Bilder für diese Ankündigung entfernen? Dies kann nicht rückgängig gemacht werden.',
   [tokens.announcements.modals.removeDocumentsTitle]: 'Alle Dokumente entfernen',
   [tokens.announcements.modals.removeDocumentsMessage]: 'Alle Dokumente für diese Ankündigung entfernen? Dies kann nicht rückgängig gemacht werden.',
+  [tokens.announcements.modals.publishTitle]: 'Ankündigung veröffentlichen',
+  [tokens.announcements.modals.publishMessage]: 'Sind Sie sicher, dass Sie diese Ankündigung jetzt veröffentlichen möchten? Geplante Zeit (falls vorhanden) wird ignoriert.',
   [tokens.announcements.toasts.saveError]: 'Ankündigung konnte nicht gespeichert werden',
   [tokens.announcements.toasts.saveSuccess]: 'Ankündigung erfolgreich gespeichert',
   [tokens.announcements.toasts.publishError]: 'Veröffentlichung fehlgeschlagen',

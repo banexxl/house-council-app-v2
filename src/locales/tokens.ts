@@ -750,6 +750,8 @@ export const tokens = {
       removeImagesMessage: 'announcements.modals.removeImagesMessage',
       removeDocumentsTitle: 'announcements.modals.removeDocumentsTitle',
       removeDocumentsMessage: 'announcements.modals.removeDocumentsMessage',
+      publishTitle: 'announcements.modals.publishTitle',
+      publishMessage: 'announcements.modals.publishMessage',
     },
     categories: {
       community_general: 'announcements.category.community_general',

@@ -132,6 +132,8 @@ export const rs = {
      [tokens.announcements.modals.removeImagesMessage]: 'Ukloniti sve slike za ovu objavu? Ovo je nepovratno.',
      [tokens.announcements.modals.removeDocumentsTitle]: 'Ukloni sve dokumente',
      [tokens.announcements.modals.removeDocumentsMessage]: 'Ukloniti sve dokumente za ovu objavu? Ovo je nepovratno.',
+     [tokens.announcements.modals.publishTitle]: 'Objavi objavu',
+     [tokens.announcements.modals.publishMessage]: 'Da li ste sigurni da želite odmah da objavite ovu objavu? Zakazano vreme (ako postoji) biće ignorisano.',
      [tokens.announcements.toasts.saveError]: 'Čuvanje objave nije uspelo',
      [tokens.announcements.toasts.saveSuccess]: 'Objava je uspešno sačuvana',
      [tokens.announcements.toasts.publishError]: 'Objavljivanje nije uspelo',

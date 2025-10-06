@@ -753,6 +753,8 @@ export const en = {
   [tokens.announcements.modals.removeImagesMessage]: 'Remove all images for this announcement? This cannot be undone.',
   [tokens.announcements.modals.removeDocumentsTitle]: 'Remove all documents',
   [tokens.announcements.modals.removeDocumentsMessage]: 'Remove all documents for this announcement? This cannot be undone.',
+  [tokens.announcements.modals.publishTitle]: 'Publish announcement',
+  [tokens.announcements.modals.publishMessage]: 'Are you sure you want to publish this announcement now? Scheduled time (if any) will be ignored.',
   [tokens.announcements.toasts.saveError]: 'Failed to save announcement',
   [tokens.announcements.toasts.saveSuccess]: 'Announcement saved successfully',
   [tokens.announcements.toasts.publishError]: 'Failed to publish',

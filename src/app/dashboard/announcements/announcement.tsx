@@ -70,7 +70,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const [rowBusy, setRowBusy] = useState<string | null>(null);
      const [imagesUploading, setImagesUploading] = useState(false);
      const [docsUploading, setDocsUploading] = useState(false);
-     const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents'; targetId?: string }>(null);
+     const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents' | 'confirm-publish'; targetId?: string }>(null);
 
      const uploadingBusy = imagesUploading || docsUploading; // only busy during media uploads
      const router = useRouter();
@@ -176,6 +176,10 @@ export default function Announcements({ client, announcements, buildings }: Anno
           if (formDocs.length > 0) return formDocs;
           return editingEntity.documents || [];
      }, [editingEntity, formik.values.documents]);
+
+     const handlePublishClick = () => {
+          setModalState({ type: 'confirm-publish', targetId: editingEntity?.id });
+     }
 
      const handlePublish = async () => {
           formik.setSubmitting(true);
@@ -815,7 +819,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                              ) : (
                                                   <Button
                                                        variant="contained"
-                                                       onClick={handlePublish}
+                                                       onClick={handlePublishClick}
                                                        disabled={!editingEntity?.id || !!formik.errors.title || !!formik.errors.message || !!formik.errors.category || !!formik.errors.subcategory}
                                                        loading={formik.isSubmitting}>
                                                        {t(tokens.announcements.actions.publish)}
@@ -952,6 +956,24 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               cancelText={t(tokens.common.btnCancel)}
                          >
                               {t(tokens.announcements.modals.removeDocumentsMessage || tokens.announcements.modals.removeImagesMessage)}
+                         </PopupModal>
+                    )
+               }
+               {
+                    modalState?.type === 'confirm-publish' && (
+                         <PopupModal
+                              isOpen
+                              onClose={() => setModalState(null)}
+                              onConfirm={async () => {
+                                   if (modalState.targetId) await handlePublish();
+                                   setModalState(null);
+                              }}
+                              title={t(tokens.announcements.modals.publishTitle)}
+                              type="confirmation"
+                              confirmText={t(tokens.common.btnConfirm)}
+                              cancelText={t(tokens.common.btnCancel)}
+                         >
+                              {t(tokens.announcements.modals.publishMessage)}
                          </PopupModal>
                     )
                }
