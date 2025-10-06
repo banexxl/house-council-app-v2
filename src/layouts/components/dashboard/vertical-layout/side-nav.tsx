@@ -202,12 +202,14 @@ export const SideNav: FC<SideNavProps> = (props) => {
             flexDirection: { xs: 'column', sm: 'row' },
             alignItems: 'center',
             justifyContent: 'flex-start',
-            gap: 0, // slightly increased gap for clarity, but you can set to 0 or a smaller value
+            gap: 0,
           }}
         >
           <Logo
             url="/assets/logo-icons/1-01.png"
             alt="/assets/no-image.png"
+            width={60}
+            height={60}
             style={{
               width: '100%',
               height: 'auto',
@@ -219,10 +221,9 @@ export const SideNav: FC<SideNavProps> = (props) => {
             sx={{
               fontWeight: 700,
               color: 'primary.main',
-              letterSpacing: 0.3,
-              textAlign: 'center',
+              textAlign: 'left',
               lineHeight: 1.2,
-              mb: '20px', // reduced margin-bottom for less space below
+              mb: 1
             }}
           >
             {t('common.title')}
