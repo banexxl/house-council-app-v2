@@ -5,6 +5,7 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
+import { readClientFromClientMemberID } from '../actions/client/client-members';
 
 export type SignInFormValues = {
      email: string;
@@ -324,6 +325,32 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                .eq('email', values.email)
                .single();
           if (clientMember) {
+
+               const { success, data } = await readClientFromClientMemberID(clientMember?.id!);
+
+               // Check if client has an active subscription
+               const { data: subscriptionData, error: subscriptionError } = await supabase
+                    .from('tblClient_Subscription')
+                    .select('*')
+                    .eq('client_id', data?.id)
+                    .eq('status', 'active')
+                    .single();
+
+               if (subscriptionError || !subscriptionData) {
+                    supabase.auth.signOut();
+                    // Remove cookies
+                    cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password - no active subscription found',
+                         payload: values,
+                         status: 'fail',
+                         error: subscriptionError ? subscriptionError.message : 'No active subscription found',
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    });
+                    return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
+               }
                userType = 'client_member';
                userId = clientMember.id;
                userFound = true;
