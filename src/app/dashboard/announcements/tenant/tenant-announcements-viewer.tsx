@@ -112,7 +112,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
           <Container maxWidth="xl">
                <Stack spacing={3}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <Typography variant="h4">{t('announcements.viewer.tenantTitle')}</Typography>
+                         <Typography variant="h4">{t('announcements.tenantTitle')}</Typography>
                     </Box>
                     <Card sx={{ p: 2, maxWidth: { xs: '100%', md: 1000, lg: 1200 }, mx: 'auto' }}>
                          <Box
@@ -132,7 +132,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                              <TextField
                                                   size="small"
                                                   fullWidth
-                                                  placeholder={t('announcements.viewer.searchPlaceholder')}
+                                                  placeholder={t('announcements.searchPlaceholder')}
                                                   value={search}
                                                   onChange={e => setSearch(e.target.value)}
                                                   InputProps={{
@@ -153,7 +153,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                         </Stack>
                                         <TextField
                                              select
-                                             label={t('announcements.viewer.fields.category')}
+                                             label={t('announcements.fields.category')}
                                              size="small"
                                              value={category}
                                              onChange={e => setCategory(e.target.value)}
@@ -167,7 +167,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                         </TextField>
                                         <TextField
                                              select
-                                             label={t('announcements.viewer.fields.building')}
+                                             label={t('announcements.fields.building')}
                                              size="small"
                                              value={buildingFilter}
                                              onChange={e => setBuildingFilter(e.target.value)}
@@ -206,21 +206,21 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                  primary={
                                                                       <Stack direction="row" spacing={1} alignItems="center" sx={{ maxWidth: '100%' }}>
                                                                            <Typography variant="subtitle2" noWrap sx={{ flexGrow: 1 }}>{a.title || t('common.untitled')}</Typography>
-                                                                           {a.pinned && <Tooltip title={t('announcements.viewer.pinned')}><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
+                                                                           {a.pinned && <Tooltip title={t('announcements.pinned')}><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
                                                                            {a.schedule_enabled && a.scheduled_at && (
-                                                                                <Tooltip title={t('announcements.viewer.scheduledAt', { date: new Date(a.scheduled_at).toLocaleString() })}>
+                                                                                <Tooltip title={t('announcements.scheduledAt', { date: new Date(a.scheduled_at).toLocaleString() })}>
                                                                                      <ScheduleIcon color="info" fontSize="small" />
                                                                                 </Tooltip>
                                                                            )}
                                                                            {imagesCount > 0 && (
-                                                                                <Tooltip title={t('announcements.viewer.imagesCount', { count: imagesCount })}>
+                                                                                <Tooltip title={t('announcements.imagesCount', { count: imagesCount })}>
                                                                                      <Badge badgeContent={imagesCount} color="primary" max={9}>
                                                                                           <ImageIcon fontSize="small" />
                                                                                      </Badge>
                                                                                 </Tooltip>
                                                                            )}
                                                                            {docsCount > 0 && (
-                                                                                <Tooltip title={t('announcements.viewer.documentsCount', { count: docsCount })}>
+                                                                                <Tooltip title={t('announcements.documentsCount', { count: docsCount })}>
                                                                                      <Badge badgeContent={docsCount} color="secondary" max={9}>
                                                                                           <DescriptionIcon fontSize="small" />
                                                                                      </Badge>
@@ -230,7 +230,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                  }
                                                                  secondary={
                                                                       <Typography variant="caption" color="text.secondary" noWrap>
-                                                                           {new Date(a.created_at).toLocaleString()} · {(a.buildings || []).length} {t(tokens.announcements.viewer.buildingsShort, { count: (a.buildings || []).length })}
+                                                                           {new Date(a.created_at).toLocaleString()} · {(a.buildings || []).length} {t('announcements.buildingsShort', { count: (a.buildings || []).length })}
                                                                       </Typography>
                                                                  }
                                                             />
@@ -239,14 +239,14 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                              })}
                                              {filtered.length === 0 && (
                                                   <Box sx={{ p: 3, textAlign: 'center' }}>
-                                                       <Typography variant="body2" color="text.secondary">{t(tokens.announcements.viewer.noneMatch)}</Typography>
+                                                       <Typography variant="body2" color="text.secondary">{t('announcements.noneMatch')}</Typography>
                                                   </Box>
                                              )}
                                         </List>
                                    </Box>
                                    <Divider />
                                    <Box sx={{ p: 1, textAlign: 'right' }}>
-                                        <Typography variant="caption" color="text.secondary">{t(tokens.announcements.viewer.countShown, { shown: ordered.length, total: announcements.length })}</Typography>
+                                        <Typography variant="caption" color="text.secondary">{t('announcements.countShown', { shown: ordered.length, total: announcements.length })}</Typography>
                                    </Box>
                               </Paper>
 
@@ -254,7 +254,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                               <Paper variant="outlined" sx={{ flexGrow: 1, width: { xs: '100%', sm: '66.666%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh', minWidth: 0 }}>
                                    {!selected && (
                                         <Box sx={{ p: 4, textAlign: 'center' }}>
-                                             <Typography variant="body2" color="text.secondary">{t(tokens.announcements.viewer.selectPrompt)}</Typography>
+                                             <Typography variant="body2" color="text.secondary">{t('announcements.selectPrompt')}</Typography>
                                         </Box>
                                    )}
                                    {selected && (
@@ -264,7 +264,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                                                             <Typography variant="h5" sx={{ mb: 1, pr: 1 }} noWrap>{selected.title}</Typography>
                                                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                                                 {selected.pinned && <Chip size="small" color="warning" label={t(tokens.announcements.viewer.pinned)} />}
+                                                                 {selected.pinned && <Chip size="small" color="warning" label={t('announcements.pinned')} />}
                                                                  <Chip size="small" label={selected.status === 'published' ? t('announcements.status.published') : t('announcements.status.draft')} color={selected.status === 'published' ? 'success' : 'default'} />
                                                                  {selected.category && (
                                                                       <Chip
@@ -280,13 +280,13 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                            variant="outlined"
                                                                       />
                                                                  )}
-                                                                 {selected.schedule_enabled && selected.scheduled_at && <Chip size="small" color="info" label={t(tokens.announcements.viewer.scheduledAt, { date: new Date(selected.scheduled_at).toLocaleString() })} />}
+                                                                 {selected.schedule_enabled && selected.scheduled_at && <Chip size="small" color="info" label={t('announcements.scheduledAt', { date: new Date(selected.scheduled_at).toLocaleString() })} />}
                                                                  {(selected.images?.length || 0) > 0 && (
                                                                       <Chip
                                                                            size="small"
                                                                            variant="outlined"
                                                                            icon={<ImageIcon fontSize="small" />}
-                                                                           label={t(tokens.announcements.viewer.imagesCount, { count: selected.images?.length ?? 0 })}
+                                                                           label={t('announcements.imagesCount', { count: selected.images?.length ?? 0 })}
                                                                       />
                                                                  )}
                                                                  {Array.isArray(selected.documents) && selected.documents.length > 0 && (
@@ -294,15 +294,15 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                                            size="small"
                                                                            variant="outlined"
                                                                            icon={<DescriptionIcon fontSize="small" />}
-                                                                           label={t(tokens.announcements.viewer.documentsCount, { count: selected.documents.length })}
+                                                                           label={t('announcements.documentsCount', { count: selected.documents.length })}
                                                                       />
                                                                  )}
                                                             </Stack>
                                                        </Box>
                                                        <Stack spacing={0.5} sx={{ textAlign: 'right' }}>
-                                                            <Typography variant="caption" color="text.secondary">{`${t(tokens.common.createdAt)} ${new Date(selected.created_at).toLocaleString()}`}</Typography>
+                                                            <Typography variant="caption" color="text.secondary">{`${t('common.createdAt')} ${new Date(selected.created_at).toLocaleString()}`}</Typography>
                                                             {selected.updated_at && (
-                                                                 <Typography variant="caption" color="text.secondary">{`${t(tokens.common.updatedAt)} ${new Date(selected.updated_at).toLocaleString()}`}</Typography>
+                                                                 <Typography variant="caption" color="text.secondary">{`${t('common.updatedAt')} ${new Date(selected.updated_at).toLocaleString()}`}</Typography>
                                                             )}
                                                        </Stack>
                                                   </Stack>
@@ -326,7 +326,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                   )}
                                                   {Array.isArray(selected.images) && selected.images.length > 0 && (
                                                        <Box sx={{ mb: 4 }}>
-                                                            <Typography variant="subtitle1" gutterBottom>{t(tokens.announcements.viewer.images)}</Typography>
+                                                            <Typography variant="subtitle1" gutterBottom>{t('announcements.images')}</Typography>
                                                             <Box
                                                                  sx={{
                                                                       display: 'grid',
@@ -366,7 +366,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                   )}
                                                   {Array.isArray(selected.documents) && selected.documents.length > 0 && (
                                                        <Box sx={{ mb: 4 }}>
-                                                            <Typography variant="subtitle1" gutterBottom>{t(tokens.announcements.viewer.documents)}</Typography>
+                                                            <Typography variant="subtitle1" gutterBottom>{t('announcements.documents')}</Typography>
                                                             <List dense>
                                                                  {selected.documents.map((d: any, i: number) => (
                                                                       <ListItemButton key={i} component="a" href={d.url} target="_blank" rel="noopener noreferrer" sx={{ borderRadius: 1 }}>

@@ -777,6 +777,32 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
           status: 'success',
           type: 'db',
      });
+
+     // Fire-and-forget internal notification about publishing (mirrors deleteAnnouncement pattern)
+     try {
+          const notification = {
+               type: { value: 'announcement', labelToken: 'Publish Announcement' } as NotificationTypeMap,
+               title: 'Announcement published',
+               description: `Announcement ${id} was published`,
+               created_at: new Date().toISOString(),
+               user_id: user ? user.data.user?.id! : null,
+               is_read: false,
+               is_for_tenant: false,
+               announcement_id: id,
+          } as BaseNotification;
+          const emitted = await emitNotifications([notification]);
+          if (!emitted.success) {
+               logServerAction({
+                    user_id: user ? user.data.user?.id! : null,
+                    action: 'publishAnnouncementNotification',
+                    duration_ms: 0,
+                    error: emitted.error || 'unknown',
+                    payload: { id },
+                    status: 'fail',
+                    type: 'db',
+               });
+          }
+     } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true };
 }

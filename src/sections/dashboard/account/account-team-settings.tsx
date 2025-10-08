@@ -103,6 +103,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                       label={t('common.fullName', 'Name')}
                       name="name"
                       fullWidth
+                      disabled={clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!}
                       value={values.name}
                       onChange={handleChange}
                       error={touched.name && Boolean(errors.name)}
@@ -133,6 +134,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                       label={t('common.lblEmail')}
                       name="email"
                       fullWidth
+                      disabled={clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!}
                       value={values.email}
                       onChange={handleChange}
                       error={touched.email && Boolean(errors.email)}
@@ -163,7 +165,7 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!)}
                       sx={{ mb: 4, width: isMobile ? '100%' : '250px', height: '50px' }}
                     >
                       {t('common.btnAdd')}
