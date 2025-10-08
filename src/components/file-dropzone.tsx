@@ -44,9 +44,12 @@ const fileNameFromPath = (p: string) => decodeURIComponent(p.split('/').pop() ??
 
 function Thumb({ image, onClick }: { image: DBStoredImage; onClick?: () => void }) {
   const { url } = useSignedUrl(image.storage_bucket, image.storage_path, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
+  if (!url) {
+    return <span style={{ display: 'block', width: '100%', height: '100%', background: '#f4f4f5' }} />;
+  }
   return (
     <img
-      src={url ?? ''}
+      src={url}
       alt={fileNameFromPath(image.storage_path)}
       style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: onClick ? 'zoom-in' : 'default' }}
       onClick={onClick}

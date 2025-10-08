@@ -14,11 +14,17 @@ export function CoverImageCell({
      width?: number;
      height?: number;
 }) {
-     const { url } = useSignedUrl(bucket, path, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
+     const { url, loading } = useSignedUrl(bucket, path, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
      if (!path) return null;
+     if (!url) {
+          // Avoid passing empty string to img src; render a lightweight placeholder
+          return (
+               <span style={{ display: 'inline-block', width, height, borderRadius: 6, background: '#f4f4f5' }} />
+          );
+     }
      return (
           <img
-               src={url ?? ''}
+               src={url}
                alt="cover"
                width={width}
                height={height}
