@@ -30,14 +30,17 @@ interface BuildingTableProps {
 const Buildings = ({ clientBuildings }: BuildingTableProps) => {
   const { t } = useTranslation();
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);
+  const [deletingBuildingId, setDeletingBuildingId] = useState<string | null>(null);
 
   const handleDeleteConfirm = useCallback(async (buildingId: string) => {
+    setDeletingBuildingId(buildingId);
     const deleteBuildingResponse = await deleteBuilding(buildingId);
     if (deleteBuildingResponse.success) {
       toast.success(t('common.actionDeleteSuccess'));
     } else {
       toast.error(t('common.actionDeleteError'));
     }
+    setDeletingBuildingId(null);
   }, [t]);
 
   return (
@@ -120,6 +123,8 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
                     color="error"
                     variant="outlined"
                     size="small"
+                    loading={deletingBuildingId === building.id}
+                    disabled={deletingBuildingId !== null}
                     onClick={() => openActionDialog({
                       id: building.id,
                       title: t('warning.deleteWarningTitle'),

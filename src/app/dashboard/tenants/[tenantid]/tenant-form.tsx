@@ -374,7 +374,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   <Button
                                                        variant="outlined"
                                                        color="primary"
-                                                       disabled={formik.isSubmitting || !formik.values.email}
+                                                       disabled={formik.isSubmitting || !formik.values.email || modalLoading}
+                                                       loading={modalLoading && modal.type === 'recovery'}
                                                        onClick={() => setModal({ type: 'recovery', open: true })}
                                                   >
                                                        {t('clients.sendPasswordRecovery')}
@@ -388,7 +389,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   <Button
                                                        variant="outlined"
                                                        color="primary"
-                                                       disabled={formik.isSubmitting || !formik.values.email}
+                                                       disabled={formik.isSubmitting || !formik.values.email || modalLoading}
+                                                       loading={modalLoading && modal.type === 'magic'}
                                                        onClick={() => setModal({ type: 'magic', open: true })}
                                                   >
                                                        {t('clients.sendMagicLink')}
@@ -402,7 +404,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   <Button
                                                        variant="outlined"
                                                        color="warning"
-                                                       disabled={formik.isSubmitting || !formik.values.id}
+                                                       disabled={formik.isSubmitting || !formik.values.id || modalLoading}
+                                                       loading={modalLoading && modal.type === 'mfa'}
                                                        onClick={() => setModal({ type: 'mfa', open: true })}
                                                   >
                                                        {t('clients.removeMfa')}
@@ -416,7 +419,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   <Button
                                                        variant="outlined"
                                                        color="error"
-                                                       disabled={formik.isSubmitting || !formik.values.id}
+                                                       disabled={formik.isSubmitting || !formik.values.id || modalLoading}
+                                                       loading={modalLoading && modal.type === 'ban'}
                                                        onClick={() => setModal({ type: 'ban', open: true })}
                                                   >
                                                        {t('clients.banUser')}
@@ -424,7 +428,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   <Button
                                                        variant="outlined"
                                                        color="success"
-                                                       disabled={formik.isSubmitting || !formik.values.id}
+                                                       disabled={formik.isSubmitting || !formik.values.id || modalLoading}
+                                                       loading={modalLoading && modal.type === 'unban'}
                                                        onClick={() => setModal({ type: 'unban', open: true })}
                                                   >
                                                        {t('clients.unbanUser')}
@@ -481,6 +486,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               type="submit"
                               variant="contained"
                               disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                              loading={formik.isSubmitting}
                          >
                               {t('common.btnSave')}
                          </Button>

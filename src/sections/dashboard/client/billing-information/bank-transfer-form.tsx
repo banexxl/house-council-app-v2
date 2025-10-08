@@ -24,7 +24,7 @@ const BankTransferForm: React.FC<BankTransferFormProps> = ({ clients, onSubmit }
                })}
                onSubmit={onSubmit}
           >
-               {({ errors, touched }) => (
+               {({ errors, touched, isSubmitting, isValid }) => (
                     <Form>
                          <ClientSelect clients={clients} />
                          <Field
@@ -55,7 +55,14 @@ const BankTransferForm: React.FC<BankTransferFormProps> = ({ clients, onSubmit }
                               helperText={touched.amount && errors.amount}
                               margin="normal"
                          />
-                         <Button type="submit" variant="contained" color="primary" fullWidth>
+                         <Button
+                              type="submit"
+                              variant="contained"
+                              color="primary"
+                              fullWidth
+                              loading={isSubmitting}
+                              disabled={!isValid}
+                         >
                               Submit Bank Transfer
                          </Button>
                     </Form>

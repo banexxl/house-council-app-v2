@@ -36,14 +36,17 @@ interface ApartmentsProps {
 const Apartments = ({ apartments }: ApartmentsProps) => {
   const { t } = useTranslation();
   const [addApartmentLoading, setAddApartmentLoading] = useState(false);
+  const [deletingApartmentId, setDeletingApartmentId] = useState<string | null>(null);
 
   const handleDelete = useCallback(async (apartmentId: string) => {
+    setDeletingApartmentId(apartmentId);
     const deleteApartmentResponse = await deleteApartment(apartmentId);
     if (deleteApartmentResponse.success) {
       toast.success(t('common.actionDeleteSuccess'));
     } else {
       toast.error(t('common.actionDeleteError'));
     }
+    setDeletingApartmentId(null);
   }, [t]);
 
   return (
@@ -142,6 +145,8 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
                     color="error"
                     variant="outlined"
                     size="small"
+                    loading={deletingApartmentId === apartment.id}
+                    disabled={deletingApartmentId !== null}
                     onClick={() => openActionDialog({
                       id: apartment.id,
                       title: t('warning.deleteWarningTitle'),

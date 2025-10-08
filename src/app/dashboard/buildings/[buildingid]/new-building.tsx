@@ -47,6 +47,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const [files, setFiles] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const [deletingBuilding, setDeletingBuilding] = useState(false);
   const { t } = useTranslation();
 
   const formik = useFormik({
@@ -179,6 +180,25 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
     }
   }, [formik, buildingData?.id]);
 
+  const handleDeleteBuilding = useCallback(async (buildingId: string): Promise<void> => {
+    setDeletingBuilding(true);
+    try {
+      const { success, error } = await deleteBuilding(buildingId);
+
+      if (!success) {
+        toast.error(error ?? t('common.actionDeleteError'));
+        setDeletingBuilding(false);
+        return;
+      }
+
+      toast.success(t('common.actionDeleteSuccess'));
+      router.push(paths.dashboard.buildings.index);
+    } catch (error) {
+      toast.error(t('common.actionDeleteError'));
+      setDeletingBuilding(false);
+    }
+  }, [router, t]);
+
   const featureIcons: Record<string, JSX.Element> = {
     has_parking_lot: (
       <Tooltip title={t('common.lblHasParkingLot')}>
@@ -231,21 +251,6 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
       </Tooltip>
     )
   };
-
-  const handleDeleteBuilding = async (buildingId: string) => {
-
-    try {
-      const { success, data, error } = await deleteBuilding(buildingId);
-      if (!success) {
-        toast.error(error!);
-        return
-      }
-      toast.success('Building deleted');
-      router.push(paths.dashboard.buildings.index);
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  }
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -439,6 +444,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
             <Button
               variant="contained"
               startIcon={<DeleteIcon />}
+              loading={deletingBuilding}
+              disabled={deletingBuilding}
               sx={{
                 color: 'text.main',
                 backgroundColor: 'error.main',

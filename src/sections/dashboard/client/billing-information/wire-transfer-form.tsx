@@ -25,7 +25,7 @@ const WireTransferForm: React.FC<WireTransferFormProps> = ({ clients, onSubmit }
                })}
                onSubmit={onSubmit}
           >
-               {({ errors, touched }) => (
+               {({ errors, touched, isSubmitting, isValid }) => (
                     <Form>
                          <ClientSelect clients={clients} />
                          <Field
@@ -65,7 +65,14 @@ const WireTransferForm: React.FC<WireTransferFormProps> = ({ clients, onSubmit }
                               helperText={touched.routingNumber && errors.routingNumber}
                               margin="normal"
                          />
-                         <Button type="submit" variant="contained" color="primary" fullWidth>
+                         <Button
+                              type="submit"
+                              variant="contained"
+                              color="primary"
+                              fullWidth
+                              loading={isSubmitting}
+                              disabled={!isValid}
+                         >
                               Submit Wire Transfer
                          </Button>
                     </Form>

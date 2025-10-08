@@ -31,14 +31,17 @@ interface TenantsProps {
 const Tenants = ({ tenants }: TenantsProps) => {
      const { t } = useTranslation();
      const [addTenantLoading, setAddTenantLoading] = useState(false);
+     const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
 
      const handleDeleteConfirm = useCallback(async (tenantId: string) => {
+          setDeletingTenantId(tenantId);
           const deleteTenantResponse = await deleteTenantByIDAction(tenantId);
           if (deleteTenantResponse.deleteTenantByIDActionSuccess) {
                toast.success(t('common.actionDeleteSuccess'));
           } else {
                toast.error(t('common.actionDeleteError'));
           }
+          setDeletingTenantId(null);
      }, [t]);
 
      return (
@@ -105,13 +108,15 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                                   color="error"
                                                   variant="outlined"
                                                   size="small"
+                                                  loading={deletingTenantId === tenant.id}
+                                                  disabled={deletingTenantId !== null}
                                                   onClick={() => openActionDialog({
                                                        id: tenant.id,
                                                        title: t('warning.deleteWarningTitle'),
                                                        message: t('warning.deleteWarningMessage'),
                                                        confirmText: t('common.btnDelete'),
                                                        cancelText: t('common.btnClose'),
-                                                       onConfirm: () => deleteTenantByIDAction(tenant.id)
+                                                       onConfirm: () => handleDeleteConfirm(tenant.id)
                                                   })}
                                              >
                                                   {t('common.btnDelete')}
