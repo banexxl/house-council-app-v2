@@ -852,7 +852,7 @@ export const tokens = {
       statusRequired: 'announcements.validation.statusRequired',
     },
     viewer: {
-      tenantTitle: 'announcements.tenant.title',
+      tenantTitle: 'announcements.title',
       searchPlaceholder: 'announcements.searchPlaceholder',
       fields: {
         category: 'announcements.fields.category',

@@ -112,7 +112,7 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
           <Container maxWidth="xl">
                <Stack spacing={3}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <Typography variant="h4">{t('announcements.tenantTitle')}</Typography>
+                         <Typography variant="h4">{t('announcements.title')}</Typography>
                     </Box>
                     <Card sx={{ p: 2, maxWidth: { xs: '100%', md: 1000, lg: 1200 }, mx: 'auto' }}>
                          <Box
