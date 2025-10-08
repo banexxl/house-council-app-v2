@@ -42,6 +42,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
     validationSchema: apartmentValidationSchema(t, apartmentData?.id),
     onSubmit: async (values, helpers) => {
       helpers.setSubmitting(true); // manually set submitting state
+      //Exclude building object from values
+      delete (values as any).building;
 
       try {
         const response = await createOrUpdateApartment(values);
@@ -147,10 +149,13 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   select
                   name="building_id"
                   value={formik.values.building_id}
-                  onChange={formik.handleChange}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (!formik.touched.building_id) formik.setFieldTouched('building_id', true, false);
+                  }}
                   onBlur={formik.handleBlur}
-                  error={Boolean(formik.touched.building_id && formik.errors.building_id)}
-                  helperText={formik.touched.building_id && formik.errors.building_id}
+                  error={Boolean(formik.errors.building_id && (formik.touched.building_id || !!formik.values.building_id))}
+                  helperText={(formik.touched.building_id || !!formik.values.building_id) ? formik.errors.building_id : ''}
                   disabled={formik.isSubmitting || !!apartmentData?.id}
                 >
                   {buildings?.map((building) => (
@@ -167,14 +172,16 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="apartment_number"
                   type="text"
                   value={formik.values.apartment_number}
-                  onChange={formik.handleChange}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (!formik.touched.apartment_number) formik.setFieldTouched('apartment_number', true, false);
+                  }}
                   onBlur={() => {
                     const trimmedValue = formik.values.apartment_number?.trim() ?? '';
-                    formik.setFieldValue("apartment_number", trimmedValue);
-                    formik.setFieldTouched("apartment_number", true);
+                    formik.setFieldValue('apartment_number', trimmedValue);
                   }}
-                  error={Boolean(formik.touched.apartment_number && formik.errors.apartment_number)}
-                  helperText={formik.touched.apartment_number && formik.errors.apartment_number}
+                  error={Boolean(formik.errors.apartment_number && (formik.touched.apartment_number || !!formik.values.apartment_number))}
+                  helperText={(formik.touched.apartment_number || !!formik.values.apartment_number) ? formik.errors.apartment_number : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
 
@@ -186,14 +193,16 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   label={t('apartments.lblFloor')}
                   name="floor"
                   value={formik.values.floor}
-                  onChange={formik.handleChange}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (!formik.touched.floor) formik.setFieldTouched('floor', true, false);
+                  }}
                   onBlur={() => {
                     const value = parseInt(String(formik.values.floor), 10);
-                    formik.setFieldValue("floor", isNaN(value) ? '' : value);
-                    formik.setFieldTouched("floor", true);
+                    formik.setFieldValue('floor', isNaN(value) ? '' : value);
                   }}
-                  error={Boolean(formik.touched.floor && formik.errors.floor)}
-                  helperText={formik.touched.floor && formik.errors.floor}
+                  error={Boolean(formik.errors.floor && (formik.touched.floor || formik.values.floor !== undefined && formik.values.floor !== null))}
+                  helperText={(formik.touched.floor || (formik.values.floor !== undefined && formik.values.floor !== null)) ? formik.errors.floor : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -205,12 +214,15 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="square_meters"
                   value={formik.values.square_meters}
                   onChange={(e) => {
-                    formik.setFieldValue("square_meters", e.target.value);
+                    formik.handleChange(e);
+                    if (!formik.touched.square_meters) formik.setFieldTouched('square_meters', true, false);
                   }}
                   onBlur={() => {
                     const value = parseInt(String(formik.values.square_meters), 10);
-                    formik.setFieldValue("square_meters", isNaN(value) ? '' : value);
+                    formik.setFieldValue('square_meters', isNaN(value) ? '' : value);
                   }}
+                  error={Boolean(formik.errors.square_meters && (formik.touched.square_meters || formik.values.square_meters !== undefined && formik.values.square_meters !== null))}
+                  helperText={(formik.touched.square_meters || (formik.values.square_meters !== undefined && formik.values.square_meters !== null)) ? formik.errors.square_meters : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -227,14 +239,15 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   label={t('apartments.lblRooms')}
                   name="room_count"
                   value={formik.values.room_count}
-                  onChange={formik.handleChange}
-                  onBlur={() => {
-                    const value = parseInt(String(formik.values.room_count), 10);
-                    formik.setFieldValue("room_count", isNaN(value) ? '' : Math.min(8, Math.max(1, value)));
-                    formik.setFieldTouched("room_count", true);
+                  onChange={(e) => {
+                    formik.handleChange(e); // update value
+                    // mark as touched immediately so validation messages appear without waiting for blur
+                    if (!formik.touched.room_count) {
+                      formik.setFieldTouched('room_count', true, false);
+                    }
                   }}
-                  error={Boolean(formik.touched.room_count && formik.errors.room_count)}
-                  helperText={formik.touched.room_count && formik.errors.room_count}
+                  error={Boolean(formik.errors.room_count && (formik.touched.room_count || formik.values.room_count !== undefined && formik.values.room_count !== null))}
+                  helperText={(formik.touched.room_count || (formik.values.room_count !== undefined && formik.values.room_count !== null)) ? formik.errors.room_count : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -245,7 +258,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   label={t('apartments.lblType')}
                   name="apartment_type"
                   value={formik.values.apartment_type}
-                  onChange={formik.handleChange}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (!formik.touched.apartment_type) formik.setFieldTouched('apartment_type', true, false);
+                  }}
+                  error={Boolean(formik.errors.apartment_type && (formik.touched.apartment_type || !!formik.values.apartment_type))}
+                  helperText={(formik.touched.apartment_type || !!formik.values.apartment_type) ? formik.errors.apartment_type : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 >
                   {['residential',
@@ -274,7 +292,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   label={t('apartments.lblRentalStatus')}
                   name="apartment_status"
                   value={formik.values.apartment_status}
-                  onChange={formik.handleChange}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (!formik.touched.apartment_status) formik.setFieldTouched('apartment_status', true, false);
+                  }}
+                  error={Boolean(formik.errors.apartment_status && (formik.touched.apartment_status || !!formik.values.apartment_status))}
+                  helperText={(formik.touched.apartment_status || !!formik.values.apartment_status) ? formik.errors.apartment_status : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 >
                   {['owned', 'rented', 'for_rent', 'vacant'].map((option) => (
@@ -295,7 +318,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   label={t('apartments.lblNotes')}
                   name="notes"
                   value={formik.values.notes}
-                  onChange={formik.handleChange}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (!formik.touched.notes) formik.setFieldTouched('notes', true, false);
+                  }}
+                  error={Boolean(formik.errors.notes && (formik.touched.notes || !!formik.values.notes))}
+                  helperText={(formik.touched.notes || !!formik.values.notes) ? formik.errors.notes : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -331,6 +359,9 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
         )}
 
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
+          <Typography>
+            {JSON.stringify(formik.errors) /* For debugging purposes only */}
+          </Typography>
           <Button
             color="inherit"
             onClick={() => router.push(paths.dashboard.apartments.index)}

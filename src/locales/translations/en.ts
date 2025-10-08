@@ -607,6 +607,8 @@ export const en = {
   [tokens.errors.apartment.apartmentFloorTooHigh]: 'Apartment floor exceeds building height',
   [tokens.errors.apartment.apartmentRoomCountTooHigh]: 'Apartment room count is too high',
   [tokens.errors.apartment.apartmentInvalidImageUrl]: 'Apartment image URL must be a valid URL',
+  [tokens.errors.apartment.apartmentSquareMetersTooLow]: 'Square meters must be at least 1',
+  [tokens.errors.apartment.apartmentRoomCountTooLow]: 'Room count must be at least 1',
   //#endregion
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Delete Warning',

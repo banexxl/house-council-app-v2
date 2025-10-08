@@ -890,6 +890,8 @@ export const tokens = {
       apartmentFloorTooHigh: 'errors.apartment.apartmentFloorTooHigh',
       apartmentRoomCountTooHigh: 'errors.apartment.apartmentRoomCountTooHigh',
       apartmentInvalidImageUrl: 'errors.apartment.apartmentInvalidImageUrl',
+      apartmentSquareMetersTooLow: 'errors.apartment.apartmentSquareMetersTooLow',
+      apartmentRoomCountTooLow: 'errors.apartment.apartmentRoomCountTooLow',
     },
     client: {
       clientPaymentMethodError: 'errors.client.clientPaymentMethodError',

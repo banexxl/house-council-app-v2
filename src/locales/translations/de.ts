@@ -858,6 +858,8 @@ export const de = {
   [tokens.common.lblCover]: 'Titelbild',
   [tokens.warning.deleteAllWarningTitle]: 'Alle Bilder löschen',
   [tokens.warning.deleteAllWarningMessage]: 'Möchten Sie wirklich alle Bilder entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
+  [tokens.errors.apartment.apartmentSquareMetersTooLow]: 'Quadratmeter müssen mindestens 1 sein',
+  [tokens.errors.apartment.apartmentRoomCountTooLow]: 'Zimmeranzahl muss mindestens 1 sein',
 };
 
 // (viewer keys merged into main de export)

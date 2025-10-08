@@ -3,18 +3,7 @@
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
-import {
-     Box,
-     Breadcrumbs,
-     Button,
-     Card,
-     Container,
-     Link,
-     Stack,
-     SvgIcon,
-     Typography,
-} from '@mui/material';
-
+import { Box, Breadcrumbs, Button, Card, Container, Link, Stack, SvgIcon, Typography } from '@mui/material';
 import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
@@ -74,9 +63,7 @@ const useLocationsSearch = () => {
      };
 };
 
-interface LocationsProps {
-     locations: BuildingLocation[];
-}
+interface LocationsProps { locations: BuildingLocation[]; }
 
 const Locations = ({ locations }: LocationsProps) => {
      const { t } = useTranslation();
@@ -117,12 +104,7 @@ const Locations = ({ locations }: LocationsProps) => {
                               <Stack spacing={1}>
                                    <Typography variant="h4">{t('locations.locationList')}</Typography>
                                    <Breadcrumbs separator={<BreadcrumbsSeparator />}>
-                                        <Link
-                                             color="text.primary"
-                                             component={RouterLink}
-                                             href={paths.dashboard.index}
-                                             variant="subtitle2"
-                                        >
+                                        <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
                                              {t('nav.adminDashboard')}
                                         </Link>
                                         <Typography color="text.secondary" variant="subtitle2">
@@ -143,14 +125,15 @@ const Locations = ({ locations }: LocationsProps) => {
                               </Button>
                          </Stack>
 
-                         <Card>
+                         <Card sx={{ mb: 2 }}>
                               <SearchAndBooleanFilters
-                                   fields={[
-                                        { field: 'location_occupied', label: 'locations.locationTaken' }
-                                   ]}
+                                   fields={[{ field: 'location_occupied', label: 'locations.locationTaken' }]}
                                    value={locationsSearch.state.filters}
                                    onChange={(newFilters) => locationsSearch.handleFiltersChange(newFilters)}
                               />
+                         </Card>
+
+                         <Card>
                               <GenericTable<BuildingLocation>
                                    items={filteredLocations}
                                    page={locationsSearch.state.page}
@@ -165,12 +148,7 @@ const Locations = ({ locations }: LocationsProps) => {
                                         { key: 'region', label: t('locations.locationState') },
                                         { key: 'country', label: t('locations.locationCountry') },
                                         { key: 'post_code', label: t('locations.locationZipCode') },
-                                        {
-                                             key: 'building_id',
-                                             label: t('locations.locationTaken'),
-                                             render: (value, _item) =>
-                                                  isUUID(value as string) ? t('common.lblYes') : t('common.lblNo'),
-                                        },
+                                        { key: 'building_id', label: t('locations.locationTaken'), render: (value) => isUUID(value as string) ? t('common.lblYes') : t('common.lblNo') },
                                    ]}
                                    rowActions={[
                                         (location, openActionDialog) => (

@@ -98,6 +98,17 @@ export const apartmentStatusMap: Record<string, string> = {
 }
 
 // Yup Validation Schema
+export const apartmentImageValidationSchema = (t: (key: string) => string) =>
+     Yup.object().shape({
+          id: Yup.string().required(t('common.required')),
+          created_at: Yup.string().required(t('common.required')),
+          updated_at: Yup.string().required(t('common.required')),
+          storage_bucket: Yup.string().required(t('common.required')),
+          storage_path: Yup.string().required(t('common.required')),
+          is_cover_image: Yup.boolean().required(t('common.required')),
+          apartment_id: Yup.string().required(t('common.required')),
+     });
+
 export const apartmentValidationSchema = (t: (key: string) => string, apartmentId?: string) => Yup.object().shape({
      building_id: Yup.string(),
      apartment_number: Yup.string()
@@ -133,8 +144,8 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
                return value! <= building.stories_high;
           }
      ).required(t('common.required')),
-     square_meters: Yup.number().integer().min(0).optional(),
-     room_count: Yup.number().integer().min(1).max(8, t('errors.apartment.apartmentRoomCountTooHigh')).optional(),
+     square_meters: Yup.number().integer().min(0, t('errors.apartment.apartmentSquareMetersTooLow')).optional(),
+     room_count: Yup.number().integer().min(1, t('errors.apartment.apartmentRoomCountTooLow')).max(8, t('errors.apartment.apartmentRoomCountTooHigh')).optional(),
      notes: Yup.string().optional(),
      apartment_type: Yup.string()
           .oneOf(ApartmentTypeValues)
@@ -143,5 +154,6 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
           .oneOf(ApartmentStatusValues)
           .required(t('common.required')),
      apartment_images: Yup.array().of(
-          Yup.string().url(t('errors.apartment.apartmentInvalidImageUrl')).required(t('common.required'))).optional(),
+          apartmentImageValidationSchema(t)
+     ).optional(),
 });

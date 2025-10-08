@@ -875,4 +875,6 @@ export const es = {
   [tokens.common.lblCover]: 'Portada',
   [tokens.warning.deleteAllWarningTitle]: 'Eliminar todas las imágenes',
   [tokens.warning.deleteAllWarningMessage]: '¿Seguro que quieres eliminar todas las imágenes? Esta acción no se puede deshacer.',
+  [tokens.errors.apartment.apartmentSquareMetersTooLow]: 'Los metros cuadrados deben ser al menos 1',
+  [tokens.errors.apartment.apartmentRoomCountTooLow]: 'El número de habitaciones debe ser al menos 1',
 };

@@ -870,6 +870,8 @@ export const rs = {
      'common.untitled': 'Bez naslova',
      'common.createdAt': 'Kreirano',
      'common.updatedAt': 'Ažurirano',
+     [tokens.errors.apartment.apartmentSquareMetersTooLow]: 'Kvadratura (m²) mora biti najmanje 1',
+     [tokens.errors.apartment.apartmentRoomCountTooLow]: 'Broj soba mora biti najmanje 1',
 };
 
 
