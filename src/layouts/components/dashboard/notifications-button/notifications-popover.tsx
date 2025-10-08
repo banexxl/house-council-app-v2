@@ -24,7 +24,7 @@ import { Notification } from 'src/types/notification';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 
-const renderContent = (notification: Notification): JSX.Element | null => {
+const renderContent = (notification: Notification, t: (key: string) => string): JSX.Element | null => {
   const createdAt = notification.created_at instanceof Date ? notification.created_at : new Date(notification.created_at as any);
   return (
     <ListItemText
@@ -35,7 +35,7 @@ const renderContent = (notification: Notification): JSX.Element | null => {
       }
       secondary={
         <Typography variant="caption" color="text.secondary">
-          {notification.type.labelToken} • {format(createdAt, 'MMM dd, h:mm a')}
+          • {format(createdAt, 'MMM dd, h:mm a')}
         </Typography>
       }
       sx={{ my: 0 }}
@@ -146,7 +146,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
                   </Tooltip>
                 }
               >
-                {renderContent(notification)}
+                {renderContent(notification, t)}
               </ListItem>
             ))}
           </List>
