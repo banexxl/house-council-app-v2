@@ -136,6 +136,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                                     toast.error(t('common.actionSaveError'));
                                   }
                                 }}
+                                disabled={image.is_cover_image}
                               >
                                 {image.is_cover_image ? t('common.lblCover') : t('common.actionSetAsCover')}
                               </Button>
