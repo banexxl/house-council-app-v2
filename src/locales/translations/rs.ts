@@ -723,6 +723,7 @@ export const rs = {
      //#region Errors Apartment
      [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'Broj apartmana mora biti alfanumericni',
      [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'Broj apartmana mora biti jedinstven',
+     [tokens.errors.apartment.apartmentNumberRequired]: 'Broj apartmana je obavezan',
      [tokens.errors.apartment.apartmentFloorTooHigh]: 'Sprat apartmana prelazi visinu zgrade',
      [tokens.errors.apartment.apartmentRoomCountTooHigh]: 'Broj soba je prevelik',
      [tokens.errors.apartment.apartmentInvalidImageUrl]: 'URL slike apartmana mora biti validan',

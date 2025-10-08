@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import {
   Box,
@@ -40,6 +40,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
   const formik = useFormik<Apartment>({
     initialValues: apartmentData ? apartmentData : apartmentInitialValues,
     validationSchema: apartmentValidationSchema(t, apartmentData?.id),
+    validateOnMount: true,
     onSubmit: async (values, helpers) => {
       helpers.setSubmitting(true); // manually set submitting state
       //Exclude building object from values
@@ -64,6 +65,18 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
 
     }
   });
+
+  useEffect(() => {
+    formik.validateForm().then(errs => {
+      const errorFields = Object.keys(errs || {});
+      if (errorFields.length) {
+        const touched: Record<string, boolean> = {};
+        errorFields.forEach(f => { touched[f] = true; });
+        formik.setTouched({ ...formik.touched, ...touched }, false);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apartmentData]);
 
   const handleImageUpload = useCallback(async (newFiles: File[]) => {
     setUploadProgress(0);

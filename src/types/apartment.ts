@@ -131,7 +131,7 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
 
                     return !exists;
                }
-          ).required(t('common.required')),
+          ).required(t('errors.apartment.apartmentNumberRequired')),
      floor: Yup.number().integer().test(
           'valid-floor',
           t('errors.apartment.apartmentFloorTooHigh'),

@@ -428,8 +428,6 @@ export const tokens = {
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
     tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected',
     loadingLocation: 'locations.loadingLocation',
-    // Apartment validation (moved to errors.apartment namespace below)
-    required: 'common.required',
   },
   clients: {
     client: 'clients.client',
@@ -887,6 +885,7 @@ export const tokens = {
     apartment: {
       apartmentNumberMustBeAlphaNumeric: 'errors.apartment.apartmentNumberMustBeAlphaNumeric',
       apartmentNumberMustBeUnique: 'errors.apartment.apartmentNumberMustBeUnique',
+      apartmentNumberRequired: 'errors.apartment.apartmentNumberRequired',
       apartmentFloorTooHigh: 'errors.apartment.apartmentFloorTooHigh',
       apartmentRoomCountTooHigh: 'errors.apartment.apartmentRoomCountTooHigh',
       apartmentInvalidImageUrl: 'errors.apartment.apartmentInvalidImageUrl',

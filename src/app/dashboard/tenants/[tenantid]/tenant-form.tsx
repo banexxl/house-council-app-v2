@@ -88,6 +88,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                ...initialValues,
           },
           validationSchema: tenantValidationSchema(t),
+          validateOnMount: true,
           onSubmit: async (values, { setSubmitting }) => {
                try {
                     const response = await createOrUpdateTenantAction(values as Tenant);
@@ -110,6 +111,19 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
      });
 
      const apartmentSelected = !!formik.values.apartment_id;
+
+     // Surface errors immediately on load and when tenantData changes
+     useEffect(() => {
+          formik.validateForm().then(errs => {
+               const errorFields = Object.keys(errs || {});
+               if (errorFields.length) {
+                    const touched: Record<string, boolean> = {};
+                    errorFields.forEach(f => { touched[f] = true; });
+                    formik.setTouched({ ...formik.touched, ...touched }, false);
+               }
+          });
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [tenantData]);
 
      // Admin action handlers (reuse logic from client form, but use tenantData)
      const handleSendPasswordRecovery = async () => {

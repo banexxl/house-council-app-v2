@@ -718,6 +718,7 @@ export const es = {
   //#region Errors Apartment
   [tokens.errors.apartment.apartmentNumberMustBeAlphaNumeric]: 'El numero de apartamento debe ser alfanumerico',
   [tokens.errors.apartment.apartmentNumberMustBeUnique]: 'El numero de apartamento debe ser unico',
+  [tokens.errors.apartment.apartmentNumberRequired]: 'El numero de apartamento es obligatorio',
   [tokens.errors.apartment.apartmentFloorTooHigh]: 'El piso del apartamento excede la altura del edificio',
   [tokens.errors.apartment.apartmentRoomCountTooHigh]: 'El número de habitaciones es demasiado alto',
   [tokens.errors.apartment.apartmentInvalidImageUrl]: 'La URL de la imagen del apartamento debe ser válida',

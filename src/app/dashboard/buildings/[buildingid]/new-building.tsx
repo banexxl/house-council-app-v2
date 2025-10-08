@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import {
   Button, Card, CardContent, Grid, Stack, Switch,
@@ -53,6 +53,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const formik = useFormik({
     initialValues: buildingData ? buildingData : buildingInitialValues,
     validationSchema: buildingValidationSchema(t),
+    validateOnMount: true,
     onSubmit: async (values, helpers) => {
 
       helpers.setSubmitting(true);
@@ -96,6 +97,19 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
     }
 
   });
+
+  // Immediately surface validation errors on initial load / when entity changes
+  useEffect(() => {
+    formik.validateForm().then(errs => {
+      const errorFields = Object.keys(errs || {});
+      if (errorFields.length) {
+        const touched: Record<string, boolean> = {};
+        errorFields.forEach(f => { touched[f] = true; });
+        formik.setTouched({ ...formik.touched, ...touched }, false);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buildingData]);
 
   const handleFilesDrop = useCallback(async (newFiles: File[]): Promise<void> => {
 

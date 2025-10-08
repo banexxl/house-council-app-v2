@@ -84,6 +84,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const formik = useFormik({
           initialValues: announcementInitialValues,
           validationSchema: buildAnnouncementValidationSchema(t),
+          validateOnMount: true,
           onSubmit: async (values, helpers) => {
                helpers.setSubmitting(true);
                // Build payload mapping to server expectations
@@ -148,6 +149,23 @@ export default function Announcements({ client, announcements, buildings }: Anno
                }
           }
      });
+
+     // Immediately surface existing validation errors on load / entity change / scheduling toggle
+     useEffect(() => {
+          // Validate then mark errored fields as touched so helper texts appear without user interaction
+          formik.validateForm().then((errs) => {
+               if (!errs) return;
+               const touched: Record<string, boolean> = {};
+               const candidateFields = ['title', 'message', 'category', 'subcategory', 'buildings', 'scheduled_at'];
+               candidateFields.forEach(f => {
+                    if ((errs as any)[f] !== undefined) touched[f] = true;
+               });
+               if (Object.keys(touched).length) {
+                    formik.setTouched({ ...formik.touched, ...touched }, false);
+               }
+          });
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [editingEntity, formik.values.schedule_enabled, formik.values.category]);
 
      const isDraft = formik.values.status === 'draft';
      const hasErrors = Object.keys(formik.errors).length > 0;
