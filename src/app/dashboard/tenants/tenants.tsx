@@ -96,7 +96,7 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                              }
                                         },
                                         {
-                                             key: 'apartment',
+                                             key: 'apartment_id',
                                              label: `${t('apartments.lblApartmentNumber')}`,
                                              render: (_v, item) => {
                                                   const b = (item as any).apartment.apartment_number;
