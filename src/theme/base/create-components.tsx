@@ -76,22 +76,8 @@ export const createComponents = (): Components => {
             boxShadow: 'none',
             transform: 'none',
             opacity: '1 !important',
-            color: 'inherit !important',
             '&.MuiButton-contained': {
               opacity: '1 !important',
-              color: 'inherit !important',
-              '&.MuiButton-containedPrimary': {
-                backgroundColor: 'rgb(25, 118, 210) !important',
-              },
-              '&.MuiButton-containedSuccess': {
-                backgroundColor: 'rgb(46, 125, 50) !important',
-              },
-              '&.MuiButton-containedSecondary': {
-                backgroundColor: 'rgb(156, 39, 176) !important',
-              },
-              '&.MuiButton-containedError': {
-                backgroundColor: 'rgb(211, 47, 47) !important',
-              },
             },
           },
           // Contained variant tweaks (retain background + pressed effect synergy)

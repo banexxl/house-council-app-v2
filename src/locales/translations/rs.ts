@@ -530,7 +530,7 @@ export const rs = {
      [tokens.buildings.yupBuildingNumberOfApartmentsRequired]: 'Broj stanova u zgradi je obavezan',
      [tokens.buildings.yupBuildingMaxApartmentsPerFloorRequired]: 'Maksimalan broj stanova po spratu je obavezan',
      [tokens.buildings.yupBuildingStatusRequired]: 'Status zgrade je obavezan',
-     [tokens.buildings.yupBuildingNumberOfApartmentsMaxCheck]: 'Broj stanova ne sme biti veći od broja spratova Ã— maksimalan broj stanova po spratu',
+     [tokens.buildings.yupBuildingNumberOfApartmentsMaxCheck]: 'Broj stanova ne sme biti veći od broja spratova × maksimalan broj stanova po spratu',
      [tokens.buildings.yupBuildingMaxApartmentsPerFloorMaxCheck]: 'Broj stanova po spratu ne sme biti veći od ukupnog broja stanova u zgradi.',
      [tokens.buildings.yupBuildingHasGroundFloorApartmentsRequired]: 'Da li zgrada ima stambene jedinice na prizemlju je obavezno polje',
      //#endregion
