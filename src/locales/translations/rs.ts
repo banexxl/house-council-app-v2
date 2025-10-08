@@ -310,7 +310,7 @@ export const rs = {
      [tokens.apartments.lblApartmentTypeMixedUse]: 'Mešovita namena',
      [tokens.apartments.lblApartmentTypeVacation]: 'Odmor',
      [tokens.apartments.lblApartmentTypeStorage]: 'Skladište',
-     [tokens.apartments.lblApartmentTypeGarage]: 'Garađa',
+     [tokens.apartments.lblApartmentTypeGarage]: 'Garaža',
      [tokens.apartments.lblApartmentTypeUtility]: 'Komunalno',
      [tokens.common.notes]: 'Napomene',
      [tokens.common.settings]: 'Podešavanje',

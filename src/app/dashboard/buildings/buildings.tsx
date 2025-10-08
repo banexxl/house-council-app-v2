@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
@@ -16,8 +16,9 @@ import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
-import { Building } from 'src/types/building';
+import { Building, buildingStatusMap } from 'src/types/building';
 import { GenericTable } from 'src/components/generic-table';
+import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteBuilding } from 'src/app/actions/building/building-actions';
 import toast from 'react-hot-toast';
 import { CoverImageCell } from 'src/components/cover-image-cell';
@@ -31,6 +32,50 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
   const { t } = useTranslation();
   const [addBuildingLoading, setAddBuildingLoading] = useState(false);
   const [deletingBuildingId, setDeletingBuildingId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{
+    search?: string;
+    building_status?: string;
+    has_bicycle_room?: boolean;
+    has_parking_lot?: boolean;
+    has_elevator?: boolean;
+    has_gas_heating?: boolean;
+    has_central_heating?: boolean;
+    is_recently_built?: boolean;
+    has_electric_heating?: boolean;
+    has_solar_power?: boolean;
+    has_pre_heated_water?: boolean;
+  }>({});
+
+  const handleFiltersChange = useCallback((newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }, []);
+
+  const filteredBuildings = useMemo(() => {
+    const search = filters.search?.toLowerCase().trim();
+    return clientBuildings.filter(b => {
+      // status filter
+      if (filters.building_status && b.building_status !== filters.building_status) return false;
+      // boolean feature toggles
+      const booleanKeys: (keyof typeof filters)[] = [
+        'has_bicycle_room', 'has_parking_lot', 'has_elevator', 'has_gas_heating', 'has_central_heating', 'is_recently_built', 'has_electric_heating', 'has_solar_power', 'has_pre_heated_water'
+      ];
+      for (const k of booleanKeys) {
+        if (filters[k] === true && (b as any)[k] !== true) return false; // require feature present
+      }
+      if (search) {
+        const loc = b.building_location;
+        const haystack = [
+          b.id,
+          b.building_status,
+          loc?.city,
+          loc?.street_address,
+          loc?.street_number
+        ].filter(Boolean).map(v => String(v).toLowerCase()).join(' ');
+        if (!haystack.includes(search)) return false;
+      }
+      return true;
+    });
+  }, [clientBuildings, filters]);
 
   const handleDeleteConfirm = useCallback(async (buildingId: string) => {
     setDeletingBuildingId(buildingId);
@@ -72,9 +117,34 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
             </Button>
           </Stack>
 
+          <Card sx={{ mb: 2 }}>
+            <SearchAndBooleanFilters
+              value={filters}
+              onChange={handleFiltersChange}
+              selects={[
+                {
+                  field: 'building_status',
+                  label: 'buildings.buildingStatus',
+                  options: Object.entries(buildingStatusMap).map(([value, label]) => ({ value, label }))
+                }
+              ]}
+              fields={[
+                { field: 'has_bicycle_room', label: 'common.lblHasBicycleRoom' },
+                { field: 'has_parking_lot', label: 'common.lblHasParkingLot' },
+                { field: 'has_elevator', label: 'common.lblHasElevator' },
+                { field: 'has_gas_heating', label: 'common.lblHasGasHeating' },
+                { field: 'has_central_heating', label: 'common.lblHasCentralHeating' },
+                { field: 'is_recently_built', label: 'common.lblRecentlyBuilt' },
+                { field: 'has_electric_heating', label: 'common.lblHasElectricHeating' },
+                { field: 'has_solar_power', label: 'common.lblHasSolarPower' },
+                { field: 'has_pre_heated_water', label: 'common.lblHasPreHeatedWater' },
+              ]}
+            />
+          </Card>
+
           <Card>
             <GenericTable<Building>
-              items={clientBuildings}
+              items={filteredBuildings}
               baseUrl="/dashboard/buildings"
               columns={[
                 {
@@ -106,7 +176,7 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
                     return `${city}${street ? ' / ' + street : ''}`;
                   }
                 },
-                { key: 'building_status', label: t('buildings.buildingStatus') },
+                { key: 'building_status', label: t('buildings.buildingStatus'), render: (val) => t(buildingStatusMap[val as string] || val as string) },
                 { key: 'has_bicycle_room', label: t('common.lblHasBicycleRoom') },
                 { key: 'has_parking_lot', label: t('common.lblHasParkingLot') },
                 { key: 'has_elevator', label: t('common.lblHasElevator') },
