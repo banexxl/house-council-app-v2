@@ -84,6 +84,27 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                              render: (_, tenant) => `${tenant.first_name} ${tenant.last_name}`
                                         },
                                         {
+                                             key: 'apartment',
+                                             label: `${t('locations.locationCity')} / ${t('locations.locationStreet')}`,
+                                             render: (_v, item) => {
+                                                  const b = (item as any).apartment.building;
+                                                  const loc = b?.building_location;
+                                                  if (!loc) return '-';
+                                                  const city = loc.city ?? '-';
+                                                  const street = `${loc.street_address ?? ''} ${loc.street_number ?? ''}`.trim();
+                                                  return `${city}${street ? ' / ' + street : ''}`;
+                                             }
+                                        },
+                                        {
+                                             key: 'apartment',
+                                             label: `${t('apartments.lblApartmentNumber')}`,
+                                             render: (_v, item) => {
+                                                  const b = (item as any).apartment.apartment_number;
+                                                  if (!b) return '-';
+                                                  return `${b}`;
+                                             }
+                                        },
+                                        {
                                              key: 'email',
                                              label: t('tenants.email')
                                         },

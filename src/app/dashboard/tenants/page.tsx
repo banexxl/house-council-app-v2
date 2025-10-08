@@ -26,6 +26,7 @@ export default async function TenantsPage() {
     // Redirect tenant to products page
     redirect('/dashboard/products');
   }
+  console.log('Tenants:', tenants);
 
   return <Tenants tenants={tenants} />;
 }
