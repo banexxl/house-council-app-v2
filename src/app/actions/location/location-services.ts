@@ -28,7 +28,6 @@ export const insertLocationAction = async (
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: resolvedForInsert } = await readClientOrClientIDFromClientMemberID(values.client_id);
      const client_id = typeof resolvedForInsert === 'string' ? resolvedForInsert : resolvedForInsert?.id ?? values.client_id;
-     console.log('client_id:', client_id);
 
      if (
           !values ||

@@ -140,7 +140,6 @@ export const createOrUpdateTenantAction = async (
                email_confirm: true,
                phone: tenantData.phone_number,
           });
-          console.log('createdUser, userError', createdUser, userError);
 
           if (userError || !createdUser?.user) {
                await logServerAction({
@@ -187,7 +186,6 @@ export const createOrUpdateTenantAction = async (
                })
                .select()
                .single();
-          console.log('insertedTenant, insertError', insertedTenant, insertError);
 
           if (insertError || !insertedTenant) {
                await logServerAction({

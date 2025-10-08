@@ -79,8 +79,6 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
                   label: t('common.lblCoverImage'),
                   render: (_v, row) => {
                     const imgs = Array.isArray(row.building_images) ? (row.building_images as any[]) : [];
-                    console.log(imgs);
-
                     const cover = imgs.find((im) => im && typeof im === 'object' && im.is_cover_image) as (typeof imgs)[0] | undefined;
                     const bucket = (cover?.storage_bucket as string) ?? (process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET as string);
                     const path = cover?.storage_path as string | undefined;
