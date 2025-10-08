@@ -359,9 +359,6 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
         )}
 
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
-          <Typography>
-            {JSON.stringify(formik.errors) /* For debugging purposes only */}
-          </Typography>
           <Button
             color="inherit"
             onClick={() => router.push(paths.dashboard.apartments.index)}
