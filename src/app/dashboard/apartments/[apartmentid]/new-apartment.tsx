@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { FileDropzone } from 'src/components/file-dropzone';
-import type { File } from 'src/components/file-dropzone';
+import type { File, DBStoredImage } from 'src/components/file-dropzone';
 import { apartmentInitialValues, apartmentValidationSchema, type Apartment } from 'src/types/apartment';
 import { createOrUpdateApartment } from 'src/app/actions/apartment/apartment-actions';
 import { removeAllImagesFromApartment, removeApartmentImageFilePath, setAsApartmentCoverImage, uploadApartmentImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
@@ -309,7 +309,11 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
               <Typography variant="h6" sx={{ mb: 2 }}>{t('common.lblImages')}</Typography>
               <FileDropzone
                 entityId={apartmentData.id}
-                onRemoveImage={handleFileRemove}
+                onRemoveImage={async (image: DBStoredImage) => {
+                  const { success, error } = await removeApartmentImageFilePath(apartmentData.id!, image.storage_path);
+                  if (!success) toast.error(error ?? t('common.actionDeleteError'));
+                  else toast.success(t('common.actionDeleteSuccess'));
+                }}
                 onRemoveAll={handleFileRemoveAll}
                 accept={{ 'image/*': [] }}
                 caption="(SVG, JPG, PNG or GIF up to 900x400)"

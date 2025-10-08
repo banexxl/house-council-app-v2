@@ -176,13 +176,14 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                 {onRemoveAll && (
                   <>
                     <Button size="small" color="error" onClick={() => setOpenRemoveAll(true)}>
-                      {t('common.actionRemoveAll')}
+                      {t('common.btnRemoveAll')}
                     </Button>
                     <PopupModal
                       isOpen={openRemoveAll}
                       onClose={() => setOpenRemoveAll(false)}
                       onConfirm={() => { onRemoveAll(); setOpenRemoveAll(false); }}
-                      title={t('common.warnRemoveAll')}
+                      title={t('warning.deleteWarningTitle')}
+                      children={t('warning.deleteWarningMessage')}
                       type="confirmation"
                     />
                   </>
