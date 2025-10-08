@@ -327,6 +327,8 @@ export const ProductCreateForm: FC = (props) => {
           <Button
             type="submit"
             variant="contained"
+            disabled={formik.isSubmitting}
+            loading={formik.isSubmitting}
           >
             Create
           </Button>

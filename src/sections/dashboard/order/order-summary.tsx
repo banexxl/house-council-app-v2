@@ -26,9 +26,23 @@ export const OrderSummary: FC<OrderSummaryProps> = (props) => {
   const { order, ...other } = props;
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
   const [status, setStatus] = useState<string>(statusOptions[0]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setStatus(event.target.value);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Handle save logic here
+    } catch (error) {
+      console.error('Error saving order:', error);
+    } finally {
+      setIsSaving(false);
+    }
   }, []);
 
   const align = mdUp ? 'horizontal' : 'vertical';
@@ -131,7 +145,14 @@ export const OrderSummary: FC<OrderSummaryProps> = (props) => {
                 </option>
               ))}
             </TextField>
-            <Button variant="contained">Save</Button>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              disabled={isSaving}
+              loading={isSaving}
+            >
+              Save
+            </Button>
           </Stack>
         </PropertyListItem>
       </PropertyList>

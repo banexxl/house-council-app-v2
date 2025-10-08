@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState, useCallback } from 'react';
 import Attachment01Icon from '@untitled-ui/icons-react/build/esm/Attachment01';
 import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';
 import Image01Icon from '@untitled-ui/icons-react/build/esm/Image01';
@@ -20,6 +21,20 @@ import { getInitials } from 'src/utils/get-initials';
 export const SocialPostAdd: FC = (props) => {
   const user = useMockedUser();
   const smUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handlePost = useCallback(async () => {
+    setIsPosting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Handle post submission logic here
+    } catch (error) {
+      console.error('Error posting:', error);
+    } finally {
+      setIsPosting(false);
+    }
+  }, []);
 
   return (
     <Card {...props}>
@@ -83,7 +98,14 @@ export const SocialPostAdd: FC = (props) => {
                 </Stack>
               )}
               <div>
-                <Button variant="contained">Post</Button>
+                <Button
+                  variant="contained"
+                  onClick={handlePost}
+                  disabled={isPosting}
+                  loading={isPosting}
+                >
+                  Post
+                </Button>
               </div>
             </Stack>
           </Stack>

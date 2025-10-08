@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC, FormEvent } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -14,8 +14,21 @@ import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
 
 export const ContactForm: FC = () => {
-  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>): void => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Handle form submission logic here
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }, []);
 
   return (
@@ -192,6 +205,9 @@ export const ContactForm: FC = () => {
           fullWidth
           size="large"
           variant="contained"
+          type="submit"
+          disabled={isSubmitting}
+          loading={isSubmitting}
         >
           Let&apos;s Talk
         </Button>

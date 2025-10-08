@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState, useCallback } from 'react';
 import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';
 import Link01Icon from '@untitled-ui/icons-react/build/esm/Link01';
 import Attachment01Icon from '@untitled-ui/icons-react/build/esm/Attachment01';
@@ -19,6 +20,20 @@ import { getInitials } from 'src/utils/get-initials';
 export const SocialCommentAdd: FC = (props) => {
   const smUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
   const user = useMockedUser();
+  const [isSending, setIsSending] = useState(false);
+
+  const handleSend = useCallback(async () => {
+    setIsSending(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Handle comment submission logic here
+    } catch (error) {
+      console.error('Error sending comment:', error);
+    } finally {
+      setIsSending(false);
+    }
+  }, []);
 
   return (
     <div {...props}>
@@ -91,7 +106,14 @@ export const SocialCommentAdd: FC = (props) => {
               )}
             </Stack>
             <div>
-              <Button variant="contained">Send</Button>
+              <Button
+                variant="contained"
+                onClick={handleSend}
+                disabled={isSending}
+                loading={isSending}
+              >
+                Send
+              </Button>
             </div>
           </Stack>
         </Stack>

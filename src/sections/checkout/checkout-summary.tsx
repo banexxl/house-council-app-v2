@@ -1,6 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
+import { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import Box from '@mui/material/Box';
@@ -55,10 +56,24 @@ interface CheckoutOrderSummaryProps {
 export const CheckoutSummary: FC<CheckoutOrderSummaryProps> = (props) => {
   const { onQuantityChange, products = [], ...other } = props;
   const { shippingTax, subtotal, total } = calculateAmounts(products);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   const formattedShippingTax = numeral(shippingTax).format('$00.00');
   const formattedSubtotal = numeral(subtotal).format('$00.00');
   const formattedTotal = numeral(total).format('$00.00');
+
+  const handleApplyCoupon = useCallback(async () => {
+    setIsApplyingCoupon(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Handle coupon application logic here
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  }, []);
 
   return (
     <Card
@@ -148,7 +163,14 @@ export const CheckoutSummary: FC<CheckoutOrderSummaryProps> = (props) => {
           mt: 2,
         }}
       >
-        <Button type="button">Apply Coupon</Button>
+        <Button
+          type="button"
+          onClick={handleApplyCoupon}
+          disabled={isApplyingCoupon}
+          loading={isApplyingCoupon}
+        >
+          Apply Coupon
+        </Button>
       </Box>
       <Box
         sx={{

@@ -13,6 +13,7 @@ import { getInitials } from 'src/utils/get-initials';
 export const CompanyReviewAdd = () => {
   const user = useMockedUser();
   const [rating, setRating] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRatingChange = useCallback(
     (event: SyntheticEvent, newRating: number | null): void => {
@@ -20,6 +21,20 @@ export const CompanyReviewAdd = () => {
     },
     []
   );
+
+  const handleSubmitReview = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Handle review submission logic here
+      setRating(null);
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
 
   return (
     <Stack
@@ -47,7 +62,14 @@ export const CompanyReviewAdd = () => {
             onChange={handleRatingChange}
             value={rating}
           />
-          <Button variant="contained">Send Review</Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmitReview}
+            disabled={isSubmitting || !rating}
+            loading={isSubmitting}
+          >
+            Send Review
+          </Button>
         </Stack>
       </Box>
     </Stack>

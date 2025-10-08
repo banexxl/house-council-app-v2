@@ -19,6 +19,7 @@ export const MailThreadReply: FC = (props) => {
   const user = useMockedUser();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState<string>('');
+  const [isReplying, setIsReplying] = useState(false);
 
   const handleMessageChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>): void => {
     setMessage(event.target.value);
@@ -26,6 +27,20 @@ export const MailThreadReply: FC = (props) => {
 
   const handleFileAttach = useCallback((): void => {
     fileRef.current?.click();
+  }, []);
+
+  const handleReply = useCallback(async () => {
+    setIsReplying(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Handle reply logic here
+      setMessage('');
+    } catch (error) {
+      console.error('Error sending reply:', error);
+    } finally {
+      setIsReplying(false);
+    }
   }, []);
 
   return (
@@ -95,7 +110,14 @@ export const MailThreadReply: FC = (props) => {
                 </IconButton>
               </Stack>
               <div>
-                <Button variant="contained">Reply</Button>
+                <Button
+                  variant="contained"
+                  onClick={handleReply}
+                  disabled={isReplying || !message.trim()}
+                  loading={isReplying}
+                >
+                  Reply
+                </Button>
               </div>
             </Stack>
           </Box>

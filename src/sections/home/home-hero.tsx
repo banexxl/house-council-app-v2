@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState } from 'react';
 import EyeIcon from '@untitled-ui/icons-react/build/esm/Eye';
 import LayoutBottomIcon from '@untitled-ui/icons-react/build/esm/LayoutBottom';
 import Box from '@mui/material/Box';
@@ -17,6 +18,7 @@ import { HomeCodeSamples } from './home-code-samples';
 
 export const HomeHero: FC = () => {
   const theme = useTheme();
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   return (
     <Box
@@ -88,6 +90,7 @@ export const HomeHero: FC = () => {
             <Button
               component={RouterLink}
               href={paths.dashboard.index}
+              onClick={() => setIsDemoLoading(true)}
               startIcon={
                 <SvgIcon fontSize="small">
                   <EyeIcon />
@@ -111,6 +114,7 @@ export const HomeHero: FC = () => {
                   }
               }
               variant="contained"
+              loading={isDemoLoading}
             >
               Live Demo
             </Button>

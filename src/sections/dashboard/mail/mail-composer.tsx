@@ -1,5 +1,5 @@
 import type { ChangeEvent, FC } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import Attachment01Icon from '@untitled-ui/icons-react/build/esm/Attachment01';
 import Expand01Icon from '@untitled-ui/icons-react/build/esm/Expand01';
@@ -50,6 +50,8 @@ export const MailComposer: FC<MailComposerProps> = (props) => {
     to = '',
   } = props;
 
+  const [isSending, setIsSending] = useState(false);
+
   const handleSubjectChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
       onSubjectChange?.(event.target.value);
@@ -63,6 +65,20 @@ export const MailComposer: FC<MailComposerProps> = (props) => {
     },
     [onToChange]
   );
+
+  const handleSend = useCallback(async () => {
+    setIsSending(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Handle email sending logic here
+      onClose?.();
+    } catch (error) {
+      console.error('Error sending email:', error);
+    } finally {
+      setIsSending(false);
+    }
+  }, [onClose]);
 
   if (!open) {
     return null;
@@ -184,7 +200,14 @@ export const MailComposer: FC<MailComposerProps> = (props) => {
             </Tooltip>
           </Stack>
           <div>
-            <Button variant="contained">Send</Button>
+            <Button
+              variant="contained"
+              onClick={handleSend}
+              disabled={isSending}
+              loading={isSending}
+            >
+              Send
+            </Button>
           </div>
         </Stack>
       </Paper>
