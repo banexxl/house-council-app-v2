@@ -42,7 +42,19 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: apartments, error } = await supabase.from("tblApartments").select("*");
+    const { data: apartments, error } = await supabase
+         .from("tblApartments")
+         .select(`
+              *,
+              building:tblBuildings (
+                   id,
+                   building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                        street_address,
+                        street_number,
+                        city
+                   )
+              )
+         `);
      if (error) {
           await logServerAction({ action: "getAllApartments", duration_ms: Date.now() - t0, error: error.message, payload: {}, status: "fail", type: "db", user_id: null });
           return { success: false, error: error.message };
@@ -96,10 +108,20 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
           return { success: true, data: { apartments: [], building_images: [] } }; // keep shape
      }
 
-     const { data: apartments, error: apartmentsError } = await supabase
-          .from("tblApartments")
-          .select("*")
-          .in("building_id", buildings.map(b => b.id));
+    const { data: apartments, error: apartmentsError } = await supabase
+         .from("tblApartments")
+         .select(`
+              *,
+              building:tblBuildings (
+                   id,
+                   building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                        street_address,
+                        street_number,
+                        city
+                   )
+              )
+         `)
+         .in("building_id", buildings.map(b => b.id));
 
      if (apartmentsError) {
           await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: apartmentsError.message, payload: { clientid }, status: "fail", type: "db", user_id: clientid, id: "" });
@@ -145,7 +167,20 @@ export async function getApartmentsFromClientsBuilding(clientid: string, buildin
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data, error } = await supabase.from("tblApartments").select("*").eq("building_id", buildingid);
+    const { data, error } = await supabase
+         .from("tblApartments")
+         .select(`
+              *,
+              building:tblBuildings (
+                   id,
+                   building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                        street_address,
+                        street_number,
+                        city
+                   )
+              )
+         `)
+         .eq("building_id", buildingid);
 
      if (error) {
           await logServerAction({ action: "getApartmentsFromClientsBuilding", duration_ms: Date.now() - t0, error: error.message, payload: { clientid, buildingid }, status: "fail", type: "db", user_id: clientid, id: buildingid });
@@ -162,11 +197,21 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: apartment, error } = await supabase
-          .from("tblApartments")
-          .select("*")
-          .eq("id", id)
-          .single();
+    const { data: apartment, error } = await supabase
+         .from("tblApartments")
+         .select(`
+              *,
+              building:tblBuildings (
+                   id,
+                   building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                        street_address,
+                        street_number,
+                        city
+                   )
+              )
+         `)
+         .eq("id", id)
+         .single();
 
      if (error) {
           await logServerAction({ action: "getApartmentById", duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: "fail", type: "db", user_id: null, id: "" });

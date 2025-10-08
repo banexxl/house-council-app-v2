@@ -107,6 +107,18 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
                     );
                   }
                 },
+                {
+                  key: 'building_id',
+                  label: `${t('locations.locationCity')} / ${t('locations.locationStreet')}`,
+                  render: (_v, item) => {
+                    const b = (item as any).building;
+                    const loc = b?.building_location;
+                    if (!loc) return '-';
+                    const city = loc.city ?? '-';
+                    const street = `${loc.street_address ?? ''} ${loc.street_number ?? ''}`.trim();
+                    return `${city}${street ? ' / ' + street : ''}`;
+                  }
+                },
                 { key: 'apartment_number', label: t('apartments.lblApartmentNumber') },
                 { key: 'floor', label: t('apartments.lblFloor') },
                 {
