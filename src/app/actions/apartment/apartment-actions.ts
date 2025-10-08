@@ -48,28 +48,30 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
           return { success: false, error: error.message };
      }
 
-     // fetch & sign image refs
-     const { data: imageRows } = await supabase
-          .from("tblApartmentImages")
-          .select("apartment_id, storage_bucket, storage_path");
+    // fetch image rows (raw refs)
+    const { data: imageRows } = await supabase
+         .from("tblApartmentImages")
+         .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, apartment_id");
 
-     const refs = (imageRows ?? []).map(r => ({ bucket: r.storage_bucket ?? DEFAULT_BUCKET, path: r.storage_path }));
-     const signedMap = await signMany(supabase, refs);
+    const imagesByApt = new Map<string, any[]>();
+    (imageRows ?? []).forEach(r => {
+         const arr = imagesByApt.get(r.apartment_id) ?? [];
+         arr.push({
+              id: r.id,
+              created_at: r.created_at,
+              updated_at: r.updated_at,
+              storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+              storage_path: r.storage_path,
+              is_cover_image: !!(r as any).is_cover_image,
+              apartment_id: r.apartment_id,
+         });
+         imagesByApt.set(r.apartment_id, arr);
+    });
 
-     const imagesByApt = new Map<string, string[]>();
-     (imageRows ?? []).forEach(r => {
-          const key = `${r.storage_bucket ?? DEFAULT_BUCKET}::${r.storage_path}`;
-          const url = signedMap.get(key);
-          if (!url) return;
-          const arr = imagesByApt.get(r.apartment_id) ?? [];
-          arr.push(url);
-          imagesByApt.set(r.apartment_id, arr);
-     });
-
-     const data: Apartment[] = (apartments ?? []).map(a => ({
-          ...a,
-          apartment_images: imagesByApt.get(a.id) ?? [],
-     }));
+    const data: Apartment[] = (apartments ?? []).map(a => ({
+         ...a,
+         apartment_images: imagesByApt.get(a.id) ?? [],
+    }));
 
      await logServerAction({ action: "getAllapartments", duration_ms: Date.now() - t0, error: "", payload: {}, status: "success", type: "db", user_id: null });
      return { success: true, data };
@@ -106,27 +108,37 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
 
      // sign apartment images for these apartments
      const aptIds = (apartments ?? []).map(a => a.id);
-     let signedImageRows: Array<{ apartment_id: string; image_url: string }> = [];
+    let imagesByApt = new Map<string, any[]>();
 
      if (aptIds.length) {
-          const { data: imageRows } = await supabase
-               .from("tblApartmentImages")
-               .select("apartment_id, storage_bucket, storage_path")
-               .in("apartment_id", aptIds);
+         const { data: imageRows } = await supabase
+              .from("tblApartmentImages")
+              .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, apartment_id")
+              .in("apartment_id", aptIds);
 
-          const refs = (imageRows ?? []).map(r => ({ bucket: r.storage_bucket ?? DEFAULT_BUCKET, path: r.storage_path }));
-          const signedMap = await signMany(supabase, refs);
-
-          signedImageRows = (imageRows ?? []).map(r => ({
-               apartment_id: r.apartment_id,
-               // keep legacy key name `image_url` to avoid breaking callers
-               image_url: signedMap.get(`${r.storage_bucket ?? DEFAULT_BUCKET}::${r.storage_path}`) ?? "",
-          })).filter(r => !!r.image_url);
+         imagesByApt = new Map();
+         (imageRows ?? []).forEach(r => {
+              const arr = imagesByApt.get(r.apartment_id) ?? [];
+              arr.push({
+                   id: r.id,
+                   created_at: r.created_at,
+                   updated_at: r.updated_at,
+                   storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                   storage_path: r.storage_path,
+                   is_cover_image: !!(r as any).is_cover_image,
+                   apartment_id: r.apartment_id,
+              });
+              imagesByApt.set(r.apartment_id, arr);
+         });
      }
 
      await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: "", payload: { clientid }, status: "success", type: "db", user_id: clientid, id: "" });
-     // keep return shape the same: { apartments, building_images: ... } (was misnamed before)
-     return { success: true, data: { apartments: apartments ?? [], building_images: signedImageRows } };
+    // Return apartments with image rows attached (legacy building_images field omitted; not used by callers)
+    const apartmentsWithImages: Apartment[] = (apartments ?? []).map(a => ({
+         ...a,
+         apartment_images: imagesByApt.get(a.id) ?? [],
+    }));
+    return { success: true, data: { apartments: apartmentsWithImages, building_images: [] } };
 }
 
 export async function getApartmentsFromClientsBuilding(clientid: string, buildingid: string): Promise<{ success: boolean; error?: string; data?: Apartment[] }> {
@@ -161,20 +173,28 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
           return { success: false, error: error.message };
      }
 
-     const { data: imageRows } = await supabase
-          .from("tblApartmentImages")
-          .select("storage_bucket, storage_path")
-          .eq("apartment_id", id);
-
-     const refs = (imageRows ?? []).map(r => ({ bucket: r.storage_bucket ?? DEFAULT_BUCKET, path: r.storage_path }));
-     const signedMap = await signMany(supabase, refs);
-     const signed = (imageRows ?? [])
-          .map(r => signedMap.get(`${r.storage_bucket ?? DEFAULT_BUCKET}::${r.storage_path}`))
-          .filter(Boolean) as string[];
+    const { data: imageRows } = await supabase
+         .from("tblApartmentImages")
+         .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, apartment_id")
+         .eq("apartment_id", id);
 
      await logServerAction({ action: "getApartmentById", duration_ms: Date.now() - t0, error: "", payload: { id }, status: "success", type: "db", user_id: null, id: "" });
 
-     return { success: true, data: { ...apartment, apartment_images: signed } };
+    return {
+         success: true,
+         data: {
+              ...apartment,
+              apartment_images: (imageRows ?? []).map(r => ({
+                   id: r.id,
+                   created_at: r.created_at,
+                   updated_at: r.updated_at,
+                   storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                   storage_path: r.storage_path,
+                   is_cover_image: !!(r as any).is_cover_image,
+                   apartment_id: r.apartment_id,
+              })),
+         }
+    };
 }
 
 export async function createOrUpdateApartment(payload: Apartment) {

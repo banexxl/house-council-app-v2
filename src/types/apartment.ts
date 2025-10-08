@@ -32,8 +32,18 @@ export interface Apartment {
      apartment_status: ApartmentStatus;
      created_at?: Date;
      updated_at?: Date;
-     apartment_images?: string[];
-     cover_image?: string;
+     // Storage-linked images (strings during create/update; rows on reads)
+     apartment_images?: (string | ApartmentImage)[];
+}
+
+export interface ApartmentImage {
+     id: string;
+     created_at: string;
+     updated_at: string;
+     storage_bucket: string;
+     storage_path: string;
+     is_cover_image: boolean;
+     apartment_id: string;
 }
 
 // Initial Values for Formik
@@ -49,6 +59,7 @@ export const apartmentInitialValues: Apartment = {
      apartment_status: 'owned',
      created_at: new Date(),
      updated_at: new Date(),
+     apartment_images: [],
 };
 
 // Explicit allowed values for validation

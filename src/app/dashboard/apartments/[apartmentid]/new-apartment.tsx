@@ -125,7 +125,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
       }
 
       // Clear local form state
-      formik.setFieldValue('building_images', []);
+      formik.setFieldValue('apartment_images', []);
       toast.success(t('common.actionDeleteSuccess'));
 
     } catch (error) {
@@ -315,9 +315,9 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                 caption="(SVG, JPG, PNG or GIF up to 900x400)"
                 onDrop={handleImageUpload}
                 uploadProgress={uploadProgress}
-                images={apartmentData.apartment_images || []}
-                onSetAsCover={async (url) => {
-                  const { success } = await setAsApartmentCoverImage(apartmentData.id!, url);
+                images={(apartmentData.apartment_images as unknown as import('src/components/file-dropzone').DBStoredImage[]) || []}
+                onSetAsCover={async (image) => {
+                  const { success } = await setAsApartmentCoverImage(apartmentData.id!, image.id);
                   if (!success) throw new Error();
                 }}
                 disabled={formik.isSubmitting || !formik.values.building_id}

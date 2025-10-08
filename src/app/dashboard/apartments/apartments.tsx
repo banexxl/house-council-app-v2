@@ -25,6 +25,7 @@ import {
 } from 'src/types/apartment';
 import { GenericTable } from 'src/components/generic-table';
 import { deleteApartment } from 'src/app/actions/apartment/apartment-actions';
+import { CoverImageCell } from 'src/components/cover-image-cell';
 import { toast } from 'react-hot-toast';
 
 
@@ -88,7 +89,24 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
               items={apartments}
               baseUrl="/dashboard/apartments"
               columns={[
-                { key: 'cover_image', label: t('apartments.lblCoverImage') },
+                {
+                  key: 'apartment_images',
+                  label: t('apartments.lblCoverImage'),
+                  render: (_v, row) => {
+                    const imgs = Array.isArray(row.apartment_images) ? (row.apartment_images as any[]) : [];
+                    const cover = imgs.find((im) => im && typeof im === 'object' && im.is_cover_image) as (typeof imgs)[0] | undefined;
+                    const bucket = (cover?.storage_bucket as string) ?? (process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET as string);
+                    const path = cover?.storage_path as string | undefined;
+                    return (
+                      <CoverImageCell
+                        bucket={bucket}
+                        path={path}
+                        width={64}
+                        height={40}
+                      />
+                    );
+                  }
+                },
                 { key: 'apartment_number', label: t('apartments.lblApartmentNumber') },
                 { key: 'floor', label: t('apartments.lblFloor') },
                 {

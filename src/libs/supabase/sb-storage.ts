@@ -814,12 +814,28 @@ export const removeAllImagesFromApartment = async (
  * @param url The URL of the image to set as the cover image.
  * @returns A promise resolving to an object with a success boolean.
  */
-export const setAsApartmentCoverImage = async (apartmentid: string, url: string): Promise<{ success: boolean }> => {
+export const setAsApartmentCoverImage = async (apartmentid: string, imageId: string): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { error: dbError } = await supabase.from('tblApartments').update({ cover_image: url }).eq('id', apartmentid);
-     if (dbError) return { success: false };
-     revalidatePath(`/dashboard/apartments`);
-     return { success: !dbError }
+     try {
+          // Unset previous covers
+          const { error: unsetErr } = await supabase
+               .from('tblApartmentImages')
+               .update({ is_cover_image: false })
+               .eq('apartment_id', apartmentid);
+          if (unsetErr) return { success: false, error: unsetErr.message };
+
+          // Set new cover
+          const { error: setErr } = await supabase
+               .from('tblApartmentImages')
+               .update({ is_cover_image: true })
+               .match({ id: imageId, apartment_id: apartmentid });
+          if (setErr) return { success: false, error: setErr.message };
+
+          revalidatePath(`/dashboard/apartments/${apartmentid}`);
+          return { success: true };
+     } catch (e: any) {
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
 }
 
 
