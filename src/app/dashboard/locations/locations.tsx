@@ -100,12 +100,6 @@ const Locations = ({ locations }: LocationsProps) => {
           });
      }, [locations, locationsSearch.state.filters]);
 
-     const paginatedLocations = useMemo(() => {
-          const start = locationsSearch.state.page * locationsSearch.state.rowsPerPage;
-          const end = start + locationsSearch.state.rowsPerPage;
-          return filteredLocations.slice(start, end);
-     }, [filteredLocations, locationsSearch.state.page, locationsSearch.state.rowsPerPage]);
-
      const handleDeleteLocationsConfirm = useCallback(async (locationId: string) => {
           const deleteLocationResponse = await deleteLocationByID(locationId);
           if (deleteLocationResponse.success) {
@@ -157,9 +151,8 @@ const Locations = ({ locations }: LocationsProps) => {
                                    value={locationsSearch.state.filters}
                                    onChange={(newFilters) => locationsSearch.handleFiltersChange(newFilters)}
                               />
-
                               <GenericTable<BuildingLocation>
-                                   items={paginatedLocations}
+                                   items={filteredLocations}
                                    page={locationsSearch.state.page}
                                    rowsPerPage={locationsSearch.state.rowsPerPage}
                                    onPageChange={locationsSearch.handlePageChange}

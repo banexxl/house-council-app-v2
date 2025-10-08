@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
   Box,
@@ -24,6 +24,7 @@ import {
   type Apartment,
 } from 'src/types/apartment';
 import { GenericTable } from 'src/components/generic-table';
+import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteApartment } from 'src/app/actions/apartment/apartment-actions';
 import { CoverImageCell } from 'src/components/cover-image-cell';
 import { toast } from 'react-hot-toast';
@@ -37,6 +38,37 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
   const { t } = useTranslation();
   const [addApartmentLoading, setAddApartmentLoading] = useState(false);
   const [deletingApartmentId, setDeletingApartmentId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{ search?: string; apartment_type?: string; apartment_status?: string }>({});
+
+  const handleFiltersChange = useCallback((newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }, []);
+
+  const filteredApartments = useMemo(() => {
+    const search = filters.search?.toLowerCase().trim();
+    return apartments.filter(a => {
+      // Type filter
+      if (filters.apartment_type && a.apartment_type !== filters.apartment_type) return false;
+      // Status filter
+      if (filters.apartment_status && a.apartment_status !== filters.apartment_status) return false;
+      // Search across: apartment number, floor, square_meters, location city/street, building id
+      if (search) {
+        const b: any = (a as any).building;
+        const loc = b?.building_location;
+        const haystack = [
+          a.apartment_number,
+          a.floor,
+          a.square_meters,
+          loc?.city,
+          loc?.street_address,
+          loc?.street_number,
+          a.id
+        ].filter(Boolean).map(v => String(v).toLowerCase()).join(' ');
+        if (!haystack.includes(search)) return false;
+      }
+      return true;
+    });
+  }, [apartments, filters]);
 
   const handleDelete = useCallback(async (apartmentId: string) => {
     setDeletingApartmentId(apartmentId);
@@ -87,9 +119,28 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
             </Button>
           </Stack>
 
+          <Card sx={{ mb: 2 }}>
+            <SearchAndBooleanFilters
+              value={filters}
+              onChange={handleFiltersChange}
+              selects={[
+                {
+                  field: 'apartment_type',
+                  label: 'apartments.lblType',
+                  options: Object.keys(apartmentTypeMap).map(k => ({ value: k, label: apartmentTypeMap[k as keyof typeof apartmentTypeMap] }))
+                },
+                {
+                  field: 'apartment_status',
+                  label: 'apartments.lblRentalStatus',
+                  options: Object.keys(apartmentStatusMap).map(k => ({ value: k, label: apartmentStatusMap[k as keyof typeof apartmentStatusMap] }))
+                }
+              ]}
+            />
+          </Card>
+
           <Card>
             <GenericTable<Apartment>
-              items={apartments}
+              items={filteredApartments}
               baseUrl="/dashboard/apartments"
               columns={[
                 {
