@@ -474,30 +474,46 @@ export const removeAllImagesFromBuilding = async (
 
 export const setAsBuildingCoverImage = async (
      buildingId: string,
-     imageURL: string
+     imageId: string
 ): Promise<{ success: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
-
-          // Set new cover
-          const { error: updateError } = await supabase
-               .from('tblBuildings')
-               .update({ cover_image: imageURL })
-               .eq('id', buildingId)
-
-          if (updateError) {
+          // Unset previous cover(s)
+          const { error: unsetErr } = await supabase
+               .from('tblBuildingImages')
+               .update({ is_cover_image: false })
+               .eq('building_id', buildingId);
+          if (unsetErr) {
                await logServerAction({
-                    action: 'setAsBuildingCoverImage',
+                    action: 'setAsBuildingCoverImage - unset',
                     duration_ms: 0,
-                    error: updateError.message,
-                    payload: { buildingId, imageURL },
+                    error: unsetErr.message,
+                    payload: { buildingId },
                     status: 'fail',
                     type: 'db',
                     user_id: null,
-               })
-               return { success: false, error: updateError.message };
+               });
+               return { success: false, error: unsetErr.message };
+          }
+
+          // Set new cover image row
+          const { error: setErr } = await supabase
+               .from('tblBuildingImages')
+               .update({ is_cover_image: true })
+               .match({ id: imageId, building_id: buildingId });
+          if (setErr) {
+               await logServerAction({
+                    action: 'setAsBuildingCoverImage - set',
+                    duration_ms: 0,
+                    error: setErr.message,
+                    payload: { buildingId, imageId },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+               });
+               return { success: false, error: setErr.message };
           }
 
           revalidatePath(`/dashboard/buildings/${buildingId}`);

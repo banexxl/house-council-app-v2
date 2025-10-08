@@ -30,6 +30,7 @@ export default async function Page() {
   } else if (tenant) {
     buildings = [];
   }
+  console.log(buildings);
 
   return (
     <Buildings clientBuildings={buildings} />

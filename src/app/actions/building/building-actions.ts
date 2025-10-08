@@ -13,6 +13,22 @@ import { toStorageRef } from "src/utils/sb-bucket";
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
 const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 
+export type DBStoredImage = {
+     id: string;
+     created_at: string;
+     updated_at: string;
+     storage_bucket: string;
+     storage_path: string;
+     is_cover_image: boolean;
+     building_id: string;
+};
+
+async function signOne(supabase: any, bucket: string, path: string, ttlSeconds = 60 * 30) {
+     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, ttlSeconds);
+     if (error) return null;
+     return data?.signedUrl ?? null;
+}
+
 /** Batch-sign many paths, grouped by bucket. Returns map bucket+path → signedUrl. */
 async function signMany(
      supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
@@ -53,31 +69,31 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
           return { success: false, error: error.message };
      }
 
-     // Fetch image storage refs
-     const { data: imageRows } = await supabase
-          .from("tblBuildingImages")
-          .select("building_id, storage_bucket, storage_path");
+    // Fetch image rows (raw refs) for each building
+    const { data: imageRows } = await supabase
+         .from("tblBuildingImages")
+         .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id");
 
-     // Sign images (batch)
-     const refs = (imageRows ?? []).map(r => ({ bucket: r.storage_bucket ?? DEFAULT_BUCKET, path: r.storage_path }));
-     const signedMap = await signMany(supabase, refs);
+    // Group by building
+    const imagesByBuilding = new Map<string, any[]>();
+    (imageRows ?? []).forEach(r => {
+         const arr = imagesByBuilding.get(r.building_id) ?? [];
+         arr.push({
+              id: r.id,
+              created_at: r.created_at,
+              updated_at: r.updated_at,
+              storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+              storage_path: r.storage_path,
+              is_cover_image: !!(r as any).is_cover_image,
+              building_id: r.building_id,
+         });
+         imagesByBuilding.set(r.building_id, arr);
+    });
 
-     // Attach signed URLs per building
-     const imagesByBuilding = new Map<string, string[]>();
-     (imageRows ?? []).forEach(r => {
-          const key = `${r.storage_bucket ?? DEFAULT_BUCKET}::${r.storage_path}`;
-          const url = signedMap.get(key);
-          if (!url) return;
-          const arr = imagesByBuilding.get(r.building_id) ?? [];
-          arr.push(url);
-          imagesByBuilding.set(r.building_id, arr);
-     });
-
-     const data: Building[] = (buildings ?? []).map(b => ({
-          ...b,
-          // If your Building type expects `building_images: string[]`
-          building_images: imagesByBuilding.get(b.id) ?? [],
-     }));
+    const data: Building[] = (buildings ?? []).map(b => ({
+         ...b,
+         building_images: imagesByBuilding.get(b.id) ?? [],
+    }));
 
      await logServerAction({ action: "getAllBuildings", duration_ms: Date.now() - t0, error: "", payload: {}, status: "success", type: "db", user_id: null, id: "" });
      return { success: true, data };
@@ -103,32 +119,34 @@ export async function getAllBuildingsFromClient(
      }
 
      const ids = (buildings ?? []).map(b => b.id);
-     let imagesByBuilding = new Map<string, string[]>();
+    let imagesByBuilding = new Map<string, any[]>();
 
      if (ids.length) {
-          const { data: imageRows } = await supabase
-               .from("tblBuildingImages")
-               .select("building_id, storage_bucket, storage_path")
-               .in("building_id", ids);
+         const { data: imageRows } = await supabase
+              .from("tblBuildingImages")
+              .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id")
+              .in("building_id", ids);
 
-          const refs = (imageRows ?? []).map(r => ({ bucket: r.storage_bucket ?? DEFAULT_BUCKET, path: r.storage_path }));
-          const signedMap = await signMany(supabase, refs);
-
-          imagesByBuilding = new Map();
-          (imageRows ?? []).forEach(r => {
-               const key = `${r.storage_bucket ?? DEFAULT_BUCKET}::${r.storage_path}`;
-               const url = signedMap.get(key);
-               if (!url) return;
-               const arr = imagesByBuilding.get(r.building_id) ?? [];
-               arr.push(url);
-               imagesByBuilding.set(r.building_id, arr);
-          });
+         imagesByBuilding = new Map();
+         (imageRows ?? []).forEach(r => {
+              const arr = imagesByBuilding.get(r.building_id) ?? [];
+              arr.push({
+                   id: r.id,
+                   created_at: r.created_at,
+                   updated_at: r.updated_at,
+                   storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                   storage_path: r.storage_path,
+                   is_cover_image: !!(r as any).is_cover_image,
+                   building_id: r.building_id,
+              });
+              imagesByBuilding.set(r.building_id, arr);
+         });
      }
 
-     const data: Building[] = (buildings ?? []).map(b => ({
-          ...b,
-          building_images: imagesByBuilding.get(b.id) ?? [],
-     }));
+    const data: Building[] = (buildings ?? []).map(b => ({
+         ...b,
+         building_images: imagesByBuilding.get(b.id) ?? [],
+    }));
 
      await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: "", payload: { client_id: resolvedClientId }, status: "success", type: "db", user_id: resolvedClientId, id: "" });
      return { success: true, data };
@@ -152,21 +170,29 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
           return { success: false, error: error.message };
      }
 
-     // Get image refs and sign
-     const { data: imageRows } = await supabase
-          .from('tblBuildingImages')
-          .select('storage_bucket, storage_path')
-          .eq('building_id', id);
-
-     const refs = (imageRows ?? []).map(r => ({ bucket: r.storage_bucket ?? DEFAULT_BUCKET, path: r.storage_path }));
-     const signedMap = await signMany(supabase, refs);
-     const signed = (imageRows ?? [])
-          .map(r => signedMap.get(`${r.storage_bucket ?? DEFAULT_BUCKET}::${r.storage_path}`))
-          .filter(Boolean) as string[];
+    // Get image rows (raw storage refs)
+    const { data: imageRows } = await supabase
+         .from('tblBuildingImages')
+         .select('id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id')
+         .eq('building_id', id);
 
      await logServerAction({ user_id: null, action: 'getBuildingById', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db' });
 
-     return { success: true, data: { ...building, building_images: signed } };
+    return {
+         success: true,
+         data: {
+              ...building,
+              building_images: (imageRows ?? []).map(r => ({
+                   id: r.id,
+                   created_at: r.created_at,
+                   updated_at: r.updated_at,
+                   storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                   storage_path: r.storage_path,
+                   is_cover_image: !!(r as any).is_cover_image,
+                   building_id: r.building_id,
+              })),
+         }
+    };
 }
 
 /** CREATE a new building */

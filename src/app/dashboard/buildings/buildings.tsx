@@ -20,6 +20,7 @@ import { Building } from 'src/types/building';
 import { GenericTable } from 'src/components/generic-table';
 import { deleteBuilding } from 'src/app/actions/building/building-actions';
 import toast from 'react-hot-toast';
+import { CoverImageCell } from 'src/components/cover-image-cell';
 
 
 interface BuildingTableProps {
@@ -74,9 +75,24 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
               baseUrl="/dashboard/buildings"
               columns={[
                 {
-                  key: 'cover_image',
+                  key: 'building_images',
                   label: t('common.lblCoverImage'),
-                  render: (value) => value ? <img src={value as string} alt="cover" width={64} height={40} /> : null
+                  render: (_v, row) => {
+                    const imgs = Array.isArray(row.building_images) ? (row.building_images as any[]) : [];
+                    console.log(imgs);
+
+                    const cover = imgs.find((im) => im && typeof im === 'object' && im.is_cover_image) as (typeof imgs)[0] | undefined;
+                    const bucket = (cover?.storage_bucket as string) ?? (process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET as string);
+                    const path = cover?.storage_path as string | undefined;
+                    return (
+                      <CoverImageCell
+                        bucket={bucket}
+                        path={path}
+                        width={64}
+                        height={40}
+                      />
+                    );
+                  }
                 },
                 {
                   key: 'building_location',

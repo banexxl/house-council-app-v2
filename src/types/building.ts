@@ -20,10 +20,23 @@ export interface Building {
      building_status: string;
      number_of_apartments: number;
      client_id: string;
-     building_images?: string[];
-     cover_image?: string;
+     /**
+      * Images linked via tblBuildingImages. During create/update flows this may contain string paths/URLs,
+      * while in read flows it may contain full image rows. Kept as a union for minimal churn across the app.
+      */
+     building_images?: (string | BuildingImage)[];
      max_apartments_per_floor: number;
      has_ground_floor_apartments: boolean;
+}
+
+export interface BuildingImage {
+     id: string;
+     created_at: string;
+     updated_at: string;
+     storage_bucket: string;
+     storage_path: string;
+     is_cover_image: boolean;
+     building_id: string;
 }
 
 export interface BuildingOptions {

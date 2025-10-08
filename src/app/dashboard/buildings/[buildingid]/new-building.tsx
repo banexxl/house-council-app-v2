@@ -24,7 +24,7 @@ import ElevatorIcon from '@mui/icons-material/Elevator';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { buildingInitialValues, buildingValidationSchema, buildingStatusMap, type Building } from 'src/types/building';
-import type { File } from 'src/components/file-dropzone';
+import type { DBStoredImage, File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { BuildingLocation } from 'src/types/location';
@@ -414,12 +414,16 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 caption="(SVG, JPG, PNG or GIF up to 900x400)"
                 onDrop={handleFilesDrop}
                 onRemoveAll={handleFileRemoveAll}
-                onRemoveImage={handleFileRemove}
+                onRemoveImage={async (image: DBStoredImage) => {
+                  const { success, error } = await removeBuildingImageFilePath(buildingData.id!, image.storage_path);
+                  if (!success) toast.error(error ?? t('common.actionDeleteError'));
+                  else toast.success(t('common.actionDeleteSuccess'));
+                }}
                 uploadProgress={uploadProgress}
-                images={buildingData.building_images || []}
-                onSetAsCover={async (url) => {
-                  const { success } = await setAsBuildingCoverImage(buildingData.id!, url);
-                  if (!success) throw new Error();
+                images={(buildingData.building_images as unknown as DBStoredImage[]) || []}
+                onSetAsCover={async (image: DBStoredImage) => {
+                  const { success, error } = await setAsBuildingCoverImage(buildingData.id!, image.id);
+                  if (!success) throw new Error(error ?? 'Failed to set cover');
                 }}
               />
               {formik.errors.building_images && (
