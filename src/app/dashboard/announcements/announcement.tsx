@@ -491,7 +491,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     <Card>
                          <Grid container>
                               {/* Form Column */}
-                              <Grid size={{ xs: 12, md: 7, lg: 8 }} sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                              <Grid size={{ xs: 12, md: 6, lg: 7 }} sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                                    <Paper variant="outlined" sx={{ p: 3, position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                                         {uploadingBusy && (
                                              <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, bgcolor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -846,15 +846,40 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                    </Paper>
                               </Grid>
                               {/* Table Column */}
-                              <Grid size={{ xs: 12, md: 5, lg: 4 }}>
+                              <Grid size={{ xs: 12, md: 6, lg: 5 }}>
                                    <Paper variant="outlined" sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
                                         <Typography variant="h6" sx={{ mb: 2 }}>{t(tokens.announcements.table.heading)}</Typography>
-                                        <TableContainer sx={{ flexGrow: 1 }}>
-                                             <Table size="small">
+                                        <TableContainer
+                                             sx={{
+                                                  flexGrow: 1,
+                                                  position: 'relative',
+                                                  overflowX: 'auto',
+                                                  WebkitOverflowScrolling: 'touch',
+                                                  // Add subtle fade edges to indicate scrollability on narrow screens
+                                                  '&:before, &:after': {
+                                                       content: '""',
+                                                       position: 'absolute',
+                                                       top: 0,
+                                                       bottom: 0,
+                                                       width: 16,
+                                                       pointerEvents: 'none',
+                                                       zIndex: 2,
+                                                  },
+                                                  '&:before': {
+                                                       left: 0,
+                                                       background: (theme) => `linear-gradient(to right, ${theme.palette.background.paper} 40%, rgba(0,0,0,0))`,
+                                                  },
+                                                  '&:after': {
+                                                       right: 0,
+                                                       background: (theme) => `linear-gradient(to left, ${theme.palette.background.paper} 40%, rgba(0,0,0,0))`,
+                                                  },
+                                             }}
+                                        >
+                                             <Table size="small" stickyHeader sx={{ width: '100%', tableLayout: 'auto' }}>
                                                   <TableHead>
                                                        <TableRow>
-                                                            <TableCell>{t(tokens.announcements.table.colTitle)}</TableCell>
-                                                            <TableCell align="right">{t(tokens.announcements.table.colActions)}</TableCell>
+                                                            <TableCell sx={{ width: 'auto' }}>{t(tokens.announcements.table.colTitle)}</TableCell>
+                                                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{t(tokens.announcements.table.colActions)}</TableCell>
                                                        </TableRow>
                                                   </TableHead>
                                                   <TableBody>
@@ -871,20 +896,19 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  onClick={() => handleEdit(row.id)}
                                                                  hover
                                                                  sx={{ backgroundColor: editingEntity?.id === row.id ? 'action.selected' : 'inherit' }}>
-                                                                 <TableCell sx={{ maxWidth: 240 }}>
-                                                                      <Stack direction="row" spacing={1} alignItems="center">
-                                                                           {row.pinned && <PushPinIcon color="primary" fontSize="small" />}
+                                                                 <TableCell sx={{ py: 0.5 }}>
+                                                                      <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ minWidth: 0 }}>
+                                                                           {row.pinned && <PushPinIcon color="primary" fontSize="small" style={{ marginTop: 2 }} />}
                                                                            <Typography
                                                                                 variant="body2"
-                                                                                noWrap
                                                                                 title={row.title}
-                                                                                sx={{ cursor: 'pointer' }}
+                                                                                sx={{ cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', lineHeight: 1.4 }}
                                                                            >
                                                                                 {row.title}
                                                                            </Typography>
                                                                       </Stack>
                                                                  </TableCell>
-                                                                 <TableCell align="right">
+                                                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 0.5 }}>
                                                                       <Tooltip title={row.pinned ? t(tokens.announcements.table.unpin) : t(tokens.announcements.table.pin)}>
                                                                            <IconButton size="small" onClick={() => togglePin(row.id)} disabled={rowBusy === row.id}>
                                                                                 {row.pinned ? <PushPinIcon fontSize="small" color="primary" /> : <PushPinOutlinedIcon fontSize="small" color="primary" />}
@@ -909,7 +933,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                                 )}
                                                                            </span>
                                                                       </Tooltip>
-
                                                                  </TableCell>
                                                             </TableRow>
                                                        ))}
