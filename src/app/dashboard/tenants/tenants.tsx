@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
      Box,
@@ -20,6 +20,7 @@ import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
 import { GenericTable } from 'src/components/generic-table';
+import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteTenantByIDAction } from 'src/app/actions/tenant/tenant-actions';
 import toast from 'react-hot-toast';
 
@@ -32,6 +33,23 @@ const Tenants = ({ tenants }: TenantsProps) => {
      const { t } = useTranslation();
      const [addTenantLoading, setAddTenantLoading] = useState(false);
      const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
+     const [filters, setFilters] = useState<{ search?: string; main?: boolean }>({});
+
+     const handleFiltersChange = useCallback((newFilters: typeof filters) => {
+          setFilters(newFilters);
+     }, []);
+
+     const filteredTenants = useMemo(() => {
+          const search = filters.search?.toLowerCase().trim();
+          return tenants.filter(tn => {
+               if (filters.main && !tn.is_primary) return false;
+               if (search) {
+                    const hay = `${tn.first_name || ''} ${tn.last_name || ''}`.toLowerCase();
+                    if (!hay.includes(search)) return false;
+               }
+               return true;
+          });
+     }, [tenants, filters]);
 
      const handleDeleteConfirm = useCallback(async (tenantId: string) => {
           setDeletingTenantId(tenantId);
@@ -73,9 +91,16 @@ const Tenants = ({ tenants }: TenantsProps) => {
                               </Button>
                          </Stack>
 
+                         <Card sx={{ mb: 2 }}>
+                              <SearchAndBooleanFilters
+                                   value={filters}
+                                   onChange={handleFiltersChange}
+                                   fields={[{ field: 'main', label: 'tenants.tenantIsPrimary' }]}
+                              />
+                         </Card>
                          <Card>
                               <GenericTable<Tenant>
-                                   items={tenants}
+                                   items={filteredTenants}
                                    baseUrl="/dashboard/tenants"
                                    columns={[
                                         {
