@@ -352,9 +352,9 @@ export const createComponents = (): Components => {
           paddingLeft: 0,
           paddingRight: 0,
           textTransform: 'none',
-          '& + &': {
-            marginLeft: 24,
-          },
+          justifyContent: 'flex-start',
+          alignItems: 'left',
+          textAlign: 'center',
         },
       },
     },

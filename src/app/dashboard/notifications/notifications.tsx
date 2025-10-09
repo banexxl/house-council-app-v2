@@ -70,9 +70,14 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                                         value={type}
                                         onChange={(_, v) => setType(v)}
                                         variant="scrollable"
+                                        slotProps={{ indicator: { sx: { left: 10 } } }}
                                    >
                                         {NOTIFICATION_TYPES_MAP.map(nt => (
-                                             <Tab key={nt.value} value={nt.value} label={t(nt.labelToken)} />
+                                             <Tab
+                                                  key={nt.value}
+                                                  value={nt.value}
+                                                  label={t(nt.labelToken)}
+                                             />
                                         ))}
                                    </Tabs>
                               </Box>

@@ -113,8 +113,6 @@ export const GenericTable = <T extends { id: string }>(
                          title={t(tableTitle || '')}
                          subheader={t(tableSubtitle || '')}
                     />
-
-
                     <Table>
                          <TableHead>
                               <TableRow>
@@ -188,8 +186,6 @@ export const GenericTable = <T extends { id: string }>(
                               )}
                          </TableBody>
                     </Table>
-
-
                     <TablePagination
                          component="div"
                          count={count}
