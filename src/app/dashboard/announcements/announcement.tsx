@@ -491,8 +491,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     <Card>
                          <Grid container>
                               {/* Form Column */}
-                              <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-                                   <Paper variant="outlined" sx={{ p: 3, position: 'relative' }}>
+                              <Grid size={{ xs: 12, md: 7, lg: 8 }} sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                   <Paper variant="outlined" sx={{ p: 3, position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                                         {uploadingBusy && (
                                              <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, bgcolor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                   <Typography variant="body2" color="text.secondary">{t(tokens.announcements.uploadingImages)}</Typography>
@@ -501,7 +501,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                         <Box component="fieldset" disabled={inputsDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.6 : 1 }}>
                                              <Stack spacing={2}>
                                                   {/* Title Field with reserved helper space */}
-                                                  <Box>
+                                                  <Box sx={{ minWidth: 0 }}>
                                                        <TextField
                                                             label={t(tokens.announcements.form.title)}
                                                             name="title"
@@ -516,7 +516,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             disabled={inputsDisabled}
                                                        />
                                                   </Box>
-                                                  <Box sx={{ pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.7 : 1, gap: 1 }}>
+                                                  <Box sx={{ pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.7 : 1, gap: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                                                        <QuillEditor
                                                             value={formik.values.message}
                                                             onChange={(v) => formik.setFieldValue('message', v)}
@@ -529,8 +529,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        </Box>
                                                   </Box>
                                                   {/* Category / Subcategory row now fluid: always row with wrap so they shrink before stacking */}
-                                                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                                                       <FormControl sx={{ flex: '1 1 240px', minWidth: 220 }} disabled={inputsDisabled}>
+                                                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fit,minmax(160px,1fr))' }, gap: 1.5, minWidth: 0 }}>
+                                                       <FormControl sx={{ minWidth: 0, width: '100%' }} disabled={inputsDisabled}>
                                                             <InputLabel id="category-label">{t(tokens.announcements.form.category)}</InputLabel>
                                                             <Select
                                                                  labelId="category-label"
@@ -562,7 +562,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             const cat = ANNOUNCEMENT_CATEGORIES.find(c => c.id === formik.values.category);
                                                             if (!cat || cat.subcategories.length === 0) return null;
                                                             return (
-                                                                 <FormControl sx={{ flex: '1 1 240px', minWidth: 220 }} disabled={inputsDisabled}>
+                                                                 <FormControl sx={{ minWidth: 0, width: '100%' }} disabled={inputsDisabled}>
                                                                       <InputLabel id="subcategory-label">{t(tokens.announcements.form.subcategory)}</InputLabel>
                                                                       <Select
                                                                            labelId="subcategory-label"
@@ -588,7 +588,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                        })()}
                                                   </Box>
                                                   {/* Buildings multi-select (replaces simple building visibility radio) */}
-                                                  <FormControl fullWidth disabled={inputsDisabled}>
+                                                  <FormControl fullWidth disabled={inputsDisabled} sx={{ minWidth: 0, width: '100%' }}>
                                                        <InputLabel id="buildings-label">{t('buildings.buildingsTitle')}</InputLabel>
                                                        <Select
                                                             labelId="buildings-label"
@@ -695,9 +695,9 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   <Stack
                                                        direction="row"
                                                        alignItems="flex-start"
-                                                       flexWrap={{ xs: 'wrap', md: 'nowrap' }}
+                                                       flexWrap="wrap"
                                                        gap={2}
-                                                       sx={{ opacity: inputsDisabled ? 0.6 : 1 }}
+                                                       sx={{ opacity: inputsDisabled ? 0.6 : 1, minWidth: 0 }}
                                                   >
                                                        <FormControlLabel
                                                             sx={{ flexShrink: 0, mb: 1 }} // same bottom space as pickers
@@ -746,15 +746,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                                  <Box
                                                                       sx={{
-                                                                           display: 'flex',
-                                                                           alignItems: 'flex-start',
-                                                                           flexWrap: { xs: 'wrap', md: 'nowrap' },
+                                                                           display: 'grid',
+                                                                           gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fit,minmax(140px,1fr))' },
                                                                            gap: 1.5,
                                                                            flexGrow: 1,
                                                                            minWidth: 0,
                                                                       }}
                                                                  >
-                                                                      <Box sx={{ flex: '1 1 240px', minWidth: { xs: '100%', sm: 240 } }}>
+                                                                      <Box sx={{ minWidth: 0 }}>
                                                                            <DatePicker
                                                                                 label={t(tokens.announcements.form.scheduleAt) + ' (Date)'}
                                                                                 value={scheduledDate}
@@ -777,7 +776,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                            />
                                                                       </Box>
 
-                                                                      <Box sx={{ flex: '1 1 200px', minWidth: { xs: '100%', sm: 200 } }}>
+                                                                      <Box sx={{ minWidth: 0 }}>
                                                                            <TimePicker
                                                                                 label={t(tokens.announcements.form.scheduleAt) + ' (Time)'}
                                                                                 value={scheduledTime}

@@ -1,5 +1,4 @@
 import { tokens } from 'src/locales/tokens';
-import * as Yup from 'yup';
 
 export type NotificationType =
      'all' |
@@ -18,7 +17,7 @@ export const NOTIFICATION_TYPES = [
      'alert',
      'announcement',
      'other',
-] as const;
+] as NotificationType[];
 
 export type NotificationTypeMap = {
      value: NotificationType;
@@ -45,6 +44,10 @@ export interface BaseNotification {
      user_id: string | null;
      is_read: boolean;
      // Optional foreign keys, present depending on notification kind
+
+}
+
+export interface AnnouncementNotification extends BaseNotification {
      building_id?: string | null;
      client_id?: string | null;
      announcement_id?: string | null;
@@ -64,23 +67,3 @@ export interface AlertNotification extends BaseNotification {
 }
 
 export type Notification = BaseNotification | MessageNotification | AlertNotification;
-
-export const notificationInitialValues: Partial<Notification> = {
-     title: '',
-     description: '',
-     type: NOTIFICATION_TYPES_MAP[0],
-     user_id: null,
-     is_read: false
-};
-
-export const notificationValidationSchema = Yup.object({
-     title: Yup.string().trim().min(2).max(200).required(),
-     description: Yup.string().trim().min(2).required(),
-     type: Yup.mixed<NotificationType>().oneOf(NOTIFICATION_TYPES as unknown as NotificationType[]).required(),
-     client_id: Yup.string().nullable(),
-     is_read: Yup.boolean().default(false),
-     building_id: Yup.string().nullable(),
-     user_id: Yup.string().nullable(),
-     is_for_tenant: Yup.boolean().default(false),
-     announcement_id: Yup.string().nullable(),
-});

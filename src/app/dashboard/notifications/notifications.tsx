@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Box, Tabs, Tab, IconButton, Tooltip, Container, Stack, Typography, Card } from '@mui/material';
 import { GenericTable, TableColumn } from 'src/components/generic-table';
-import { Notification, NOTIFICATION_TYPES_MAP, NotificationType } from 'src/types/notification';
+import { Notification, NOTIFICATION_TYPES_MAP, NotificationType, NotificationTypeMap } from 'src/types/notification';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteNotification, markNotificationRead } from 'src/app/actions/notification/notification-actions';
@@ -19,7 +19,20 @@ export default function NotificationsClient({ initialNotifications }: Notificati
 
      type Row = Notification & { id: string; created_at: string };
      const [type, setType] = useState<NotificationType>('all');
-     const [items, setItems] = useState<Row[]>(initialNotifications as unknown as Row[]);
+
+     // Normalize incoming notifications so that `type` is always a NotificationTypeMap object
+     const normalize = useCallback((n: any): Row => {
+          let typeObj: NotificationTypeMap;
+          if (n && typeof n.type === 'object' && n.type?.value) {
+               typeObj = n.type as NotificationTypeMap;
+          } else {
+               const raw = (n?.type ?? 'other') as NotificationType;
+               typeObj = NOTIFICATION_TYPES_MAP.find(m => m.value === raw) || NOTIFICATION_TYPES_MAP.find(m => m.value === 'other')!;
+          }
+          return { ...(n as Notification), type: typeObj } as Row;
+     }, []);
+
+     const [items, setItems] = useState<Row[]>(() => (initialNotifications || []).map(normalize));
      const { t } = useTranslation();
 
      const filtered = useMemo<Row[]>(() => {
@@ -53,7 +66,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                base.splice(1, 0, { key: 'other_id' as any, label: t(tokens.notifications.col.created) });
           }
           if (type !== 'all') {
-               base.unshift({ key: 'type', label: t(tokens.notifications.col.type) });
+               base.unshift({ key: 'type', label: t(tokens.notifications.col.type), render: (_, row) => t(row.type.labelToken) });
           }
           return base;
      }, [type, t]);
@@ -63,25 +76,102 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                <Typography variant="h4" sx={{ mb: 3 }}>{t(tokens.notifications.centerTitle)}</Typography>
                <Card>
                     <Stack spacing={4}>
-                         <Box sx={{ display: 'flex', gap: 3 }}>
-                              <Box sx={{ width: 180, pt: 1 }}>
+                         <Box
+                              sx={{
+                                   display: 'flex',
+                                   flexDirection: { xs: 'column', md: 'row' },
+                                   gap: 3,
+                              }}
+                         >
+                              {/* Tabs Wrapper */}
+                              <Box
+                                   sx={{
+                                        pt: { xs: 1, md: 1 },
+                                        width: { xs: '100%', md: 200 },
+                                        flexShrink: 0,
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        justifyContent: { xs: 'flex-start', md: 'center' },
+                                        overflowX: { xs: 'auto', md: 'visible' },
+                                        // Sticky behavior on mobile
+                                        position: { xs: 'sticky', md: 'static' },
+                                        top: { xs: (theme) => `calc(${theme.spacing(0)} + env(safe-area-inset-top, 0px))`, md: 'auto' },
+                                        zIndex: { xs: 5, md: 'auto' },
+                                        backgroundColor: { xs: 'background.paper', md: 'transparent' },
+                                        boxShadow: { xs: '0 2px 4px rgba(0,0,0,0.06)', md: 'none' },
+                                        borderBottom: { xs: 1, md: 0 },
+                                        borderColor: { xs: 'divider', md: 'transparent' },
+                                   }}
+                              >
+                                   {/* Horizontal tabs (mobile) */}
                                    <Tabs
-                                        orientation="vertical"
+                                        orientation="horizontal"
                                         value={type}
                                         onChange={(_, v) => setType(v)}
                                         variant="scrollable"
-                                        slotProps={{ indicator: { sx: { left: 10 } } }}
+                                        allowScrollButtonsMobile
+                                        sx={{
+                                             display: { xs: 'flex', md: 'none' },
+                                             px: 0.5,
+                                             borderBottom: 1,
+                                             borderColor: 'divider',
+                                        }}
                                    >
                                         {NOTIFICATION_TYPES_MAP.map(nt => (
                                              <Tab
                                                   key={nt.value}
                                                   value={nt.value}
                                                   label={t(nt.labelToken)}
+                                                  sx={{
+                                                       // Horizontal: rely on global MuiTab root styles; just tweak spacing
+                                                       px: 1.5,
+                                                       minHeight: 42,
+                                                       '&.Mui-selected': { fontWeight: 600 },
+                                                  }}
+                                             />
+                                        ))}
+                                   </Tabs>
+                                   {/* Vertical tabs (desktop) */}
+                                   <Tabs
+                                        orientation="vertical"
+                                        value={type}
+                                        onChange={(_, v) => setType(v)}
+                                        variant="scrollable"
+                                        allowScrollButtonsMobile
+                                        sx={{
+                                             display: { xs: 'none', md: 'flex' },
+                                             minHeight: '100%',
+                                             '& .MuiTabs-indicator': {
+                                                  left: 0,
+                                                  width: 3,
+                                                  borderRadius: 2,
+                                             },
+                                             // Provide space so indicator does not overlap centered text
+                                             pr: 1,
+                                        }}
+                                   >
+                                        {NOTIFICATION_TYPES_MAP.map(nt => (
+                                             <Tab
+                                                  key={nt.value}
+                                                  value={nt.value}
+                                                  label={t(nt.labelToken)}
+                                                  sx={{
+                                                       // Vertical: add left gutter; center content via wrapper defaults
+                                                       px: 0,
+                                                       pl: 5,
+                                                       minHeight: 36,
+                                                       width: '100%',
+                                                       '& .MuiTab-wrapper': {
+                                                            width: '100%',
+                                                            justifyContent: 'center',
+                                                       },
+                                                       '&.Mui-selected': { fontWeight: 600 },
+                                                  }}
                                              />
                                         ))}
                                    </Tabs>
                               </Box>
-                              <Box sx={{ flex: 1 }}>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
                                    <GenericTable<Row>
                                         columns={columns}
                                         items={filtered}

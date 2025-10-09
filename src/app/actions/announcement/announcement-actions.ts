@@ -5,6 +5,7 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement } from 'src/types/announcement';
 import { BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
+import { createAnnouncementNotification } from 'src/utils/notification';
 import { emitNotifications } from '../notification/notification-actions';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
@@ -606,15 +607,14 @@ export async function deleteAnnouncement(id: string) {
      });
      // Fire-and-forget notification about deletion
      try {
-          const notification = {
-               type: { value: 'announcement', labelToken: 'Delete Announcement' } as NotificationTypeMap,
+          const notification = createAnnouncementNotification({
                title: 'Announcement deleted',
                description: `Announcement ${id} was deleted`,
                created_at: new Date().toISOString(),
                user_id: user_id ? user_id : null,
                is_read: false,
-               is_for_tenant: false
-          } as BaseNotification;
+               is_for_tenant: false,
+          });
           const emitted = await emitNotifications([notification]);
           const notificationError = emitted.success ? null : emitted.error ? { message: emitted.error } as any : null;
           if (notificationError) {
@@ -731,16 +731,17 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                     // 3) Fetch announcement for title/message
                     const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title, message').eq('id', id).maybeSingle();
                     const createdAtISO = new Date().toISOString();
-                    const rows = (tenants || []).map((tenant) => ({
-                         type: typeInfo as NotificationTypeMap,
-                         title: annRow?.title,
-                         description: annRow?.message,
-                         created_at: createdAtISO,
-                         user_id: tenant.user_id,
-                         is_read: false,
-                         announcement_id: id,
-                         is_for_tenant: true,
-                    })) as unknown as BaseNotification[];
+                    const rows = (tenants || []).map((tenant) => (
+                         createAnnouncementNotification({
+                              title: annRow?.title || '',
+                              description: annRow?.message || '',
+                              created_at: createdAtISO,
+                              user_id: tenant.user_id!,
+                              is_read: false,
+                              announcement_id: id,
+                              is_for_tenant: true,
+                         })
+                    )) as unknown as BaseNotification[];
 
                     if (rows.length > 0) {
                          const emitted = await emitNotifications(rows);
@@ -780,8 +781,7 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
 
      // Fire-and-forget internal notification about publishing (mirrors deleteAnnouncement pattern)
      try {
-          const notification = {
-               type: { value: 'announcement', labelToken: 'Publish Announcement' } as NotificationTypeMap,
+          const notification = createAnnouncementNotification({
                title: 'Announcement published',
                description: `Announcement ${id} was published`,
                created_at: new Date().toISOString(),
@@ -789,7 +789,7 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                is_read: false,
                is_for_tenant: false,
                announcement_id: id,
-          } as BaseNotification;
+          });
           const emitted = await emitNotifications([notification]);
           if (!emitted.success) {
                logServerAction({

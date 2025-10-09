@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Notification, BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
+import { hydrateNotificationsFromDb } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { createMessage } from 'src/libs/sms/twilio';
@@ -83,7 +84,6 @@ export async function emitNotifications(
                }
                try {
                     const msg = await createMessage(contact.phone_number, title, body, notificationType);
-
                     if (msg && (msg.sid || msg.status)) {
                          smsSent++;
                     } else {
@@ -112,7 +112,8 @@ export async function getAllNotifications(): Promise<{ success: boolean; data?: 
           return { success: false, error: error.message };
      }
      await logServerAction({ user_id, action: 'getAllNotifications', duration_ms: Date.now() - time, error: '', payload: { count: data?.length || 0 }, status: 'success', type: 'db' });
-     return { success: true, data: data as Notification[] };
+     const hydrated = hydrateNotificationsFromDb<Notification>(data as any[]);
+     return { success: true, data: hydrated };
 }
 
 export async function getNotificationsForClient(): Promise<{ success: boolean; data?: Notification[]; error?: string; }> {
@@ -126,7 +127,8 @@ export async function getNotificationsForClient(): Promise<{ success: boolean; d
           return { success: false, error: error.message };
      }
      await logServerAction({ user_id, action: 'getNotificationsForClient', duration_ms: Date.now() - time, error: '', payload: { user_id, count: data?.length || 0 }, status: 'success', type: 'db' });
-     return { success: true, data: data as Notification[] };
+     const hydrated = hydrateNotificationsFromDb<Notification>(data as any[]);
+     return { success: true, data: hydrated };
 }
 
 export async function deleteNotification(id: string) {
