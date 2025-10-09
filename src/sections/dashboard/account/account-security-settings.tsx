@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import { Grid } from '@mui/material';;
+import { Grid, Box } from '@mui/material';;
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -15,7 +15,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
-import { Scrollbar } from 'src/components/scrollbar';
 import { DeleteAccountSection } from './account-delete-section';
 import { Client } from 'src/types/client';
 import PasswordReset from './account-security-password-reset';
@@ -85,8 +84,8 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
           title={t('account.security.loginHistoryTitle')}
           subheader={t('account.security.loginHistorySubtitle')}
         />
-        <Scrollbar>
-          <Table sx={{ minWidth: 500 }}>
+        <Box sx={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <Table sx={{ minWidth: 560 }}>
             <TableHead>
               <TableRow>
                 <TableCell>{t('account.security.loginHistoryTime')}</TableCell>
@@ -129,7 +128,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
               }
             </TableBody>
           </Table>
-        </Scrollbar>
+        </Box>
       </Card>
       <Card sx={{ p: 3, mt: 2 }}>
         <DeleteAccountSection id={client.id} />

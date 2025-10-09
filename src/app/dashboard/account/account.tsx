@@ -62,44 +62,127 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                     }}
                >
                     <Container maxWidth="xl">
-                         <Stack spacing={3} sx={{ mb: 3 }}>
-                              <Typography variant="h4">{t('nav.account')}</Typography>
-                              <div>
+                         <Typography variant="h4" sx={{ mb: 2 }}>{t('nav.account')}</Typography>
+                         <Box
+                              sx={{
+                                   display: 'grid',
+                                   gridTemplateColumns: { xs: '1fr', md: '240px 1fr' },
+                                   gap: 3
+                              }}
+                         >
+                              {/* Vertical Tabs for md+ */}
+                              <Box
+                                   sx={{
+                                        display: { xs: 'none', md: 'flex' },
+                                        flexDirection: 'column',
+                                        position: 'sticky',
+                                        top: (theme) => theme.spacing(9),
+                                        alignSelf: 'start',
+                                        height: 'fit-content',
+                                        borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+                                        pr: 1
+                                   }}
+                              >
                                    <Tabs
-                                        indicatorColor="primary"
-                                        onChange={handleTabsChange}
-                                        scrollButtons="auto"
-                                        textColor="primary"
+                                        orientation="vertical"
                                         value={currentTab}
-                                        variant="scrollable"
+                                        onChange={handleTabsChange}
+                                        textColor="primary"
+                                        indicatorColor="primary"
+                                        sx={{
+                                             position: 'relative',
+                                             '& .MuiTab-root': {
+                                                  alignItems: 'flex-start',
+                                                  textAlign: 'left',
+                                                  minHeight: 48,
+                                                  px: 2.5,
+                                                  pl: 3.5, // space for indicator gutter
+                                                  justifyContent: 'flex-start',
+                                                  width: '100%',
+                                                  '& .MuiTab-wrapper': {
+                                                       alignItems: 'flex-start'
+                                                  }
+                                             },
+                                             '& .MuiTabs-indicator': {
+                                                  left: 0,
+                                                  width: 3,
+                                                  borderRadius: 2,
+                                                  boxShadow: (theme) => `0 0 0 1px ${theme.palette.background.paper}`
+                                             }
+                                        }}
                                    >
-                                        {tabs.map((tab) => (
-                                             <Tab key={tab.value} label={tab.label} value={tab.value} />
+                                        {tabs.map(tab => (
+                                             <Tab key={tab.value} value={tab.value} label={tab.label} />
                                         ))}
                                    </Tabs>
-                                   <Divider />
-                              </div>
-                         </Stack>
-                         {currentTab === 'general' && (
-                              <AccountGeneralSettings
-                                   client={client}
-                              />
-                         )}
-                         {currentTab === 'billing' && (
-                              <AccountBillingSettings
-                                   plan={clientSubscriptionPlan?.id!}
-                                   invoices={clientInvoices}
-                                   billingInfo={clientBillingInfo}
-                                   subscriptionPlans={subscriptionPlans}
-                              />
-                         )}
-                         {currentTab === 'team' && (
-                              <AccountTeamSettings members={allTeamMembers || []} client={client} clientSubscriptionPlan={clientSubscriptionPlan} />
-                         )}
-                         {currentTab === 'notifications' && <AccountNotificationsSettings />}
-                         {currentTab === 'security' && (
-                              <AccountSecuritySettings loginEvents={clientLogs || []} client={client} userData={userData} />
-                         )}
+                              </Box>
+                              <Box>
+                                   {/* Horizontal sticky Tabs for mobile */}
+                                   <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+                                        <Tabs
+                                             value={currentTab}
+                                             onChange={handleTabsChange}
+                                             variant="scrollable"
+                                             scrollButtons="auto"
+                                             allowScrollButtonsMobile
+                                             textColor="primary"
+                                             indicatorColor="primary"
+                                             sx={{
+                                                  px: 0.5,
+                                                  '& .MuiTabs-indicator': { height: 3, borderRadius: 2 },
+                                                  '& .MuiTabScrollButton-root': {
+                                                       display: 'flex',
+                                                       borderRadius: 1,
+                                                       bgcolor: 'transparent'
+                                                  }
+                                             }}
+                                        >
+                                             {tabs.map(tab => (
+                                                  <Tab
+                                                       key={tab.value}
+                                                       value={tab.value}
+                                                       label={tab.label}
+                                                       sx={{
+                                                            px: 1.5,
+                                                            minHeight: 42,
+                                                            flexShrink: 0,
+                                                            '&.Mui-selected': { fontWeight: 600 },
+                                                       }}
+                                                  />
+                                             ))}
+                                        </Tabs>
+                                        <Divider sx={{ mt: 1 }} />
+                                   </Box>
+
+                                   {/* Content */}
+                                   {currentTab === 'general' && (
+                                        <AccountGeneralSettings client={client} />
+                                   )}
+                                   {currentTab === 'billing' && (
+                                        <AccountBillingSettings
+                                             plan={clientSubscriptionPlan?.id!}
+                                             invoices={clientInvoices}
+                                             billingInfo={clientBillingInfo}
+                                             subscriptionPlans={subscriptionPlans}
+                                        />
+                                   )}
+                                   {currentTab === 'team' && (
+                                        <AccountTeamSettings
+                                             members={allTeamMembers || []}
+                                             client={client}
+                                             clientSubscriptionPlan={clientSubscriptionPlan}
+                                        />
+                                   )}
+                                   {currentTab === 'notifications' && <AccountNotificationsSettings />}
+                                   {currentTab === 'security' && (
+                                        <AccountSecuritySettings
+                                             loginEvents={clientLogs || []}
+                                             client={client}
+                                             userData={userData}
+                                        />
+                                   )}
+                              </Box>
+                         </Box>
                     </Container>
                </Box>
           </>

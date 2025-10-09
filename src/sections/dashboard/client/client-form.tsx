@@ -214,9 +214,9 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <Card>
+      <Card sx={{ overflow: 'hidden' }}>
         <CardHeader title={t('common.formBasicInfo')} />
-        <CardContent sx={{ pt: 0 }}>
+        <CardContent sx={{ pt: 0, px: { xs: 2, sm: 3 }, minWidth: 0 }}>
           <ImageUpload
             buttonDisabled={initialValues?.id == '' ? true : false}
             ref={ImageUploadRef}
@@ -232,9 +232,10 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             showAdvancedSettings && (
               <>
                 <Divider sx={{ my: 3 }} >{t('clients.clientFormSettings')}</Divider>
-                <Grid container spacing={3} sx={{ mb: 2 }}>
+                <Grid container spacing={3} sx={{ mb: 2, minWidth: 0 }}>
                   <Grid
                     size={{ xs: 12, md: 6 }}
+                    sx={{ minWidth: 0 }}
                   >
                     <TextField
                       select
@@ -257,6 +258,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
 
                   <Grid
                     size={{ xs: 12, md: 6 }}
+                    sx={{ minWidth: 0 }}
                   >
                     <TextField
                       select
@@ -284,8 +286,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             )
           }
           <Divider sx={{ my: 3 }} >{t('common.formBasicInfo')}</Divider>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 6 }}>
+          <Grid container spacing={3} sx={{ minWidth: 0 }}>
+            <Grid size={{ xs: 12, md: 6 }} sx={{ minWidth: 0 }}>
               <TextField
                 fullWidth
                 label={t('clients.clientName')}
@@ -300,6 +302,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             </Grid>
             <Grid
               size={{ xs: 12, md: 6 }}
+              sx={{ minWidth: 0 }}
             >
               <TextField
                 fullWidth
@@ -315,6 +318,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             </Grid>
             <Grid
               size={{ xs: 12, md: 6 }}
+              sx={{ minWidth: 0 }}
             >
               <LocationAutocomplete
                 label={t('clients.clientAddress1')}
@@ -331,6 +335,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             </Grid>
             <Grid
               size={{ xs: 12, md: 6 }}
+              sx={{ minWidth: 0 }}
             >
               <LocationAutocomplete
                 label={t('clients.clientAddress2')}
@@ -347,6 +352,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             </Grid>
             <Grid
               size={{ xs: 12, md: 6 }}
+              sx={{ minWidth: 0 }}
             >
               <TextField
                 fullWidth
@@ -362,6 +368,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             </Grid>
             <Grid
               size={{ xs: 12, md: 6 }}
+              sx={{ minWidth: 0 }}
             >
               <TextField
                 fullWidth
@@ -392,7 +399,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             </Grid>
             {
               clientData && showClientActions && (
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 6 }} sx={{ minWidth: 0 }}>
                   <CustomAutocomplete
                     data={unassignedLocations}
                     searchKey={'street_address'}
@@ -420,8 +427,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
           {clientSubscription && (
             <>
               <Divider sx={{ my: 3 }}>{t('clients.clientSubscriptionPlan')}</Divider>
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 4 }}>
+              <Grid container spacing={3} sx={{ minWidth: 0 }}>
+                <Grid size={{ xs: 12, md: 4 }} sx={{ minWidth: 0 }}>
                   <TextField
                     select
                     fullWidth
@@ -439,7 +446,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 4 }} sx={{ minWidth: 0 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={t('clients.clientCardExpirationDate')}
@@ -450,7 +457,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     />
                   </LocalizationProvider>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 4 }} sx={{ minWidth: 0 }}>
                   <TextField
                     select
                     fullWidth
@@ -482,7 +489,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
               <>
                 <Divider sx={{ my: 3 }} >{t('common.formAdvancedInfo')}</Divider>
                 <Stack divider={<Divider />} spacing={3} sx={{ mt: 3 }}>
-                  <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={2} sx={{ width: '100%', minWidth: 0 }}>
                     <Stack spacing={1}>
                       <Typography gutterBottom variant="subtitle1">
                         {t('clients.clientIsVerified')}
@@ -501,7 +508,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                       disabled={formik.isSubmitting}
                     />
                   </Stack>
-                  <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={2} sx={{ width: '100%', minWidth: 0 }}>
                     <Stack spacing={1}>
                       <Typography gutterBottom variant="subtitle1">
                         {t('clients.clientHasAcceptedTermsAndConditions')}
@@ -539,7 +546,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             clientData && showClientActions ? (
               <>
                 <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
-                <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={2} sx={{ width: '100%', minWidth: 0 }}>
                   <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
                       <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
@@ -550,6 +557,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                         color="primary"
                         disabled={formik.isSubmitting || !formik.values.email}
                         onClick={() => setModal({ type: 'recovery', open: true })}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                       >
                         {t('clients.sendPasswordRecovery')}
                       </Button>
@@ -564,6 +572,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                         color="primary"
                         disabled={formik.isSubmitting || !formik.values.email}
                         onClick={() => setModal({ type: 'magic', open: true })}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                       >
                         {t('clients.sendMagicLink')}
                       </Button>
@@ -578,6 +587,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                         color="warning"
                         disabled={formik.isSubmitting || !formik.values.id}
                         onClick={() => setModal({ type: 'mfa', open: true })}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                       >
                         {t('clients.removeMfa')}
                       </Button>
@@ -592,6 +602,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                         color="error"
                         disabled={formik.isSubmitting || !formik.values.id}
                         onClick={() => setModal({ type: 'ban', open: true })}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                       >
                         {t('clients.banUser')}
                       </Button>
@@ -600,6 +611,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                         color="success"
                         disabled={formik.isSubmitting || !formik.values.id}
                         onClick={() => setModal({ type: 'unban', open: true })}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                       >
                         {t('clients.unbanUser')}
                       </Button>

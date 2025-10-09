@@ -8,7 +8,7 @@ import User01Icon from '@untitled-ui/icons-react/build/esm/User01';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { Box, Grid } from '@mui/material';;
+import { Box } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -61,8 +61,8 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
   };
 
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{ overflow: 'hidden' }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
         <Formik
           initialValues={{ name: '', email: '' }}
           validationSchema={clientMemberValidationSchema(t)}
@@ -81,98 +81,105 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
         >
           {({ handleChange, values, errors, touched, isSubmitting, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Stack spacing={1}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: { xs: 3, md: 4 },
+                  width: '100%',
+                  maxWidth: '100%',
+                }}
+              >
+                {/* Left descriptive column */}
+                <Box
+                  sx={{
+                    flexBasis: { xs: '100%', md: '33%' },
+                    flexShrink: 0,
+                    minWidth: 0,
+                  }}
+                >
+                  <Stack spacing={1} sx={{ minWidth: 0 }}>
                     <Typography variant="h6">{t('account.team.inviteMembers')}</Typography>
-                    <Typography color="text.secondary" variant="body2">
+                    <Typography color="text.secondary" variant="body2" sx={{ wordBreak: 'break-word' }}>
                       {t('account.team.editorSeatsInfo', { max: clientSubscriptionPlan?.max_number_of_team_members ?? 0 })}
                     </Typography>
                   </Stack>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 8 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-end', // align to bottom edge
-                      gap: 2,
-                      flexDirection: isMobile ? 'column' : 'row',
+                </Box>
+                {/* Right form controls column */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    flexWrap: { xs: 'nowrap', md: 'wrap' },
+                    rowGap: 2,
+                    columnGap: 2,
+                    flexGrow: 1,
+                    minWidth: 0,
+                    alignItems: 'flex-start',
+                    '& > *': { minWidth: 0 },
+                  }}
+                >
+                  <TextField
+                    label={t('common.fullName', 'Name')}
+                    name="name"
+                    fullWidth
+                    disabled={clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!}
+                    value={values.name}
+                    onChange={handleChange}
+                    error={touched.name && Boolean(errors.name)}
+                    helperText={
+                      <Typography variant="caption" color="error" sx={{ minHeight: 24, display: 'block' }}>
+                        {touched.name && errors.name ? errors.name : ''}
+                      </Typography>
+                    }
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SvgIcon>
+                              <User01Icon />
+                            </SvgIcon>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
+                  />
+                  <TextField
+                    label={t('common.lblEmail')}
+                    name="email"
+                    fullWidth
+                    disabled={clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!}
+                    value={values.email}
+                    onChange={handleChange}
+                    error={touched.email && Boolean(errors.email)}
+                    helperText={
+                      <Typography variant="caption" color="error" sx={{ minHeight: 24, display: 'block' }}>
+                        {touched.email && errors.email ? errors.email : ''}
+                      </Typography>
+                    }
+                    type={t('lblEmail')}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SvgIcon>
+                              <Mail01Icon />
+                            </SvgIcon>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={isSubmitting || (clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!)}
+                    sx={{ width: { xs: '100%', md: 200 }, height: 50, alignSelf: { xs: 'stretch', md: 'flex-start' } }}
                   >
-                    <TextField
-                      label={t('common.fullName', 'Name')}
-                      name="name"
-                      fullWidth
-                      disabled={clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!}
-                      value={values.name}
-                      onChange={handleChange}
-                      error={touched.name && Boolean(errors.name)}
-                      helperText={
-                        <Typography
-                          variant="caption"
-                          color="error"
-                          sx={{ minHeight: 24, display: 'block' }}
-                        >
-                          {touched.name && errors.name ? errors.name : ''}
-                        </Typography>
-                      }
-                      sx={{ flexGrow: 1 }}
-                      slotProps={{
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <SvgIcon>
-                                <User01Icon />
-                              </SvgIcon>
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-
-                    <TextField
-                      label={t('common.lblEmail')}
-                      name="email"
-                      fullWidth
-                      disabled={clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!}
-                      value={values.email}
-                      onChange={handleChange}
-                      error={touched.email && Boolean(errors.email)}
-                      helperText={
-                        <Typography
-                          variant="caption"
-                          color="error"
-                          sx={{ minHeight: 24, display: 'block' }}
-                        >
-                          {touched.email && errors.email ? errors.email : ''}
-                        </Typography>
-                      }
-                      sx={{ flexGrow: 1 }}
-                      type={t('lblEmail')}
-                      slotProps={{
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <SvgIcon>
-                                <Mail01Icon />
-                              </SvgIcon>
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={isSubmitting || (clientSubscriptionPlan?.max_number_of_team_members !== null && members.length >= clientSubscriptionPlan?.max_number_of_team_members!)}
-                      sx={{ mb: 4, width: isMobile ? '100%' : '250px', height: '50px' }}
-                    >
-                      {t('common.btnAdd')}
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
+                    {t('common.btnAdd')}
+                  </Button>
+                </Box>
+              </Box>
             </form>
           )}
         </Formik>
