@@ -105,9 +105,9 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                               >
                                    {/* Horizontal tabs (mobile) */}
                                    <Tabs
-                                        orientation="horizontal"
                                         value={type}
                                         onChange={(_, v) => setType(v)}
+                                        orientation="horizontal"
                                         variant="scrollable"
                                         allowScrollButtonsMobile
                                         sx={{
