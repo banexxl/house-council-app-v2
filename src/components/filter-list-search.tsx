@@ -76,13 +76,28 @@ export const SearchAndBooleanFilters: FC<Props> = ({ fields = [], selects = [], 
      );
 
      return (
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 2, flexWrap: 'wrap' }}>
+          <Stack
+               direction={{ xs: 'column', sm: 'row' }}
+               alignItems={{ xs: 'stretch', sm: 'center' }}
+               spacing={2}
+               sx={{
+                    p: 2,
+                    pt: { xs: 1.5, sm: 2 },
+                    pb: { xs: 1.5, sm: 2 },
+                    flexWrap: { xs: 'nowrap', sm: 'wrap' },
+                    '& > *': {
+                         width: { xs: '100%', sm: 'auto' }
+                    },
+                    gap: 1.5
+               }}
+          >
                {!hideSearch && (
                     <TextField
                          label={t('common.search')}
                          variant="outlined"
                          size="small"
-                         sx={{ minWidth: 220, flex: 1 }}
+                         fullWidth
+                         sx={{ minWidth: { xs: 'auto', sm: 220 }, flex: { xs: '0 0 auto', sm: 1 } }}
                          value={value.search ?? ''}
                          onChange={handleSearchChange}
                          slotProps={{
@@ -91,10 +106,10 @@ export const SearchAndBooleanFilters: FC<Props> = ({ fields = [], selects = [], 
                                         <Button
                                              size="small"
                                              onClick={() => onChange({ ...value, search: '' })}
+                                             aria-label={t('common.clear', 'Clear search')}
                                              sx={{ minWidth: 0, p: 0.5 }}
                                         >
                                              <SvgIcon fontSize="small">
-                                                  {/* MUI Clear Icon */}
                                                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" />
                                              </SvgIcon>
                                         </Button>
@@ -103,60 +118,78 @@ export const SearchAndBooleanFilters: FC<Props> = ({ fields = [], selects = [], 
                          }}
                     />
                )}
-               {selects.map(sel => (
-                    <FormControl key={sel.field} size="small" sx={{ minWidth: 180 }}>
-                         <InputLabel>{t(sel.label)}</InputLabel>
-                         <Select
-                              label={t(sel.label)}
-                              value={(value[sel.field] as string) || ''}
-                              onChange={(e) => handleSelectChange(sel.field, e.target.value)}
+               <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={2}
+                    sx={{ flex: 1, width: { xs: '100%', sm: 'auto' } }}
+               >
+                    {selects.map(sel => (
+                         <FormControl
+                              key={sel.field}
+                              size="small"
+                              fullWidth
+                              sx={{ minWidth: { xs: 'auto', sm: 180 } }}
                          >
-                              <MenuItem value=""><em>{t('common.lblAll', 'All')}</em></MenuItem>
-                              {sel.options.map(opt => (
-                                   <MenuItem key={opt.value} value={opt.value}>{t(opt.label)}</MenuItem>
-                              ))}
-                         </Select>
-                    </FormControl>
-               ))}
-               <Button
-                    color="inherit"
-                    endIcon={
-                         <SvgIcon>
-                              <ChevronDownIcon />
-                         </SvgIcon>
-                    }
-                    onClick={popover.handleOpen}
-                    ref={popover.anchorRef}
-               // sx={{ display: fields.length === 0 ? 'none' : 'flex' }}
-               >
-                    {t('common.lblFilters')}
-               </Button>
-               <Menu
-                    anchorEl={popover.anchorRef.current}
-                    onClose={popover.handleClose}
-                    open={popover.open}
-                    slotProps={{ paper: { style: { width: 220 } } }}
-               >
-                    {fields.length > 0 && fields.map((field) => {
-                         const checked = value[field.field] === true;
-                         return (
-                              <MenuItem key={field.field}>
-                                   <Checkbox
-                                        checked={checked}
-                                        onChange={(e) => handleCheckboxChange(field.field, e.target.checked)}
-                                   />
-                                   <Typography>{t(field.label)}</Typography>
+                              <InputLabel>{t(sel.label)}</InputLabel>
+                              <Select
+                                   label={t(sel.label)}
+                                   value={(value[sel.field] as string) || ''}
+                                   onChange={(e) => handleSelectChange(sel.field, e.target.value)}
+                              >
+                                   <MenuItem value=""><em>{t('common.lblAll', 'All')}</em></MenuItem>
+                                   {sel.options.map(opt => (
+                                        <MenuItem key={opt.value} value={opt.value}>{t(opt.label)}</MenuItem>
+                                   ))}
+                              </Select>
+                         </FormControl>
+                    ))}
+               </Stack>
+               <Box sx={{ display: 'flex', alignItems: 'center', width: { xs: '100%', sm: 'auto' } }}>
+                    <Button
+                         color="inherit"
+                         endIcon={
+                              <SvgIcon>
+                                   <ChevronDownIcon />
+                              </SvgIcon>
+                         }
+                         onClick={popover.handleOpen}
+                         ref={popover.anchorRef}
+                         fullWidth={false as any}
+                         sx={{
+                              justifyContent: { xs: 'space-between', sm: 'flex-start' },
+                              width: { xs: '100%', sm: 'auto' },
+                              border: (theme) => ({ xs: `1px solid ${theme.palette.divider}`, sm: 'none' })
+                         }}
+                    >
+                         {t('common.lblFilters')}
+                    </Button>
+                    <Menu
+                         anchorEl={popover.anchorRef.current}
+                         onClose={popover.handleClose}
+                         open={popover.open}
+                         slotProps={{ paper: { style: { width: 240 } } }}
+                    >
+                         {fields.length > 0 && fields.map((field) => {
+                              const checked = value[field.field] === true;
+                              return (
+                                   <MenuItem key={field.field} onClick={(e) => e.stopPropagation()}>
+                                        <Checkbox
+                                             checked={checked}
+                                             onChange={(e) => handleCheckboxChange(field.field, e.target.checked)}
+                                        />
+                                        <Typography>{t(field.label)}</Typography>
+                                   </MenuItem>
+                              );
+                         })}
+                         {fields.length === 0 && (
+                              <MenuItem disabled>
+                                   <Typography variant="caption" color="text.secondary">
+                                        {t('common.lblNoBooleanFilters', 'No toggle filters')}
+                                   </Typography>
                               </MenuItem>
-                         );
-                    })}
-                    {fields.length === 0 && (
-                         <MenuItem disabled>
-                              <Typography variant="caption" color="text.secondary">
-                                   {t('common.lblNoBooleanFilters', 'No toggle filters')}
-                              </Typography>
-                         </MenuItem>
-                    )}
-               </Menu>
+                         )}
+                    </Menu>
+               </Box>
           </Stack>
      );
 };
