@@ -2,6 +2,7 @@ import { tokens } from 'src/locales/tokens';
 import * as Yup from 'yup';
 
 export type NotificationType =
+     'all' |
      'system' |
      'message' |
      'reminder' |
@@ -10,6 +11,7 @@ export type NotificationType =
      'other';
 
 export const NOTIFICATION_TYPES = [
+     'all',
      'system',
      'message',
      'reminder',
@@ -24,6 +26,7 @@ export type NotificationTypeMap = {
 }
 
 export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
+     { value: 'all', labelToken: tokens.notifications.tabs.all },
      { value: 'system', labelToken: tokens.notifications.tabs.system },
      { value: 'message', labelToken: tokens.notifications.tabs.message },
      { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },

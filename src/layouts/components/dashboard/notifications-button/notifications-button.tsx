@@ -144,19 +144,20 @@ export function useNotifications() {
     }
   }, [userId]);
 
-  const handleMarkAllAsRead = useCallback((): void => {
+  const handleMarkAllAsRead = useCallback(async (): Promise<void> => {
     const ids = notifications.map(n => n.id);
     setNotifications([]); // optimistic
     if (!userId || ids.length === 0) return;
 
-    supabaseBrowserClient
+    const e = await supabaseBrowserClient
       .from('tblNotifications')
       .update({ is_read: true })
       .in('id', ids)
       .eq('user_id', userId)
       .then(({ error }) => {
-        if (error) toast.error('Failed to mark all notifications as read');
+        if (error) toast.error('Failed to mark all notifications as read', error.cause || error.message);
       });
+    console.log('effects', e);
   }, [userId, notifications]);
 
   return {

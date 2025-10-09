@@ -114,81 +114,81 @@ export const GenericTable = <T extends { id: string }>(
                          subheader={t(tableSubtitle || '')}
                     />
 
-                    <Scrollbar>
-                         <Table>
-                              <TableHead>
-                                   <TableRow>
-                                        {columns.map((col) => (
-                                             <TableCell key={String(col.key)}>{col.label}</TableCell>
-                                        ))}
-                                        <TableCell>{t('common.lblActions')}</TableCell>
-                                   </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                   {items.length > 0 ? (
-                                        items
-                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                             .map((item) => (
-                                                  <TableRow
-                                                       hover
-                                                       key={item.id}
-                                                       sx={{ cursor: baseUrl ? 'pointer' : 'default' }}
-                                                  >
-                                                       {columns.map((col) => (
-                                                            <TableCell key={String(col.key)}>
-                                                                 {typeof item[col.key] === 'boolean' ? (
-                                                                      <SvgIcon>
-                                                                           {item[col.key] ? (
-                                                                                <CheckCircleIcon color="success" />
-                                                                           ) : (
-                                                                                <CancelIcon color="error" />
-                                                                           )}
-                                                                      </SvgIcon>
-                                                                 ) : typeof item[col.key] === 'string' && /^https?:\/\//.test(item[col.key] as string) ? (
-                                                                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                           <img src={item[col.key] as string} alt="cell-img" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 4 }} />
-                                                                      </Box>
-                                                                 ) : (
-                                                                      <Box
-                                                                           component={Link}
-                                                                           href={baseUrl ? `${baseUrl}/${item.id}` : '#'}
-                                                                           sx={{
-                                                                                display: 'block',
-                                                                                color: 'inherit',
-                                                                                textDecoration: 'none',
-                                                                                pointerEvents: baseUrl ? 'auto' : 'none',
-                                                                           }}
-                                                                      >
-                                                                           {col.render
-                                                                                ? col.render(item[col.key], item)
-                                                                                : String(item[col.key])}
-                                                                      </Box>
-                                                                 )}
-                                                            </TableCell>
-                                                       ))}
-                                                       <TableCell>
-                                                            {rowActions.length > 0 ? (
-                                                                 <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                      {rowActions.map((action, idx) => (
-                                                                           <span key={idx}>{action(item, openActionDialog)}</span>
-                                                                      ))}
+
+                    <Table>
+                         <TableHead>
+                              <TableRow>
+                                   {columns.map((col) => (
+                                        <TableCell key={String(col.key)}>{col.label}</TableCell>
+                                   ))}
+                                   <TableCell>{t('common.lblActions')}</TableCell>
+                              </TableRow>
+                         </TableHead>
+                         <TableBody>
+                              {items.length > 0 ? (
+                                   items
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((item) => (
+                                             <TableRow
+                                                  hover
+                                                  key={item.id}
+                                                  sx={{ cursor: baseUrl ? 'pointer' : 'default' }}
+                                             >
+                                                  {columns.map((col) => (
+                                                       <TableCell key={String(col.key)}>
+                                                            {typeof item[col.key] === 'boolean' ? (
+                                                                 <SvgIcon>
+                                                                      {item[col.key] ? (
+                                                                           <CheckCircleIcon color="success" />
+                                                                      ) : (
+                                                                           <CancelIcon color="error" />
+                                                                      )}
+                                                                 </SvgIcon>
+                                                            ) : typeof item[col.key] === 'string' && /^https?:\/\//.test(item[col.key] as string) ? (
+                                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                      <img src={item[col.key] as string} alt="cell-img" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 4 }} />
                                                                  </Box>
-                                                            ) : 'N/A'}
+                                                            ) : (
+                                                                 <Box
+                                                                      component={Link}
+                                                                      href={baseUrl ? `${baseUrl}/${item.id}` : '#'}
+                                                                      sx={{
+                                                                           display: 'block',
+                                                                           color: 'inherit',
+                                                                           textDecoration: 'none',
+                                                                           pointerEvents: baseUrl ? 'auto' : 'none',
+                                                                      }}
+                                                                 >
+                                                                      {col.render
+                                                                           ? col.render(item[col.key], item)
+                                                                           : String(item[col.key])}
+                                                                 </Box>
+                                                            )}
                                                        </TableCell>
-                                                  </TableRow>
-                                             ))
-                                   ) : (
-                                        <TableRow>
-                                             <TableCell colSpan={columns.length + 1} align="center">
-                                                  <Typography variant="body2">
-                                                       {t('common.emptyTableInfo')}
-                                                  </Typography>
-                                             </TableCell>
-                                        </TableRow>
-                                   )}
-                              </TableBody>
-                         </Table>
-                    </Scrollbar>
+                                                  ))}
+                                                  <TableCell>
+                                                       {rowActions.length > 0 ? (
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                 {rowActions.map((action, idx) => (
+                                                                      <span key={idx}>{action(item, openActionDialog)}</span>
+                                                                 ))}
+                                                            </Box>
+                                                       ) : 'N/A'}
+                                                  </TableCell>
+                                             </TableRow>
+                                        ))
+                              ) : (
+                                   <TableRow>
+                                        <TableCell colSpan={columns.length + 1} align="center">
+                                             <Typography variant="body2">
+                                                  {t('common.emptyTableInfo')}
+                                             </Typography>
+                                        </TableCell>
+                                   </TableRow>
+                              )}
+                         </TableBody>
+                    </Table>
+
 
                     <TablePagination
                          component="div"

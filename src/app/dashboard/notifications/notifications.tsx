@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Box, Tabs, Tab, IconButton, Tooltip, Container, Stack, Typography, Card } from '@mui/material';
 import { GenericTable, TableColumn } from 'src/components/generic-table';
-import { Notification, NOTIFICATION_TYPES_MAP } from 'src/types/notification';
+import { Notification, NOTIFICATION_TYPES_MAP, NotificationType } from 'src/types/notification';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteNotification, markNotificationRead } from 'src/app/actions/notification/notification-actions';
@@ -18,7 +18,7 @@ interface NotificationsClientProps {
 export default function NotificationsClient({ initialNotifications }: NotificationsClientProps) {
 
      type Row = Notification & { id: string; created_at: string };
-     const [type, setType] = useState<string>('all');
+     const [type, setType] = useState<NotificationType>('all');
      const [items, setItems] = useState<Row[]>(initialNotifications as unknown as Row[]);
      const { t } = useTranslation();
 
@@ -37,7 +37,6 @@ export default function NotificationsClient({ initialNotifications }: Notificati
           if (type === 'reminder') {
                base.splice(1, 0, { key: 'scheduled_for' as any, label: t(tokens.notifications.col.scheduledFor) });
           }
-
           if (type === 'message') {
                // Cast to include potential sender/receiver fields
                base.splice(1, 0, { key: 'sender_id' as any, label: t(tokens.notifications.col.sender) });
@@ -45,6 +44,13 @@ export default function NotificationsClient({ initialNotifications }: Notificati
           }
           if (type === 'alert') {
                base.splice(1, 0, { key: 'severity' as any, label: t(tokens.notifications.col.severity) });
+          }
+
+          if (type === 'announcement') {
+               base.splice(1, 0, { key: 'announcement_id' as any, label: t(tokens.notifications.col.created) });
+          }
+          if (type === 'other') {
+               base.splice(1, 0, { key: 'other_id' as any, label: t(tokens.notifications.col.created) });
           }
           if (type !== 'all') {
                base.unshift({ key: 'type', label: t(tokens.notifications.col.type) });
