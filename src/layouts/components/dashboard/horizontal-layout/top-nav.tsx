@@ -203,14 +203,27 @@ export const TopNav: FC<TopNavProps> = (props) => {
           )}
           {!!mdUp && (
             <Stack alignItems="center" direction="row" spacing={2}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box
+                component={RouterLink}
+                href={paths.index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  '&:visited': { color: 'inherit' },
+                  '&:hover': { textDecoration: 'none', color: 'inherit' },
+                  '&:active': { color: 'inherit' },
+                  '&:focus': { color: 'inherit' },
+                }}
+              >
                 <Box
                   sx={{
-                    width: 56,              // visual target size of the logo area (tweak)
-                    height: 56,             // keep this equal width for a square box
+                    width: 56,
+                    height: 56,
                     display: 'flex',
                     alignItems: 'flex-start',
-                    overflow: 'hidden',     // hide the part that grows downward
+                    overflow: 'hidden',
                   }}
                 >
                   <Logo
@@ -234,6 +247,7 @@ export const TopNav: FC<TopNavProps> = (props) => {
                     '& span': { color: 'primary.main' },
                     transition: 'transform 0.2s',
                     '&:hover': { transform: 'scale(1.05)' },
+                    color: '#fff',
                   }}
                 >
                   NestLink <span>APP</span>

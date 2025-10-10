@@ -20,6 +20,7 @@ import type { NavColor } from 'src/types/settings';
 import type { Section } from '../config';
 import { SideNavSection } from './side-nav-section';
 import { useTranslation } from 'react-i18next';
+import { RouterLink } from 'src/components/router-link';
 
 const SIDE_NAV_WIDTH = 280;
 
@@ -195,40 +196,39 @@ export const SideNav: FC<SideNavProps> = (props) => {
       > */}
       <Stack sx={{ height: '100%' }}>
         <Box
+          component={RouterLink}
+          href={paths.index}
           sx={{
             alignItems: 'center',
             display: 'flex',
             p: 3,
+            textDecoration: 'none',
           }}
         >
           <Logo
             url='/assets/logo-icons/1-01.png'
             alt='/assets/no-image.png'
-            width={40} // Increased from 60 to 80 for zoom effect
-            height={40} // Increased from 60 to 80 for zoom effect
+            width={40}
+            height={40}
             style={{ transform: 'scale(2)' }}
           />
           <Box
             sx={{
-              color: 'text.secondary',
+              color: '#fff',
               fontSize: 20,
               fontWeight: 800,
               letterSpacing: '0.3px',
               lineHeight: 2.5,
-              '& span': {
-                color: 'primary.main',
-              },
+              '& span': { color: 'primary.main' },
               transition: 'transform 0.2s',
-              '&:hover': {
-                transform: 'scale(1.05)',
-              },
+              '&:hover': { transform: 'scale(1.05)' },
               mb: 2,
+              ml: 0.5,
             }}
           >
             NestLink <span>APP</span>
           </Box>
         </Box>
-
         <Stack
           component="nav"
 
