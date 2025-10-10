@@ -187,10 +187,7 @@ export const TopNav: FC<TopNavProps> = (props) => {
         direction="row"
         justifyContent="space-between"
         spacing={2}
-        sx={{
-          px: 3,
-          py: 1,
-        }}
+        sx={{ px: 3, py: 1, minHeight: 72 }}
       >
         <Stack
           alignItems="center"
@@ -204,40 +201,46 @@ export const TopNav: FC<TopNavProps> = (props) => {
               </SvgIcon>
             </IconButton>
           )}
-          <Box
-            sx={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              display: 'flex',
-            }}
-          >
-            <Logo
-              url='/assets/logo-icons/1-01.png'
-              alt='/assets/no-image.png'
-              width={40} // Increased from 60 to 80 for zoom effect
-              height={40} // Increased from 60 to 80 for zoom effect
-              style={{ transform: 'scale(2)' }}
-            />
-            <Box
-              sx={{
-                color: 'text.secondary',
-                fontSize: 20,
-                fontWeight: 800,
-                letterSpacing: '0.3px',
-                lineHeight: 2.5,
-                '& span': {
-                  color: 'primary.main',
-                },
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                },
-                mb: 2,
-              }}
-            >
-              NestLink <span>APP</span>
-            </Box>
-          </Box>
+          {!!mdUp && (
+            <Stack alignItems="center" direction="row" spacing={2}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    width: 56,              // visual target size of the logo area (tweak)
+                    height: 56,             // keep this equal width for a square box
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    overflow: 'hidden',     // hide the part that grows downward
+                  }}
+                >
+                  <Logo
+                    url="/assets/logo-icons/1-01.png"
+                    width={56}
+                    height={56}
+                    style={{
+                      transform: 'scale(1.32) translateY(-1px)',
+                      transformOrigin: 'top center',
+                      display: 'block',
+                    }}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    ml: 1,
+                    fontSize: 20,
+                    fontWeight: 800,
+                    letterSpacing: '0.3px',
+                    lineHeight: 1.2,
+                    '& span': { color: 'primary.main' },
+                    transition: 'transform 0.2s',
+                    '&:hover': { transform: 'scale(1.05)' },
+                  }}
+                >
+                  NestLink <span>APP</span>
+                </Box>
+              </Box>
+            </Stack>
+          )}
         </Stack>
         <Stack
           alignItems="center"
@@ -250,44 +253,46 @@ export const TopNav: FC<TopNavProps> = (props) => {
           <AccountButton />
         </Stack>
       </Stack>
-      {mdUp && (
-        <Box
-          sx={{
-            borderTopWidth: 1,
-            borderTopStyle: 'solid',
-            borderTopColor: 'var(--nav-divider-color)',
-          }}
-        >
-          <Scrollbar
+      {
+        mdUp && (
+          <Box
             sx={{
-              '& .simplebar-scrollbar:before': {
-                background: 'var(--nav-scrollbar-color)',
-              },
+              borderTopWidth: 1,
+              borderTopStyle: 'solid',
+              borderTopColor: 'var(--nav-divider-color)',
             }}
           >
-            <Stack
-              alignItems="center"
-              component="nav"
-              direction="row"
-              spacing={1}
+            <Scrollbar
               sx={{
-                px: 2,
-                py: 1.5,
+                '& .simplebar-scrollbar:before': {
+                  background: 'var(--nav-scrollbar-color)',
+                },
               }}
             >
-              {sections.map((section, index) => (
-                <TopNavSection
-                  items={section.items}
-                  key={index}
-                  pathname={pathname}
-                  subheader={section.subheader}
-                />
-              ))}
-            </Stack>
-          </Scrollbar>
-        </Box>
-      )}
-    </Box>
+              <Stack
+                alignItems="center"
+                component="nav"
+                direction="row"
+                spacing={1}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                }}
+              >
+                {sections.map((section, index) => (
+                  <TopNavSection
+                    items={section.items}
+                    key={index}
+                    pathname={pathname}
+                    subheader={section.subheader}
+                  />
+                ))}
+              </Stack>
+            </Scrollbar>
+          </Box>
+        )
+      }
+    </Box >
   );
 };
 
