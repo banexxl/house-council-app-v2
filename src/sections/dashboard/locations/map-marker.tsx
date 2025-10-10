@@ -84,6 +84,7 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, loca
                toast.error(t('locations.locationNotDeleted'));
           }
      }
+
      return (
           <Box>
                <Box
