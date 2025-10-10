@@ -13,8 +13,6 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
 import { Logo } from 'src/components/logo';
-import { RouterLink } from 'src/components/router-link';
-import { Scrollbar } from 'src/components/scrollbar';
 import { usePathname } from 'src/hooks/use-pathname';
 import { paths } from 'src/paths';
 import type { NavColor } from 'src/types/settings';
@@ -208,13 +206,8 @@ export const SideNav: FC<SideNavProps> = (props) => {
           <Logo
             url="/assets/logo-icons/1-01.png"
             alt="/assets/no-image.png"
-            width={60}
-            height={60}
-            style={{
-              width: '100%',
-              height: 'auto',
-              objectFit: 'fill',
-            }}
+            width={80}
+            height={80}
           />
           <Typography
             variant="h5"
@@ -223,7 +216,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
               color: 'primary.main',
               textAlign: 'left',
               lineHeight: 1.2,
-              mb: 1
+              mb: 2,
             }}
           >
             {t('common.title')}

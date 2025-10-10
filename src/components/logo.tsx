@@ -9,7 +9,7 @@ export interface LogoProps {
   height?: number; // default 40
   priority?: boolean;
   style?: CSSProperties;
-  imageProps?: Omit<ImageProps, 'src' | 'alt' | 'width' | 'height'>; // for advanced usage (sizes, placeholder, etc.)
+  imageProps?: Omit<ImageProps, 'src' | 'alt' | 'width' | 'height' | 'style'>; // for advanced usage (sizes, placeholder, etc.)
 }
 
 export const Logo: FC<LogoProps> = ({
@@ -29,7 +29,6 @@ export const Logo: FC<LogoProps> = ({
         width={width}
         height={height}
         priority={priority}
-        style={{ width: 'auto', height: 'auto', maxWidth: '100%', ...style }}
         {...imageProps}
       />
     </Box>

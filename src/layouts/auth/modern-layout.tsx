@@ -121,21 +121,16 @@ export const Layout: FC<LayoutProps> = (props) => {
             <Stack
               alignItems="center"
               component={RouterLink}
-              direction="row"
-              display="inline-flex"
               href={paths.index}
-              spacing={1}
-              sx={{ textDecoration: 'none' }}
+              sx={{
+                textDecoration: 'none',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: { xs: 'center', md: 'flex-start' },
+              }}
             >
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  height: 24,
-                  width: 24,
-                }}
-              >
-                <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
-              </Box>
+              <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' height={100} width={100} />
               <Box
                 sx={{
                   color: 'text.secondary',
@@ -147,6 +142,7 @@ export const Layout: FC<LayoutProps> = (props) => {
                   '& span': {
                     color: 'primary.main',
                   },
+                  mb: 2
                 }}
               >
                 NestLink <span>APP</span>
