@@ -116,18 +116,15 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                         ))}
                                    </Tabs>
                               </Box>
-                              <Box>
-                                   {/* Tabs Wrapper */}
+                              <Box sx={{ minWidth: 0 }}>
+                                   {/* Mobile horizontal tabs (desktop hidden) */}
                                    <Box
                                         sx={{
-                                             pt: { xs: 1, md: 1 },
-                                             width: { xs: '100%', md: 200 },
-                                             flexShrink: 0,
+                                             pt: { xs: 1, md: 0 },
+                                             mb: { xs: 2, md: 3 },
                                              display: 'flex',
                                              alignItems: 'flex-start',
-                                             justifyContent: { xs: 'flex-start', md: 'center' },
                                              overflowX: { xs: 'auto', md: 'visible' },
-                                             // Sticky behavior on mobile
                                              position: { xs: 'sticky', md: 'static' },
                                              top: { xs: (theme) => `calc(${theme.spacing(0)} + env(safe-area-inset-top, 0px))`, md: 'auto' },
                                              zIndex: { xs: 5, md: 'auto' },
@@ -143,6 +140,15 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                              orientation="horizontal"
                                              variant="scrollable"
                                              allowScrollButtonsMobile
+                                             scrollButtons
+                                             TabScrollButtonProps={{
+                                                  sx: {
+                                                       '&.Mui-disabled': {
+                                                            opacity: 0.4,
+                                                            display: 'inline-flex'
+                                                       }
+                                                  }
+                                             }}
                                              sx={{
                                                   display: { xs: 'flex', md: 'none' },
                                                   px: 0.5,
@@ -164,37 +170,38 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                                   />
                                              ))}
                                         </Tabs>
-                                        <Divider sx={{ mt: 1 }} />
+                                   </Box>
+
+                                   {/* Content */}
+                                   <Box sx={{ minWidth: 0 }}>
+                                        {currentTab === 'general' && (
+                                             <AccountGeneralSettings client={client} />
+                                        )}
+                                        {currentTab === 'billing' && (
+                                             <AccountBillingSettings
+                                                  plan={clientSubscriptionPlan?.id!}
+                                                  invoices={clientInvoices}
+                                                  billingInfo={clientBillingInfo}
+                                                  subscriptionPlans={subscriptionPlans}
+                                             />
+                                        )}
+                                        {currentTab === 'team' && (
+                                             <AccountTeamSettings
+                                                  members={allTeamMembers || []}
+                                                  client={client}
+                                                  clientSubscriptionPlan={clientSubscriptionPlan}
+                                             />
+                                        )}
+                                        {currentTab === 'notifications' && <AccountNotificationsSettings />}
+                                        {currentTab === 'security' && (
+                                             <AccountSecuritySettings
+                                                  loginEvents={clientLogs || []}
+                                                  client={client}
+                                                  userData={userData}
+                                             />
+                                        )}
                                    </Box>
                               </Box>
-
-                              {/* Content */}
-                              {currentTab === 'general' && (
-                                   <AccountGeneralSettings client={client} />
-                              )}
-                              {currentTab === 'billing' && (
-                                   <AccountBillingSettings
-                                        plan={clientSubscriptionPlan?.id!}
-                                        invoices={clientInvoices}
-                                        billingInfo={clientBillingInfo}
-                                        subscriptionPlans={subscriptionPlans}
-                                   />
-                              )}
-                              {currentTab === 'team' && (
-                                   <AccountTeamSettings
-                                        members={allTeamMembers || []}
-                                        client={client}
-                                        clientSubscriptionPlan={clientSubscriptionPlan}
-                                   />
-                              )}
-                              {currentTab === 'notifications' && <AccountNotificationsSettings />}
-                              {currentTab === 'security' && (
-                                   <AccountSecuritySettings
-                                        loginEvents={clientLogs || []}
-                                        client={client}
-                                        userData={userData}
-                                   />
-                              )}
                          </Box>
                     </Container>
                </Box>
