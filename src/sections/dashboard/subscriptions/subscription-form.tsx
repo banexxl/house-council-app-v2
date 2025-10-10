@@ -1,10 +1,10 @@
 "use client"
 
-import { Form, Formik, useFormik } from "formik"
+import { useFormik } from "formik"
 import * as Yup from "yup"
-import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, Box, } from "@mui/material"
+import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, Box } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
-import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanStatusOptions, subscriptionPlanValidationSchema, SubscriptionStatus } from "src/types/subscription-plan"
+import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanStatusOptions, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
 import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plan/subscription-plan-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
@@ -13,21 +13,42 @@ import { SubscriptionFormHeader } from "./subscription-form-header"
 import { isUUIDv4 } from "src/utils/uuid"
 import { BaseEntity, FeatureExtension } from "src/types/base-entity"
 import { updateFeature } from "src/app/actions/feature/feature-actions"
-import { useState } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 
 interface SubscriptionEditorProps {
      features: (BaseEntity & FeatureExtension)[]
      subscriptionPlansData?: SubscriptionPlan
 }
 
-export default function SubscriptionEditor({ features, subscriptionPlansData, }: SubscriptionEditorProps) {
+// Helper to compute pricing based on current form values & feature prices
+const getCalculatedPrices = (values: SubscriptionPlan, prices: Record<string, number>) => {
+     let baseTotal = Number(values.base_price) || 0;
+     values.features?.forEach((featureId: any) => {
+          const featurePrice = prices[featureId];
+          if (!isNaN(featurePrice)) baseTotal += featurePrice;
+     });
+     const monthly_total_price = parseFloat(baseTotal.toFixed(2));
+     let discountedPrice = monthly_total_price;
+     if (values.is_discounted) discountedPrice *= 1 - (values.discount_percentage || 0) / 100;
+     if (values.is_billed_annually) {
+          discountedPrice *= 12;
+          discountedPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
+     }
+     const total_price_with_discounts = parseFloat(discountedPrice.toFixed(2));
+     return { monthly_total_price, total_price_with_discounts };
+};
 
+export default function SubscriptionEditor({ features, subscriptionPlansData }: SubscriptionEditorProps) {
      const { t } = useTranslation()
      const router = useRouter()
 
      if (subscriptionPlansData?.id && !isUUIDv4(subscriptionPlansData?.id)) {
           notFound()
      }
+
+     const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
+          Object.fromEntries(features.map((f) => [f.id!, f.price_per_month]))
+     );
 
      const formik = useFormik({
           initialValues: {
@@ -41,13 +62,7 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
           }),
           onSubmit: async (values: SubscriptionPlan) => {
                const { monthly_total_price, total_price_with_discounts } = getCalculatedPrices(values, featurePrices);
-
-               const payload = {
-                    ...values,
-                    monthly_total_price,
-                    total_price_with_discounts,
-               };
-
+               const payload = { ...values, monthly_total_price, total_price_with_discounts } as SubscriptionPlan;
                try {
                     let response;
                     if (values.id && values.id !== '') {
@@ -73,71 +88,57 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                     formik.setSubmitting(false);
                }
           }
-
-     })
-     const getCalculatedPrices = (values: SubscriptionPlan, prices: Record<string, number>) => {
-          let baseTotal = Number(values.base_price) || 0;
-
-          values.features?.forEach((featureId) => {
-               const featurePrice = prices[featureId];
-               if (!isNaN(featurePrice)) {
-                    baseTotal += featurePrice;
-               }
-          });
-
-          const monthly_total_price = parseFloat(baseTotal.toFixed(2));
-
-          let discountedPrice = monthly_total_price;
-
-          if (values.is_discounted) {
-               discountedPrice *= 1 - (values.discount_percentage || 0) / 100;
-          }
-
-          if (values.is_billed_annually) {
-               discountedPrice *= 12;
-               discountedPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
-          }
-
-          const total_price_with_discounts = parseFloat(discountedPrice.toFixed(2));
-
-          return { monthly_total_price, total_price_with_discounts };
-     };
-
-     const calculatePrices = () => getCalculatedPrices(formik.values, featurePrices);
-
-     // const updateCalculatedPrices = () => {
-     //      const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-     //      formik.setFieldValue('monthly_total_price', monthly_total_price);
-     //      formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-     // };
-
-     const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
-          Object.fromEntries(features.map((f) => [f.id!, f.price_per_month]))
-     );
-
-     const handleFeaturePriceChange = (featureId: string, price: number) => {
+     });
+     const handleFeaturePriceChange = useCallback((featureId: string, price: number) => {
           setFeaturePrices((prev) => ({ ...prev, [featureId]: price }));
-     };
+     }, []);
 
-     const handleFeaturePriceSave = async (featureId: string) => {
+     const handleFeaturePriceSave = useCallback(async (featureId: string) => {
           const price = featurePrices[featureId];
           const { success } = await updateFeature(featureId, { price_per_month: price });
-
           if (success) {
                toast.success("Feature price updated successfully!");
-
                const { monthly_total_price, total_price_with_discounts } = getCalculatedPrices(formik.values, featurePrices);
-
-               await updateSubscriptionPlan({
-                    ...formik.values,
-                    id: subscriptionPlansData!.id,
-                    monthly_total_price: monthly_total_price,
-                    total_price_with_discounts: total_price_with_discounts,
-               });
+               if (subscriptionPlansData?.id) {
+                    await updateSubscriptionPlan({
+                         ...formik.values,
+                         id: subscriptionPlansData.id,
+                         monthly_total_price,
+                         total_price_with_discounts,
+                    });
+               }
           } else {
                toast.error("Failed to update feature price.");
           }
-     };
+     }, [featurePrices, formik.values, subscriptionPlansData]);
+
+     // Memoized calculated prices for display
+     const memoPrices = useMemo(() => {
+          return getCalculatedPrices(formik.values, featurePrices);
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [
+          formik.values.base_price,
+          formik.values.is_discounted,
+          formik.values.discount_percentage,
+          formik.values.is_billed_annually,
+          formik.values.annual_discount_percentage,
+          formik.values.features,
+          featurePrices
+     ]);
+
+     // Debounce updating form fields for monthly_total_price & total_price_with_discounts
+     useEffect(() => {
+          const timer = setTimeout(() => {
+               const { monthly_total_price, total_price_with_discounts } = memoPrices;
+               if (formik.values.monthly_total_price !== monthly_total_price) {
+                    formik.setFieldValue('monthly_total_price', monthly_total_price, false);
+               }
+               if (formik.values.total_price_with_discounts !== total_price_with_discounts) {
+                    formik.setFieldValue('total_price_with_discounts', total_price_with_discounts, false);
+               }
+          }, 250);
+          return () => clearTimeout(timer);
+     }, [memoPrices, formik.values.monthly_total_price, formik.values.total_price_with_discounts, formik.setFieldValue]);
 
      return (
           <form onSubmit={formik.handleSubmit}>
@@ -227,43 +228,25 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                              value={formik.values.base_price}
                                              onChange={(event) => {
                                                   const value = event.target.value;
-
-                                                  // Allow empty string so the user can delete and retype
-                                                  if (value === "") {
+                                                  if (value === "") { // allow clearing
                                                        formik.setFieldValue("base_price", "");
-                                                       return;
-                                                  }
-
-                                                  // Ensure only valid decimal numbers are allowed
-                                                  if (!isNaN(Number(value))) {
-                                                       formik.setFieldValue("base_price", value).then(() => {
-                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
-                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-                                                       })
+                                                  } else if (!isNaN(Number(value))) {
+                                                       formik.setFieldValue("base_price", value);
                                                   }
                                              }}
                                              error={formik.touched.base_price && Boolean(formik.errors.base_price)}
                                              helperText={formik.touched.base_price && formik.errors.base_price}
                                              margin="normal"
-                                             InputProps={{ inputProps: { min: 0, max: 1000000, step: "0.01" } }}
+                                             slotProps={{ htmlInput: { min: 0, max: 1000000, step: "0.01" } }}
                                              onBlur={() => {
                                                   let value = formik.values.base_price;
-
-                                                  // If the field is empty, set it to 0
-                                                  if (value === parseFloat("") || value === null || value === undefined) {
+                                                  if (value === parseFloat("") || value === null || value === undefined || value === ('' as any)) {
                                                        value = 0;
                                                   } else {
-                                                       // Convert to float and ensure two decimal places
-                                                       value = Math.max(0, Math.min(1000000, value));
-                                                       value = parseFloat(value.toFixed(2));
+                                                       value = Math.max(0, Math.min(1000000, Number(value)));
+                                                       value = parseFloat((value as number).toFixed(2));
                                                   }
-
-                                                  formik.setFieldValue("base_price", value).then(() => {
-                                                       const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-                                                       formik.setFieldValue('monthly_total_price', monthly_total_price);
-                                                       formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-                                                  })
+                                                  formik.setFieldValue("base_price", value);
                                              }}
                                         />
                                    </CardContent>
@@ -313,16 +296,12 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                                             numberValue = 0; // Set to 0 if it's invalid
                                                        }
 
-                                                       formik.setFieldValue("annual_discount_percentage", numberValue).then(() => {
-                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
-                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-                                                       })
+                                                       formik.setFieldValue("annual_discount_percentage", numberValue)
                                                   }}
                                                   error={formik.touched.annual_discount_percentage && Boolean(formik.errors.annual_discount_percentage)}
                                                   helperText={formik.touched.annual_discount_percentage && formik.errors.annual_discount_percentage}
                                                   margin="normal"
-                                                  InputProps={{ inputProps: { min: 0, max: 100 } }}
+                                                  slotProps={{ htmlInput: { min: 0, max: 100 } }}
                                                   onBlur={() => {
                                                        let value = formik.values.annual_discount_percentage;
 
@@ -333,11 +312,7 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                                             value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
                                                        }
 
-                                                       formik.setFieldValue("annual_discount_percentage", value).then(() => {
-                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
-                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-                                                       })
+                                                       formik.setFieldValue("annual_discount_percentage", value)
                                                   }}
                                              />
                                         )}
@@ -381,16 +356,12 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                                             numberValue = 0; // Set to 0 if it's invalid
                                                        }
 
-                                                       formik.setFieldValue("discount_percentage", numberValue).then(() => {
-                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
-                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-                                                       })
+                                                       formik.setFieldValue("discount_percentage", numberValue)
                                                   }}
                                                   error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
                                                   helperText={formik.touched.discount_percentage && formik.errors.discount_percentage}
                                                   margin="normal"
-                                                  InputProps={{ inputProps: { min: 0, max: 100 } }}
+                                                  slotProps={{ htmlInput: { min: 0, max: 100 } }}
                                                   onBlur={() => {
                                                        let value = formik.values.discount_percentage;
 
@@ -401,18 +372,14 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                                             value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
                                                        }
 
-                                                       formik.setFieldValue("discount_percentage", value).then(() => {
-                                                            const { monthly_total_price, total_price_with_discounts } = calculatePrices();
-                                                            formik.setFieldValue('monthly_total_price', monthly_total_price);
-                                                            formik.setFieldValue('total_price_with_discounts', total_price_with_discounts);
-                                                       })
+                                                       formik.setFieldValue("discount_percentage", value)
                                                   }}
                                              />
 
                                         )}
                                         <Typography variant="h5" className="mt-4">
-                                             Monthly Price: ${calculatePrices().monthly_total_price.toFixed(2)}<br />
-                                             Total with Discounts: ${calculatePrices().total_price_with_discounts.toFixed(2)}{" "}
+                                             Monthly Price: ${memoPrices.monthly_total_price.toFixed(2)}<br />
+                                             Total with Discounts: ${memoPrices.total_price_with_discounts.toFixed(2)}{" "}
                                              {formik.values.is_billed_annually ? t("subscriptionPlans.subscriptionPlanYearly") : t("subscriptionPlans.subscriptionPlanMonthly")}
                                         </Typography>
                                    </CardContent>
@@ -448,13 +415,29 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                              return (
                                                   <Box
                                                        key={featureId}
-                                                       display="flex"
-                                                       alignItems="center"
-                                                       justifyContent="space-between"
-                                                       mb={2}
+                                                       sx={{
+                                                            display: 'grid',
+                                                            gridTemplateColumns: {
+                                                                 xs: '1fr 1fr',
+                                                                 sm: '1fr 90px 80px'
+                                                            },
+                                                            alignItems: 'center',
+                                                            gap: 1,
+                                                            mb: 2,
+                                                       }}
                                                   >
-                                                       {/* Label + Checkbox on the left */}
                                                        <FormControlLabel
+                                                            sx={{
+                                                                 m: 0,
+                                                                 pr: 1,
+                                                                 alignItems: 'center',
+                                                                 gridColumn: { xs: '1 / -1', sm: '1 / 2' },
+                                                                 '.MuiFormControlLabel-label': {
+                                                                      display: 'inline-block',
+                                                                      lineHeight: 1.2,
+                                                                      paddingTop: '2px'
+                                                                 }
+                                                            }}
                                                             control={
                                                                  <Checkbox
                                                                       id={`feature-${featureId}`}
@@ -468,37 +451,61 @@ export default function SubscriptionEditor({ features, subscriptionPlansData, }:
                                                                       }}
                                                                  />
                                                             }
-                                                            label={feature.name}
+                                                            label={
+                                                                 <Typography
+                                                                      variant="body2"
+                                                                      sx={{
+                                                                           pr: 2,
+                                                                           whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                                                                           overflow: 'hidden',
+                                                                           textOverflow: 'ellipsis',
+                                                                      }}
+                                                                 >
+                                                                      {feature.name}
+                                                                 </Typography>
+                                                            }
                                                        />
-
-                                                       {/* Price input + Save button on the right */}
-                                                       <Stack direction="row" spacing={1} alignItems="center">
-                                                            <TextField
-                                                                 type="number"
-                                                                 value={price}
-                                                                 onChange={(e) => {
-                                                                      const val = parseFloat(e.target.value);
-                                                                      if (!isNaN(val)) {
-                                                                           handleFeaturePriceChange(featureId, val);
-                                                                      }
-                                                                 }}
-                                                                 inputProps={{ step: "0.01", min: 0 }}
-                                                                 size="small"
-                                                                 sx={{ width: 80 }} // smaller text box
-                                                                 disabled={!isChecked}
-                                                            />
-                                                            <Button
-                                                                 variant="contained"
-                                                                 size="small"
-                                                                 startIcon={<SaveIcon />}
-                                                                 onClick={() => handleFeaturePriceSave(featureId)}
-                                                                 disabled={!isChecked || price === feature.price_per_month}
-                                                            >
-                                                                 Save
-                                                            </Button>
-                                                       </Stack>
+                                                       <TextField
+                                                            type="number"
+                                                            value={price}
+                                                            onChange={(e) => {
+                                                                 const val = parseFloat(e.target.value);
+                                                                 if (!isNaN(val)) {
+                                                                      handleFeaturePriceChange(featureId, val);
+                                                                 }
+                                                            }}
+                                                            slotProps={{ htmlInput: { step: '0.01', min: 0 } }}
+                                                            size="small"
+                                                            sx={{
+                                                                 width: { xs: '100%', sm: '90px' },
+                                                                 gridColumn: { xs: '1 / 2', sm: '2 / 3' },
+                                                                 // Match MUI small button height (~32px)
+                                                                 '& .MuiInputBase-root': {
+                                                                      height: 35,
+                                                                      width: 80,
+                                                                      fontSize: 13,
+                                                                 },
+                                                                 '& input': { textAlign: 'right', fontSize: 13, p: 0, height: '32px !important' },
+                                                            }}
+                                                            disabled={!isChecked}
+                                                       />
+                                                       <Button
+                                                            variant="contained"
+                                                            size="small"
+                                                            startIcon={<SaveIcon />}
+                                                            onClick={() => handleFeaturePriceSave(featureId)}
+                                                            disabled={!isChecked || price === feature.price_per_month}
+                                                            sx={{
+                                                                 minWidth: { xs: 'auto', sm: 80 },
+                                                                 px: 1.5,
+                                                                 fontSize: 12,
+                                                                 justifySelf: { xs: 'start', sm: 'stretch' },
+                                                                 gridColumn: { xs: '2 / 3', sm: '3 / 4' }
+                                                            }}
+                                                       >
+                                                            {t('common.btnSave')}
+                                                       </Button>
                                                   </Box>
-
                                              );
                                         })}
 
