@@ -22,7 +22,6 @@ import { ContactsButton } from '../contacts-button';
 import type { Section } from '../config';
 import { LanguageSwitch } from '../language-switch';
 import { NotificationsButton } from '../notifications-button';
-import { TenantSwitch } from '../tenant-switch';
 import { TopNavSection } from './top-nav-section';
 
 const useCssVars = (color: NavColor): Record<string, string> => {
@@ -206,22 +205,39 @@ export const TopNav: FC<TopNavProps> = (props) => {
             </IconButton>
           )}
           <Box
-            component={RouterLink}
-            href={paths.index}
             sx={{
-              borderColor: 'var(--nav-logo-border)',
-              borderRadius: 1,
-              borderStyle: 'solid',
-              borderWidth: 1,
-              display: 'inline-flex',
-              height: 40,
-              p: '4px',
-              width: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              display: 'flex',
             }}
           >
-            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
+            <Logo
+              url='/assets/logo-icons/1-01.png'
+              alt='/assets/no-image.png'
+              width={40} // Increased from 60 to 80 for zoom effect
+              height={40} // Increased from 60 to 80 for zoom effect
+              style={{ transform: 'scale(2)' }}
+            />
+            <Box
+              sx={{
+                color: 'text.secondary',
+                fontSize: 20,
+                fontWeight: 800,
+                letterSpacing: '0.3px',
+                lineHeight: 2.5,
+                '& span': {
+                  color: 'primary.main',
+                },
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                },
+                mb: 2,
+              }}
+            >
+              NestLink <span>APP</span>
+            </Box>
           </Box>
-          <TenantSwitch />
         </Stack>
         <Stack
           alignItems="center"

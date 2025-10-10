@@ -29,6 +29,7 @@ export const Logo: FC<LogoProps> = ({
         width={width}
         height={height}
         priority={priority}
+        style={style}
         {...imageProps}
       />
     </Box>
