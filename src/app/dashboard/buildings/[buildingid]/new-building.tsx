@@ -53,7 +53,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const formik = useFormik({
     initialValues: buildingData ? buildingData : buildingInitialValues,
     validationSchema: buildingValidationSchema(t),
-    validateOnMount: true,
+    validateOnMount: false,
     onSubmit: async (values, helpers) => {
 
       helpers.setSubmitting(true);
@@ -98,18 +98,15 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
 
   });
 
-  // Immediately surface validation errors on initial load / when entity changes
+  // Re-run validation when editing entity changes, without marking fields touched
   useEffect(() => {
-    formik.validateForm().then(errs => {
-      const errorFields = Object.keys(errs || {});
-      if (errorFields.length) {
-        const touched: Record<string, boolean> = {};
-        errorFields.forEach(f => { touched[f] = true; });
-        formik.setTouched({ ...formik.touched, ...touched }, false);
-      }
-    });
+    if (buildingData) {
+      formik.validateForm();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildingData]);
+
+  const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
 
   const handleFilesDrop = useCallback(async (newFiles: File[]): Promise<void> => {
 
@@ -290,7 +287,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 </Box>
               )}
               getOptionLabel={(item) => `${item.city} — ${item.street_address} ${item.street_number}`}
-              disabled={!locationDataWithNoBuildingId}
+              disabled={!!locationDataWithNoBuildingId}
             />
           </CardContent>
         </Card>
@@ -307,8 +304,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.description}
-              error={!!formik.touched.description && !!formik.errors.description}
-              helperText={formik.touched.description && formik.errors.description}
+              error={Boolean(formik.errors.description) && showFieldError('description')}
+              helperText={showFieldError('description') ? formik.errors.description : ''}
               sx={{ mt: 2 }}
             />
           </CardContent>
@@ -358,8 +355,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.stories_high}
-                error={!!formik.touched.stories_high && !!formik.errors.stories_high}
-                helperText={formik.touched.stories_high && formik.errors.stories_high}
+                error={Boolean(formik.errors.stories_high) && showFieldError('stories_high')}
+                helperText={showFieldError('stories_high') ? formik.errors.stories_high : ''}
               />
 
               <TextField
@@ -376,8 +373,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.number_of_apartments}
-                error={!!formik.touched.number_of_apartments && !!formik.errors.number_of_apartments}
-                helperText={formik.touched.number_of_apartments && formik.errors.number_of_apartments}
+                error={Boolean(formik.errors.number_of_apartments) && showFieldError('number_of_apartments')}
+                helperText={showFieldError('number_of_apartments') ? formik.errors.number_of_apartments : ''}
               />
 
               <TextField
@@ -394,8 +391,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.max_apartments_per_floor}
-                error={!!formik.touched.max_apartments_per_floor && !!formik.errors.max_apartments_per_floor}
-                helperText={formik.touched.max_apartments_per_floor && formik.errors.max_apartments_per_floor}
+                error={Boolean(formik.errors.max_apartments_per_floor) && showFieldError('max_apartments_per_floor')}
+                helperText={showFieldError('max_apartments_per_floor') ? formik.errors.max_apartments_per_floor : ''}
               />
 
               <TextField
@@ -406,12 +403,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.building_status}
-                error={!!formik.touched.building_status && !!formik.errors.building_status}
-                helperText={
-                  formik.touched.building_status && typeof formik.errors.building_status === 'string'
-                    ? formik.errors.building_status
-                    : undefined
-                }
+                error={Boolean(formik.errors.building_status) && showFieldError('building_status')}
+                helperText={showFieldError('building_status') && typeof formik.errors.building_status === 'string' ? formik.errors.building_status : ''}
               >
                 {Object.entries(buildingStatusMap).map(([value, resourceString]) => (
                   <MenuItem key={value} value={value}>

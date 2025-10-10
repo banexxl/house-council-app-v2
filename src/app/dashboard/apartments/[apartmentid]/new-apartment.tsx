@@ -40,7 +40,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
   const formik = useFormik<Apartment>({
     initialValues: apartmentData ? apartmentData : apartmentInitialValues,
     validationSchema: apartmentValidationSchema(t, apartmentData?.id),
-    validateOnMount: true,
+    validateOnMount: false,
     onSubmit: async (values, helpers) => {
       helpers.setSubmitting(true); // manually set submitting state
       //Exclude building object from values
@@ -66,17 +66,16 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
     }
   });
 
+  // Re-run validation if the underlying apartment data changes (does not mark fields as touched)
   useEffect(() => {
-    formik.validateForm().then(errs => {
-      const errorFields = Object.keys(errs || {});
-      if (errorFields.length) {
-        const touched: Record<string, boolean> = {};
-        errorFields.forEach(f => { touched[f] = true; });
-        formik.setTouched({ ...formik.touched, ...touched }, false);
-      }
-    });
+    if (apartmentData) {
+      formik.validateForm();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apartmentData]);
+
+  // Helper to decide when to show an error for a field
+  const showFieldError = (name: keyof Apartment | string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
 
   const handleImageUpload = useCallback(async (newFiles: File[]) => {
     setUploadProgress(0);
@@ -167,8 +166,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     if (!formik.touched.building_id) formik.setFieldTouched('building_id', true, false);
                   }}
                   onBlur={formik.handleBlur}
-                  error={Boolean(formik.errors.building_id && (formik.touched.building_id || !!formik.values.building_id))}
-                  helperText={(formik.touched.building_id || !!formik.values.building_id) ? formik.errors.building_id : ''}
+                  error={Boolean(formik.errors.building_id) && showFieldError('building_id')}
+                  helperText={showFieldError('building_id') ? formik.errors.building_id : ''}
                   disabled={formik.isSubmitting || !!apartmentData?.id}
                 >
                   {buildings?.map((building) => (
@@ -193,8 +192,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     const trimmedValue = formik.values.apartment_number?.trim() ?? '';
                     formik.setFieldValue('apartment_number', trimmedValue);
                   }}
-                  error={Boolean(formik.errors.apartment_number && (formik.touched.apartment_number || !!formik.values.apartment_number))}
-                  helperText={(formik.touched.apartment_number || !!formik.values.apartment_number) ? formik.errors.apartment_number : ''}
+                  error={Boolean(formik.errors.apartment_number) && showFieldError('apartment_number')}
+                  helperText={showFieldError('apartment_number') ? formik.errors.apartment_number : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
 
@@ -214,8 +213,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     const value = parseInt(String(formik.values.floor), 10);
                     formik.setFieldValue('floor', isNaN(value) ? '' : value);
                   }}
-                  error={Boolean(formik.errors.floor && (formik.touched.floor || formik.values.floor !== undefined && formik.values.floor !== null))}
-                  helperText={(formik.touched.floor || (formik.values.floor !== undefined && formik.values.floor !== null)) ? formik.errors.floor : ''}
+                  error={Boolean(formik.errors.floor) && showFieldError('floor')}
+                  helperText={showFieldError('floor') ? formik.errors.floor : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -234,8 +233,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     const value = parseInt(String(formik.values.square_meters), 10);
                     formik.setFieldValue('square_meters', isNaN(value) ? '' : value);
                   }}
-                  error={Boolean(formik.errors.square_meters && (formik.touched.square_meters || formik.values.square_meters !== undefined && formik.values.square_meters !== null))}
-                  helperText={(formik.touched.square_meters || (formik.values.square_meters !== undefined && formik.values.square_meters !== null)) ? formik.errors.square_meters : ''}
+                  error={Boolean(formik.errors.square_meters) && showFieldError('square_meters')}
+                  helperText={showFieldError('square_meters') ? formik.errors.square_meters : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -259,8 +258,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                       formik.setFieldTouched('room_count', true, false);
                     }
                   }}
-                  error={Boolean(formik.errors.room_count && (formik.touched.room_count || formik.values.room_count !== undefined && formik.values.room_count !== null))}
-                  helperText={(formik.touched.room_count || (formik.values.room_count !== undefined && formik.values.room_count !== null)) ? formik.errors.room_count : ''}
+                  error={Boolean(formik.errors.room_count) && showFieldError('room_count')}
+                  helperText={showFieldError('room_count') ? formik.errors.room_count : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
@@ -275,8 +274,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     formik.handleChange(e);
                     if (!formik.touched.apartment_type) formik.setFieldTouched('apartment_type', true, false);
                   }}
-                  error={Boolean(formik.errors.apartment_type && (formik.touched.apartment_type || !!formik.values.apartment_type))}
-                  helperText={(formik.touched.apartment_type || !!formik.values.apartment_type) ? formik.errors.apartment_type : ''}
+                  error={Boolean(formik.errors.apartment_type) && showFieldError('apartment_type')}
+                  helperText={showFieldError('apartment_type') ? formik.errors.apartment_type : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 >
                   {['residential',
@@ -309,8 +308,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     formik.handleChange(e);
                     if (!formik.touched.apartment_status) formik.setFieldTouched('apartment_status', true, false);
                   }}
-                  error={Boolean(formik.errors.apartment_status && (formik.touched.apartment_status || !!formik.values.apartment_status))}
-                  helperText={(formik.touched.apartment_status || !!formik.values.apartment_status) ? formik.errors.apartment_status : ''}
+                  error={Boolean(formik.errors.apartment_status) && showFieldError('apartment_status')}
+                  helperText={showFieldError('apartment_status') ? formik.errors.apartment_status : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 >
                   {['owned', 'rented', 'for_rent', 'vacant'].map((option) => (
@@ -335,8 +334,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                     formik.handleChange(e);
                     if (!formik.touched.notes) formik.setFieldTouched('notes', true, false);
                   }}
-                  error={Boolean(formik.errors.notes && (formik.touched.notes || !!formik.values.notes))}
-                  helperText={(formik.touched.notes || !!formik.values.notes) ? formik.errors.notes : ''}
+                  error={Boolean(formik.errors.notes) && showFieldError('notes')}
+                  helperText={showFieldError('notes') ? formik.errors.notes : ''}
                   disabled={formik.isSubmitting || !formik.values.building_id}
                 />
               </Grid>
