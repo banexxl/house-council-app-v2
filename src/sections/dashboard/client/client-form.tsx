@@ -606,6 +606,12 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                       >
                         {t('clients.banUser')}
                       </Button>
+                    </Box>
+                    <Divider sx={{ my: 3 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                        {t('clients.unbanUserDescription')}
+                      </Typography>
                       <Button
                         variant="outlined"
                         color="success"
