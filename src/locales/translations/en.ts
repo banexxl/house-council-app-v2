@@ -225,6 +225,8 @@ export const en = {
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No client data available',
+  [tokens.clients.banUserDescription]: 'Ban user from accessing the platform. This will disable login.',
+  [tokens.clients.unbanUserDescription]: 'Unban user to restore their access to the platform.',
   //#region Navigation
   [tokens.nav.adminDashboard]: 'Dashboard',
   [tokens.nav.academy]: 'Academy',

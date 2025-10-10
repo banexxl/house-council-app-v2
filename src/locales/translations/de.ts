@@ -336,6 +336,8 @@ export const de = {
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'Keine Kundendaten verfügbar',
+  [tokens.clients.banUserDescription]: 'Benutzer vom Zugriff auf die Plattform ausschließen. Dies deaktiviert die Anmeldung.',
+  [tokens.clients.unbanUserDescription]: 'Benutzer entsperren, um den Zugriff auf die Plattform wiederherzustellen.',
   //#region Navigation
   [tokens.nav.academy]: 'Akademie',
   [tokens.nav.account]: 'Konto',

@@ -203,6 +203,8 @@ export const rs = {
      [tokens.account.deleteAccountSuccess]: 'Nalog je uspešno obrisan.',
      [tokens.locations.loadingLocation]: 'Učitavanje lokacije...',
      [tokens.clients.clientUnassignedLocations]: 'Nepridružene lokacije',
+     [tokens.clients.banUserDescription]: 'Blokiraj korisnika i onemogući mu pristup platformi. Ovo deaktivira prijavu.',
+     [tokens.clients.unbanUserDescription]: 'Odblokiraj korisnika i vrati mu pristup platformi.',
      //#region Common
      [tokens.common.languageChanged]: 'Jezik promjenjen',
      [tokens.common.title]: 'Kućni savet',

@@ -336,6 +336,8 @@ export const es = {
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No hay datos de cliente disponibles',
+  [tokens.clients.banUserDescription]: 'Bloquea al usuario para impedir el acceso a la plataforma. Esto deshabilita el inicio de sesión.',
+  [tokens.clients.unbanUserDescription]: 'Desbloquea al usuario para restaurar su acceso a la plataforma.',
   //#region Navigation
   [tokens.nav.academy]: 'Academia',
   [tokens.nav.account]: 'Cuenta',
