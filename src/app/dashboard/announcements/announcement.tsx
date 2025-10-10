@@ -84,7 +84,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const formik = useFormik({
           initialValues: announcementInitialValues,
           validationSchema: buildAnnouncementValidationSchema(t),
-          validateOnMount: true,
+          // Do not validate on mount; defer validation feedback until user interaction or submit
+          validateOnMount: false,
           onSubmit: async (values, helpers) => {
                helpers.setSubmitting(true);
                // Build payload mapping to server expectations
@@ -150,22 +151,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
           }
      });
 
-     // Immediately surface existing validation errors on load / entity change / scheduling toggle
-     useEffect(() => {
-          // Validate then mark errored fields as touched so helper texts appear without user interaction
-          formik.validateForm().then((errs) => {
-               if (!errs) return;
-               const touched: Record<string, boolean> = {};
-               const candidateFields = ['title', 'message', 'category', 'subcategory', 'buildings', 'scheduled_at'];
-               candidateFields.forEach(f => {
-                    if ((errs as any)[f] !== undefined) touched[f] = true;
-               });
-               if (Object.keys(touched).length) {
-                    formik.setTouched({ ...formik.touched, ...touched }, false);
-               }
-          });
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-     }, [editingEntity, formik.values.schedule_enabled, formik.values.category]);
+     // Helper to decide when to show an error for a field (user has interacted or submitted)
+     const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
 
      const isDraft = formik.values.status === 'draft';
      const hasErrors = Object.keys(formik.errors).length > 0;
@@ -508,8 +495,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             value={formik.values.title}
                                                             onChange={formik.handleChange}
                                                             onBlur={formik.handleBlur}
-                                                            error={formik.touched.title && Boolean(formik.errors.title)}
-                                                            helperText={formik.touched.title && formik.errors.title ? formik.errors.title : ' '}
+                                                            error={Boolean(formik.errors.title) && showFieldError('title')}
+                                                            helperText={showFieldError('title') && formik.errors.title ? formik.errors.title : ' '}
                                                             slotProps={{ formHelperText: { sx: { minHeight: 18, mt: 0.5 } } }}
                                                             fullWidth
                                                             required={formik.values.status === 'published'}
@@ -523,7 +510,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             onBlur={() => formik.setFieldTouched('message', true)}
                                                        />
                                                        <Box sx={{ minHeight: 25, mt: 0.5 }}>
-                                                            {formik.touched.message && formik.errors.message ? (
+                                                            {showFieldError('message') && formik.errors.message ? (
                                                                  <Typography variant="caption" color="error">{formik.errors.message}</Typography>
                                                             ) : ' '}
                                                        </Box>
@@ -552,7 +539,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                  ))}
                                                             </Select>
                                                             <Box sx={{ minHeight: 25, mt: 0.5 }}>
-                                                                 {formik.touched.category && formik.errors.category ? (
+                                                                 {showFieldError('category') && formik.errors.category ? (
                                                                       <Typography variant="caption" color="error">{formik.errors.category}</Typography>
                                                                  ) : ' '}
                                                             </Box>
@@ -579,7 +566,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                            ))}
                                                                       </Select>
                                                                       <Box sx={{ minHeight: 25, mt: 0.5 }}>
-                                                                           {formik.touched.subcategory && formik.errors.subcategory ? (
+                                                                           {showFieldError('subcategory') && formik.errors.subcategory ? (
                                                                                 <Typography variant="caption" color="error">{formik.errors.subcategory as string}</Typography>
                                                                            ) : ' '}
                                                                       </Box>
@@ -629,7 +616,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             ))}
                                                        </Select>
                                                        <Box sx={{ minHeight: 18, mt: 0.5 }}>
-                                                            {formik.touched.buildings && formik.errors.buildings ? (
+                                                            {showFieldError('buildings') && formik.errors.buildings ? (
                                                                  <Typography variant="caption" color="error">{formik.errors.buildings as any}</Typography>
                                                             ) : ' '}
                                                        </Box>
