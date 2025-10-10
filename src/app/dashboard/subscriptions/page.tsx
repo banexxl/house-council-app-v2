@@ -1,4 +1,4 @@
-import { Box, Container, Stack } from "@mui/material";
+import { Box, Container, Stack, Card } from "@mui/material";
 import { readAllSubscriptionPlans } from "src/app/actions/subscription-plan/subscription-plan-actions";
 import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
 
@@ -16,9 +16,11 @@ export default async function Page() {
           >
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <SubscriptionTable
-                              subscriptionPlans={subscriptionPlans.subscriptionPlansData}
-                         />
+                         <Card>
+                              <SubscriptionTable
+                                   subscriptionPlans={subscriptionPlans.subscriptionPlansData}
+                              />
+                         </Card>
                     </Stack>
                </Container>
           </Box>

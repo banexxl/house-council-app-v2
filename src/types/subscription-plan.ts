@@ -24,7 +24,7 @@ export const clientSubscriptionStatusOptions: { value: ClientSubscriptionStatus;
 export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
 
 export type SubscriptionPlan = {
-     id?: string;
+     id: string;
      created_at: Date;
      updated_at: Date;
      name: string;
@@ -43,6 +43,7 @@ export type SubscriptionPlan = {
 };
 
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
+     id: '',
      created_at: new Date(),
      updated_at: new Date(),
      name: '',
