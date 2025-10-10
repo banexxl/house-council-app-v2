@@ -621,8 +621,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             ) : ' '}
                                                        </Box>
                                                   </FormControl>
-
-
                                                   {/* Images Section */}
                                                   <Divider sx={{ my: 1 }} />
                                                   <Stack spacing={1}>
