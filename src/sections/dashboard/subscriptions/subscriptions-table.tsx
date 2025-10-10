@@ -16,10 +16,13 @@ interface SubscriptionListTableProps { subscriptionPlans?: SubscriptionPlan[]; }
 export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscriptionPlans = [] }) => {
      const { t } = useTranslation();
      const [filters, setFilters] = useState<{ search?: string; status?: string; billed_annually?: string; discounted?: string }>({});
+     // Control table page so we can reset to first page on new search/filter
+     const [page, setPage] = useState(0);
      const [deletingIds, setDeletingIds] = useState<string[]>([]);
 
      const handleFiltersChange = useCallback((newFilters: typeof filters) => {
           setFilters(newFilters);
+          setPage(0); // reset to first page when any filter (including search) changes
      }, []);
 
      const filtered = useMemo(() => {
@@ -35,8 +38,10 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                     if (p.is_discounted !== want) return false;
                }
                if (search) {
-                    const hay = [p.name, p.description, p.id].filter(Boolean).map(v => String(v).toLowerCase()).join(' ');
-                    if (!hay.includes(search)) return false;
+                    // Search ONLY by subscription name (case-insensitive, diacritic-insensitive)
+                    const normName = p.name?.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '') || '';
+                    const normSearch = search.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+                    if (!normName.includes(normSearch)) return false;
                }
                return true;
           });
@@ -74,6 +79,9 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                <GenericTable<SubscriptionPlan>
                     items={filtered}
                     baseUrl="/dashboard/subscriptions"
+                    page={page}
+                    onPageChange={(_, newPage) => setPage(newPage)}
+                    count={filtered.length}
                     columns={[
                          { key: 'name', label: t('subscriptionPlans.subscriptionPlanName') },
                          {
