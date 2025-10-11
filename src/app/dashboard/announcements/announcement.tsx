@@ -33,6 +33,7 @@ import {
      Card,
      CardHeader
 } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
 import LinearProgress from '@mui/material/LinearProgress';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
@@ -574,47 +575,60 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             );
                                                        })()}
                                                   </Box>
-                                                  {/* Buildings multi-select (replaces simple building visibility radio) */}
+                                                  {/* Buildings multi-select searchable Autocomplete */}
                                                   <FormControl fullWidth disabled={inputsDisabled} sx={{ minWidth: 0, width: '100%' }}>
-                                                       <InputLabel id="buildings-label">{t('buildings.buildingsTitle')}</InputLabel>
-                                                       <Select
-                                                            labelId="buildings-label"
+                                                       <Autocomplete
                                                             multiple
-                                                            name="buildings"
-                                                            value={formik.values.buildings || []}
-                                                            onChange={(e) => {
-                                                                 formik.setFieldValue('buildings', e.target.value);
+                                                            disableCloseOnSelect
+                                                            options={(buildings || []).map(b => {
+                                                                 let label = b.id;
+                                                                 if (b?.building_location) {
+                                                                      const loc: any = b.building_location || {};
+                                                                      const parts = [loc.street_address, loc.street_number, loc.city].filter(Boolean);
+                                                                      if (parts.length) label = parts.join(' ');
+                                                                 }
+                                                                 return { id: b.id, label };
+                                                            }).sort((a, b) => a.label.localeCompare(b.label))}
+                                                            value={(formik.values.buildings || []).map(id => {
+                                                                 const b = buildings.find(x => x.id === id);
+                                                                 let label = id;
+                                                                 if (b?.building_location) {
+                                                                      const loc: any = b.building_location || {};
+                                                                      const parts = [loc.street_address, loc.street_number, loc.city].filter(Boolean);
+                                                                      if (parts.length) label = parts.join(' ');
+                                                                 }
+                                                                 return { id, label };
+                                                            })}
+                                                            onChange={(e, newVal) => {
+                                                                 formik.setFieldValue('buildings', newVal.map(v => v.id));
                                                                  if (!formik.touched.buildings) {
                                                                       formik.setFieldTouched('buildings', true, false);
                                                                  }
                                                             }}
-                                                            onBlur={() => formik.setFieldTouched('buildings', true)}
-                                                            input={<OutlinedInput label={t('buildings.buildingsTitle')} />}
-                                                            renderValue={(selected) => (
-                                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                      {(selected as string[]).map((id) => {
-                                                                           const b = buildings.find(b => b.id === id);
-                                                                           let label = id;
-                                                                           if (b?.building_location) {
-                                                                                const loc: any = b.building_location as any;
-                                                                                const parts = [loc.street_address, loc.street_number, loc.city].filter(Boolean);
-                                                                                if (parts.length) label = parts.join(' ');
-                                                                           }
-                                                                           return <Chip key={id} label={label} size="small" />;
-                                                                      })}
-                                                                 </Box>
+                                                            getOptionLabel={(option) => option.label}
+                                                            isOptionEqualToValue={(o, v) => o.id === v.id}
+                                                            renderInput={(params) => (
+                                                                 <TextField
+                                                                      {...params}
+                                                                      label={t('buildings.buildingsTitle')}
+                                                                      placeholder={t('common.search')}
+                                                                      size="small"
+                                                                 />
                                                             )}
-                                                            sx={{ mb: 1 }}
-                                                       >
-                                                            {buildings.map(b => (
-                                                                 <MenuItem key={b.id} value={b.id}>
-                                                                      <Checkbox checked={(formik.values.buildings || []).indexOf(b.id) > -1} />
-                                                                      <Typography variant="body2">
-                                                                           {b.building_location ? [b.building_location.street_address, b.building_location.street_number, b.building_location.city].filter(Boolean).join(' ') : b.id}
-                                                                      </Typography>
-                                                                 </MenuItem>
-                                                            ))}
-                                                       </Select>
+                                                            renderOption={(props, option, { selected }) => (
+                                                                 <li {...props} key={option.id} style={{ display: 'flex', alignItems: 'center' }}>
+                                                                      <Checkbox
+                                                                           checked={selected}
+                                                                           style={{ marginRight: 8 }}
+                                                                      />
+                                                                      <Typography variant="body2" noWrap>{option.label}</Typography>
+                                                                 </li>
+                                                            )}
+                                                            slotProps={{
+                                                                 listbox: { sx: { maxHeight: 5 * 40, overflowY: 'auto' } },
+                                                                 popper: { sx: { '& .MuiAutocomplete-paper': { maxWidth: 400 } } },
+                                                            }}
+                                                       />
                                                        <Box sx={{ minHeight: 18, mt: 0.5 }}>
                                                             {showFieldError('buildings') && formik.errors.buildings ? (
                                                                  <Typography variant="caption" color="error">{formik.errors.buildings as any}</Typography>
