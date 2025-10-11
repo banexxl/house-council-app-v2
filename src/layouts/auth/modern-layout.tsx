@@ -71,7 +71,7 @@ export const Layout: FC<LayoutProps> = (props) => {
             left: 0,
             right: 0,
             bottom: 0,
-            display: 'flex',
+            display: { xs: 'none', md: 'none', lg: 'block' },
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
