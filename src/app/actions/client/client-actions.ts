@@ -22,9 +22,9 @@ export const sendMagicLink = async (email: string): Promise<{ success: boolean; 
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.auth.signInWithOtp({
           email,
-          options: {
-               emailRedirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
-          },
+          // options: {
+          //      emailRedirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
+          // },
      });
 
      if (error) return { success: false, error: error.message };
