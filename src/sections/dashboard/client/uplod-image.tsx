@@ -18,6 +18,7 @@ import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { uploadClientImagesAndGetUrls } from "src/libs/supabase/sb-storage"
+import { useSignedUrl } from "src/hooks/use-signed-urls"
 
 type ImageUploadProps = {
      buttonDisabled: boolean
@@ -33,7 +34,10 @@ export type ImageUploadRef = {
 
 export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
      ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx }, ref) => {
-          const [avatarUrl, setAvatarUrl] = useState<string>(initialValue !== undefined && initialValue !== "" ? initialValue : "")
+
+          const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!
+          const { url, loading: isLoading } = useSignedUrl(bucket, initialValue, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
+          const [avatarUrl, setAvatarUrl] = useState<string>(url ?? url ?? initialValue ?? "")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()

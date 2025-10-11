@@ -6,6 +6,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import type { PaletteMode } from 'src/theme';
 
@@ -17,7 +18,7 @@ interface Option {
 
 const options: Option[] = [
   {
-    label: 'Light',
+    label: 'settings.colorScheme.light',
     value: 'light',
     icon: (
       <SvgIcon fontSize="small">
@@ -26,7 +27,7 @@ const options: Option[] = [
     ),
   },
   {
-    label: 'Dark',
+    label: 'settings.colorScheme.dark',
     value: 'dark',
     icon: (
       <SvgIcon fontSize="small">
@@ -43,6 +44,7 @@ interface OptionsColorSchemeProps {
 
 export const OptionsColorScheme: FC<OptionsColorSchemeProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   return (
     <Stack spacing={1}>
@@ -50,7 +52,7 @@ export const OptionsColorScheme: FC<OptionsColorSchemeProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Color Scheme
+        {t('settings.colorScheme.label')}
       </Typography>
       <Stack
         alignItems="center"
@@ -62,7 +64,7 @@ export const OptionsColorScheme: FC<OptionsColorSchemeProps> = (props) => {
           <Chip
             icon={option.icon}
             key={option.value}
-            label={option.label}
+            label={t(option.label)}
             onClick={() => onChange?.(option.value)}
             sx={{
               borderColor: 'transparent',

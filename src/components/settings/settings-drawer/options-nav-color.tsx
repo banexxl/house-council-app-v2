@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import type { NavColor } from 'src/types/settings';
 
@@ -13,15 +14,15 @@ interface Option {
 
 const options: Option[] = [
   {
-    label: 'Blend-in',
+    label: 'settings.navColor.blendIn',
     value: 'blend-in',
   },
   {
-    label: 'Discrete',
+    label: 'settings.navColor.discrete',
     value: 'discrete',
   },
   {
-    label: 'Evident',
+    label: 'settings.navColor.evident',
     value: 'evident',
   },
 ];
@@ -33,6 +34,7 @@ interface OptionsNavColorProps {
 
 export const OptionsNavColor: FC<OptionsNavColorProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   return (
     <Stack spacing={1}>
@@ -40,7 +42,7 @@ export const OptionsNavColor: FC<OptionsNavColorProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Nav Color
+        {t('settings.navColor.label')}
       </Typography>
       <Stack
         alignItems="center"
@@ -51,7 +53,7 @@ export const OptionsNavColor: FC<OptionsNavColorProps> = (props) => {
         {options.map((option) => (
           <Chip
             key={option.label}
-            label={option.label}
+            label={t(option.label)}
             onClick={() => onChange?.(option.value)}
             sx={{
               borderColor: 'transparent',

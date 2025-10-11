@@ -238,6 +238,52 @@ export const tokens = {
       cancel: 'account.billing.cancel',
     }
   },
+  settings: {
+    drawer: {
+      title: 'settings.drawer.title',
+    },
+    colorPreset: {
+      label: 'settings.colorPreset.label',
+      orange: 'settings.colorPreset.orange',
+      green: 'settings.colorPreset.green',
+      blue: 'settings.colorPreset.blue',
+      indigo: 'settings.colorPreset.indigo',
+      purple: 'settings.colorPreset.purple',
+      teal: 'settings.colorPreset.teal',
+      red: 'settings.colorPreset.red',
+    },
+    colorScheme: {
+      label: 'settings.colorScheme.label',
+      light: 'settings.colorScheme.light',
+      dark: 'settings.colorScheme.dark',
+    },
+    navColor: {
+      label: 'settings.navColor.label',
+      blendIn: 'settings.navColor.blendIn',
+      discrete: 'settings.navColor.discrete',
+      evident: 'settings.navColor.evident',
+    },
+    layout: {
+      label: 'settings.layout.label',
+      vertical: 'settings.layout.vertical',
+      horizontal: 'settings.layout.horizontal',
+    },
+    content: {
+      label: 'settings.content.label',
+      compact: 'settings.content.compact',
+      wide: 'settings.content.wide',
+    },
+    contrast: {
+      label: 'settings.contrast.label',
+      normal: 'settings.contrast.normal',
+      high: 'settings.contrast.high',
+    },
+    orientation: {
+      label: 'settings.orientation.label',
+      leftToRight: 'settings.orientation.leftToRight',
+      rightToLeft: 'settings.orientation.rightToLeft',
+    },
+  },
   nav: {
     home: 'nav.home',
     academy: 'nav.academy',

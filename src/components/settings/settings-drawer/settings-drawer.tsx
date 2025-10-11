@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import RefreshCcw01Icon from '@untitled-ui/icons-react/build/esm/RefreshCcw01';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
@@ -32,6 +33,7 @@ interface SettingsDrawerProps {
 
 export const SettingsDrawer: FC<SettingsDrawerProps> = (props) => {
   const { canReset, onClose, onUpdate, onReset, open, values = {}, ...other } = props;
+  const { t } = useTranslation();
 
   const handleFieldUpdate = useCallback(
     (field: keyof Settings, value: unknown): void => {
@@ -54,11 +56,13 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = (props) => {
         },
         sx: { zIndex: 1400 },
       }}
-      PaperProps={{
-        elevation: 24,
-        sx: {
-          maxWidth: '100%',
-          width: 440,
+      slotProps={{
+        paper: {
+          elevation: 24,
+          sx: {
+            maxWidth: '100%',
+            width: 440,
+          },
         },
       }}
       {...other}
@@ -84,7 +88,7 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = (props) => {
             pt: 2,
           }}
         >
-          <Typography variant="h6">App Settings</Typography>
+          <Typography variant="h6">{t('settings.drawer.title')}</Typography>
           <Stack
             alignItems="center"
             direction="row"

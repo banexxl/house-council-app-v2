@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import type { Contrast } from 'src/theme';
 
@@ -13,11 +14,11 @@ interface Option {
 
 const options: Option[] = [
   {
-    label: 'Normal',
+    label: 'settings.contrast.normal',
     value: 'normal',
   },
   {
-    label: 'High',
+    label: 'settings.contrast.high',
     value: 'high',
   },
 ];
@@ -29,6 +30,7 @@ interface OptionsContrastProps {
 
 export const OptionsContrast: FC<OptionsContrastProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   return (
     <Stack spacing={1}>
@@ -36,7 +38,7 @@ export const OptionsContrast: FC<OptionsContrastProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Contrast
+        {t('settings.contrast.label')}
       </Typography>
       <Stack
         alignItems="center"
@@ -47,7 +49,7 @@ export const OptionsContrast: FC<OptionsContrastProps> = (props) => {
         {options.map((option) => (
           <Chip
             key={option.label}
-            label={option.label}
+            label={t(option.label)}
             onClick={() => onChange?.(option.value)}
             sx={{
               borderColor: 'transparent',

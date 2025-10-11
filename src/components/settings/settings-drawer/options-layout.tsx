@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import { Logo } from 'src/components/logo';
 import type { Layout } from 'src/types/settings';
@@ -15,7 +16,7 @@ interface Option {
 
 const options: Option[] = [
   {
-    label: 'Vertical',
+    label: 'settings.layout.vertical',
     value: 'vertical',
     icon: (
       <Box
@@ -35,15 +36,7 @@ const options: Option[] = [
           }}
         >
           <Stack spacing={1}>
-            <Box
-              sx={{
-                display: 'inline-flex',
-                height: 12,
-                width: 12,
-              }}
-            >
-              <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
-            </Box>
+            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' height={40} width={40} />
             <Box
               sx={{
                 backgroundColor: 'primary.main',
@@ -96,7 +89,7 @@ const options: Option[] = [
     ),
   },
   {
-    label: 'Horizontal',
+    label: 'settings.layout.horizontal',
     value: 'horizontal',
     icon: (
       <Box
@@ -120,15 +113,7 @@ const options: Option[] = [
             direction="row"
             spacing={1}
           >
-            <Box
-              sx={{
-                display: 'inline-flex',
-                height: 12,
-                width: 12,
-              }}
-            >
-              <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
-            </Box>
+            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' height={40} width={40} />
             <Box
               sx={{
                 backgroundColor: 'primary.main',
@@ -189,6 +174,7 @@ interface OptionsLayoutProps {
 
 export const OptionsLayout: FC<OptionsLayoutProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   return (
     <Stack spacing={1}>
@@ -196,7 +182,7 @@ export const OptionsLayout: FC<OptionsLayoutProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Layout
+        {t('settings.layout.label')}
       </Typography>
       <Box
         sx={{
@@ -234,7 +220,7 @@ export const OptionsLayout: FC<OptionsLayoutProps> = (props) => {
               sx={{ fontWight: 500 }}
               variant="body2"
             >
-              {option.label}
+              {t(option.label)}
             </Typography>
           </Stack>
         ))}

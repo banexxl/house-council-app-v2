@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 interface Option {
   label: string;
@@ -12,7 +13,7 @@ interface Option {
 
 const options: Option[] = [
   {
-    label: 'Compact',
+    label: 'settings.content.compact',
     value: false,
     icon: (
       <Box
@@ -60,7 +61,7 @@ const options: Option[] = [
     ),
   },
   {
-    label: 'Wide',
+    label: 'settings.content.wide',
     value: true,
     icon: (
       <Box
@@ -115,6 +116,7 @@ interface OptionsStretchProps {
 
 export const OptionsStretch: FC<OptionsStretchProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   return (
     <Stack spacing={1}>
@@ -122,7 +124,7 @@ export const OptionsStretch: FC<OptionsStretchProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Content
+        {t('settings.content.label')}
       </Typography>
       <Box
         sx={{
@@ -159,7 +161,7 @@ export const OptionsStretch: FC<OptionsStretchProps> = (props) => {
               sx={{ fontWight: 500 }}
               variant="body2"
             >
-              {option.label}
+              {t(option.label)}
             </Typography>
           </Stack>
         ))}

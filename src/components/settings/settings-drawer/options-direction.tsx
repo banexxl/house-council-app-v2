@@ -6,6 +6,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import type { Direction } from 'src/theme';
 
@@ -17,7 +18,7 @@ interface Option {
 
 const options: Option[] = [
   {
-    label: 'Left-to-right',
+    label: 'settings.orientation.leftToRight',
     value: 'ltr',
     icon: (
       <SvgIcon fontSize="small">
@@ -26,7 +27,7 @@ const options: Option[] = [
     ),
   },
   {
-    label: 'Right-to-left',
+    label: 'settings.orientation.rightToLeft',
     value: 'rtl',
     icon: (
       <SvgIcon fontSize="small">
@@ -43,6 +44,7 @@ interface OptionsDirectionProps {
 
 export const OptionsDirection: FC<OptionsDirectionProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   return (
     <Stack spacing={1}>
@@ -50,7 +52,7 @@ export const OptionsDirection: FC<OptionsDirectionProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Orientation
+        {t('settings.orientation.label')}
       </Typography>
       <Stack
         alignItems="center"
@@ -62,7 +64,7 @@ export const OptionsDirection: FC<OptionsDirectionProps> = (props) => {
           <Chip
             icon={option.icon}
             key={option.label}
-            label={option.label}
+            label={t(option.label)}
             onClick={() => onChange?.(option.value)}
             sx={{
               borderColor: 'transparent',

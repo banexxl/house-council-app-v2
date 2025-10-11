@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import type { ColorPreset } from 'src/theme';
 import { blue, green, indigo, purple, red, teal, orange } from 'src/theme/colors';
@@ -21,43 +22,16 @@ interface OptionsColorPresetProps {
 
 export const OptionsColorPreset: FC<OptionsColorPresetProps> = (props) => {
   const { onChange, value } = props;
+  const { t } = useTranslation();
 
   const options: Option[] = [
-    {
-      label: 'Orange',
-      value: 'orange',
-      color: orange.main,
-    },
-    {
-      label: 'Green',
-      value: 'green',
-      color: green.main,
-    },
-    {
-      label: 'Blue',
-      value: 'blue',
-      color: blue.main,
-    },
-    {
-      label: 'Indigo',
-      value: 'indigo',
-      color: indigo.main,
-    },
-    {
-      label: 'Purple',
-      value: 'purple',
-      color: purple.main,
-    },
-    {
-      label: 'Teal',
-      value: 'teal',
-      color: teal.main,
-    },
-    {
-      label: 'Red',
-      value: 'red',
-      color: red.main,
-    }
+    { label: 'settings.colorPreset.orange', value: 'orange', color: orange.main },
+    { label: 'settings.colorPreset.green', value: 'green', color: green.main },
+    { label: 'settings.colorPreset.blue', value: 'blue', color: blue.main },
+    { label: 'settings.colorPreset.indigo', value: 'indigo', color: indigo.main },
+    { label: 'settings.colorPreset.purple', value: 'purple', color: purple.main },
+    { label: 'settings.colorPreset.teal', value: 'teal', color: teal.main },
+    { label: 'settings.colorPreset.red', value: 'red', color: red.main }
   ];
 
   return (
@@ -66,7 +40,7 @@ export const OptionsColorPreset: FC<OptionsColorPresetProps> = (props) => {
         color="text.secondary"
         variant="overline"
       >
-        Primary Color
+        {t('settings.colorPreset.label')}
       </Typography>
       <Stack
         alignItems="center"
@@ -88,7 +62,7 @@ export const OptionsColorPreset: FC<OptionsColorPresetProps> = (props) => {
               />
             }
             key={option.value}
-            label={option.label}
+            label={t(option.label)}
             onClick={() => onChange?.(option.value)}
             sx={{
               borderColor: 'transparent',
