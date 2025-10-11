@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import User01Icon from '@untitled-ui/icons-react/build/esm/User01';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -9,11 +9,27 @@ import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { usePopover } from 'src/hooks/use-popover';
 
 import { AccountPopover } from './account-popover';
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 
 export const AccountButton: FC = () => {
 
-  const user = useMockedUser();
   const popover = usePopover<HTMLButtonElement>();
+
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabaseBrowserClient.auth.getUser();
+      //Get user data from tblClients where the avatar is stored
+      const { error, data: clientData } = await supabaseBrowserClient
+        .from('tblClients')
+        .select('avatar')
+        .eq('user_id', data.user?.id)
+        .single();
+      setUser(clientData || null);
+    };
+    fetchUser();
+  }, []);
 
   return (
     <>
@@ -37,7 +53,7 @@ export const AccountButton: FC = () => {
             height: 32,
             width: 32,
           }}
-          src={user.avatar}
+          src={user?.avatar}
         >
           <SvgIcon>
             <User01Icon />

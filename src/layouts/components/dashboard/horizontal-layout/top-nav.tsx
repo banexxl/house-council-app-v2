@@ -23,9 +23,13 @@ import type { Section } from '../config';
 import { LanguageSwitch } from '../language-switch';
 import { NotificationsButton } from '../notifications-button';
 import { TopNavSection } from './top-nav-section';
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 
 const useCssVars = (color: NavColor): Record<string, string> => {
+
   const theme = useTheme();
+
+  const user = supabaseBrowserClient.auth.getUser();
 
   return useMemo((): Record<string, string> => {
     switch (color) {
