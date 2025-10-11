@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import type { IpLocationResponse } from 'src/types/ip-location';
+import { formatIpLocation } from 'src/types/ip-location';
 
 // In-memory cache for IP location lookups (module scoped)
-const ipLocationCache: Record<string, string> = {};
+interface CachedEntry { formatted: string; raw: IpLocationResponse | null }
+const ipLocationCache: Record<string, CachedEntry> = {};
 
 /**
  * useIpLocation
@@ -11,9 +14,10 @@ const ipLocationCache: Record<string, string> = {};
  * Returns an object: { ip, location, loading }
  * location values: "Loading..." | "Unknown" | "Country" | "City, Country"
  */
-export const useIpLocation = (ip?: string | null): { ip: string | null; location: string; loading: boolean } => {
+export const useIpLocation = (ip?: string | null): { ip: string | null; location: string; loading: boolean; data: IpLocationResponse | null } => {
      const [resolvedIp, setResolvedIp] = useState<string | null>(ip ?? null);
-     const [location, setLocation] = useState<string>(() => (ip && ipLocationCache[ip]) ? ipLocationCache[ip] : 'Loading...');
+     const [location, setLocation] = useState<string>(() => (ip && ipLocationCache[ip]) ? ipLocationCache[ip].formatted : 'Loading...');
+     const [data, setData] = useState<IpLocationResponse | null>(() => (ip && ipLocationCache[ip]) ? ipLocationCache[ip].raw : null);
      const [loadingIp, setLoadingIp] = useState(!ip);
      const [loadingLocation, setLoadingLocation] = useState(true);
      const isMounted = useRef(true);
@@ -48,7 +52,8 @@ export const useIpLocation = (ip?: string | null): { ip: string | null; location
                return () => { isMounted.current = false; };
           }
           if (ipLocationCache[currentIp]) {
-               setLocation(ipLocationCache[currentIp]);
+               setLocation(ipLocationCache[currentIp].formatted);
+               setData(ipLocationCache[currentIp].raw);
                setLoadingLocation(false);
                return () => { isMounted.current = false; };
           }
@@ -58,19 +63,20 @@ export const useIpLocation = (ip?: string | null): { ip: string | null; location
                     setLoadingLocation(true);
                     const res = await fetch(`/api/ip/get-location?ip=${encodeURIComponent(currentIp)}`, { signal: controller.signal });
                     if (!res.ok) throw new Error('Failed');
-                    const data = await res.json().catch(() => ({}));
-                    let loc = 'Unknown';
-                    if (data && data.city && data.country_name) {
-                         loc = `${data.city}, ${data.country_name}`;
-                    } else if (data && data.country_name) {
-                         loc = data.country_name;
+                    const json: IpLocationResponse = await res.json().catch(() => ({} as IpLocationResponse));
+                    const formatted = formatIpLocation(json);
+                    ipLocationCache[currentIp] = { formatted, raw: json };
+                    if (isMounted.current) {
+                         setLocation(formatted);
+                         setData(json);
                     }
-                    ipLocationCache[currentIp] = loc;
-                    if (isMounted.current) setLocation(loc);
                } catch (e) {
                     if (!controller.signal.aborted) {
-                         ipLocationCache[currentIp] = 'Unknown';
-                         if (isMounted.current) setLocation('Unknown');
+                         ipLocationCache[currentIp] = { formatted: 'Unknown', raw: null };
+                         if (isMounted.current) {
+                              setLocation('Unknown');
+                              setData(null);
+                         }
                     }
                } finally {
                     if (isMounted.current) setLoadingLocation(false);
@@ -82,5 +88,5 @@ export const useIpLocation = (ip?: string | null): { ip: string | null; location
                controller.abort();
           };
      }, [resolvedIp]);
-     return { ip: resolvedIp, location, loading: loadingIp || loadingLocation };
+     return { ip: resolvedIp, location, loading: loadingIp || loadingLocation, data };
 };
