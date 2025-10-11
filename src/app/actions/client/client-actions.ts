@@ -47,7 +47,7 @@ export const removeAllMfaFactors = async (userId: string): Promise<{ success: bo
 };
 
 export const banUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      // Mark user as banned in user_metadata (Supabase does not support a direct ban flag)
      const { error } = await supabase.auth.admin.updateUserById(userId, {
           app_metadata: {
@@ -57,6 +57,7 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
           ban_duration: '24h',
           email_confirm: true, // Optional: prevent login until email is confirmed
      });
+     console.log('error', error);
 
      if (error) return { success: false, error: error.message };
 
@@ -66,7 +67,7 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
 };
 
 export const unbanUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      const { error } = await supabase.auth.admin.updateUserById(userId, {
           app_metadata: {
                banned: false,
