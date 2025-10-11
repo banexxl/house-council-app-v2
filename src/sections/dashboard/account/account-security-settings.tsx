@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { FC } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import Card from '@mui/material/Card';
@@ -20,6 +20,7 @@ import { Client } from 'src/types/client';
 import PasswordReset from './account-security-password-reset';
 import { User } from '@supabase/supabase-js';
 import { ServerLog } from 'src/libs/supabase/server-logging';
+import { useIpLocation } from 'src/hooks/use-ip-location';
 
 interface AccountSecuritySettingsProps {
   loginEvents: ServerLog[];
@@ -30,42 +31,25 @@ interface AccountSecuritySettingsProps {
 export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props) => {
 
   const { t } = useTranslation();
-
   const { loginEvents, client, userData } = props;
-  // In-memory cache for IP locations (per session)
-  const ipLocationCache: Record<string, string> = {};
 
-  function useIpLocation(ip: string): string {
-    const [location, setLocation] = useState<string>(() => ipLocationCache[ip] || 'Loading...');
-    const isMounted = useRef(true);
-    useEffect(() => {
-      isMounted.current = true;
-      if (!ip) return setLocation('Unknown');
-      if (ipLocationCache[ip]) {
-        setLocation(ipLocationCache[ip]);
-        return;
-      }
-      fetch(`/api/ip/get-location?ip=${ip}`)
-        .then(res => res.json())
-        .then(data => {
-          let loc = 'Unknown';
-          if (data && data.city && data.country_name) {
-            loc = `${data.city}, ${data.country_name}`;
-          } else if (data && data.country_name) {
-            loc = data.country_name;
-          }
-          ipLocationCache[ip] = loc;
-          if (isMounted.current) setLocation(loc);
-        })
-        .catch(() => {
-          ipLocationCache[ip] = 'Unknown';
-          if (isMounted.current) setLocation('Unknown');
-        });
-      return () => { isMounted.current = false; };
-    }, [ip]);
-    return location;
-  }
-
+  const LoginEventRow = memo(({ event }: { event: ServerLog }) => {
+    const { location } = useIpLocation(event.payload.ip);
+    const created_at = format(new Date(event.created_at!), 'HH:mm a MM/dd/yyyy');
+    return (
+      <TableRow
+        key={event.id}
+        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+      >
+        <TableCell>
+          <Typography variant="subtitle2">{event.type}</Typography>
+          <Typography variant="body2" color="body2">on {created_at}</Typography>
+        </TableCell>
+        <TableCell>{event.payload.ip}</TableCell>
+        <TableCell>{location}</TableCell>
+      </TableRow>
+    );
+  });
 
   return (
     <Stack spacing={4}>
@@ -96,29 +80,9 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
             <TableBody>
               {
                 loginEvents.length > 0 ?
-                  loginEvents.map((event) => {
-                    const created_at = format(new Date(event.created_at!), 'HH:mm a MM/dd/yyyy');
-                    const location = useIpLocation(event.payload.ip);
-                    return (
-                      <TableRow
-                        key={event.id}
-                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography variant="subtitle2">{event.type}</Typography>
-                          <Typography
-                            variant="body2"
-                            color="body2"
-                          >
-                            on {created_at}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>{event.payload.ip}</TableCell>
-                        <TableCell>{location}</TableCell>
-                      </TableRow>
-                    );
-
-                  })
+                  loginEvents.map((event) => (
+                    <LoginEventRow key={event.id} event={event} />
+                  ))
                   :
                   <TableRow>
                     <TableCell colSpan={3} align="center">

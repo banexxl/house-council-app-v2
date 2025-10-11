@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useIpLocation } from 'src/hooks/use-ip-location';
 // import Button from "@mui/material/Button"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
@@ -16,6 +17,7 @@ import { handleGoogleSignIn } from "../actions"
 import { Box, Button, CircularProgress, TextField } from "@mui/material"
 import { MagicLinkForm } from "./magic-link-form"
 import Link from "next/link"
+import { log } from "console";
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -71,14 +73,9 @@ const LoginForm = () => {
           setAuthMethod(newValue)
      }
 
-     const [ipAddress, setIpAddress] = useState<string | null>(null);
-
-     useEffect(() => {
-          fetch('/api/ip')
-               .then(res => res.json())
-               .then(data => setIpAddress(data.ip))
-               .catch(() => setIpAddress(null));
-     }, []);
+     // Resolve IP (hook auto-fetches if none passed) and treat it as ipAddress for downstream forms
+     const { ip: resolvedIp, location: ipLocation, loading: ipLoading } = useIpLocation();
+     const ipAddress = resolvedIp || undefined;
 
      return (
           <div style={{ height: "400px" }}>
@@ -94,7 +91,7 @@ const LoginForm = () => {
                     <Tab value="magic_link" label="Magic Link" />
                </Tabs>
 
-               {authMethod === "password" && <PasswordForm ipAddress={ipAddress} />}
+               {authMethod === "password" && <PasswordForm ipAddress={ipAddress || null} />}
                {authMethod === "google" && (
                     <Box>
                          <Typography
@@ -149,7 +146,7 @@ const LoginForm = () => {
                          </Button>
                     </Box>
                )}
-               {authMethod === "magic_link" && <MagicLinkForm ipAddress={ipAddress} />}
+               {authMethod === "magic_link" && <MagicLinkForm ipAddress={ipAddress || null} />}
 
                <Divider sx={{ my: 3 }} />
                <Typography color="text.secondary" variant="body2" align="center">
