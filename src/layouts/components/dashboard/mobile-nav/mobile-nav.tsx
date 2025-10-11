@@ -171,7 +171,7 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
             />
             <Box
               sx={{
-                color: '#fff',
+                color: 'text.secondary',
                 fontSize: 20,
                 fontWeight: 800,
                 letterSpacing: '0.3px',

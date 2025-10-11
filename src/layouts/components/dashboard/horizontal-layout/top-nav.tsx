@@ -251,7 +251,7 @@ export const TopNav: FC<TopNavProps> = (props) => {
                     '& span': { color: 'primary.main' },
                     transition: 'transform 0.2s',
                     '&:hover': { transform: 'scale(1.05)' },
-                    color: '#fff',
+                    color: 'text.secondary',
                   }}
                 >
                   NestLink <span>APP</span>
