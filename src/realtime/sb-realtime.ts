@@ -2,6 +2,7 @@
 
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import log from "src/utils/logger";
 
 type AnyChannel = RealtimeChannel & {
      on: (
@@ -85,24 +86,24 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
 
      // 4) Subscribe (with status logs)
      channel.subscribe((status) => {
-          if (process.env.NODE_ENV !== "production") {
-               console.log(`Channel status: ${status}`);
-          }
+
+          log(`Channel status: ${status}`);
+
      });
 
      // 4b) When tab regains focus/visibility or network returns, try to re-subscribe
      const tryResubscribe = () => {
           const state = (channel as any)?.state;
           if (document.visibilityState !== 'visible') return;
-          if (process.env.NODE_ENV !== 'production') {
-               console.log('[Realtime] Focus/online/visible; channel state:', state);
-          }
+
+          log(`[Realtime] Focus/online/visible; channel state: ${state}`);
+
           // If not joined or has errored/closed, attempt subscribe again
           if (state && (state === 'closed' || state === 'errored' || state === 'leaving' || state === 'closed')) {
                (channel as AnyChannel).subscribe((status) => {
-                    if (process.env.NODE_ENV !== 'production') {
-                         console.log(`[Realtime] Re-subscribe status: ${status}`);
-                    }
+
+                    log(`[Realtime] Re-subscribe status: ${status}`);
+
                });
           }
      };
@@ -140,7 +141,7 @@ export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"
           onEvent,
      });
 
-export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitListenerOptions["onEvent"], opts?: { debug?: boolean }) => {
+export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitListenerOptions["onEvent"]) => {
      // Enforce a non-empty filter; if missing, no-op with safe cleanup
      if (!clientId) {
           if (process.env.NODE_ENV !== 'production') {
@@ -151,23 +152,16 @@ export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitLi
 
      // Correct Postgres filter syntax requires operator (eq.)
      const filter = `client_id=eq.${clientId}`;
-     const debug = !!opts?.debug && process.env.NODE_ENV !== 'production';
-     if (debug) {
-          console.log('[Realtime] Subscribing to tblClient_Subscription', { clientId, filter });
-     }
+
+     log(`[Realtime] Subscribing to tblClient_Subscription ${filter}`, 'info');
+
 
      return initTableRealtimeListener("tblClient_Subscription", ["INSERT", "UPDATE", "DELETE"], {
           schema: "public",
           channelName: `client_${clientId}_subscription`,
           filter,
           onEvent: (payload) => {
-               if (debug) {
-                    console.log('[Realtime] Client subscription event', {
-                         eventType: (payload as any).eventType,
-                         new: (payload as any).new,
-                         old: (payload as any).old
-                    });
-               }
+               log(`[Realtime] Client subscription event ${JSON.stringify(payload)}`);
                onEvent(payload);
           },
      });

@@ -17,7 +17,6 @@ import { handleGoogleSignIn } from "../actions"
 import { Box, Button, CircularProgress, TextField } from "@mui/material"
 import { MagicLinkForm } from "./magic-link-form"
 import Link from "next/link"
-import { log } from "console";
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (

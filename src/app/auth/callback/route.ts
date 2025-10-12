@@ -99,10 +99,8 @@ export async function GET(request: Request) {
       .select("*")
       .eq("client_id", userId!)
       .in("status", ["active", "trialing"])
+      .single();
 
-    console.log('subscription', subscription);
-    console.log('userid', userId);
-    console.log('subscriptionError', subscriptionError);
 
     if (subscriptionError || !subscription) {
       await supabase.auth.signOut();

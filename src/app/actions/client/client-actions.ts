@@ -57,7 +57,6 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
           ban_duration: '24h',
           email_confirm: true, // Optional: prevent login until email is confirmed
      });
-     console.log('error', error);
 
      if (error) return { success: false, error: error.message };
 

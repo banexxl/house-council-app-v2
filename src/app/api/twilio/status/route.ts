@@ -1,4 +1,5 @@
 // app/api/twilio/status/route.ts
+import { log } from 'console';
 import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 
@@ -78,12 +79,12 @@ export async function POST(req: Request) {
                     // queued/sent/etc.
                     break;
           }
-          if (process.env.NODE_ENV === 'development') {
-               console.log('[twilio-status] callback', { messageSid, messageStatus, to, from, errorCode, errorMessage });
-          }
+
+          log('[twilio-status] callback', { messageSid, messageStatus, to, from, errorCode, errorMessage });
+
           return NextResponse.json({ ok: true });
      } catch (err: any) {
-          console.error('[twilio-status] error:', err?.message ?? err);
+          log('[twilio-status] error:', err?.message ?? err);
           return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
      }
 }

@@ -157,7 +157,6 @@ export function useNotifications() {
       .then(({ error }) => {
         if (error) toast.error('Failed to mark all notifications as read', error.cause || error.message);
       });
-    console.log('effects', e);
   }, [userId, notifications]);
 
   return {

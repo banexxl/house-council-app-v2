@@ -6,6 +6,7 @@ import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"; // 
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client"; // Preconfigured Supabase browser instance
 import { useAuth } from "src/contexts/auth/auth-provider"; // Access authenticated user + associated client context
 import { useRouter } from "next/navigation"; // Client router for redirects after sign-out
+import log from "src/utils/logger";
 
 // Domain model: minimal subset of tblClient_Subscription columns needed here
 interface ClientSubscriptionRow {
@@ -74,13 +75,9 @@ export default function ClientSubscriptionWatcher() {
 
                // Realtime listener: reacts to UPDATE / DELETE events on this client's subscription row
                cleanup = await initClientSubscriptionRealtime(clientId, async (payload: RealtimePostgresChangesPayload<any>) => {
-                    if (process.env.NODE_ENV !== 'production') {
-                         console.log('[ClientSubscriptionWatcher] Realtime payload', {
-                              eventType: (payload as any).eventType,
-                              new: (payload as any).new,
-                              old: (payload as any).old,
-                         });
-                    }
+
+                    log(`[ClientSubscriptionWatcher] Realtime payload ${JSON.stringify(payload)}`);
+
                     try { // Defensive parsing + decision logic
                          const raw = (payload.new || payload.old || {}) as Partial<ClientSubscriptionRow>;
                          const row: ClientSubscriptionRow | null = (raw && typeof raw === 'object')
@@ -118,7 +115,7 @@ export default function ClientSubscriptionWatcher() {
                               console.error("[ClientSubscriptionWatcher] error handling payload", e);
                          }
                     }
-               }, { debug: true });
+               });
 
                // Additional realtime listener for tblClients status (account status gate separate from subscription)
                try {
@@ -134,14 +131,14 @@ export default function ClientSubscriptionWatcher() {
                               try {
                                    const newRow = payload.new || payload.old;
                                    const client_status = newRow?.client_status;
-                                   if (process.env.NODE_ENV !== 'production') {
-                                        console.log('[ClientSubscriptionWatcher] Client status realtime', { client_status, eventType: payload.eventType });
-                                   }
+
+                                   log(`[ClientSubscriptionWatcher] Client status realtime ${JSON.stringify({ client_status, eventType: payload.eventType })}`);
+
                                    if (client_status && client_status !== 'active') {
                                         signingOut = true;
-                                        if (process.env.NODE_ENV !== 'production') {
-                                             console.warn('[ClientSubscriptionWatcher] Client status changed to non-active; signing out', { status });
-                                        }
+
+                                        log('[ClientSubscriptionWatcher] Client status changed to non-active; signing out', 'warn');
+
                                         await supabaseBrowserClient.auth.signOut();
                                         router.push('/auth/login');
                                    }
@@ -152,22 +149,18 @@ export default function ClientSubscriptionWatcher() {
                               }
                          })
                          .subscribe(status => {
-                              if (process.env.NODE_ENV !== 'production') {
-                                   console.log('[ClientSubscriptionWatcher] Client status channel subscribed', status);
-                              }
+                              log(`[ClientSubscriptionWatcher] Client status channel subscribed ${status}`);
                          });
                } catch (e) {
-                    if (process.env.NODE_ENV !== 'production') {
-                         console.error('[ClientSubscriptionWatcher] Failed to init client status channel', e);
-                    }
+                    log(`[ClientSubscriptionWatcher] Failed to init client status channel ${e}`, 'error');
                }
 
                // Polling fallback: executes every 15s to cover missed realtime events or network hiccups
                intervalId = setInterval(async () => {
                     if (signingOut) return; // already processing sign-out
-                    if (process.env.NODE_ENV !== 'production') {
-                         console.log('[ClientSubscriptionWatcher] Poll tick');
-                    }
+
+                    log('[ClientSubscriptionWatcher] Poll tick');
+
                     try {
                          const { data: current, error: readErr } = await supabaseBrowserClient
                               .from('tblClient_Subscription')

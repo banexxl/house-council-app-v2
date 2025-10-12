@@ -6,6 +6,7 @@ import { getAllAutoPublishReadyAnnouncements, publishAnnouncement } from 'src/ap
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { revalidatePath } from 'next/cache';
 import { tokens } from 'src/locales/tokens';
+import { log } from 'console';
 
 // Extend dayjs with timezone support (safe to call repeatedly)
 if (!(dayjs as any)._tzExtended) {
@@ -63,10 +64,10 @@ export async function POST(req: NextRequest) {
                }
           }
           if (toPublish.length) {
-               console.log('[cron publish] due announcements:', toPublish);
+               log('[cron publish] due announcements:', toPublish);
           }
           if (skippedFuture.length) {
-               console.log('[cron publish] skipped future announcements (outside grace):', skippedFuture.map(s => s.id));
+               log('[cron publish] skipped future announcements (outside grace):', skippedFuture.map(s => s.id));
                // Log detailed metadata (truncate if very large)
                await logServerAction({
                     user_id: null,
