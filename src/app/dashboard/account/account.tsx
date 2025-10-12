@@ -141,11 +141,13 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                              variant="scrollable"
                                              allowScrollButtonsMobile
                                              scrollButtons
-                                             TabScrollButtonProps={{
-                                                  sx: {
-                                                       '&.Mui-disabled': {
-                                                            opacity: 0.4,
-                                                            display: 'inline-flex'
+                                             slotProps={{
+                                                  scrollButtons: {
+                                                       sx: {
+                                                            '&.Mui-disabled': {
+                                                                 opacity: 0.4,
+                                                                 display: 'inline-flex'
+                                                            }
                                                        }
                                                   }
                                              }}

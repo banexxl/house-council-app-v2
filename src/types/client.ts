@@ -81,7 +81,7 @@ export const clientValidationSchema = (t: (key: string) => string): Yup.ObjectSc
     contact_person: Yup.string().max(255).required(t('clients.clientContactPersonRequired')),
     email: Yup.string().email(t('clients.clientEmailMustBeValid')).max(255).required(t('clients.clientEmailRequired')),
     phone: Yup.string().max(15),
-    mobile_phone: Yup.string().max(15).required(t('clients.clientMobilePhoneRequired')),
+    mobile_phone: Yup.string().max(15),//.required(t('clients.clientMobilePhoneRequired')),
     address_1: Yup.string().max(255),
     address_2: Yup.string().max(255),
     client_type: Yup.string().max(255).required(t('clients.clientTypeRequired')),
