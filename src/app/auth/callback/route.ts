@@ -98,8 +98,11 @@ export async function GET(request: Request) {
       .from("tblClient_Subscription")
       .select("*")
       .eq("client_id", userId!)
-      .eq("status", "active")
-      .maybeSingle();
+      .in("status", ["active", "trialing"])
+
+    console.log('subscription', subscription);
+    console.log('userid', userId);
+    console.log('subscriptionError', subscriptionError);
 
     if (subscriptionError || !subscription) {
       await supabase.auth.signOut();
