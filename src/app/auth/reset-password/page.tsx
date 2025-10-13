@@ -9,12 +9,16 @@ import { resetTenantPassword } from "src/app/actions/tenant/tenant-actions";
 import Link from "next/link";
 import { resetClientMemberPassword } from "src/app/actions/client/client-members";
 import toast from "react-hot-toast";
+import { logout } from "src/app/auth/actions";
+import { useRouter } from "next/navigation";
 
 
 export default function TenantPasswordResetPage() {
      const [isPending, startTransition] = useTransition();
      const [success, setSuccess] = useState(false);
      const [submitError, setSubmitError] = useState("");
+     const [isLoggingOut, setIsLoggingOut] = useState(false);
+     const router = useRouter();
      const searchParams = useSearchParams();
      const tokenFromUrl = searchParams.get("token") || "";
      const clientIdFromUrl = searchParams.get("client_id") || "";
@@ -70,6 +74,20 @@ export default function TenantPasswordResetPage() {
           },
      });
 
+     const handleBackToLogin = async () => {
+          setIsLoggingOut(true);
+          try {
+               await logout();
+               router.push('/auth/login');
+          } catch (error) {
+               console.error('Logout failed:', error);
+               // Navigate anyway even if logout fails
+               router.push('/auth/login');
+          } finally {
+               setIsLoggingOut(false);
+          }
+     };
+
      return (
           <Box sx={{ maxWidth: 400, mx: "auto", mt: 8, p: 3, border: "1px solid #eee", borderRadius: 2 }}>
                <Typography variant="h5" sx={{ mb: 2 }}>
@@ -121,11 +139,14 @@ export default function TenantPasswordResetPage() {
                          </Button>
                     </Stack>
                     <Box mt={2}>
-                         <Link href={'/auth/login'} passHref>
-                              <Button variant="outlined" fullWidth>
-                                   Back to Login
-                              </Button>
-                         </Link>
+                         <Button
+                              variant="outlined"
+                              fullWidth
+                              onClick={handleBackToLogin}
+                              disabled={isLoggingOut || isPending}
+                         >
+                              {isLoggingOut ? "Logging out..." : "Back to Login"}
+                         </Button>
                     </Box>
                </form>
           </Box>
