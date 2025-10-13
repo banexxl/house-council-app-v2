@@ -76,7 +76,11 @@ export default function ClientSubscriptionWatcher() {
                // Realtime listener: reacts to UPDATE / DELETE events on this client's subscription row
                cleanup = await initClientSubscriptionRealtime(clientId, async (payload: RealtimePostgresChangesPayload<any>) => {
 
-                    log(`[ClientSubscriptionWatcher] Realtime payload ${JSON.stringify(payload)}`);
+                    log(`[ClientSubscriptionWatcher] Realtime payload ${JSON.stringify({
+                         eventType: (payload as any).eventType,
+                         new: (payload as any).new,
+                         old: (payload as any).old,
+                    })}`);
 
                     try { // Defensive parsing + decision logic
                          const raw = (payload.new || payload.old || {}) as Partial<ClientSubscriptionRow>;
@@ -137,7 +141,7 @@ export default function ClientSubscriptionWatcher() {
                                    if (client_status && client_status !== 'active') {
                                         signingOut = true;
 
-                                        log('[ClientSubscriptionWatcher] Client status changed to non-active; signing out', 'warn');
+                                        log(`[ClientSubscriptionWatcher] Client status changed to non-active; signing out`, 'warn');
 
                                         await supabaseBrowserClient.auth.signOut();
                                         router.push('/auth/login');
