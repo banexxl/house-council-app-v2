@@ -149,7 +149,7 @@ const LoginForm = () => {
 
                <Divider sx={{ my: 3 }} />
                <Typography color="text.secondary" variant="body2" align="center">
-                    Don&apos;t have an account, or forgot password? <Link href="https://nest-link.app/auth/sign-in" target="_blank" rel="noopener noreferrer" >Visit our home page.</Link>
+                    Don&apos;t have an account, or forgot password? <Link href={`${process.env.NEXT_PUBLIC_BASE_URL + '/auth/reset-password'}`} rel="noopener noreferrer" >Reset password!</Link>
                </Typography>
           </div>
      )
