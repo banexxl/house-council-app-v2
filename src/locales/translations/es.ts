@@ -718,7 +718,7 @@ export const es = {
   [tokens.tenants.tenantIsPrimary]: 'Estado de ser principal',
   [tokens.tenants.tenantIsPrimaryDescription]: 'Propietario o contacto principal!',
   [tokens.tenants.tenantType]: 'Tipo de Mietnehmer',
-  [tokens.tenants.tenantSaved]: 'Mietnehmer guardado',
+  [tokens.tenants.tenantSaved]: 'Mietnehmer guardado!',
   [tokens.tenants.tenantNotSaved]: 'Mietnehmer no guardado',
   [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'El número de teléfono debe comenzar con un signo más (+), y contener al menos 7 números',
   [tokens.tenants.phoneAlreadyExists]: 'El número de teléfono ya existe',

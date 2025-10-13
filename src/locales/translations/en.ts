@@ -604,7 +604,7 @@ export const en = {
   [tokens.tenants.tenantIsPrimary]: 'Is Primary',
   [tokens.tenants.tenantIsPrimaryDescription]: 'Owner or primary contact person!',
   [tokens.tenants.tenantType]: 'Tenant Type',
-  [tokens.tenants.tenantSaved]: 'Tenant saved',
+  [tokens.tenants.tenantSaved]: 'Tenant saved!',
   [tokens.tenants.tenantNotSaved]: 'Tenant not saved',
   [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Phone number must start with +, followed by at least 7 digits',
   [tokens.tenants.phoneAlreadyExists]: 'Phone number already exists',

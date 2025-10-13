@@ -723,7 +723,7 @@ export const rs = {
      [tokens.tenants.tenantIsPrimary]: 'Glavni stanar',
      [tokens.tenants.tenantIsPrimaryDescription]: 'Vlasnik ili glavna kontakt osoba!',
      [tokens.tenants.tenantType]: 'Tip stanara',
-     [tokens.tenants.tenantSaved]: 'Stanar je sačuvan',
+     [tokens.tenants.tenantSaved]: 'Stanar je sačuvan!',
      [tokens.tenants.tenantNotSaved]: 'Stanar nije sačuvan',
      [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Broj telefona mora početi sa +, i sadržati bar 7 cifara',
      [tokens.tenants.phoneAlreadyExists]: 'Telefon već postoji',
