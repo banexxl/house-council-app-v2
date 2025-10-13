@@ -145,7 +145,7 @@ export const apartmentValidationSchema = (t: (key: string) => string, apartmentI
           }
      ).required(t('common.required')),
      square_meters: Yup.number().integer().min(0, t('errors.apartment.apartmentSquareMetersTooLow')).optional(),
-     room_count: Yup.number().integer().min(1, t('errors.apartment.apartmentRoomCountTooLow')).max(8, t('errors.apartment.apartmentRoomCountTooHigh')).optional(),
+     room_count: Yup.number().integer().min(1, t('errors.apartment.apartmentRoomCountTooLow')).max(10, t('errors.apartment.apartmentRoomCountTooHigh')).optional(),
      notes: Yup.string().optional(),
      apartment_type: Yup.string()
           .oneOf(ApartmentTypeValues)

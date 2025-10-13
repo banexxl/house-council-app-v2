@@ -88,7 +88,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                ...initialValues,
           },
           validationSchema: tenantValidationSchema(t),
-          validateOnMount: true,
+          validateOnMount: false,
           onSubmit: async (values, { setSubmitting }) => {
                try {
                     const response = await createOrUpdateTenantAction(values as Tenant);
@@ -98,7 +98,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                          if (!currentRoute.includes(tenantId!)) {
                               router.push(paths.dashboard.tenants.index + '/' + tenantId);
                          }
-                         toast.success(t('tenants.tenantSaved'));
+                         toast.success(t('tenants.tenantSaved') + '\n' + t('clients.passwordResetEmailSent'));
                     } else {
                          toast.error(t('tenants.tenantNotSaved') + ': ' + t(response.saveTenantActionError));
                     }
@@ -112,16 +112,14 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
 
      const apartmentSelected = !!formik.values.apartment_id;
 
-     // Surface errors immediately on load and when tenantData changes
+     // Helper to decide when to show an error for a field
+     const showFieldError = (name: keyof Tenant | string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
+
+     // Re-run validation if the underlying tenant data changes (does not mark fields as touched)
      useEffect(() => {
-          formik.validateForm().then(errs => {
-               const errorFields = Object.keys(errs || {});
-               if (errorFields.length) {
-                    const touched: Record<string, boolean> = {};
-                    errorFields.forEach(f => { touched[f] = true; });
-                    formik.setTouched({ ...formik.touched, ...touched }, false);
-               }
-          });
+          if (tenantData) {
+               formik.validateForm();
+          }
           // eslint-disable-next-line react-hooks/exhaustive-deps
      }, [tenantData]);
 
@@ -130,7 +128,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
           setModalLoading(true);
           try {
                const { success, error } = await sendPasswordRecoveryEmail(formik.values.email!);
-               setModalResult(success ? t('clients.passwordRecoverySent') : error || t('clients.tenantNotSaved'));
+               setModalResult(success ? t('clients.passwordResetEmailSent') : error || t('clients.tenantNotSaved'));
           } catch (error) {
                toast.error(t('clients.tenantNotSaved'), error.message);
                setModalResult(t('clients.tenantNotSaved'));
@@ -241,10 +239,10 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
-                                        error={!!(formik.touched.first_name && formik.errors.first_name)}
+                                        error={Boolean(formik.errors.first_name) && showFieldError('first_name')}
                                         helperText={
                                              <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {formik.touched.first_name && formik.errors.first_name ? formik.errors.first_name : ''}
+                                                  {showFieldError('first_name') ? formik.errors.first_name : ''}
                                              </span>
                                         }
                                    />
@@ -259,10 +257,10 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
-                                        error={!!(formik.touched.last_name && formik.errors.last_name)}
+                                        error={Boolean(formik.errors.last_name) && showFieldError('last_name')}
                                         helperText={
                                              <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {formik.touched.last_name && formik.errors.last_name ? formik.errors.last_name : ''}
+                                                  {showFieldError('last_name') ? formik.errors.last_name : ''}
                                              </span>
                                         }
                                    />
@@ -277,10 +275,10 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected || !!tenantData}
-                                        error={!!(formik.touched.email && formik.errors.email)}
+                                        error={Boolean(formik.errors.email) && showFieldError('email')}
                                         helperText={
                                              <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {formik.touched.email && formik.errors.email ? formik.errors.email : ''}
+                                                  {showFieldError('email') ? formik.errors.email : ''}
                                              </span>
                                         }
                                    />
@@ -296,10 +294,10 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
-                                        error={!!(formik.touched.tenant_type && formik.errors.tenant_type)}
+                                        error={Boolean(formik.errors.tenant_type) && showFieldError('tenant_type')}
                                         helperText={
                                              <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {formik.touched.tenant_type && formik.errors.tenant_type ? formik.errors.tenant_type : ''}
+                                                  {showFieldError('tenant_type') ? formik.errors.tenant_type : ''}
                                              </span>
                                         }
                                    >
@@ -323,8 +321,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   textField: {
                                                        fullWidth: true,
                                                        name: 'date_of_birth',
-                                                       error: !!(formik.touched.date_of_birth && formik.errors.date_of_birth),
-                                                       helperText: formik.touched.date_of_birth && formik.errors.date_of_birth,
+                                                       error: Boolean(formik.errors.date_of_birth) && showFieldError('date_of_birth'),
+                                                       helperText: showFieldError('date_of_birth') ? formik.errors.date_of_birth : '',
                                                   },
                                              }}
                                              disabled={!apartmentSelected}
@@ -342,10 +340,10 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
-                                        error={!!(formik.touched.phone_number && formik.errors.phone_number)}
+                                        error={Boolean(formik.errors.phone_number) && showFieldError('phone_number')}
                                         helperText={
                                              <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {formik.touched.phone_number && formik.errors.phone_number ? formik.errors.phone_number : ''}
+                                                  {showFieldError('phone_number') ? formik.errors.phone_number : ''}
                                              </span>
                                         }
                                    />

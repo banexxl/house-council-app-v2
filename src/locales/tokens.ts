@@ -613,6 +613,7 @@ export const tokens = {
     sendPasswordRecoveryDescription: 'clients.sendPasswordRecoveryDescription',
     confirmSendPasswordRecovery: 'clients.confirmSendPasswordRecovery',
     passwordRecoverySent: 'clients.passwordRecoverySent',
+    passwordResetEmailSent: 'clients.passwordResetEmailSent',
     sendMagicLink: 'clients.sendMagicLink',
     sendMagicLinkDescription: 'clients.sendMagicLinkDescription',
     confirmSendMagicLink: 'clients.confirmSendMagicLink',

@@ -470,6 +470,7 @@ export const rs = {
      [tokens.clients.sendPasswordRecoveryDescription]: 'Pošaljite korisniku e-mail za oporavak lozinke.',
      [tokens.clients.confirmSendPasswordRecovery]: 'Da li ste sigurni da želite da pošaljete e-mail za oporavak lozinke?',
      [tokens.clients.passwordRecoverySent]: 'E-mail za oporavak lozinke je poslat!',
+     [tokens.clients.passwordResetEmailSent]: 'E-mail za resetovanje lozinke je poslat!',
      [tokens.clients.sendMagicLink]: 'Pošalji magic link',
      [tokens.clients.sendMagicLinkDescription]: 'Pošaljite korisniku magic link za prijavu bez lozinke.',
      [tokens.clients.confirmSendMagicLink]: 'Da li ste sigurni da želite da pošaljete magic link?',

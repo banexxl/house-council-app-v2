@@ -567,6 +567,7 @@ export const es = {
   [tokens.clients.sendPasswordRecoveryDescription]: 'Enviar un correo de recuperación de contraseña al usuario.',
   [tokens.clients.confirmSendPasswordRecovery]: '¿Está seguro de que desea enviar un correo de recuperación de contraseña?',
   [tokens.clients.passwordRecoverySent]: '¡Correo de recuperación enviado!',
+  [tokens.clients.passwordResetEmailSent]: '¡Correo de restablecimiento de contraseña enviado!',
   [tokens.clients.sendMagicLink]: 'Enviar magic link',
   [tokens.clients.sendMagicLinkDescription]: 'Enviar un magic link al usuario para iniciar sesión sin contraseña.',
   [tokens.clients.confirmSendMagicLink]: '¿Está seguro de que desea enviar un magic link?',

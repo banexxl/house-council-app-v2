@@ -331,8 +331,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
                   name="notes"
                   value={formik.values.notes}
                   onChange={(e) => {
-                    formik.handleChange(e);
-                    if (!formik.touched.notes) formik.setFieldTouched('notes', true, false);
+                    // Only update the field value without triggering validation
+                    formik.setFieldValue('notes', e.target.value, false);
+                  }}
+                  onBlur={() => {
+                    // Trigger validation only on blur
+                    formik.setFieldTouched('notes', true, true);
                   }}
                   error={Boolean(formik.errors.notes) && showFieldError('notes')}
                   helperText={showFieldError('notes') ? formik.errors.notes : ''}
