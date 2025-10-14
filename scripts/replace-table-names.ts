@@ -14,7 +14,7 @@ const path = require('path');
 
 // Mapping of old table names to new TABLES constants
 const TABLE_REPLACEMENTS = {
-     'tblSuperAdmins': 'TABLES.SUPER_ADMIN',
+     'tblSuperAdmins': 'TABLES.SUPER_ADMINS',
      'tblClients': 'TABLES.CLIENTS',
      'tblClientMembers': 'TABLES.CLIENT_MEMBERS',
      'tblTenants': 'TABLES.TENANTS',
