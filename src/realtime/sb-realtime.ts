@@ -3,6 +3,7 @@
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import log from "src/utils/logger";
+import { TABLES } from "src/config/tables";
 
 type AnyChannel = RealtimeChannel & {
      on: (

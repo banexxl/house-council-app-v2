@@ -6,6 +6,7 @@ import { Client, ClientMember } from 'src/types/client'
 import { Tenant } from 'src/types/tenant'
 import { Admin } from 'src/types/admin'
 import { cache } from 'react';
+import { TABLES } from 'src/config/tables';
 
 export type UserDataCombined = {
      client: Client | null

@@ -1,3 +1,4 @@
+import { TABLES } from "src/config/tables";
 import { useServerSideSupabaseAnonClient } from "./sb-server";
 
 export type LogType =

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "./sb-server";
 import { logServerAction } from "./server-logging";
 import { toStorageRef } from "src/utils/sb-bucket";
+import { TABLES } from "src/config/tables";
 
 const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 

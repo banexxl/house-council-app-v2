@@ -1,12 +1,13 @@
 "use client"; // Ensures this component runs only on the client side (hooks + Supabase browser client)
 
-import { useEffect, useMemo } from "react"; // React hooks for lifecycle
+import { useEffect } from "react"; // React hooks for lifecycle
 import { initClientSubscriptionRealtime } from "src/realtime/sb-realtime"; // Helper to attach a filtered realtime listener for the client's subscription row
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"; // Type for realtime payload shape
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client"; // Preconfigured Supabase browser instance
 import { useAuth } from "src/contexts/auth/auth-provider"; // Access authenticated user + associated client context
 import { useRouter } from "next/navigation"; // Client router for redirects after sign-out
 import log from "src/utils/logger";
+import { TABLES } from "src/config/tables";
 
 // Domain model: minimal subset of tblClient_Subscription columns needed here
 interface ClientSubscriptionRow {
