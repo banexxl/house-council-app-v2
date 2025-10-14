@@ -26,7 +26,7 @@ export const Layout: FC<LayoutProps> = ((props) => {
 
       const [adminRes, clientRes, clientMemberRes, tenantRes] = await Promise.all([
         supabaseBrowserClient
-          .from(TABLES.SUPER_ADMIN)
+          .from(TABLES.SUPER_ADMINS)
           .select('id')
           .eq('email', email)
           .single(),
