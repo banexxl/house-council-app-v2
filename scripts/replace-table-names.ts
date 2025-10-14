@@ -7,6 +7,8 @@
  * Usage: node scripts/replace-table-names.js
  */
 
+import log from "src/utils/logger";
+
 const fs = require('fs');
 const path = require('path');
 
@@ -37,7 +39,7 @@ const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx'];
 // Directories to exclude
 const EXCLUDE_DIRS = ['node_modules', '.git', '.next', 'dist', 'build'];
 
-function shouldProcessFile(filePath) {
+function shouldProcessFile(filePath: string) {
      // Check extension
      if (!EXTENSIONS.includes(path.extname(filePath))) {
           return false;
@@ -53,7 +55,7 @@ function shouldProcessFile(filePath) {
      return true;
 }
 
-function addImportIfNeeded(content, filePath) {
+function addImportIfNeeded(content: string, filePath: string) {
      // Skip if TABLES is already imported
      if (content.includes('import { TABLES }') || content.includes("import { TABLES }")) {
           return content;
@@ -61,7 +63,7 @@ function addImportIfNeeded(content, filePath) {
 
      // Skip if no table references found
      const hasTableReferences = Object.keys(TABLE_REPLACEMENTS).some(tableName =>
-          content.includes(`'${ tableName }'`) || content.includes(`"${ tableName }"`)
+          content.includes(`'${tableName}'`) || content.includes(`"${tableName}"`)
      );
 
      if (!hasTableReferences) {
@@ -106,17 +108,17 @@ function addImportIfNeeded(content, filePath) {
      return lines.join('\n');
 }
 
-function replaceTableNames(content) {
+function replaceTableNames(content: string) {
      let updatedContent = content;
 
      for (const [oldName, newName] of Object.entries(TABLE_REPLACEMENTS)) {
           // Replace string literals
           updatedContent = updatedContent.replace(
-               new RegExp(`'${ oldName }'`, 'g'),
+               new RegExp(`'${oldName}'`, 'g'),
                newName
           );
           updatedContent = updatedContent.replace(
-               new RegExp(`"${ oldName }"`, 'g'),
+               new RegExp(`"${oldName}"`, 'g'),
                newName
           );
      }
@@ -124,7 +126,7 @@ function replaceTableNames(content) {
      return updatedContent;
 }
 
-function processFile(filePath) {
+function processFile(filePath: string) {
      try {
           const content = fs.readFileSync(filePath, 'utf8');
 
@@ -137,18 +139,18 @@ function processFile(filePath) {
           // Only write if content changed
           if (updatedContent !== content) {
                fs.writeFileSync(filePath, updatedContent, 'utf8');
-               console.log(`✓ Updated: ${ filePath }`);
+               log(`✓ Updated: ${filePath}`);
                return true;
           }
 
           return false;
      } catch (error) {
-          console.error(`✗ Error processing ${ filePath }:`, error.message);
+          console.error(`✗ Error processing ${filePath}:`, error.message);
           return false;
      }
 }
 
-function walkDirectory(dir) {
+function walkDirectory(dir: any) {
      const files = fs.readdirSync(dir);
      const results = { processed: 0, updated: 0 };
 
@@ -174,7 +176,7 @@ function walkDirectory(dir) {
 }
 
 function main() {
-     console.log('🔄 Replacing hardcoded table names with TABLES configuration...\n');
+     log('🔄 Replacing hardcoded table names with TABLES configuration...\n');
 
      const projectRoot = process.cwd();
      const srcDir = path.join(projectRoot, 'src');
@@ -186,16 +188,16 @@ function main() {
 
      const results = walkDirectory(srcDir);
 
-     console.log(`\n📊 Summary:`);
-     console.log(`   Files processed: ${ results.processed }`);
-     console.log(`   Files updated: ${ results.updated }`);
-     console.log(`\n✅ Table name replacement complete!`);
+     log(`\n📊 Summary:`);
+     log(`   Files processed: ${results.processed}`);
+     log(`   Files updated: ${results.updated}`);
+     log(`\n✅ Table name replacement complete!`);
 
      if (results.updated > 0) {
-          console.log('\n📝 Next steps:');
-          console.log('1. Review the changes in your version control');
-          console.log('2. Test your application to ensure everything works');
-          console.log('3. Update your Vercel environment variables with obfuscated table names');
+          log('\n📝 Next steps:');
+          log('1. Review the changes in your version control');
+          log('2. Test your application to ensure everything works');
+          log('3. Update your Vercel environment variables with obfuscated table names');
      }
 }
 

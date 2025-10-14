@@ -9,6 +9,7 @@ import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { createMessage } from 'src/libs/sms/twilio';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
+import { TABLES } from 'src/config/tables';
 
 const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
 

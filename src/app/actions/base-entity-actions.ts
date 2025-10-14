@@ -5,6 +5,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { BaseEntity } from "src/types/base-entity";
 import { generateSlug } from "src/utils/url-creator";
+import { TABLES } from "src/config/tables";
 
 export const createEntity = async <T extends BaseEntity>(table: string, entity: T): Promise<{ success: boolean; createdEntity?: T; error?: any }> => {
 

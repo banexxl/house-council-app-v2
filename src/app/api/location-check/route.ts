@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { TABLES } from 'src/config/tables';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server'
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
