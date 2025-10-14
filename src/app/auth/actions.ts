@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { readClientFromClientMemberID } from '../actions/client/client-members';
+import { TABLES } from 'src/config/tables';
 
 export type SignInFormValues = {
      email: string;
@@ -31,7 +32,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
 
      // 1. Check tblSuperAdmins
      const { data: admin, error: adminError } = await supabase
-          .from('tblSuperAdmins')
+          .from(TABLES.SUPER_ADMIN)
           .select('id')
           .eq('email', email)
           .single();
@@ -45,7 +46,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
      // 2. If not found, check tblClients
      if (!userFound) {
           const { data: client, error: clientError } = await supabase
-               .from('tblClients')
+               .from(TABLES.CLIENTS)
                .select('id')
                .eq('email', email)
                .single();
@@ -71,7 +72,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
      // 3. If not found, check tblTenants
      if (!userFound) {
           const { data: tenant, error: tenantError } = await supabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS)
                .select('id')
                .eq('email', email)
                .single();
@@ -97,7 +98,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
      // 4. If not found, check tblClientMembers
      if (!userFound) {
           const { data: clientMember, error: clientMemberError } = await supabase
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .select('id')
                .eq('email', email)
                .single();
@@ -216,7 +217,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
      // 1. Check tblSuperAdmins
      const { data: admin, error: adminError } = await supabase
-          .from('tblSuperAdmins')
+          .from(TABLES.SUPER_ADMIN)
           .select('id')
           .eq('email', values.email)
           .single();
@@ -239,7 +240,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      // 2. If not found, check tblClients (and enforce status gate)
      if (!userFound) {
           const { data: clientRow, error: clientError } = await supabase
-               .from('tblClients')
+               .from(TABLES.CLIENTS)
                .select('id,client_status')
                .eq('email', values.email)
                .single();
@@ -286,7 +287,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      // 3. If not found, check tblTenants
      if (!userFound) {
           const { data: tenant, error: tenantError } = await supabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS)
                .select('id')
                .eq('email', values.email)
                .single();
@@ -320,7 +321,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      // 1. Check tblClientMembers
      if (!userFound) {
           const { data: clientMember, error: clientMemberError } = await supabase
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .select('id')
                .eq('email', values.email)
                .single();
@@ -330,7 +331,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
                // Check if client has an active subscription
                const { data: subscriptionData, error: subscriptionError } = await supabase
-                    .from('tblClient_Subscription')
+                    .from(TABLES.CLIENT_SUBSCRIPTION)
                     .select('*')
                     .eq('client_id', data?.id)
                     .in('status', ['active', 'trialing'])
@@ -393,7 +394,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      if (userType === 'client') {
           // Check if client has an active subscription
           const { data: subscriptionData, error: subscriptionError } = await supabase
-               .from('tblClient_Subscription')
+               .from(TABLES.CLIENT_SUBSCRIPTION)
                .select('*')
                .eq('client_id', userId)
                .in('status', ['active', 'trialing'])

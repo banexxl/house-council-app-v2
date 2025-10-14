@@ -43,7 +43,7 @@ export const resetTenantPassword = async (
 export const getAllTenants = async () => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase
-          .from('tblTenants')
+          .from(TABLES.TENANTS)
           .select('*');
      if (error) return { success: false, error: error.message };
      return { success: true, data };
@@ -65,7 +65,7 @@ export const createOrUpdateTenantAction = async (
           // === UPDATE ===
           // 1. Update tenant record
           const { data: updatedTenant, error: updateTenantError } = await anonSupabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS)
                .update({
                     ...tenantData,
                     updated_at: new Date().toISOString(),
@@ -175,7 +175,7 @@ export const createOrUpdateTenantAction = async (
 
           // 2. Create tenant record
           const { data: insertedTenant, error: insertError } = await anonSupabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS)
                .insert({
                     ...tenantData,
                     created_at: new Date().toISOString(),
@@ -249,7 +249,7 @@ export const readTenantByIdAction = async (
      const supabase = await useServerSideSupabaseAnonClient();
      if (!isUUID(tenantId)) return { getTenantByIdActionSuccess: false, getTenantByIdActionError: 'Invalid tenant ID' };
 
-     const { data, error } = await supabase.from('tblTenants').select('*').eq('id', tenantId).single();
+     const { data, error } = await supabase.from(TABLES.TENANTS).select('*').eq('id', tenantId).single();
      if (error) {
           return {
                getTenantByIdActionSuccess: false,
@@ -273,7 +273,7 @@ export const deleteTenantByIDAction = async (
 
      try {
           const { data: tenantToDelete, error: fetchError } = await anonSupabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS)
                .select('user_id')
                .eq('id', id)
                .single();
@@ -287,7 +287,7 @@ export const deleteTenantByIDAction = async (
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteUserError.message };
           }
 
-          const { error: deleteTenantError } = await anonSupabase.from('tblTenants').delete().eq('id', id);
+          const { error: deleteTenantError } = await anonSupabase.from(TABLES.TENANTS).delete().eq('id', id);
           if (deleteTenantError) {
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteTenantError.message };
           }
@@ -322,7 +322,7 @@ export const getAllTenantsFromClientsBuildings = async (
 
      // 1. Get buildings owned by the client
      const { data: buildings, error: buildingsError } = await supabase
-          .from('tblBuildings')
+          .from(TABLES.BUILDINGS)
           .select('id')
           .eq('client_id', clientId);
 
@@ -337,7 +337,7 @@ export const getAllTenantsFromClientsBuildings = async (
 
      // 2. Get apartments in those buildings
      const { data: apartments, error: apartmentsError } = await supabase
-          .from('tblApartments')
+          .from(TABLES.APARTMENTS)
           .select('id')
           .in('building_id', buildingIds);
 
@@ -352,7 +352,7 @@ export const getAllTenantsFromClientsBuildings = async (
 
      // ✅ 3. Get tenants with nested apartment → building → building_location
      const { data: tenants, error: tenantsError } = await supabase
-          .from('tblTenants')
+          .from(TABLES.TENANTS)
           .select(`
       *,
       apartment:tblApartments (
@@ -404,7 +404,7 @@ export const getAllBuildingsWithApartmentsForClient = async (
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from('tblBuildings')
+          .from(TABLES.BUILDINGS)
           .select(`
     id,
     building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
@@ -441,7 +441,7 @@ export const readAllTenantsFromBuildingIds = async (
 ): Promise<{ success: boolean; data?: Tenant[]; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: buildings, error } = await supabase
-          .from('tblBuildings')
+          .from(TABLES.BUILDINGS)
           .select('id')
           .in('id', buildingIds);
      if (error) {
@@ -453,7 +453,7 @@ export const readAllTenantsFromBuildingIds = async (
      }
      // 2. Get apartments in those buildings
      const { data: apartments, error: apartmentsError } = await supabase
-          .from('tblApartments')
+          .from(TABLES.APARTMENTS)
           .select('id')
           .in('building_id', validBuildingIds);
      if (apartmentsError) {
@@ -465,7 +465,7 @@ export const readAllTenantsFromBuildingIds = async (
      }
      // 3. Get tenants in those apartments
      const { data: tenants, error: tenantsError } = await supabase
-          .from('tblTenants')
+          .from(TABLES.TENANTS)
           .select('*')
           .in('apartment_id', apartmentIds);
 
@@ -483,7 +483,7 @@ export const readTenantContactByUserIds = async (
           if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, data: {} };
           const supabase = await useServerSideSupabaseAnonClient();
           const { data, error } = await supabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS)
                .select('user_id, email, phone_number, email_opt_in, sms_opt_in')
                .in('user_id', userIds);
           if (error) return { success: false, error: error.message, data: {} as any };

@@ -43,7 +43,7 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
      const supabase = await useServerSideSupabaseAnonClient();
 
     const { data: apartments, error } = await supabase
-         .from("tblApartments")
+         .from(TABLES.APARTMENTS)
          .select(`
               *,
               building:tblBuildings (
@@ -62,7 +62,7 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
 
     // fetch image rows (raw refs)
     const { data: imageRows } = await supabase
-         .from("tblApartmentImages")
+         .from(TABLES.APARTMENT_IMAGES)
          .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, apartment_id");
 
     const imagesByApt = new Map<string, any[]>();
@@ -94,7 +94,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: resolvedClientOrMemberId } = await readClientOrClientIDFromClientMemberID(clientid);
      const { data: buildings, error: buildingsError } = await supabase
-          .from("tblBuildings")
+          .from(TABLES.BUILDINGS)
           .select("*")
           .eq("client_id", typeof resolvedClientOrMemberId === "string" ? resolvedClientOrMemberId : resolvedClientOrMemberId!.id);
 
@@ -109,7 +109,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      }
 
     const { data: apartments, error: apartmentsError } = await supabase
-         .from("tblApartments")
+         .from(TABLES.APARTMENTS)
          .select(`
               *,
               building:tblBuildings (
@@ -134,7 +134,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
 
      if (aptIds.length) {
          const { data: imageRows } = await supabase
-              .from("tblApartmentImages")
+              .from(TABLES.APARTMENT_IMAGES)
               .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, apartment_id")
               .in("apartment_id", aptIds);
 
@@ -168,7 +168,7 @@ export async function getApartmentsFromClientsBuilding(clientid: string, buildin
      const supabase = await useServerSideSupabaseAnonClient();
 
     const { data, error } = await supabase
-         .from("tblApartments")
+         .from(TABLES.APARTMENTS)
          .select(`
               *,
               building:tblBuildings (
@@ -198,7 +198,7 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
      const supabase = await useServerSideSupabaseAnonClient();
 
     const { data: apartment, error } = await supabase
-         .from("tblApartments")
+         .from(TABLES.APARTMENTS)
          .select(`
               *,
               building:tblBuildings (
@@ -219,7 +219,7 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
      }
 
     const { data: imageRows } = await supabase
-         .from("tblApartmentImages")
+         .from(TABLES.APARTMENT_IMAGES)
          .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, apartment_id")
          .eq("apartment_id", id);
 
@@ -254,7 +254,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
           delete (apartmentPayload as any).updated_at;
 
           const { data, error } = await supabase
-               .from("tblApartments")
+               .from(TABLES.APARTMENTS)
                .update(apartmentPayload)
                .eq("id", id)
                .select()
@@ -267,9 +267,9 @@ export async function createOrUpdateApartment(payload: Apartment) {
 
           if (apartment_images) {
                const refs = apartment_images.map(toStorageRef).filter(Boolean) as Array<{ bucket: string; path: string }>;
-               await supabase.from("tblApartmentImages").delete().eq("apartment_id", id);
+               await supabase.from(TABLES.APARTMENT_IMAGES).delete().eq("apartment_id", id);
                if (refs.length) {
-                    await supabase.from("tblApartmentImages").insert(
+                    await supabase.from(TABLES.APARTMENT_IMAGES).insert(
                          refs.map(r => ({ apartment_id: id, storage_bucket: r.bucket, storage_path: r.path }))
                     );
                }
@@ -284,7 +284,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
 
           // enforce building capacity
           const { data: building, error: buildingError } = await supabase
-               .from("tblBuildings")
+               .from(TABLES.BUILDINGS)
                .select("number_of_apartments")
                .eq("id", (apartmentPayload as any).building_id)
                .single();
@@ -297,7 +297,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
           const maxApts = building?.number_of_apartments ?? 0;
 
           const { count, error: countError } = await supabase
-               .from("tblApartments")
+               .from(TABLES.APARTMENTS)
                .select("id", { count: "exact", head: true })
                .eq("building_id", (apartmentPayload as any).building_id);
 
@@ -311,7 +311,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
           }
 
           const { data, error } = await supabase
-               .from("tblApartments")
+               .from(TABLES.APARTMENTS)
                .insert(apartmentPayload)
                .select()
                .single();
@@ -324,7 +324,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
           if (apartment_images?.length) {
                const refs = apartment_images.map(toStorageRef).filter(Boolean) as Array<{ bucket: string; path: string }>;
                if (refs.length) {
-                    await supabase.from("tblApartmentImages").insert(
+                    await supabase.from(TABLES.APARTMENT_IMAGES).insert(
                          refs.map(r => ({ apartment_id: data.id, storage_bucket: r.bucket, storage_path: r.path }))
                     );
                }
@@ -341,7 +341,7 @@ export async function deleteApartment(id: string) {
 
      // 1) fetch image refs
      const { data: imgs } = await supabase
-          .from("tblApartmentImages")
+          .from(TABLES.APARTMENT_IMAGES)
           .select("storage_bucket, storage_path")
           .eq("apartment_id", id);
 
@@ -367,10 +367,10 @@ export async function deleteApartment(id: string) {
      }
 
      // 3) delete DB image rows
-     await supabase.from("tblApartmentImages").delete().eq("apartment_id", id);
+     await supabase.from(TABLES.APARTMENT_IMAGES).delete().eq("apartment_id", id);
 
      // 4) delete the apartment
-     const { error } = await supabase.from("tblApartments").delete().eq("id", id);
+     const { error } = await supabase.from(TABLES.APARTMENTS).delete().eq("id", id);
      if (error) {
           await logServerAction({ action: "deleteApartment", duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: "fail", type: "db", user_id: null });
           return { success: false, error: error.message };
@@ -390,7 +390,7 @@ export async function checkIfApartmentExistsInBuilding(buildingId: string, apart
      }
 
      const { data, error } = await supabase
-          .from("tblApartments")
+          .from(TABLES.APARTMENTS)
           .select("id")
           .eq("building_id", buildingId)
           .eq("apartment_number", apartmentNumber)

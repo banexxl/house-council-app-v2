@@ -37,7 +37,7 @@ export const logServerAction = async ({
 }: ServerLog) => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const { error: logInsertError } = await supabase.from('tblServerLogs').insert({
+     const { error: logInsertError } = await supabase.from(TABLES.SERVER_LOGS).insert({
           user_id,
           action,
           payload,
@@ -53,7 +53,7 @@ export const getAllLogsFromEmail = async (email: string): Promise<ServerLog[]> =
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from("tblServerLogs")
+          .from(TABLES.SERVER_LOGS)
           .select("id, created_at, payload") // include other columns if you need them
           .filter("payload->>email", "eq", email)
           .order("created_at", { ascending: false })

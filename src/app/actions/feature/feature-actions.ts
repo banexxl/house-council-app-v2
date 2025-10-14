@@ -18,7 +18,7 @@ export const updateFeature = async (id: string, feature: Partial<Feature>): Prom
 
      if (feature.name) {
           const { data: existingFeature } = await supabase
-               .from('tblFeatures')
+               .from(TABLES.FEATURES)
                .select('id')
                .ilike('name', feature.name.trim())
                .neq('id', id)
@@ -30,7 +30,7 @@ export const updateFeature = async (id: string, feature: Partial<Feature>): Prom
      }
 
      const { data, error } = await supabase
-          .from('tblFeatures')
+          .from(TABLES.FEATURES)
           .update(feature)
           .eq('id', id)
           .select()

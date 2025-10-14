@@ -26,7 +26,7 @@ export default async function TableEditorPage() {
      const [
           readFeaturesData,
      ] = await Promise.all([
-          readAllEntities<BaseEntity>("tblFeatures"),
+          readAllEntities<BaseEntity>(TABLES.FEATURES),
      ]);
 
 

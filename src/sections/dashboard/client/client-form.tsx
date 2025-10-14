@@ -28,6 +28,7 @@ import { CustomAutocomplete } from 'src/components/autocomplete-custom'
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
 import { ClientSubscription, SubscriptionPlan, clientSubscriptionStatusOptions } from 'src/types/subscription-plan'
+import { TABLES } from 'src/config/tables';
 import dayjs, { Dayjs } from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -60,7 +61,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       // Make sure client_id is defined
       const client_id = clientData?.id;
       if (!client_id) return;
-      const { data, error } = await supabaseBrowserClient.from('tblBuildingLocations').select('*').eq('client_id', client_id).is('building_id', null);
+      const { data, error } = await supabaseBrowserClient.from(TABLES.BUILDING_LOCATIONS).select('*').eq('client_id', client_id).is('building_id', null);
       setUnassignedLocations(data || []);
     };
     fetchBuildingLocations();

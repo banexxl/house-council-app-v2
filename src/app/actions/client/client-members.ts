@@ -8,7 +8,7 @@ export const readClientMember = async (id: string): Promise<{ readClientMemberSu
      const supabase = await useServerSideSupabaseAnonClient();
      try {
           const { data, error } = await supabase
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .select('*')
                .eq('id', id)
                .single();
@@ -25,7 +25,7 @@ export const deleteClientMember = async (id: string): Promise<{ deleteClientMemb
 
      try {
           const { data: tenantToDelete, error: fetchError } = await supabaseAdmin
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .select('user_id')
                .eq('id', id)
                .single();
@@ -39,7 +39,7 @@ export const deleteClientMember = async (id: string): Promise<{ deleteClientMemb
                return { deleteClientMemberSuccess: false, deleteClientMemberError: deleteUserError.message };
           }
 
-          const { error: deleteClientMemberError } = await supabaseAdmin.from('tblClientMembers').delete().eq('id', id);
+          const { error: deleteClientMemberError } = await supabaseAdmin.from(TABLES.CLIENT_MEMBERS).delete().eq('id', id);
           if (deleteClientMemberError) {
                return { deleteClientMemberSuccess: false, deleteClientMemberError: deleteClientMemberError.message };
           }
@@ -61,7 +61,7 @@ export const readAllClientTeamMembers = async (clientId: string): Promise<{ read
 
      try {
           const { data, error } = await supabase
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .select('*')
                .eq('client_id', clientId);
 
@@ -79,7 +79,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
      try {
           // 1. Fetch client's subscription_plan_id
           const { data: clientSubscription, error: clientSubError } = await adminSupabase
-               .from('tblClient_Subscription')
+               .from(TABLES.CLIENT_SUBSCRIPTION)
                .select('subscription_plan_id')
                .eq('client_id', client_id)
                .single();
@@ -94,7 +94,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
 
           // 2. Fetch subscription plan to read max_number_of_team_members
           const { data: subscriptionPlan, error: planError } = await adminSupabase
-               .from('tblSubscriptionPlans')
+               .from(TABLES.SUBSCRIPTION_PLANS)
                .select('id, max_number_of_team_members')
                .eq('id', clientSubscription.subscription_plan_id)
                .single();
@@ -105,7 +105,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
 
           // 3. Count existing client members
           const { count: currentCount, error: countError } = await adminSupabase
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .select('id', { count: 'exact', head: true })
                .eq('client_id', client_id);
 
@@ -123,7 +123,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
 
           if (createUserError) throw createUserError;
           const { error: insertError } = await supabase
-               .from('tblClientMembers')
+               .from(TABLES.CLIENT_MEMBERS)
                .insert({
                     email,
                     name,
@@ -169,7 +169,7 @@ export const readClientOrClientIDFromClientMemberID = async (
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: clientData, error: clientError } = await supabase
-          .from('tblClients')
+          .from(TABLES.CLIENTS)
           .select('*')
           .eq('id', client_id)
           .single();
@@ -180,7 +180,7 @@ export const readClientOrClientIDFromClientMemberID = async (
      }
      // Attempt to treat id as a client member id second
      const { data: memberRow } = await supabase
-          .from('tblClientMembers')
+          .from(TABLES.CLIENT_MEMBERS)
           .select('client_id')
           .eq('id', client_id)
           .single();
@@ -198,7 +198,7 @@ export const readClientFromClientMemberID = async (
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: memberRow, error: memberError } = await supabase
-          .from('tblClientMembers')
+          .from(TABLES.CLIENT_MEMBERS)
           .select('client_id')
           .eq('id', clientMemberID)
           .single();
@@ -208,7 +208,7 @@ export const readClientFromClientMemberID = async (
      }
 
      const { data: clientData, error: clientError } = await supabase
-          .from('tblClients')
+          .from(TABLES.CLIENTS)
           .select('*')
           .eq('id', memberRow.client_id)
           .single();

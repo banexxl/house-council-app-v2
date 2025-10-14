@@ -2,6 +2,7 @@
 
 import { PostgrestError } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache"
+import { TABLES } from "src/config/tables";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";
@@ -15,7 +16,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      if (billingInformationId && billingInformationId !== "") {
           // Update existing client billing information
           result = await supabase
-               .from('tblBillingInformation')
+               .from(TABLES.BILLING_INFORMATION)
                .update({
                     updated_at: new Date().toISOString(),
                     contact_person: clientBillingInformation.contact_person,
@@ -34,7 +35,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      } else {
           // Insert new client billing information
           result = await supabase
-               .from('tblBillingInformation')
+               .from(TABLES.BILLING_INFORMATION)
                .insert({
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
@@ -68,7 +69,7 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from('tblBillingInformation')
+          .from(TABLES.BILLING_INFORMATION)
           .select('*')
           .eq('id', id)
           .single();
@@ -89,7 +90,7 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
      }
 
      const { error } = await supabase
-          .from('tblBillingInformation')
+          .from(TABLES.BILLING_INFORMATION)
           .delete()
           .in('id', ids!);
 
@@ -114,7 +115,7 @@ export const readAllClientBillingInformation = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from("tblBillingInformation")
+          .from(TABLES.BILLING_INFORMATION)
           .select(`
          *,
          client:client_id (*)
@@ -136,7 +137,7 @@ export const readAllClientBillingInformation = async (): Promise<{
 export const readBillingInfoFromClientId = async (clientId: string): Promise<{ readClientBillingInformationSuccess: boolean; readClientBillingInformationData?: ClientBillingInformation[]; readClientBillingInformationError?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase
-          .from('tblBillingInformation')
+          .from(TABLES.BILLING_INFORMATION)
           .select('*')
           .eq('client_id', clientId)
      if (error) {

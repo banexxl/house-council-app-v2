@@ -7,6 +7,7 @@ import { useSections } from './config';
 import { HorizontalLayout } from './horizontal-layout';
 import { VerticalLayout } from './vertical-layout';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import { TABLES } from 'src/config/tables';
 
 interface LayoutProps {
   children?: ReactNode;
@@ -25,22 +26,22 @@ export const Layout: FC<LayoutProps> = ((props) => {
 
       const [adminRes, clientRes, clientMemberRes, tenantRes] = await Promise.all([
         supabaseBrowserClient
-          .from('tblSuperAdmins')
+          .from(TABLES.SUPER_ADMIN)
           .select('id')
           .eq('email', email)
           .single(),
         supabaseBrowserClient
-          .from('tblClients')
+          .from(TABLES.CLIENTS)
           .select('id')
           .eq('email', email)
           .single(),
         supabaseBrowserClient
-          .from('tblClientMembers')
+          .from(TABLES.CLIENT_MEMBERS)
           .select('id')
           .eq('email', email)
           .single(),
         supabaseBrowserClient
-          .from('tblTenants')
+          .from(TABLES.TENANTS)
           .select('id')
           .eq('email', email)
           .single(),

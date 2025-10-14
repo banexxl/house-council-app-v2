@@ -81,7 +81,7 @@ export const createEntity = async <T extends BaseEntity>(table: string, entity: 
 
      // Proceed with insertion since no existing entity was found
      let insertData = { ...entity };
-     if (table === 'tblFeatures') {
+     if (table === TABLES.FEATURES) {
           insertData = { ...insertData, slug: generateSlug(entity.name) };
      }
      const { data, error } = await supabase.from(table).insert(insertData).select().single();
@@ -178,7 +178,7 @@ export const updateEntity = async <T extends BaseEntity>(table: string, id: stri
      const { data, error } = await supabase.from(table)
           .update({
                ...entity,
-               ...(table === 'tblFeatures' && entity.name && { slug: generateSlug(entity.name.trim()) }),
+               ...(table === TABLES.FEATURES && entity.name && { slug: generateSlug(entity.name.trim()) }),
           })
           .eq('id', id)
           .select()

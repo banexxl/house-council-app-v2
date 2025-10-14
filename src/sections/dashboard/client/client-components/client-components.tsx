@@ -76,7 +76,7 @@ const GenericTableEditor: React.FC<GenericTableEditorProps> = ({
 
      const tables = [
           {
-               name: "tblFeatures",
+               name: TABLES.FEATURES,
                displayName: "clients.featuresTableName",
                data: features,
           },

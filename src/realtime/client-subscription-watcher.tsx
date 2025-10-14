@@ -40,7 +40,7 @@ export default function ClientSubscriptionWatcher() {
                // Step 0: Initial snapshot validation - if subscription missing or not allowed, force sign-out early
                try {
                     const { data: current, error: readErr } = await supabaseBrowserClient
-                         .from('tblClient_Subscription')
+                         .from(TABLES.CLIENT_SUBSCRIPTION)
                          .select('status')
                          .eq('client_id', clientId)
                          .single();
@@ -128,7 +128,7 @@ export default function ClientSubscriptionWatcher() {
                          .on('postgres_changes', {
                               event: '*',
                               schema: 'public',
-                              table: 'tblClients',
+                              table: TABLES.CLIENTS,
                               filter: `id=eq.${clientId}`,
                          }, async (payload: any) => {
                               if (signingOut) return;
@@ -167,7 +167,7 @@ export default function ClientSubscriptionWatcher() {
 
                     try {
                          const { data: current, error: readErr } = await supabaseBrowserClient
-                              .from('tblClient_Subscription')
+                              .from(TABLES.CLIENT_SUBSCRIPTION)
                               .select('status')
                               .eq('client_id', clientId)
                               .single();

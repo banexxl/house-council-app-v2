@@ -59,7 +59,7 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
                // Example payload structure:
                // {
                //   "schema": "public",
-               //   "table": "tblNotifications",
+               //   "table": TABLES.NOTIFICATIONS,
                //   "commit_timestamp": "2025-09-08T19:40:08.889Z",
                //   "eventType": "INSERT",
                //   "new": {
@@ -135,7 +135,7 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
 
 // Helpers (NO empty filter)
 export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"]) =>
-     initTableRealtimeListener("tblNotifications", ["INSERT", "UPDATE", "DELETE"], {
+     initTableRealtimeListener(TABLES.NOTIFICATIONS, ["INSERT", "UPDATE", "DELETE"], {
           schema: "public",
           channelName: "notifications_topic",
           onEvent,
@@ -156,7 +156,7 @@ export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitLi
      log(`[Realtime] Subscribing to tblClient_Subscription ${filter}`, 'info');
 
 
-     return initTableRealtimeListener("tblClient_Subscription", ["INSERT", "UPDATE", "DELETE"], {
+     return initTableRealtimeListener(TABLES.CLIENT_SUBSCRIPTION, ["INSERT", "UPDATE", "DELETE"], {
           schema: "public",
           channelName: `client_${clientId}_subscription`,
           filter,

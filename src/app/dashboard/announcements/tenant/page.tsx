@@ -26,7 +26,7 @@ export default async function TenantAnnouncementsPage() {
      let buildingIds: string[] = [];
      try {
           const { data: apt } = await supabase
-               .from('tblApartments')
+               .from(TABLES.APARTMENTS)
                .select('building_id')
                .eq('id', tenant.apartment_id)
                .maybeSingle();

@@ -22,7 +22,7 @@ export const AccountButton: FC = () => {
       const { data } = await supabaseBrowserClient.auth.getUser();
       //Get user data from tblClients where the avatar is stored
       const { error, data: clientData } = await supabaseBrowserClient
-        .from('tblClients')
+        .from(TABLES.CLIENTS)
         .select('avatar')
         .eq('user_id', data.user?.id)
         .single();

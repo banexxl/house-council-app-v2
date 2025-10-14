@@ -6,6 +6,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
 import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
+import { TABLES } from 'src/config/tables';
 
 // --- Supabase Auth Actions for Client Management ---
 export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
@@ -95,7 +96,7 @@ export const createOrUpdateClientAction = async (
      if (id && id !== '') {
           // === UPDATE ===
           const { data, error: updateError } = await adminSupabase
-               .from('tblClients')
+               .from(TABLES.CLIENTS)
                .update({ ...clientData, updated_at: new Date().toISOString() })
                .eq('id', id)
                .select()
@@ -127,7 +128,7 @@ export const createOrUpdateClientAction = async (
           if (unassigned_location_id) {
                // First, fetch the building location by unassigned_location_id
                const { data: buildingLocation, error: fetchError } = await adminSupabase
-                    .from('tblBuildingLocations')
+                    .from(TABLES.BUILDING_LOCATIONS)
                     .select('*')
                     .eq('id', unassigned_location_id)
                     .single();
@@ -147,7 +148,7 @@ export const createOrUpdateClientAction = async (
 
                // Reassign unassigned location to the client
                const { error: reassignError } = await adminSupabase
-                    .from('tblBuildingLocations')
+                    .from(TABLES.BUILDING_LOCATIONS)
                     .update({ client_id: id })
                     .eq('id', unassigned_location_id);
 
@@ -195,7 +196,7 @@ export const createOrUpdateClientAction = async (
           }
 
           const { data, error: insertError } = await adminSupabase
-               .from('tblClients')
+               .from(TABLES.CLIENTS)
                .insert({ ...clientData, user_id: invitedUser.user.id })
                .select()
                .single();
@@ -240,7 +241,7 @@ export const readAllClientsAction = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
-          const { data, error } = await supabase.from('tblClients').select('*');
+          const { data, error } = await supabase.from(TABLES.CLIENTS).select('*');
           if (error) throw error;
 
           return {
@@ -268,7 +269,7 @@ export const readClientByIdAction = async (
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
-          const { data, error } = await supabase.from('tblClients').select('*').eq('id', clientId).single();
+          const { data, error } = await supabase.from(TABLES.CLIENTS).select('*').eq('id', clientId).single();
           if (error) throw error;
           if (!data) throw new Error('Client not found');
 
@@ -294,7 +295,7 @@ export const deleteClientByIDsAction = async (
      try {
           // Fetch user_ids before deleting clients
           const { data: clientsToDelete, error: fetchError } = await anonSupabase
-               .from('tblClients')
+               .from(TABLES.CLIENTS)
                .select('user_id')
                .in('id', ids);
 
@@ -303,7 +304,7 @@ export const deleteClientByIDsAction = async (
           const userIdsToDelete = clientsToDelete.map((c) => c.user_id).filter(Boolean);
 
           // Delete from tblClients
-          const { error: deleteClientError } = await anonSupabase.from('tblClients').delete().in('id', ids);
+          const { error: deleteClientError } = await anonSupabase.from(TABLES.CLIENTS).delete().in('id', ids);
           if (deleteClientError) throw deleteClientError;
 
           // Delete from auth.users
@@ -337,7 +338,7 @@ export const readClientByEmailAction = async (
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
-          const { data, error } = await supabase.from('tblClients').select().eq('email', email).single();
+          const { data, error } = await supabase.from(TABLES.CLIENTS).select().eq('email', email).single();
           if (error) throw error;
           return { getClientByEmailActionSuccess: true, getClientByEmailActionData: data };
      } catch (error) {
@@ -354,7 +355,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: user, error: userError } = await supabase
-          .from('tblClients')
+          .from(TABLES.CLIENTS)
           .select('*')
           .eq('email', email)
           .single();
@@ -510,11 +511,11 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
 // Returns true if the provided userId corresponds to a Client record; false if tenant or not found.
 export const isClientUserId = async (userId: string): Promise<boolean> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: client, error: clientError } = await supabase.from('tblClients').select('id').eq('user_id', userId).single();
+     const { data: client, error: clientError } = await supabase.from(TABLES.CLIENTS).select('id').eq('user_id', userId).single();
      if (client && isUUIDv4(client.id) && !clientError) return true;
-     const { data: clientMember, error: clientMemberError } = await supabase.from('tblClientMemebers').select('id').eq('user_id', userId).single();
+     const { data: clientMember, error: clientMemberError } = await supabase.from(TABLES.CLIENT_MEMBERS).select('id').eq('user_id', userId).single();
      if (clientMember && isUUIDv4(clientMember.id) && !clientMemberError) return true;
-     const { data: tenant, error: tenantError } = await supabase.from('tblTenants').select('id').eq('user_id', userId).single();
+     const { data: tenant, error: tenantError } = await supabase.from(TABLES.TENANTS).select('id').eq('user_id', userId).single();
      if (tenant && isUUIDv4(tenant.id) && !tenantError) return false;
      return !!tenant;
 }

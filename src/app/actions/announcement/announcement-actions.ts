@@ -11,6 +11,7 @@ import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { sendNotificationEmail } from 'src/libs/email/node-mailer';
+import { TABLES } from 'src/config/tables';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
@@ -396,7 +397,7 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
                const uniqueBIds = Array.from(new Set(buildingIds));
                if (uniqueBIds.length > 0) {
                     const { data: bRows } = await supabase
-                         .from('tblBuildings')
+                         .from(TABLES.BUILDINGS)
                          .select('id, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (street_address, street_number, city)')
                          .in('id', uniqueBIds);
                     for (const b of (bRows || []) as any[]) buildingsMap[b.id] = b;

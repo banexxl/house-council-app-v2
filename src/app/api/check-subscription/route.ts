@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { sendSubscriptionEndingNotificationToSupport, sendTrialEndingEmailToClient } from 'src/libs/email/node-mailer';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
+import { TABLES } from 'src/config/tables';
 
 export const runtime = 'nodejs'          // ensure Node (not Edge)
 export const dynamic = 'force-dynamic';   // avoid caching for cron
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
      try {
           // 2) Fetch all subscriptions
           const { data: client_subscriptions, error } = await supabase
-               .from('tblClient_Subscription')
+               .from(TABLES.CLIENT_SUBSCRIPTION)
                .select('id, client_id, status, next_payment_date');
 
           if (error) {
@@ -127,7 +128,7 @@ export async function POST(req: NextRequest) {
 
                if (newStatus !== sub.status) {
                     const { error: updateError } = await supabase
-                         .from('tblClient_Subscription')
+                         .from(TABLES.CLIENT_SUBSCRIPTION)
                          .update({ status: newStatus, updated_at: now.toISOString() })
                          .eq('id', sub.id);
 
@@ -168,7 +169,7 @@ export async function POST(req: NextRequest) {
 
                     if ([7, 3, 1].includes(daysUntilExpiration)) {
                          const { data: clientData, error: clientError } = await supabase
-                              .from('tblClients')
+                              .from(TABLES.CLIENTS)
                               .select('email')
                               .eq('id', sub.client_id)
                               .single();

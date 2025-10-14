@@ -31,7 +31,7 @@ export function useSignedUrl(bucket: string, path?: string | null, opts?: Option
      const timerRef = useRef<number | null>(null);
 
      async function fetchSigned() {
-          if (!path) return;
+          if (!path || !bucket) return;
           setLoading(true);
           setError(null);
           try {

@@ -16,7 +16,7 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .insert({ ...subscriptionPlan, features: undefined })
           .select()
           .single();
@@ -38,7 +38,7 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
 
      if (featureEntries.length > 0) {
           const { error: featureInsertError } = await supabase
-               .from("tblSubscriptionPlans_Features")
+               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
                .insert(featureEntries);
 
           if (featureInsertError) {
@@ -74,7 +74,7 @@ export const updateSubscriptionPlan = async (
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .update({ ...subscriptionPlan, features: undefined })
           .eq("id", subscriptionPlan.id)
           .select()
@@ -121,7 +121,7 @@ export const updateSubscriptionPlan = async (
 
           // Delete all existing feature entries for the subscription plan
           const { error: featureDeleteError } = await supabase
-               .from("tblSubscriptionPlans_Features")
+               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
                .delete()
                .match({ subscription_plan_id: data.id });
 
@@ -140,7 +140,7 @@ export const updateSubscriptionPlan = async (
 
           // Insert the new feature entries
           const { error: featureInsertError } = await supabase
-               .from("tblSubscriptionPlans_Features")
+               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
                .insert(featureEntries);
 
           if (featureInsertError) {
@@ -158,7 +158,7 @@ export const updateSubscriptionPlan = async (
 
      } else {
           const { error: featureDeleteError } = await supabase
-               .from("tblSubscriptionPlans_Features")
+               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
                .delete()
                .match({ subscription_plan_id: data.id });
 
@@ -198,7 +198,7 @@ export const readSubscriptionPlan = async (id: string): Promise<{
 
      // Fetch the subscription plan along with its features using a join
      const { data: subscriptionPlan, error: planError } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`
       *,
       tblSubscriptionPlans_Features (
@@ -241,7 +241,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: subscriptionPlans, error: planError } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`
       *,
       tblSubscriptionPlans_Features (
@@ -262,14 +262,14 @@ export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ del
      const supabase = await useServerSideSupabaseAnonClient();
 
      // Delete related entries from the connection table first
-     const { error: relationError } = await supabase.from("tblSubscriptionPlans_Features").delete().in("subscription_plan_id", ids);
+     const { error: relationError } = await supabase.from(TABLES.SUBSCRIPTION_PLANS_FEATURES).delete().in("subscription_plan_id", ids);
 
      if (relationError) {
           return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: relationError };
      }
 
      // Now delete the subscription plans
-     const { error } = await supabase.from("tblSubscriptionPlans").delete().in("id", ids);
+     const { error } = await supabase.from(TABLES.SUBSCRIPTION_PLANS).delete().in("id", ids);
 
      if (error) {
           return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };
@@ -289,7 +289,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
 
      // Fetch the subscription_id from tblClient_Subscription based on client_id
      const { data: clientSubscription, error: clientSubscriptionError } = await supabase
-          .from("tblClient_Subscription")
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .select("subscription_plan_id")
           .eq("client_id", clientId)
           .single();
@@ -303,7 +303,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
 
      // Now fetch the subscription plan using the subscription_id from tblSubscriptionPlans
      const { data: subscriptionPlan, error: planError } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`*`)
           .eq("id", clientSubscription.subscription_plan_id)
           .single()
@@ -329,7 +329,7 @@ export const readAllActiveSubscriptionPlans = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`
       *,
       tblSubscriptionPlans_Features (
@@ -398,7 +398,7 @@ export const readSubscriptionPlanFeatures = async (
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data: subscriptionPlan, error } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`
       *,
       tblSubscriptionPlans_Features (
@@ -460,7 +460,7 @@ export const subscribeClientAction = async (
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data, error } = await supabase
-          .from("tblClient_Subscription")
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .insert({
                client_id: clientId,
                subscription_plan_id: subscriptionPlanId,
@@ -506,7 +506,7 @@ export const unsubscribeClientAction = async (
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data, error } = await supabase
-          .from("tblClient_Subscription")
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .update({
                status: "canceled",
                next_payment_date: new Date().toISOString(),
@@ -558,7 +558,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: subscriptionPlan, error: planError } = await supabase
-          .from("tblSubscriptionPlans")
+          .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`
       *,
           tblSubscriptionPlans_Features (
@@ -628,7 +628,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
      const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase client
 
      const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
-          .from("tblClient_Subscription")
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .select(`
     *,
     subscription_plan:subscription_plan_id (*)
@@ -690,7 +690,7 @@ export const updateClientSubscriptionForClient = async (
 
      // Check existing subscription row
      const { data: existing, error: readErr } = await supabase
-          .from('tblClient_Subscription')
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .select('id')
           .eq('client_id', clientId)
           .single();
@@ -727,7 +727,7 @@ export const updateClientSubscriptionForClient = async (
           }
 
           const { error: updErr } = await supabase
-               .from('tblClient_Subscription')
+               .from(TABLES.CLIENT_SUBSCRIPTION)
                .update(updatePayload)
                .eq('id', existing.id);
 
@@ -759,7 +759,7 @@ export const updateClientSubscriptionForClient = async (
 
      // Insert if missing
      const { error: insErr } = await supabase
-          .from('tblClient_Subscription')
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .insert({
                client_id: clientId,
                subscription_plan_id: subscriptionPlanId,

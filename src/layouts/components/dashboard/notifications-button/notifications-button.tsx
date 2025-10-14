@@ -55,7 +55,7 @@ export function useNotifications() {
     let active = true;
     (async () => {
       const { data, error } = await supabaseBrowserClient
-        .from('tblNotifications')
+        .from(TABLES.NOTIFICATIONS)
         .select('*')
         .eq('user_id', userId)
         .eq('is_read', false)
@@ -150,7 +150,7 @@ export function useNotifications() {
     if (!userId || ids.length === 0) return;
 
     const e = await supabaseBrowserClient
-      .from('tblNotifications')
+      .from(TABLES.NOTIFICATIONS)
       .update({ is_read: true })
       .in('id', ids)
       .eq('user_id', userId)

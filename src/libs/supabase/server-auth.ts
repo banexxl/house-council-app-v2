@@ -51,10 +51,10 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
 
      // Run in parallel
      const [client, clientMember, tenant, admin] = await Promise.all([
-          maybeSingle(db.from('tblClients').select('*').eq('user_id', user.id)),
-          maybeSingle(db.from('tblClientMembers').select('*').eq('user_id', user.id)),
-          maybeSingle(db.from('tblTenants').select('*').eq('user_id', user.id)),
-          maybeSingle(db.from('tblSuperAdmins').select('*').eq('user_id', user.id)),
+          maybeSingle(db.from(TABLES.CLIENTS).select('*').eq('user_id', user.id)),
+          maybeSingle(db.from(TABLES.CLIENT_MEMBERS).select('*').eq('user_id', user.id)),
+          maybeSingle(db.from(TABLES.TENANTS).select('*').eq('user_id', user.id)),
+          maybeSingle(db.from(TABLES.SUPER_ADMIN).select('*').eq('user_id', user.id)),
      ]).catch((err) => {
           return [null, null, null, null] as const;
      });

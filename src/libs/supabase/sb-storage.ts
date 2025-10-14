@@ -225,7 +225,7 @@ export const uploadBuildingImagesAndGetUrls = async (
 
                // Store bucket + path in DB (not a signed URL)
                const { error: insertError } = await supabase
-                    .from('tblBuildingImages')
+                    .from(TABLES.BUILDING_IMAGES)
                     .insert({
                          building_id: buildingId,
                          storage_bucket: bucket,
@@ -320,13 +320,13 @@ export const removeBuildingImageFilePath = async (
 
           // Delete DB row by new columns first
           const { error: dbDeleteNewErr } = await supabase
-               .from('tblBuildingImages')
+               .from(TABLES.BUILDING_IMAGES)
                .delete()
                .match({ building_id: buildingId, storage_bucket: bkt, storage_path: path });
 
           if (dbDeleteNewErr) {
                const { error: dbDeleteLegacyErr } = await supabase
-                    .from('tblBuildingImages')
+                    .from(TABLES.BUILDING_IMAGES)
                     .delete()
                     .match({ building_id: buildingId, storage_path: filePathOrUrl });
 
@@ -362,7 +362,7 @@ export const removeAllImagesFromBuilding = async (
      try {
           // Pull both legacy and new columns
           const { data: images, error: imagesError } = await supabase
-               .from('tblBuildingImages')
+               .from(TABLES.BUILDING_IMAGES)
                .select('storage_path, storage_bucket, storage_path')
                .eq('building_id', buildingId);
 
@@ -426,7 +426,7 @@ export const removeAllImagesFromBuilding = async (
 
           // Delete DB rows for this building (covers both legacy and new)
           const { error: dbDeleteError } = await supabase
-               .from('tblBuildingImages')
+               .from(TABLES.BUILDING_IMAGES)
                .delete()
                .eq('building_id', buildingId);
           if (dbDeleteError) {
@@ -482,7 +482,7 @@ export const setAsBuildingCoverImage = async (
      try {
           // Unset previous cover(s)
           const { error: unsetErr } = await supabase
-               .from('tblBuildingImages')
+               .from(TABLES.BUILDING_IMAGES)
                .update({ is_cover_image: false })
                .eq('building_id', buildingId);
           if (unsetErr) {
@@ -500,7 +500,7 @@ export const setAsBuildingCoverImage = async (
 
           // Set new cover image row
           const { error: setErr } = await supabase
-               .from('tblBuildingImages')
+               .from(TABLES.BUILDING_IMAGES)
                .update({ is_cover_image: true })
                .match({ id: imageId, building_id: buildingId });
           if (setErr) {
@@ -590,7 +590,7 @@ export const uploadApartmentImagesAndGetUrls = async (
 
                // store refs in DB (not a URL)
                const { error: insertError } = await supabase
-                    .from('tblApartmentImages')
+                    .from(TABLES.APARTMENT_IMAGES)
                     .insert({
                          apartment_id: apartmentid,
                          storage_bucket: bucket,
@@ -686,13 +686,13 @@ export const removeApartmentImageFilePath = async (
 
           // delete DB row (new columns);
           const { error: dbDeleteNewErr } = await supabase
-               .from('tblApartmentImages')
+               .from(TABLES.APARTMENT_IMAGES)
                .delete()
                .match({ apartment_id: apartmentid, storage_bucket: bkt, storage_path: path });
 
           if (dbDeleteNewErr) {
                const { error: dbDeleteLegacyErr } = await supabase
-                    .from('tblApartmentImages')
+                    .from(TABLES.APARTMENT_IMAGES)
                     .delete()
                     .match({ apartment_id: apartmentid });
 
@@ -730,7 +730,7 @@ export const removeAllImagesFromApartment = async (
      try {
           // fetch both new & legacy fields
           const { data: images, error: imagesError } = await supabase
-               .from('tblApartmentImages')
+               .from(TABLES.APARTMENT_IMAGES)
                .select('storage_bucket, storage_path')
                .eq('apartment_id', apartmentid);
 
@@ -782,7 +782,7 @@ export const removeAllImagesFromApartment = async (
 
           // delete DB rows
           const { error: dbDeleteError } = await supabase
-               .from('tblApartmentImages')
+               .from(TABLES.APARTMENT_IMAGES)
                .delete()
                .eq('apartment_id', apartmentid);
 
@@ -819,14 +819,14 @@ export const setAsApartmentCoverImage = async (apartmentid: string, imageId: str
      try {
           // Unset previous covers
           const { error: unsetErr } = await supabase
-               .from('tblApartmentImages')
+               .from(TABLES.APARTMENT_IMAGES)
                .update({ is_cover_image: false })
                .eq('apartment_id', apartmentid);
           if (unsetErr) return { success: false, error: unsetErr.message };
 
           // Set new cover
           const { error: setErr } = await supabase
-               .from('tblApartmentImages')
+               .from(TABLES.APARTMENT_IMAGES)
                .update({ is_cover_image: true })
                .match({ id: imageId, apartment_id: apartmentid });
           if (setErr) return { success: false, error: setErr.message };

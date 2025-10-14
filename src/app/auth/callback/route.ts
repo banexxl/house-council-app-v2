@@ -33,7 +33,7 @@ export async function GET(request: Request) {
   const userEmail = sessionData.session.user.email;
 
   const { data: client, error: clientError } = await supabase
-    .from("tblClients")
+    .from(TABLES.CLIENTS)
     .select("id")
     .eq("email", userEmail)
     .single();
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     userId = client.id;
   } else {
     const { data: tenant, error: tenantError } = await supabase
-      .from("tblTenants")
+      .from(TABLES.TENANTS)
       .select("id")
       .eq("email", userEmail)
       .maybeSingle();
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
       userId = tenant.id;
     } else {
       const { data: admin, error: adminError } = await supabase
-        .from("tblSuperAdmins")
+        .from(TABLES.SUPER_ADMIN)
         .select("id")
         .eq("email", userEmail)
         .single();
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
 
   if (role === "client") {
     const { data: subscription, error: subscriptionError } = await supabase
-      .from("tblClient_Subscription")
+      .from(TABLES.CLIENT_SUBSCRIPTION)
       .select("*")
       .eq("client_id", userId!)
       .in("status", ["active", "trialing"])

@@ -3,6 +3,7 @@
 import {
      useState,
      useRef,
+     useEffect,
      type ChangeEvent,
      forwardRef,
      useImperativeHandle,
@@ -35,12 +36,53 @@ export type ImageUploadRef = {
 export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
      ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx }, ref) => {
 
-          const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!
-          const { url, loading: isLoading } = useSignedUrl(bucket, initialValue, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
-          const [avatarUrl, setAvatarUrl] = useState<string>(url ?? url ?? initialValue ?? "")
+          const bucket = "nla-clients-data" // Use the actual bucket name directly since env vars aren't accessible client-side
+
+          // Helper function to extract path from signed URL
+          const extractPathFromSignedUrl = (url: string): string | null => {
+               try {
+                    if (!url) return null;
+
+                    // If it's already a simple path (not a full URL), return as is
+                    if (!url.includes('http')) return url;
+
+                    // Extract path from signed URL
+                    const urlObj = new URL(url);
+                    const pathMatch = urlObj.pathname.match(/\/storage\/v1\/object\/sign\/[^/]+\/(.+)$/);
+                    return pathMatch ? pathMatch[1] : null;
+               } catch (error) {
+                    console.error('Error extracting path from URL:', error);
+                    return null;
+               }
+          };
+
+          // Extract the actual file path from initialValue (which might be a signed URL)
+          const actualPath = extractPathFromSignedUrl(initialValue || '');
+          const shouldFetchSignedUrl = !!actualPath;
+
+          console.log('ImageUpload Debug:', {
+               initialValue,
+               actualPath,
+               shouldFetchSignedUrl,
+               userId,
+               bucket
+          });
+
+          const { url, loading: isLoading } = useSignedUrl(
+               shouldFetchSignedUrl ? bucket : '',
+               shouldFetchSignedUrl ? actualPath : '',
+               { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
+          ); const [avatarUrl, setAvatarUrl] = useState<string>(shouldFetchSignedUrl ? (url || initialValue || "") : "")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()
+
+          // Update avatar URL when signed URL is loaded
+          useEffect(() => {
+               if (shouldFetchSignedUrl && url) {
+                    setAvatarUrl(url);
+               }
+          }, [url, shouldFetchSignedUrl]);
 
 
           // Expose clearImage method to the parent

@@ -10,7 +10,7 @@ import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { createMessage } from 'src/libs/sms/twilio';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
 
-const NOTIFICATIONS_TABLE = 'tblNotifications';
+const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
 
 // Batch insert notifications; reusable across server actions
 export async function emitNotifications(

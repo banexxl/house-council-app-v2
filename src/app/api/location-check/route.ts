@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
      // get all locations without building_id
      const { data, error } = await supabase
-          .from('tblBuildingLocations')
+          .from(TABLES.BUILDING_LOCATIONS)
           .select('*')
           .is('building_id', null)
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
           const addressesDeleted = data.map(location => location.street_address + ', ' + location.street_number + ', ' + location.city);
 
           const { error: deleteError } = await supabase
-               .from('tblBuildingLocations')
+               .from(TABLES.BUILDING_LOCATIONS)
                .delete()
                .in('id', data.map(location => location.id))
 

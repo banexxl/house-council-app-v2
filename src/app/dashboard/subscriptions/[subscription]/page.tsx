@@ -9,7 +9,7 @@ import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 export default async function SubscriptionEditorPage({ params }: { params: Promise<{ subscription: string }> }) {
      const { subscription } = await params;
 
-     const features = await readAllEntities<BaseEntity & FeatureExtension>('tblFeatures');
+     const features = await readAllEntities<BaseEntity & FeatureExtension>(TABLES.FEATURES);
 
      let subscriptionPlan: any = null;
      if (subscription && subscription !== 'new') {

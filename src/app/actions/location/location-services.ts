@@ -16,7 +16,7 @@ type ErrorResponse = {
 // Get all locations (admin use)
 export const getAllLocations = async () => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data, error } = await supabase.from("tblBuildingLocations").select("*");
+     const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).select("*");
      if (error) return { success: false, error: error.message };
      return { success: true, data };
 };
@@ -54,7 +54,7 @@ export const insertLocationAction = async (
      try {
           // Pre-check duplicates by location_id
           const { data: existingLocation, error: fetchError } = await supabase
-               .from("tblBuildingLocations")
+               .from(TABLES.BUILDING_LOCATIONS)
                .select("id")
                .eq("location_id", values.location_id);
           if (fetchError) {
@@ -74,7 +74,7 @@ export const insertLocationAction = async (
           if (existingLocation && existingLocation.length > 0) {
                // secondary uniqueness check (street + city + number)
                const { data: duplicateLocation, error: duplicateError } = await supabase
-                    .from("tblBuildingLocations")
+                    .from(TABLES.BUILDING_LOCATIONS)
                     .select("id")
                     .eq("location_id", values.location_id)
                     .eq("street_address", values.street_address)
@@ -121,7 +121,7 @@ export const insertLocationAction = async (
                longitude: values.longitude,
                post_code: values.post_code,
           };
-          const { data, error } = await supabase.from("tblBuildingLocations").insert(insertPayload).select("*");
+          const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).insert(insertPayload).select("*");
           if (error) {
                await logServerAction({
                     action: "insertLocationAction",
@@ -169,7 +169,7 @@ export const getAllAddedLocations = async (): Promise<{
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      try {
-          const { data, error } = await supabase.from("tblBuildingLocations").select("*");
+          const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).select("*");
           if (error) {
                await logServerAction({
                     action: "getAllAddedLocations",
@@ -226,7 +226,7 @@ export const getAllAddedLocationsByClientId = async (
      }
      try {
           const { data, error } = await supabase
-               .from("tblBuildingLocations")
+               .from(TABLES.BUILDING_LOCATIONS)
                .select("*")
                .eq("client_id", resolvedClientId);
           if (error) {
@@ -289,7 +289,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (
      }
      try {
           const { data, error } = await supabase
-               .from("tblBuildingLocations")
+               .from(TABLES.BUILDING_LOCATIONS)
                .select("*")
                .eq("client_id", resolvedClientId)
                .is("building_id", null);
@@ -346,7 +346,7 @@ export const deleteLocationByID = async (
           return { success: false, error: { code: "400", details: null, hint: null, message: "No location ID provided" } };
      }
      try {
-          const { error } = await supabase.from("tblBuildingLocations").delete().eq("id", id);
+          const { error } = await supabase.from(TABLES.BUILDING_LOCATIONS).delete().eq("id", id);
           if (error) {
                await logServerAction({
                     action: "deleteLocationByID",
@@ -393,7 +393,7 @@ export const getAllAddedLocationsWithoutBuildingId = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
      try {
           const { data, error } = await supabase
-               .from("tblBuildingLocations")
+               .from(TABLES.BUILDING_LOCATIONS)
                .select("*")
                .is("building_id", null);
           if (error) {
