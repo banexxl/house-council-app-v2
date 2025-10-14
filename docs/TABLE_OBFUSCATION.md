@@ -63,7 +63,7 @@ Add the following environment variables with obfuscated values:
 
 ```bash
 # Example obfuscated names for production
-NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMIN="t1"
+NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMINS="t1"
 NEXT_PUBLIC_SUPABASE_TBL_CLIENTS="t2"
 NEXT_PUBLIC_SUPABASE_TBL_CLIENT_MEMBERS="t3"
 NEXT_PUBLIC_SUPABASE_TBL_TENANTS="t4"
