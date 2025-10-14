@@ -3,6 +3,8 @@
  * Run with: node scripts/validate-tables.js
  */
 
+import log from "src/utils/logger";
+
 // Mock the process.env for testing
 process.env.NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMIN = "tblSuperAdmins";
 process.env.NEXT_PUBLIC_SUPABASE_TBL_CLIENTS = "tblClients";
@@ -30,18 +32,18 @@ try {
      // Test import
      const { TABLES, validateTableConfig } = require('../src/config/tables.ts');
 
-     console.log('✅ TABLES configuration loaded successfully');
-     console.log('📊 Available tables:');
+     log('✅ TABLES configuration loaded successfully');
+     log('📊 Available tables:');
 
      Object.entries(TABLES).forEach(([key, value]) => {
-          console.log(`   ${ key }: ${ value }`);
+          log(`   ${key}: ${value}`);
      });
 
      // Test validation
      validateTableConfig();
-     console.log('✅ All environment variables are properly set');
+     log('✅ All environment variables are properly set');
 
-     console.log('\n🎉 Table configuration is valid!');
+     log('\n🎉 Table configuration is valid!');
 
 } catch (error) {
      console.error('❌ Error validating table configuration:', error.message);
