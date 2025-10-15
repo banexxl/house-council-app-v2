@@ -1,552 +1,292 @@
 import type { ReactNode } from "react";
-import { useMemo, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import Chip from "@mui/material/Chip";
-import SvgIcon from "@mui/material/SvgIcon";
-import ApartmentIcon from "@mui/icons-material/Apartment";
-import AnnouncementIcon from '@mui/icons-material/Announcement';
-import BarChartSquare02Icon from "src/icons/untitled-ui/duocolor/bar-chart-square-02";
-import Building04Icon from "src/icons/untitled-ui/duocolor/building-04";
-import CalendarIcon from "src/icons/untitled-ui/duocolor/calendar";
-import CheckDone01Icon from "src/icons/untitled-ui/duocolor/check-done-01";
-import CreditCard01Icon from "src/icons/untitled-ui/duocolor/credit-card-01";
-import CurrencyBitcoinCircleIcon from "src/icons/untitled-ui/duocolor/currency-bitcoin-circle";
-import File01Icon from "src/icons/untitled-ui/duocolor/file-01";
-import GraduationHat01Icon from "src/icons/untitled-ui/duocolor/graduation-hat-01";
+import { SvgIcon, Chip } from "@mui/material";
+
+// === ICONS ===
 import HomeSmileIcon from "src/icons/untitled-ui/duocolor/home-smile";
-import LayoutAlt02Icon from "src/icons/untitled-ui/duocolor/layout-alt-02";
-import LineChartUp04Icon from "src/icons/untitled-ui/duocolor/line-chart-up-04";
-import Lock01Icon from "src/icons/untitled-ui/duocolor/lock-01";
-import LogOut01Icon from "src/icons/untitled-ui/duocolor/log-out-01";
-import Mail03Icon from "src/icons/untitled-ui/duocolor/mail-03";
-import Mail04Icon from "src/icons/untitled-ui/duocolor/mail-04";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import MessageChatSquareIcon from "src/icons/untitled-ui/duocolor/message-chat-square";
-import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
-import Share07Icon from "src/icons/untitled-ui/duocolor/share-07";
-import ShoppingBag03Icon from "src/icons/untitled-ui/duocolor/shopping-bag-03";
-import ShoppingCart01Icon from "src/icons/untitled-ui/duocolor/shopping-cart-01";
-import Truck01Icon from "src/icons/untitled-ui/duocolor/truck-01";
-import Upload04Icon from "src/icons/untitled-ui/duocolor/upload-04";
 import Users03Icon from "src/icons/untitled-ui/duocolor/users-03";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import AnnouncementIcon from "@mui/icons-material/Announcement";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import BarChartSquare02Icon from "src/icons/untitled-ui/duocolor/bar-chart-square-02";
+import CurrencyBitcoinCircleIcon from "src/icons/untitled-ui/duocolor/currency-bitcoin-circle";
+import CalendarIcon from "src/icons/untitled-ui/duocolor/calendar";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
+
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
-import { supabaseBrowserClient } from "src/libs/supabase/sb-client";
-import { TABLES } from "src/libs/supabase/tables";
 
-export interface Item {
-  disabled?: boolean;
-  external?: boolean;
-  icon?: ReactNode;
-  items?: Item[];
-  label?: ReactNode;
-  path?: string;
+export type Role = "admin" | "client" | "clientMember" | "tenant";
+
+export interface NavItem {
   title: string;
+  path?: string;           // clickable when present
+  icon?: ReactNode;
+  label?: ReactNode;
+  items?: NavItem[];       // children -> shows expander when length > 0
+  roles: Role[];           // who sees this node
 }
 
-export interface Section {
-  items: Item[];
+export interface NavSection {
   subheader?: string;
+  items: NavItem[];
+  roles: Role[];
 }
 
-const useIsAdmin = () => {
+// === FULL CONFIG (with children to keep expanders) ===
+const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
+  // ADMIN
+  {
+    subheader: t(tokens.nav.adminDashboard),
+    roles: ["admin"],
+    items: [
+      {
+        title: t(tokens.nav.clients),
+        roles: ["admin"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <Users03Icon />
+          </SvgIcon>
+        ),
+        items: [
+          {
+            title: t(tokens.nav.list),
+            path: paths.dashboard.clients.index,
+            roles: ["admin"],
+            icon: (
+              <SvgIcon fontSize="small">
+                <Users03Icon />
+              </SvgIcon>
+            ),
+          },
+          {
+            title: t(tokens.nav.create),
+            path: paths.dashboard.clients.new,
+            roles: ["admin"],
+            icon: (
+              <SvgIcon fontSize="small">
+                <Users03Icon />
+              </SvgIcon>
+            ),
+          },
+          {
+            title: t(tokens.nav.billingInformation),
+            roles: ["admin"],
+            icon: (
+              <SvgIcon fontSize="small">
+                <Users03Icon />
+              </SvgIcon>
+            ),
+            items: [
+              { title: t(tokens.nav.list), path: paths.dashboard.clients.billingInformation.index, roles: ["admin"] },
+              { title: t(tokens.nav.create), path: paths.dashboard.clients.billingInformation.new, roles: ["admin"] },
+            ],
+          },
+        ],
+      },
+      {
+        title: t(tokens.nav.subscriptions),
+        roles: ["admin"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <ReceiptCheckIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.subscriptions.index, roles: ["admin"] },
+          { title: t(tokens.nav.create), path: paths.dashboard.subscriptions.new, roles: ["admin"] },
+        ],
+      },
+    ],
+  },
 
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  // CLIENT / CLIENT MEMBER
+  {
+    subheader: t(tokens.nav.clientDashboard),
+    roles: ["admin", "client", "clientMember"],
+    items: [
+      {
+        title: t(tokens.nav.overview),
+        path: paths.dashboard.index,
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <HomeSmileIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: t(tokens.nav.account),
+        path: paths.dashboard.account,
+        roles: ["admin", "client"], // hidden for clientMember
+        icon: (
+          <SvgIcon fontSize="small">
+            <ManageAccountsIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: t(tokens.nav.locations),
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <LocationOnIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.locations.index, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.locationAdd), path: paths.dashboard.locations.new, roles: ["admin", "client", "clientMember"] },
+        ],
+      },
+      {
+        title: t(tokens.nav.buildings),
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <ApartmentIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.buildings.index, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client"] },
+        ],
+      },
+      {
+        title: t(tokens.nav.apartments),
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <MeetingRoomIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.apartments.index, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client"] },
+        ],
+      },
+      {
+        title: t(tokens.nav.tenants),
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <Users03Icon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.tenants.index, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client"] },
+        ],
+      },
+      {
+        title: t(tokens.nav.announcements),
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <AnnouncementIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.announcements.index, roles: ["admin", "client", "clientMember"] },
+        ],
+      },
+      {
+        title: t(tokens.nav.calendar),
+        path: paths.dashboard.calendar,
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <CalendarIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: t(tokens.nav.analytics),
+        path: paths.dashboard.analytics,
+        roles: ["admin", "client"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <BarChartSquare02Icon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: t(tokens.nav.crypto),
+        path: paths.dashboard.crypto,
+        roles: ["admin", "client"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <CurrencyBitcoinCircleIcon />
+          </SvgIcon>
+        ),
+        label: <Chip color="primary" label="New" size="small" />,
+      },
+    ],
+  },
 
-  useEffect(() => {
-    const check = async () => {
-      const { data } = await supabaseBrowserClient.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        setIsAdmin(false);
-        return;
+  // TENANT
+  {
+    subheader: t(tokens.nav.tenants), // or a dedicated tenantDashboard token if you have it
+    roles: ["tenant"],
+    items: [
+      {
+        title: t(tokens.announcements.managementTitle),
+        path: paths.dashboard.announcements.tenant,
+        roles: ["tenant"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <AnnouncementIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: t(tokens.nav.calendar),
+        path: paths.dashboard.calendar,
+        roles: ["tenant"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <CalendarIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
+  },
+];
+
+// === RECURSIVE FILTER (keeps parent if it or any child is visible) ===
+const filterItemsByRole = (items: NavItem[], role: Role): NavItem[] =>
+  items
+    .map((item) => {
+      const children = item.items ? filterItemsByRole(item.items, role) : undefined;
+      const selfVisible = item.roles.includes(role);
+      const anyChild = !!(children && children.length);
+
+      if (!selfVisible && !anyChild) return null;
+
+      // If parent not visible but has visible children, keep it as a container (not clickable)
+      if (!selfVisible && anyChild) {
+        const { path, ...rest } = item;
+        return { ...rest, items: children };
       }
-      const { data: admin } = await supabaseBrowserClient
-        .from(TABLES.SUPER_ADMINS)
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1)
 
-      setIsAdmin(!!admin);
+      return { ...item, items: children };
+    })
+    .filter(Boolean) as NavItem[];
 
-    };
-    check();
-  }, []);
+const filterByRole = (sections: NavSection[], role: Role): NavSection[] =>
+  sections
+    .map((section) => {
+      if (!section.roles.includes(role)) return null;
+      const items = filterItemsByRole(section.items, role);
+      if (!items.length) return null;
+      return { ...section, items };
+    })
+    .filter(Boolean) as NavSection[];
 
-  return isAdmin;
-};
-
-export const useSections = (role: 'client' | 'clientMember' | 'tenant' | 'admin') => {
+// === MAIN HOOK ===
+export const useSections = (role: Role) => {
   const { t } = useTranslation();
-  const isAdmin = useIsAdmin();
-
-  return useMemo(() => {
-    const allSections: Section[] = [
-      // Admin Dashboard
-      {
-        subheader: t(tokens.nav.adminDashboard),
-        items: [
-          {
-            title: t(tokens.nav.clients),
-            icon: (
-              <SvgIcon fontSize="small">
-                <Users03Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.clients.index,
-                icon: (
-                  <SvgIcon fontSize="small">
-                    <Users03Icon />
-                  </SvgIcon>
-                ),
-              },
-              {
-                title: t(tokens.nav.create),
-                path: paths.dashboard.clients.new,
-                icon: (
-                  <SvgIcon fontSize="small">
-                    <Users03Icon />
-                  </SvgIcon>
-                ),
-              },
-              {
-                title: t(tokens.nav.billingInformation),
-                icon: (
-                  <SvgIcon fontSize="small">
-                    <Users03Icon />
-                  </SvgIcon>
-                ),
-                items: [
-                  {
-                    title: t(tokens.nav.list),
-                    path: paths.dashboard.clients.billingInformation.index,
-                  },
-                  {
-                    title: t(tokens.nav.create),
-                    path: paths.dashboard.clients.billingInformation.new,
-                  },
-                ],
-              },
-              // {
-              //   title: t(tokens.common.settings),
-              //   items: [
-              //     {
-              //       title: t(tokens.nav.clientSettings),
-              //       path: paths.dashboard.clients.clientSettings.index,
-              //       icon: (
-              //         <SvgIcon fontSize="small">
-              //           <SettingsIcon />
-              //         </SvgIcon>
-              //       )
-              //     }
-              //   ]
-              // }
-            ],
-          },
-          {
-            title: t(tokens.nav.subscriptions),
-            icon: (
-              <SvgIcon fontSize="small">
-                <ReceiptCheckIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.subscriptions.index,
-              },
-              {
-                title: t(tokens.nav.create),
-                path: paths.dashboard.subscriptions.new,
-              },
-            ],
-          },
-        ],
-      },
-      // Client Dashboard
-      {
-        subheader: t(tokens.nav.clientDashboard),
-        items: [
-          {
-            title: t(tokens.nav.overview),
-            path: paths.dashboard.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <HomeSmileIcon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.account),
-            path: paths.dashboard.account,
-            icon: (
-              <SvgIcon fontSize="small">
-                <ManageAccountsIcon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.locations),
-            path: paths.dashboard.locations.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <LocationOnIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.locations.index,
-              },
-              {
-                title: t(tokens.nav.locationAdd),
-                path: paths.dashboard.locations.new,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.buildings),
-            path: paths.dashboard.buildings.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <ApartmentIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.buildings.index,
-              },
-              {
-                title: t(tokens.nav.buildingAdd),
-                path: paths.dashboard.buildings.new,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.apartments),
-            path: paths.dashboard.apartments.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <MeetingRoomIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.apartments.index,
-              },
-              {
-                title: t(tokens.nav.apartmentAdd),
-                path: paths.dashboard.apartments.new,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.tenants),
-            path: paths.dashboard.tenants.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Users03Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.tenants.index,
-              },
-              {
-                title: t(tokens.nav.tenantAdd),
-                path: paths.dashboard.tenants.new,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.announcements),
-            path: paths.dashboard.announcements.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <AnnouncementIcon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.analytics),
-            path: paths.dashboard.analytics,
-            icon: (
-              <SvgIcon fontSize="small">
-                <BarChartSquare02Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.ecommerce),
-            path: paths.dashboard.ecommerce,
-            icon: (
-              <SvgIcon fontSize="small">
-                <LineChartUp04Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.crypto),
-            path: paths.dashboard.crypto,
-            icon: (
-              <SvgIcon fontSize="small">
-                <CurrencyBitcoinCircleIcon />
-              </SvgIcon>
-            ),
-            label: <Chip color="primary" label="New" size="small" />,
-          },
-        ],
-      },
-      // Tenant Dashboard
-      {
-        subheader: t(tokens.nav.tenants),
-        items: [
-          {
-            title: t(tokens.announcements.managementTitle),
-            path: paths.dashboard.announcements.tenant,
-            icon: (
-              <SvgIcon fontSize="small">
-                <AnnouncementIcon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.productList),
-            path: paths.dashboard.products.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <ShoppingBag03Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.products.index,
-              },
-              {
-                title: t(tokens.nav.create),
-                path: paths.dashboard.products.create,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.orderList),
-            icon: (
-              <SvgIcon fontSize="small">
-                <ShoppingCart01Icon />
-              </SvgIcon>
-            ),
-            path: paths.dashboard.orders.index,
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.orders.index,
-              },
-              {
-                title: t(tokens.nav.details),
-                path: paths.dashboard.orders.details,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.invoiceList),
-            path: paths.dashboard.invoices.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <ReceiptCheckIcon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.list),
-                path: paths.dashboard.invoices.index,
-              },
-              {
-                title: t(tokens.nav.details),
-                path: paths.dashboard.invoices.details,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.logistics),
-            path: paths.dashboard.logistics.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Truck01Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.dashboard),
-                path: paths.dashboard.logistics.index,
-              },
-              {
-                title: t(tokens.nav.fleet),
-                path: paths.dashboard.logistics.fleet,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.academy),
-            path: paths.dashboard.academy.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <GraduationHat01Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.dashboard),
-                path: paths.dashboard.academy.index,
-              },
-              {
-                title: t(tokens.nav.course),
-                path: paths.dashboard.academy.courseDetails,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.jobList),
-            path: paths.dashboard.jobs.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Building04Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.browse),
-                path: paths.dashboard.jobs.index,
-              },
-              {
-                title: t(tokens.nav.details),
-                path: paths.dashboard.jobs.companies.details,
-              },
-              {
-                title: t(tokens.nav.create),
-                path: paths.dashboard.jobs.create,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.socialMedia),
-            path: paths.dashboard.social.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Share07Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.profile),
-                path: paths.dashboard.social.profile,
-              },
-              {
-                title: t(tokens.nav.feed),
-                path: paths.dashboard.social.feed,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.blog),
-            path: paths.dashboard.blog.index,
-            icon: (
-              <SvgIcon fontSize="small">
-                <LayoutAlt02Icon />
-              </SvgIcon>
-            ),
-            items: [
-              {
-                title: t(tokens.nav.postList),
-                path: paths.dashboard.blog.index,
-              },
-              {
-                title: t(tokens.nav.postDetails),
-                path: paths.dashboard.blog.postDetails,
-              },
-              {
-                title: t(tokens.nav.postCreate),
-                path: paths.dashboard.blog.postCreate,
-              },
-            ],
-          },
-          {
-            title: t(tokens.nav.fileManager),
-            path: paths.dashboard.fileManager,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Upload04Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.kanban),
-            path: paths.dashboard.kanban,
-            icon: (
-              <SvgIcon fontSize="small">
-                <CheckDone01Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.mail),
-            path: paths.dashboard.mail,
-            icon: (
-              <SvgIcon fontSize="small">
-                <Mail03Icon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.chat),
-            path: paths.dashboard.chat,
-            icon: (
-              <SvgIcon fontSize="small">
-                <MessageChatSquareIcon />
-              </SvgIcon>
-            ),
-          },
-          {
-            title: t(tokens.nav.calendar),
-            path: paths.dashboard.calendar,
-            icon: (
-              <SvgIcon fontSize="small">
-                <CalendarIcon />
-              </SvgIcon>
-            ),
-          },
-        ],
-      },
-    ];
-
-    let filtered = allSections;
-    if (role === 'client') {
-      // Exclude admin and tenant sections
-      filtered = allSections.slice(1, -1);
-    } else if (role === 'clientMember') {
-      // Exclude admin and tenant sections and account
-      filtered = allSections.slice(1, -1).map(section => ({
-        ...section,
-        items: section.items.filter(item => item.title !== t(tokens.nav.account))
-      }));
-    } else if (role === 'tenant') {
-      filtered = allSections.slice(-1); // Only show tenant section
-    } // if admin, show all
-
-    if (isAdmin === false) {
-      filtered = filtered.filter(
-        (section) => section.subheader !== t(tokens.nav.adminDashboard),
-      );
-    }
-
-    return filtered;
-  }, [role, t, isAdmin]);
+  return useMemo(() => filterByRole(NAV_SECTIONS(t), role), [t, role]);
 };

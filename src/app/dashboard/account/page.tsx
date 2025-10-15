@@ -29,10 +29,6 @@ const Page = async () => {
     return null;
   }
 
-  if (clientMember) {
-    redirect('/dashboard');
-  }
-
   if (client) {
 
     const [

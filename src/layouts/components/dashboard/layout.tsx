@@ -25,49 +25,43 @@ export const Layout: FC<LayoutProps> = ((props) => {
       const email = data.session?.user?.email;
       if (!email) return;
 
-      const [adminRes, clientRes, clientMemberRes, tenantRes] = await Promise.all([
+      // Query each table as single rows to avoid truthy [] bugs
+      const [adminRes, tenantRes, clientMemberRes, clientRes] = await Promise.all([
         supabaseBrowserClient
           .from(TABLES.SUPER_ADMINS)
           .select('id')
           .eq('email', email)
-          .limit(1),
-        supabaseBrowserClient
-          .from(TABLES.CLIENTS)
-          .select('id')
-          .eq('email', email)
-          .limit(1),
-        supabaseBrowserClient
-          .from(TABLES.CLIENT_MEMBERS)
-          .select('id')
-          .eq('email', email)
-          .limit(1),
+          .maybeSingle(),            // null if none
         supabaseBrowserClient
           .from(TABLES.TENANTS)
           .select('id')
           .eq('email', email)
-          .limit(1),
+          .maybeSingle(),
+        supabaseBrowserClient
+          .from(TABLES.CLIENT_MEMBERS)
+          .select('id')
+          .eq('email', email)
+          .maybeSingle(),
+        supabaseBrowserClient
+          .from(TABLES.CLIENTS)
+          .select('id')
+          .eq('email', email)
+          .maybeSingle(),
       ]);
 
-      if (adminRes.data?.length! > 0) {
-        setRole('admin');
-        return;
-      }
-      if (clientRes.data) {
-        setRole('client');
-        return;
-      }
-      if (clientMemberRes.data?.length! > 0) {
-        setRole('clientMember');
-        return;
-      }
-      if (tenantRes.data?.length! > 0) {
-        setRole('tenant');
-        return;
-      }
+      // Explicit precedence: admin > tenant > clientMember > client
+      if (adminRes.data) return setRole('admin');
+      if (tenantRes.data) return setRole('tenant');
+      if (clientMemberRes.data) return setRole('clientMember');
+      if (clientRes.data) return setRole('client');
+
+      // fallback (optional): keep as tenant or choose a "guest" role if you have one
+      setRole('tenant');
     };
 
     getRole();
   }, []);
+
   log(`role ${role}`)
   const sections = useSections(role);
 

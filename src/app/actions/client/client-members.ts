@@ -160,10 +160,10 @@ export const resetClientMemberPassword = async (
 // Unified resolver: accept an id that may be either a client member id or already a client id.
 // Returns the Client row when found, otherwise returns the original id string as data.
 export const readClientOrClientIDFromClientMemberID = async (
-     client_id: string
+     client_or_client_member_id: string
 ): Promise<{ success: boolean; data?: Client | string; error?: string }> => {
 
-     if (!client_id || client_id.trim() === '') {
+     if (!client_or_client_member_id || client_or_client_member_id.trim() === '') {
           return { success: false, error: 'Invalid client/member ID' };
      }
 
@@ -172,7 +172,7 @@ export const readClientOrClientIDFromClientMemberID = async (
      const { data: clientData, error: clientError } = await supabase
           .from(TABLES.CLIENTS)
           .select('*')
-          .eq('id', client_id)
+          .eq('id', client_or_client_member_id)
           .single();
 
      if (!clientError && clientData) {
@@ -183,7 +183,7 @@ export const readClientOrClientIDFromClientMemberID = async (
      const { data: memberRow } = await supabase
           .from(TABLES.CLIENT_MEMBERS)
           .select('client_id')
-          .eq('id', client_id)
+          .eq('id', client_or_client_member_id)
           .single();
 
      if (!memberRow?.client_id) {
