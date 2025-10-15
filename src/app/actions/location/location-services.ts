@@ -5,7 +5,7 @@ import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { BuildingLocation } from "src/types/location";
 import { readClientOrClientIDFromClientMemberID } from "../client/client-members";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 
 type ErrorResponse = {
      code: string;

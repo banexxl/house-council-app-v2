@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Feature } from "src/types/base-entity";
 

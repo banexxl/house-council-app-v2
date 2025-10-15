@@ -7,7 +7,7 @@ import { supabaseBrowserClient } from "src/libs/supabase/sb-client"; // Preconfi
 import { useAuth } from "src/contexts/auth/auth-provider"; // Access authenticated user + associated client context
 import { useRouter } from "next/navigation"; // Client router for redirects after sign-out
 import log from "src/utils/logger";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 
 // Domain model: minimal subset of tblClient_Subscription columns needed here
 interface ClientSubscriptionRow {

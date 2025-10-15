@@ -28,7 +28,7 @@ import { CustomAutocomplete } from 'src/components/autocomplete-custom'
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
 import { ClientSubscription, SubscriptionPlan, clientSubscriptionStatusOptions } from 'src/types/subscription-plan'
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 import dayjs, { Dayjs } from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'

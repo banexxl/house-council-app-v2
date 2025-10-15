@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { readClientFromClientMemberID } from '../actions/client/client-members';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 export type SignInFormValues = {
      email: string;

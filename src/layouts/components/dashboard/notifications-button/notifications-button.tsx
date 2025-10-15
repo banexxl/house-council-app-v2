@@ -17,7 +17,7 @@ import { tokens } from 'src/locales/tokens';
 import { markNotificationRead } from 'src/app/actions/notification/notification-actions';
 import toast from 'react-hot-toast';
 import { isClientUserId } from 'src/app/actions/client/client-actions';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 const MAX_DISPLAY = 10;
 

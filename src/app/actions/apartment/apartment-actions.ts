@@ -7,7 +7,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
 import { toStorageRef } from "src/utils/sb-bucket";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 
 // ===== Helpers =====
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h

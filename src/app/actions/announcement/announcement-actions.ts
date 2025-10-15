@@ -11,7 +11,7 @@ import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { sendNotificationEmail } from 'src/libs/email/node-mailer';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';

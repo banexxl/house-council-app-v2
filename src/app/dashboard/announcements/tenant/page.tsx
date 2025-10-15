@@ -4,7 +4,7 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getPublishedAnnouncementsForBuildings } from 'src/app/actions/announcement/announcement-actions';
 import TenantAnnouncementsViewer from 'src/app/dashboard/announcements/tenant/tenant-announcements-viewer';
 import { logout } from 'src/app/auth/actions';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 // Server component: lists published announcements for the tenant's building(s)
 export default async function TenantAnnouncementsPage() {

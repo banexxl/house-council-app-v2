@@ -24,7 +24,7 @@ import { useDialog } from "src/hooks/use-dialog"
 import { PopupModal } from "src/components/modal-dialog"
 import toast from "react-hot-toast"
 import { BaseEntity, FeatureExtension } from "src/types/base-entity"
-import { TABLES } from "src/config/tables"
+import { TABLES } from "src/libs/supabase/tables"
 
 interface GenericTableEditorProps {
      features: (BaseEntity & FeatureExtension)[]

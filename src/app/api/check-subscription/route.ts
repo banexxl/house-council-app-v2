@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { sendSubscriptionEndingNotificationToSupport, sendTrialEndingEmailToClient } from 'src/libs/email/node-mailer';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 export const runtime = 'nodejs'          // ensure Node (not Edge)
 export const dynamic = 'force-dynamic';   // avoid caching for cron

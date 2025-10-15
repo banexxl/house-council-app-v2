@@ -2,7 +2,7 @@
 
 import { PostgrestError } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache"
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Client } from "src/types/client";
 import { ClientBillingInformation } from "src/types/client-billing-information";

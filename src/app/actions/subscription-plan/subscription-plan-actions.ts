@@ -5,7 +5,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { ClientSubscription, RenewalPeriod, SubscriptionPlan } from "src/types/subscription-plan";
 import { Feature } from "src/types/base-entity";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 
 export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):
      Promise<{

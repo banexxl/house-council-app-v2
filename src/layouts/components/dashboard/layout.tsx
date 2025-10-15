@@ -7,7 +7,7 @@ import { useSections } from './config';
 import { HorizontalLayout } from './horizontal-layout';
 import { VerticalLayout } from './vertical-layout';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 interface LayoutProps {
   children?: ReactNode;

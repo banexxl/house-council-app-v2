@@ -34,7 +34,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 
 export interface Item {
   disabled?: boolean;

@@ -2,7 +2,7 @@ import { Box, Container, Stack } from "@mui/material";
 import { notFound } from "next/navigation";
 import { readAllEntities } from "src/app/actions/base-entity-actions";
 import { readSubscriptionPlan } from "src/app/actions/subscription-plan/subscription-plan-actions";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";
 import { BaseEntity, FeatureExtension } from "src/types/base-entity";
 

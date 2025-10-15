@@ -6,7 +6,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
 import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 // --- Supabase Auth Actions for Client Management ---
 export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {

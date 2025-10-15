@@ -10,7 +10,7 @@ import { usePopover } from 'src/hooks/use-popover';
 
 import { AccountPopover } from './account-popover';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
-import { TABLES } from 'src/config/tables';
+import { TABLES } from 'src/libs/supabase/tables';
 
 export const AccountButton: FC = () => {
 

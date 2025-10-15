@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { TABLES } from "src/config/tables";
+import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 
 export async function GET(request: Request) {
