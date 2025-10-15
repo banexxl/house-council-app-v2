@@ -20,6 +20,7 @@ import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { uploadClientImagesAndGetUrls } from "src/libs/supabase/sb-storage"
 import { useSignedUrl } from "src/hooks/use-signed-urls"
+import log from "src/utils/logger"
 
 type ImageUploadProps = {
      buttonDisabled: boolean
@@ -60,13 +61,13 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
           const actualPath = extractPathFromSignedUrl(initialValue || '');
           const shouldFetchSignedUrl = !!actualPath;
 
-          console.log('ImageUpload Debug:', {
+          log(`'ImageUpload Debug:', ${JSON.stringify({
                initialValue,
                actualPath,
                shouldFetchSignedUrl,
                userId,
                bucket
-          });
+          })}`);
 
           const { url, loading: isLoading } = useSignedUrl(
                shouldFetchSignedUrl ? bucket : '',

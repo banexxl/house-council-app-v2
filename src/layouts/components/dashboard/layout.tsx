@@ -29,22 +29,22 @@ export const Layout: FC<LayoutProps> = ((props) => {
           .from(TABLES.SUPER_ADMINS)
           .select('id')
           .eq('email', email)
-          .single(),
+          .limit(1),
         supabaseBrowserClient
           .from(TABLES.CLIENTS)
           .select('id')
           .eq('email', email)
-          .single(),
+          .limit(1),
         supabaseBrowserClient
           .from(TABLES.CLIENT_MEMBERS)
           .select('id')
           .eq('email', email)
-          .single(),
+          .limit(1),
         supabaseBrowserClient
           .from(TABLES.TENANTS)
           .select('id')
           .eq('email', email)
-          .single(),
+          .limit(1),
       ]);
 
       if (adminRes.data) {
@@ -67,7 +67,6 @@ export const Layout: FC<LayoutProps> = ((props) => {
 
     getRole();
   }, []);
-
   const sections = useSections(role);
 
   if (settings.layout === 'horizontal') {

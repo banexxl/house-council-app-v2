@@ -67,7 +67,7 @@ const useIsAdmin = () => {
         .from(TABLES.SUPER_ADMINS)
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .limit(1)
 
       setIsAdmin(!!admin);
 

@@ -34,6 +34,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { updateClientSubscriptionForClient } from 'src/app/actions/subscription-plan/subscription-plan-actions'
+import log from 'src/utils/logger'
 
 interface ClientNewFormProps {
   clientData?: Client
@@ -222,6 +223,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             buttonDisabled={initialValues?.id == '' ? true : false}
             ref={ImageUploadRef}
             onUploadSuccess={(url: string) => {
+              log('usao u onuploadsuccess')
               formik.setFieldValue('avatar', url)
               formik.setFieldTouched('avatar', true, false)
             }}
