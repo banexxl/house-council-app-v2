@@ -143,6 +143,7 @@ export const tokens = {
     filterSearchByName: 'common.filterSearchByName',
     filterSearchByAddress: 'common.filterSearchByAddress',
     editorStartTyping: 'common.editorStartTyping',
+    imageUploadRequirements: 'common.imageUploadRequirements',
   },
   account: {
     security: {

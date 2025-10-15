@@ -39,6 +39,7 @@ export const rs = {
      [tokens.account.security.twofaRequired]: '2FA je potrebna, ali nije pronađen validan faktor.',
      [tokens.account.security.noValidFactor]: 'Nije pronađen validan 2FA faktor.',
      [tokens.common.editorStartTyping]: 'Počnite da kucate...',
+     [tokens.common.imageUploadRequirements]: 'Min 400×400px, PNG ili JPEG',
      [tokens.account.security.loginHistoryTitle]: 'Istorija prijava',
      [tokens.account.security.loginHistorySubtitle]: 'Vaša nedavna aktivnost prijavljivanja',
      [tokens.account.security.loginHistoryTime]: 'Vreme',

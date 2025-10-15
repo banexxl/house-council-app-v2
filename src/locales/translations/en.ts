@@ -90,6 +90,7 @@ export const en = {
   [tokens.locations.loadingLocation]: 'Loading location...',
   [tokens.clients.clientUnassignedLocations]: 'Unassigned locations',
   [tokens.common.editorStartTyping]: 'Start typing...',
+  [tokens.common.imageUploadRequirements]: 'Min 400×400px, PNG or JPEG',
   // Settings Drawer
   [tokens.settings.drawer.title]: 'App Settings',
   [tokens.settings.colorPreset.label]: 'Primary Color',

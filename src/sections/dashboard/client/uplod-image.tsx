@@ -186,7 +186,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               Avatar
                          </Typography>
                          <Typography variant="body2" color="text.secondary">
-                              Min 400×400px, PNG or JPEG
+                              {t('common.imageUploadRequirements')}
                          </Typography>
                          <Button
                               variant="outlined"
