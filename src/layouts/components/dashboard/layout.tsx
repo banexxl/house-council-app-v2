@@ -8,6 +8,7 @@ import { HorizontalLayout } from './horizontal-layout';
 import { VerticalLayout } from './vertical-layout';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
+import log from 'src/utils/logger';
 
 interface LayoutProps {
   children?: ReactNode;
@@ -47,7 +48,7 @@ export const Layout: FC<LayoutProps> = ((props) => {
           .limit(1),
       ]);
 
-      if (adminRes.data) {
+      if (adminRes.data?.length! > 0) {
         setRole('admin');
         return;
       }
@@ -55,11 +56,11 @@ export const Layout: FC<LayoutProps> = ((props) => {
         setRole('client');
         return;
       }
-      if (clientMemberRes.data) {
+      if (clientMemberRes.data?.length! > 0) {
         setRole('clientMember');
         return;
       }
-      if (tenantRes.data) {
+      if (tenantRes.data?.length! > 0) {
         setRole('tenant');
         return;
       }
@@ -67,6 +68,7 @@ export const Layout: FC<LayoutProps> = ((props) => {
 
     getRole();
   }, []);
+  log(`role ${role}`)
   const sections = useSections(role);
 
   if (settings.layout === 'horizontal') {
