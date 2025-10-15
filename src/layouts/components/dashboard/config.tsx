@@ -193,14 +193,12 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.announcements),
         roles: ["admin", "client", "clientMember"],
+        path: paths.dashboard.announcements.index,
         icon: (
           <SvgIcon fontSize="small">
             <AnnouncementIcon />
           </SvgIcon>
         ),
-        items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.announcements.index, roles: ["admin", "client", "clientMember"] },
-        ],
       },
       {
         title: t(tokens.nav.calendar),
