@@ -68,6 +68,20 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
 
      const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
 
+     // Build lookup map for building addresses
+     const buildingMap = useMemo(() => {
+          const m = new Map<string, string>();
+          buildings.forEach(b => {
+               const loc = b.building_location;
+               if (loc) {
+                    const addr = `${loc.street_address || ''} ${loc.street_number || ''}`.trim();
+                    const city = loc.city || '';
+                    m.set(b.id, `${addr}${addr && city ? ', ' : ''}${city}`);
+               }
+          });
+          return m;
+     }, [buildings]);
+
      // Events for selected date
      const mergedEvents = useMemo(() => [...events, ...optimisticEvents], [events, optimisticEvents]);
      const dayEvents = useMemo(() => {
@@ -249,13 +263,15 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                                    {dayEvents.map(ev => {
                                         const start = new Date(ev.start_date_time);
                                         const end = new Date(ev.end_date_time);
+                                        const bAddr = ev.building_id ? buildingMap.get(ev.building_id) : null;
                                         return (
                                              <Box key={ev.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, cursor: 'pointer' }} onClick={() => handleOpenEditModal(ev)}>
                                                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                                                        <Typography variant="subtitle2" noWrap>{ev.title}</Typography>
                                                        <Chip size="small" label={EVENT_TYPE_META[ev.calendar_event_type || 'other'].label} sx={{ bgcolor: EVENT_TYPE_META[ev.calendar_event_type || 'other'].color, color: '#fff' }} />
                                                   </Stack>
-                                                  <Typography variant="caption" color="text.secondary">{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
+                                                  {bAddr && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{bAddr}</Typography>}
+                                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
                                                   {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }} noWrap>{ev.description}</Typography>}
                                              </Box>
                                         );
@@ -275,13 +291,15 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                               {dayEvents.map(ev => {
                                    const start = new Date(ev.start_date_time);
                                    const end = new Date(ev.end_date_time);
+                                   const bAddr = ev.building_id ? buildingMap.get(ev.building_id) : null;
                                    return (
                                         <Box key={ev.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, cursor: 'pointer' }} onClick={() => handleOpenEditModal(ev)}>
                                              <Stack direction="row" justifyContent="space-between" alignItems="center">
                                                   <Typography variant="subtitle2">{ev.title}</Typography>
                                                   <Chip size="small" label={EVENT_TYPE_META[ev.calendar_event_type || 'other'].label} sx={{ bgcolor: EVENT_TYPE_META[ev.calendar_event_type || 'other'].color, color: '#fff' }} />
                                              </Stack>
-                                             <Typography variant="caption" color="text.secondary">{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
+                                             {bAddr && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{bAddr}</Typography>}
+                                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
                                              {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }}>{ev.description}</Typography>}
                                         </Box>
                                    );
