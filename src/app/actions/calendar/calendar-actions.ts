@@ -3,37 +3,24 @@
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { TABLES } from "src/libs/supabase/tables";
 import { getViewer } from "src/libs/supabase/server-auth";
-import type { CalendarEvent } from "src/types/calendar";
-
-// Raw DB row type (matches Supabase column naming)
-interface CalendarEventRow {
-     id: string;
-     all_day: boolean;
-     description: string;
-     end_time: number;
-     start_time: number;
-     title: string;
-     client_id: string;
-     color?: string | null;
-     created_at?: string;
-     updated_at?: string;
-}
+import type { CalendarEvent, UpdateCalendarEventInput } from "src/types/calendar";
+import log from "src/utils/logger";
 
 // Map DB row -> CalendarEvent (keeps field names consistent across app)
-const mapRow = (r: CalendarEventRow): CalendarEvent => ({
+const mapRow = (r: CalendarEvent): CalendarEvent => ({
      id: r.id,
      all_day: r.all_day,
      description: r.description,
-     end_time: r.end_time,
-     start_time: r.start_time,
+     end_date_time: r.end_date_time,
+     start_date_time: r.start_date_time,
      title: r.title,
      client_id: r.client_id,
-     color: r.color || undefined,
+     calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
 });
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
-export async function getCalendarEvents(): Promise<ActionResult<CalendarEvent[]>> {
+export const getCalendarEvents = async (): Promise<ActionResult<CalendarEvent[]>> => {
      try {
           const { client, clientMember, tenant, admin } = await getViewer();
           let clientId: string | null = null;
@@ -48,7 +35,7 @@ export async function getCalendarEvents(): Promise<ActionResult<CalendarEvent[]>
           if (clientId && !admin) {
                query.eq("client_id", clientId);
           }
-          const { data, error } = await query.order("start_time", { ascending: true });
+          const { data, error } = await query.order("start_date_time", { ascending: true });
           if (error) return { success: false, error: error.message };
           return { success: true, data: (data || []).map(mapRow) };
      } catch (err: any) {
@@ -56,16 +43,7 @@ export async function getCalendarEvents(): Promise<ActionResult<CalendarEvent[]>
      }
 }
 
-interface CreateCalendarEventInput {
-     all_day: boolean;
-     description: string;
-     end_time: number;
-     start_time: number;
-     title: string;
-     color?: string;
-}
-
-export async function createCalendarEvent(input: CreateCalendarEventInput): Promise<ActionResult<CalendarEvent>> {
+export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionResult<CalendarEvent>> => {
      try {
           const { client, clientMember, admin } = await getViewer();
           const clientId = client?.id || clientMember?.client_id;
@@ -78,19 +56,17 @@ export async function createCalendarEvent(input: CreateCalendarEventInput): Prom
                .insert(payload)
                .select("*")
                .single();
+          log(`Creating calendar event with payload: ${JSON.stringify(payload)}`);
+          log(`data: ${JSON.stringify(data)}`);
+          log(`error: ${error?.message ?? ""}`);
           if (error || !data) return { success: false, error: error?.message || "Insert failed" };
-          return { success: true, data: mapRow(data as CalendarEventRow) };
+          return { success: true, data: mapRow(data as CalendarEvent) };
      } catch (err: any) {
           return { success: false, error: err.message || "Unexpected error" };
      }
 }
 
-interface UpdateCalendarEventInput {
-     eventId: string;
-     update: Partial<Pick<CalendarEvent, 'all_day' | 'description' | 'end_time' | 'start_time' | 'title' | 'color'>>;
-}
-
-export async function updateCalendarEvent({ eventId, update }: UpdateCalendarEventInput): Promise<ActionResult<CalendarEvent>> {
+export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEventInput): Promise<ActionResult<CalendarEvent>> => {
      try {
           const { client, clientMember, admin } = await getViewer();
           const clientId = client?.id || clientMember?.client_id;
@@ -113,13 +89,13 @@ export async function updateCalendarEvent({ eventId, update }: UpdateCalendarEve
                .select('*')
                .single();
           if (error || !data) return { success: false, error: error?.message || 'Update failed' };
-          return { success: true, data: mapRow(data as CalendarEventRow) };
+          return { success: true, data: mapRow(data as CalendarEvent) };
      } catch (err: any) {
           return { success: false, error: err.message || 'Unexpected error' };
      }
 }
 
-export async function deleteCalendarEvent(eventId: string): Promise<ActionResult<{ id: string }>> {
+export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult<{ id: string }>> => {
      try {
           const { client, clientMember, admin } = await getViewer();
           const clientId = client?.id || clientMember?.client_id;

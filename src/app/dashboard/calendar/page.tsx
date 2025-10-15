@@ -4,13 +4,16 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
 import { Seo } from 'src/components/seo';
-import CalendarClient from './calendar';
+import CalendarClient, { CalendarClientProps } from './calendar';
 import { getCalendarEvents } from 'src/app/actions/calendar/calendar-actions';
+import { getViewer } from 'src/libs/supabase/server-auth';
 import type { CalendarEvent } from 'src/types/calendar';
 
 const Page = async () => {
   const result = await getCalendarEvents();
   const events: CalendarEvent[] = result.success ? result.data : [];
+  const { client, clientMember, tenant, admin } = await getViewer();
+  const clientId = client ? client.id : clientMember ? clientMember.client_id : null;
 
 
 
@@ -26,7 +29,7 @@ const Page = async () => {
       >
         <Container maxWidth="xl">
           <Card sx={{ p: 2 }}>
-            <CalendarClient initialEvents={events} />
+            <CalendarClient initialEvents={events} clientId={clientId} isTenant={!!tenant && !admin} isAdmin={!!admin} />
           </Card>
         </Container>
       </Box>

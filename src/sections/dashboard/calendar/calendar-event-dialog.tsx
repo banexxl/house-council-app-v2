@@ -44,8 +44,8 @@ const useInitialValues = (
         allDay: event.all_day || false,
         color: event.color || '',
         description: event.description || '',
-        end: event.end_time ? new Date(event.end_time) : addMinutes(new Date(), 30),
-        start: event.start_time ? new Date(event.start_time) : new Date(),
+        end: event.end_date_time ? new Date(event.end_date_time) : addMinutes(new Date(), 30),
+        start: event.start_date_time ? new Date(event.start_date_time) : new Date(),
         title: event.title || '',
         submit: null,
       };
