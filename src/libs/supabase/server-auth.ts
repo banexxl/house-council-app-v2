@@ -55,7 +55,7 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
           maybeSingle(db.from(TABLES.CLIENTS).select('*').eq('user_id', user.id)),
           maybeSingle(db.from(TABLES.CLIENT_MEMBERS).select('*').eq('user_id', user.id)),
           maybeSingle(db.from(TABLES.TENANTS).select('*').eq('user_id', user.id)),
-          maybeSingle(db.from(TABLES.SUPER_ADMIN).select('*').eq('user_id', user.id)),
+          maybeSingle(db.from(TABLES.SUPER_ADMINS).select('*').eq('user_id', user.id)),
      ]).catch((err) => {
           return [null, null, null, null] as const;
      });

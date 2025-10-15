@@ -64,7 +64,7 @@ const useIsAdmin = () => {
         return;
       }
       const { data: admin } = await supabaseBrowserClient
-        .from(TABLES.SUPER_ADMIN)
+        .from(TABLES.SUPER_ADMINS)
         .select("id")
         .eq("user_id", user.id)
         .single();

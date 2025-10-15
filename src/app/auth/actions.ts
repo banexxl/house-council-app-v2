@@ -32,7 +32,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
 
      // 1. Check tblSuperAdmins
      const { data: admin, error: adminError } = await supabase
-          .from(TABLES.SUPER_ADMIN)
+          .from(TABLES.SUPER_ADMINS)
           .select('id')
           .eq('email', email)
           .single();
@@ -217,7 +217,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
      // 1. Check tblSuperAdmins
      const { data: admin, error: adminError } = await supabase
-          .from(TABLES.SUPER_ADMIN)
+          .from(TABLES.SUPER_ADMINS)
           .select('id')
           .eq('email', values.email)
           .single();

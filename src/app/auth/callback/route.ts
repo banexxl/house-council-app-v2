@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       userId = tenant.id;
     } else {
       const { data: admin, error: adminError } = await supabase
-        .from(TABLES.SUPER_ADMIN)
+        .from(TABLES.SUPER_ADMINS)
         .select("id")
         .eq("email", userEmail)
         .single();
