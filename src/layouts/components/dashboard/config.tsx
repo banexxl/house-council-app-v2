@@ -212,27 +212,27 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
       },
-      {
-        title: t(tokens.nav.analytics),
-        path: paths.dashboard.analytics,
-        roles: ["admin", "client"],
-        icon: (
-          <SvgIcon fontSize="small">
-            <BarChartSquare02Icon />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: t(tokens.nav.crypto),
-        path: paths.dashboard.crypto,
-        roles: ["admin", "client"],
-        icon: (
-          <SvgIcon fontSize="small">
-            <CurrencyBitcoinCircleIcon />
-          </SvgIcon>
-        ),
-        label: <Chip color="primary" label="New" size="small" />,
-      },
+      // {
+      //   title: t(tokens.nav.analytics),
+      //   path: paths.dashboard.analytics,
+      //   roles: ["admin", "client"],
+      //   icon: (
+      //     <SvgIcon fontSize="small">
+      //       <BarChartSquare02Icon />
+      //     </SvgIcon>
+      //   ),
+      // },
+      // {
+      //   title: t(tokens.nav.crypto),
+      //   path: paths.dashboard.crypto,
+      //   roles: ["admin", "client"],
+      //   icon: (
+      //     <SvgIcon fontSize="small">
+      //       <CurrencyBitcoinCircleIcon />
+      //     </SvgIcon>
+      //   ),
+      //   label: <Chip color="primary" label="New" size="small" />,
+      // },
     ],
   },
 

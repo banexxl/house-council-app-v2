@@ -1,11 +1,12 @@
 export interface CalendarEvent {
   id: string;
-  allDay: boolean;
+  all_day: boolean;
   color?: string;
   description: string;
-  end: number;
-  start: number;
+  end_time: number;
+  start_time: number;
   title: string;
+  client_id: string;
 }
 
 export type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';

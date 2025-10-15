@@ -41,11 +41,11 @@ const useInitialValues = (
   return useMemo((): Values => {
     if (event) {
       return {
-        allDay: event.allDay || false,
+        allDay: event.all_day || false,
         color: event.color || '',
         description: event.description || '',
-        end: event.end ? new Date(event.end) : addMinutes(new Date(), 30),
-        start: event.start ? new Date(event.start) : new Date(),
+        end: event.end_time ? new Date(event.end_time) : addMinutes(new Date(), 30),
+        start: event.start_time ? new Date(event.start_time) : new Date(),
         title: event.title || '',
         submit: null,
       };
