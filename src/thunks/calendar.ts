@@ -1,7 +1,8 @@
 import { slice } from 'src/slices/calendar';
 import type { AppThunk } from 'src/store';
 import { getCalendarEvents, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from 'src/app/actions/calendar/calendar-actions';
-import type { CalendarEvent, EventType } from 'src/types/calendar';
+import type { CalendarEvent, EventType, UpdateCalendarEventInput } from 'src/types/calendar';
+import log from 'src/utils/logger';
 
 const getEvents = (): AppThunk => async (dispatch): Promise<void> => {
      const result = await getCalendarEvents();
@@ -9,7 +10,7 @@ const getEvents = (): AppThunk => async (dispatch): Promise<void> => {
           dispatch(slice.actions.getEvents(result.data));
      } else {
           // Optionally dispatch an error slice or log
-          console.error('Failed to fetch calendar events:', result.error);
+          log('Failed to fetch calendar events:', 'error');
      }
 };
 
@@ -23,37 +24,22 @@ const createEvent = (params: CreateEventInput): AppThunk => async (dispatch): Pr
           start_date_time: params.start_date_time,
           title: params.title,
           calendar_event_type: params.calendar_event_type,
-          // id & client_id assigned server-side
-          id: '' as any,
-          client_id: '' as any,
      } as CalendarEvent);
      if (result.success) {
           dispatch(slice.actions.createEvent(result.data));
      } else {
-          console.error('Failed to create calendar event:', result.error);
+          log(`Failed to create calendar event: ${result.error}`, 'error');
      }
 };
 
-type UpdateEventParams = {
-     eventId: string;
-     update: {
-          allDay?: boolean;
-          description?: string;
-          end?: number;
-          start?: number;
-          title?: string;
-          calendar_event_type?: EventType;
-     };
-};
-
-const updateEvent = (params: UpdateEventParams): AppThunk => async (dispatch): Promise<void> => {
+const updateEvent = (params: UpdateCalendarEventInput): AppThunk => async (dispatch): Promise<void> => {
      const result = await updateCalendarEvent({
           eventId: params.eventId,
           update: {
-               all_day: params.update.allDay,
+               all_day: params.update.all_day,
                description: params.update.description,
-               end_date_time: params.update.end,
-               start_date_time: params.update.start,
+               end_date_time: params.update.end_date_time,
+               start_date_time: params.update.start_date_time,
                title: params.update.title,
                calendar_event_type: params.update.calendar_event_type,
           },
@@ -61,7 +47,7 @@ const updateEvent = (params: UpdateEventParams): AppThunk => async (dispatch): P
      if (result.success) {
           dispatch(slice.actions.updateEvent(result.data));
      } else {
-          console.error('Failed to update calendar event:', result.error);
+          log(`Failed to update calendar event: ${result.error}`, 'error');
      }
 };
 

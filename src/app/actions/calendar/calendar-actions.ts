@@ -6,13 +6,13 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import type { CalendarEvent, UpdateCalendarEventInput } from "src/types/calendar";
 import log from "src/utils/logger";
 
-// Map DB row -> CalendarEvent (keeps field names consistent across app)
-const mapRow = (r: CalendarEvent): CalendarEvent => ({
+// Map DB row -> CalendarEvent converting timestamptz strings into epoch ms numbers
+const mapRow = (r: any): CalendarEvent => ({
      id: r.id,
      all_day: r.all_day,
      description: r.description,
-     end_date_time: r.end_date_time,
-     start_date_time: r.start_date_time,
+     end_date_time: typeof r.end_date_time === 'string' ? Date.parse(r.end_date_time) : r.end_date_time,
+     start_date_time: typeof r.start_date_time === 'string' ? Date.parse(r.start_date_time) : r.start_date_time,
      title: r.title,
      client_id: r.client_id,
      calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
@@ -49,7 +49,13 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
           const clientId = client?.id || clientMember?.client_id;
           if (!clientId && !admin) return { success: false, error: "Unauthorized" };
 
-          const payload = { ...input, client_id: clientId };
+          const payload = {
+               ...input,
+               client_id: clientId,
+               // Ensure timestamptz columns receive ISO8601 strings
+               start_date_time: new Date(input.start_date_time).toISOString(),
+               end_date_time: new Date(input.end_date_time).toISOString(),
+          };
           const supabase = await useServerSideSupabaseAnonClient();
           const { data, error } = await supabase
                .from(TABLES.CALENDAR_EVENTS)
@@ -82,9 +88,16 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
           if (ownerErr) return { success: false, error: ownerErr.message };
           if (!admin && ownerRow?.client_id !== clientId) return { success: false, error: 'Forbidden' };
 
+          const normalizedUpdate: any = { ...update };
+          if (typeof normalizedUpdate.start_date_time === 'number') {
+               normalizedUpdate.start_date_time = new Date(normalizedUpdate.start_date_time).toISOString();
+          }
+          if (typeof normalizedUpdate.end_date_time === 'number') {
+               normalizedUpdate.end_date_time = new Date(normalizedUpdate.end_date_time).toISOString();
+          }
           const { data, error } = await supabase
                .from(TABLES.CALENDAR_EVENTS)
-               .update(update)
+               .update(normalizedUpdate)
                .eq('id', eventId)
                .select('*')
                .single();

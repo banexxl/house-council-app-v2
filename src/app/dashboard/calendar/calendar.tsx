@@ -6,6 +6,13 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import Tooltip from '@mui/material/Tooltip';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import TodayIcon from '@mui/icons-material/Today';
+import AddIcon from '@mui/icons-material/Add';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -51,6 +58,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
      const [formType, setFormType] = useState<EventType>('meeting');
      const [formStartTime, setFormStartTime] = useState('09:00');
      const [formEndTime, setFormEndTime] = useState('10:00');
+     const [timeError, setTimeError] = useState<string | null>(null);
 
      // Initial fetch
      useEffect(() => { if (!events || events.length === 0) (dispatch as any)(thunks.getEvents()); }, []); // eslint-disable-line
@@ -82,7 +90,11 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
           setViewMonth(today.getMonth());
           setSelectedDate(today);
      };
-     const handleSelectDay = (day: Date) => { setSelectedDate(day); };
+     const handleSelectDay = (day: Date) => {
+          const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+          if (day < todayStart) return; // forbid selecting past dates for new events
+          setSelectedDate(day);
+     };
 
      const readOnly = isTenant && !isAdmin;
      const effectiveClientId = clientId || 'client';
@@ -109,7 +121,10 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
           const [eh, em] = formEndTime.split(':').map(Number);
           const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), sh, sm).getTime();
           const end = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), eh, em).getTime();
-          if (end <= start) return; // basic guard
+          setTimeError(null);
+          if (end <= start) { setTimeError('End time must be after start time'); return; }
+          // Disallow creating events in the past (only for new events)
+          if (!editingEventId && start < Date.now()) { setTimeError('Start time is in the past'); return; }
           if (readOnly) return;
           if (!editingEventId) {
                setCreating(true);
@@ -141,10 +156,10 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                await (dispatch as any)(thunks.updateEvent({
                     eventId: editingEventId,
                     update: {
-                         allDay: false,
+                         all_day: false,
                          description: formDescription,
-                         end,
-                         start,
+                         end_date_time: end,
+                         start_date_time: start,
                          title: formTitle,
                          calendar_event_type: formType,
                     },
@@ -152,7 +167,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                setCreating(false);
           }
           // Reset and close
-          setFormTitle(''); setFormDescription(''); setFormType('meeting'); setFormStartTime('09:00'); setFormEndTime('10:00');
+          setFormTitle(''); setFormDescription(''); setFormType('meeting'); setFormStartTime('09:00'); setFormEndTime('10:00'); setTimeError(null);
           handleCloseModal();
      };
 
@@ -170,15 +185,32 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
      return (
           <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
                {/* Left: Calendar grid */}
-               <Card sx={{ flex: 3, p: 2 }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                         <Typography variant="h5">Calendar</Typography>
-                         <Stack direction="row" spacing={1}>
-                              <Button variant="outlined" onClick={handlePrevMonth}>Prev</Button>
-                              <Button variant="outlined" onClick={handleToday}>Today</Button>
-                              <Button variant="outlined" onClick={handleNextMonth}>Next</Button>
-                              {!readOnly && <Button variant="contained" onClick={handleOpenCreateModal}>Add Event</Button>}
-                         </Stack>
+               <Card sx={{ flex: 3, p: { xs: 1.5, md: 2 } }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: { xs: 1.5, md: 2 } }}>
+                         <Typography variant={mdDown ? 'h6' : 'h5'}>Calendar</Typography>
+                         {mdDown ? (
+                              <Stack direction="row" spacing={0.5} alignItems="center">
+                                   <Tooltip title="Previous Month"><span><IconButton size="small" onClick={handlePrevMonth}><ChevronLeftIcon fontSize="small" /></IconButton></span></Tooltip>
+                                   <Tooltip title="Today"><span><IconButton size="small" onClick={handleToday}><TodayIcon fontSize="small" /></IconButton></span></Tooltip>
+                                   <Tooltip title="Next Month"><span><IconButton size="small" onClick={handleNextMonth}><ChevronRightIcon fontSize="small" /></IconButton></span></Tooltip>
+                                   {!readOnly && (
+                                        <Tooltip title="Add Event">
+                                             <span>
+                                                  <IconButton size="small" color="primary" onClick={handleOpenCreateModal}>
+                                                       <AddIcon fontSize="small" />
+                                                  </IconButton>
+                                             </span>
+                                        </Tooltip>
+                                   )}
+                              </Stack>
+                         ) : (
+                              <Stack direction="row" spacing={1}>
+                                   <Button variant="outlined" onClick={handlePrevMonth}>Prev</Button>
+                                   <Button variant="outlined" onClick={handleToday}>Today</Button>
+                                   <Button variant="outlined" onClick={handleNextMonth}>Next</Button>
+                                   {!readOnly && <Button variant="contained" onClick={handleOpenCreateModal}>Add Event</Button>}
+                              </Stack>
+                         )}
                     </Stack>
                     <Typography variant="subtitle2" sx={{ mb: 1 }}>{new Date(viewYear, viewMonth).toLocaleString(undefined, { month: 'long', year: 'numeric' })}</Typography>
                     <MonthGrid
@@ -189,6 +221,31 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                          onSelectDate={handleSelectDay}
                          eventTypeMeta={EVENT_TYPE_META}
                     />
+                    {/* Mobile events list (below grid) */}
+                    {mdDown && (
+                         <Box sx={{ mt: 2 }}>
+                              <Typography variant="subtitle1" gutterBottom>Events on {selectedDate.toLocaleDateString()}</Typography>
+                              <Divider sx={{ mb: 1.5 }} />
+                              {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">No events</Typography>}
+                              {creating && <Typography variant="caption" color="primary.main">Creating event...</Typography>}
+                              <Stack spacing={1}>
+                                   {dayEvents.map(ev => {
+                                        const start = new Date(ev.start_date_time);
+                                        const end = new Date(ev.end_date_time);
+                                        return (
+                                             <Box key={ev.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, cursor: 'pointer' }} onClick={() => handleOpenEditModal(ev)}>
+                                                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                                       <Typography variant="subtitle2" noWrap>{ev.title}</Typography>
+                                                       <Chip size="small" label={EVENT_TYPE_META[ev.calendar_event_type || 'other'].label} sx={{ bgcolor: EVENT_TYPE_META[ev.calendar_event_type || 'other'].color, color: '#fff' }} />
+                                                  </Stack>
+                                                  <Typography variant="caption" color="text.secondary">{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
+                                                  {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }} noWrap>{ev.description}</Typography>}
+                                             </Box>
+                                        );
+                                   })}
+                              </Stack>
+                         </Box>
+                    )}
                </Card>
                {/* Right: Selected day events (hidden below md) */}
                {showRightPanel && (
@@ -215,6 +272,11 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                          </Stack>
                     </Card>
                )}
+               {!readOnly && mdDown && (
+                    <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: (theme) => theme.zIndex.fab }} onClick={handleOpenCreateModal} aria-label="Add Event">
+                         <AddIcon />
+                    </Fab>
+               )}
                {/* Modal for adding event */}
                <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
                     <DialogTitle>{editingEventId ? 'Edit Event' : 'Add Event'}</DialogTitle>
@@ -224,8 +286,8 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                               <TextField label="Title" value={formTitle} onChange={e => setFormTitle(e.target.value)} fullWidth />
                               <TextField label="Description" value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
                               <Stack direction="row" spacing={2}>
-                                   <TextField label="Start Time" type="time" value={formStartTime} onChange={e => setFormStartTime(e.target.value)} inputProps={{ step: 300 }} fullWidth />
-                                   <TextField label="End Time" type="time" value={formEndTime} onChange={e => setFormEndTime(e.target.value)} inputProps={{ step: 300 }} fullWidth />
+                                   <TextField label="Start Time" type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); }} inputProps={{ step: 300 }} fullWidth error={!!timeError} helperText={timeError || ''} />
+                                   <TextField label="End Time" type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); }} inputProps={{ step: 300 }} fullWidth error={!!timeError} />
                               </Stack>
                               <TextField select label="Event Type" value={formType} onChange={e => setFormType(e.target.value as EventType)} fullWidth>
                                    {Object.entries(EVENT_TYPE_META).map(([key, meta]) => (

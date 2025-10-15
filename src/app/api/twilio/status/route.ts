@@ -58,7 +58,7 @@ export async function POST(req: Request) {
               }, { onConflict: 'sid' });
       
             if (error) {
-              console.error('[twilio-status] DB upsert error:', error.message);
+              log('[twilio-status] DB upsert error:', 'error);
             }
           }
           */

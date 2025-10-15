@@ -25,6 +25,7 @@ import { paths } from 'src/paths';
 import { PostNewsletter } from 'src/sections/dashboard/blog/post-newsletter';
 import { PostCard } from 'src/sections/dashboard/blog/post-card';
 import type { Post } from 'src/types/blog';
+import log from 'src/utils/logger';
 
 const usePosts = (): Post[] => {
 
@@ -38,7 +39,7 @@ const usePosts = (): Post[] => {
       setPosts(response);
 
     } catch (err) {
-      console.error(err);
+      log(`Failed to fetch posts: ${err}`, 'error');
     }
   }, []);
 

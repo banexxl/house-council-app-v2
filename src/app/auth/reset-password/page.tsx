@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { logout } from "src/app/auth/actions";
 import { useRouter } from "next/navigation";
 import { sendPasswordRecoveryEmail } from "src/app/actions/client/client-actions";
+import log from "src/utils/logger";
 
 
 export default function TenantPasswordResetPage() {
@@ -108,7 +109,7 @@ export default function TenantPasswordResetPage() {
                await logout();
                router.push('/auth/login');
           } catch (error) {
-               console.error('Logout failed:', error);
+               log(`Logout failed: ${error}`, 'error');
                // Navigate anyway even if logout fails
                router.push('/auth/login');
           } finally {
