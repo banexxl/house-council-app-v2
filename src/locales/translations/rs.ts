@@ -38,6 +38,7 @@ export const rs = {
      [tokens.account.security.qrCodeAlt]: '2FA QR kod',
      [tokens.account.security.twofaRequired]: '2FA je potrebna, ali nije pronađen validan faktor.',
      [tokens.account.security.noValidFactor]: 'Nije pronađen validan 2FA faktor.',
+     [tokens.common.editorStartTyping]: 'Počnite da kucate...',
      [tokens.account.security.loginHistoryTitle]: 'Istorija prijava',
      [tokens.account.security.loginHistorySubtitle]: 'Vaša nedavna aktivnost prijavljivanja',
      [tokens.account.security.loginHistoryTime]: 'Vreme',

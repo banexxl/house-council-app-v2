@@ -89,6 +89,7 @@ export const en = {
   [tokens.account.deleteAccountSuccess]: 'Account deleted successfully.',
   [tokens.locations.loadingLocation]: 'Loading location...',
   [tokens.clients.clientUnassignedLocations]: 'Unassigned locations',
+  [tokens.common.editorStartTyping]: 'Start typing...',
   // Settings Drawer
   [tokens.settings.drawer.title]: 'App Settings',
   [tokens.settings.colorPreset.label]: 'Primary Color',

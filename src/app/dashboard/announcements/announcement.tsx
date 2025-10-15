@@ -615,15 +615,19 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                                       size="small"
                                                                  />
                                                             )}
-                                                            renderOption={(props, option, { selected }) => (
-                                                                 <li {...props} key={option.id} style={{ display: 'flex', alignItems: 'center' }}>
-                                                                      <Checkbox
-                                                                           checked={selected}
-                                                                           style={{ marginRight: 8 }}
-                                                                      />
-                                                                      <Typography variant="body2" noWrap>{option.label}</Typography>
-                                                                 </li>
-                                                            )}
+                                                            renderOption={(props, option, { selected }) => {
+                                                                 // Extract key so it isn't spread (React warns if key is inside spread object)
+                                                                 const { key, ...rest } = props as any;
+                                                                 return (
+                                                                      <li key={key} {...rest} data-id={option.id} style={{ display: 'flex', alignItems: 'center' }}>
+                                                                           <Checkbox
+                                                                                checked={selected}
+                                                                                style={{ marginRight: 8 }}
+                                                                           />
+                                                                           <Typography variant="body2" noWrap>{option.label}</Typography>
+                                                                      </li>
+                                                                 );
+                                                            }}
                                                             slotProps={{
                                                                  listbox: { sx: { maxHeight: 5 * 40, overflowY: 'auto' } },
                                                                  popper: { sx: { '& .MuiAutocomplete-paper': { maxWidth: 400 } } },

@@ -37,6 +37,7 @@ export const de = {
   [tokens.account.security.noValidFactor]: 'Kein gültiger 2FA-Faktor gefunden.',
   [tokens.account.security.loginHistoryTitle]: 'Anmeldeverlauf',
   [tokens.account.security.loginHistorySubtitle]: 'Ihre letzten Anmeldeaktivitäten',
+  [tokens.common.editorStartTyping]: 'Beginnen Sie zu tippen...',
   [tokens.account.security.loginHistoryTime]: 'Zeit',
   // Settings Drawer
   [tokens.settings.drawer.title]: 'App-Einstellungen',

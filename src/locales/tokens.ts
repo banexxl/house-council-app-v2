@@ -142,6 +142,7 @@ export const tokens = {
     tableFilterNoFilterSelected: 'common.tableFilterNoFilterSelected',
     filterSearchByName: 'common.filterSearchByName',
     filterSearchByAddress: 'common.filterSearchByAddress',
+    editorStartTyping: 'common.editorStartTyping',
   },
   account: {
     security: {

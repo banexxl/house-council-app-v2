@@ -37,6 +37,7 @@ export const es = {
   [tokens.account.security.noValidFactor]: 'No se encontró un factor 2FA válido.',
   [tokens.account.security.loginHistoryTitle]: 'Historial de inicio de sesión',
   [tokens.account.security.loginHistorySubtitle]: 'Tu actividad de inicio de sesión reciente',
+  [tokens.common.editorStartTyping]: 'Empieza a escribir...',
   [tokens.account.security.loginHistoryTime]: 'Hora',
   // Settings Drawer
   [tokens.settings.drawer.title]: 'Configuración de la aplicación',

@@ -2,6 +2,8 @@ import React, { forwardRef, useImperativeHandle, useEffect, useRef } from 'react
 import { useQuill } from 'react-quilljs'
 import 'quill/dist/quill.snow.css'
 import Box from '@mui/material/Box'
+import { useTranslation } from 'react-i18next'
+import { tokens } from 'src/locales/tokens'
 
 interface QuillEditorProps {
   placeholder?: string
@@ -19,6 +21,7 @@ export interface QuillEditorRef {
 
 const QuillEditor = forwardRef<QuillEditorRef, QuillEditorProps>(
   ({ placeholder, onChange, onBlur, value }, ref) => {
+    const { t } = useTranslation()
     const { quill, quillRef } = useQuill({
       modules: {
         toolbar: [
@@ -28,7 +31,7 @@ const QuillEditor = forwardRef<QuillEditorRef, QuillEditorProps>(
           ['clean'],
         ],
       },
-      placeholder: placeholder || 'Start typing...',
+      placeholder: placeholder || t(tokens.common.editorStartTyping),
     })
 
     useImperativeHandle(ref, () => ({
