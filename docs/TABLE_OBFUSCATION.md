@@ -12,7 +12,7 @@ Your `.env` file should contain all the table name mappings:
 
 ```bash
 # Core entities
-NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMIN="tblSuperAdmins"
+NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMINS="tblSuperAdmins"
 NEXT_PUBLIC_SUPABASE_TBL_CLIENTS="tblClients"
 NEXT_PUBLIC_SUPABASE_TBL_CLIENT_MEMBERS="tblClientMembers"
 NEXT_PUBLIC_SUPABASE_TBL_TENANTS="tblTenants"

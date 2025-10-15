@@ -6,7 +6,7 @@
 import log from "src/utils/logger";
 
 // Mock the process.env for testing
-process.env.NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMIN = "tblSuperAdmins";
+process.env.NEXT_PUBLIC_SUPABASE_TBL_SUPER_ADMINS = "tblSuperAdmins";
 process.env.NEXT_PUBLIC_SUPABASE_TBL_CLIENTS = "tblClients";
 process.env.NEXT_PUBLIC_SUPABASE_TBL_CLIENT_MEMBERS = "tblClientMembers";
 process.env.NEXT_PUBLIC_SUPABASE_TBL_TENANTS = "tblTenants";
