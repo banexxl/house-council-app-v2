@@ -25,6 +25,8 @@ import Chip from '@mui/material/Chip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles';
 import MonthGrid from './month-grid';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 import { useDispatch, useSelector } from 'react-redux';
 import { thunks } from 'src/thunks/calendar';
 import type { CalendarEvent, EventType } from 'src/types/calendar';
@@ -32,18 +34,27 @@ import type { Building } from 'src/types/building';
 
 export interface CalendarClientProps { initialEvents: CalendarEvent[]; clientId: string | null; isTenant: boolean; isAdmin: boolean; buildings?: Building[]; }
 
-// Colors for event types
-const EVENT_TYPE_META: Record<EventType, { label: string; color: string }> = {
-     appointment: { label: 'Appointment', color: '#1976d2' },
-     meeting: { label: 'Meeting', color: '#9c27b0' },
-     reminder: { label: 'Reminder', color: '#ff9800' },
-     task: { label: 'Task', color: '#2e7d32' },
-     holiday: { label: 'Holiday', color: '#d32f2f' },
-     other: { label: 'Other', color: '#607d8b' },
+// Colors for event types (labels translated dynamically)
+const BASE_EVENT_TYPE_META: Record<EventType, { color: string }> = {
+     appointment: { color: '#1976d2' },
+     meeting: { color: '#9c27b0' },
+     reminder: { color: '#ff9800' },
+     task: { color: '#2e7d32' },
+     holiday: { color: '#d32f2f' },
+     other: { color: '#607d8b' },
 };
 
 
 export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, buildings = [] }: CalendarClientProps) => {
+     const { t } = useTranslation();
+     const EVENT_TYPE_META: Record<EventType, { label: string; color: string }> = useMemo(() => ({
+          appointment: { label: t(tokens.calendar.types.appointment), color: BASE_EVENT_TYPE_META.appointment.color },
+          meeting: { label: t(tokens.calendar.types.meeting), color: BASE_EVENT_TYPE_META.meeting.color },
+          reminder: { label: t(tokens.calendar.types.reminder), color: BASE_EVENT_TYPE_META.reminder.color },
+          task: { label: t(tokens.calendar.types.task), color: BASE_EVENT_TYPE_META.task.color },
+          holiday: { label: t(tokens.calendar.types.holiday), color: BASE_EVENT_TYPE_META.holiday.color },
+          other: { label: t(tokens.calendar.types.other), color: BASE_EVENT_TYPE_META.other.color },
+     }), [t]);
      const dispatch = useDispatch();
      const events = useSelector((state: any) => state.calendar.events) as CalendarEvent[];
      const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -136,11 +147,11 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      const handleSubmit = async () => {
           // Basic field presence validation
           const newErrors: typeof errors = {};
-          if (!formTitle.trim()) newErrors.title = 'Title is required';
-          if (!formStartTime) newErrors.start = 'Start time required';
-          if (!formEndTime) newErrors.end = 'End time required';
-          if (!formType) newErrors.type = 'Event type required';
-          if (!formBuildingId) newErrors.building = 'Building is required';
+          if (!formTitle.trim()) newErrors.title = t(tokens.calendar.validation.titleRequired);
+          if (!formStartTime) newErrors.start = t(tokens.calendar.validation.startRequired);
+          if (!formEndTime) newErrors.end = t(tokens.calendar.validation.endRequired);
+          if (!formType) newErrors.type = t(tokens.calendar.validation.typeRequired);
+          if (!formBuildingId) newErrors.building = t(tokens.calendar.validation.buildingRequired);
 
           setErrors(newErrors);
           if (Object.keys(newErrors).length > 0) return;
@@ -150,9 +161,9 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
           const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), sh, sm).getTime();
           const end = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), eh, em).getTime();
           setTimeError(null);
-          if (end <= start) { setTimeError('End time must be after start time'); return; }
+          if (end <= start) { setTimeError(t(tokens.calendar.validation.endAfterStart)); return; }
           // Disallow creating events in the past (only for new events)
-          if (!editingEventId && start < Date.now()) { setTimeError('Start time is in the past'); return; }
+          if (!editingEventId && start < Date.now()) { setTimeError(t(tokens.calendar.validation.startInPast)); return; }
           if (readOnly) return;
           if (!editingEventId) {
                setCreating(true);
@@ -218,14 +229,14 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                {/* Left: Calendar grid */}
                <Card sx={{ flex: 3, p: { xs: 1.5, md: 2 } }}>
                     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: { xs: 1.5, md: 2 } }}>
-                         <Typography variant={mdDown ? 'h6' : 'h5'}>Calendar</Typography>
+                         <Typography variant={mdDown ? 'h6' : 'h5'}>{t(tokens.calendar.title)}</Typography>
                          {mdDown ? (
                               <Stack direction="row" spacing={0.5} alignItems="center">
-                                   <Tooltip title="Previous Month"><span><IconButton size="small" onClick={handlePrevMonth}><ChevronLeftIcon fontSize="small" /></IconButton></span></Tooltip>
-                                   <Tooltip title="Today"><span><IconButton size="small" onClick={handleToday}><TodayIcon fontSize="small" /></IconButton></span></Tooltip>
-                                   <Tooltip title="Next Month"><span><IconButton size="small" onClick={handleNextMonth}><ChevronRightIcon fontSize="small" /></IconButton></span></Tooltip>
+                                   <Tooltip title={t(tokens.calendar.prev)}><span><IconButton size="small" onClick={handlePrevMonth}><ChevronLeftIcon fontSize="small" /></IconButton></span></Tooltip>
+                                   <Tooltip title={t(tokens.calendar.today)}><span><IconButton size="small" onClick={handleToday}><TodayIcon fontSize="small" /></IconButton></span></Tooltip>
+                                   <Tooltip title={t(tokens.calendar.next)}><span><IconButton size="small" onClick={handleNextMonth}><ChevronRightIcon fontSize="small" /></IconButton></span></Tooltip>
                                    {!readOnly && (
-                                        <Tooltip title="Add Event">
+                                        <Tooltip title={t(tokens.calendar.addEvent)}>
                                              <span>
                                                   <IconButton size="small" color="primary" onClick={handleOpenCreateModal}>
                                                        <AddIcon fontSize="small" />
@@ -236,10 +247,10 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                               </Stack>
                          ) : (
                               <Stack direction="row" spacing={1}>
-                                   <Button variant="outlined" onClick={handlePrevMonth}>Prev</Button>
-                                   <Button variant="outlined" onClick={handleToday}>Today</Button>
-                                   <Button variant="outlined" onClick={handleNextMonth}>Next</Button>
-                                   {!readOnly && <Button variant="contained" onClick={handleOpenCreateModal}>Add Event</Button>}
+                                   <Button variant="outlined" onClick={handlePrevMonth}>{t(tokens.calendar.prev)}</Button>
+                                   <Button variant="outlined" onClick={handleToday}>{t(tokens.calendar.today)}</Button>
+                                   <Button variant="outlined" onClick={handleNextMonth}>{t(tokens.calendar.next)}</Button>
+                                   {!readOnly && <Button variant="contained" onClick={handleOpenCreateModal}>{t(tokens.calendar.addEvent)}</Button>}
                               </Stack>
                          )}
                     </Stack>
@@ -255,10 +266,10 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     {/* Mobile events list (below grid) */}
                     {mdDown && (
                          <Box sx={{ mt: 2 }}>
-                              <Typography variant="subtitle1" gutterBottom>Events on {selectedDate.toLocaleDateString()}</Typography>
+                              <Typography variant="subtitle1" gutterBottom>{t(tokens.calendar.eventsOnDate, { date: selectedDate.toLocaleDateString() })}</Typography>
                               <Divider sx={{ mb: 1.5 }} />
-                              {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">No events</Typography>}
-                              {creating && <Typography variant="caption" color="primary.main">Creating event...</Typography>}
+                              {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">{t(tokens.calendar.noEvents)}</Typography>}
+                              {creating && <Typography variant="caption" color="primary.main">{t(tokens.calendar.creating)}</Typography>}
                               <Stack spacing={1}>
                                    {dayEvents.map(ev => {
                                         const start = new Date(ev.start_date_time);
@@ -283,10 +294,10 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                {/* Right: Selected day events (hidden below md) */}
                {showRightPanel && (
                     <Card sx={{ flex: 2, p: 2 }}>
-                         <Typography variant="h6" gutterBottom>Events on {selectedDate.toLocaleDateString()}</Typography>
+                         <Typography variant="h6" gutterBottom>{t(tokens.calendar.eventsOnDate, { date: selectedDate.toLocaleDateString() })}</Typography>
                          <Divider sx={{ mb: 2 }} />
-                         {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">No events</Typography>}
-                         {creating && <Typography variant="caption" color="primary.main">Creating event...</Typography>}
+                         {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">{t(tokens.calendar.noEvents)}</Typography>}
+                         {creating && <Typography variant="caption" color="primary.main">{t(tokens.calendar.creating)}</Typography>}
                          <Stack spacing={1}>
                               {dayEvents.map(ev => {
                                    const start = new Date(ev.start_date_time);
@@ -308,30 +319,30 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     </Card>
                )}
                {!readOnly && mdDown && (
-                    <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: (theme) => theme.zIndex.fab }} onClick={handleOpenCreateModal} aria-label="Add Event">
+                    <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: (theme) => theme.zIndex.fab }} onClick={handleOpenCreateModal} aria-label={t(tokens.calendar.addEvent)}>
                          <AddIcon />
                     </Fab>
                )}
                {/* Modal for adding event */}
                <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
-                    <DialogTitle>{editingEventId ? 'Edit Event' : 'Add Event'}</DialogTitle>
+                    <DialogTitle>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</DialogTitle>
                     <DialogContent>
-                         <Typography variant="body2" sx={{ mb: 2 }}>{editingEventId ? 'Modify event details.' : `Create a new calendar event for ${selectedDate.toDateString()}.`}</Typography>
+                         <Typography variant="body2" sx={{ mb: 2 }}>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</Typography>
                          <Stack spacing={2}>
-                              <TextField label="Title" value={formTitle} onChange={e => { setFormTitle(e.target.value); if (errors.title) setErrors(prev => ({ ...prev, title: undefined })); }} fullWidth error={!!errors.title} helperText={errors.title} />
-                              <TextField label="Description" value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
+                              <TextField label={t(tokens.calendar.titleLabel)} value={formTitle} onChange={e => { setFormTitle(e.target.value); if (errors.title) setErrors(prev => ({ ...prev, title: undefined })); }} fullWidth error={!!errors.title} helperText={errors.title} />
+                              <TextField label={t(tokens.calendar.descriptionLabel)} value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
                               <Stack direction="row" spacing={2}>
-                                   <TextField label="Start Time" type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); if (errors.start) setErrors(p => ({ ...p, start: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.start} helperText={timeError || errors.start || ''} />
-                                   <TextField label="End Time" type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); if (errors.end) setErrors(p => ({ ...p, end: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.end} helperText={errors.end || ''} />
+                                   <TextField label={t(tokens.calendar.startTimeLabel)} type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); if (errors.start) setErrors(p => ({ ...p, start: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.start} helperText={errors.start} />
+                                   <TextField label={t(tokens.calendar.endTimeLabel)} type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); if (errors.end) setErrors(p => ({ ...p, end: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.end} helperText={errors.end} />
                               </Stack>
-                              <TextField select label="Event Type" value={formType} onChange={e => { setFormType(e.target.value as EventType); if (errors.type) setErrors(p => ({ ...p, type: undefined })); }} fullWidth error={!!errors.type} helperText={errors.type}>
-                                   {Object.entries(EVENT_TYPE_META).map(([key, meta]) => (
-                                        <MenuItem key={key} value={key}>{meta.label}</MenuItem>
+                              <TextField select label={t(tokens.calendar.eventTypeLabel)} value={formType} onChange={e => { setFormType(e.target.value as EventType); if (errors.type) setErrors(p => ({ ...p, type: undefined })); }} fullWidth error={!!errors.type} helperText={errors.type}>
+                                   {Object.entries(BASE_EVENT_TYPE_META).map(([key, meta]) => (
+                                        <MenuItem key={key} value={key}>{t((tokens.calendar.types as any)[key])}</MenuItem>
                                    ))}
                               </TextField>
                               {buildings.length > 0 && (
-                                   <TextField select label="Building" value={formBuildingId} onChange={e => { setFormBuildingId(e.target.value); if (errors.building) setErrors(p => ({ ...p, building: undefined })); }} fullWidth error={!!errors.building} helperText={errors.building}>
-                                        <MenuItem value="">(No building)</MenuItem>
+                                   <TextField select label={t(tokens.calendar.buildingLabel)} value={formBuildingId} onChange={e => { setFormBuildingId(e.target.value); if (errors.building) setErrors(p => ({ ...p, building: undefined })); }} fullWidth error={!!errors.building} helperText={errors.building}>
+                                        <MenuItem value="">{t(tokens.calendar.noBuildingOption)}</MenuItem>
                                         {buildings.map(b => (
                                              <MenuItem key={b.id} value={b.id}>
                                                   {b.building_location ? `${b.building_location.street_address || ''} ${b.building_location.street_number || ''}, ${b.building_location.city}` : b.id}
@@ -342,9 +353,9 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                          </Stack>
                     </DialogContent>
                     <DialogActions>
-                         <Button onClick={handleCloseModal} color="inherit">Cancel</Button>
-                         {editingEventId && !readOnly && <Button onClick={handleDeleteEvent} color="error" disabled={creating}>{creating ? 'Deleting...' : 'Delete'}</Button>}
-                         {!readOnly && <Button onClick={handleSubmit} variant="contained" disabled={!formTitle || creating}>{creating ? (editingEventId ? 'Saving...' : 'Creating...') : (editingEventId ? 'Save' : 'Create')}</Button>}
+                         <Button onClick={handleCloseModal} color="inherit">{t(tokens.calendar.cancel)}</Button>
+                         {editingEventId && !readOnly && <Button onClick={handleDeleteEvent} color="error" disabled={creating}>{creating ? t(tokens.calendar.deleting) : t(tokens.calendar.delete)}</Button>}
+                         {!readOnly && <Button onClick={handleSubmit} variant="contained" disabled={!formTitle || creating}>{creating ? (editingEventId ? t(tokens.calendar.saving) : t(tokens.calendar.creating)) : (editingEventId ? t(tokens.calendar.save) : t(tokens.calendar.create))}</Button>}
                     </DialogActions>
                </Dialog>
           </Stack>
