@@ -24,6 +24,7 @@ const createEvent = (params: CreateEventInput): AppThunk => async (dispatch): Pr
           start_date_time: params.start_date_time,
           title: params.title,
           calendar_event_type: params.calendar_event_type,
+          building_id: params.building_id ?? null,
      } as CalendarEvent);
      if (result.success) {
           dispatch(slice.actions.createEvent(result.data));
@@ -42,6 +43,7 @@ const updateEvent = (params: UpdateCalendarEventInput): AppThunk => async (dispa
                start_date_time: params.update.start_date_time,
                title: params.update.title,
                calendar_event_type: params.update.calendar_event_type,
+               building_id: params.update.building_id ?? null,
           },
      });
      if (result.success) {

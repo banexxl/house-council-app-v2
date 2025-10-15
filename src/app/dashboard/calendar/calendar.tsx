@@ -28,8 +28,9 @@ import MonthGrid from './month-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { thunks } from 'src/thunks/calendar';
 import type { CalendarEvent, EventType } from 'src/types/calendar';
+import type { Building } from 'src/types/building';
 
-export interface CalendarClientProps { initialEvents: CalendarEvent[]; clientId: string | null; isTenant: boolean; isAdmin: boolean; }
+export interface CalendarClientProps { initialEvents: CalendarEvent[]; clientId: string | null; isTenant: boolean; isAdmin: boolean; buildings?: Building[]; }
 
 // Colors for event types
 const EVENT_TYPE_META: Record<EventType, { label: string; color: string }> = {
@@ -42,7 +43,7 @@ const EVENT_TYPE_META: Record<EventType, { label: string; color: string }> = {
 };
 
 
-export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: CalendarClientProps) => {
+export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, buildings = [] }: CalendarClientProps) => {
      const dispatch = useDispatch();
      const events = useSelector((state: any) => state.calendar.events) as CalendarEvent[];
      const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -59,6 +60,8 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
      const [formStartTime, setFormStartTime] = useState('09:00');
      const [formEndTime, setFormEndTime] = useState('10:00');
      const [timeError, setTimeError] = useState<string | null>(null);
+     const [formBuildingId, setFormBuildingId] = useState<string>('');
+     const [errors, setErrors] = useState<{ title?: string; start?: string; end?: string; type?: string; building?: string }>({});
 
      // Initial fetch
      useEffect(() => { if (!events || events.length === 0) (dispatch as any)(thunks.getEvents()); }, []); // eslint-disable-line
@@ -105,6 +108,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
           setFormTitle(event.title);
           setFormDescription(event.description || '');
           setFormType(event.calendar_event_type || 'other');
+          setFormBuildingId(event.building_id || '');
           const startDate = new Date(event.start_date_time);
           const endDate = new Date(event.end_date_time);
           setSelectedDate(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()));
@@ -116,6 +120,16 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
      const handleCloseModal = () => { setOpenModal(false); setEditingEventId(null); };
 
      const handleSubmit = async () => {
+          // Basic field presence validation
+          const newErrors: typeof errors = {};
+          if (!formTitle.trim()) newErrors.title = 'Title is required';
+          if (!formStartTime) newErrors.start = 'Start time required';
+          if (!formEndTime) newErrors.end = 'End time required';
+          if (!formType) newErrors.type = 'Event type required';
+          if (!formBuildingId) newErrors.building = 'Building is required';
+
+          setErrors(newErrors);
+          if (Object.keys(newErrors).length > 0) return;
           // Build start/end timestamps from selectedDate + times
           const [sh, sm] = formStartTime.split(':').map(Number);
           const [eh, em] = formEndTime.split(':').map(Number);
@@ -139,6 +153,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                     title: formTitle,
                     client_id: effectiveClientId,
                     calendar_event_type: formType,
+                    building_id: formBuildingId || null,
                };
                setOptimisticEvents(prev => [...prev, optimistic]);
                await (dispatch as any)(thunks.createEvent({
@@ -148,6 +163,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                     start_date_time: start,
                     title: formTitle,
                     calendar_event_type: formType,
+                    building_id: formBuildingId || null,
                }));
                setOptimisticEvents(prev => prev.filter(e => e.id !== tempId));
                setCreating(false);
@@ -162,12 +178,13 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                          start_date_time: start,
                          title: formTitle,
                          calendar_event_type: formType,
+                         building_id: formBuildingId || null,
                     },
                }));
                setCreating(false);
           }
           // Reset and close
-          setFormTitle(''); setFormDescription(''); setFormType('meeting'); setFormStartTime('09:00'); setFormEndTime('10:00'); setTimeError(null);
+          setFormTitle(''); setFormDescription(''); setFormType('meeting'); setFormStartTime('09:00'); setFormEndTime('10:00'); setFormBuildingId(''); setTimeError(null); setErrors({});
           handleCloseModal();
      };
 
@@ -283,17 +300,27 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin }: C
                     <DialogContent>
                          <Typography variant="body2" sx={{ mb: 2 }}>{editingEventId ? 'Modify event details.' : `Create a new calendar event for ${selectedDate.toDateString()}.`}</Typography>
                          <Stack spacing={2}>
-                              <TextField label="Title" value={formTitle} onChange={e => setFormTitle(e.target.value)} fullWidth />
+                              <TextField label="Title" value={formTitle} onChange={e => { setFormTitle(e.target.value); if (errors.title) setErrors(prev => ({ ...prev, title: undefined })); }} fullWidth error={!!errors.title} helperText={errors.title} />
                               <TextField label="Description" value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
                               <Stack direction="row" spacing={2}>
-                                   <TextField label="Start Time" type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); }} inputProps={{ step: 300 }} fullWidth error={!!timeError} helperText={timeError || ''} />
-                                   <TextField label="End Time" type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); }} inputProps={{ step: 300 }} fullWidth error={!!timeError} />
+                                   <TextField label="Start Time" type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); if (errors.start) setErrors(p => ({ ...p, start: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.start} helperText={timeError || errors.start || ''} />
+                                   <TextField label="End Time" type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); if (errors.end) setErrors(p => ({ ...p, end: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.end} helperText={errors.end || ''} />
                               </Stack>
-                              <TextField select label="Event Type" value={formType} onChange={e => setFormType(e.target.value as EventType)} fullWidth>
+                              <TextField select label="Event Type" value={formType} onChange={e => { setFormType(e.target.value as EventType); if (errors.type) setErrors(p => ({ ...p, type: undefined })); }} fullWidth error={!!errors.type} helperText={errors.type}>
                                    {Object.entries(EVENT_TYPE_META).map(([key, meta]) => (
                                         <MenuItem key={key} value={key}>{meta.label}</MenuItem>
                                    ))}
                               </TextField>
+                              {buildings.length > 0 && (
+                                   <TextField select label="Building" value={formBuildingId} onChange={e => { setFormBuildingId(e.target.value); if (errors.building) setErrors(p => ({ ...p, building: undefined })); }} fullWidth error={!!errors.building} helperText={errors.building}>
+                                        <MenuItem value="">(No building)</MenuItem>
+                                        {buildings.map(b => (
+                                             <MenuItem key={b.id} value={b.id}>
+                                                  {b.building_location ? `${b.building_location.street_address || ''} ${b.building_location.street_number || ''}, ${b.building_location.city}` : b.id}
+                                             </MenuItem>
+                                        ))}
+                                   </TextField>
+                              )}
                          </Stack>
                     </DialogContent>
                     <DialogActions>

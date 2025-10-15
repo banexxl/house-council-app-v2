@@ -16,6 +16,7 @@ const mapRow = (r: any): CalendarEvent => ({
      title: r.title,
      client_id: r.client_id,
      calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
+     building_id: r.building_id ?? null,
 });
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
@@ -52,6 +53,7 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
           const payload = {
                ...input,
                client_id: clientId,
+               building_id: input.building_id ?? null,
                // Ensure timestamptz columns receive ISO8601 strings
                start_date_time: new Date(input.start_date_time).toISOString(),
                end_date_time: new Date(input.end_date_time).toISOString(),
@@ -89,6 +91,7 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
           if (!admin && ownerRow?.client_id !== clientId) return { success: false, error: 'Forbidden' };
 
           const normalizedUpdate: any = { ...update };
+          if (normalizedUpdate.building_id === '') normalizedUpdate.building_id = null;
           if (typeof normalizedUpdate.start_date_time === 'number') {
                normalizedUpdate.start_date_time = new Date(normalizedUpdate.start_date_time).toISOString();
           }
