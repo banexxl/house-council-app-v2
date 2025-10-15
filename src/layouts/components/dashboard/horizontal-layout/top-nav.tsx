@@ -19,7 +19,7 @@ import type { NavColor } from 'src/types/settings';
 
 import { AccountButton } from '../account-button';
 import { ContactsButton } from '../contacts-button';
-import type { Section } from '../config';
+import type { NavSection } from '../config';
 import { LanguageSwitch } from '../language-switch';
 import { NotificationsButton } from '../notifications-button';
 import { TopNavSection } from './top-nav-section';
@@ -161,7 +161,7 @@ const useCssVars = (color: NavColor): Record<string, string> => {
 interface TopNavProps {
   color?: NavColor;
   onMobileNav?: () => void;
-  sections?: Section[];
+  sections?: NavSection[];
 }
 
 export const TopNav: FC<TopNavProps> = (props) => {

@@ -17,7 +17,7 @@ import { usePathname } from 'src/hooks/use-pathname';
 import { paths } from 'src/paths';
 import type { NavColor } from 'src/types/settings';
 
-import type { Section } from '../config';
+import type { NavSection } from '../config';
 import { SideNavSection } from './side-nav-section';
 import { useTranslation } from 'react-i18next';
 import { RouterLink } from 'src/components/router-link';
@@ -154,7 +154,7 @@ const useCssVars = (color: NavColor): Record<string, string> => {
 
 interface SideNavProps {
   color?: NavColor;
-  sections?: Section[];
+  sections?: NavSection[];
 }
 
 export const SideNav: FC<SideNavProps> = (props) => {

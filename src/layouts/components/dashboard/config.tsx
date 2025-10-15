@@ -21,6 +21,16 @@ import { paths } from "src/paths";
 
 export type Role = "admin" | "client" | "clientMember" | "tenant";
 
+export const useSections = (role: Role | null) => {
+  const { t } = useTranslation();
+
+  return useMemo(() => {
+    if (!role) return [];                   // loading → no sections yet
+    return filterByRole(NAV_SECTIONS(t), role);
+  }, [t, role]);
+};
+
+
 export interface NavItem {
   title: string;
   path?: string;           // clickable when present
@@ -284,9 +294,3 @@ const filterByRole = (sections: NavSection[], role: Role): NavSection[] =>
       return { ...section, items };
     })
     .filter(Boolean) as NavSection[];
-
-// === MAIN HOOK ===
-export const useSections = (role: Role) => {
-  const { t } = useTranslation();
-  return useMemo(() => filterByRole(NAV_SECTIONS(t), role), [t, role]);
-};

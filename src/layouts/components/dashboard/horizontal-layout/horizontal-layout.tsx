@@ -6,7 +6,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 
 import type { NavColor } from 'src/types/settings';
 
-import type { Section } from '../config';
+import type { NavSection } from '../config';
 import { MobileNav } from '../mobile-nav';
 import { TopNav } from './top-nav';
 import { useMobileNav } from './use-mobile-nav';
@@ -27,7 +27,7 @@ const HorizontalLayoutContainer = styled('div')({
 interface HorizontalLayoutProps {
   children?: ReactNode;
   navColor?: NavColor;
-  sections?: Section[];
+  sections?: NavSection[];
 }
 
 export const HorizontalLayout: FC<HorizontalLayoutProps> = (props) => {

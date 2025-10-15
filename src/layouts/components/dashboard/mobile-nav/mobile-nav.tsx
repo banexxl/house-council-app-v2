@@ -17,7 +17,7 @@ import { usePathname } from 'src/hooks/use-pathname';
 import { paths } from 'src/paths';
 import type { NavColor } from 'src/types/settings';
 
-import type { Section } from '../config';
+import type { NavSection } from '../config';
 import { MobileNavSection } from './mobile-nav-section';
 
 const MOBILE_NAV_WIDTH = 280;
@@ -114,7 +114,7 @@ interface MobileNavProps {
   color?: NavColor;
   onClose?: () => void;
   open?: boolean;
-  sections?: Section[];
+  sections?: NavSection[];
 }
 
 export const MobileNav: FC<MobileNavProps> = (props) => {

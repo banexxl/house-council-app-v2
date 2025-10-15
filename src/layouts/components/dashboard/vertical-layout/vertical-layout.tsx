@@ -6,7 +6,7 @@ import { styled } from '@mui/material/styles';
 
 import type { NavColor } from 'src/types/settings';
 
-import type { Section } from '../config';
+import type { NavSection } from '../config';
 import { MobileNav } from '../mobile-nav';
 import { SideNav } from './side-nav';
 import { TopNav } from './top-nav';
@@ -33,7 +33,7 @@ const VerticalLayoutContainer = styled('div')({
 interface VerticalLayoutProps {
   children?: ReactNode;
   navColor?: NavColor;
-  sections?: Section[];
+  sections?: NavSection[];
 }
 
 export const VerticalLayout: FC<VerticalLayoutProps> = (props) => {
