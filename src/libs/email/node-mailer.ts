@@ -134,7 +134,7 @@ export const sendNotificationEmail = async (
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.NOTIFICATIONS_EMAIL_FROM || 'Nest Link <no-reply@nest-link.app>',
+      from: process.env.EMAIL_SMTP_USER!,
       to,
       subject,
       html: htmlContent,

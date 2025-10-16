@@ -116,9 +116,7 @@ export default function ClientSubscriptionWatcher() {
                               return;
                          }
                     } catch (e) { // Realtime handler failure shouldn't crash app; log only in dev
-                         if (process.env.NODE_ENV !== "production") {
-                              console.error("[ClientSubscriptionWatcher] error handling payload", e);
-                         }
+                         log(`[ClientSubscriptionWatcher] error handling payload: ${JSON.stringify(payload)}`, 'error');
                     }
                });
 
@@ -148,9 +146,7 @@ export default function ClientSubscriptionWatcher() {
                                         router.push('/auth/login');
                                    }
                               } catch (e) {
-                                   if (process.env.NODE_ENV !== 'production') {
-                                        console.error('[ClientSubscriptionWatcher] Error handling client status payload', e);
-                                   }
+                                   log('[ClientSubscriptionWatcher] Error handling client status payload', e);
                               }
                          })
                          .subscribe(status => {

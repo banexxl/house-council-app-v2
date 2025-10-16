@@ -145,9 +145,7 @@ export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"
 export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitListenerOptions["onEvent"]) => {
      // Enforce a non-empty filter; if missing, no-op with safe cleanup
      if (!clientId) {
-          if (process.env.NODE_ENV !== 'production') {
-               console.warn('[Realtime] initClientSubscriptionRealtime called without clientId; skipping subscribe.');
-          }
+          log('[Realtime] initClientSubscriptionRealtime called without clientId; skipping subscribe.', 'warn');
           return Promise.resolve(async () => { /* noop */ });
      }
 

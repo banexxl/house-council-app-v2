@@ -10,6 +10,7 @@ import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { createMessage } from 'src/libs/sms/twilio';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
 import { TABLES } from 'src/libs/supabase/tables';
+import log from 'src/utils/logger';
 
 const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
 
@@ -85,12 +86,23 @@ export async function emitNotifications(
                }
                try {
                     const msg = await createMessage(contact.phone_number, title, body, notificationType);
+                    log(`[emitNotifications] SMS sent to ${contact.phone_number} (uid: ${uid}): ${msg?.sid || 'no sid'}`, 'warn');
                     if (msg && (msg.sid || msg.status)) {
                          smsSent++;
                     } else {
                          smsErrors++;
                     }
                } catch (e: any) {
+                    log(`[emitNotifications] Error sending SMS to ${contact.phone_number} (uid: ${uid}): ${e?.message || 'no message'}`, 'error');
+                    logServerAction({
+                         user_id: uid,
+                         action: 'emitNotificationsTwilio',
+                         duration_ms: 0,
+                         error: e?.message || 'unknown',
+                         payload: { phone: contact.phone_number, user_id: uid },
+                         status: 'fail',
+                         type: 'external',
+                    })
                     smsErrors++;
                }
           }

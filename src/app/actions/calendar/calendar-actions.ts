@@ -4,7 +4,11 @@ import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { TABLES } from "src/libs/supabase/tables";
 import { getViewer } from "src/libs/supabase/server-auth";
 import type { CalendarEvent, UpdateCalendarEventInput } from "src/types/calendar";
-import log from "src/utils/logger";
+import { logServerAction } from "src/libs/supabase/server-logging";
+import { createAnnouncementNotification } from "src/utils/notification";
+import { emitNotifications } from "../notification/notification-actions";
+import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
+import { sendNotificationEmail } from "src/libs/email/node-mailer";
 
 // Map DB row -> CalendarEvent converting timestamptz strings into epoch ms numbers
 const mapRow = (r: any): CalendarEvent => ({
@@ -22,6 +26,7 @@ const mapRow = (r: any): CalendarEvent => ({
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
 export const getCalendarEvents = async (): Promise<ActionResult<CalendarEvent[]>> => {
+     const time = Date.now();
      try {
           const { client, clientMember, tenant, admin } = await getViewer();
           let clientId: string | null = null;
@@ -29,7 +34,10 @@ export const getCalendarEvents = async (): Promise<ActionResult<CalendarEvent[]>
           if (client) clientId = client.id;
           else if (clientMember) clientId = clientMember.client_id;
           // Tenants may not have client-level visibility yet; restrict to empty set
-          if (tenant && !clientId) return { success: true, data: [] };
+          if (tenant && !clientId) {
+               await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: '', payload: { tenant: true, clientScoped: false, returned: 0 }, status: 'success', type: 'db' });
+               return { success: true, data: [] };
+          }
 
           const supabase = await useServerSideSupabaseAnonClient();
           const query = supabase.from(TABLES.CALENDAR_EVENTS).select("*");
@@ -37,18 +45,28 @@ export const getCalendarEvents = async (): Promise<ActionResult<CalendarEvent[]>
                query.eq("client_id", clientId);
           }
           const { data, error } = await query.order("start_date_time", { ascending: true });
-          if (error) return { success: false, error: error.message };
-          return { success: true, data: (data || []).map(mapRow) };
+          if (error) {
+               await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: error.message, payload: { clientId, admin }, status: 'fail', type: 'db' });
+               return { success: false, error: error.message };
+          }
+          const rows = (data || []).map(mapRow);
+          await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: '', payload: { clientId, admin, count: rows.length }, status: 'success', type: 'db' });
+          return { success: true, data: rows };
      } catch (err: any) {
+          await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: {}, status: 'fail', type: 'db' });
           return { success: false, error: err.message || "Unexpected error" };
      }
 }
 
 export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionResult<CalendarEvent>> => {
+     const time = Date.now();
      try {
           const { client, clientMember, admin } = await getViewer();
           const clientId = client?.id || clientMember?.client_id;
-          if (!clientId && !admin) return { success: false, error: "Unauthorized" };
+          if (!clientId && !admin) {
+               await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: 'unauthorized', payload: { hasClient: !!clientId, admin }, status: 'fail', type: 'db' });
+               return { success: false, error: "Unauthorized" };
+          }
 
           const payload = {
                ...input,
@@ -64,17 +82,64 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                .insert(payload)
                .select("*")
                .single();
-          log(`Creating calendar event with payload: ${JSON.stringify(payload)}`);
-          log(`data: ${JSON.stringify(data)}`);
-          log(`error: ${error?.message ?? ""}`);
-          if (error || !data) return { success: false, error: error?.message || "Insert failed" };
-          return { success: true, data: mapRow(data as CalendarEvent) };
+          if (error || !data) {
+               await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: error?.message || 'insertFailed', payload: { clientId }, status: 'fail', type: 'db' });
+               return { success: false, error: error?.message || "Insert failed" };
+          }
+          const mapped = mapRow(data as CalendarEvent);
+          // Emit notifications to tenants of the building (if building_id present)
+          if (mapped.building_id) {
+               try {
+                    const tenantsRes = await readAllTenantsFromBuildingIds([mapped.building_id]);
+                    const tenants: any[] = (tenantsRes as any)?.data || [];
+                    if (tenants.length > 0) {
+                         const createdAtISO = new Date().toISOString();
+                         const rows = tenants.map(t => createAnnouncementNotification({
+                              title: mapped.title,
+                              description: mapped.description || '',
+                              created_at: createdAtISO,
+                              user_id: t.user_id || null,
+                              is_read: false,
+                              is_for_tenant: true,
+                              announcement_id: null,
+                              building_id: mapped.building_id,
+                              client_id: clientId || null,
+                         }) as any);
+                         if (rows.length) {
+                              const emitted = await emitNotifications(rows);
+                              if (!emitted.success) {
+                                   await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
+                              } else {
+                                   await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
+                              }
+                         }
+                         // Email blast (best-effort) to tenant emails
+                         const emails = tenants.map(t => t.email).filter((e: any) => typeof e === 'string' && e.includes('@')) as string[];
+                         if (emails.length) {
+                              const subject = `New calendar event: ${mapped.title}`;
+                              const html = `<p>A new calendar event has been scheduled.</p><p><strong>Title:</strong> ${mapped.title}</p>${mapped.description ? `<p><strong>Description:</strong> ${mapped.description}</p>` : ''}`;
+                              const { ok, error: mailErr } = await sendNotificationEmail(emails, subject, html, `${mapped.title}\n${mapped.description || ''}`);
+                              if (!ok) {
+                                   await logServerAction({ user_id: null, action: 'createCalendarEventEmail', duration_ms: 0, error: mailErr || 'emailFailed', payload: { eventId: mapped.id, recipients: emails.length }, status: 'fail', type: 'external' });
+                              } else {
+                                   await logServerAction({ user_id: null, action: 'createCalendarEventEmail', duration_ms: 0, error: '', payload: { eventId: mapped.id, recipients: emails.length }, status: 'success', type: 'external' });
+                              }
+                         }
+                    }
+               } catch (e: any) {
+                    await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: e?.message || 'unexpected', payload: { eventId: mapped.id }, status: 'fail', type: 'db' });
+               }
+          }
+          await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { clientId, id: mapped.id }, status: 'success', type: 'db' });
+          return { success: true, data: mapped };
      } catch (err: any) {
+          await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: {}, status: 'fail', type: 'db' });
           return { success: false, error: err.message || "Unexpected error" };
      }
 }
 
 export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEventInput): Promise<ActionResult<CalendarEvent>> => {
+     const time = Date.now();
      try {
           const { client, clientMember, admin } = await getViewer();
           const clientId = client?.id || clientMember?.client_id;
@@ -87,8 +152,14 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                .limit(1)
                .single();
           const { data: ownerRow, error: ownerErr } = await ownershipCheck;
-          if (ownerErr) return { success: false, error: ownerErr.message };
-          if (!admin && ownerRow?.client_id !== clientId) return { success: false, error: 'Forbidden' };
+          if (ownerErr) {
+               await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: ownerErr.message, payload: { eventId, stage: 'ownership' }, status: 'fail', type: 'db' });
+               return { success: false, error: ownerErr.message };
+          }
+          if (!admin && ownerRow?.client_id !== clientId) {
+               await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: 'forbidden', payload: { eventId, ownerClient: ownerRow?.client_id, viewerClient: clientId }, status: 'fail', type: 'db' });
+               return { success: false, error: 'Forbidden' };
+          }
 
           const normalizedUpdate: any = { ...update };
           if (normalizedUpdate.building_id === '') normalizedUpdate.building_id = null;
@@ -104,14 +175,64 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                .eq('id', eventId)
                .select('*')
                .single();
-          if (error || !data) return { success: false, error: error?.message || 'Update failed' };
-          return { success: true, data: mapRow(data as CalendarEvent) };
+          if (error || !data) {
+               await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: error?.message || 'updateFailed', payload: { eventId }, status: 'fail', type: 'db' });
+               return { success: false, error: error?.message || 'Update failed' };
+          }
+          const mapped = mapRow(data as CalendarEvent);
+          // Optional: emit notifications if building_id present and start_date_time changed (reminder logic)
+          try {
+               if (mapped.building_id && (update.start_date_time || update.title || update.description)) {
+                    const tenantsRes = await readAllTenantsFromBuildingIds([mapped.building_id]);
+                    const tenants: any[] = (tenantsRes as any)?.data || [];
+                    if (tenants.length > 0) {
+                         const createdAtISO = new Date().toISOString();
+                         const rows = tenants.map(t => createAnnouncementNotification({
+                              title: mapped.title,
+                              description: mapped.description || '',
+                              created_at: createdAtISO,
+                              user_id: t.user_id || null,
+                              is_read: false,
+                              is_for_tenant: true,
+                              announcement_id: null,
+                              building_id: mapped.building_id,
+                              client_id: clientId || null,
+                         }) as any);
+                         if (rows.length) {
+                              const emitted = await emitNotifications(rows);
+                              if (!emitted.success) {
+                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
+                              } else {
+                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
+                              }
+                         }
+                         // Optional email on update (could be noisy; keep for now) best-effort
+                         const emails = tenants.map(t => t.email).filter((e: any) => typeof e === 'string' && e.includes('@')) as string[];
+                         if (emails.length) {
+                              const subject = `Updated calendar event: ${mapped.title}`;
+                              const html = `<p>A calendar event has been updated.</p><p><strong>Title:</strong> ${mapped.title}</p>${mapped.description ? `<p><strong>Description:</strong> ${mapped.description}</p>` : ''}`;
+                              const { ok, error: mailErr } = await sendNotificationEmail(emails, subject, html, `${mapped.title}\n${mapped.description || ''}`);
+                              if (!ok) {
+                                   await logServerAction({ user_id: null, action: 'updateCalendarEventEmail', duration_ms: 0, error: mailErr || 'emailFailed', payload: { eventId: mapped.id, recipients: emails.length }, status: 'fail', type: 'external' });
+                              } else {
+                                   await logServerAction({ user_id: null, action: 'updateCalendarEventEmail', duration_ms: 0, error: '', payload: { eventId: mapped.id, recipients: emails.length }, status: 'success', type: 'external' });
+                              }
+                         }
+                    }
+               }
+          } catch (e: any) {
+               await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: e?.message || 'unexpected', payload: { eventId: mapped.id }, status: 'fail', type: 'db' });
+          }
+          await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { eventId, id: mapped.id }, status: 'success', type: 'db' });
+          return { success: true, data: mapped };
      } catch (err: any) {
+          await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: { eventId }, status: 'fail', type: 'db' });
           return { success: false, error: err.message || 'Unexpected error' };
      }
 }
 
 export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult<{ id: string }>> => {
+     const time = Date.now();
      try {
           const { client, clientMember, admin } = await getViewer();
           const clientId = client?.id || clientMember?.client_id;
@@ -122,16 +243,27 @@ export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult
                .eq('id', eventId)
                .limit(1)
                .single();
-          if (ownerErr) return { success: false, error: ownerErr.message };
-          if (!admin && ownerRow?.client_id !== clientId) return { success: false, error: 'Forbidden' };
+          if (ownerErr) {
+               await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: ownerErr.message, payload: { eventId, stage: 'ownership' }, status: 'fail', type: 'db' });
+               return { success: false, error: ownerErr.message };
+          }
+          if (!admin && ownerRow?.client_id !== clientId) {
+               await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: 'forbidden', payload: { eventId, ownerClient: ownerRow?.client_id, viewerClient: clientId }, status: 'fail', type: 'db' });
+               return { success: false, error: 'Forbidden' };
+          }
 
           const { error } = await supabase
                .from(TABLES.CALENDAR_EVENTS)
                .delete()
                .eq('id', eventId);
-          if (error) return { success: false, error: error.message };
+          if (error) {
+               await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: error.message, payload: { eventId }, status: 'fail', type: 'db' });
+               return { success: false, error: error.message };
+          }
+          await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { eventId }, status: 'success', type: 'db' });
           return { success: true, data: { id: eventId } };
      } catch (err: any) {
+          await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: { eventId }, status: 'fail', type: 'db' });
           return { success: false, error: err.message || 'Unexpected error' };
      }
 }
