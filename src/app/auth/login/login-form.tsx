@@ -17,6 +17,7 @@ import { handleGoogleSignIn } from "../actions"
 import { Box, Button, CircularProgress, TextField } from "@mui/material"
 import { MagicLinkForm } from "./magic-link-form"
 import Link from "next/link"
+import LinkIcon from '@mui/icons-material/Link';
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -149,7 +150,18 @@ const LoginForm = () => {
 
                <Divider sx={{ my: 3 }} />
                <Typography color="text.secondary" variant="body2" align="center">
-                    Don&apos;t have an account, or forgot password? <Link href={`${process.env.NEXT_PUBLIC_BASE_URL + '/auth/reset-password'}`} rel="noopener noreferrer" >Reset password!</Link>
+                    Don&apos;t have an account?{" "}
+                    <Link href="https://nest-link.app" rel="noopener noreferrer" target="_blank">
+                         Go to Nest-Link <Box component="span" sx={{ verticalAlign: 'middle', ml: 0.5 }}>
+                              <LinkIcon fontSize="small" />
+                         </Box>
+                    </Link>
+               </Typography>
+               <Typography color="text.secondary" variant="body2" align="center" sx={{ mt: 1 }}>
+                    Forgot password?{" "}
+                    <Link href={`${process.env.NEXT_PUBLIC_BASE_URL + '/auth/reset-password'}`} rel="noopener noreferrer">
+                         Reset password!
+                    </Link>
                </Typography>
           </div>
      )
