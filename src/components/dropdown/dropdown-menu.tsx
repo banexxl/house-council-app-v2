@@ -28,13 +28,15 @@ export const DropdownMenu: FC<DropdownMenuProps> = (props) => {
         vertical: 'bottom',
       }}
       open={ctx.open}
-      PaperProps={{
-        ...PaperProps,
-        onMouseEnter: ctx.onMenuEnter,
-        onMouseLeave: ctx.onMenuLeave,
-        sx: {
-          ...PaperProps?.sx,
-          pointerEvents: 'auto',
+      slotProps={{
+        paper: {
+          ...PaperProps,
+          onMouseEnter: ctx.onMenuEnter,
+          onMouseLeave: ctx.onMenuLeave,
+          sx: {
+            ...PaperProps?.sx,
+            pointerEvents: 'auto',
+          },
         },
       }}
       sx={{ pointerEvents: 'none' }}
