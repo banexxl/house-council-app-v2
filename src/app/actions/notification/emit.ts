@@ -74,6 +74,7 @@ export async function emitNotifications(
           }
 
           const contactsRes = await readTenantContactByUserIds(userIds);
+          log(`Contacts fetch result: ${contactsRes.success ? 'success' : 'fail'}`, contactsRes.error ? 'error' : 'warn');
           const contacts = contactsRes.success ? (contactsRes as any).data as Record<string, any> : {};
           log(`Fetched ${contactsRes.success ? Object.keys(contacts).length : 0} contacts for ${userIds.length} users`, 'warn');
 

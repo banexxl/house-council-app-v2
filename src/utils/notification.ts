@@ -2,11 +2,11 @@ import {
   NOTIFICATION_TYPES_MAP,
   type Notification,
   type BaseNotification,
-  type AnnouncementNotification,
   type MessageNotification,
   type AlertNotification,
   type NotificationType,
   type NotificationTypeMap,
+  AnnouncementNotification,
 } from 'src/types/notification';
 
 // Resolve a DB enum value or an existing map into a NotificationTypeMap

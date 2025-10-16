@@ -609,6 +609,7 @@ export async function deleteAnnouncement(id: string) {
      // Fire-and-forget notification about deletion
      try {
           const notification = createAnnouncementNotification({
+               announcement_id: id,
                title: 'Announcement deleted',
                description: `Announcement ${id} was deleted`,
                created_at: new Date().toISOString(),

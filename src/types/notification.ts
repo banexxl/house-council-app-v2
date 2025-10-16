@@ -4,7 +4,7 @@ import { tokens } from 'src/locales/tokens';
 export type NotificationType =
      'all' | 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'other';
 
-export type NotificationChannel = 'whatsapp' | 'email'; // extend: 'push' | 'sms' ...
+export type NotificationChannel = 'whatsapp' | 'email' | 'push' | 'sms';
 
 export type NotificationTypeMap = {
      value: NotificationType;
@@ -30,6 +30,16 @@ export interface BaseNotification {
      user_id: string | null;
      is_read: boolean;
      // optional FKs...
+}
+
+export interface AnnouncementNotification extends BaseNotification {
+     announcement_id: string;
+     title: string;
+     description: string;
+     created_at: string | Date;
+     user_id: string | null;  // null = for all users
+     is_read: boolean;
+     is_for_tenant: boolean; // true = all users in tenant, false = all users in system
 }
 
 export interface MessageNotification extends BaseNotification {
