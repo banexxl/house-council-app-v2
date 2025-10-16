@@ -101,9 +101,7 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                               user_id: t.user_id || null,
                               is_read: false,
                               is_for_tenant: true,
-                              announcement_id: null,
-                              building_id: mapped.building_id,
-                              client_id: clientId || null,
+                              announcement_id: '',
                          }) as any);
                          if (rows.length) {
                               const emitted = await emitNotifications(rows);
@@ -194,9 +192,7 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                               user_id: t.user_id || null,
                               is_read: false,
                               is_for_tenant: true,
-                              announcement_id: null,
-                              building_id: mapped.building_id,
-                              client_id: clientId || null,
+                              announcement_id: '',
                          }) as any);
                          if (rows.length) {
                               const emitted = await emitNotifications(rows);

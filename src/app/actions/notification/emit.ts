@@ -59,6 +59,9 @@ export async function emitNotifications(
           }
           const userIds = Array.from(byUser.keys());
           log(`Prepared digests for ${userIds.length} users`, 'warn');
+          userIds.forEach(uid => {
+               log(`Prepared digest for user: ${uid}`, 'warn');
+          });
 
           if (userIds.length === 0) {
                await logServerAction({

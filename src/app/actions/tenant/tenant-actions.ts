@@ -7,6 +7,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
 import log from 'src/utils/logger';
+import { TenantContact } from 'src/types/notification';
 
 /**
  * 
@@ -480,28 +481,28 @@ export const readAllTenantsFromBuildingIds = async (
 // Lightweight contact lookup for notifications fanout
 export const readTenantContactByUserIds = async (
      userIds: string[]
-): Promise<{ success: boolean; data: Record<string, { email?: string | null; phone_number?: string | null; email_opt_in?: boolean | null; sms_opt_in?: boolean | null }>; error?: string }> => {
-     userIds.forEach((id) => log(`readTenantContactByUserIds client id: ${id}`));
+): Promise<{ success: boolean; data: TenantContact[]; error?: string }> => {
+     userIds.forEach((id) => log(`these should all be tenant user_ids ${id}`));
      try {
-          if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, data: {} };
+          if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, data: [] };
           const supabase = await useServerSideSupabaseAnonClient();
           const { data, error } = await supabase
                .from(TABLES.TENANTS)
                .select('user_id, email, phone_number, email_opt_in, sms_opt_in')
                .in('user_id', userIds);
-          log(`readTenantContactByUserIds fetched ${data?.length || 0} contacts for ${userIds.length} userIds`)
           if (error) return { success: false, error: error.message, data: {} as any };
-          const map: Record<string, { email?: string | null; phone_number?: string | null; email_opt_in?: boolean | null; sms_opt_in?: boolean | null }> = {};
-          for (const row of (data || []) as any[]) {
-               map[row.user_id] = {
+          const map: Record<string, TenantContact> = {};
+          for (const row of (data || []) as TenantContact[]) {
+               map[row.email!] = {
+                    user_id: row.user_id!,
                     email: row.email ?? null,
                     phone_number: row.phone_number ?? null,
                     email_opt_in: row.email_opt_in ?? null,
                     sms_opt_in: row.sms_opt_in ?? null,
                };
           }
-          return { success: true, data: map };
+          return { success: true, data: Object.values(map) };
      } catch (e: any) {
-          return { success: false, error: e?.message || 'Unexpected error', data: {} as any };
+          return { success: false, error: e?.message || 'Unexpected error', data: [] };
      }
 }

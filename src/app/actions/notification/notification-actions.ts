@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { Notification, BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
+import { Notification, BaseNotification, NotificationType, NotificationTypeMap, TenantContact } from 'src/types/notification';
 import { hydrateNotificationsFromDb } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
@@ -51,19 +51,21 @@ export async function emitNotifications(
                byUser.set(r.user_id, arr);
           }
           const userIds = Array.from(byUser.keys());
-          log(`Prepared SMS for ${userIds.length} users`, 'warn')
+          for (const uid of userIds) {
+               log(`Prepared SMS for user ${uid}`, 'warn');
+          }
           if (userIds.length === 0) {
                await logServerAction({ user_id: null, action: 'emitNotificationsInsert+Twilio', duration_ms: Date.now() - time, error: '', payload: { inserted, users: 0, smsSent: 0, smsErrors: 0 }, status: 'success', type: 'db' });
                return { success: true, inserted };
           }
 
-          const contactsRes = await readTenantContactByUserIds(userIds);
-          log(`Fetched ${contactsRes.success ? (contactsRes as any).data.length : 0} contacts for ${userIds.length} users`, 'warn')
-          const contacts = contactsRes.success ? (contactsRes as any).data : {};
+          const { data, success, error } = await readTenantContactByUserIds(userIds);
+          log(`Fetched ${data ? data : 0} contacts for ${userIds.length} users or ${error ? error : 'no error'}`, 'warn')
+          const contacts: TenantContact[] = success && data ? data : [];
 
           let smsSent = 0; let smsErrors = 0;
           for (const uid of userIds) {
-               const contact = contacts[uid];
+               const contact = Array.isArray(contacts) && contacts.length > 0 ? contacts.find(c => c.user_id === uid) : undefined;
                if (!contact?.phone_number) {
                     continue;
                }
