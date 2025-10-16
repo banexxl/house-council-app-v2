@@ -6,6 +6,7 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
+import log from 'src/utils/logger';
 
 /**
  * 
@@ -480,6 +481,7 @@ export const readAllTenantsFromBuildingIds = async (
 export const readTenantContactByUserIds = async (
      userIds: string[]
 ): Promise<{ success: boolean; data: Record<string, { email?: string | null; phone_number?: string | null; email_opt_in?: boolean | null; sms_opt_in?: boolean | null }>; error?: string }> => {
+     userIds.forEach((id) => log(`readTenantContactByUserIds client id: ${id}`));
      try {
           if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, data: {} };
           const supabase = await useServerSideSupabaseAnonClient();
@@ -487,6 +489,7 @@ export const readTenantContactByUserIds = async (
                .from(TABLES.TENANTS)
                .select('user_id, email, phone_number, email_opt_in, sms_opt_in')
                .in('user_id', userIds);
+          log(`readTenantContactByUserIds fetched ${data?.length || 0} contacts for ${userIds.length} userIds`)
           if (error) return { success: false, error: error.message, data: {} as any };
           const map: Record<string, { email?: string | null; phone_number?: string | null; email_opt_in?: boolean | null; sms_opt_in?: boolean | null }> = {};
           for (const row of (data || []) as any[]) {

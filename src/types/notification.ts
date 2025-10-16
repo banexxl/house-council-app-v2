@@ -1,28 +1,15 @@
+// notifications/types.ts
 import { tokens } from 'src/locales/tokens';
 
 export type NotificationType =
-     'all' |
-     'system' |
-     'message' |
-     'reminder' |
-     'alert' |
-     'announcement' |
-     'other';
+     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'other';
 
-export const NOTIFICATION_TYPES = [
-     'all',
-     'system',
-     'message',
-     'reminder',
-     'alert',
-     'announcement',
-     'other',
-] as NotificationType[];
+export type NotificationChannel = 'whatsapp' | 'email'; // extend: 'push' | 'sms' ...
 
 export type NotificationTypeMap = {
      value: NotificationType;
      labelToken: string;
-}
+};
 
 export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'all', labelToken: tokens.notifications.tabs.all },
@@ -31,39 +18,36 @@ export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
      { value: 'alert', labelToken: tokens.notifications.tabs.alert },
      { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
-     { value: 'other', labelToken: tokens.notifications.tabs.other }
+     { value: 'other', labelToken: tokens.notifications.tabs.other },
 ] as const;
 
 export interface BaseNotification {
      id?: string;
-     type: NotificationTypeMap;
+     type: NotificationTypeMap;        // stored as map on the server; db gets .value
      title: string;
-     description: string;
-     // Accept either Date or ISO string to match DB/client usage
+     description: string;              // HTML or plain text (we’ll plainify for WA)
      created_at: string | Date;
      user_id: string | null;
      is_read: boolean;
-     // Optional foreign keys, present depending on notification kind
-
+     // optional FKs...
 }
 
-export interface AnnouncementNotification extends BaseNotification {
-     building_id?: string | null;
-     client_id?: string | null;
-     announcement_id?: string | null;
-     is_for_tenant?: boolean;
-}
-
-// Extended shapes depending on type
 export interface MessageNotification extends BaseNotification {
-     type: NotificationTypeMap;
      sender_id: string;
      receiver_id: string;
 }
-
 export interface AlertNotification extends BaseNotification {
-     type: NotificationTypeMap;
      severity?: 'low' | 'medium' | 'high';
 }
 
 export type Notification = BaseNotification | MessageNotification | AlertNotification;
+
+// Contact shape you already retrieve:
+export type TenantContact = {
+     user_id: string;
+     email?: string | null;
+     phone_number?: string | null;
+     email_opt_in?: boolean | null;
+     sms_opt_in?: boolean | null;         // you already have this
+     whatsapp_opt_in?: boolean | null;    // reuse sms_opt_in or split if you prefer
+};

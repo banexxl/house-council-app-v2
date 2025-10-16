@@ -1,15 +1,11 @@
 import { useEffect, useState, type FC } from 'react';
-import User01Icon from '@untitled-ui/icons-react/build/esm/User01';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
-import SvgIcon from '@mui/material/SvgIcon';
-
-import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { usePopover } from 'src/hooks/use-popover';
 
 import { AccountPopover } from './account-popover';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import { SignedAvatar } from 'src/components/signed-avatar';
 import { TABLES } from 'src/libs/supabase/tables';
 
 export const AccountButton: FC = () => {
@@ -49,17 +45,13 @@ export const AccountButton: FC = () => {
           borderRadius: '50%',
         }}
       >
-        <Avatar
+        <SignedAvatar
+          value={user?.avatar}
           sx={{
             height: 32,
             width: 32,
           }}
-          src={user?.avatar}
-        >
-          <SvgIcon>
-            <User01Icon />
-          </SvgIcon>
-        </Avatar>
+        />
       </Box>
       <AccountPopover
         anchorEl={popover.anchorRef.current}

@@ -3,6 +3,7 @@
 import 'server-only';
 import { logServerAction } from "../supabase/server-logging";
 import { NotificationTypeMap } from "src/types/notification";
+import log from 'src/utils/logger';
 
 // We lazy-load the library so Next.js / Vercel won't attempt to resolve the
 // internal twilio ../lib path in an unsupported runtime.
@@ -29,6 +30,8 @@ async function getTwilioClient() {
 }
 
 export const createMessage = async (to: string, title: string, body: string, notificationType: NotificationTypeMap): Promise<any> => {
+
+     log(`Twilio createMessage to=${to} title=${title} body=${body} type=${notificationType.value}`)
 
      const start = Date.now();
 

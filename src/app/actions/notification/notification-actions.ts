@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Notification, BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
 import { hydrateNotificationsFromDb } from 'src/utils/notification';
@@ -18,7 +18,7 @@ const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
 export async function emitNotifications(
      rows: BaseNotification[]
 ): Promise<{ success: boolean; error?: string; inserted?: number }> {
-
+     log(`Emitting ${rows.length} notifications`, 'warn');
      const time = Date.now();
      if (!rows || rows.length === 0) return { success: true, inserted: 0 };
      try {
@@ -33,8 +33,9 @@ export async function emitNotifications(
                     type: r.type.value as NotificationType,
                }));
                const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(dbSlice as any);
-
+               log(`Inserted batch of ${slice.length} notifications`, 'warn')
                if (error) {
+                    log(`Error inserting notifications: ${error.message}`, 'error')
                     await logServerAction({ user_id: null, action: 'emitNotificationsInsert', duration_ms: Date.now() - time, error: error.message, payload: { count: slice.length }, status: 'fail', type: 'db' });
                     return { success: false, error: error.message };
                }
@@ -50,13 +51,14 @@ export async function emitNotifications(
                byUser.set(r.user_id, arr);
           }
           const userIds = Array.from(byUser.keys());
+          log(`Prepared SMS for ${userIds.length} users`, 'warn')
           if (userIds.length === 0) {
                await logServerAction({ user_id: null, action: 'emitNotificationsInsert+Twilio', duration_ms: Date.now() - time, error: '', payload: { inserted, users: 0, smsSent: 0, smsErrors: 0 }, status: 'success', type: 'db' });
                return { success: true, inserted };
           }
 
           const contactsRes = await readTenantContactByUserIds(userIds);
-
+          log(`Fetched ${contactsRes.success ? (contactsRes as any).data.length : 0} contacts for ${userIds.length} users`, 'warn')
           const contacts = contactsRes.success ? (contactsRes as any).data : {};
 
           let smsSent = 0; let smsErrors = 0;
@@ -85,6 +87,7 @@ export async function emitNotifications(
                     notificationType = (list[0].type)
                }
                try {
+                    log('usssaaaoooo')
                     const msg = await createMessage(contact.phone_number, title, body, notificationType);
                     log(`[emitNotifications] SMS sent to ${contact.phone_number} (uid: ${uid}): ${msg?.sid || 'no sid'}`, 'warn');
                     if (msg && (msg.sid || msg.status)) {
