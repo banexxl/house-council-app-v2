@@ -18,7 +18,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   // Realtime subscriptions moved to dashboard layout so auth pages don't subscribe.
 
   return (
-    <html>
+    <html twilio-domain-verification='d9a2bf865bddea56a5ff4846036cef3b'>
       <body>
         <AuthProvider initialViewer={viewer}>
           <RootLayout >
