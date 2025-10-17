@@ -85,7 +85,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     // only recompute when these truly change
   }, [clientInitialValues, initialValues, clientSubscription]);
 
-
   const formik = useFormik({
     initialValues: initialFormikValues,
     enableReinitialize: true,

@@ -26,11 +26,12 @@ import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { paths } from 'src/paths';
 import { RouterLink } from 'src/components/router-link';
-import { createOrUpdateTenantAction, sendWhatsAppSandboxInvite } from 'src/app/actions/tenant/tenant-actions';
+import { createOrUpdateTenantAction } from 'src/app/actions/tenant/tenant-actions';
 import { Tenant, tenantInitialValues, tenantValidationSchema, tenantTypeOptions } from 'src/types/tenant';
 import dayjs from 'dayjs';
 import { PopupModal } from 'src/components/modal-dialog';
 import { banUser, removeAllMfaFactors, sendMagicLink, sendPasswordRecoveryEmail, unbanUser } from 'src/app/actions/client/client-actions';
+import { sendWhatsAppSandboxInvite } from 'src/libs/whatsapp/twilio';
 
 interface TenantFormProps {
      tenantData?: Tenant;
@@ -189,6 +190,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
           const res = await sendWhatsAppSandboxInvite({ phone: formik.values.phone_number!, name: formik.values.first_name });
           if (res.ok) toast.success('SMS invite sent');
           else toast.error(res.error ?? 'Failed to send SMS');
+          setModal({ open: false, type: undefined });
      };
 
      return (

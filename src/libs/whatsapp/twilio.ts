@@ -1,143 +1,202 @@
-// Server-only Twilio helper. Avoid static imports so that this file never gets
-// pulled into an Edge runtime bundle (Twilio needs Node core modules).
-import 'server-only';
+"use server";
 import { logServerAction } from "../supabase/server-logging";
 import { NotificationTypeMap } from "src/types/notification";
-import log from 'src/utils/logger';
+import log from "src/utils/logger";
+
+// NOTE: Removed top-level twilio import to avoid loading heavy library eagerly.
+// We'll dynamic-import only when actually sending a message.
 
 // We lazy-load the library so Next.js / Vercel won't attempt to resolve the
 // internal twilio ../lib path in an unsupported runtime.
 let _twilioClient: any | null = null;
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// NOTE: The canonical env var name is usually TWILIO_AUTH_TOKEN; the project uses TWILIO_API_TOKEN.
-// Ensure the prod environment actually sets TWILIO_API_TOKEN (or alias it below).
-const authToken = process.env.TWILIO_API_TOKEN || process.env.TWILIO_AUTH_TOKEN;
-const numberFrom = process.env.TWILIO_SENDER_PHONE_NUMBER;
+// Helper to safely read credentials (server-side only). We alias TWILIO_API_TOKEN -> TWILIO_AUTH_TOKEN usage if needed.
+function getTwilioEnv() {
+     const accountSid = process.env.TWILIO_ACCOUNT_SID || "";
+     const authToken = process.env.TWILIO_API_TOKEN || process.env.TWILIO_AUTH_TOKEN || "";
+     const whatsappFrom = process.env.TWILIO_SENDER_WHATSAPP_NUMBER || "";
+     const smsFrom = process.env.TWILIO_SENDER_PHONE_NUMBER || "";
+     return { accountSid, authToken, whatsappFrom, smsFrom };
+}
+
+// Mask secrets when logging (show first 4 chars only if present).
+const mask = (s: string) => (s ? `${s.slice(0, 4)}***` : "n/a");
 
 async function getTwilioClient() {
      if (_twilioClient) return _twilioClient;
-     if (!accountSid || !authToken) {
-          // We still return null; caller will log a more specific message.
-          return null;
-     }
-     // Dynamic import keeps it out of edge bundles and fixes the '../lib/index.js' production resolution error.
-     const twilioModule: any = await import('twilio');
-     // Twilio v5 default export vs named: handle both defensively.
+     const { accountSid, authToken } = getTwilioEnv();
+     if (!accountSid || !authToken) return null;
+     log(`Twilio: initializing client (sid=${mask(accountSid)} token=${mask(authToken)})`);
+     const twilioModule: any = await import("twilio");
      const TwilioCtor = twilioModule?.Twilio || twilioModule?.default || twilioModule;
      _twilioClient = new TwilioCtor(accountSid, authToken);
      return _twilioClient;
 }
 
-export const createMessage = async (to: string, title: string, body: string, notificationType: NotificationTypeMap): Promise<any> => {
+// Optional lightweight fetch-based sender (avoids full twilio lib). Useful for edge runtimes.
+async function sendViaFetch(params: { to: string; from: string; body: string }) {
+     const { accountSid, authToken } = getTwilioEnv();
+     if (!accountSid || !authToken) throw new Error("Twilio credentials missing for fetch sender");
+     const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+     const form = new URLSearchParams({ To: params.to, From: params.from, Body: params.body });
+     const res = await fetch(url, {
+          method: "POST",
+          headers: {
+               Authorization: "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64"),
+               "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: form.toString(),
+     });
+     if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(`Twilio fetch send failed status=${res.status} body=${txt}`);
+     }
+     return res.json();
+}
 
-     log(`Twilio createMessage to=${to} title=${title} body=${body} type=${notificationType.value}`)
-
+export const createMessage = async (
+     to: string,
+     title: string,
+     body: string,
+     notificationType: NotificationTypeMap,
+     opts: { useFetch?: boolean } = {}
+): Promise<any> => {
      const start = Date.now();
-
-     try {
-          if (!accountSid || !authToken || !numberFrom) {
-               await logServerAction({
-                    action: 'Twilio WhatsApp Send',
-                    error: 'Missing Twilio env variables (TWILIO_ACCOUNT_SID / TWILIO_API_TOKEN / TWILIO_SENDER_PHONE_NUMBER)',
-                    payload: null,
-                    status: 'fail',
-                    type: 'external',
-                    user_id: null,
-                    created_at: new Date(),
-                    duration_ms: 0,
-               });
-               throw new Error('Twilio configuration missing');
-          }
-          const client = await getTwilioClient();
-          if (!client) {
-               throw new Error('Twilio client not initialized');
-          }
-          const normalize = (p: string) => {
-               const cleaned = p.replace(/\s+/g, '');
-               const numberPart = cleaned.startsWith('+') ? cleaned.slice(1) : cleaned;
-               if (!/^\d+$/.test(numberPart)) {
-                    throw new Error('Invalid phone number: must contain only digits after "+"');
-               }
-               return `+${numberPart}`;
-          };
-
-          const toWa = `whatsapp:${normalize(to)}`;
-          const fromEnv = process.env.TWILIO_SENDER_WHATSAPP_NUMBER || numberFrom || '';
-          const fromWa = fromEnv.startsWith('whatsapp:') ? fromEnv : `whatsapp:${normalize(fromEnv)}`;
-
-
-          let header = '';
-          let messageBody = body;
-
-
-          switch (notificationType.value) {
-               case 'alert':
-                    header = `🚨 *${notificationType.labelToken || 'ALERT'}*`;
-                    messageBody = `*${body}*`;
-                    break;
-               case 'announcement':
-                    header = `📢 *${notificationType.labelToken || 'Announcement'}*`;
-                    break;
-               case 'reminder':
-                    header = `⏰ *${notificationType.labelToken || 'Reminder'}*`;
-                    messageBody = `_${body}_`;
-                    break;
-               case 'message':
-                    header = `💬 *${notificationType.labelToken || 'New Message'}*`;
-                    messageBody = `_${body}_`;
-                    break;
-               case 'system':
-                    header = `🛠️ *${notificationType.labelToken || 'System Update'}*`;
-                    break;
-               default:
-                    header = `🔔 *${notificationType.labelToken || 'Notification'}*`;
-          }
-
-          const parts = [header, title, messageBody].filter(Boolean);
-          const completeMessage = parts.join('\n\n');
-
-
-          const waResponse = await client.messages.create({
-               body: completeMessage,
-               from: fromWa,
-               to: toWa,
+     const { accountSid, authToken, whatsappFrom } = getTwilioEnv();
+     if (!accountSid || !authToken || !whatsappFrom) {
+          await logServerAction({
+               action: "Twilio WhatsApp Send",
+               error: "Missing Twilio env variables (ACCOUNT_SID / AUTH_TOKEN / SENDER_WHATSAPP_NUMBER)",
+               payload: null,
+               status: "fail",
+               type: "external",
+               user_id: null,
+               created_at: new Date(),
+               duration_ms: 0,
           });
-          log(`Twilio WhatsApp response: sid=${waResponse?.sid || 'n/a'} status=${waResponse?.status || 'n/a'}`)
-          if (!waResponse || !(waResponse as any)?.sid) {
-               logServerAction({
-                    action: 'Twilio WhatsApp Send',
-                    error: 'No message SID returned from Twilio',
-                    payload: { to: toWa, body },
-                    status: 'fail',
-                    type: 'external',
+          throw new Error("Twilio configuration missing");
+     }
+     const normalize = (p: string) => {
+          const cleaned = p.replace(/\s+/g, "");
+          const numberPart = cleaned.startsWith("+") ? cleaned.slice(1) : cleaned;
+          if (!/^\d+$/.test(numberPart)) throw new Error("Invalid phone number: digits only after '+'");
+          return `+${numberPart}`;
+     };
+     const toWa = `whatsapp:${normalize(to)}`;
+     let header = "";
+     let messageBody = body;
+     switch (notificationType.value) {
+          case "alert":
+               header = `🚨 *${notificationType.labelToken || "ALERT"}*`;
+               messageBody = `*${body}*`;
+               break;
+          case "announcement":
+               header = `📢 *${notificationType.labelToken || "Announcement"}*`;
+               break;
+          case "reminder":
+               header = `⏰ *${notificationType.labelToken || "Reminder"}*`;
+               messageBody = `_${body}_`;
+               break;
+          case "message":
+               header = `💬 *${notificationType.labelToken || "New Message"}*`;
+               messageBody = `_${body}_`;
+               break;
+          case "system":
+               header = `🛠️ *${notificationType.labelToken || "System Update"}*`;
+               break;
+          default:
+               header = `🔔 *${notificationType.labelToken || "Notification"}*`;
+     }
+     const parts = [header, title, messageBody].filter(Boolean);
+     const completeMessage = parts.join("\n\n");
+     try {
+          let waResponse: any;
+          if (opts.useFetch) {
+               waResponse = await sendViaFetch({ to: toWa, from: whatsappFrom, body: completeMessage });
+          } else {
+               const client = await getTwilioClient();
+               if (!client) throw new Error("Twilio client not initialized");
+               waResponse = await client.messages.create({ body: completeMessage, from: whatsappFrom, to: toWa });
+          }
+          log(`Twilio WhatsApp response: sid=${waResponse?.sid || "n/a"} status=${waResponse?.status || waResponse?.statusCode || "n/a"}`);
+          if (!waResponse?.sid) {
+               await logServerAction({
+                    action: "Twilio WhatsApp Send",
+                    error: "No message SID returned from Twilio",
+                    payload: { to: toWa },
+                    status: "fail",
+                    type: "external",
                     user_id: null,
                     created_at: new Date(),
                     duration_ms: Date.now() - start,
-               })
+               });
+          } else {
+               await logServerAction({
+                    action: "Twilio WhatsApp Send",
+                    error: "",
+                    payload: { to: toWa, sid: waResponse.sid, status: waResponse.status },
+                    status: "success",
+                    type: "external",
+                    user_id: null,
+                    created_at: new Date(),
+                    duration_ms: Date.now() - start,
+               });
           }
-          logServerAction({
-               action: 'Twilio WhatsApp Send',
-               error: '',
-               payload: { to: toWa, body, sid: (waResponse as any)?.sid, status: (waResponse as any)?.status },
-               status: 'success',
-               type: 'external',
-               user_id: null,
-               created_at: new Date(),
-               duration_ms: Date.now() - start,
-          })
           return waResponse;
      } catch (e: any) {
-          logServerAction({
-               action: 'Twilio WhatsApp Send',
+          await logServerAction({
+               action: "Twilio WhatsApp Send",
                error: e?.message || String(e),
-               payload: { to, body },
-               status: 'fail',
-               type: 'external',
+               payload: { to: toWa },
+               status: "fail",
+               type: "external",
                user_id: null,
                created_at: new Date(),
                duration_ms: Date.now() - start,
-          })
+          });
           throw e;
+     }
+};
+
+
+// Invite to whatsapp sandbox
+type InviteArgs = {
+     phone: string;     // E.164 format, e.g. +3816xxxxxxx
+     name?: string;
+};
+
+function buildJoinLinks(sandboxNumber: string, keyword: string) {
+     // WhatsApp wants the number in intl format WITHOUT '+'
+     const intl = sandboxNumber.replace(/[^\d]/g, ''); // keep digits only
+     const text = encodeURIComponent(`join%20${keyword}`);
+
+     // Primary (more compatible in some environments)
+     const api = `https://api.whatsapp.com/send?phone=${intl}&text=${text}`;
+     // Fallback (official universal link)
+     const wa = `https://wa.me/${intl}?text=${text}`;
+
+     return { api, wa };
+}
+
+export async function sendWhatsAppSandboxInvite({ phone, name }: InviteArgs) {
+     if (!phone?.startsWith("+")) return { ok: false, error: "Phone must be E.164 format (e.g., +3816...)" };
+     const { accountSid, authToken, smsFrom, whatsappFrom } = getTwilioEnv();
+     const keyword = process.env.NEXT_PUBLIC_TWILIO_WHATSAPP_SANDBOX_KEYWORD || "";
+     log(`Twilio invite: sid=${mask(accountSid)} smsFrom=${smsFrom} waFrom=${whatsappFrom} keyword=${keyword}`);
+     if (!accountSid || !authToken || !smsFrom || !whatsappFrom || !keyword) return { ok: false, error: "Missing Twilio configuration." };
+     const { api, wa } = buildJoinLinks(whatsappFrom, keyword);
+     const body =
+          `Hi${name ? " " + name : ""}!\n` +
+          `To receive WhatsApp messages and updates for your building, join our group:\n` +
+          `1) Link: ${api}\n` +
+          `   (If it doesn’t prefill, try: ${wa})\n` +
+          `OR\n` +
+          `2) Send: join ${keyword} to ${whatsappFrom} in WhatsApp.`;
+     try {
+          // Use fetch variant to avoid separate client init.
+          const sms = await sendViaFetch({ to: phone, from: smsFrom, body });
+          return { ok: true, sid: sms.sid || sms?.sid || "" };
+     } catch (e: any) {
+          return { ok: false, error: e?.message || "Failed to send SMS" };
      }
 }
