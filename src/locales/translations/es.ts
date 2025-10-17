@@ -39,6 +39,12 @@ export const es = {
   [tokens.account.security.loginHistorySubtitle]: 'Tu actividad de inicio de sesión reciente',
   [tokens.common.editorStartTyping]: 'Empieza a escribir...',
   [tokens.common.imageUploadRequirements]: 'Mín. 400×400px, PNG o JPEG',
+  // Invitaciones WhatsApp
+  [tokens.clients.inviteToWhatsAppSandboxDescription]: 'Enviar invitación al grupo del edificio por WhatsApp',
+  [tokens.clients.inviteToWhatsAppSandboxTitle]: 'Invitación de WhatsApp',
+  [tokens.clients.confirmInviteToWhatsAppSandboxMessage]: '¿Seguro que deseas enviar la invitación de WhatsApp?',
+  [tokens.clients.invitationButtonTitle]: 'Invitar por WhatsApp',
+  [tokens.clients.invitationMessage]: '¡Hola! Me gustaría invitarte a unirte a nuestra aplicación del consejo de vivienda. Haz clic en el enlace para comenzar: {{link}}',
   // Calendario
   [tokens.calendar.title]: 'Calendario',
   [tokens.calendar.prev]: 'Anterior',

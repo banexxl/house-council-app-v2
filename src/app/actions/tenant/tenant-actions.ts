@@ -8,6 +8,7 @@ import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
 import log from 'src/utils/logger';
 import { TenantContact } from 'src/types/notification';
+import twilio from 'twilio';
 
 /**
  * 
@@ -153,7 +154,6 @@ export const createOrUpdateTenantAction = async (
                     payload: { email: tenantData.email },
                     status: 'fail',
                     type: 'auth',
-
                });
 
                return {
@@ -504,5 +504,54 @@ export const readTenantContactByUserIds = async (
           return { success: true, data: Object.values(map) };
      } catch (e: any) {
           return { success: false, error: e?.message || 'Unexpected error', data: [] };
+     }
+}
+
+// Invite to whatsapp sandbox
+type InviteArgs = {
+     phone: string;     // E.164 format, e.g. +3816xxxxxxx
+     name?: string;
+};
+
+function buildJoinLink(sandboxNumber: string, keyword: string) {
+     const phone = sandboxNumber.replace(/\+/g, '');
+     const text = encodeURIComponent(`join ${keyword}`);
+     return `https://wa.me/${phone}?text=${text}`;
+}
+
+export async function sendWhatsAppSandboxInvite({ phone, name }: InviteArgs) {
+     if (!phone?.startsWith('+')) {
+          return { ok: false, error: 'Phone must be E.164 format (e.g., +3816...)' };
+     }
+
+     const accountSid = process.env.TWILIO_ACCOUNT_SID;
+     const authToken = process.env.TWILIO_API_TOKEN;
+     const smsFrom = process.env.TWILIO_SENDER_PHONE_NUMBER;
+     const sandboxNumber = process.env.TWILIO_SENDER_WHATSAPP_NUMBER;
+     const keyword = process.env.NEXT_PUBLIC_TWILIO_WHATSAPP_SANDBOX_KEYWORD;
+     log(`accountSid=${accountSid} authToken=${authToken ? '***' : 'n/a'} smsFrom=${smsFrom} sandboxNumber=${sandboxNumber} keyword=${keyword}`);
+     if (!accountSid || !authToken || !smsFrom || !sandboxNumber || !keyword) {
+          return { ok: false, error: 'Missing Twilio configuration.' };
+     }
+
+     const client = twilio(accountSid, authToken);
+     const joinLink = buildJoinLink(sandboxNumber, keyword);
+
+     const body =
+          `Hi${name ? ' ' + name : ''}! To receive messages on WhatsApp, please join our Twilio Sandbox:\n` +
+          `1) Tap this link: ${joinLink}\n` +
+          `   (it opens WhatsApp with "join ${keyword}" prefilled to ${sandboxNumber})\n` +
+          `OR\n` +
+          `2) Manually send:  join ${keyword}  to ${sandboxNumber} in WhatsApp.`;
+
+     try {
+          const message = await client.messages.create({
+               from: smsFrom,
+               to: phone,
+               body,
+          });
+          return { ok: true, sid: message.sid };
+     } catch (e: any) {
+          return { ok: false, error: e?.message ?? 'Failed to send SMS' };
      }
 }

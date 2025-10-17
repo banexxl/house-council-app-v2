@@ -91,6 +91,12 @@ export const en = {
   [tokens.clients.clientUnassignedLocations]: 'Unassigned locations',
   [tokens.common.editorStartTyping]: 'Start typing...',
   [tokens.common.imageUploadRequirements]: 'Min 400×400px, PNG or JPEG',
+  // WhatsApp invitations
+  [tokens.clients.inviteToWhatsAppSandboxDescription]: 'Send invitation to the building group via WhatsApp',
+  [tokens.clients.inviteToWhatsAppSandboxTitle]: 'WhatsApp Invitation',
+  [tokens.clients.confirmInviteToWhatsAppSandboxMessage]: 'Are you sure you want to send a WhatsApp invitation?',
+  [tokens.clients.invitationButtonTitle]: 'Invite via WhatsApp',
+  [tokens.clients.invitationMessage]: 'Hi! I\'d like to invite you to join our house council app. Click the link to get started: {{link}}',
   // Calendar
   [tokens.calendar.title]: 'Calendar',
   [tokens.calendar.prev]: 'Prev',

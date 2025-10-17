@@ -18,6 +18,7 @@ import {
      Divider
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +26,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { paths } from 'src/paths';
 import { RouterLink } from 'src/components/router-link';
-import { createOrUpdateTenantAction } from 'src/app/actions/tenant/tenant-actions';
+import { createOrUpdateTenantAction, sendWhatsAppSandboxInvite } from 'src/app/actions/tenant/tenant-actions';
 import { Tenant, tenantInitialValues, tenantValidationSchema, tenantTypeOptions } from 'src/types/tenant';
 import dayjs from 'dayjs';
 import { PopupModal } from 'src/components/modal-dialog';
@@ -182,6 +183,12 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                setModalResult(t('clients.tenantNotSaved'));
           }
           setModalLoading(false);
+     };
+
+     const handleInviteToWhatsAppSandbox = async () => {
+          const res = await sendWhatsAppSandboxInvite({ phone: formik.values.phone_number!, name: formik.values.first_name });
+          if (res.ok) toast.success('SMS invite sent');
+          else toast.error(res.error ?? 'Failed to send SMS');
      };
 
      return (
@@ -381,6 +388,23 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
                                              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
                                                   <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                       {t('clients.inviteToWhatsAppSandboxDescription')}
+                                                  </Typography>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="primary"
+                                                       startIcon={<WhatsAppIcon />}
+                                                       onClick={() => setModal({ type: 'whatsapp', open: true })}
+                                                       disabled={formik.isSubmitting || !formik.values.email || modalLoading}
+                                                       loading={modalLoading && modal.type === 'whatsapp'}
+                                                       sx={{ textTransform: 'none' }}
+                                                  >
+                                                       {t('clients.invitationButtonTitle')}
+                                                  </Button>
+                                             </Box>
+                                             <Divider sx={{ my: 3 }} />
+                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
                                                        {t('clients.sendPasswordRecoveryDescription')}
                                                   </Typography>
                                                   <Button
@@ -461,7 +485,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                        modal.type === 'magic' ? t('clients.sendMagicLink') :
                                                             modal.type === 'mfa' ? t('clients.removeMfa') :
                                                                  modal.type === 'ban' ? t('clients.banUser') :
-                                                                      modal.type === 'unban' ? t('clients.unbanUser') : ''
+                                                                      modal.type === 'unban' ? t('clients.unbanUser') :
+                                                                           modal.type === 'whatsapp' ? t('clients.inviteToWhatsAppSandboxTitle') : ''
                                              }
                                              type="confirmation"
                                              loading={modalLoading}
@@ -475,6 +500,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   if (modal.type === 'mfa') return handleRemoveMfa();
                                                   if (modal.type === 'ban') return handleBanUser();
                                                   if (modal.type === 'unban') return handleUnbanUser();
+                                                  if (modal.type === 'whatsapp') return handleInviteToWhatsAppSandbox();
                                              }}
                                              confirmText={t('common.btnConfirm')}
                                              cancelText={t('common.btnCancel')}
@@ -484,6 +510,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                              {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
                                              {modal.type === 'ban' && t('clients.confirmBanUser')}
                                              {modal.type === 'unban' && t('clients.confirmUnbanUser')}
+                                             {modal.type === 'whatsapp' && t('clients.confirmInviteToWhatsAppSandboxMessage')}
                                              {modalResult && (
                                                   <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
                                                        {modalResult}

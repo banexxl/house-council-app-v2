@@ -7,7 +7,7 @@ import { Notification, BaseNotification, NotificationType, NotificationTypeMap, 
 import { hydrateNotificationsFromDb } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
-import { createMessage } from 'src/libs/sms/twilio';
+import { createMessage } from 'src/libs/whatsapp/twilio';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
@@ -66,14 +66,17 @@ export async function emitNotifications(
           let smsSent = 0; let smsErrors = 0;
           for (const uid of userIds) {
                const contact = Array.isArray(contacts) && contacts.length > 0 ? contacts.find(c => c.user_id === uid) : undefined;
+               log(`contact ${contact ? contact?.phone_number : 'not found'} for user ${uid}`, 'warn')
                if (!contact?.phone_number) {
+                    log('nije trebao da udje ovde')
                     continue;
                }
                if (contact.sms_opt_in !== true) {
+                    log('nije trebao da udje ovde sms opt in false')
                     continue;
                }
                const list = byUser.get(uid)!;
-
+               log(`logging notifications for user ${uid}: ${list} items`, 'warn')
 
                let title: string;
                let body: string;

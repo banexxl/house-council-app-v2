@@ -103,7 +103,7 @@ export const createMessage = async (to: string, title: string, body: string, not
                from: fromWa,
                to: toWa,
           });
-
+          log(`Twilio WhatsApp response: sid=${waResponse?.sid || 'n/a'} status=${waResponse?.status || 'n/a'}`)
           if (!waResponse || !(waResponse as any)?.sid) {
                logServerAction({
                     action: 'Twilio WhatsApp Send',

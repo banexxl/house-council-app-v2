@@ -40,6 +40,12 @@ export const rs = {
      [tokens.account.security.noValidFactor]: 'Nije pronađen validan 2FA faktor.',
      [tokens.common.editorStartTyping]: 'Počnite da kucate...',
      [tokens.common.imageUploadRequirements]: 'Min 400×400px, PNG ili JPEG',
+     // WhatsApp pozivnice
+     [tokens.clients.inviteToWhatsAppSandboxDescription]: 'Pošalji poziv u grupu zgrade preko WhatsApp-a',
+     [tokens.clients.inviteToWhatsAppSandboxTitle]: 'WhatsApp poziv',
+     [tokens.clients.confirmInviteToWhatsAppSandboxMessage]: 'Da li ste sigurni da želite da pošaljete WhatsApp poziv?',
+     [tokens.clients.invitationButtonTitle]: 'Pozovi preko WhatsApp-a',
+     [tokens.clients.invitationMessage]: 'Zdravo! Želeo bih da te pozovem da se pridružiš našoj aplikaciji za skup stanara. Klikni na link da započneš: {{link}}',
      // Kalendar
      [tokens.calendar.title]: 'Kalendar',
      [tokens.calendar.prev]: 'Prethodni',

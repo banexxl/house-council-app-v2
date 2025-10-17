@@ -145,6 +145,7 @@ export const tokens = {
     editorStartTyping: 'common.editorStartTyping',
     imageUploadRequirements: 'common.imageUploadRequirements',
   },
+  // (whatsapp section removed; keys moved under clients)
   account: {
     security: {
       lblSecurity: 'account.security.lblSecurity',
@@ -673,6 +674,12 @@ export const tokens = {
     unbanUserDescription: 'clients.unbanUserDescription',
     confirmUnbanUser: 'clients.confirmUnbanUser',
     userUnbanned: 'clients.userUnbanned',
+    // WhatsApp invitation related (moved from former whatsapp group)
+    inviteToWhatsAppSandboxDescription: 'clients.inviteToWhatsAppSandboxDescription',
+    inviteToWhatsAppSandboxTitle: 'clients.inviteToWhatsAppSandboxTitle',
+    confirmInviteToWhatsAppSandboxMessage: 'clients.confirmInviteToWhatsAppSandboxMessage',
+    invitationButtonTitle: 'clients.invitationButtonTitle',
+    invitationMessage: 'clients.invitationMessage',
   },
   subscriptionPlans: {
     status: 'subscriptionPlans.status',

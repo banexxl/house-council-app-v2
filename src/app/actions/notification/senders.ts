@@ -1,7 +1,7 @@
 // notifications/senders.ts
 
 import { sendNotificationEmail } from "src/libs/email/node-mailer";
-import { createMessage } from "src/libs/sms/twilio";
+import { createMessage } from "src/libs/whatsapp/twilio";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { NotificationTypeMap } from "src/types/notification";
 import log from "src/utils/logger";
@@ -45,10 +45,4 @@ export async function sendViaEmail(
           });
           return { ok: false, error: e?.message || String(e) };
      }
-}
-
-// TEMP stub so this compiles until you wire your mailer:
-async function fakeMailerSend(to: string, subject: string, html: string): Promise<string> {
-     // no-op; return a pseudo id
-     return `mail_${Date.now()}`;
 }
