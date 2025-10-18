@@ -72,7 +72,7 @@ const Page = async () => {
     if (readAllClientTeamMembersSuccess && readAllClientTeamMembersData) {
       allTeamMembers = readAllClientTeamMembersData;
     }
-  } else if (admin) {
+  } else if (clientMember) {
     redirect('/dashboard');
   } else if (tenant) {
     redirect('/dashboard/products');
