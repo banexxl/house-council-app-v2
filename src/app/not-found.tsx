@@ -6,14 +6,11 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
-
-import { Seo } from 'src/components/seo';
-
 import { paths } from 'src/paths';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-
 import { useState } from 'react';
+import Layout from './dashboard/layout';
 
 export default function NotFound() {
 
@@ -23,8 +20,7 @@ export default function NotFound() {
   const router = useRouter()
 
   return (
-    <>
-      <Seo title={t('errors.page.notFound')} />
+    <Layout>
       <Box
         component="main"
         sx={{
@@ -85,6 +81,6 @@ export default function NotFound() {
           </Box>
         </Container>
       </Box>
-    </>
+    </Layout>
   );
 }

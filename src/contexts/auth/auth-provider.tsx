@@ -1,30 +1,33 @@
-// components/AuthProvider.tsx
 'use client';
 
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 
-const AuthCtx = createContext<UserDataCombined>({ admin: null, client: null, tenant: null, userData: null, clientMember: null, error: undefined });
+const AuthCtx = createContext<UserDataCombined>({
+     admin: null, client: null, tenant: null, userData: null, clientMember: null, error: undefined
+});
 
-export default function AuthProvider({
-     initialViewer,
-     children,
-}: { initialViewer: UserDataCombined; children: React.ReactNode }) {
+export default function AuthProvider({ initialViewer, children }: {
+     initialViewer: UserDataCombined; children: React.ReactNode
+}) {
      const router = useRouter();
 
-     // Subscribe once; on login/logout, refresh the tree (server fetches fresh viewer)
      useEffect(() => {
-          // Guard just in case (should only run client-side)
           if (!supabaseBrowserClient) return;
-          const { data: sub } = supabaseBrowserClient.auth.onAuthStateChange(() => {
-               // Defer refresh to next tick to avoid sync render issues
-               setTimeout(() => router.refresh(), 0);
+
+          const { data: { subscription } } = supabaseBrowserClient.auth.onAuthStateChange((event) => {
+               // Only react to actual auth boundary changes
+               if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                    console.log('Auth state changed:', event);
+                    // Defer to next tick to avoid sync render conflicts
+                    setTimeout(() => router.refresh(), 0);
+               }
+               // Ignore: 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED', 'PASSWORD_RECOVERY'
           });
-          return () => {
-               try { sub.subscription.unsubscribe(); } catch { /* noop */ }
-          };
+
+          return () => subscription.unsubscribe();
      }, [router]);
 
      return <AuthCtx.Provider value={initialViewer}>{children}</AuthCtx.Provider>;
