@@ -161,7 +161,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         ),
         items: [
           { title: t(tokens.nav.list), path: paths.dashboard.buildings.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client"] },
+          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client", "clientMember"] },
         ],
       },
       {
@@ -174,7 +174,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         ),
         items: [
           { title: t(tokens.nav.list), path: paths.dashboard.apartments.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client"] },
+          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client", "clientMember"] },
         ],
       },
       {
@@ -187,7 +187,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         ),
         items: [
           { title: t(tokens.nav.list), path: paths.dashboard.tenants.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client"] },
+          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client", "clientMember"] },
         ],
       },
       {
