@@ -96,9 +96,11 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                try {
                     const response = await createOrUpdateTenantAction(values as Tenant);
                     if (response.saveTenantActionSuccess) {
+                         // Update local initialValues and reset Formik to new clean state so form is not marked dirty.
                          setInitialValues((prev) => ({ ...prev, ...response.saveTenantActionData }));
+                         formik.resetForm({ values: { ...tenantInitialValues, ...response.saveTenantActionData } });
                          const tenantId = response.saveTenantActionData?.id;
-                         if (!currentRoute.includes(tenantId!)) {
+                         if (tenantId && !currentRoute.includes(tenantId)) {
                               router.push(paths.dashboard.tenants.index + '/' + tenantId);
                          }
                          toast.success(t('tenants.tenantSaved'));
@@ -412,8 +414,6 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         </label>
                                    </Tooltip>
                               </Grid>
-
-
                          </Grid>
                     </CardContent>
                     <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
@@ -422,6 +422,55 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               tenantData ? (
                                    <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
                                         <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
+                                             {/* Opt-in communication preferences */}
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box
+                                                       sx={{
+                                                            display: 'flex',
+                                                            flexWrap: 'wrap',
+                                                            gap: 2,
+                                                            alignItems: 'center'
+                                                       }}
+                                                  >
+                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Checkbox
+                                                                 name="email_opt_in"
+                                                                 checked={formik.values.email_opt_in}
+                                                                 onChange={(e) => formik.setFieldValue('email_opt_in', e.target.checked)}
+                                                                 disabled={!apartmentSelected}
+                                                            />
+                                                            <Typography variant="body2">{t('tenants.tenantOptInEmail')}</Typography>
+                                                       </Box>
+                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Checkbox
+                                                                 name="sms_opt_in"
+                                                                 checked={formik.values.sms_opt_in}
+                                                                 onChange={(e) => formik.setFieldValue('sms_opt_in', e.target.checked)}
+                                                                 disabled={!apartmentSelected || !formik.values.phone_number}
+                                                            />
+                                                            <Typography variant="body2">{t('tenants.tenantOptInSms')}</Typography>
+                                                       </Box>
+                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Checkbox
+                                                                 name="viber_opt_in"
+                                                                 checked={formik.values.viber_opt_in}
+                                                                 onChange={(e) => formik.setFieldValue('viber_opt_in', e.target.checked)}
+                                                                 disabled={!apartmentSelected || !formik.values.phone_number}
+                                                            />
+                                                            <Typography variant="body2">{t('tenants.tenantOptInViber')}</Typography>
+                                                       </Box>
+                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Checkbox
+                                                                 name="whatsapp_opt_in"
+                                                                 checked={formik.values.whatsapp_opt_in}
+                                                                 onChange={(e) => formik.setFieldValue('whatsapp_opt_in', e.target.checked)}
+                                                                 disabled={!apartmentSelected || !formik.values.phone_number}
+                                                            />
+                                                            <Typography variant="body2">{t('tenants.tenantOptInWhatsApp')}</Typography>
+                                                       </Box>
+                                                  </Box>
+                                             </Grid>
+                                             <Divider sx={{ my: 3 }} />
                                              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
                                                   <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
                                                        {t('clients.inviteToWhatsAppSandboxDescription')}

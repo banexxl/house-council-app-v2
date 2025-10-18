@@ -16,7 +16,6 @@ export interface Tenant {
      email?: string;
      phone_number?: string;
      date_of_birth?: string; // ISO string
-
      apartment_id: string;
      apartment: {
           apartment_number: string;
@@ -27,15 +26,15 @@ export interface Tenant {
      };
      is_primary: boolean;
      move_in_date: string;   // ISO string
-
      tenant_type: TenantType;
-
      notes?: string;
-
      created_at?: string;
      updated_at?: string;
-
-     user_id?: string; // optional FK to auth.users
+     user_id?: string; //  FK to auth.users
+     email_opt_in: boolean;
+     sms_opt_in: boolean;
+     viber_opt_in: boolean;
+     whatsapp_opt_in: boolean;
 }
 
 export const tenantInitialValues: Tenant = {
@@ -53,6 +52,10 @@ export const tenantInitialValues: Tenant = {
      notes: '',
      created_at: new Date().toISOString(),
      updated_at: new Date().toISOString(),
+     email_opt_in: false,
+     sms_opt_in: false,
+     viber_opt_in: false,
+     whatsapp_opt_in: false,
 };
 
 export const tenantValidationSchema = (t: (key: string) => string) => Yup.object().shape({
