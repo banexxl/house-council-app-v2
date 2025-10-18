@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import log from 'src/utils/logger';
 
 const AuthCtx = createContext<UserDataCombined>({
      admin: null, client: null, tenant: null, userData: null, clientMember: null, error: undefined
@@ -20,7 +21,7 @@ export default function AuthProvider({ initialViewer, children }: {
           const { data: { subscription } } = supabaseBrowserClient.auth.onAuthStateChange((event) => {
                // Only react to actual auth boundary changes
                if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                    console.log('Auth state changed:', event);
+                    log(`Auth state changed: ${event}`);
                     // Defer to next tick to avoid sync render conflicts
                     setTimeout(() => router.refresh(), 0);
                }
