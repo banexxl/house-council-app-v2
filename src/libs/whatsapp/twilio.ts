@@ -10,13 +10,15 @@ import log from "src/utils/logger";
 // internal twilio ../lib path in an unsupported runtime.
 let _twilioClient: any | null = null;
 
-// Helper to safely read credentials (server-side only). We alias TWILIO_API_TOKEN -> TWILIO_AUTH_TOKEN usage if needed.
+// Helper to safely read credentials (server-side only). We alias TWILIO_AUTH_TOKEN -> TWILIO_AUTH_TOKEN usage if needed.
 function getTwilioEnv() {
-     const accountSid = process.env.TWILIO_ACCOUNT_SID || "";
-     const authToken = process.env.TWILIO_API_TOKEN || process.env.TWILIO_AUTH_TOKEN || "";
-     const whatsappFrom = process.env.TWILIO_SENDER_WHATSAPP_NUMBER || "";
-     const smsFrom = process.env.TWILIO_SENDER_PHONE_NUMBER || "";
-     return { accountSid, authToken, whatsappFrom, smsFrom };
+     const accountSid = process.env.TWILIO_ACCOUNT_SID!
+     const authToken = process.env.TWILIO_AUTH_TOKEN!
+     const apiTokenSID = process.env.TWILIO_API_KEY_SID!
+     const apiTokenSecret = process.env.TWILIO_API_KEY_SECRET!
+     const whatsappFrom = process.env.TWILIO_SENDER_WHATSAPP_NUMBER!
+     const smsFrom = process.env.TWILIO_SENDER_PHONE_NUMBER!
+     return { accountSid, authToken, whatsappFrom, smsFrom, apiTokenSID, apiTokenSecret };
 }
 
 // Mask secrets when logging (show first 4 chars only if present).
@@ -35,18 +37,21 @@ async function getTwilioClient() {
 
 // Optional lightweight fetch-based sender (avoids full twilio lib). Useful for edge runtimes.
 async function sendViaFetch(params: { to: string; from: string; body: string }) {
-     const { accountSid, authToken } = getTwilioEnv();
-     if (!accountSid || !authToken) throw new Error("Twilio credentials missing for fetch sender");
-     const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+     const { apiTokenSID, apiTokenSecret } = getTwilioEnv();
+     if (!apiTokenSID || !apiTokenSecret) throw new Error("Twilio credentials missing for fetch sender");
+     log(`Twilio fetch sender: to=${params.to} from=${params.from}, apiTokenSID=${(apiTokenSID)}, apiTokenSecret=${(apiTokenSecret)}`);
+     const url = `https://api.twilio.com/2010-04-01/Accounts/${apiTokenSID}/Messages.json`;
      const form = new URLSearchParams({ To: params.to, From: params.from, Body: params.body });
      const res = await fetch(url, {
           method: "POST",
           headers: {
-               Authorization: "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64"),
+               Authorization: "Basic " + Buffer.from(`${apiTokenSID}:${apiTokenSecret}`).toString("base64"),
                "Content-Type": "application/x-www-form-urlencoded",
           },
           body: form.toString(),
      });
+     const response = await res.clone().text();
+     log(`Twilio fetch send response: status=${response}`);
      if (!res.ok) {
           const txt = await res.text();
           throw new Error(`Twilio fetch send failed status=${res.status} body=${txt}`);
@@ -158,7 +163,6 @@ export const createMessage = async (
      }
 };
 
-
 // Invite to whatsapp sandbox
 type InviteArgs = {
      phone: string;     // E.164 format, e.g. +3816xxxxxxx
@@ -168,7 +172,7 @@ type InviteArgs = {
 function buildJoinLinks(sandboxNumber: string, keyword: string) {
      // WhatsApp wants the number in intl format WITHOUT '+'
      const intl = sandboxNumber.replace(/[^\d]/g, ''); // keep digits only
-     const text = encodeURIComponent(`join%20${keyword}`);
+     const text = encodeURIComponent(`join ${keyword}`);
 
      // Primary (more compatible in some environments)
      const api = `https://api.whatsapp.com/send?phone=${intl}&text=${text}`;
@@ -182,7 +186,7 @@ export async function sendWhatsAppSandboxInvite({ phone, name }: InviteArgs) {
      if (!phone?.startsWith("+")) return { ok: false, error: "Phone must be E.164 format (e.g., +3816...)" };
      const { accountSid, authToken, smsFrom, whatsappFrom } = getTwilioEnv();
      const keyword = process.env.NEXT_PUBLIC_TWILIO_WHATSAPP_SANDBOX_KEYWORD || "";
-     log(`Twilio invite: sid=${mask(accountSid)} smsFrom=${smsFrom} waFrom=${whatsappFrom} keyword=${keyword}`);
+     log(`Twilio invite: sid=${(accountSid)}, auth=${authToken}, smsFrom=${smsFrom} waFrom=${whatsappFrom} keyword=${keyword}`);
      if (!accountSid || !authToken || !smsFrom || !whatsappFrom || !keyword) return { ok: false, error: "Missing Twilio configuration." };
      const { api, wa } = buildJoinLinks(whatsappFrom, keyword);
      const body =

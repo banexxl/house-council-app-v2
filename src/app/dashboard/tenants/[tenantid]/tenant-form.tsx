@@ -15,7 +15,8 @@ import {
      Typography,
      Checkbox,
      Tooltip,
-     Divider
+     Divider,
+     InputAdornment
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -100,7 +101,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                          if (!currentRoute.includes(tenantId!)) {
                               router.push(paths.dashboard.tenants.index + '/' + tenantId);
                          }
-                         toast.success(t('tenants.tenantSaved') + '\n' + t('clients.passwordResetEmailSent'));
+                         toast.success(t('tenants.tenantSaved'));
                     } else {
                          toast.error(t('tenants.tenantNotSaved') + ': ' + t(response.saveTenantActionError));
                     }
@@ -189,7 +190,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
      const handleInviteToWhatsAppSandbox = async () => {
           const res = await sendWhatsAppSandboxInvite({ phone: formik.values.phone_number!, name: formik.values.first_name });
           if (res.ok) toast.success('SMS invite sent');
-          else toast.error(res.error ?? 'Failed to send SMS');
+          else toast.error('Error sending SMS invite');
           setModal({ open: false, type: undefined });
      };
 
@@ -343,10 +344,16 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <TextField
                                         fullWidth
+                                        type="text"
                                         label={t('tenants.tenantPhoneNumber')}
                                         name="phone_number"
                                         value={formik.values.phone_number}
-                                        onChange={formik.handleChange}
+                                        onChange={(e) => {
+                                             const raw = e.target.value;
+                                             // Strip non-digits
+                                             const digits = raw.replace(/[^0-9]/g, '');
+                                             formik.setFieldValue('phone_number', digits);
+                                        }}
                                         onBlur={formik.handleBlur}
                                         disabled={!apartmentSelected}
                                         error={Boolean(formik.errors.phone_number) && showFieldError('phone_number')}
@@ -355,6 +362,33 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   {showFieldError('phone_number') ? formik.errors.phone_number : ''}
                                              </span>
                                         }
+                                        slotProps={{
+                                             htmlInput: {
+                                                  inputMode: 'numeric',
+                                                  pattern: '[0-9]*',
+                                                  onKeyDown: (e: any) => {
+                                                       const allowedControlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+                                                       if (allowedControlKeys.includes(e.key)) return;
+                                                       if (!/^[0-9]$/.test(e.key)) {
+                                                            e.preventDefault();
+                                                       }
+                                                  },
+                                                  style: { MozAppearance: 'textfield' }
+                                             }
+                                        }}
+                                        sx={{
+                                             '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                  WebkitAppearance: 'none',
+                                                  margin: 0,
+                                             },
+                                        }}
+                                        InputProps={{
+                                             startAdornment: (
+                                                  <InputAdornment position="start" sx={{ userSelect: 'none' }}>
+                                                       <span style={{ fontWeight: 600 }}>+</span>
+                                                  </InputAdornment>
+                                             ),
+                                        }}
                                    />
                               </Grid>
 

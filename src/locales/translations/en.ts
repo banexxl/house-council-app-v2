@@ -651,6 +651,7 @@ export const en = {
   [tokens.tenants.tenantSaved]: 'Tenant saved!',
   [tokens.tenants.tenantNotSaved]: 'Tenant not saved',
   [tokens.tenants.phoneNumberMustStartWithPlusAndNumbersOnly]: 'Phone number must start with +, followed by at least 7 digits',
+  [tokens.tenants.phoneNumberDigitsOnly]: 'Phone number must be digits only (7-15)',
   [tokens.tenants.phoneAlreadyExists]: 'Phone number already exists',
   [tokens.tenants.tenantAlreadyExists]: 'Email already exists',
   // Tenant validation

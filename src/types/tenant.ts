@@ -43,7 +43,7 @@ export const tenantInitialValues: Tenant = {
      first_name: '',
      last_name: '',
      email: '',
-     phone_number: '+',
+     phone_number: '', // plus sign now visual only; store raw digits
      date_of_birth: '',
      apartment_id: '',
      apartment: { apartment_number: '', building: { street_address: '', city: '' } },
@@ -71,11 +71,11 @@ export const tenantValidationSchema = (t: (key: string) => string) => Yup.object
                then: (schema: Yup.StringSchema) =>
                     schema
                          .required(t('tenants.phoneNumberRequired'))
-                         .matches(/^\+\d{7,15}$/, t('tenants.phoneNumberMustStartWithPlusAndNumbersOnly')),
+                         .matches(/^\d{7,15}$/, t('tenants.phoneNumberDigitsOnly')),
                otherwise: (schema: Yup.StringSchema) =>
-                    schema.matches(/^$|^\+\d{7,15}$/, t('tenants.phoneNumberMustStartWithPlusAndNumbersOnly')),
+                    schema.matches(/^$|^\d{7,15}$/, t('tenants.phoneNumberDigitsOnly')),
           })
-          .matches(/^$|^\+\d{7,15}$/, t('tenants.phoneNumberMustStartWithPlusAndNumbersOnly')),
+          .matches(/^$|^\d{7,15}$/, t('tenants.phoneNumberDigitsOnly')),
      date_of_birth: Yup.date().nullable(),
      apartment_id: Yup.string().required(t('tenants.apartmentRequired')),
      is_primary: Yup.boolean().required(t('tenants.isPrimaryRequired')),

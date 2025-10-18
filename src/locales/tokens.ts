@@ -745,6 +745,7 @@ export const tokens = {
     tenantSaved: 'tenants.tenantSaved',
     tenantNotSaved: 'tenants.tenantNotSaved',
     phoneNumberMustStartWithPlusAndNumbersOnly: 'tenants.phoneNumberMustStartWithPlusAndNumbersOnly',
+    phoneNumberDigitsOnly: 'tenants.phoneNumberDigitsOnly',
     phoneAlreadyExists: 'tenants.phoneAlreadyExists',
     tenantAlreadyExists: 'tenants.tenantAlreadyExists',
 
