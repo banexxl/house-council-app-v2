@@ -60,7 +60,7 @@ export async function emitNotifications(
           }
 
           const { data, success, error } = await readTenantContactByUserIds(userIds);
-          log(`Fetched ${data ? data : 0} contacts for ${userIds.length} users or ${error ? error : 'no error'}`, 'warn')
+          log(`Fetched ${data ? data.length : 0} contacts for ${userIds.length} users. ${error ? error : 'no error'}`, 'warn')
           const contacts: TenantContact[] = success && data ? data : [];
 
           let smsSent = 0; let smsErrors = 0;
@@ -93,7 +93,7 @@ export async function emitNotifications(
                }
                try {
                     log('usssaaaoooo')
-                    const msg = await createMessage(contact.phone_number, title, body, notificationType);
+                    const msg = await createMessage(contact.phone_number, title, body, notificationType, { useFetch: true });
                     log(`[emitNotifications] SMS sent to ${contact.phone_number} (uid: ${uid}): ${msg?.sid || 'no sid'}`, 'warn');
                     if (msg && (msg.sid || msg.status)) {
                          smsSent++;

@@ -191,8 +191,15 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
 
      const handleInviteToWhatsAppSandbox = async () => {
           const res = await sendWhatsAppSandboxInvite({ phone: formik.values.phone_number!, name: formik.values.first_name });
-          if (res.ok) toast.success('SMS invite sent');
-          else toast.error('Error sending SMS invite');
+          if (res.ok) {
+               toast.success('SMS invite sent');
+          } else {
+               if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
+                    toast.error(res.error || 'Error sending SMS invite');
+               } else {
+                    toast.error('Error sending SMS invite');
+               }
+          }
           setModal({ open: false, type: undefined });
      };
 

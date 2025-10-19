@@ -172,7 +172,7 @@ type InviteArgs = {
 function buildJoinLinks(sandboxNumber: string, keyword: string) {
      // WhatsApp wants the number in intl format WITHOUT '+'
      const intl = sandboxNumber.replace(/[^\d]/g, ''); // keep digits only
-     const text = encodeURIComponent(`join ${keyword}`);
+     const text = encodeURIComponent(`join%20${keyword}`);
 
      // Primary (more compatible in some environments)
      const api = `https://api.whatsapp.com/send?phone=${intl}&text=${text}`;
@@ -183,7 +183,7 @@ function buildJoinLinks(sandboxNumber: string, keyword: string) {
 }
 
 export async function sendWhatsAppSandboxInvite({ phone, name }: InviteArgs) {
-     if (!phone?.startsWith("+")) return { ok: false, error: "Phone must be E.164 format (e.g., +3816...)" };
+     // if (!phone?.startsWith("+")) return { ok: false, error: "Phone must be E.164 format (e.g., +16...)" };
      const { accountSid, authToken, smsFrom, whatsappFrom } = getTwilioEnv();
      const keyword = process.env.NEXT_PUBLIC_TWILIO_WHATSAPP_SANDBOX_KEYWORD || "";
      log(`Twilio invite: sid=${(accountSid)}, auth=${authToken}, smsFrom=${smsFrom} waFrom=${whatsappFrom} keyword=${keyword}`);
@@ -198,7 +198,7 @@ export async function sendWhatsAppSandboxInvite({ phone, name }: InviteArgs) {
           `2) Send: join ${keyword} to ${whatsappFrom} in WhatsApp.`;
      try {
           // Use fetch variant to avoid separate client init.
-          const sms = await sendViaFetch({ to: phone, from: smsFrom, body });
+          const sms = await sendViaFetch({ to: '+' + phone, from: smsFrom, body });
           return { ok: true, sid: sms.sid || sms?.sid || "" };
      } catch (e: any) {
           return { ok: false, error: e?.message || "Failed to send SMS" };
