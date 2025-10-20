@@ -946,6 +946,26 @@ export const de = {
   [tokens.warning.deleteAllWarningMessage]: 'Möchten Sie wirklich alle Bilder entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
   [tokens.errors.apartment.apartmentSquareMetersTooLow]: 'Quadratmeter müssen mindestens 1 sein',
   [tokens.errors.apartment.apartmentRoomCountTooLow]: 'Zimmeranzahl muss mindestens 1 sein',
+  // Account Notifications
+  [tokens.account.notifications.sectionConsentTitle]: 'Einwilligungen',
+  [tokens.account.notifications.sectionOptinsTitle]: 'Kommunikations-Einwilligungen',
+  [tokens.account.notifications.acceptedTerms]: 'AGB akzeptiert',
+  [tokens.account.notifications.acceptedTermsDesc]: 'Bestätigt, dass der Nutzer die aktuellen AGB akzeptiert hat.',
+  [tokens.account.notifications.acceptedPrivacy]: 'Datenschutzerklärung akzeptiert',
+  [tokens.account.notifications.acceptedPrivacyDesc]: 'Bestätigt, dass der Nutzer die Datenschutzerklärung akzeptiert hat.',
+  [tokens.account.notifications.acceptedMarketing]: 'Marketing akzeptiert',
+  [tokens.account.notifications.acceptedMarketingDesc]: 'Erlaubt den Erhalt von Marketinginhalten und -aktionen.',
+  [tokens.account.notifications.verified]: 'Verifiziertes Konto',
+  [tokens.account.notifications.verifiedDesc]: 'Markiert den Kunden als verifiziert.',
+  [tokens.account.notifications.optinEmail]: 'E-Mail',
+  [tokens.account.notifications.optinEmailDesc]: 'Einwilligen, E-Mails zu erhalten.',
+  [tokens.account.notifications.optinSms]: 'SMS',
+  [tokens.account.notifications.optinSmsDesc]: 'Einwilligen, SMS-Nachrichten zu erhalten.',
+  [tokens.account.notifications.optinViber]: 'Viber',
+  [tokens.account.notifications.optinViberDesc]: 'Einwilligen, Viber-Nachrichten zu erhalten.',
+  [tokens.account.notifications.optinWhatsApp]: 'WhatsApp',
+  [tokens.account.notifications.optinWhatsAppDesc]: 'Einwilligen, WhatsApp-Nachrichten zu erhalten.',
+  [tokens.account.notifications.missingClientId]: 'Aktualisierung nicht möglich: fehlende Client-ID',
 };
 
 // (viewer keys merged into main de export)

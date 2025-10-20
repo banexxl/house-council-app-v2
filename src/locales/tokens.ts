@@ -240,6 +240,28 @@ export const tokens = {
       refundNote: 'account.billing.refundNote',
       cancel: 'account.billing.cancel',
     }
+    ,
+    notifications: {
+      sectionConsentTitle: 'account.notifications.sectionConsentTitle',
+      sectionOptinsTitle: 'account.notifications.sectionOptinsTitle',
+      acceptedTerms: 'account.notifications.acceptedTerms',
+      acceptedTermsDesc: 'account.notifications.acceptedTermsDesc',
+      acceptedPrivacy: 'account.notifications.acceptedPrivacy',
+      acceptedPrivacyDesc: 'account.notifications.acceptedPrivacyDesc',
+      acceptedMarketing: 'account.notifications.acceptedMarketing',
+      acceptedMarketingDesc: 'account.notifications.acceptedMarketingDesc',
+      verified: 'account.notifications.verified',
+      verifiedDesc: 'account.notifications.verifiedDesc',
+      optinEmail: 'account.notifications.optinEmail',
+      optinEmailDesc: 'account.notifications.optinEmailDesc',
+      optinSms: 'account.notifications.optinSms',
+      optinSmsDesc: 'account.notifications.optinSmsDesc',
+      optinViber: 'account.notifications.optinViber',
+      optinViberDesc: 'account.notifications.optinViberDesc',
+      optinWhatsApp: 'account.notifications.optinWhatsApp',
+      optinWhatsAppDesc: 'account.notifications.optinWhatsAppDesc',
+      missingClientId: 'account.notifications.missingClientId',
+    }
   },
   settings: {
     drawer: {
