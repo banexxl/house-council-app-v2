@@ -194,7 +194,7 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                                   clientSubscriptionPlan={clientSubscriptionPlan}
                                              />
                                         )}
-                                        {currentTab === 'notifications' && <AccountNotificationsSettings />}
+                                        {currentTab === 'notifications' && <AccountNotificationsSettings client={client} />}
                                         {currentTab === 'security' && (
                                              <AccountSecuritySettings
                                                   loginEvents={clientLogs || []}

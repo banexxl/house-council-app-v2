@@ -50,6 +50,10 @@ export interface Client {
   is_returning?: boolean;
   is_verified?: boolean;
   unassigned_location_id?: string | null;
+  sms_opt_in?: boolean;
+  email_opt_in?: boolean;
+  viber_opt_in?: boolean;
+  whatsapp_opt_in?: boolean;
 }
 
 export interface ClientLog {
