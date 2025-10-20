@@ -110,7 +110,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="has_accepted_terms_and_conditions"
                   checked={values.has_accepted_terms_and_conditions}
                   onChange={handleToggle}
-                  disabled={savingField === 'has_accepted_terms_and_conditions'}
+                  disabled={client?.has_accepted_terms_and_conditions === true}
                 />
               </Stack>
 
@@ -133,7 +133,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="has_accepted_privacy_policy"
                   checked={values.has_accepted_privacy_policy}
                   onChange={handleToggle}
-                  disabled={savingField === 'has_accepted_privacy_policy'}
+                  disabled={client?.has_accepted_privacy_policy === true}
                 />
               </Stack>
 
@@ -179,7 +179,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="is_verified"
                   checked={values.is_verified}
                   onChange={handleToggle}
-                  disabled={savingField === 'is_verified'}
+                  disabled={client?.is_verified === true}
                 />
               </Stack>
             </Stack>
