@@ -17,6 +17,8 @@ export const tokens = {
     search: 'common.search',
     sortBy: 'common.sortBy',
     rowsPerPage: 'common.rowsPerPage',
+    comment: 'common.comment',
+    summary: 'common.summary',
     emptyTableInfo: 'common.emptyTableInfo',
     formBasicInfo: 'common.formBasicInfo',
     formAdvancedInfo: 'common.formAdvancedInfo',
@@ -384,7 +386,7 @@ export const tokens = {
     title: 'polls.title',
     description: 'polls.description',
     type: 'polls.type',
-    status: 'polls.status',
+    statusTitle: 'polls.status',
     building: 'polls.building',
     startsAt: 'polls.startsAt',
     endsAt: 'polls.endsAt',
@@ -407,6 +409,8 @@ export const tokens = {
     existingAttachments: 'polls.existingAttachments',
     btnClosePoll: 'polls.btnClosePoll',
     closed: 'polls.closed',
+    votesList: 'polls.votesList',
+    noVotesYet: 'polls.noVotesYet',
     validation: {
       min0: 'polls.validation.min0',
       max100: 'polls.validation.max100',
@@ -424,6 +428,36 @@ export const tokens = {
       winnersRequired: 'polls.validation.winnersRequired',
       scoreAggRequired: 'polls.validation.scoreAggRequired',
       endsAfterStarts: 'polls.validation.endsAfterStarts',
+    },
+    anonymous: 'polls.anonymous',
+    types: {
+      yes_no: 'polls.types.yes_no',
+      single_choice: 'polls.types.single_choice',
+      multiple_choice: 'polls.types.multiple_choice',
+      ranked_choice: 'polls.types.ranked_choice',
+      score: 'polls.types.score',
+    },
+    status: {
+      draft: 'polls.status.draft',
+      scheduled: 'polls.status.scheduled',
+      active: 'polls.status.active',
+      closed: 'polls.status.closed',
+      archived: 'polls.status.archived',
+    },
+    voteStatus: {
+      cast: 'polls.voteStatus.cast',
+      revoked: 'polls.voteStatus.revoked',
+    },
+    rules: {
+      plurality: 'polls.rules.plurality',
+      absolute_majority: 'polls.rules.absolute_majority',
+      supermajority: 'polls.rules.supermajority',
+      threshold: 'polls.rules.threshold',
+      top_k: 'polls.rules.top_k',
+    },
+    scoreAgg: {
+      sum: 'polls.scoreAgg.sum',
+      avg: 'polls.scoreAgg.avg',
     },
   },
   calendar: {
@@ -1109,5 +1143,5 @@ export const tokens = {
       subheader: 'errors.authorization.authorizationErrorDescriptionShort',
       description: 'errors.authorization.authorizationErrorDescription',
     },
-  }
+  },
 };

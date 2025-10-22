@@ -21,12 +21,17 @@ import {
      Switch,
      TextField,
      Typography,
+     Table,
+     TableBody,
+     TableCell,
+     TableHead,
+     TableRow,
 } from '@mui/material';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
 import { Building } from 'src/types/building';
-import { Poll, PollInsert, PollOption, PollOptionInsert, PollType, ScoreAgg, DecisionRule, PollAttachment, buildPollValidationSchema, NewPollForm } from 'src/types/poll';
+import { Poll, PollInsert, PollOption, PollOptionInsert, PollType, ScoreAgg, DecisionRule, PollAttachment, buildPollValidationSchema, NewPollForm, PollVote, voteStatusLabel, DECISION_RULE_TRANSLATIONS, SCORE_AGG_TRANSLATIONS } from 'src/types/poll';
 import { createPoll, updatePoll, closePoll } from 'src/app/actions/poll/polls';
 import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-options';
 import { uploadPollImagesAndGetUrls } from 'src/app/actions/poll/poll-attachments';
@@ -42,20 +47,42 @@ type Props = {
      options?: PollOption[] | null;
      attachments?: PollAttachment[] | null;
      attachmentsSigned?: { url: string; name?: string }[];
+     votes?: PollVote[] | null;
 };
 
 type OptRow = { id?: string; label: string; sort_order: number };
 
-const decisionRules: (DecisionRule | '')[] = ['', 'plurality', 'absolute_majority', 'supermajority', 'threshold', 'top_k'];
-const scoreAggs: (ScoreAgg | '')[] = ['', 'sum', 'avg'];
-
-export default function PollCreate({ clientId, buildings, poll, options, attachments, attachmentsSigned = [] }: Props) {
+export default function PollCreate({ clientId, buildings, poll, options, attachments, attachmentsSigned = [], votes = [] }: Props) {
      const { t } = useTranslation();
      const router = useRouter();
      const isEdit = !!poll?.id;
      const [saving, setSaving] = useState(false);
      const [uploading, setUploading] = useState(false);
      const [files, setFiles] = useState<File[]>([]);
+     const optionLabelById = useMemo(() => new Map((options || []).map(o => [o.id, o.label])), [options]);
+     const summarizeVote = (v: PollVote): string => {
+          if (v.abstain) return 'Abstain';
+          switch (poll?.type) {
+               case 'yes_no':
+                    return v.choice_bool === true ? 'Yes' : v.choice_bool === false ? 'No' : '';
+               case 'single_choice':
+               case 'multiple_choice': {
+                    const ids = v.choice_option_ids || [];
+                    const labels = ids.map(id => optionLabelById.get(id) || id);
+                    return labels.join(', ');
+               }
+               case 'ranked_choice': {
+                    const ranks = (v.ranks || []).slice().sort((a, b) => a.rank - b.rank);
+                    return ranks.map(r => `${r.rank}. ${optionLabelById.get(r.option_id) || r.option_id}`).join(' | ');
+               }
+               case 'score': {
+                    const scores = (v.scores || []).slice().sort((a, b) => (optionLabelById.get(a.option_id) || '').localeCompare(optionLabelById.get(b.option_id) || ''));
+                    return scores.map(s => `${optionLabelById.get(s.option_id) || s.option_id}: ${s.score}`).join(', ');
+               }
+               default:
+                    return '';
+          }
+     };
 
      const buildingOptions = useMemo(() => buildings.map(b => ({ id: (b as any).id, name: (b as any).name, loc: (b as any).building_location })), [buildings]);
 
@@ -121,7 +148,6 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
                               status: 'draft' as any,
                               created_at: undefined as any,
                               closed_at: null,
-                              created_by: clientId
                          };
                          const { success, data, error } = await createPoll(pollInsert);
                          if (!success || !data) throw new Error(error || 'Failed to create poll');
@@ -234,282 +260,357 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
                     <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
                          <Typography variant="h4">{isEdit ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll')}</Typography>
 
-                         <Card>
-                              <CardHeader title={t('polls.details') || 'Details'} />
-                              <Divider />
-                              <CardContent>
-                                   <Grid container spacing={2}>
-                                        <Grid size={{ xs: 12 }}>
-                                             <TextField fullWidth name="title" label={t('polls.title') || 'Title'} value={formik.values.title} onChange={formik.handleChange}
-                                                  error={!!(formik.touched.title && formik.errors.title)} helperText={formik.touched.title && (formik.errors.title as any)} />
-                                        </Grid>
-                                        <Grid size={{ xs: 12 }}>
-                                             <TextField fullWidth name="description" label={t('polls.description') || 'Description'} multiline minRows={3}
-                                                  value={formik.values.description || ''} onChange={formik.handleChange} />
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <FormControl fullWidth>
-                                                  <InputLabel>{t('polls.type') || 'Type'}</InputLabel>
-                                                  <Select name="type" label={t('polls.type') || 'Type'} value={formik.values.type} onChange={formik.handleChange}>
-                                                       <MenuItem value={'yes_no'}>Yes/No</MenuItem>
-                                                       <MenuItem value={'single_choice'}>Single Choice</MenuItem>
-                                                       <MenuItem value={'multiple_choice'}>Multiple Choice</MenuItem>
-                                                       <MenuItem value={'ranked_choice'}>Ranked Choice</MenuItem>
-                                                       <MenuItem value={'score'}>Score</MenuItem>
-                                                  </Select>
-                                             </FormControl>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <FormControl fullWidth>
-                                                  <InputLabel>{t('polls.building') || 'Building'}</InputLabel>
-                                                  <Select name="building_id" label={t('polls.building') || 'Building'} value={formik.values.building_id} onChange={formik.handleChange}>
-                                                       {buildingOptions.map(b => (
-                                                            <MenuItem key={b.id} value={b.id}>
-                                                                 {b.name || `${b.loc?.city || ''} ${b.loc?.street_address || ''}`}
-                                                            </MenuItem>
-                                                       ))}
-                                                  </Select>
-                                             </FormControl>
-                                        </Grid>
+                         {/* Two-column layout: left 8/12 form, right 4/12 votes */}
+                         <Grid container spacing={2}>
+                              <Grid size={{ xs: 12, md: 8 }}>
+                                   <Card>
+                                        <CardHeader title={t('polls.details') || 'Details'} />
+                                        <Divider />
+                                        <CardContent>
+                                             <Grid container spacing={2}>
+                                                  <Grid size={{ xs: 12 }}>
+                                                       <TextField fullWidth name="title" label={t('polls.title') || 'Title'} value={formik.values.title} onChange={formik.handleChange}
+                                                            error={!!(formik.touched.title && formik.errors.title)} helperText={formik.touched.title && (formik.errors.title as any)} />
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12 }}>
+                                                       <TextField fullWidth name="description" label={t('polls.description') || 'Description'} multiline minRows={3}
+                                                            value={formik.values.description || ''} onChange={formik.handleChange} />
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <FormControl fullWidth>
+                                                            <InputLabel>{t('polls.type') || 'Type'}</InputLabel>
+                                                            <Select name="type" label={t('polls.type') || 'Type'} value={formik.values.type} onChange={formik.handleChange}>
+                                                                 <MenuItem value={'yes_no'}>{t('polls.types.yes_no') || 'Yes/No'}</MenuItem>
+                                                                 <MenuItem value={'single_choice'}>{t('polls.types.single_choice') || 'Single Choice'}</MenuItem>
+                                                                 <MenuItem value={'multiple_choice'}>{t('polls.types.multiple_choice') || 'Multiple Choice'}</MenuItem>
+                                                                 <MenuItem value={'ranked_choice'}>{t('polls.types.ranked_choice') || 'Ranked Choice'}</MenuItem>
+                                                                 <MenuItem value={'score'}>{t('polls.types.score') || 'Score'}</MenuItem>
+                                                            </Select>
+                                                       </FormControl>
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <FormControl fullWidth>
+                                                            <InputLabel>{t('polls.building') || 'Building'}</InputLabel>
+                                                            <Select name="building_id" label={t('polls.building') || 'Building'} value={formik.values.building_id} onChange={formik.handleChange}>
+                                                                 {buildingOptions.map(b => (
+                                                                      <MenuItem key={b.id} value={b.id}>
+                                                                           {b.name || `${b.loc?.city || ''} ${b.loc?.street_address || ''}`}
+                                                                      </MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                       </FormControl>
+                                                  </Grid>
 
-                                        {canConfigureMaxChoices && (
-                                             <Grid size={{ xs: 12, sm: 6 }} >
-                                                  <TextField
-                                                       type="text"
-                                                       slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
-                                                       onKeyDown={allowIntegerKeyDown}
-                                                       fullWidth
-                                                       name="max_choices"
-                                                       label={t('polls.maxChoices') || 'Max choices'}
-                                                       value={formik.values.max_choices ?? ''}
-                                                       onChange={(e) => formik.setFieldValue('max_choices', coerceInt(e.target.value))}
-                                                  />
+                                                  {canConfigureMaxChoices && (
+                                                       <Grid size={{ xs: 12, sm: 6 }} >
+                                                            <TextField
+                                                                 type="text"
+                                                                 slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
+                                                                 onKeyDown={allowIntegerKeyDown}
+                                                                 fullWidth
+                                                                 name="max_choices"
+                                                                 label={t('polls.maxChoices') || 'Max choices'}
+                                                                 value={formik.values.max_choices ?? ''}
+                                                                 onChange={(e) => formik.setFieldValue('max_choices', coerceInt(e.target.value))}
+                                                            />
+                                                       </Grid>
+                                                  )}
+
+                                                  <Grid size={{ xs: 12 }}>
+                                                       <Stack direction="row" spacing={2}>
+                                                            <FormControlLabel control={<Switch checked={!!formik.values.allow_abstain} onChange={e => formik.setFieldValue('allow_abstain', e.target.checked)} />} label={t('polls.allowAbstain') || 'Allow abstain'} />
+                                                            <FormControlLabel control={<Switch checked={!!formik.values.allow_comments} onChange={e => formik.setFieldValue('allow_comments', e.target.checked)} />} label={t('polls.allowComments') || 'Allow comments'} />
+                                                            <FormControlLabel control={<Switch checked={!!formik.values.allow_anonymous} onChange={e => formik.setFieldValue('allow_anonymous', e.target.checked)} />} label={t('polls.allowAnonymous') || 'Allow anonymous'} />
+                                                            <FormControlLabel control={<Switch checked={!!formik.values.allow_change_until_deadline} onChange={e => formik.setFieldValue('allow_change_until_deadline', e.target.checked)} />} label={t('polls.allowChangeUntilDeadline') || 'Allow change until deadline'} />
+                                                       </Stack>
+                                                  </Grid>
+
+                                                  <Grid size={{ xs: 12 }}>
+                                                       <Typography variant="subtitle2">{t('polls.advanced') || 'Advanced'}</Typography>
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <FormControl fullWidth>
+                                                            <InputLabel>{t('polls.decisionRule') || 'Decision rule'}</InputLabel>
+                                                            <Select
+                                                                 name="rule"
+                                                                 label={t('polls.decisionRule') || 'Decision rule'}
+                                                                 value={(formik.values.rule || '') as any}
+                                                                 onChange={e => formik.setFieldValue('rule', (e.target.value || null) as any)}
+                                                            >
+                                                                 {DECISION_RULE_TRANSLATIONS.map(r => (
+                                                                      <MenuItem key={r.value || 'empty'} value={r.value}>{t(r.key) || r.defaultLabel}</MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                       </FormControl>
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <FormControl fullWidth>
+                                                            <InputLabel>{t('polls.scoreAggregation') || 'Score aggregation'}</InputLabel>
+                                                            <Select name="score_aggregation" label={t('polls.scoreAggregation') || 'Score aggregation'} value={(formik.values.score_aggregation || '') as any}
+                                                                 onChange={e => formik.setFieldValue('score_aggregation', (e.target.value || null) as any)}>
+                                                                 {SCORE_AGG_TRANSLATIONS.map(s => (
+                                                                      <MenuItem key={s.value || 'empty'} value={s.value}>{t(s.key) || s.defaultLabel}</MenuItem>
+                                                                 ))}
+                                                            </Select>
+                                                       </FormControl>
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <TextField
+                                                            name='supermajority_percent'
+                                                            label={t('polls.supermajorityPercent') || 'Supermajority %'}
+                                                            fullWidth
+                                                            type='number'
+                                                            value={formik.values.supermajority_percent ?? ''}
+                                                            slotProps={{
+                                                                 htmlInput: {
+                                                                      inputMode: 'numeric',     // brings up numeric keypad on mobile
+                                                                      pattern: '[0-9]*',     // hints allowed chars
+                                                                      max: 100,
+                                                                      min: 0,
+                                                                 }
+                                                            }}
+                                                            onChange={e => {
+                                                                 const val = e.target.value;
+                                                                 // Allow only digits
+                                                                 if (/^\d*$/.test(val)) {
+                                                                      formik.setFieldValue(
+                                                                           'supermajority_percent',
+                                                                           val === '' ? null : Number(val)
+                                                                      );
+                                                                 }
+                                                            }}
+                                                            onBlur={
+                                                                 (e: React.FocusEvent<HTMLInputElement>) => {
+                                                                      const val = formik.values.supermajority_percent;
+                                                                      if (val !== null && val !== undefined) {
+                                                                           if (val < 0) {
+                                                                                formik.setFieldValue('supermajority_percent', 0);
+                                                                           } else if (val > 100) {
+                                                                                formik.setFieldValue('supermajority_percent', 100);
+                                                                           }
+                                                                      }
+                                                                 }
+                                                            }
+                                                       />
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <TextField
+                                                            label={t('polls.thresholdPercent') || 'Threshold %'}
+                                                            fullWidth
+                                                            type='number'
+                                                            value={formik.values.threshold_percent ?? ''}
+                                                            slotProps={{
+                                                                 htmlInput: {
+                                                                      inputMode: 'numeric',
+                                                                      pattern: '[0-9]*',
+                                                                      max: 100,
+                                                                      min: 0,
+                                                                 }
+                                                            }}
+                                                            onChange={e => {
+                                                                 const val = e.target.value;
+                                                                 if (/^\d*$/.test(val)) {
+                                                                      formik.setFieldValue(
+                                                                           'threshold_percent',
+                                                                           val === '' ? null : Number(val)
+                                                                      );
+                                                                 }
+                                                            }}
+                                                            onBlur={
+                                                                 (e: React.FocusEvent<HTMLInputElement>) => {
+                                                                      const val = formik.values.threshold_percent;
+                                                                      if (val !== null && val !== undefined) {
+                                                                           if (val < 0) {
+                                                                                formik.setFieldValue('threshold_percent', 0);
+                                                                           } else if (val > 100) {
+                                                                                formik.setFieldValue('threshold_percent', 100);
+                                                                           }
+                                                                      }
+                                                                 }
+                                                            }
+                                                       />
+                                                  </Grid>
+                                                  <Grid size={{ xs: 12, sm: 6 }} >
+                                                       <TextField
+                                                            label={t('polls.winnersCount') || 'Winners count'}
+                                                            fullWidth
+                                                            type="number"
+                                                            value={formik.values.winners_count ?? ''}
+                                                            slotProps={{
+                                                                 htmlInput: {
+                                                                      inputMode: 'numeric',
+                                                                      pattern: '[0-9]*',
+                                                                      min: 1,
+                                                                      max: 5,
+                                                                 }
+                                                            }}
+                                                            onChange={e => {
+                                                                 const val = e.target.value;
+                                                                 if (/^\d*$/.test(val)) {
+                                                                      formik.setFieldValue(
+                                                                           'winners_count',
+                                                                           val === '' ? null : Number(val)
+                                                                      );
+                                                                 }
+                                                            }}
+                                                            onBlur={
+                                                                 (e: React.FocusEvent<HTMLInputElement>) => {
+                                                                      const val = formik.values.winners_count;
+                                                                      if (val !== null && val !== undefined) {
+                                                                           if (val < 1) {
+                                                                                formik.setFieldValue('winners_count', 1);
+                                                                           } else if (val > 5) {
+                                                                                formik.setFieldValue('winners_count', 5);
+                                                                           }
+                                                                      }
+                                                                 }
+                                                            }
+                                                       />
+                                                  </Grid>
+
+
                                              </Grid>
-                                        )}
+                                        </CardContent>
+                                   </Card>
 
-                                        <Grid size={{ xs: 12 }}>
-                                             <Stack direction="row" spacing={2}>
-                                                  <FormControlLabel control={<Switch checked={!!formik.values.allow_abstain} onChange={e => formik.setFieldValue('allow_abstain', e.target.checked)} />} label={t('polls.allowAbstain') || 'Allow abstain'} />
-                                                  <FormControlLabel control={<Switch checked={!!formik.values.allow_comments} onChange={e => formik.setFieldValue('allow_comments', e.target.checked)} />} label={t('polls.allowComments') || 'Allow comments'} />
-                                                  <FormControlLabel control={<Switch checked={!!formik.values.allow_anonymous} onChange={e => formik.setFieldValue('allow_anonymous', e.target.checked)} />} label={t('polls.allowAnonymous') || 'Allow anonymous'} />
-                                                  <FormControlLabel control={<Switch checked={!!formik.values.allow_change_until_deadline} onChange={e => formik.setFieldValue('allow_change_until_deadline', e.target.checked)} />} label={t('polls.allowChangeUntilDeadline') || 'Allow change until deadline'} />
+                                   <Card>
+                                        <CardHeader title={t('polls.details') || 'Details'} />
+                                        <Divider />
+                                        <CardContent>
+                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                       <Stack direction="row" spacing={2}>
+                                                            <DatePicker
+                                                                 label={t('polls.startsAt') || 'Starts at'}
+                                                                 value={formik.values.starts_at ? dayjs(formik.values.starts_at) : null}
+                                                                 onChange={(newDate) => {
+                                                                      const current = formik.values.starts_at ? dayjs(formik.values.starts_at) : null;
+                                                                      const base = newDate || current;
+                                                                      const timeRef = current || newDate || null;
+                                                                      const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
+                                                                      formik.setFieldValue('starts_at', composed);
+                                                                 }}
+                                                            />
+                                                            <TimePicker
+                                                                 label={t('polls.startsAt') || 'Starts at'}
+                                                                 value={formik.values.starts_at ? dayjs(formik.values.starts_at) : null}
+                                                                 onChange={(newTime) => {
+                                                                      const current = formik.values.starts_at ? dayjs(formik.values.starts_at) : null;
+                                                                      const base = current || newTime;
+                                                                      const timeRef = newTime || current || null;
+                                                                      const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
+                                                                      formik.setFieldValue('starts_at', composed);
+                                                                 }}
+                                                            />
+                                                       </Stack>
+                                                  </LocalizationProvider>
+
+                                                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                       <Stack direction="row" spacing={2}>
+                                                            <DatePicker
+                                                                 label={t('polls.endsAt') || 'Ends at'}
+                                                                 value={formik.values.ends_at ? dayjs(formik.values.ends_at) : null}
+                                                                 onChange={(newDate) => {
+                                                                      const current = formik.values.ends_at ? dayjs(formik.values.ends_at) : null;
+                                                                      const base = newDate || current;
+                                                                      const timeRef = current || newDate || null;
+                                                                      const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
+                                                                      formik.setFieldValue('ends_at', composed);
+                                                                 }}
+                                                            />
+                                                            <TimePicker
+                                                                 label={t('polls.endsAt') || 'Ends at'}
+                                                                 value={formik.values.ends_at ? dayjs(formik.values.ends_at) : null}
+                                                                 onChange={(newTime) => {
+                                                                      const current = formik.values.ends_at ? dayjs(formik.values.ends_at) : null;
+                                                                      const base = current || newTime;
+                                                                      const timeRef = newTime || current || null;
+                                                                      const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
+                                                                      formik.setFieldValue('ends_at', composed);
+                                                                 }}
+                                                            />
+                                                       </Stack>
+                                                  </LocalizationProvider>
+                                             </Box>
+                                        </CardContent>
+                                   </Card>
+
+                                   <Card>
+                                        <CardHeader title={t('polls.options') || 'Options'} />
+                                        <Divider />
+                                        <CardContent>
+                                             <Stack spacing={1}>
+                                                  {formik.values.options.map((r, idx) => (
+                                                       <Stack key={r.label || idx} direction="row" spacing={1} alignItems="center">
+                                                            <TextField size="small" label={t('polls.optionLabel') || 'Label'} value={r.label}
+                                                                 onChange={e => formik.setFieldValue('options', formik.values.options.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))} />
+                                                            <TextField
+                                                                 size="small"
+                                                                 type="text"
+                                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                                                                 onKeyDown={allowIntegerKeyDown}
+                                                                 label={t('polls.sortOrder') || 'Order'}
+                                                                 value={r.sort_order}
+                                                                 onChange={e => {
+                                                                      const v = coerceInt(e.target.value) ?? (idx + 1);
+                                                                      formik.setFieldValue('options', formik.values.options.map((x, i) => i === idx ? { ...x, sort_order: v } : x))
+                                                                 }}
+                                                            />
+                                                            <Button color="error" variant="outlined" onClick={() => formik.setFieldValue('options', formik.values.options.filter((_, i) => i !== idx))}>{t('common.btnDelete')}</Button>
+                                                       </Stack>
+                                                  ))}
+                                                  <Button onClick={() => formik.setFieldValue('options', [...formik.values.options, { label: '', sort_order: (formik.values.options.length + 1) }])}>{t('polls.addOption') || 'Add option'}</Button>
                                              </Stack>
-                                        </Grid>
+                                        </CardContent>
+                                   </Card>
 
-                                        <Grid size={{ xs: 12 }}>
-                                             <Typography variant="subtitle2">{t('polls.advanced') || 'Advanced'}</Typography>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <FormControl fullWidth>
-                                                  <InputLabel>{t('polls.decisionRule') || 'Decision rule'}</InputLabel>
-                                                  <Select name="rule" label={t('polls.decisionRule') || 'Decision rule'} value={(formik.values.rule || '') as any}
-                                                       onChange={e => formik.setFieldValue('rule', (e.target.value || null) as any)}>
-                                                       {decisionRules.map(r => (
-                                                            <MenuItem key={r || 'empty'} value={r}>{r || '-'}</MenuItem>
-                                                       ))}
-                                                  </Select>
-                                             </FormControl>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <FormControl fullWidth>
-                                                  <InputLabel>{t('polls.scoreAggregation') || 'Score aggregation'}</InputLabel>
-                                                  <Select name="score_aggregation" label={t('polls.scoreAggregation') || 'Score aggregation'} value={(formik.values.score_aggregation || '') as any}
-                                                       onChange={e => formik.setFieldValue('score_aggregation', (e.target.value || null) as any)}>
-                                                       {scoreAggs.map(s => (
-                                                            <MenuItem key={s || 'empty'} value={s}>{s || '-'}</MenuItem>
-                                                       ))}
-                                                  </Select>
-                                             </FormControl>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <TextField
-                                                  label={t('polls.supermajorityPercent') || 'Supermajority %'}
-                                                  fullWidth
-                                                  type='number'
-                                                  value={formik.values.supermajority_percent ?? ''}
-                                                  slotProps={{
-                                                       htmlInput: {
-                                                            inputMode: 'numeric',     // brings up numeric keypad on mobile
-                                                            pattern: '[0-9]*',     // hints allowed chars
-                                                            max: 100,
-                                                            min: 0,
-                                                       }
-                                                  }}
-                                                  onChange={e => {
-                                                       const val = e.target.value;
-                                                       // Allow only digits
-                                                       if (/^\d*$/.test(val)) {
-                                                            formik.setFieldValue(
-                                                                 'supermajority_percent',
-                                                                 val === '' ? null : Number(val)
-                                                            );
-                                                       }
-                                                  }}
-                                                  onBlur={
-                                                       (e: React.FocusEvent<HTMLInputElement>) => {
-                                                            const val = formik.values.supermajority_percent;
-                                                            if (val !== null && val !== undefined) {
-                                                                 if (val < 0) {
-                                                                      formik.setFieldValue('supermajority_percent', 0);
-                                                                 } else if (val > 100) {
-                                                                      formik.setFieldValue('supermajority_percent', 100);
-                                                                 }
-                                                            }
-                                                       }
-                                                  }
-                                             />
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <TextField
-                                                  label={t('polls.thresholdPercent') || 'Threshold %'}
-                                                  fullWidth
-                                                  type='number'
-                                                  value={formik.values.threshold_percent ?? ''}
-                                                  slotProps={{
-                                                       htmlInput: {
-                                                            inputMode: 'numeric',
-                                                            pattern: '[0-9]*',
-                                                            max: 100,
-                                                            min: 0,
-                                                       }
-                                                  }}
-                                                  onChange={e => {
-                                                       const val = e.target.value;
-                                                       if (/^\d*$/.test(val)) {
-                                                            formik.setFieldValue(
-                                                                 'threshold_percent',
-                                                                 val === '' ? null : Number(val)
-                                                            );
-                                                       }
-                                                  }}
-                                                  onBlur={
-                                                       (e: React.FocusEvent<HTMLInputElement>) => {
-                                                            const val = formik.values.threshold_percent;
-                                                            if (val !== null && val !== undefined) {
-                                                                 if (val < 0) {
-                                                                      formik.setFieldValue('threshold_percent', 0);
-                                                                 } else if (val > 100) {
-                                                                      formik.setFieldValue('threshold_percent', 100);
-                                                                 }
-                                                            }
-                                                       }
-                                                  }
-                                             />
-                                        </Grid>
-                                        <Grid size={{ xs: 12, sm: 6 }} >
-                                             <TextField
-                                                  type="text"
-                                                  slotProps={{
-                                                       htmlInput: {
-                                                            inputMode: 'numeric',
-                                                            pattern: '[0-9]*',
-                                                            max: 100,
-                                                            min: 0,
-                                                       }
-                                                  }}
-                                                  onKeyDown={allowIntegerKeyDown}
-                                                  fullWidth
-                                                  label={t('polls.winnersCount') || 'Winners count'}
-                                                  value={formik.values.winners_count ?? ''}
-                                                  onChange={e => formik.setFieldValue('winners_count', coerceInt(e.target.value))}
-                                             />
-                                        </Grid>
-
-
-                                   </Grid>
-                              </CardContent>
-                         </Card>
-
-                         <Card>
-                              <CardHeader title={t('polls.details') || 'Details'} />
-                              <Divider />
-                              <CardContent>
-                                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                             <Stack direction="row" spacing={2}>
-                                                  <DatePicker
-                                                       label={t('polls.startsAt') || 'Starts at'}
-                                                       value={formik.values.starts_at ? dayjs(formik.values.starts_at) : null}
-                                                       onChange={(newDate) => {
-                                                            const current = formik.values.starts_at ? dayjs(formik.values.starts_at) : null;
-                                                            const base = newDate || current;
-                                                            const timeRef = current || newDate || null;
-                                                            const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
-                                                            formik.setFieldValue('starts_at', composed);
-                                                       }}
-                                                  />
-                                                  <TimePicker
-                                                       label={t('polls.startsAt') || 'Starts at'}
-                                                       value={formik.values.starts_at ? dayjs(formik.values.starts_at) : null}
-                                                       onChange={(newTime) => {
-                                                            const current = formik.values.starts_at ? dayjs(formik.values.starts_at) : null;
-                                                            const base = current || newTime;
-                                                            const timeRef = newTime || current || null;
-                                                            const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
-                                                            formik.setFieldValue('starts_at', composed);
-                                                       }}
-                                                  />
-                                             </Stack>
-                                        </LocalizationProvider>
-
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                             <Stack direction="row" spacing={2}>
-                                                  <DatePicker
-                                                       label={t('polls.endsAt') || 'Ends at'}
-                                                       value={formik.values.ends_at ? dayjs(formik.values.ends_at) : null}
-                                                       onChange={(newDate) => {
-                                                            const current = formik.values.ends_at ? dayjs(formik.values.ends_at) : null;
-                                                            const base = newDate || current;
-                                                            const timeRef = current || newDate || null;
-                                                            const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
-                                                            formik.setFieldValue('ends_at', composed);
-                                                       }}
-                                                  />
-                                                  <TimePicker
-                                                       label={t('polls.endsAt') || 'Ends at'}
-                                                       value={formik.values.ends_at ? dayjs(formik.values.ends_at) : null}
-                                                       onChange={(newTime) => {
-                                                            const current = formik.values.ends_at ? dayjs(formik.values.ends_at) : null;
-                                                            const base = current || newTime;
-                                                            const timeRef = newTime || current || null;
-                                                            const composed = base && timeRef ? base.hour(timeRef.hour()).minute(timeRef.minute()).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss') : null;
-                                                            formik.setFieldValue('ends_at', composed);
-                                                       }}
-                                                  />
-                                             </Stack>
-                                        </LocalizationProvider>
-                                   </Box>
-                              </CardContent>
-                         </Card>
-
-                         <Card>
-                              <CardHeader title={t('polls.options') || 'Options'} />
-                              <Divider />
-                              <CardContent>
-                                   <Stack spacing={1}>
-                                        {formik.values.options.map((r, idx) => (
-                                             <Stack key={r.label || idx} direction="row" spacing={1} alignItems="center">
-                                                  <TextField size="small" label={t('polls.optionLabel') || 'Label'} value={r.label}
-                                                       onChange={e => formik.setFieldValue('options', formik.values.options.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))} />
-                                                  <TextField
-                                                       size="small"
-                                                       type="text"
-                                                       inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                                                       onKeyDown={allowIntegerKeyDown}
-                                                       label={t('polls.sortOrder') || 'Order'}
-                                                       value={r.sort_order}
-                                                       onChange={e => {
-                                                            const v = coerceInt(e.target.value) ?? (idx + 1);
-                                                            formik.setFieldValue('options', formik.values.options.map((x, i) => i === idx ? { ...x, sort_order: v } : x))
-                                                       }}
-                                                  />
-                                                  <Button color="error" variant="outlined" onClick={() => formik.setFieldValue('options', formik.values.options.filter((_, i) => i !== idx))}>{t('common.btnDelete')}</Button>
-                                             </Stack>
-                                        ))}
-                                        <Button onClick={() => formik.setFieldValue('options', [...formik.values.options, { label: '', sort_order: (formik.values.options.length + 1) }])}>{t('polls.addOption') || 'Add option'}</Button>
-                                   </Stack>
-                              </CardContent>
-                         </Card>
+                              </Grid>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                   {isEdit && (
+                                        <Card>
+                                             <CardHeader title={t('polls.votesList') || 'Votes'} />
+                                             <Divider />
+                                             <CardContent>
+                                                  <Stack spacing={1}>
+                                                       <Typography variant="subtitle2">{(votes?.length || 0)} votes</Typography>
+                                                       <Table size="small">
+                                                            <TableHead>
+                                                                 <TableRow>
+                                                                      <TableCell>{t('common.lblTime') || 'Time'}</TableCell>
+                                                                      <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
+                                                                      <TableCell>{t('polls.anonymous') || 'Anonymous'}</TableCell>
+                                                                      <TableCell>{t('common.comment') || 'Comment'}</TableCell>
+                                                                      <TableCell>{t('common.summary') || 'Summary'}</TableCell>
+                                                                 </TableRow>
+                                                            </TableHead>
+                                                            <TableBody>
+                                                                 {(!votes || votes.length === 0) ? (
+                                                                      <TableRow>
+                                                                           <TableCell colSpan={5}>
+                                                                                <Typography variant="body2" color="text.secondary">
+                                                                                     {t('polls.noVotesYet') || 'No votes yet'}
+                                                                                </Typography>
+                                                                           </TableCell>
+                                                                      </TableRow>
+                                                                 ) : (
+                                                                      (votes || []).map((v) => (
+                                                                           <TableRow key={v.id}>
+                                                                                <TableCell>{new Date(v.cast_at).toLocaleString()}</TableCell>
+                                                                                <TableCell>{voteStatusLabel(t, v.status)}</TableCell>
+                                                                                <TableCell>{v.is_anonymous ? (t('common.lblYes') || 'Yes') : (t('common.lblNo') || 'No')}</TableCell>
+                                                                                <TableCell>{v.comment || ''}</TableCell>
+                                                                                <TableCell>{summarizeVote(v)}</TableCell>
+                                                                           </TableRow>
+                                                                      ))
+                                                                 )}
+                                                            </TableBody>
+                                                       </Table>
+                                                  </Stack>
+                                             </CardContent>
+                                        </Card>
+                                   )}
+                              </Grid>
+                         </Grid>
 
                          <Card>
                               <CardHeader title={t('polls.attachments') || 'Attachments'} />

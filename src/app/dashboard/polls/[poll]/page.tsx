@@ -5,6 +5,7 @@ import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/buil
 import { getPollById } from 'src/app/actions/poll/polls';
 import { getPollOptions } from 'src/app/actions/poll/poll-options';
 import { getAttachments } from 'src/app/actions/poll/poll-attachments';
+import { getVotesByPoll } from 'src/app/actions/poll/poll-votes';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import PollCreate from './poll-create';
@@ -38,10 +39,16 @@ export default async function PollCreatePage({ params }: Props) {
   }
 
   // Edit existing poll
-  const [{ data: pollRes }, { data: optionsRes }, { data: attachmentsRes }] = await Promise.all([
+  const [
+    { data: pollRes },
+    { data: optionsRes },
+    { data: attachmentsRes },
+    { data: votesRes },
+  ] = await Promise.all([
     getPollById(idOrCreate),
     getPollOptions(idOrCreate),
     getAttachments(idOrCreate),
+    getVotesByPoll(idOrCreate),
   ]);
 
   // Sign attachment URLs for display
@@ -78,6 +85,7 @@ export default async function PollCreatePage({ params }: Props) {
       options={optionsRes}
       attachments={attachmentsRes}
       attachmentsSigned={attachmentsSigned}
+      votes={votesRes}
     />
   );
 }

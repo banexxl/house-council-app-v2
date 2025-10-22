@@ -27,6 +27,103 @@ export type DecisionRule =
 export type ScoreAgg = 'sum' | 'avg';
 
 /** =========================
+ *  I18N METADATA FOR ENUM-LIKE TYPES
+ *  Each value maps to a translation key and a sensible fallback label.
+ *  Use helpers like `pollTypeLabel(t, value)` to render.
+ *  ========================= */
+
+export type I18nFn = (key: string) => string;
+
+export const POLL_TYPE_VALUES: PollType[] = ['yes_no', 'single_choice', 'multiple_choice', 'ranked_choice', 'score'];
+export const POLL_TYPE_TRANSLATIONS: { value: PollType; key: string; defaultLabel: string }[] = [
+     { value: 'yes_no', key: 'polls.types.yes_no', defaultLabel: 'Yes / No' },
+     { value: 'single_choice', key: 'polls.types.single_choice', defaultLabel: 'Single Choice' },
+     { value: 'multiple_choice', key: 'polls.types.multiple_choice', defaultLabel: 'Multiple Choice' },
+     { value: 'ranked_choice', key: 'polls.types.ranked_choice', defaultLabel: 'Ranked Choice' },
+     { value: 'score', key: 'polls.types.score', defaultLabel: 'Score' },
+];
+
+export const POLL_STATUS_VALUES: PollStatus[] = ['draft', 'scheduled', 'active', 'closed', 'archived'];
+export const POLL_STATUS_TRANSLATIONS: { value: PollStatus; key: string; defaultLabel: string }[] = [
+     { value: 'draft', key: 'polls.status.draft', defaultLabel: 'Draft' },
+     { value: 'scheduled', key: 'polls.status.scheduled', defaultLabel: 'Scheduled' },
+     { value: 'active', key: 'polls.status.active', defaultLabel: 'Active' },
+     { value: 'closed', key: 'polls.status.closed', defaultLabel: 'Closed' },
+     { value: 'archived', key: 'polls.status.archived', defaultLabel: 'Archived' },
+];
+
+export const VOTE_STATUS_VALUES: VoteStatus[] = ['cast', 'revoked'];
+export const VOTE_STATUS_TRANSLATIONS: { value: VoteStatus; key: string; defaultLabel: string }[] = [
+     { value: 'cast', key: 'polls.voteStatus.cast', defaultLabel: 'Cast' },
+     { value: 'revoked', key: 'polls.voteStatus.revoked', defaultLabel: 'Revoked' },
+];
+
+export const DECISION_RULE_VALUES: DecisionRule[] = ['plurality', 'absolute_majority', 'supermajority', 'threshold', 'top_k'];
+export const DECISION_RULE_TRANSLATIONS: { value: DecisionRule; key: string; defaultLabel: string }[] = [
+     { value: 'plurality', key: 'polls.rules.plurality', defaultLabel: 'Plurality' },
+     { value: 'absolute_majority', key: 'polls.rules.absolute_majority', defaultLabel: 'Absolute Majority' },
+     { value: 'supermajority', key: 'polls.rules.supermajority', defaultLabel: 'Supermajority' },
+     { value: 'threshold', key: 'polls.rules.threshold', defaultLabel: 'Threshold' },
+     { value: 'top_k', key: 'polls.rules.top_k', defaultLabel: 'Top K' },
+];
+
+export const SCORE_AGG_VALUES: ScoreAgg[] = ['sum', 'avg'];
+export const SCORE_AGG_TRANSLATIONS: { value: ScoreAgg; key: string; defaultLabel: string }[] = [
+     { value: 'sum', key: 'polls.scoreAgg.sum', defaultLabel: 'Sum' },
+     { value: 'avg', key: 'polls.scoreAgg.avg', defaultLabel: 'Average' },
+];
+
+type Meta = { key: string; defaultLabel: string };
+
+export const POLL_TYPE_META: Record<PollType, Meta> = {
+     yes_no: { key: 'polls.types.yes_no', defaultLabel: 'Yes / No' },
+     single_choice: { key: 'polls.types.single_choice', defaultLabel: 'Single Choice' },
+     multiple_choice: { key: 'polls.types.multiple_choice', defaultLabel: 'Multiple Choice' },
+     ranked_choice: { key: 'polls.types.ranked_choice', defaultLabel: 'Ranked Choice' },
+     score: { key: 'polls.types.score', defaultLabel: 'Score' },
+};
+
+export const POLL_STATUS_META: Record<PollStatus, Meta> = {
+     draft: { key: 'polls.status.draft', defaultLabel: 'Draft' },
+     scheduled: { key: 'polls.status.scheduled', defaultLabel: 'Scheduled' },
+     active: { key: 'polls.status.active', defaultLabel: 'Active' },
+     closed: { key: 'polls.status.closed', defaultLabel: 'Closed' },
+     archived: { key: 'polls.status.archived', defaultLabel: 'Archived' },
+};
+
+export const VOTE_STATUS_META: Record<VoteStatus, Meta> = {
+     cast: { key: 'polls.voteStatus.cast', defaultLabel: 'Cast' },
+     revoked: { key: 'polls.voteStatus.revoked', defaultLabel: 'Revoked' },
+};
+
+export const DECISION_RULE_META: Record<DecisionRule, Meta> = {
+     plurality: { key: 'polls.rules.plurality', defaultLabel: 'Plurality' },
+     absolute_majority: { key: 'polls.rules.absolute_majority', defaultLabel: 'Absolute Majority' },
+     supermajority: { key: 'polls.rules.supermajority', defaultLabel: 'Supermajority' },
+     threshold: { key: 'polls.rules.threshold', defaultLabel: 'Threshold' },
+     top_k: { key: 'polls.rules.top_k', defaultLabel: 'Top K' },
+};
+
+export const SCORE_AGG_META: Record<ScoreAgg, Meta> = {
+     sum: { key: 'polls.scoreAgg.sum', defaultLabel: 'Sum' },
+     avg: { key: 'polls.scoreAgg.avg', defaultLabel: 'Average' },
+};
+
+const tr = (t: I18nFn, key: string, fallback: string) => t(key) || fallback;
+
+export const pollTypeLabel = (t: I18nFn, v: PollType) => tr(t, POLL_TYPE_META[v].key, POLL_TYPE_META[v].defaultLabel);
+export const pollStatusLabel = (t: I18nFn, v: PollStatus) => tr(t, POLL_STATUS_META[v].key, POLL_STATUS_META[v].defaultLabel);
+export const voteStatusLabel = (t: I18nFn, v: VoteStatus) => tr(t, VOTE_STATUS_META[v].key, VOTE_STATUS_META[v].defaultLabel);
+export const decisionRuleLabel = (t: I18nFn, v: DecisionRule) => tr(t, DECISION_RULE_META[v].key, DECISION_RULE_META[v].defaultLabel);
+export const scoreAggLabel = (t: I18nFn, v: ScoreAgg) => tr(t, SCORE_AGG_META[v].key, SCORE_AGG_META[v].defaultLabel);
+
+export const getPollTypeOptions = (t: I18nFn) => POLL_TYPE_VALUES.map(v => ({ value: v, label: pollTypeLabel(t, v) }));
+export const getPollStatusOptions = (t: I18nFn) => POLL_STATUS_VALUES.map(v => ({ value: v, label: pollStatusLabel(t, v) }));
+export const getVoteStatusOptions = (t: I18nFn) => VOTE_STATUS_VALUES.map(v => ({ value: v, label: voteStatusLabel(t, v) }));
+export const getDecisionRuleOptions = (t: I18nFn) => DECISION_RULE_VALUES.map(v => ({ value: v, label: decisionRuleLabel(t, v) }));
+export const getScoreAggOptions = (t: I18nFn) => SCORE_AGG_VALUES.map(v => ({ value: v, label: scoreAggLabel(t, v) }));
+
+/** =========================
  *  TABLE ROW TYPES (as returned from DB)
  *  ========================= */
 export interface Poll {
@@ -54,7 +151,6 @@ export interface Poll {
      ends_at: string | null;                       // ISO
 
      status: PollStatus;
-     created_by: string;                           // auth.users.id
      created_at: string;                           // ISO
      closed_at: string | null;                     // ISO
 }
