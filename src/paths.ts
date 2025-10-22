@@ -81,6 +81,10 @@ export const paths = {
       index: '/dashboard/products',
       create: '/dashboard/products/create',
     },
+    polls: {
+      index: '/dashboard/polls',
+      create: '/dashboard/polls/create',
+    },
     social: {
       index: '/dashboard/social',
       profile: '/dashboard/social/profile',

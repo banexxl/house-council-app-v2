@@ -11,6 +11,7 @@ import AnnouncementIcon from "@mui/icons-material/Announcement";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import BarChartSquare02Icon from "src/icons/untitled-ui/duocolor/bar-chart-square-02";
 import CurrencyBitcoinCircleIcon from "src/icons/untitled-ui/duocolor/currency-bitcoin-circle";
+import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import CalendarIcon from "src/icons/untitled-ui/duocolor/calendar";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
@@ -209,6 +210,27 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
             <CalendarIcon />
           </SvgIcon>
         ),
+      },
+      {
+        title: t(tokens.nav.polls),
+        roles: ["admin", "client", "clientMember"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <HowToVoteIcon />
+          </SvgIcon>
+        ),
+        items: [
+          {
+            title: t(tokens.nav.list),
+            path: paths.dashboard.polls.index,
+            roles: ["admin", "client", "clientMember"],
+          },
+          {
+            title: t(tokens.nav.create),
+            path: paths.dashboard.polls.create,
+            roles: ["admin", "client", "clientMember"],
+          },
+        ],
       },
       // {
       //   title: t(tokens.nav.analytics),
