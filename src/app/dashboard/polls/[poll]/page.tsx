@@ -8,8 +8,9 @@ import { getAttachments } from 'src/app/actions/poll/poll-attachments';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import PollCreate from './poll-create';
+import log from 'src/utils/logger';
 
-type Props = { params: { poll: string } };
+type Props = { params: Promise<{ poll: string }> };
 
 export default async function PollCreatePage({ params }: Props) {
   const { poll: idOrCreate } = await params;
