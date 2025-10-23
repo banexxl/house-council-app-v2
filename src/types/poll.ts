@@ -335,14 +335,32 @@ export const isVoteScore = (v: unknown): v is VoteScore =>
 /** =========================
  *  VALIDATION SCHEMA (Yup)
  *  ========================= */
-export const buildPollValidationSchema = (t: (key: string) => string) => {
-     const percent = () => Yup.number().min(0, t('polls.validation.min0') || 'Must be >= 0').max(100, t('polls.validation.max100') || 'Must be <= 100');
+export const buildPollValidationSchema = (t: (k: string) => string) => {
+     const msg = (k: string, fallback: string) => t(k) || fallback;
+     const numberPct = () =>
+          Yup.number()
+               .typeError(msg('polls.validation.number', 'Must be a number'))
+               .min(0, msg('polls.validation.min0', 'Must be ≥ 0'))
+               .max(100, msg('polls.validation.max100', 'Must be ≤ 100'));
+
+     const dateStr = () =>
+          Yup.string()
+               .nullable()
+               .test('is-date', msg('polls.validation.invalidDate', 'Invalid date'), v => {
+                    if (!v) return true;
+                    const ts = new Date(v).getTime();
+                    return !Number.isNaN(ts);
+               });
+
      return Yup.object({
-          client_id: Yup.string().trim().required(t('polls.validation.clientRequired') || 'Client required'),
-          building_id: Yup.string().trim().required(t('polls.validation.buildingRequired') || 'Building required'),
-          type: Yup.mixed<PollType>().oneOf(['yes_no', 'single_choice', 'multiple_choice', 'ranked_choice', 'score'] as const).required(),
-          title: Yup.string().trim().min(3, t('polls.validation.titleTooShort') || 'Title too short').required(t('polls.validation.titleRequired') || 'Title required'),
-          description: Yup.string().max(5000).nullable().default(''),
+          client_id: Yup.string().trim().required(msg('polls.validation.clientRequired', 'Client required')),
+          building_id: Yup.string().trim().required(msg('polls.validation.buildingRequired', 'Building required')),
+          type: Yup.mixed<PollType>()
+               .oneOf(['yes_no', 'single_choice', 'multiple_choice', 'ranked_choice', 'score'] as const)
+               .required(),
+          title: Yup.string().trim().min(3, msg('polls.validation.titleTooShort', 'Title too short'))
+               .required(msg('polls.validation.titleRequired', 'Title required')),
+          description: Yup.string().max(500).default(''),
 
           allow_change_until_deadline: Yup.boolean().required(),
           allow_abstain: Yup.boolean().required(),
@@ -351,64 +369,130 @@ export const buildPollValidationSchema = (t: (key: string) => string) => {
 
           options: Yup.array().of(
                Yup.object({
-                    label: Yup.string().trim().required(t('polls.validation.optionLabelRequired') || 'Option label required'),
-                    sort_order: Yup.number().min(1).required(),
+                    label: Yup.string().trim().required(msg('polls.validation.optionLabelRequired', 'Option label required')),
+                    // pick ONE convention: 0-based or 1-based; here we use 0-based:
+                    sort_order: Yup.number().integer().min(0).required(),
                })
-          ).when('type', (type, schema) => {
-               const pollType = Array.isArray(type) ? type[0] : type;
-               if (pollType === 'yes_no') return schema.min(0); // auto generated if empty
-               if (pollType === 'single_choice' || pollType === 'multiple_choice' || pollType === 'ranked_choice' || pollType === 'score') {
-                    return schema.min(2, t('polls.validation.atLeastTwoOptions') || 'At least two options');
-               }
-               return schema;
-          }),
-
-          max_choices: Yup.number().nullable().when('type', (type, s) => {
-               const pollType = Array.isArray(type) ? type[0] : type;
-               return pollType === 'multiple_choice'
-                    ? s.min(1, t('polls.validation.maxChoicesMin') || 'Must be >= 1').required(t('polls.validation.maxChoicesReq') || 'Max choices required')
-                    : s.nullable();
-          }),
-
-          rule: Yup.mixed().nullable(),
-          supermajority_percent: percent().nullable().when('rule', (rule, s) => {
-               const ruleValue = Array.isArray(rule) ? rule[0] : rule;
-               return ruleValue === 'supermajority'
-                    ? s.required(t('polls.validation.supermajorityRequired') || 'Required')
-                    : s.nullable();
-          }),
-          threshold_percent: percent().nullable().when('rule', (rule, s) => {
-               const ruleValue = Array.isArray(rule) ? rule[0] : rule;
-               return ruleValue === 'threshold'
-                    ? s.required(t('polls.validation.thresholdRequired') || 'Required')
-                    : s.nullable();
-          }),
-          winners_count: Yup.number().nullable().when('rule', (rule, s) => {
-               const ruleValue = Array.isArray(rule) ? rule[0] : rule;
-               return ruleValue === 'top_k'
-                    ? s.min(1, t('polls.validation.winnersMin') || 'Must be >= 1').required(t('polls.validation.winnersRequired') || 'Required')
-                    : s.nullable();
-          }),
-          score_aggregation: Yup.mixed().nullable().when('type', (type, s) => {
-               const pollType = Array.isArray(type) ? type[0] : type;
-               return pollType === 'score'
-                    ? s.required(t('polls.validation.scoreAggRequired') || 'Required')
-                    : s.nullable();
-          }),
-
-          starts_at: Yup.string().nullable(),
-          ends_at: Yup.string().nullable()
-               .test('ends-after-starts', t('polls.validation.endsAfterStarts') || 'Ends must be after starts', function (value) {
-                    const starts = this.parent.starts_at as string | null | undefined;
-                    if (!starts || !value) return true;
-                    try {
-                         const s = new Date(starts).getTime();
-                         const e = new Date(value).getTime();
-                         return !Number.isNaN(s) && !Number.isNaN(e) && e > s;
-                    } catch { return true; }
+          )
+               .when('type', (type, schema: any) => {
+                    const pollType = Array.isArray(type) ? type[0] : type;
+                    if (pollType === 'yes_no') {
+                         // yes/no can be auto-generated; allow 0 or 2; keep min(0)
+                         return schema.min(0);
+                    }
+                    if (['single_choice', 'multiple_choice', 'ranked_choice', 'score'].includes(pollType)) {
+                         return schema
+                              .min(2, msg('polls.validation.atLeastTwoOptions', 'At least two options'))
+                              .test('unique-labels', msg('polls.validation.uniqueOptions', 'Option labels must be unique'), (opts?: any[]) => {
+                                   if (!opts) return true;
+                                   const keys = opts.map(o => (o?.label || '').trim().toLowerCase());
+                                   return new Set(keys).size === keys.length;
+                              });
+                    }
+                    return schema;
                }),
 
-          activate_now: Yup.boolean().default(false),
+          max_choices: Yup.number().nullable().when('type', (type, s: any) => {
+               const pollType = Array.isArray(type) ? type[0] : type;
+               return pollType === 'multiple_choice'
+                    ? s
+                         .typeError(msg('polls.validation.number', 'Must be a number'))
+                         .integer(msg('polls.validation.integer', 'Must be an integer'))
+                         .min(1, msg('polls.validation.maxChoicesMin', 'Must be ≥ 1'))
+                         .required(msg('polls.validation.maxChoicesReq', 'Max choices required'))
+                         .test('lte-options', msg('polls.validation.maxChoicesLteOptions', 'Must be ≤ number of options'), function (this: Yup.TestContext, value: any) {
+                              const options = this.parent?.options ?? [];
+                              if (typeof value !== 'number') return true;
+                              return value <= options.length;
+                         })
+                    : s.nullable();
+          }),
+
+          // RULE constraints differ by type
+          rule: Yup.mixed<DecisionRule>().nullable().when('type', (type, s: any) => {
+               const pollType = Array.isArray(type) ? type[0] : type as PollType;
+               if (pollType === 'ranked_choice') return s.nullable().test('must-be-null', msg('polls.validation.ruleNotAllowed', 'Rule not applicable for ranked choice'), (v: any) => v == null);
+               if (pollType === 'score') return s.nullable().test('usually-null', msg('polls.validation.ruleUsuallyNull', 'Rule is not needed for score voting'), () => true);
+               if (pollType === 'single_choice') return s.oneOf(['plurality', 'absolute_majority', 'supermajority', 'threshold']).required(msg('polls.validation.ruleReq', 'Rule required'));
+               if (pollType === 'yes_no') return s.oneOf(['absolute_majority', 'supermajority', 'threshold']).required(msg('polls.validation.ruleReq', 'Rule required'));
+               if (pollType === 'multiple_choice') return s.oneOf(['top_k', 'threshold']).required(msg('polls.validation.ruleReq', 'Rule required'));
+               return s.nullable();
+          }),
+
+          supermajority_percent: numberPct()
+               .nullable()
+               .when('rule', (rule, s: any) => {
+                    const v = Array.isArray(rule) ? rule[0] : rule;
+                    // > 50 and ≤ 100
+                    return v === 'supermajority'
+                         ? s.moreThan(50, msg('polls.validation.supermajorityGt50', 'Must be > 50')).max(100).required(msg('polls.validation.supermajorityRequired', 'Required'))
+                         : s.nullable();
+               }),
+
+          threshold_percent: numberPct()
+               .nullable()
+               .when('rule', (rule, s: any) => {
+                    const v = Array.isArray(rule) ? rule[0] : rule;
+                    // > 0 and ≤ 100
+                    return v === 'threshold'
+                         ? s.moreThan(0, msg('polls.validation.thresholdGt0', 'Must be > 0')).max(100).required(msg('polls.validation.thresholdRequired', 'Required'))
+                         : s.nullable();
+               }),
+
+          winners_count: Yup.number().nullable().when('rule', (rule, s: any) => {
+               const v = Array.isArray(rule) ? rule[0] : rule;
+               return v === 'top_k'
+                    ? s
+                         .typeError(msg('polls.validation.number', 'Must be a number'))
+                         .integer(msg('polls.validation.integer', 'Must be an integer'))
+                         .min(1, msg('polls.validation.winnersMin', 'Must be ≥ 1'))
+                         .required(msg('polls.validation.winnersRequired', 'Required'))
+                         .test('lte-options', msg('polls.validation.winnersLteOptions', 'Must be ≤ number of options'), function (this: Yup.TestContext, value: any) {
+                              const options = this.parent?.options as PollOption[] ?? [];
+                              if (typeof value !== 'number') return true;
+                              return value <= options.length;
+                         })
+                    : s.nullable();
+          }),
+
+          score_aggregation: Yup.mixed<ScoreAgg>()
+               .nullable()
+               .when('type', (type, s: any) => {
+                    const pollType = Array.isArray(type) ? type[0] : type;
+                    return pollType === 'score'
+                         ? s.oneOf(['avg', 'sum']).required(msg('polls.validation.scoreAggRequired', 'Required'))
+                         : s.nullable();
+               }),
+
+          starts_at: dateStr()
+               .required(msg('polls.validation.startsRequired', 'Start date required'))
+               .test('starts-not-in-past', msg('polls.validation.startsNotInPast', 'Start date must not be in the past'), function (value) {
+                    if (!value) return true;
+                    const now = Date.now();
+                    const start = new Date(value).getTime();
+                    return !Number.isNaN(start) && start >= now;
+               }),
+          ends_at: dateStr()
+               .test('ends-after-starts', msg('polls.validation.endsAfterStarts', 'Ends must be after starts'), function (value) {
+                    const starts = this.parent.starts_at as string | null | undefined;
+                    if (!starts || !value) return true;
+                    const s = new Date(starts).getTime();
+                    const e = new Date(value).getTime();
+                    return !Number.isNaN(s) && !Number.isNaN(e) && e > s;
+               }),
+
+          activate_now: Yup.boolean().default(false)
+               .test('activate-window', msg('polls.validation.activateWindow', 'Start must be now/past and end must be in the future'), function (activate) {
+                    if (!activate) return true;
+                    const now = Date.now();
+                    const starts = this.parent.starts_at ? new Date(this.parent.starts_at).getTime() : null;
+                    const ends = this.parent.ends_at ? new Date(this.parent.ends_at).getTime() : null;
+                    // starts_at omitted → OK; else must be ≤ now
+                    const startsOk = !starts || (!Number.isNaN(starts) && starts <= now);
+                    // ends_at omitted → OK; else must be > now
+                    const endsOk = !ends || (!Number.isNaN(ends) && ends > now);
+                    return startsOk && endsOk;
+               }),
      });
 };
 import * as Yup from 'yup';

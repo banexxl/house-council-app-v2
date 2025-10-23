@@ -369,11 +369,11 @@ export const en = {
   // Polls help dialog
   [tokens.polls.help.title]: 'How the poll system works',
   [tokens.polls.help.tooltip]: 'How voting works',
-  [tokens.polls.help.plurality]: 'Plurality. The option with the most votes wins (even if it’s not >50%). Default for single_choice polls — e.g. “Pick a new building manager”.',
-  [tokens.polls.help.absolute_majority]: 'Absolute majority. Winner must have >50% of votes. Often used for yes_no or single_choice polls (“Approve this renovation?”).',
-  [tokens.polls.help.supermajority]: 'Supermajority. Winner must have at least X% of votes (from supermajority_percent). Example: require 2/3 (66.67%) support to pass a rule change.',
-  [tokens.polls.help.threshold]: 'Threshold. Option(s) are accepted if they reach a minimum % (from threshold_percent). Example: “Any proposal with ≥ 50% votes passes.” Multiple can pass.',
-  [tokens.polls.help.top_k]: 'Top‑k. The top N options win (from winners_count). Example: “Vote for up to 3 projects — the top 2 are funded.”',
+  [tokens.polls.help.plurality]: 'The option with the most votes wins (even if it is not >50%). Example: “Pick a new building manager”.',
+  [tokens.polls.help.absolute_majority]: 'Winner must have >50% of votes. Example: Yes/No or Single Choice polls (“Approve this renovation?”).',
+  [tokens.polls.help.supermajority]: 'Winner must have at least X% of votes (from supermajority percent). Example: require 2/3 (66.67%) support to pass a rule change.',
+  [tokens.polls.help.threshold]: 'Option(s) are accepted if they reach a minimum % (from threshold percent). Example: “Any proposal with ≥ 50% votes passes.” Multiple can pass.',
+  [tokens.polls.help.top_k]: 'The top N options win (from winners count). Example: “Vote for up to 3 projects — the top 2 are funded.”',
   //#region Locations
   [tokens.locations.geoLocationAvailable]: 'Geolocation available',
   [tokens.locations.geoLocationNotAvailable]: 'Geolocation not available',

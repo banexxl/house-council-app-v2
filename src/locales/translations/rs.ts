@@ -1048,9 +1048,9 @@ export const rs = {
      // Dijalog pomoći za glasanje
      [tokens.polls.help.title]: 'Kako funkcioniše sistem glasanja',
      [tokens.polls.help.tooltip]: 'Kako funkcioniše glasanje',
-     [tokens.polls.help.plurality]: 'Pluralitet. Opcija sa najviše glasova pobeđuje (čak i ako nije >50%). Podrazumevano za single_choice ankete — npr. „Izaberite novog upravnika zgrade“.',
-     [tokens.polls.help.absolute_majority]: 'Apsolutna većina. Pobednik mora imati >50% glasova. Često za yes_no ili single_choice ankete („Odobriti ovu renovaciju?“).',
-     [tokens.polls.help.supermajority]: 'Kvalifikovana većina. Pobednik mora imati najmanje X% glasova (iz supermajority_percent). Primer: zahtevati 2/3 (66,67%) podrške za usvajanje izmene pravila.',
-     [tokens.polls.help.threshold]: 'Prag. Opcija(e) se prihvata(ju) ako dostignu minimalni procenat (iz threshold_percent). Primer: „Svaki predlog sa ≥ 50% glasova prolazi.” Više opcija može proći.',
-     [tokens.polls.help.top_k]: 'Top‑N. Prvih N opcija pobeđuje (iz winners_count). Primer: „Glasajte za najviše 3 projekta — prva 2 se finansiraju.“',
+     [tokens.polls.help.plurality]: 'Opcija sa najviše glasova pobeđuje (čak i ako nije >50%). Primer: Izaberite novog upravnika zgrade.',
+     [tokens.polls.help.absolute_majority]: 'Pobednik mora imati >50% glasova. Primer: Da/Ne ankete „Odobriti ovu renovaciju?“.',
+     [tokens.polls.help.supermajority]: 'Pobednik mora imati najmanje X% glasova. Primer: zahtevati 2/3 (66,67%) podrške za usvajanje izmene pravila.',
+     [tokens.polls.help.threshold]: 'Opcija(e) se prihvata(ju) ako dostignu minimalni procenat. Primer: „Svaki predlog sa ≥ 50% glasova prolazi.” Više opcija može proći.',
+     [tokens.polls.help.top_k]: 'Prvih N opcija pobeđuje. Primer: „Glasajte za najviše 3 projekta — prva 2 se finansiraju.“',
 };

@@ -1054,9 +1054,9 @@ export const es = {
   // Diálogo de ayuda de encuestas
   [tokens.polls.help.title]: 'Cómo funciona el sistema de votación',
   [tokens.polls.help.tooltip]: 'Cómo funciona la votación',
-  [tokens.polls.help.plurality]: 'Pluralidad. Gana la opción con más votos (aunque no supere el 50 %). Predeterminado para encuestas de selección única — p. ej., “Elegir un nuevo administrador del edificio”.',
-  [tokens.polls.help.absolute_majority]: 'Mayoría absoluta. El ganador debe superar el 50 % de los votos. Suele usarse en sí/no o selección única (“¿Aprobar esta reforma?”).',
-  [tokens.polls.help.supermajority]: 'Mayoría cualificada. El ganador debe alcanzar al menos X % de los votos (desde supermajority_percent). Ejemplo: exigir 2/3 (66,67 %) para aprobar un cambio de normas.',
-  [tokens.polls.help.threshold]: 'Umbral. La(s) opción(es) se acepta(n) si alcanzan un porcentaje mínimo (desde threshold_percent). Ejemplo: “Cualquier propuesta con ≥ 50 % de votos se aprueba”. Pueden aprobarse varias.',
-  [tokens.polls.help.top_k]: 'Top‑N. Ganan las N primeras opciones (desde winners_count). Ejemplo: “Votar hasta 3 proyectos — se financian los 2 primeros”.',
+  [tokens.polls.help.plurality]: 'Gana la opción con más votos (aunque no supere el 50 %). Predeterminado para encuestas de selección única — p. ej., “Elegir un nuevo administrador del edificio”.',
+  [tokens.polls.help.absolute_majority]: 'El ganador debe superar el 50 % de los votos. Suele usarse en sí/no o selección única (“¿Aprobar esta reforma?”).',
+  [tokens.polls.help.supermajority]: 'El ganador debe alcanzar al menos X % de los votos (desde supermajority_percent). Ejemplo: exigir 2/3 (66,67 %) para aprobar un cambio de normas.',
+  [tokens.polls.help.threshold]: 'La(s) opción(es) se acepta(n) si alcanzan un porcentaje mínimo (desde threshold_percent). Ejemplo: “Cualquier propuesta con ≥ 50 % de votos se aprueba”. Pueden aprobarse varias.',
+  [tokens.polls.help.top_k]: 'Ganan las N primeras opciones (desde winners_count). Ejemplo: “Votar hasta 3 proyectos — se financian los 2 primeros”.',
 }
