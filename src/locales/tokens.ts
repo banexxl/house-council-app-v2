@@ -459,6 +459,15 @@ export const tokens = {
       sum: 'polls.scoreAgg.sum',
       avg: 'polls.scoreAgg.avg',
     },
+    help: {
+      title: 'polls.help.title',
+      tooltip: 'polls.help.tooltip',
+      plurality: 'polls.help.plurality',
+      absolute_majority: 'polls.help.absolute_majority',
+      supermajority: 'polls.help.supermajority',
+      threshold: 'polls.help.threshold',
+      top_k: 'polls.help.top_k',
+    },
   },
   calendar: {
     title: 'calendar.title',

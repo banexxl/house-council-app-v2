@@ -26,7 +26,14 @@ import {
      TableCell,
      TableHead,
      TableRow,
+     IconButton,
+     Tooltip,
+     Dialog,
+     DialogTitle,
+     DialogContent,
+     DialogActions,
 } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -59,6 +66,7 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
      const [saving, setSaving] = useState(false);
      const [uploading, setUploading] = useState(false);
      const [files, setFiles] = useState<File[]>([]);
+     const [infoOpen, setInfoOpen] = useState(false);
      const optionLabelById = useMemo(() => new Map((options || []).map(o => [o.id, o.label])), [options]);
      const summarizeVote = (v: PollVote): string => {
           if (v.abstain) return 'Abstain';
@@ -327,10 +335,20 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
 
                                                   <Grid size={{ xs: 12 }}>
                                                        <Typography variant="subtitle2">{t('polls.advanced') || 'Advanced'}</Typography>
+                                                       <InputLabel>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                 {t('polls.decisionRule') || 'Decision rule'}
+                                                                 <Tooltip title={t('polls.help.tooltip') || 'How voting works'}>
+                                                                      <IconButton size="small" onClick={() => setInfoOpen(true)} aria-label="How voting works">
+                                                                           <InfoOutlinedIcon fontSize="small" />
+                                                                      </IconButton>
+                                                                 </Tooltip>
+                                                            </Box>
+                                                       </InputLabel>
                                                   </Grid>
                                                   <Grid size={{ xs: 12, sm: 6 }} >
                                                        <FormControl fullWidth>
-                                                            <InputLabel>{t('polls.decisionRule') || 'Decision rule'}</InputLabel>
+
                                                             <Select
                                                                  name="rule"
                                                                  label={t('polls.decisionRule') || 'Decision rule'}
@@ -361,6 +379,11 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
                                                             fullWidth
                                                             type='number'
                                                             value={formik.values.supermajority_percent ?? ''}
+                                                            onKeyDown={e => {
+                                                                 if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab'].includes(e.key)) {
+                                                                      e.preventDefault();
+                                                                 }
+                                                            }}
                                                             slotProps={{
                                                                  htmlInput: {
                                                                       inputMode: 'numeric',     // brings up numeric keypad on mobile
@@ -399,6 +422,11 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
                                                             fullWidth
                                                             type='number'
                                                             value={formik.values.threshold_percent ?? ''}
+                                                            onKeyDown={e => {
+                                                                 if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab'].includes(e.key)) {
+                                                                      e.preventDefault();
+                                                                 }
+                                                            }}
                                                             slotProps={{
                                                                  htmlInput: {
                                                                       inputMode: 'numeric',
@@ -436,6 +464,11 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
                                                             fullWidth
                                                             type="number"
                                                             value={formik.values.winners_count ?? ''}
+                                                            onKeyDown={e => {
+                                                                 if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab'].includes(e.key)) {
+                                                                      e.preventDefault();
+                                                                 }
+                                                            }}
                                                             slotProps={{
                                                                  htmlInput: {
                                                                       inputMode: 'numeric',
@@ -661,6 +694,22 @@ export default function PollCreate({ clientId, buildings, poll, options, attachm
                          </Stack>
                     </Stack>
                </Container>
+               {/* Info dialog about how the poll system works */}
+               <Dialog open={infoOpen} onClose={() => setInfoOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle>{t('polls.help.title') || 'How the poll system works'}</DialogTitle>
+                    <DialogContent dividers>
+                         <Stack spacing={1}>
+                              <Typography variant="body2">{t('polls.help.plurality')}</Typography>
+                              <Typography variant="body2">{t('polls.help.absolute_majority')}</Typography>
+                              <Typography variant="body2">{t('polls.help.supermajority')}</Typography>
+                              <Typography variant="body2">{t('polls.help.threshold')}</Typography>
+                              <Typography variant="body2">{t('polls.help.top_k')}</Typography>
+                         </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                         <Button onClick={() => setInfoOpen(false)}>{t('common.btnClose') || 'Close'}</Button>
+                    </DialogActions>
+               </Dialog>
           </Box>
      );
 }

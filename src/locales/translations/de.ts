@@ -1038,5 +1038,13 @@ export const de = {
   [tokens.polls.rules.threshold]: 'Schwellenwert',
   [tokens.polls.rules.top_k]: 'Top-K',
   [tokens.polls.scoreAgg.sum]: 'Summe',
-  [tokens.polls.scoreAgg.avg]: 'Durchschnitt'
+  [tokens.polls.scoreAgg.avg]: 'Durchschnitt',
+  // Polls help dialog
+  [tokens.polls.help.title]: 'So funktioniert das Abstimmungssystem',
+  [tokens.polls.help.tooltip]: 'So funktioniert die Abstimmung',
+  [tokens.polls.help.plurality]: 'Pluralität. Die Option mit den meisten Stimmen gewinnt (auch wenn es nicht >50 % sind). Standard für Single‑Choice‑Umfragen — z. B. „Neue Hausverwaltung wählen“.',
+  [tokens.polls.help.absolute_majority]: 'Absolute Mehrheit. Der Gewinner muss >50 % der Stimmen haben. Häufig für Ja/Nein oder Single‑Choice ("Diese Renovierung genehmigen?").',
+  [tokens.polls.help.supermajority]: 'Qualifizierte Mehrheit. Der Gewinner muss mindestens X % der Stimmen erreichen (aus supermajority_percent). Beispiel: Für eine Satzungsänderung 2/3 (66,67 %) Zustimmung verlangen.',
+  [tokens.polls.help.threshold]: 'Schwellenwert. Option(en) gelten als angenommen, wenn sie einen Mindest‑% erreichen (aus threshold_percent). Beispiel: „Jeder Vorschlag mit ≥ 50 % gilt als angenommen.“ Mehrere können bestehen.',
+  [tokens.polls.help.top_k]: 'Top‑N. Die besten N Optionen gewinnen (aus winners_count). Beispiel: „Für bis zu 3 Projekte stimmen — die Top 2 werden finanziert.“'
 };
