@@ -1029,6 +1029,7 @@ export const es = {
   [tokens.polls.validation.winnersRequired]: 'Nro. de ganadores requerido',
   [tokens.polls.validation.scoreAggRequired]: 'Agregación de puntaje requerida',
   [tokens.polls.validation.endsAfterStarts]: 'Debe terminar después de comenzar',
+  [tokens.polls.validation.ruleReq]: 'Regla de decisión requerida',
   [tokens.polls.anonymous]: 'Anónimo',
   [tokens.polls.types.yes_no]: 'Sí / No',
   [tokens.polls.types.single_choice]: 'Elección única',
@@ -1051,6 +1052,10 @@ export const es = {
   [tokens.polls.rules.top_k]: 'Top-K',
   [tokens.polls.scoreAgg.sum]: 'Suma',
   [tokens.polls.scoreAgg.avg]: 'Promedio',
+  // Encuestas: Ayuda sobre agregación de puntajes
+  [tokens.polls.scoreAggHelp.tooltip]: 'Cómo funciona la agregación de puntajes',
+  [tokens.polls.scoreAggHelp.sum]: 'Suma: Suma todos los puntajes de los votantes para cada opción',
+  [tokens.polls.scoreAggHelp.avg]: 'Promedio: Promedia los puntajes de los votantes para cada opción',
   // Diálogo de ayuda de encuestas
   [tokens.polls.help.title]: 'Cómo funciona el sistema de votación',
   [tokens.polls.help.tooltip]: 'Cómo funciona la votación',

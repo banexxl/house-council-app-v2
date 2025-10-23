@@ -595,7 +595,29 @@ export default function PollCreate({
                                                                  )
                                                             }
                                                        >
-                                                            <InputLabel>{t('polls.scoreAggregation') || 'Score aggregation'}</InputLabel>
+                                                            <InputLabel>
+                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                      {t('polls.scoreAggregation') || 'Score aggregation'}
+                                                                      <Tooltip
+                                                                           title={
+                                                                                formik.values.score_aggregation === 'avg'
+                                                                                     ? (t('polls.scoreAggHelp.avg') || 'Average: Averages voter scores for each option')
+                                                                                     : formik.values.score_aggregation === 'sum'
+                                                                                     ? (t('polls.scoreAggHelp.sum') || 'Sum: Adds all voter scores for each option')
+                                                                                     : (t('polls.scoreAggHelp.tooltip') || 'How score aggregation works')
+                                                                           }
+                                                                      >
+                                                                           <IconButton
+                                                                                size="small"
+                                                                                aria-label={t('polls.scoreAggHelp.tooltip') || 'How score aggregation works'}
+                                                                                edge="end"
+                                                                                tabIndex={-1}
+                                                                           >
+                                                                                <InfoOutlinedIcon fontSize="small" />
+                                                                           </IconButton>
+                                                                      </Tooltip>
+                                                                 </Box>
+                                                            </InputLabel>
                                                             <Select
                                                                  name="score_aggregation"
                                                                  label={t('polls.scoreAggregation') || 'Score aggregation'}
@@ -605,11 +627,22 @@ export default function PollCreate({
                                                                  }
                                                                  onBlur={() => formik.setFieldTouched('score_aggregation', true)}
                                                             >
-                                                                 {SCORE_AGG_TRANSLATIONS.map((s) => (
-                                                                      <MenuItem key={s.value || 'empty'} value={s.value}>
-                                                                           {t(s.key) || s.defaultLabel}
-                                                                      </MenuItem>
-                                                                 ))}
+                                                                  {SCORE_AGG_TRANSLATIONS.map((s) => (
+                                                                       <MenuItem key={s.value || 'empty'} value={s.value}>
+                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                                 <span>{t(s.key) || s.defaultLabel}</span>
+                                                                                 <Tooltip
+                                                                                      title={
+                                                                                           s.value === 'avg'
+                                                                                                ? (t('polls.scoreAggHelp.avg') || 'Average: Averages voter scores for each option')
+                                                                                                : (t('polls.scoreAggHelp.sum') || 'Sum: Adds all voter scores for each option')
+                                                                                      }
+                                                                                 >
+                                                                                      <InfoOutlinedIcon fontSize="small" color="action" />
+                                                                                 </Tooltip>
+                                                                            </Box>
+                                                                       </MenuItem>
+                                                                  ))}
                                                             </Select>
                                                             {getIn(formik.touched, 'score_aggregation') &&
                                                                  getIn(formik.errors, 'score_aggregation') && (

@@ -1032,6 +1032,7 @@ export const en = {
   [tokens.polls.validation.winnersRequired]: 'Winners count is required',
   [tokens.polls.validation.scoreAggRequired]: 'Score aggregation is required',
   [tokens.polls.validation.endsAfterStarts]: 'Ends must be after starts',
+  [tokens.polls.validation.ruleReq]: 'Decision rule is required',
   // Polls meta labels
   [tokens.polls.anonymous]: 'Anonymous',
   [tokens.polls.types.yes_no]: 'Yes / No',
@@ -1055,5 +1056,10 @@ export const en = {
   [tokens.polls.rules.top_k]: 'Top-K',
   [tokens.polls.scoreAgg.sum]: 'Sum',
   [tokens.polls.scoreAgg.avg]: 'Average',
+
+  // Polls: Score aggregation help
+  [tokens.polls.scoreAggHelp.tooltip]: 'How score aggregation works',
+  [tokens.polls.scoreAggHelp.sum]: 'Sum: Adds all voter scores for each option',
+  [tokens.polls.scoreAggHelp.avg]: 'Average: Averages voter scores for each option',
 
 };

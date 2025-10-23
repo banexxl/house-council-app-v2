@@ -1016,6 +1016,7 @@ export const de = {
   [tokens.polls.validation.winnersRequired]: 'Anzahl Gewinner ist erforderlich',
   [tokens.polls.validation.scoreAggRequired]: 'Score-Aggregation ist erforderlich',
   [tokens.polls.validation.endsAfterStarts]: 'Ende muss nach Beginn liegen',
+  [tokens.polls.validation.ruleReq]: 'Regel ist erforderlich',
   // Polls meta labels
   [tokens.polls.anonymous]: 'Anonym',
   [tokens.polls.types.yes_no]: 'Ja / Nein',
@@ -1039,6 +1040,10 @@ export const de = {
   [tokens.polls.rules.top_k]: 'Top-K',
   [tokens.polls.scoreAgg.sum]: 'Summe',
   [tokens.polls.scoreAgg.avg]: 'Durchschnitt',
+  // Polls: Score aggregation help
+  [tokens.polls.scoreAggHelp.tooltip]: 'So funktioniert die Score-Aggregation',
+  [tokens.polls.scoreAggHelp.sum]: 'Summe: Addiert alle Wähler‑Scores je Option',
+  [tokens.polls.scoreAggHelp.avg]: 'Durchschnitt: Mittelt die Wähler‑Scores je Option',
   // Polls help dialog
   [tokens.polls.help.title]: 'So funktioniert das Abstimmungssystem',
   [tokens.polls.help.tooltip]: 'So funktioniert die Abstimmung',

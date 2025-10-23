@@ -1023,6 +1023,7 @@ export const rs = {
      [tokens.polls.validation.winnersRequired]: 'Broj pobednika je obavezan',
      [tokens.polls.validation.scoreAggRequired]: 'Agregacija poena je obavezna',
      [tokens.polls.validation.endsAfterStarts]: 'Kraj mora biti posle početka',
+     [tokens.polls.validation.ruleReq]: 'Pravilo odlučivanja je obavezno',
      [tokens.polls.anonymous]: 'Anonimno',
      [tokens.polls.types.yes_no]: 'Da / Ne',
      [tokens.polls.types.single_choice]: 'Jedan izbor',
@@ -1043,8 +1044,12 @@ export const rs = {
      [tokens.polls.rules.supermajority]: 'Kvalifikovana većina',
      [tokens.polls.rules.threshold]: 'Prag',
      [tokens.polls.rules.top_k]: 'Top-K',
-     [tokens.polls.scoreAgg.sum]: 'Zbir',
-     [tokens.polls.scoreAgg.avg]: 'Prosek',
+      [tokens.polls.scoreAgg.sum]: 'Zbir',
+      [tokens.polls.scoreAgg.avg]: 'Prosek',
+      // Glasanje: Pomoc za agregaciju ocena
+      [tokens.polls.scoreAggHelp.tooltip]: 'Kako funkcionise agregacija poena',
+      [tokens.polls.scoreAggHelp.sum]: 'Zbir: Sabira sve poene glasaca za svaku opciju',
+      [tokens.polls.scoreAggHelp.avg]: 'Prosek: Prosecava poene glasaca za svaku opciju',
      // Dijalog pomoći za glasanje
      [tokens.polls.help.title]: 'Kako funkcioniše sistem glasanja',
      [tokens.polls.help.tooltip]: 'Kako funkcioniše glasanje',

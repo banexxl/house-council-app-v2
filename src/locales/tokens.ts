@@ -428,6 +428,7 @@ export const tokens = {
       winnersRequired: 'polls.validation.winnersRequired',
       scoreAggRequired: 'polls.validation.scoreAggRequired',
       endsAfterStarts: 'polls.validation.endsAfterStarts',
+      ruleReq: 'polls.validation.ruleReq',
     },
     anonymous: 'polls.anonymous',
     types: {
@@ -458,6 +459,11 @@ export const tokens = {
     scoreAgg: {
       sum: 'polls.scoreAgg.sum',
       avg: 'polls.scoreAgg.avg',
+    },
+    scoreAggHelp: {
+      tooltip: 'polls.scoreAggHelp.tooltip',
+      sum: 'polls.scoreAggHelp.sum',
+      avg: 'polls.scoreAggHelp.avg',
     },
     help: {
       title: 'polls.help.title',
