@@ -413,9 +413,9 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
                const pollType = Array.isArray(type) ? type[0] : type as PollType;
                if (pollType === 'ranked_choice') return s.nullable().test('must-be-null', msg('polls.validation.ruleNotAllowed', 'Rule not applicable for ranked choice'), (v: any) => v == null);
                if (pollType === 'score') return s.nullable().test('usually-null', msg('polls.validation.ruleUsuallyNull', 'Rule is not needed for score voting'), () => true);
-               if (pollType === 'single_choice') return s.oneOf(['plurality', 'absolute_majority', 'supermajority', 'threshold']).required(msg('polls.validation.ruleReq', 'Rule required'));
-               if (pollType === 'yes_no') return s.oneOf(['absolute_majority', 'supermajority', 'threshold']).required(msg('polls.validation.ruleReq', 'Rule required'));
-               if (pollType === 'multiple_choice') return s.oneOf(['top_k', 'threshold']).required(msg('polls.validation.ruleReq', 'Rule required'));
+               if (pollType === 'single_choice') return s.oneOf(['plurality', 'absolute_majority', 'supermajority', 'threshold'], msg('polls.validation.mustBeofPluralityAbsoluteMajoritySupermajorityThreshold', 'Rule is not needed for single choice voting')).required(msg('polls.validation.ruleReq', 'Rule required'));
+               if (pollType === 'yes_no') return s.oneOf(['absolute_majority', 'supermajority', 'threshold'], msg('polls.validation.mustBeofAbsMajoritySuperMajorityThreshold', 'Rule is not needed for yes/no voting')).required(msg('polls.validation.ruleReq', 'Rule required'));
+               if (pollType === 'multiple_choice') return s.oneOf(['top_k', 'threshold'], msg('polls.validation.mustBeofTopKThreshold', 'Rule is not needed for multiple choice voting')).required(msg('polls.validation.ruleReq', 'Rule required'));
                return s.nullable();
           }),
 

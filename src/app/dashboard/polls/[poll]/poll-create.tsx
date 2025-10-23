@@ -32,6 +32,9 @@ import {
      DialogTitle,
      DialogContent,
      DialogActions,
+     List,
+     ListItem,
+     ListItemText,
 } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import toast from 'react-hot-toast';
@@ -596,27 +599,7 @@ export default function PollCreate({
                                                             }
                                                        >
                                                             <InputLabel>
-                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                      {t('polls.scoreAggregation') || 'Score aggregation'}
-                                                                      <Tooltip
-                                                                           title={
-                                                                                formik.values.score_aggregation === 'avg'
-                                                                                     ? (t('polls.scoreAggHelp.avg') || 'Average: Averages voter scores for each option')
-                                                                                     : formik.values.score_aggregation === 'sum'
-                                                                                     ? (t('polls.scoreAggHelp.sum') || 'Sum: Adds all voter scores for each option')
-                                                                                     : (t('polls.scoreAggHelp.tooltip') || 'How score aggregation works')
-                                                                           }
-                                                                      >
-                                                                           <IconButton
-                                                                                size="small"
-                                                                                aria-label={t('polls.scoreAggHelp.tooltip') || 'How score aggregation works'}
-                                                                                edge="end"
-                                                                                tabIndex={-1}
-                                                                           >
-                                                                                <InfoOutlinedIcon fontSize="small" />
-                                                                           </IconButton>
-                                                                      </Tooltip>
-                                                                 </Box>
+                                                                 {t('polls.scoreAggregation') || 'Score aggregation'}
                                                             </InputLabel>
                                                             <Select
                                                                  name="score_aggregation"
@@ -627,22 +610,22 @@ export default function PollCreate({
                                                                  }
                                                                  onBlur={() => formik.setFieldTouched('score_aggregation', true)}
                                                             >
-                                                                  {SCORE_AGG_TRANSLATIONS.map((s) => (
-                                                                       <MenuItem key={s.value || 'empty'} value={s.value}>
-                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                                 <span>{t(s.key) || s.defaultLabel}</span>
-                                                                                 <Tooltip
-                                                                                      title={
-                                                                                           s.value === 'avg'
-                                                                                                ? (t('polls.scoreAggHelp.avg') || 'Average: Averages voter scores for each option')
-                                                                                                : (t('polls.scoreAggHelp.sum') || 'Sum: Adds all voter scores for each option')
-                                                                                      }
-                                                                                 >
-                                                                                      <InfoOutlinedIcon fontSize="small" color="action" />
-                                                                                 </Tooltip>
-                                                                            </Box>
-                                                                       </MenuItem>
-                                                                  ))}
+                                                                 {SCORE_AGG_TRANSLATIONS.map((s) => (
+                                                                      <MenuItem key={s.value || 'empty'} value={s.value}>
+                                                                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                                <span>{t(s.key) || s.defaultLabel}</span>
+                                                                                <Tooltip
+                                                                                     title={
+                                                                                          s.value === 'avg'
+                                                                                               ? (t('polls.scoreAggHelp.avg') || 'Average: Averages voter scores for each option')
+                                                                                               : (t('polls.scoreAggHelp.sum') || 'Sum: Adds all voter scores for each option')
+                                                                                     }
+                                                                                >
+                                                                                     <InfoOutlinedIcon fontSize="small" color="action" />
+                                                                                </Tooltip>
+                                                                           </Box>
+                                                                      </MenuItem>
+                                                                 ))}
                                                             </Select>
                                                             {getIn(formik.touched, 'score_aggregation') &&
                                                                  getIn(formik.errors, 'score_aggregation') && (
@@ -1041,11 +1024,45 @@ export default function PollCreate({
                     <DialogTitle>{t('polls.help.title') || 'How the poll system works'}</DialogTitle>
                     <DialogContent dividers>
                          <Stack spacing={1}>
-                              <Typography variant="body2">{t('polls.help.plurality')}</Typography>
-                              <Typography variant="body2">{t('polls.help.absolute_majority')}</Typography>
-                              <Typography variant="body2">{t('polls.help.supermajority')}</Typography>
-                              <Typography variant="body2">{t('polls.help.threshold')}</Typography>
-                              <Typography variant="body2">{t('polls.help.top_k')}</Typography>
+                              <List
+                                   component="ol"
+                                   sx={{
+                                        listStyleType: 'decimal',
+                                        pl: 3,
+                                        '& .MuiListItem-root': { display: 'list-item', py: 0.5 },
+                                   }}
+                              >
+                                   <ListItem>
+                                        <ListItemText
+                                             primary={t('polls.help.plurality')}
+                                             slotProps={{ primary: { variant: 'body2' } }}
+                                        />
+                                   </ListItem>
+                                   <ListItem>
+                                        <ListItemText
+                                             primary={t('polls.help.absolute_majority')}
+                                             slotProps={{ primary: { variant: 'body2' } }}
+                                        />
+                                   </ListItem>
+                                   <ListItem>
+                                        <ListItemText
+                                             primary={t('polls.help.supermajority')}
+                                             slotProps={{ primary: { variant: 'body2' } }}
+                                        />
+                                   </ListItem>
+                                   <ListItem>
+                                        <ListItemText
+                                             primary={t('polls.help.threshold')}
+                                             slotProps={{ primary: { variant: 'body2' } }}
+                                        />
+                                   </ListItem>
+                                   <ListItem>
+                                        <ListItemText
+                                             primary={t('polls.help.top_k')}
+                                             slotProps={{ primary: { variant: 'body2' } }}
+                                        />
+                                   </ListItem>
+                              </List>
                          </Stack>
                     </DialogContent>
                     <DialogActions>

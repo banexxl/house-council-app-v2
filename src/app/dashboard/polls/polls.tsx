@@ -64,6 +64,22 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
     setDeletingId(null);
   }, [t]);
 
+  // Helper to format ISO date string to readable format
+  const formatDate = (iso?: string | null) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZoneName: 'short',
+    });
+  };
+
   return (
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
@@ -120,10 +136,12 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
                 {
                   key: 'starts_at',
                   label: t('polls.startsAt') || 'Starts',
+                  render: (v) => typeof v === 'string' ? formatDate(v) : (v == null ? '/' : formatDate(String(v))),
                 },
                 {
                   key: 'ends_at',
                   label: t('polls.endsAt') || 'Ends',
+                  render: (v) => typeof v === 'string' ? formatDate(v) : (v == null ? '/' : formatDate(String(v))),
                 },
               ]}
               rowActions={[
