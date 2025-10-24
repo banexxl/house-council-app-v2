@@ -1,3 +1,5 @@
+import * as Yup from 'yup';
+
 /** =========================
  *  ENUMS (string literal types)
  *  ========================= */
@@ -153,6 +155,30 @@ export interface Poll {
      status: PollStatus;
      created_at: string;                           // ISO
      closed_at: string | null;                     // ISO
+}
+
+export const pollInitialValues: Poll = {
+     id: '',
+     client_id: '',
+     building_id: '',
+     type: 'yes_no',
+     title: '',
+     description: null,
+     max_choices: null,
+     allow_change_until_deadline: false,
+     allow_abstain: true,
+     allow_comments: true,
+     allow_anonymous: false,
+     rule: null,
+     supermajority_percent: null,
+     threshold_percent: null,
+     winners_count: null,
+     score_aggregation: null,
+     starts_at: null,
+     ends_at: null,
+     status: 'draft',
+     created_at: '',
+     closed_at: null,
 }
 
 export interface PollOption {
@@ -495,4 +521,4 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
                }),
      });
 };
-import * as Yup from 'yup';
+

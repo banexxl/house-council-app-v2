@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Poll, PollInsert, PollStatus, PollUpdate } from 'src/types/poll';
+import log from 'src/utils/logger';
 
 const POLLS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_TBL_POLLS || 'tblPolls';
 
@@ -38,6 +39,7 @@ export async function getPollById(id: string): Promise<{ success: boolean; error
 }
 
 export async function createPoll(poll: PollInsert): Promise<{ success: boolean; error?: string; data?: Poll }> {
+    log(`log poll create ${JSON.stringify(poll)}`);
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
     const { data, error } = await supabase.from(POLLS_TABLE).insert([poll]).select().single();

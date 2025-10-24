@@ -55,6 +55,7 @@ import {
      DECISION_RULE_TRANSLATIONS,
      SCORE_AGG_TRANSLATIONS,
      buildPollValidationSchema,
+     pollInitialValues,
 } from 'src/types/poll';
 import { createPoll, updatePoll, closePoll } from 'src/app/actions/poll/polls';
 import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-options';
@@ -92,6 +93,7 @@ export default function PollCreate({
      const [uploading, setUploading] = useState(false);
      const [files, setFiles] = useState<File[]>([]);
      const [infoOpen, setInfoOpen] = useState(false);
+     const [initialValues, setInitialValues] = useState<Poll>(poll ? poll : pollInitialValues);
 
      // helper for MUI fields: injects error + helperText from Formik by path
      const fe = (name: string) => {
@@ -568,18 +570,18 @@ export default function PollCreate({
                                                             {t('polls.advanced') || 'Advanced'}
                                                        </Typography>
                                                        <InputLabel>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                 {t('polls.decisionRule') || 'Decision rule'}
-                                                                 <Tooltip title={t('polls.help.tooltip') || 'How voting works'}>
-                                                                      <IconButton
-                                                                           size="small"
-                                                                           onClick={() => setInfoOpen(true)}
-                                                                           aria-label="How voting works"
-                                                                      >
-                                                                           <InfoOutlinedIcon fontSize="small" />
-                                                                      </IconButton>
-                                                                 </Tooltip>
-                                                            </Box>
+                                                            {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}> */}
+                                                            {t('polls.decisionRule') || 'Decision rule'}
+                                                            <Tooltip title={t('polls.help.tooltip') || 'How voting works'}>
+                                                                 <IconButton
+                                                                      size="small"
+                                                                      onClick={() => setInfoOpen(true)}
+                                                                      aria-label="How voting works"
+                                                                 >
+                                                                      <InfoOutlinedIcon fontSize="small" />
+                                                                 </IconButton>
+                                                            </Tooltip>
+                                                            {/* </Box> */}
                                                        </InputLabel>
                                                   </Grid>
 
@@ -904,14 +906,13 @@ export default function PollCreate({
                                                                       value={r.label}
                                                                       onChange={formik.handleChange}
                                                                       onBlur={formik.handleBlur}
-                                                                      {...fe(`${base}.label`)}
                                                                  />
                                                                  <TextField
                                                                       disabled={isFormLocked}
                                                                       size="small"
                                                                       name={`${base}.sort_order`}
                                                                       type="text"
-                                                                      inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                                                                      slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
                                                                       onKeyDown={allowIntegerKeyDown}
                                                                       label={t('polls.sortOrder') || 'Order'}
                                                                       value={r.sort_order}
@@ -946,13 +947,16 @@ export default function PollCreate({
                                                                  { label: '', sort_order: formik.values.options.length },
                                                             ])
                                                        }
+                                                       sx={{
+                                                            width: '150px'
+                                                       }}
                                                   >
                                                        {t('polls.addOption') || 'Add option'}
                                                   </Button>
 
                                                   {getIn(formik.touched, 'options') && getIn(formik.errors, 'options') && (
                                                        <Typography variant="caption" color="error">
-                                                            {String(getIn(formik.errors, 'options'))}
+                                                            {String(getIn(JSON.stringify(formik.errors), 'options'))}
                                                        </Typography>
                                                   )}
                                              </Stack>
@@ -1028,12 +1032,28 @@ export default function PollCreate({
                                                   </Stack>
                                              </Stack>
                                         )}
-                                        <input type="file" multiple onChange={handleFileChange} disabled={isFormLocked} />
+                                        <Button
+                                             variant="outlined"
+                                             component="label"
+                                             disabled={isFormLocked}
+                                             sx={{ width: '150px' }}
+                                        >
+                                             {t('polls.selectFiles') || 'Select files'}
+                                             <input
+                                                  type="file"
+                                                  multiple
+                                                  hidden
+                                                  onChange={handleFileChange}
+                                             />
+                                        </Button>
                                         <Button
                                              variant="outlined"
                                              onClick={uploadAttachments}
                                              disabled={!files.length || isFormLocked}
                                              loading={uploading}
+                                             sx={{
+                                                  width: '150px'
+                                             }}
                                         >
                                              {t('common.btnUpload') || 'Upload'}
                                         </Button>
@@ -1041,18 +1061,23 @@ export default function PollCreate({
                               </CardContent>
                          </Card>
 
-                         <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mb: 2 }}>
-                              <Button variant="outlined" onClick={() => router.back()}>
+                         <Stack direction="row" spacing={2} justifyContent="flex-start" sx={{ mb: 2 }}>
+                              <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
 
-                              {process.env.NODE_ENV === 'development' && (
-                                   <Typography sx={{ wordBreak: 'break-word' }} color="error" variant="caption">
-                                        {Object.keys(formik.errors).length ? JSON.stringify(formik.errors) : null}
-                                   </Typography>
-                              )}
 
-                              <Button variant="contained" type="submit" loading={saving} disabled={!formik.isValid || isFormLocked}>
+                              <Typography sx={{ wordBreak: 'break-word' }} color="error" variant="caption">
+                                   {formik.isSubmitting + ' ' + formik.dirty + ' ' + JSON.stringify(formik.errors) + ' ' + isFormLocked}
+                              </Typography>
+
+
+                              <Button
+                                   variant="contained"
+                                   type="submit"
+                                   loading={saving}
+                                   disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                              >
                                    {t('common.btnSave')}
                               </Button>
 
@@ -1130,6 +1155,6 @@ export default function PollCreate({
                          <Button onClick={() => setInfoOpen(false)}>{t('common.btnClose') || 'Close'}</Button>
                     </DialogActions>
                </Dialog>
-          </Box>
+          </Box >
      );
 }
