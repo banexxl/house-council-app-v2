@@ -20,7 +20,7 @@ import { paths } from 'src/paths';
 import { GenericTable } from 'src/components/generic-table';
 import toast from 'react-hot-toast';
 
-import { type Poll } from 'src/types/poll';
+import { type Poll, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
 import { type Building } from 'src/types/building';
 import { deletePoll } from 'src/app/actions/poll/polls';
 
@@ -116,10 +116,12 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
                 {
                   key: 'type',
                   label: t('polls.type') || 'Type',
+                  render: (_v, p) => pollTypeLabel(t, p.type),
                 },
                 {
                   key: 'status',
                   label: t('polls.status') || 'Status',
+                  render: (_v, p) => pollStatusLabel(t, p.status),
                 },
                 {
                   key: 'building_id',
@@ -174,4 +176,3 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
 };
 
 export default Polls;
-
