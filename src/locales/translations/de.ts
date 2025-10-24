@@ -1001,6 +1001,7 @@ export const de = {
   [tokens.polls.btnReopenPoll]: 'Umfrage wiedereröffnen',
   [tokens.polls.closed]: 'Umfrage geschlossen',
   [tokens.polls.reopened]: 'Umfrage wiedereröffnet',
+  [tokens.polls.selectFiles]: 'Dateien auswählen',
   // Umfragen: Validierung
   [tokens.polls.validation.min0]: 'Muss ≥ 0 sein',
   [tokens.polls.validation.max100]: 'Muss ≤ 100 sein',

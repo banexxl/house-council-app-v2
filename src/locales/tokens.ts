@@ -413,6 +413,7 @@ export const tokens = {
     reopened: 'polls.reopened',
     votesList: 'polls.votesList',
     noVotesYet: 'polls.noVotesYet',
+    selectFiles: 'polls.selectFiles',
     validation: {
       min0: 'polls.validation.min0',
       max100: 'polls.validation.max100',

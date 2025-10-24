@@ -964,6 +964,7 @@ export default function PollCreate({
                                    </Card>
                               </Grid>
 
+                              {/* Current votes table */}
                               <Grid size={{ xs: 12, md: 4 }}>
                                    {isEdit && (
                                         <Card>

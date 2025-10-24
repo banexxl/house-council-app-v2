@@ -1014,6 +1014,7 @@ export const es = {
   [tokens.polls.btnReopenPoll]: 'Reabrir encuesta',
   [tokens.polls.closed]: 'Encuesta cerrada',
   [tokens.polls.reopened]: 'Encuesta reabierta',
+  [tokens.polls.selectFiles]: 'Seleccionar archivos',
   // Encuestas: Validaciones
   [tokens.polls.validation.min0]: 'Debe ser ≥ 0',
   [tokens.polls.validation.max100]: 'Debe ser ≤ 100',

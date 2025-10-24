@@ -1008,6 +1008,7 @@ export const rs = {
      [tokens.polls.btnReopenPoll]: 'Ponovo otvori glasanje',
      [tokens.polls.closed]: 'Glasanje zatvoreno',
      [tokens.polls.reopened]: 'Ovo glasanje je ponovo otvoreno.',
+     [tokens.polls.selectFiles]: 'Izaberite fajlove',
      // Glasanja: Validacija
      [tokens.polls.validation.min0]: 'Mora biti ≥ 0',
      [tokens.polls.validation.max100]: 'Mora biti ≤ 100',

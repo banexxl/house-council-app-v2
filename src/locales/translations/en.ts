@@ -1017,6 +1017,7 @@ export const en = {
   [tokens.polls.btnReopenPoll]: 'Reopen Poll',
   [tokens.polls.closed]: 'Poll closed',
   [tokens.polls.reopened]: 'Poll reopened',
+  [tokens.polls.selectFiles]: 'Select files',
   // Polls: Validation
   [tokens.polls.validation.min0]: 'Must be >= 0',
   [tokens.polls.validation.max100]: 'Must be <= 100',
