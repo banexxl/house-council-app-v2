@@ -1011,7 +1011,9 @@ export const es = {
   [tokens.polls.attachments]: 'Adjuntos',
   [tokens.polls.existingAttachments]: 'Adjuntos existentes',
   [tokens.polls.btnClosePoll]: 'Cerrar encuesta',
+  [tokens.polls.btnReopenPoll]: 'Reabrir encuesta',
   [tokens.polls.closed]: 'Encuesta cerrada',
+  [tokens.polls.reopened]: 'Encuesta reabierta',
   // Encuestas: Validaciones
   [tokens.polls.validation.min0]: 'Debe ser ≥ 0',
   [tokens.polls.validation.max100]: 'Debe ser ≤ 100',

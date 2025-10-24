@@ -1014,7 +1014,9 @@ export const en = {
   [tokens.polls.attachments]: 'Attachments',
   [tokens.polls.existingAttachments]: 'Existing attachments',
   [tokens.polls.btnClosePoll]: 'Close Poll',
+  [tokens.polls.btnReopenPoll]: 'Reopen Poll',
   [tokens.polls.closed]: 'Poll closed',
+  [tokens.polls.reopened]: 'Poll reopened',
   // Polls: Validation
   [tokens.polls.validation.min0]: 'Must be >= 0',
   [tokens.polls.validation.max100]: 'Must be <= 100',

@@ -998,7 +998,9 @@ export const de = {
   [tokens.polls.attachments]: 'Anhänge',
   [tokens.polls.existingAttachments]: 'Vorhandene Anhänge',
   [tokens.polls.btnClosePoll]: 'Umfrage schließen',
+  [tokens.polls.btnReopenPoll]: 'Umfrage wiedereröffnen',
   [tokens.polls.closed]: 'Umfrage geschlossen',
+  [tokens.polls.reopened]: 'Umfrage wiedereröffnet',
   // Umfragen: Validierung
   [tokens.polls.validation.min0]: 'Muss ≥ 0 sein',
   [tokens.polls.validation.max100]: 'Muss ≤ 100 sein',

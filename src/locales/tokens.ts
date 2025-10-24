@@ -408,7 +408,9 @@ export const tokens = {
     attachments: 'polls.attachments',
     existingAttachments: 'polls.existingAttachments',
     btnClosePoll: 'polls.btnClosePoll',
+    btnReopenPoll: 'polls.btnReopenPoll',
     closed: 'polls.closed',
+    reopened: 'polls.reopened',
     votesList: 'polls.votesList',
     noVotesYet: 'polls.noVotesYet',
     validation: {

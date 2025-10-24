@@ -269,6 +269,8 @@ export default function PollCreate({
           },
      });
 
+     const isFormLocked = formik.isSubmitting || !!poll?.closed_at || (poll?.status && poll.status !== 'draft' && poll.status !== 'active');
+
      const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           const fs = Array.from(e.target.files || []);
           setFiles(fs);
@@ -311,6 +313,20 @@ export default function PollCreate({
                setSaving(false);
           }
      };
+
+     const handleReopenPoll = async () => {
+          if (!isEdit) return;
+          setSaving(true);
+          try {
+               const { success, error } = await updatePoll(poll!.id, { closed_at: null, status: 'active' });
+               if (!success) throw new Error(error || 'Failed to reopen poll');
+               toast.success(t('polls.reopened') || 'Poll reopened');
+          } catch (e: any) {
+               toast.error(e.message || 'Error');
+          } finally {
+               setSaving(false);
+          }
+     }
 
      const canConfigureMaxChoices = formik.values.type === 'multiple_choice';
 
@@ -363,6 +379,7 @@ export default function PollCreate({
                                              <Grid container spacing={2}>
                                                   <Grid size={{ xs: 12 }}>
                                                        <TextField
+                                                            disabled={isFormLocked}
                                                             fullWidth
                                                             name="title"
                                                             label={t('polls.title') || 'Title'}
@@ -375,6 +392,7 @@ export default function PollCreate({
 
                                                   <Grid size={{ xs: 12 }}>
                                                        <TextField
+                                                            disabled={isFormLocked}
                                                             fullWidth
                                                             name="description"
                                                             label={t('polls.description') || 'Description'}
@@ -396,6 +414,7 @@ export default function PollCreate({
                                                        >
                                                             <InputLabel>{t('polls.type') || 'Type'}</InputLabel>
                                                             <Select
+                                                                 disabled={isFormLocked}
                                                                  name="type"
                                                                  label={t('polls.type') || 'Type'}
                                                                  value={formik.values.type}
@@ -434,6 +453,7 @@ export default function PollCreate({
                                                        >
                                                             <InputLabel>{t('polls.building') || 'Building'}</InputLabel>
                                                             <Select
+                                                                 disabled={isFormLocked}
                                                                  name="building_id"
                                                                  label={t('polls.building') || 'Building'}
                                                                  value={formik.values.building_id}
@@ -458,6 +478,7 @@ export default function PollCreate({
                                                   {canConfigureMaxChoices && (
                                                        <Grid size={{ xs: 12, sm: 6 }}>
                                                             <TextField
+                                                                 disabled={isFormLocked}
                                                                  type="text"
                                                                  slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
                                                                  onKeyDown={allowIntegerKeyDown}
@@ -477,8 +498,10 @@ export default function PollCreate({
                                                   <Grid size={{ xs: 12 }}>
                                                        <Stack direction="row" spacing={2}>
                                                             <FormControlLabel
+                                                                 disabled={isFormLocked}
                                                                  control={
                                                                       <Switch
+                                                                           disabled={isFormLocked}
                                                                            checked={!!formik.values.allow_abstain}
                                                                            onChange={(e) =>
                                                                                 formik.setFieldValue('allow_abstain', e.target.checked)
@@ -489,8 +512,10 @@ export default function PollCreate({
                                                                  label={t('polls.allowAbstain') || 'Allow abstain'}
                                                             />
                                                             <FormControlLabel
+                                                                 disabled={isFormLocked}
                                                                  control={
                                                                       <Switch
+                                                                           disabled={isFormLocked}
                                                                            checked={!!formik.values.allow_comments}
                                                                            onChange={(e) =>
                                                                                 formik.setFieldValue('allow_comments', e.target.checked)
@@ -501,8 +526,10 @@ export default function PollCreate({
                                                                  label={t('polls.allowComments') || 'Allow comments'}
                                                             />
                                                             <FormControlLabel
+                                                                 disabled={isFormLocked}
                                                                  control={
                                                                       <Switch
+                                                                           disabled={isFormLocked}
                                                                            checked={!!formik.values.allow_anonymous}
                                                                            onChange={(e) =>
                                                                                 formik.setFieldValue('allow_anonymous', e.target.checked)
@@ -513,8 +540,10 @@ export default function PollCreate({
                                                                  label={t('polls.allowAnonymous') || 'Allow anonymous'}
                                                             />
                                                             <FormControlLabel
+                                                                 disabled={isFormLocked}
                                                                  control={
                                                                       <Switch
+                                                                           disabled={isFormLocked}
                                                                            checked={!!formik.values.allow_change_until_deadline}
                                                                            onChange={(e) =>
                                                                                 formik.setFieldValue(
@@ -561,6 +590,7 @@ export default function PollCreate({
                                                        >
                                                             <InputLabel>{t('polls.decisionRule') || 'Decision rule'}</InputLabel>
                                                             <Select
+                                                                 disabled={isFormLocked}
                                                                  name="rule"
                                                                  label={t('polls.decisionRule') || 'Decision rule'}
                                                                  value={(formik.values.rule || '') as any}
@@ -602,6 +632,7 @@ export default function PollCreate({
                                                                  {t('polls.scoreAggregation') || 'Score aggregation'}
                                                             </InputLabel>
                                                             <Select
+                                                                 disabled={isFormLocked}
                                                                  name="score_aggregation"
                                                                  label={t('polls.scoreAggregation') || 'Score aggregation'}
                                                                  value={(formik.values.score_aggregation || '') as any}
@@ -638,6 +669,7 @@ export default function PollCreate({
 
                                                   <Grid size={{ xs: 12, sm: 6 }}>
                                                        <TextField
+                                                            disabled={isFormLocked}
                                                             name="supermajority_percent"
                                                             label={t('polls.supermajorityPercent') || 'Supermajority %'}
                                                             fullWidth
@@ -661,6 +693,7 @@ export default function PollCreate({
 
                                                   <Grid size={{ xs: 12, sm: 6 }}>
                                                        <TextField
+                                                            disabled={isFormLocked}
                                                             name="threshold_percent"
                                                             label={t('polls.thresholdPercent') || 'Threshold %'}
                                                             fullWidth
@@ -684,6 +717,7 @@ export default function PollCreate({
 
                                                   <Grid size={{ xs: 12, sm: 6 }}>
                                                        <TextField
+                                                            disabled={isFormLocked}
                                                             name="winners_count"
                                                             label={t('polls.winnersCount') || 'Winners count'}
                                                             fullWidth
@@ -716,6 +750,7 @@ export default function PollCreate({
                                                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                        <Stack direction="row" spacing={2}>
                                                             <DatePicker
+                                                                 disabled={isFormLocked}
                                                                  label={t('polls.startsAt') || 'Starts at'}
                                                                  value={formik.values.starts_at ? dayjs(formik.values.starts_at) : null}
                                                                  onChange={(newDate) => {
@@ -738,6 +773,7 @@ export default function PollCreate({
                                                                  onClose={() => formik.setFieldTouched('starts_at', true)}
                                                                  slotProps={{
                                                                       textField: {
+                                                                           disabled: isFormLocked,
                                                                            onBlur: () => formik.setFieldTouched('starts_at', true),
                                                                            ...fe('starts_at'),
                                                                       },
@@ -745,6 +781,7 @@ export default function PollCreate({
                                                                  disablePast
                                                             />
                                                             <TimePicker
+                                                                 disabled={isFormLocked}
                                                                  label={t('polls.startsAt') || 'Starts at'}
                                                                  value={formik.values.starts_at ? dayjs(formik.values.starts_at) : null}
                                                                  onChange={(newTime) => {
@@ -767,6 +804,7 @@ export default function PollCreate({
                                                                  onClose={() => formik.setFieldTouched('starts_at', true)}
                                                                  slotProps={{
                                                                       textField: {
+                                                                           disabled: isFormLocked,
                                                                            onBlur: () => formik.setFieldTouched('starts_at', true),
                                                                            ...fe('starts_at'),
                                                                       },
@@ -778,6 +816,7 @@ export default function PollCreate({
                                                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                        <Stack direction="row" spacing={2}>
                                                             <DatePicker
+                                                                 disabled={isFormLocked}
                                                                  label={t('polls.endsAt') || 'Ends at'}
                                                                  value={formik.values.ends_at ? dayjs(formik.values.ends_at) : null}
                                                                  onChange={(newDate) => {
@@ -800,6 +839,7 @@ export default function PollCreate({
                                                                  onClose={() => formik.setFieldTouched('ends_at', true)}
                                                                  slotProps={{
                                                                       textField: {
+                                                                           disabled: isFormLocked,
                                                                            onBlur: () => formik.setFieldTouched('ends_at', true),
                                                                            ...fe('ends_at'),
                                                                       },
@@ -807,6 +847,7 @@ export default function PollCreate({
                                                                  disablePast
                                                             />
                                                             <TimePicker
+                                                                 disabled={isFormLocked}
                                                                  label={t('polls.endsAt') || 'Ends at'}
                                                                  value={formik.values.ends_at ? dayjs(formik.values.ends_at) : null}
                                                                  onChange={(newTime) => {
@@ -829,6 +870,7 @@ export default function PollCreate({
                                                                  onClose={() => formik.setFieldTouched('ends_at', true)}
                                                                  slotProps={{
                                                                       textField: {
+                                                                           disabled: isFormLocked,
                                                                            onBlur: () => formik.setFieldTouched('ends_at', true),
                                                                            ...fe('ends_at'),
                                                                       },
@@ -855,6 +897,7 @@ export default function PollCreate({
                                                                  alignItems="center"
                                                             >
                                                                  <TextField
+                                                                      disabled={isFormLocked}
                                                                       size="small"
                                                                       name={`${base}.label`}
                                                                       label={t('polls.optionLabel') || 'Label'}
@@ -864,6 +907,7 @@ export default function PollCreate({
                                                                       {...fe(`${base}.label`)}
                                                                  />
                                                                  <TextField
+                                                                      disabled={isFormLocked}
                                                                       size="small"
                                                                       name={`${base}.sort_order`}
                                                                       type="text"
@@ -879,6 +923,7 @@ export default function PollCreate({
                                                                       {...fe(`${base}.sort_order`)}
                                                                  />
                                                                  <Button
+                                                                      disabled={isFormLocked}
                                                                       color="error"
                                                                       variant="outlined"
                                                                       onClick={() =>
@@ -894,6 +939,7 @@ export default function PollCreate({
                                                        );
                                                   })}
                                                   <Button
+                                                       disabled={isFormLocked}
                                                        onClick={() =>
                                                             formik.setFieldValue('options', [
                                                                  ...formik.values.options,
@@ -982,11 +1028,11 @@ export default function PollCreate({
                                                   </Stack>
                                              </Stack>
                                         )}
-                                        <input type="file" multiple onChange={handleFileChange} />
+                                        <input type="file" multiple onChange={handleFileChange} disabled={isFormLocked} />
                                         <Button
                                              variant="outlined"
                                              onClick={uploadAttachments}
-                                             disabled={!files.length}
+                                             disabled={!files.length || isFormLocked}
                                              loading={uploading}
                                         >
                                              {t('common.btnUpload') || 'Upload'}
@@ -1006,14 +1052,29 @@ export default function PollCreate({
                                    </Typography>
                               )}
 
-                              <Button variant="contained" type="submit" loading={saving} disabled={!formik.isValid}>
+                              <Button variant="contained" type="submit" loading={saving} disabled={!formik.isValid || isFormLocked}>
                                    {t('common.btnSave')}
                               </Button>
 
                               {isEdit && (
-                                   <Button variant="outlined" color="warning" onClick={handleClosePoll} loading={saving}>
-                                        {t('polls.btnClosePoll') || 'Close Poll'}
-                                   </Button>
+                                   poll?.closed_at ? (
+                                        <Button
+                                             variant="outlined"
+                                             color="success"
+                                             onClick={handleReopenPoll}
+                                        >
+                                             {t('polls.btnReopenPoll') || 'Reopen Poll'}
+                                        </Button>
+                                   ) : (
+                                        <Button
+                                             variant="outlined"
+                                             color="warning"
+                                             onClick={handleClosePoll}
+                                             loading={saving}
+                                        >
+                                             {t('polls.btnClosePoll') || 'Close Poll'}
+                                        </Button>
+                                   )
                               )}
                          </Stack>
                     </Stack>
