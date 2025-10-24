@@ -1,4 +1,3 @@
-
 import Announcements from 'src/app/dashboard/announcements/announcement';
 import { getAnnouncements } from 'src/app/actions/announcement/announcement-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';

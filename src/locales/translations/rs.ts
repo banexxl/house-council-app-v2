@@ -1,4 +1,4 @@
-﻿import { tokens } from '../tokens';
+import { tokens } from '../tokens';
 
 export const rs = {
      [tokens.common.lblCover]: 'Naslovna',
