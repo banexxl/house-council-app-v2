@@ -231,7 +231,7 @@ export default function PollCreate({
                          }
 
                          toast.success(t('common.actionSaveSuccess'));
-                         router.push(`${paths.dashboard.polls.index}`);
+                         router.push(`${paths.dashboard.polls.index}/${pollId}`);
                     } else {
                          const { client_id, building_id, activate_now, options: optVals, ...rest } = values as any;
                          const { success, error } = await updatePoll(poll!.id, rest);
