@@ -49,16 +49,13 @@ import {
      PollType,
      DecisionRule,
      ScoreAgg,
-     PollOptionInsert,
-     NewPollForm,
      voteStatusLabel,
      DECISION_RULE_TRANSLATIONS,
      SCORE_AGG_TRANSLATIONS,
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { createPoll, updatePoll, closePoll } from 'src/app/actions/poll/polls';
-import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-options';
+import { createOrUpdatePoll } from 'src/app/actions/poll/polls';
 import { uploadPollImagesAndGetUrls } from 'src/app/actions/poll/poll-attachments';
 import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -74,8 +71,6 @@ type Props = {
      attachmentsSigned?: { url: string; name?: string }[];
      votes?: PollVote[] | null;
 };
-
-type OptRow = { id?: string; label: string; sort_order: number };
 
 export default function PollCreate({
      clientId,
@@ -93,7 +88,6 @@ export default function PollCreate({
      const [uploading, setUploading] = useState(false);
      const [files, setFiles] = useState<File[]>([]);
      const [infoOpen, setInfoOpen] = useState(false);
-     const [initialValues, setInitialValues] = useState<Poll>(poll ? poll : pollInitialValues);
 
      // helper for MUI fields: injects error + helperText from Formik by path
      const fe = (name: string) => {
@@ -154,47 +148,20 @@ export default function PollCreate({
           [buildings]
      );
 
-     const initialOptions: OptRow[] = useMemo(() => {
-          const base = (options ?? [])
-               .map((o) => ({ id: o.id, label: o.label, sort_order: o.sort_order }))
-               .sort((a, b) => a.sort_order - b.sort_order);
-          if (!base.length && (poll?.type || 'yes_no') === 'yes_no') {
-               return [
-                    { label: t('common.lblYes') || 'Yes', sort_order: 0 },
-                    { label: t('common.lblNo') || 'No', sort_order: 1 },
-               ];
-          }
-          return base;
-     }, [options, poll?.type, t]);
-
-     const formik = useFormik<NewPollForm & { options: OptRow[] }>({
-          initialValues: {
-               client_id: poll?.client_id || clientId,
-               building_id: poll?.building_id || ((buildings[0] as any)?.id ?? ''),
-               type: (poll?.type as PollType) || 'yes_no',
-               title: poll?.title || '',
-               description: (poll?.description as any) || '',
-               allow_change_until_deadline: poll?.allow_change_until_deadline ?? false,
-               allow_abstain: poll?.allow_abstain ?? true,
-               allow_comments: poll?.allow_comments ?? true,
-               allow_anonymous: poll?.allow_anonymous ?? false,
-               options: initialOptions,
-               max_choices: poll?.max_choices ?? undefined,
-               rule: (poll?.rule as DecisionRule | null) ?? null,
-               supermajority_percent: poll?.supermajority_percent ?? null,
-               threshold_percent: poll?.threshold_percent ?? null,
-               winners_count: poll?.winners_count ?? null,
-               score_aggregation: (poll?.score_aggregation as ScoreAgg | null) ?? null,
-               starts_at: poll?.starts_at ?? null,
-               ends_at: poll?.ends_at ?? null,
-               activate_now: false,
-          },
+     const formik = useFormik<Poll>({
+          initialValues: poll ? poll : pollInitialValues,
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
           validateOnChange: true,
           onSubmit: async (values) => {
                setSaving(true);
                try {
+                    const desiredOptions = (values.options as PollOption[]).map((r, i) => ({
+                         id: r.id,
+                         label: r.label,
+                         sort_order: typeof r.sort_order === 'number' ? r.sort_order : i,
+                    }));
+
                     if (!isEdit) {
                          const pollInsert: Poll = {
                               id: undefined as any,
@@ -218,49 +185,17 @@ export default function PollCreate({
                               status: 'draft' as any,
                               created_at: undefined as any,
                               closed_at: null,
+                              options: values.options as PollOption[],
                          };
-                         const { success, data, error } = await createPoll(pollInsert);
+
+                         const { success, data, error } = await createOrUpdatePoll({ data: pollInsert as any, options: desiredOptions });
                          if (!success || !data) throw new Error(error || 'Failed to create poll');
-                         const pollId = data.id;
-
-                         for (const [i, r] of values.options.entries()) {
-                              const row: PollOptionInsert = {
-                                   poll_id: pollId,
-                                   label: r.label,
-                                   sort_order: typeof r.sort_order === 'number' ? r.sort_order : i,
-                              } as any;
-                              await createPollOption(row);
-                         }
-
                          toast.success(t('common.actionSaveSuccess'));
-                         router.push(`${paths.dashboard.polls.index}/${pollId}`);
+                         router.push(`${paths.dashboard.polls.index}/${data.id}`);
                     } else {
-                         const { client_id, building_id, activate_now, options: optVals, ...rest } = values as any;
-                         const { success, error } = await updatePoll(poll!.id, rest);
+                         const { client_id, building_id, activate_now, options: _optVals, ...rest } = values as any;
+                         const { success, error } = await createOrUpdatePoll({ id: poll!.id, data: rest, options: desiredOptions });
                          if (!success) throw new Error(error || 'Failed to update poll');
-
-                         const original = new Map((options || []).map((o) => [o.id, o]));
-                         const currentIds = new Set<string>();
-
-                         for (const [i, r] of (optVals as OptRow[]).entries()) {
-                              const nextOrder = typeof r.sort_order === 'number' ? r.sort_order : i;
-                              if (r.id && original.has(r.id)) {
-                                   currentIds.add(r.id);
-                                   const prev = original.get(r.id)!;
-                                   if (prev.label !== r.label || prev.sort_order !== nextOrder) {
-                                        await updatePollOption(r.id, { label: r.label, sort_order: nextOrder });
-                                   }
-                              } else {
-                                   await createPollOption({
-                                        poll_id: poll!.id,
-                                        label: r.label,
-                                        sort_order: nextOrder,
-                                   } as any);
-                              }
-                         }
-                         for (const [id] of original) {
-                              if (!currentIds.has(id)) await deletePollOption(id);
-                         }
                          toast.success(t('common.actionSaveSuccess'));
                     }
                } catch (e: any) {
@@ -306,7 +241,7 @@ export default function PollCreate({
           if (!isEdit) return;
           setSaving(true);
           try {
-               const { success, error } = await closePoll(poll!.id);
+               const { success, error } = await createOrUpdatePoll({ id: poll!.id, data: { status: 'closed', closed_at: new Date().toISOString() } });
                if (!success) throw new Error(error || 'Failed to close poll');
                toast.success(t('polls.closed') || 'Poll closed');
           } catch (e: any) {
@@ -320,7 +255,7 @@ export default function PollCreate({
           if (!isEdit) return;
           setSaving(true);
           try {
-               const { success, error } = await updatePoll(poll!.id, { closed_at: null, status: 'active' });
+               const { success, error } = await createOrUpdatePoll({ id: poll!.id, data: { closed_at: null, status: 'active' } });
                if (!success) throw new Error(error || 'Failed to reopen poll');
                toast.success(t('polls.reopened') || 'Poll reopened');
           } catch (e: any) {
@@ -904,7 +839,9 @@ export default function PollCreate({
                                                                       name={`${base}.label`}
                                                                       label={t('polls.optionLabel') || 'Label'}
                                                                       value={r.label}
-                                                                      onChange={formik.handleChange}
+                                                                      onChange={(e) => {
+                                                                           formik.setFieldValue(`${base}.label`, e.target.value);
+                                                                      }}
                                                                       onBlur={formik.handleBlur}
                                                                  />
                                                                  <TextField

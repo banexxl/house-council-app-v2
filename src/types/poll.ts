@@ -149,12 +149,21 @@ export interface Poll {
      winners_count: number | null;                 // top_k
      score_aggregation: ScoreAgg | null;           // score
 
+     options: PollOption[];
+
      starts_at: string | null;                     // ISO (timestamptz)
      ends_at: string | null;                       // ISO
 
      status: PollStatus;
      created_at: string;                           // ISO
      closed_at: string | null;                     // ISO
+}
+
+export interface PollOption {
+     id: string;
+     poll_id: string;
+     label: string;
+     sort_order: number;
 }
 
 export const pollInitialValues: Poll = {
@@ -169,6 +178,7 @@ export const pollInitialValues: Poll = {
      allow_abstain: true,
      allow_comments: true,
      allow_anonymous: false,
+     options: [],
      rule: null,
      supermajority_percent: null,
      threshold_percent: null,
@@ -181,12 +191,7 @@ export const pollInitialValues: Poll = {
      closed_at: null,
 }
 
-export interface PollOption {
-     id: string;
-     poll_id: string;
-     label: string;
-     sort_order: number;
-}
+
 
 export interface PollAttachment {
      id: string;
@@ -297,40 +302,6 @@ export type PollVoteInsert = Omit<PollVote, 'id' | 'cast_at' | 'status'> & {
 export type PollVoteUpdate = Partial<Omit<PollVote, 'id' | 'poll_id' | 'tenant_id'>> & {
      id?: string;
 };
-
-/** =========================
- *  NARROWED “FORM” TYPES (optional but handy)
- *  ========================= */
-
-/** Create form shape you’ll likely use on the client */
-export interface NewPollForm {
-     client_id: string;
-     building_id: string;
-
-     type: PollType;
-     title: string;
-     description?: string;
-
-     allow_change_until_deadline: boolean;
-     allow_abstain: boolean;
-     allow_comments: boolean;
-     allow_anonymous: boolean;
-
-     options: { label: string; sort_order: number }[]; // auto “Yes/No” for yes_no type
-
-     // type-specific config
-     max_choices?: number;                 // multiple_choice
-     rule?: DecisionRule | null;           // null for ranked_choice
-     supermajority_percent?: number | null;
-     threshold_percent?: number | null;
-     winners_count?: number | null;        // top_k
-     score_aggregation?: ScoreAgg | null;  // score
-
-     starts_at?: string | null;
-     ends_at?: string | null;
-
-     activate_now?: boolean;               // convenience flag for UI
-}
 
 /** A strongly-typed vote submit payload based on poll type */
 export type VoteSubmitPayload<T extends PollType> =
