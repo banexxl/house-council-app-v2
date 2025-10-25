@@ -372,9 +372,9 @@ export default function PollCreate({
                          </Typography>
 
                          {/* Two-column layout */}
-                         <Grid container spacing={2}>
+                         <Grid container spacing={2} >
                               <Grid size={{ xs: 12, md: 8 }}>
-                                   <Card>
+                                   <Card >
                                         <CardHeader title={t('polls.details') || 'Details'} />
                                         <Divider />
                                         <CardContent>
@@ -1066,13 +1066,6 @@ export default function PollCreate({
                               <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
-
-
-                              <Typography sx={{ wordBreak: 'break-word' }} color="error" variant="caption">
-                                   {formik.isSubmitting + ' ' + formik.dirty + ' ' + JSON.stringify(formik.errors) + ' ' + isFormLocked}
-                              </Typography>
-
-
                               <Button
                                    variant="contained"
                                    type="submit"
