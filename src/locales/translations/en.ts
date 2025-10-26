@@ -1008,6 +1008,7 @@ export const en = {
   [tokens.polls.thresholdPercent]: 'Threshold %',
   [tokens.polls.winnersCount]: 'Winners count',
   [tokens.polls.options]: 'Options',
+  [tokens.polls.noOptions]: 'No options available',
   [tokens.polls.optionLabel]: 'Label',
   [tokens.polls.sortOrder]: 'Order',
   [tokens.polls.addOption]: 'Add option',

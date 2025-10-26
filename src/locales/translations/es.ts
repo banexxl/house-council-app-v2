@@ -1005,6 +1005,7 @@ export const es = {
   [tokens.polls.thresholdPercent]: 'Umbral %',
   [tokens.polls.winnersCount]: 'Nro. de ganadores',
   [tokens.polls.options]: 'Opciones',
+  [tokens.polls.noOptions]: 'No hay opciones disponibles',
   [tokens.polls.optionLabel]: 'Etiqueta',
   [tokens.polls.sortOrder]: 'Orden',
   [tokens.polls.addOption]: 'Agregar opción',

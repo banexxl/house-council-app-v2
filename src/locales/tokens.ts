@@ -402,6 +402,7 @@ export const tokens = {
     thresholdPercent: 'polls.thresholdPercent',
     winnersCount: 'polls.winnersCount',
     options: 'polls.options',
+    noOptions: 'polls.noOptions',
     optionLabel: 'polls.optionLabel',
     sortOrder: 'polls.sortOrder',
     addOption: 'polls.addOption',

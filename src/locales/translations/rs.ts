@@ -999,6 +999,7 @@ export const rs = {
      [tokens.polls.thresholdPercent]: 'Prag %',
      [tokens.polls.winnersCount]: 'Broj pobednika',
      [tokens.polls.options]: 'Opcije',
+     [tokens.polls.noOptions]: 'Nema dostupnih opcija',
      [tokens.polls.optionLabel]: 'Oznaka',
      [tokens.polls.sortOrder]: 'Redosled',
      [tokens.polls.addOption]: 'Dodaj opciju',

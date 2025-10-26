@@ -992,6 +992,7 @@ export const de = {
   [tokens.polls.thresholdPercent]: 'Schwelle %',
   [tokens.polls.winnersCount]: 'Anzahl Gewinner',
   [tokens.polls.options]: 'Optionen',
+  [tokens.polls.noOptions]: 'Keine Optionen verfügbar',
   [tokens.polls.optionLabel]: 'Bezeichnung',
   [tokens.polls.sortOrder]: 'Reihenfolge',
   [tokens.polls.addOption]: 'Option hinzufügen',
