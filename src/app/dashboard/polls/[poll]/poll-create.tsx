@@ -61,6 +61,7 @@ import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import log from 'src/utils/logger';
 
 type Props = {
      clientId: string;
@@ -81,6 +82,7 @@ export default function PollCreate({
      attachmentsSigned = [],
      votes = [],
 }: Props) {
+     log(`poll ${JSON.stringify(poll)}`);
      const { t } = useTranslation();
      const router = useRouter();
      const isEdit = !!poll?.id;
@@ -154,8 +156,10 @@ export default function PollCreate({
           validateOnBlur: true,
           validateOnChange: true,
           onSubmit: async (values) => {
+               log(`Formik submit ${values}`);
                setSaving(true);
                try {
+                    // Poll options set by client
                     const desiredOptions = (values.options as PollOption[]).map((r, i) => ({
                          id: r.id,
                          label: r.label,

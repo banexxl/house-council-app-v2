@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
-import { getPolls } from 'src/app/actions/poll/polls';
+import { getPollsFromClient } from 'src/app/actions/poll/polls';
 import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import Polls from './polls';
 
@@ -16,10 +16,11 @@ export default async function PollsPage() {
   // Load polls based on role
   let polls: any[] = [];
   if (admin) {
-    const { data } = await getPolls();
+    const { data } = await getPollsFromClient();
     polls = Array.isArray(data) ? data : [];
   } else if (client || clientMember) {
-    const { data } = await getPolls({ client_id: client_id! });
+
+    const { data } = await getPollsFromClient({ client_id: client_id! });
     polls = Array.isArray(data) ? data : [];
   } else if (tenant) {
     redirect('/dashboard/products');

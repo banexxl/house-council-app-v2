@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { BuildingLocation } from "src/types/location";
-import { readClientOrClientIDFromClientMemberID } from "../client/client-members";
+import { resolveClientFromClientOrMember } from "../client/client-members";
 import { TABLES } from "src/libs/supabase/tables";
 
 type ErrorResponse = {
@@ -27,8 +27,8 @@ export const insertLocationAction = async (
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation }> => {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedForInsert } = await readClientOrClientIDFromClientMemberID(values.client_id);
-     const client_id = typeof resolvedForInsert === 'string' ? resolvedForInsert : resolvedForInsert?.id ?? values.client_id;
+     const { data: resolvedForInsert } = await resolveClientFromClientOrMember(values.client_id);
+     const client_id = resolvedForInsert?.id!;
 
      if (
           !values ||
@@ -211,8 +211,8 @@ export const getAllAddedLocationsByClientId = async (
      client_id: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedClientData } = await readClientOrClientIDFromClientMemberID(client_id);
-     const resolvedClientId = typeof resolvedClientData === 'string' ? resolvedClientData : resolvedClientData?.id ?? client_id;
+     const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
+     const resolvedClientId = resolvedClientData?.id!;
      if (!resolvedClientId.trim()) {
           await logServerAction({
                action: "getAllAddedLocationsByClientId",
@@ -274,7 +274,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (
      client_id: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedClientData2 } = await readClientOrClientIDFromClientMemberID(client_id);
+     const { data: resolvedClientData2 } = await resolveClientFromClientOrMember(client_id);
      const resolvedClientId = typeof resolvedClientData2 === 'string' ? resolvedClientData2 : resolvedClientData2?.id ?? client_id;
      if (!resolvedClientId.trim()) {
           await logServerAction({

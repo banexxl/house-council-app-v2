@@ -2,7 +2,7 @@
 
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { readClientOrClientIDFromClientMemberID } from "../client/client-members";
+import { resolveClientFromClientOrMember } from "../client/client-members";
 import { Building } from "src/types/building";
 import { validate as isUUID } from 'uuid';
 import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
@@ -69,31 +69,31 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
           return { success: false, error: error.message };
      }
 
-    // Fetch image rows (raw refs) for each building
-    const { data: imageRows } = await supabase
-         .from("tblBuildingImages")
-         .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id");
+     // Fetch image rows (raw refs) for each building
+     const { data: imageRows } = await supabase
+          .from("tblBuildingImages")
+          .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id");
 
-    // Group by building
-    const imagesByBuilding = new Map<string, any[]>();
-    (imageRows ?? []).forEach(r => {
-         const arr = imagesByBuilding.get(r.building_id) ?? [];
-         arr.push({
-              id: r.id,
-              created_at: r.created_at,
-              updated_at: r.updated_at,
-              storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
-              storage_path: r.storage_path,
-              is_cover_image: !!(r as any).is_cover_image,
-              building_id: r.building_id,
-         });
-         imagesByBuilding.set(r.building_id, arr);
-    });
+     // Group by building
+     const imagesByBuilding = new Map<string, any[]>();
+     (imageRows ?? []).forEach(r => {
+          const arr = imagesByBuilding.get(r.building_id) ?? [];
+          arr.push({
+               id: r.id,
+               created_at: r.created_at,
+               updated_at: r.updated_at,
+               storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+               storage_path: r.storage_path,
+               is_cover_image: !!(r as any).is_cover_image,
+               building_id: r.building_id,
+          });
+          imagesByBuilding.set(r.building_id, arr);
+     });
 
-    const data: Building[] = (buildings ?? []).map(b => ({
-         ...b,
-         building_images: imagesByBuilding.get(b.id) ?? [],
-    }));
+     const data: Building[] = (buildings ?? []).map(b => ({
+          ...b,
+          building_images: imagesByBuilding.get(b.id) ?? [],
+     }));
 
      await logServerAction({ action: "getAllBuildings", duration_ms: Date.now() - t0, error: "", payload: {}, status: "success", type: "db", user_id: null, id: "" });
      return { success: true, data };
@@ -106,8 +106,8 @@ export async function getAllBuildingsFromClient(
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: resolvedClientData } = await readClientOrClientIDFromClientMemberID(client_id);
-     const resolvedClientId = typeof resolvedClientData === 'string' ? resolvedClientData : resolvedClientData?.id || client_id;
+     const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
+     const resolvedClientId = resolvedClientData?.id!
      const { data: buildings, error } = await supabase
           .from("tblBuildings")
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
@@ -119,34 +119,34 @@ export async function getAllBuildingsFromClient(
      }
 
      const ids = (buildings ?? []).map(b => b.id);
-    let imagesByBuilding = new Map<string, any[]>();
+     let imagesByBuilding = new Map<string, any[]>();
 
      if (ids.length) {
-         const { data: imageRows } = await supabase
-              .from("tblBuildingImages")
-              .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id")
-              .in("building_id", ids);
+          const { data: imageRows } = await supabase
+               .from("tblBuildingImages")
+               .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id")
+               .in("building_id", ids);
 
-         imagesByBuilding = new Map();
-         (imageRows ?? []).forEach(r => {
-              const arr = imagesByBuilding.get(r.building_id) ?? [];
-              arr.push({
-                   id: r.id,
-                   created_at: r.created_at,
-                   updated_at: r.updated_at,
-                   storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
-                   storage_path: r.storage_path,
-                   is_cover_image: !!(r as any).is_cover_image,
-                   building_id: r.building_id,
-              });
-              imagesByBuilding.set(r.building_id, arr);
-         });
+          imagesByBuilding = new Map();
+          (imageRows ?? []).forEach(r => {
+               const arr = imagesByBuilding.get(r.building_id) ?? [];
+               arr.push({
+                    id: r.id,
+                    created_at: r.created_at,
+                    updated_at: r.updated_at,
+                    storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                    storage_path: r.storage_path,
+                    is_cover_image: !!(r as any).is_cover_image,
+                    building_id: r.building_id,
+               });
+               imagesByBuilding.set(r.building_id, arr);
+          });
      }
 
-    const data: Building[] = (buildings ?? []).map(b => ({
-         ...b,
-         building_images: imagesByBuilding.get(b.id) ?? [],
-    }));
+     const data: Building[] = (buildings ?? []).map(b => ({
+          ...b,
+          building_images: imagesByBuilding.get(b.id) ?? [],
+     }));
 
      await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: "", payload: { client_id: resolvedClientId }, status: "success", type: "db", user_id: resolvedClientId, id: "" });
      return { success: true, data };
@@ -170,29 +170,29 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
           return { success: false, error: error.message };
      }
 
-    // Get image rows (raw storage refs)
-    const { data: imageRows } = await supabase
-         .from('tblBuildingImages')
-         .select('id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id')
-         .eq('building_id', id);
+     // Get image rows (raw storage refs)
+     const { data: imageRows } = await supabase
+          .from('tblBuildingImages')
+          .select('id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id')
+          .eq('building_id', id);
 
      await logServerAction({ user_id: null, action: 'getBuildingById', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db' });
 
-    return {
-         success: true,
-         data: {
-              ...building,
-              building_images: (imageRows ?? []).map(r => ({
-                   id: r.id,
-                   created_at: r.created_at,
-                   updated_at: r.updated_at,
-                   storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
-                   storage_path: r.storage_path,
-                   is_cover_image: !!(r as any).is_cover_image,
-                   building_id: r.building_id,
-              })),
-         }
-    };
+     return {
+          success: true,
+          data: {
+               ...building,
+               building_images: (imageRows ?? []).map(r => ({
+                    id: r.id,
+                    created_at: r.created_at,
+                    updated_at: r.updated_at,
+                    storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                    storage_path: r.storage_path,
+                    is_cover_image: !!(r as any).is_cover_image,
+                    building_id: r.building_id,
+               })),
+          }
+     };
 }
 
 /** CREATE a new building */

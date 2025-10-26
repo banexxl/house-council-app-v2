@@ -159,9 +159,9 @@ export const resetClientMemberPassword = async (
 
 // Unified resolver: accept an id that may be either a client member id or already a client id.
 // Returns the Client row when found, otherwise returns the original id string as data.
-export const readClientOrClientIDFromClientMemberID = async (
+export const resolveClientFromClientOrMember = async (
      client_or_client_member_id: string
-): Promise<{ success: boolean; data?: Client | string; error?: string }> => {
+): Promise<{ success: boolean; data?: Client; error?: string }> => {
 
      if (!client_or_client_member_id || client_or_client_member_id.trim() === '') {
           return { success: false, error: 'Invalid client/member ID' };
@@ -176,7 +176,7 @@ export const readClientOrClientIDFromClientMemberID = async (
           .single();
 
      if (!clientError && clientData) {
-          // If we found the client_id just return it
+          // If we found the client_id just return client object
           return { success: true, data: clientData };
      }
      // Attempt to treat id as a client member id second
@@ -190,7 +190,17 @@ export const readClientOrClientIDFromClientMemberID = async (
           return { success: false, error: 'Client member nor client not found' };
      }
 
-     return { success: true, data: memberRow.client_id };
+     const { data: clientDataFromMember, error: clientDataFromMemberError } = await supabase
+          .from(TABLES.CLIENTS)
+          .select('*')
+          .eq('id', memberRow.client_id)
+          .single();
+
+     if (clientDataFromMemberError || !clientDataFromMember) {
+          return { success: false, error: clientDataFromMemberError?.message || 'Client not found for member' };
+     }
+
+     return { success: true, data: clientDataFromMember };
 };
 
 export const readClientFromClientMemberID = async (

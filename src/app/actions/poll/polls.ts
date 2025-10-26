@@ -9,7 +9,7 @@ import log from 'src/utils/logger';
 
 const POLLS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_TBL_POLLS || 'tblPolls';
 
-export async function getPolls(params?: { client_id?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
+export async function getPollsFromClient(params?: { client_id?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
     let query = supabase.from(POLLS_TABLE).select('*');
@@ -20,10 +20,10 @@ export async function getPolls(params?: { client_id?: string; building_id?: stri
 
     const { data, error } = await query;
     if (error) {
-        await logServerAction({ action: 'getPolls', duration_ms: Date.now() - t0, error: error.message, payload: { params }, status: 'fail', type: 'db', user_id: null });
+        await logServerAction({ action: 'getPollsFromClient', duration_ms: Date.now() - t0, error: error.message, payload: { params }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: error.message };
     }
-    await logServerAction({ action: 'getPolls', duration_ms: Date.now() - t0, error: '', payload: { count: data?.length ?? 0, params }, status: 'success', type: 'db', user_id: null });
+    await logServerAction({ action: 'getPollsFromClient', duration_ms: Date.now() - t0, error: '', payload: { count: data?.length ?? 0, params }, status: 'success', type: 'db', user_id: null });
     return { success: true, data: (data ?? []) as Poll[] };
 }
 

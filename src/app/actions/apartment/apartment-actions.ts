@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { readClientOrClientIDFromClientMemberID } from "../client/client-members";
+import { resolveClientFromClientOrMember } from "../client/client-members";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
@@ -93,11 +93,11 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
 export async function getAllApartmentsFromClientsBuildings(clientid: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedClientOrMemberId } = await readClientOrClientIDFromClientMemberID(clientid);
+     const { data: resolvedClientOrMemberId } = await resolveClientFromClientOrMember(clientid);
      const { data: buildings, error: buildingsError } = await supabase
           .from(TABLES.BUILDINGS)
           .select("*")
-          .eq("client_id", typeof resolvedClientOrMemberId === "string" ? resolvedClientOrMemberId : resolvedClientOrMemberId!.id);
+          .eq("client_id", resolvedClientOrMemberId!.id);
 
      if (buildingsError) {
           await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: buildingsError.message, payload: { clientid: resolvedClientOrMemberId }, status: "fail", type: "db", user_id: typeof resolvedClientOrMemberId === "string" ? resolvedClientOrMemberId : resolvedClientOrMemberId!.id, id: "" });

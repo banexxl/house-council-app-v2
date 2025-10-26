@@ -6,7 +6,7 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { Building } from "src/types/building";
-import { readClientOrClientIDFromClientMemberID } from "src/app/actions/client/client-members";
+import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
 
 
 export default async function Page() {
@@ -24,8 +24,8 @@ export default async function Page() {
     const { success, data } = await getAllBuildingsFromClient(client.id);
     buildings = success ? data! : [];
   } else if (clientMember) {
-    const { success, data } = await readClientOrClientIDFromClientMemberID(clientMember.id);
-    const { success: success2, data: data2 } = await getAllBuildingsFromClient(typeof data === 'string' ? data : data?.id!);
+    const { success, data } = await resolveClientFromClientOrMember(clientMember.id);
+    const { success: success2, data: data2 } = await getAllBuildingsFromClient(data?.id!);
     buildings = success2 ? data2! : [];
   } else if (tenant) {
     buildings = [];

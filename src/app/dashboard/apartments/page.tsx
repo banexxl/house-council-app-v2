@@ -6,7 +6,7 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { Apartment } from "src/types/apartment";
-import { readClientOrClientIDFromClientMemberID } from "src/app/actions/client/client-members";
+import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
 
 export default async function Page() {
 
@@ -28,7 +28,7 @@ export default async function Page() {
       apartments = data.apartments;
     }
   } else if (clientMember) {
-    const { success, data } = await readClientOrClientIDFromClientMemberID(client_id!);
+    const { success, data } = await resolveClientFromClientOrMember(client_id!);
     const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(client_id!);
     if (success2 && data2) {
       apartments = data2.apartments;
