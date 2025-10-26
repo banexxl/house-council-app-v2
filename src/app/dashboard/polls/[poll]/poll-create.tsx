@@ -828,7 +828,7 @@ export default function PollCreate({
                                         <Divider />
                                         <CardContent>
                                              <Stack spacing={1}>
-                                                  {formik.values.options.map((r, idx) => {
+                                                  {formik.values?.options.length !== 0 ? formik.values.options.map((r, idx) => {
                                                        const base = `options[${idx}]`;
                                                        return (
                                                             <Stack
@@ -879,7 +879,12 @@ export default function PollCreate({
                                                                  </Button>
                                                             </Stack>
                                                        );
-                                                  })}
+                                                  })
+                                                       : (
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                 {t('polls.noOptions') || 'No options available'}
+                                                            </Typography>
+                                                       )}
                                                   <Button
                                                        disabled={isFormLocked}
                                                        onClick={() =>

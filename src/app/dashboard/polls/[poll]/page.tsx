@@ -9,7 +9,6 @@ import { getVotesByPoll } from 'src/app/actions/poll/poll-votes';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import PollCreate from './poll-create';
-import log from 'src/utils/logger';
 
 type Props = { params: Promise<{ poll: string }> };
 

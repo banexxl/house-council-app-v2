@@ -30,13 +30,22 @@ export async function getPollsFromClient(params?: { client_id?: string; building
 export async function getPollById(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
+    // Fetch poll
     const { data, error } = await supabase.from(POLLS_TABLE).select('*').eq('id', id).single();
     if (error) {
         await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: error.message };
     }
+    // Fetch options for poll
+    const OPTIONS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_TBL_POLL_OPTIONS || 'tblPollOptions';
+    const { data: options, error: optionsError } = await supabase.from(OPTIONS_TABLE).select('*').eq('poll_id', id).order('sort_order', { ascending: true });
+    if (optionsError) {
+        await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: optionsError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: optionsError.message };
+    }
+    const pollWithOptions = { ...(data as Poll), options };
     await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
-    return { success: true, data: data as Poll };
+    return { success: true, data: pollWithOptions };
 }
 
 export async function deletePoll(id: string): Promise<{ success: boolean; error?: string }> {
