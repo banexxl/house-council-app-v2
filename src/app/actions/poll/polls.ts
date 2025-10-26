@@ -5,14 +5,12 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Poll, PollInsert, PollStatus, PollUpdate } from 'src/types/poll';
 import { createOrUpdatePollOptions } from './poll-options';
-import log from 'src/utils/logger';
-
-const POLLS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_TBL_POLLS || 'tblPolls';
+import { TABLES } from 'src/libs/supabase/tables';
 
 export async function getPollsFromClient(params?: { client_id?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
-    let query = supabase.from(POLLS_TABLE).select('*');
+    let query = supabase.from(TABLES.POLLS).select('*');
     if (params?.client_id) query = query.eq('client_id', params.client_id);
     if (params?.building_id) query = query.eq('building_id', params.building_id);
     if (params?.status) query = query.eq('status', params.status);
@@ -31,14 +29,12 @@ export async function getPollById(id: string): Promise<{ success: boolean; error
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
     // Fetch poll
-    const { data, error } = await supabase.from(POLLS_TABLE).select('*').eq('id', id).single();
+    const { data, error } = await supabase.from(TABLES.POLLS).select('*').eq('id', id).single();
     if (error) {
         await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: error.message };
     }
-    // Fetch options for poll
-    const OPTIONS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_TBL_POLL_OPTIONS || 'tblPollOptions';
-    const { data: options, error: optionsError } = await supabase.from(OPTIONS_TABLE).select('*').eq('poll_id', id).order('sort_order', { ascending: true });
+    const { data: options, error: optionsError } = await supabase.from(TABLES.POLL_OPTIONS).select('*').eq('poll_id', id).order('sort_order', { ascending: true });
     if (optionsError) {
         await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: optionsError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: optionsError.message };
@@ -51,7 +47,7 @@ export async function getPollById(id: string): Promise<{ success: boolean; error
 export async function deletePoll(id: string): Promise<{ success: boolean; error?: string }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
-    const { error } = await supabase.from(POLLS_TABLE).delete().eq('id', id);
+    const { error } = await supabase.from(TABLES.POLLS).delete().eq('id', id);
     if (error) {
         await logServerAction({ action: 'deletePoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: error.message };
@@ -65,7 +61,7 @@ export async function closePoll(id: string): Promise<{ success: boolean; error?:
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
     const payload: PollUpdate = { status: 'closed', closed_at: new Date().toISOString() } as PollUpdate;
-    const { data, error } = await supabase.from(POLLS_TABLE).update(payload).eq('id', id).select().single();
+    const { data, error } = await supabase.from(TABLES.POLLS).update(payload).eq('id', id).select().single();
     if (error) {
         await logServerAction({ action: 'closePoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: error.message };
@@ -99,7 +95,7 @@ export async function createOrUpdatePoll(params: {
             }
         }
 
-        const { data, error } = await supabase.from(POLLS_TABLE).update(params.data as PollUpdate).eq('id', pollId).select().single();
+        const { data, error } = await supabase.from(TABLES.POLLS).update(params.data as PollUpdate).eq('id', pollId).select().single();
         if (error) {
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: error.message, payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
             return { success: false, error: error.message };
@@ -110,7 +106,7 @@ export async function createOrUpdatePoll(params: {
     }
 
     // Create path: create poll to get id, upsert options; if options fail, rollback poll
-    const { data: created, error: createErr } = await supabase.from(POLLS_TABLE).insert([params.data as PollInsert]).select().single();
+    const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([params.data as PollInsert]).select().single();
     if (createErr || !created) {
         await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: createErr?.message || 'create error', payload: { mode: 'create' }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: createErr?.message || 'Failed to create poll' };
@@ -121,7 +117,7 @@ export async function createOrUpdatePoll(params: {
         const optRes = await createOrUpdatePollOptions(pollId, params.options);
         if (!optRes.success) {
             // Roll back the created poll so we don't leave orphaned rows
-            await supabase.from(POLLS_TABLE).delete().eq('id', pollId);
+            await supabase.from(TABLES.POLLS).delete().eq('id', pollId);
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: optRes.error || 'options error', payload: { mode: 'create', pollId }, status: 'fail', type: 'db', user_id: null });
             return { success: false, error: optRes.error || 'Failed to create poll options' };
         }

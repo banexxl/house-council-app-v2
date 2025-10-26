@@ -46,6 +46,12 @@ export const TABLES = {
      // System
      NOTIFICATIONS: process.env.NEXT_PUBLIC_SUPABASE_TBL_NOTIFICATIONS!,
      SERVER_LOGS: process.env.NEXT_PUBLIC_SUPABASE_TBL_SERVER_LOGS!,
+
+     // Polls
+     POLLS: process.env.NEXT_PUBLIC_SUPABASE_TBL_POLLS!,
+     POLL_OPTIONS: process.env.NEXT_PUBLIC_SUPABASE_TBL_POLL_OPTIONS!,
+     POLL_ATTACHMENTS: process.env.NEXT_PUBLIC_SUPABASE_TBL_POLL_ATTACHMENTS!,
+     POLL_VOTES: process.env.NEXT_PUBLIC_SUPABASE_TBL_POLL_VOTES!,
 } as const;
 
 // Type for all table names
