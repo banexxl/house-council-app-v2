@@ -129,7 +129,7 @@ export const getScoreAggOptions = (t: I18nFn) => SCORE_AGG_VALUES.map(v => ({ va
  *  TABLE ROW TYPES (as returned from DB)
  *  ========================= */
 export interface Poll {
-     id: string;
+     id?: string;
      client_id: string;
      building_id: string;
 
@@ -268,18 +268,6 @@ export interface PollVote {
  *  (useful with Supabase .insert() / .update())
  *  ========================= */
 
-/** tblPolls */
-export type PollInsert = Omit<
-     Poll,
-     'id' | 'status' | 'created_at' | 'closed_at'
-> & {
-     id?: string;
-     status?: PollStatus;     // default 'draft' in DB
-     created_at?: string;
-     closed_at?: string | null;
-};
-
-export type PollUpdate = Partial<Omit<Poll, 'id'>> & { id?: string };
 
 /** tblPollOptions */
 export type PollOptionInsert = Omit<PollOption, 'id'> & { id?: string };
@@ -476,20 +464,7 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
                     const s = new Date(starts).getTime();
                     const e = new Date(value).getTime();
                     return !Number.isNaN(s) && !Number.isNaN(e) && e > s;
-               }),
-
-          activate_now: Yup.boolean().default(false)
-               .test('activate-window', msg('polls.validation.activateWindow', 'Start must be now/past and end must be in the future'), function (activate) {
-                    if (!activate) return true;
-                    const now = Date.now();
-                    const starts = this.parent.starts_at ? new Date(this.parent.starts_at).getTime() : null;
-                    const ends = this.parent.ends_at ? new Date(this.parent.ends_at).getTime() : null;
-                    // starts_at omitted → OK; else must be ≤ now
-                    const startsOk = !starts || (!Number.isNaN(starts) && starts <= now);
-                    // ends_at omitted → OK; else must be > now
-                    const endsOk = !ends || (!Number.isNaN(ends) && ends > now);
-                    return startsOk && endsOk;
-               }),
+               })
      });
 };
 

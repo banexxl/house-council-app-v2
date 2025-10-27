@@ -55,7 +55,7 @@ import {
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { createOrUpdatePoll } from 'src/app/actions/poll/polls';
+import { closePoll, createOrUpdatePoll, reopenPoll } from 'src/app/actions/poll/polls';
 import { uploadPollImagesAndGetUrls } from 'src/app/actions/poll/poll-attachments';
 import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -82,10 +82,8 @@ export default function PollCreate({
      attachmentsSigned = [],
      votes = [],
 }: Props) {
-     log(`poll ${JSON.stringify(poll)}`);
      const { t } = useTranslation();
      const router = useRouter();
-     const isEdit = !!poll?.id;
      const [saving, setSaving] = useState(false);
      const [uploading, setUploading] = useState(false);
      const [files, setFiles] = useState<File[]>([]);
@@ -160,48 +158,18 @@ export default function PollCreate({
                setSaving(true);
                try {
                     // Poll options set by client
+                    const pollId = values.id ?? poll?.id ?? '';
                     const desiredOptions = (values.options as PollOption[]).map((r, i) => ({
                          id: r.id,
+                         poll_id: pollId,
                          label: r.label,
                          sort_order: typeof r.sort_order === 'number' ? r.sort_order : i,
                     }));
-
-                    if (!isEdit) {
-                         const pollInsert: Poll = {
-                              id: undefined as any,
-                              client_id: values.client_id,
-                              building_id: values.building_id,
-                              type: values.type,
-                              title: values.title,
-                              description: values.description || null,
-                              max_choices: (values.max_choices as any) ?? null,
-                              allow_change_until_deadline: values.allow_change_until_deadline,
-                              allow_abstain: values.allow_abstain,
-                              allow_comments: values.allow_comments,
-                              allow_anonymous: values.allow_anonymous,
-                              rule: (values.rule as any) ?? null,
-                              supermajority_percent: (values.supermajority_percent as any) ?? null,
-                              threshold_percent: (values.threshold_percent as any) ?? null,
-                              winners_count: (values.winners_count as any) ?? null,
-                              score_aggregation: (values.score_aggregation as any) ?? null,
-                              starts_at: values.starts_at ?? null,
-                              ends_at: values.ends_at ?? null,
-                              status: 'draft' as any,
-                              created_at: undefined as any,
-                              closed_at: null,
-                              options: values.options as PollOption[],
-                         };
-
-                         const { success, data, error } = await createOrUpdatePoll({ data: pollInsert as any, options: desiredOptions });
-                         if (!success || !data) throw new Error(error || 'Failed to create poll');
-                         toast.success(t('common.actionSaveSuccess'));
-                         router.push(`${paths.dashboard.polls.index}/${data.id}`);
-                    } else {
-                         const { client_id, building_id, activate_now, options: _optVals, ...rest } = values as any;
-                         const { success, error } = await createOrUpdatePoll({ id: poll!.id, data: rest, options: desiredOptions });
-                         if (!success) throw new Error(error || 'Failed to update poll');
-                         toast.success(t('common.actionSaveSuccess'));
-                    }
+                    const pollInsert = { ...values, options: desiredOptions };
+                    const { success, data, error } = await createOrUpdatePoll(pollInsert);
+                    if (!success || !data) throw new Error(error || 'Failed to create poll');
+                    toast.success(t('common.actionSaveSuccess'));
+                    router.push(`${paths.dashboard.polls.index}/${data.id}`);
                } catch (e: any) {
                     toast.error(e.message || 'Error');
                } finally {
@@ -219,7 +187,7 @@ export default function PollCreate({
 
      const uploadAttachments = async () => {
           if (!files.length) return;
-          if (!isEdit && !poll?.id) {
+          if (!poll?.id) {
                toast.error(t('common.actionSaveError') || 'Save poll first');
                return;
           }
@@ -242,10 +210,9 @@ export default function PollCreate({
      };
 
      const handleClosePoll = async () => {
-          if (!isEdit) return;
           setSaving(true);
           try {
-               const { success, error } = await createOrUpdatePoll({ id: poll!.id, data: { status: 'closed', closed_at: new Date().toISOString() } });
+               const { success, error } = await closePoll(poll?.id!);
                if (!success) throw new Error(error || 'Failed to close poll');
                toast.success(t('polls.closed') || 'Poll closed');
           } catch (e: any) {
@@ -256,10 +223,9 @@ export default function PollCreate({
      };
 
      const handleReopenPoll = async () => {
-          if (!isEdit) return;
           setSaving(true);
           try {
-               const { success, error } = await createOrUpdatePoll({ id: poll!.id, data: { closed_at: null, status: 'active' } });
+               const { success, error } = await reopenPoll(poll?.id!);
                if (!success) throw new Error(error || 'Failed to reopen poll');
                toast.success(t('polls.reopened') || 'Poll reopened');
           } catch (e: any) {
@@ -307,7 +273,7 @@ export default function PollCreate({
                <Container maxWidth="xl">
                     <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
                          <Typography variant="h4">
-                              {isEdit ? t('polls.editTitle') || 'Edit Poll' : t('polls.createTitle') || 'Create Poll'}
+                              {poll ? t('polls.editTitle') || 'Edit Poll' : t('polls.createTitle') || 'Create Poll'}
                          </Typography>
 
                          {/* Two-column layout */}
@@ -912,51 +878,49 @@ export default function PollCreate({
 
                               {/* Current votes table */}
                               <Grid size={{ xs: 12, md: 4 }}>
-                                   {isEdit && (
-                                        <Card>
-                                             <CardHeader title={t('polls.votesList') || 'Votes'} />
-                                             <Divider />
-                                             <CardContent>
-                                                  <Stack spacing={1}>
-                                                       <Typography variant="subtitle2">{(votes?.length || 0)} votes</Typography>
-                                                       <Table size="small">
-                                                            <TableHead>
+                                   <Card>
+                                        <CardHeader title={t('polls.votesList') || 'Votes'} />
+                                        <Divider />
+                                        <CardContent>
+                                             <Stack spacing={1}>
+                                                  <Typography variant="subtitle2">{(votes?.length || 0)} votes</Typography>
+                                                  <Table size="small">
+                                                       <TableHead>
+                                                            <TableRow>
+                                                                 <TableCell>{t('common.lblTime') || 'Time'}</TableCell>
+                                                                 <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
+                                                                 <TableCell>{t('polls.anonymous') || 'Anonymous'}</TableCell>
+                                                                 <TableCell>{t('common.comment') || 'Comment'}</TableCell>
+                                                                 <TableCell>{t('common.summary') || 'Summary'}</TableCell>
+                                                            </TableRow>
+                                                       </TableHead>
+                                                       <TableBody>
+                                                            {!votes || votes.length === 0 ? (
                                                                  <TableRow>
-                                                                      <TableCell>{t('common.lblTime') || 'Time'}</TableCell>
-                                                                      <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
-                                                                      <TableCell>{t('polls.anonymous') || 'Anonymous'}</TableCell>
-                                                                      <TableCell>{t('common.comment') || 'Comment'}</TableCell>
-                                                                      <TableCell>{t('common.summary') || 'Summary'}</TableCell>
+                                                                      <TableCell colSpan={5}>
+                                                                           <Typography variant="body2" color="text.secondary">
+                                                                                {t('polls.noVotesYet') || 'No votes yet'}
+                                                                           </Typography>
+                                                                      </TableCell>
                                                                  </TableRow>
-                                                            </TableHead>
-                                                            <TableBody>
-                                                                 {!votes || votes.length === 0 ? (
-                                                                      <TableRow>
-                                                                           <TableCell colSpan={5}>
-                                                                                <Typography variant="body2" color="text.secondary">
-                                                                                     {t('polls.noVotesYet') || 'No votes yet'}
-                                                                                </Typography>
+                                                            ) : (
+                                                                 (votes || []).map((v) => (
+                                                                      <TableRow key={v.id}>
+                                                                           <TableCell>{new Date(v.cast_at).toLocaleString()}</TableCell>
+                                                                           <TableCell>{voteStatusLabel(t, v.status)}</TableCell>
+                                                                           <TableCell>
+                                                                                {v.is_anonymous ? t('common.lblYes') || 'Yes' : t('common.lblNo') || 'No'}
                                                                            </TableCell>
+                                                                           <TableCell>{v.comment || ''}</TableCell>
+                                                                           <TableCell>{summarizeVote(v)}</TableCell>
                                                                       </TableRow>
-                                                                 ) : (
-                                                                      (votes || []).map((v) => (
-                                                                           <TableRow key={v.id}>
-                                                                                <TableCell>{new Date(v.cast_at).toLocaleString()}</TableCell>
-                                                                                <TableCell>{voteStatusLabel(t, v.status)}</TableCell>
-                                                                                <TableCell>
-                                                                                     {v.is_anonymous ? t('common.lblYes') || 'Yes' : t('common.lblNo') || 'No'}
-                                                                                </TableCell>
-                                                                                <TableCell>{v.comment || ''}</TableCell>
-                                                                                <TableCell>{summarizeVote(v)}</TableCell>
-                                                                           </TableRow>
-                                                                      ))
-                                                                 )}
-                                                            </TableBody>
-                                                       </Table>
-                                                  </Stack>
-                                             </CardContent>
-                                        </Card>
-                                   )}
+                                                                 ))
+                                                            )}
+                                                       </TableBody>
+                                                  </Table>
+                                             </Stack>
+                                        </CardContent>
+                                   </Card>
                               </Grid>
                          </Grid>
 
@@ -1021,7 +985,7 @@ export default function PollCreate({
                                    {t('common.btnSave')}
                               </Button>
 
-                              {isEdit && (
+                              {(
                                    poll?.closed_at ? (
                                         <Button
                                              variant="outlined"

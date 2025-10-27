@@ -3,9 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { Poll, PollInsert, PollStatus, PollUpdate } from 'src/types/poll';
+import { Poll, PollStatus } from 'src/types/poll';
 import { createOrUpdatePollOptions } from './poll-options';
 import { TABLES } from 'src/libs/supabase/tables';
+import log from 'src/utils/logger';
 
 export async function getPollsFromClient(params?: { client_id?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
     const t0 = Date.now();
@@ -60,7 +61,7 @@ export async function deletePoll(id: string): Promise<{ success: boolean; error?
 export async function closePoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
-    const payload: PollUpdate = { status: 'closed', closed_at: new Date().toISOString() } as PollUpdate;
+    const payload: Poll = { status: 'closed', closed_at: new Date().toISOString() } as Poll;
     const { data, error } = await supabase.from(TABLES.POLLS).update(payload).eq('id', id).select().single();
     if (error) {
         await logServerAction({ action: 'closePoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
@@ -71,31 +72,45 @@ export async function closePoll(id: string): Promise<{ success: boolean; error?:
     return { success: true, data: data as Poll };
 }
 
+export async function reopenPoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
+    const t0 = Date.now();
+    const supabase = await useServerSideSupabaseAnonClient();
+    const payload: Poll = { status: 'active', closed_at: null } as Poll;
+    const { data, error } = await supabase.from(TABLES.POLLS).update(payload).eq('id', id).select().single();
+    if (error) {
+        await logServerAction({ action: 'reopenPoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: error.message };
+    }
+    revalidatePath(`/dashboard/polls/${data?.id}`);
+    await logServerAction({ action: 'reopenPoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
+    return { success: true, data: data as Poll };
+}
+
 /**
  * Unified create/update for a poll with options orchestration.
  * - Update mode (id provided): first upsert options, then update poll.
  * - Create mode (no id): create poll to obtain id, upsert options; on failure, delete created poll and return error.
  */
-export async function createOrUpdatePoll(params: {
-    id?: string;
-    data: PollInsert | PollUpdate;
-    options?: { id?: string; label: string; sort_order: number }[];
-}): Promise<{ success: boolean; error?: string; data?: Poll }> {
+export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
 
     // Update path: options first, then poll update
-    if (params.id) {
-        const pollId = params.id;
-        if (params.options !== undefined) {
-            const optRes = await createOrUpdatePollOptions(pollId, params.options);
+    if (poll.id) {
+        const pollId = poll.id;
+        if (poll.options !== undefined) {
+            const optRes = await createOrUpdatePollOptions(pollId, poll.options);
+            log(`createOrUpdatePoll: options upsert result: ${JSON.stringify(optRes)}`);
             if (!optRes.success) {
                 await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: optRes.error || 'options error', payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
                 return { success: false, error: optRes.error || 'Failed to update poll options' };
             }
         }
 
-        const { data, error } = await supabase.from(TABLES.POLLS).update(params.data as PollUpdate).eq('id', pollId).select().single();
+        // Exclude options from the poll object before updating
+        const { options, ...pollWithoutOptions } = poll;
+        const { data, error } = await supabase.from(TABLES.POLLS).update(pollWithoutOptions).eq('id', pollId).select().single();
+        log(`createOrUpdatePoll: poll update result: ${JSON.stringify(error)}`);
         if (error) {
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: error.message, payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
             return { success: false, error: error.message };
@@ -106,15 +121,18 @@ export async function createOrUpdatePoll(params: {
     }
 
     // Create path: create poll to get id, upsert options; if options fail, rollback poll
-    const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([params.data as PollInsert]).select().single();
+    const { options, ...pollWithoutOptions } = poll;
+    const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([pollWithoutOptions]).select().single();
+    log(`createOrUpdatePoll: poll create result: ${JSON.stringify(createErr)}`);
     if (createErr || !created) {
         await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: createErr?.message || 'create error', payload: { mode: 'create' }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: createErr?.message || 'Failed to create poll' };
     }
 
     const pollId = created.id as string;
-    if (params.options !== undefined) {
-        const optRes = await createOrUpdatePollOptions(pollId, params.options);
+    if (options !== undefined) {
+        const optRes = await createOrUpdatePollOptions(pollId, options);
+        log(`createOrUpdatePoll: options upsert result: ${JSON.stringify(optRes)}`);
         if (!optRes.success) {
             // Roll back the created poll so we don't leave orphaned rows
             await supabase.from(TABLES.POLLS).delete().eq('id', pollId);

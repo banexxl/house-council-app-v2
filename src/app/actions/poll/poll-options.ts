@@ -66,7 +66,7 @@ export async function deletePollOption(id: string): Promise<{ success: boolean; 
  */
 export async function createOrUpdatePollOptions(
      poll_id: string,
-     desired: { id?: string; label: string; sort_order: number }[]
+     desired: PollOption[]
 ): Promise<{ success: boolean; error?: string; created?: number; updated?: number; deleted?: number }> {
      const t0 = Date.now();
      const existingRes = await getPollOptions(poll_id);
