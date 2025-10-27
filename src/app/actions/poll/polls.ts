@@ -115,7 +115,6 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: error.message, payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
             return { success: false, error: error.message };
         }
-        revalidatePath(`/dashboard/polls/${data?.id}`);
         await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: '', payload: { mode: 'update', id: data?.id }, status: 'success', type: 'db', user_id: null });
         return { success: true, data: data as Poll };
     }
@@ -141,7 +140,6 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
         }
     }
 
-    revalidatePath(`/dashboard/polls/${pollId}`);
     await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: '', payload: { mode: 'create', id: pollId }, status: 'success', type: 'db', user_id: null });
     return { success: true, data: created as Poll };
 }

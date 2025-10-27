@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { PollOption, PollOptionInsert, PollOptionUpdate } from 'src/types/poll';
@@ -101,6 +102,7 @@ export async function createOrUpdatePollOptions(
                     await logServerAction({ action: 'createOrUpdatePollOptions', duration_ms: Date.now() - t0, error: res.error || 'create error', payload: { poll_id }, status: 'fail', type: 'db', user_id: null });
                     return { success: false, error: res.error || 'Failed to create poll option' };
                }
+               revalidatePath(`/dashboard/polls/${poll_id}`);
                created += 1;
           }
      }

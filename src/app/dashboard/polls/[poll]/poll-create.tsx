@@ -55,7 +55,7 @@ import {
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { closePoll, createOrUpdatePoll, reopenPoll } from 'src/app/actions/poll/polls';
+import { closePoll, createOrUpdatePoll, getPollById, reopenPoll } from 'src/app/actions/poll/polls';
 import { uploadPollImagesAndGetUrls } from 'src/app/actions/poll/poll-attachments';
 import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -168,7 +168,16 @@ export default function PollCreate({
                     const pollInsert = { ...values, options: desiredOptions };
                     const { success, data, error } = await createOrUpdatePoll(pollInsert);
                     if (!success || !data) throw new Error(error || 'Failed to create poll');
+                    // Fetch latest poll with options
+                    const pollWithOptionsRes = await getPollById(data.id!);
+                    if (!pollWithOptionsRes.success || !pollWithOptionsRes.data) throw new Error(pollWithOptionsRes.error || 'Failed to fetch poll options');
                     toast.success(t('common.actionSaveSuccess'));
+                    // Reset Formik dirty/touched state after save
+                    formik.resetForm({
+                         values: pollWithOptionsRes.data,
+                         touched: {},
+                         errors: {},
+                    });
                     router.push(`${paths.dashboard.polls.index}/${data.id}`);
                } catch (e: any) {
                     toast.error(e.message || 'Error');
@@ -798,7 +807,7 @@ export default function PollCreate({
                                                        const base = `options[${idx}]`;
                                                        return (
                                                             <Stack
-                                                                 key={`${r.label ?? 'opt'}-${idx}`}
+                                                                 key={r.id ?? `option-${idx}`}
                                                                  direction="row"
                                                                  spacing={1}
                                                                  alignItems="center"
@@ -866,11 +875,25 @@ export default function PollCreate({
                                                        {t('polls.addOption') || 'Add option'}
                                                   </Button>
 
-                                                  {getIn(formik.touched, 'options') && getIn(formik.errors, 'options') && (
-                                                       <Typography variant="caption" color="error">
-                                                            {String(getIn(JSON.stringify(formik.errors), 'options'))}
-                                                       </Typography>
-                                                  )}
+                                                  {Array.isArray(formik.errors.options) &&
+                                                       formik.errors.options.map((err, idx) => {
+                                                            if (!err) return null;
+                                                            if (typeof err === 'string') {
+                                                                 return (
+                                                                      <Typography key={idx} variant="caption" color="error">
+                                                                           Option {idx + 1}: {err}
+                                                                      </Typography>
+                                                                 );
+                                                            }
+                                                            if (typeof err === 'object' && err.label) {
+                                                                 return (
+                                                                      <Typography key={idx} variant="caption" color="error">
+                                                                           Option {idx + 1}: {err.label}
+                                                                      </Typography>
+                                                                 );
+                                                            }
+                                                            return null;
+                                                       })}
                                              </Stack>
                                         </CardContent>
                                    </Card>
@@ -976,6 +999,9 @@ export default function PollCreate({
                               <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
+                              {/* <Typography sx={{ flexGrow: 1 }} >
+                                   {JSON.stringify(formik.errors) + JSON.stringify(formik.touched)}
+                              </Typography> */}
                               <Button
                                    variant="contained"
                                    type="submit"
