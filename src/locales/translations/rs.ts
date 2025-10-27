@@ -975,11 +975,11 @@ export const rs = {
      [tokens.errors.apartment.apartmentSquareMetersTooLow]: 'Kvadratura (m²) mora biti najmanje 1',
      [tokens.errors.apartment.apartmentRoomCountTooLow]: 'Broj soba mora biti najmanje 1',
 
-     // Glasanja (Polls)
-     [tokens.polls.details]: 'Detalji glasanja',
-     [tokens.polls.listTitle]: 'Glasanja',
-     [tokens.polls.createTitle]: 'Kreiraj glasanje',
-     [tokens.polls.editTitle]: 'Izmeni glasanje',
+     // Ankete (Polls)
+     [tokens.polls.details]: 'Detalji ankete',
+     [tokens.polls.listTitle]: 'Ankete',
+     [tokens.polls.createTitle]: 'Kreiraj anketu',
+     [tokens.polls.editTitle]: 'Izmeni anketu',
      [tokens.polls.title]: 'Naslov',
      [tokens.polls.description]: 'Opis',
      [tokens.polls.type]: 'Tip',
@@ -1010,7 +1010,7 @@ export const rs = {
      [tokens.polls.closed]: 'Glasanje zatvoreno',
      [tokens.polls.reopened]: 'Ovo glasanje je ponovo otvoreno.',
      [tokens.polls.selectFiles]: 'Izaberite fajlove',
-     // Glasanja: Validacija
+     // Ankete: Validacija
      [tokens.polls.validation.min0]: 'Mora biti ≥ 0',
      [tokens.polls.validation.max100]: 'Mora biti ≤ 100',
      [tokens.polls.validation.clientRequired]: 'Klijent je obavezan',
