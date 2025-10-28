@@ -129,7 +129,7 @@ export const getScoreAggOptions = (t: I18nFn) => SCORE_AGG_VALUES.map(v => ({ va
  *  TABLE ROW TYPES (as returned from DB)
  *  ========================= */
 export interface Poll {
-     id?: string;
+     id: string;
      client_id: string;
      building_id: string;
 
