@@ -391,6 +391,7 @@ export const de = {
   [tokens.common.actionResetSuccess]: 'Zurücksetzen erfolgreich',
   [tokens.common.actionResetError]: 'Fehler beim Zurücksetzen',
   [tokens.common.actionRemove]: 'Entfernen',
+  [tokens.common.actionWarnRemoveImage]: 'Warnung: Bild entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
   [tokens.common.actionDownloadSuccess]: 'Herunterladen erfolgreich',
   [tokens.common.actionDownloadError]: 'Fehler beim Herunterladen',
   [tokens.common.actionUploadSuccess]: 'Hochladen erfolgreich',

@@ -207,7 +207,7 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
         }
 
         // Exclude options from the poll object before updating
-        const { options, attachments, ...pollWithoutNonColumns } = poll as any;
+        const { options, attachments, votes, ...pollWithoutNonColumns } = poll as any;
         const { data, error } = await supabase.from(TABLES.POLLS).update(pollWithoutNonColumns).eq('id', pollId).select().single();
         log(`createOrUpdatePoll: poll update result: ${JSON.stringify(error)}`);
         if (error) {
@@ -219,7 +219,7 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     }
 
     // Create path: create poll to get id, upsert options; if options fail, rollback poll
-    const { options, attachments, ...pollWithoutNonColumns } = poll as any;
+    const { options, attachments, votes, ...pollWithoutNonColumns } = poll as any;
     const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([pollWithoutNonColumns]).select().single();
     log(`createOrUpdatePoll: poll create result: ${JSON.stringify(createErr)}`);
     if (createErr || !created) {

@@ -147,8 +147,8 @@ export default function PollCreate({
      );
 
      const formik = useFormik<Poll>({
-          // Prevent large lists like attachments from being part of the form state
-          initialValues: poll ? { ...poll, attachments: [] } : pollInitialValues,
+          // Prevent large lists like attachments/votes from being part of the form state
+          initialValues: poll ? { ...poll, attachments: [], votes: [] } : pollInitialValues,
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
           validateOnChange: true,
@@ -167,8 +167,8 @@ export default function PollCreate({
                     }));
 
                     // Exclude non-column props from payload
-                    const { attachments: _attachments, ...valuesNoAttachments } = values as any;
-                    const pollInsert = { ...valuesNoAttachments, options: desiredOptions };
+                    const { attachments: _attachments, votes: _votes, ...valuesNoExtras } = values as any;
+                    const pollInsert = { ...valuesNoExtras, options: desiredOptions };
                     const { success, data, error } = await createOrUpdatePoll(pollInsert);
                     if (!success || !data) throw new Error(error || 'Failed to create poll');
                     // Fetch latest poll with options
@@ -1019,14 +1019,11 @@ export default function PollCreate({
                                                   entityId={poll.id}
                                                   accept={{
                                                        'image/*': [],
-                                                       'application/pdf': [],
-                                                       'application/msword': [],
-                                                       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
                                                   }}
-                                                  caption={t('polls.attachmentsHint') || 'Images, PDF, DOC/DOCX'}
+                                                  caption={t('polls.attachmentsHintImagesOnly') || 'Images only (JPG, PNG, GIF)'}
                                                   onDrop={handleFilesDropWithUrls}
                                                   uploadProgress={uploadProgress}
-                                                  images={(poll.attachments as unknown as DBStoredImage[]) || []}
+                                                  images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
                                                   onRemoveImage={handleFileRemove}
                                                   onRemoveAll={handleFileRemoveAll}
                                              />

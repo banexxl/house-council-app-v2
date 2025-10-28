@@ -86,6 +86,17 @@ export async function uploadPollImagesAndGetUrls(
           }
           const uid = userData.user.id;
 
+          // Validate only image mimetypes are allowed
+          const invalid = files.filter((f: any) => {
+               const type = (f?.type || '').toString();
+               return !type.startsWith('image/');
+          });
+          if (invalid.length > 0) {
+               const names = invalid.map((f: any) => f?.name || 'file').join(', ');
+               await logServerAction({ action: 'uploadPollImages - invalid types', duration_ms: 0, error: `Non-image files: ${names}` , payload: { pollId }, status: 'fail', type: 'db', user_id: uid });
+               return { success: false, error: 'Only image files are allowed' };
+          }
+
           const storagePaths: string[] = [];
           for (const file of files) {
                const storagePath = ['clients', clientId, 'polls', pollId, 'images', sanitizeSegmentForS3(file.name)].join('/');
@@ -149,16 +160,29 @@ export async function removePollAttachmentFilePath(
                return { success: false, error: deleteError.message };
           }
 
-          // Try delete by original string, then by normalized path
-          let dbErrMsg: string | null = null;
-          const { error: dbErr1 } = await supabase.from(ATTACHMENTS_TABLE).delete().match({ poll_id: pollId, });
-          if (dbErr1) {
-               const { error: dbErr2 } = await supabase.from(ATTACHMENTS_TABLE).delete().match({ poll_id: pollId, storage_path: path });
-               if (dbErr2) dbErrMsg = dbErr2.message;
+          // Delete only the matching attachment row for this poll and path
+          const { data: delRows, error: dbErr } = await supabase
+               .from(ATTACHMENTS_TABLE)
+               .delete()
+               .eq('poll_id', pollId)
+               .eq('storage_path', path)
+               .select('id');
+          if (dbErr) {
+               await logServerAction({ action: 'removePollAttachment - DB delete failed', duration_ms: 0, error: dbErr.message, payload: { pollId, path }, status: 'fail', type: 'db', user_id: null });
+               return { success: false, error: dbErr.message };
           }
-          if (dbErrMsg) {
-               await logServerAction({ action: 'removePollAttachment - DB delete failed', duration_ms: 0, error: dbErrMsg, payload: { pollId, path }, status: 'fail', type: 'db', user_id: null });
-               return { success: false, error: dbErrMsg };
+          if (!delRows || delRows.length === 0) {
+               // Fallback: also try matching by bucket in case multiple buckets are used
+               const { error: dbErr2 } = await supabase
+                    .from(ATTACHMENTS_TABLE)
+                    .delete()
+                    .eq('poll_id', pollId)
+                    .eq('storage_bucket', bkt)
+                    .eq('storage_path', path);
+               if (dbErr2) {
+                    await logServerAction({ action: 'removePollAttachment - DB delete none', duration_ms: 0, error: dbErr2.message, payload: { pollId, path }, status: 'fail', type: 'db', user_id: null });
+                    return { success: false, error: dbErr2.message };
+               }
           }
 
           await logServerAction({ action: 'removePollAttachment - success', duration_ms: 0, error: '', payload: { pollId, path }, status: 'success', type: 'db', user_id: null });

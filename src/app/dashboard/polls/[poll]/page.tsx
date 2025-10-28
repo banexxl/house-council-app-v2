@@ -43,7 +43,6 @@ export default async function PollCreatePage({ params }: Props) {
   ] = await Promise.all([
     getPollById(idOrCreate),
   ]);
-  console.log('poll', pollRes);
 
   return (
     <PollCreate

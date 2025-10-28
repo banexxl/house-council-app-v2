@@ -425,6 +425,7 @@ export const rs = {
      [tokens.common.actionResetSuccess]: 'Uspešno resetovana',
      [tokens.common.actionResetError]: 'Greška prilikom resetovanja',
      [tokens.common.actionRemove]: 'Ukloni',
+     [tokens.common.actionWarnRemoveImage]: 'Da li ste sigurni da želite da uklonite ovu sliku?',
      [tokens.common.actionDownloadSuccess]: 'Uspešno preuzeto',
      [tokens.common.actionDownloadError]: 'Greška prilikom preuzimanja',
      [tokens.common.actionUploadSuccess]: 'Uspešno sačuvano',

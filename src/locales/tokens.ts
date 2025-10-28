@@ -129,6 +129,7 @@ export const tokens = {
     actionResetSuccess: 'common.actionResetSuccess',
     actionResetError: 'common.actionResetError',
     actionRemove: 'common.actionRemove',
+    actionWarnRemoveImage: 'common.actionWarnRemoveImage',
     actionDownloadSuccess: 'common.actionDownloadSuccess',
     actionDownloadError: 'common.actionDownloadError',
     actionUploadSuccess: 'common.actionUploadSuccess',

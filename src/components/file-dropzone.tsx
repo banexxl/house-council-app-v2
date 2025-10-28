@@ -165,7 +165,7 @@ export const FileDropzone: FC<FileDropzoneProps> = (props) => {
                           if (openConfirm && onRemoveImage) onRemoveImage(openConfirm);
                           setOpenConfirm(null);
                         }}
-                        title={t('common.warnRemoveImage')}
+                        title={t('common.actionWarnRemoveImage')}
                         type="confirmation"
                       />
                     </Box>

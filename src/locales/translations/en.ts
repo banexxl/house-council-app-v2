@@ -280,6 +280,7 @@ export const en = {
   [tokens.common.actionResetSuccess]: 'Reset successfully',
   [tokens.common.actionResetError]: 'Error during reset',
   [tokens.common.actionRemove]: 'Remove',
+  [tokens.common.actionWarnRemoveImage]: 'Warning: Remove image? This action cannot be undone.',
   [tokens.common.actionDownloadSuccess]: 'Downloaded successfully',
   [tokens.common.actionDownloadError]: 'Error during download',
   [tokens.common.actionUploadSuccess]: 'Uploaded successfully',

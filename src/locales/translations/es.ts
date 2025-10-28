@@ -411,6 +411,7 @@ export const es = {
   [tokens.common.actionResetSuccess]: 'Se ha restablecido correctamente',
   [tokens.common.actionResetError]: 'Ha habido un error al restablecer',
   [tokens.common.actionRemove]: 'Eliminar',
+  [tokens.common.actionWarnRemoveImage]: '¿Estás seguro de que deseas eliminar esta imagen?',
   [tokens.common.actionDownloadSuccess]: 'Se ha descargado correctamente',
   [tokens.common.actionDownloadError]: 'Ha habido un error al descargar',
   [tokens.common.actionUploadSuccess]: 'Se ha subido correctamente',
