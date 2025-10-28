@@ -159,6 +159,8 @@ export interface Poll {
      closed_at: string | null;                     // ISO
 
      attachments: PollAttachment[];
+
+     votes: PollVote[];
 }
 
 export interface PollOption {
@@ -192,6 +194,7 @@ export const pollInitialValues: Poll = {
      created_at: '',
      closed_at: null,
      attachments: [],
+     votes: [],
 }
 
 

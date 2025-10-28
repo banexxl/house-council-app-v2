@@ -40,51 +40,16 @@ export default async function PollCreatePage({ params }: Props) {
   // Edit existing poll
   const [
     { data: pollRes },
-    { data: optionsRes },
-    { data: attachmentsRes },
-    { data: votesRes },
   ] = await Promise.all([
     getPollById(idOrCreate),
-    getPollOptions(idOrCreate),
-    getAttachments(idOrCreate),
-    getVotesByPoll(idOrCreate),
   ]);
-
-  // Sign attachment URLs for display
-  let attachmentsSigned: { url: string; name?: string }[] = [];
-  try {
-    const supabase = await useServerSideSupabaseAnonClient();
-    const bucketDefault = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-    const refs = (attachmentsRes || []).map(a => {
-      const ref = toStorageRef((a as any).storage_path) ?? { bucket: bucketDefault, path: (a as any).storage_path as string };
-      return { bucket: ref.bucket, path: ref.path, name: (a as any).title as string | undefined };
-    });
-    // Group by bucket and sign
-    const byBucket = new Map<string, { path: string; name?: string }[]>();
-    refs.forEach(r => {
-      const arr = byBucket.get(r.bucket) ?? [];
-      arr.push({ path: r.path, name: r.name });
-      byBucket.set(r.bucket, arr);
-    });
-    const out: { url: string; name?: string }[] = [];
-    for (const [bucket, items] of byBucket) {
-      const { data } = await supabase.storage.from(bucket).createSignedUrls(items.map(i => i.path), 60 * 60);
-      (data || []).forEach((d, i) => {
-        if (d?.signedUrl) out.push({ url: d.signedUrl, name: items[i].name });
-      });
-    }
-    attachmentsSigned = out;
-  } catch { }
+  console.log('poll', pollRes);
 
   return (
     <PollCreate
       buildings={buildings}
       clientId={client_id || ''}
       poll={pollRes}
-      options={optionsRes}
-      attachments={attachmentsRes}
-      attachmentsSigned={attachmentsSigned}
-      votes={votesRes}
     />
   );
 }

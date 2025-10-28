@@ -116,7 +116,30 @@ export async function getPollById(id: string): Promise<{ success: boolean; error
         await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: optionsError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: optionsError.message };
     }
-    const pollWithOptions = { ...(data as Poll), options };
+    // Fetch attachments for this poll
+    const { data: attachments, error: attachmentsError } = await supabase
+        .from(TABLES.POLL_ATTACHMENTS)
+        .select('*')
+        .eq('poll_id', id)
+        .order('created_at', { ascending: false });
+    if (attachmentsError) {
+        await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: attachmentsError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: attachmentsError.message };
+    }
+
+    // Fetch poll votes and return with poll data
+    const { data: votes, error: votesError } = await supabase
+        .from(TABLES.POLL_VOTES)
+        .select('*')
+        .eq('poll_id', id)
+        .order('created_at', { ascending: false });
+
+    if (votesError) {
+        await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: votesError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: votesError.message };
+    }
+
+    const pollWithOptions = { ...(data as Poll), options, attachments: attachments ?? [], votes: votes ?? [] };
     await logServerAction({ action: 'getPollById', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
     return { success: true, data: pollWithOptions };
 }
@@ -184,8 +207,8 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
         }
 
         // Exclude options from the poll object before updating
-        const { options, ...pollWithoutOptions } = poll;
-        const { data, error } = await supabase.from(TABLES.POLLS).update(pollWithoutOptions).eq('id', pollId).select().single();
+        const { options, attachments, ...pollWithoutNonColumns } = poll as any;
+        const { data, error } = await supabase.from(TABLES.POLLS).update(pollWithoutNonColumns).eq('id', pollId).select().single();
         log(`createOrUpdatePoll: poll update result: ${JSON.stringify(error)}`);
         if (error) {
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: error.message, payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
@@ -196,8 +219,8 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     }
 
     // Create path: create poll to get id, upsert options; if options fail, rollback poll
-    const { options, ...pollWithoutOptions } = poll;
-    const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([pollWithoutOptions]).select().single();
+    const { options, attachments, ...pollWithoutNonColumns } = poll as any;
+    const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([pollWithoutNonColumns]).select().single();
     log(`createOrUpdatePoll: poll create result: ${JSON.stringify(createErr)}`);
     if (createErr || !created) {
         await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: createErr?.message || 'create error', payload: { mode: 'create' }, status: 'fail', type: 'db', user_id: null });

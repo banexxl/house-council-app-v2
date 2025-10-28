@@ -65,14 +65,12 @@ import dayjs from 'dayjs';
 import log from 'src/utils/logger';
 import { SortableOptionsList } from 'src/components/drag-and-drop';
 import type { DBStoredImage } from 'src/components/file-dropzone';
+import { a } from 'framer-motion/dist/types.d-Cjd591yU';
 
 type Props = {
      clientId: string;
      buildings: Building[];
      poll?: Poll | null;
-     options?: PollOption[] | null;
-     attachments?: PollAttachment[] | null;
-     attachmentsSigned?: { url: string; name?: string }[];
      votes?: PollVote[] | null;
 };
 
@@ -80,15 +78,11 @@ export default function PollCreate({
      clientId,
      buildings,
      poll,
-     options,
-     attachments,
-     attachmentsSigned = [],
      votes = [],
 }: Props) {
      const { t } = useTranslation();
      const router = useRouter();
      const [saving, setSaving] = useState(false);
-     const [uploading, setUploading] = useState(false);
      const [files, setFiles] = useState<DropFile[]>([]);
      const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
      const [infoOpen, setInfoOpen] = useState(false);
@@ -104,8 +98,8 @@ export default function PollCreate({
      };
 
      const optionLabelById = useMemo(
-          () => new Map((options || []).map((o) => [o.id, o.label])),
-          [options]
+          () => new Map((poll?.options! || []).map((o) => [o.id, o.label])),
+          [poll?.options]
      );
 
      const summarizeVote = (v: PollVote): string => {
@@ -153,7 +147,8 @@ export default function PollCreate({
      );
 
      const formik = useFormik<Poll>({
-          initialValues: poll ? poll : pollInitialValues,
+          // Prevent large lists like attachments from being part of the form state
+          initialValues: poll ? { ...poll, attachments: [] } : pollInitialValues,
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
           validateOnChange: true,
@@ -170,7 +165,10 @@ export default function PollCreate({
                          // Always derive sort_order from current position
                          sort_order: i,
                     }));
-                    const pollInsert = { ...values, options: desiredOptions };
+
+                    // Exclude non-column props from payload
+                    const { attachments: _attachments, ...valuesNoAttachments } = values as any;
+                    const pollInsert = { ...valuesNoAttachments, options: desiredOptions };
                     const { success, data, error } = await createOrUpdatePoll(pollInsert);
                     if (!success || !data) throw new Error(error || 'Failed to create poll');
                     // Fetch latest poll with options
@@ -970,7 +968,7 @@ export default function PollCreate({
                                         <Divider />
                                         <CardContent>
                                              <Stack spacing={1}>
-                                                  <Typography variant="subtitle2">{(votes?.length || 0)} votes</Typography>
+                                                  <Typography variant="subtitle2">{(poll?.votes!.length || 0)} votes</Typography>
                                                   <Table size="small">
                                                        <TableHead>
                                                             <TableRow>
