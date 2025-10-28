@@ -56,7 +56,7 @@ export default async function PollCreatePage({ params }: Props) {
     const supabase = await useServerSideSupabaseAnonClient();
     const bucketDefault = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
     const refs = (attachmentsRes || []).map(a => {
-      const ref = toStorageRef((a as any).file_url) ?? { bucket: bucketDefault, path: (a as any).file_url as string };
+      const ref = toStorageRef((a as any).storage_path) ?? { bucket: bucketDefault, path: (a as any).storage_path as string };
       return { bucket: ref.bucket, path: ref.path, name: (a as any).title as string | undefined };
     });
     // Group by bucket and sign

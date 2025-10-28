@@ -1,9 +1,10 @@
 "use server";
 
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { revalidatePath } from 'next/cache';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { toStorageRef } from 'src/utils/sb-bucket';
-import { PollAttachment, PollAttachmentInsert, PollAttachmentUpdate } from 'src/types/poll';
+import { PollAttachment } from 'src/types/poll';
 
 const ATTACHMENTS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_TBL_POLL_ATTACHMENTS || 'tblPollAttachments';
 const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
@@ -31,7 +32,7 @@ export async function getAttachments(poll_id: string): Promise<{ success: boolea
      return { success: true, data: (data ?? []) as PollAttachment[] };
 }
 
-export async function addAttachment(attachment: PollAttachmentInsert): Promise<{ success: boolean; error?: string; data?: PollAttachment }> {
+export async function addAttachment(attachment: PollAttachment): Promise<{ success: boolean; error?: string; data?: PollAttachment }> {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from(ATTACHMENTS_TABLE).insert([attachment]).select().single();
@@ -43,7 +44,7 @@ export async function addAttachment(attachment: PollAttachmentInsert): Promise<{
      return { success: true, data: data as PollAttachment };
 }
 
-export async function updateAttachment(id: string, update: PollAttachmentUpdate): Promise<{ success: boolean; error?: string; data?: PollAttachment }> {
+export async function updateAttachment(id: string, update: PollAttachment): Promise<{ success: boolean; error?: string; data?: PollAttachment }> {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from(ATTACHMENTS_TABLE).update(update).eq('id', id).select().single();
@@ -96,13 +97,14 @@ export async function uploadPollImagesAndGetUrls(
                     return { success: false, error: `${uploadError.message} for file ${file.name}` };
                }
 
-               const row: PollAttachmentInsert = {
+               const row: PollAttachment = {
                     poll_id: pollId,
-                    file_url: storagePath, // store path; signing happens on read
-                    title: file.name,
-                    uploaded_by: uid,
-                    uploaded_at: new Date().toISOString(),
-               } as any;
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    storage_bucket: bucket,
+                    storage_path: storagePath,
+                    is_cover_image: false
+               }
                const { error: insertErr } = await supabase.from(ATTACHMENTS_TABLE).insert(row);
                if (insertErr) {
                     await logServerAction({ action: 'uploadPollImages - DB insert failed', duration_ms: 0, error: insertErr.message, payload: { pollId, storagePath }, status: 'fail', type: 'db', user_id: uid });
@@ -122,6 +124,7 @@ export async function uploadPollImagesAndGetUrls(
 
           const urls = signedArr.map(s => s.signedUrl).filter(Boolean) as string[];
           await logServerAction({ action: 'uploadPollImages - success', duration_ms: 0, error: '', payload: { count: urls.length }, status: 'success', type: 'db', user_id: uid });
+          revalidatePath(`/dashboard/polls/${pollId}`);
           return { success: true, urls };
      } catch (error: any) {
           return { success: false, error: error.message };
@@ -148,9 +151,9 @@ export async function removePollAttachmentFilePath(
 
           // Try delete by original string, then by normalized path
           let dbErrMsg: string | null = null;
-          const { error: dbErr1 } = await supabase.from(ATTACHMENTS_TABLE).delete().match({ poll_id: pollId, file_url: filePathOrUrl });
+          const { error: dbErr1 } = await supabase.from(ATTACHMENTS_TABLE).delete().match({ poll_id: pollId, });
           if (dbErr1) {
-               const { error: dbErr2 } = await supabase.from(ATTACHMENTS_TABLE).delete().match({ poll_id: pollId, file_url: path });
+               const { error: dbErr2 } = await supabase.from(ATTACHMENTS_TABLE).delete().match({ poll_id: pollId, storage_path: path });
                if (dbErr2) dbErrMsg = dbErr2.message;
           }
           if (dbErrMsg) {
@@ -159,8 +162,49 @@ export async function removePollAttachmentFilePath(
           }
 
           await logServerAction({ action: 'removePollAttachment - success', duration_ms: 0, error: '', payload: { pollId, path }, status: 'success', type: 'db', user_id: null });
+          revalidatePath(`/dashboard/polls/${pollId}`);
           return { success: true };
      } catch (error: any) {
           return { success: false, error: error.message };
+     }
+}
+
+// Remove all attachments for a poll (storage + DB rows).
+export async function removeAllPollAttachments(pollId: string): Promise<{ success: boolean; error?: string }> {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          const { data: rows, error: readErr } = await supabase
+               .from(ATTACHMENTS_TABLE)
+               .select('storage_path')
+               .eq('poll_id', pollId);
+          if (readErr) return { success: false, error: readErr.message };
+
+          const toDelete = (rows || []).map(r => toStorageRef(r.storage_path) ?? { bucket: DEFAULT_BUCKET, path: r.storage_path });
+
+          const groups = new Map<string, string[]>();
+          for (const ref of toDelete) {
+               if (!ref?.path) continue;
+               const arr = groups.get(ref.bucket) ?? [];
+               arr.push(ref.path);
+               groups.set(ref.bucket, arr);
+          }
+
+          for (const [bkt, paths] of groups) {
+               if (!paths.length) continue;
+               const { error: delErr } = await supabase.storage.from(bkt).remove(paths);
+               if (delErr) return { success: false, error: delErr.message };
+          }
+
+          const { error: dbErr } = await supabase
+               .from(ATTACHMENTS_TABLE)
+               .delete()
+               .eq('poll_id', pollId);
+          if (dbErr) return { success: false, error: dbErr.message };
+
+          revalidatePath(`/dashboard/polls/${pollId}`);
+          return { success: true };
+     } catch (e: any) {
+          return { success: false, error: e?.message || 'Unexpected error' };
      }
 }

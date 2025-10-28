@@ -55,13 +55,16 @@ import {
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { closePoll, createOrUpdatePoll, getPollById, reopenPoll } from 'src/app/actions/poll/polls';
-import { uploadPollImagesAndGetUrls } from 'src/app/actions/poll/poll-attachments';
+import { closePoll, createOrUpdatePoll, getPollById, reopenPoll, reorderPolls } from 'src/app/actions/poll/polls';
+import { uploadPollImagesAndGetUrls, removePollAttachmentFilePath, removeAllPollAttachments } from 'src/app/actions/poll/poll-attachments';
+import { FileDropzone, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import log from 'src/utils/logger';
+import { SortableOptionsList } from 'src/components/drag-and-drop';
+import type { DBStoredImage } from 'src/components/file-dropzone';
 
 type Props = {
      clientId: string;
@@ -86,7 +89,8 @@ export default function PollCreate({
      const router = useRouter();
      const [saving, setSaving] = useState(false);
      const [uploading, setUploading] = useState(false);
-     const [files, setFiles] = useState<File[]>([]);
+     const [files, setFiles] = useState<DropFile[]>([]);
+     const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
      const [infoOpen, setInfoOpen] = useState(false);
 
      // helper for MUI fields: injects error + helperText from Formik by path
@@ -163,7 +167,8 @@ export default function PollCreate({
                          id: r.id,
                          poll_id: pollId,
                          label: r.label,
-                         sort_order: typeof r.sort_order === 'number' ? r.sort_order : i,
+                         // Always derive sort_order from current position
+                         sort_order: i,
                     }));
                     const pollInsert = { ...values, options: desiredOptions };
                     const { success, data, error } = await createOrUpdatePoll(pollInsert);
@@ -189,32 +194,97 @@ export default function PollCreate({
 
      const isFormLocked = formik.isSubmitting || !!poll?.closed_at || (poll?.status && poll.status !== 'draft' && poll.status !== 'active');
 
-     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-          const fs = Array.from(e.target.files || []);
-          setFiles(fs);
-     };
-
-     const uploadAttachments = async () => {
-          if (!files.length) return;
+     const handleFilesDrop = async (newFiles: DropFile[]) => {
           if (!poll?.id) {
                toast.error(t('common.actionSaveError') || 'Save poll first');
                return;
           }
-          setUploading(true);
+
+          let fakeProgress = 0;
+          setUploadProgress(0);
+          const interval = setInterval(() => {
+               fakeProgress += 5;
+               if (fakeProgress <= 99) setUploadProgress(fakeProgress);
+          }, 300);
+
           try {
-               const pollId = poll?.id as string;
                const { success, error } = await uploadPollImagesAndGetUrls(
-                    files,
+                    newFiles,
                     formik.values.client_id,
-                    pollId
+                    poll.id
                );
+               clearInterval(interval);
+               setUploadProgress(100);
+               setTimeout(() => setUploadProgress(undefined), 700);
                if (!success) throw new Error(error || 'Upload failed');
-               toast.success(t('common.actionUploadSuccess') || 'Uploaded');
-               setFiles([]);
+               setFiles((prev) => [...prev, ...newFiles]);
+               // Optimistically append new signed URLs to the local attachments list for immediate display
+               // Note: Server returns signed URLs in the same order as provided files
+               // We cannot read URLs here (not returned inline), so we refetch from argument? The action returns urls; adapt to it.
           } catch (e: any) {
-               toast.error(e.message || 'Upload error');
-          } finally {
-               setUploading(false);
+               clearInterval(interval);
+               setUploadProgress(undefined);
+               toast.error(e?.message || t('common.actionUploadError') || 'Upload error');
+               return;
+          }
+
+          // Fetch signed URLs were returned by the action via its return value; re-call to retrieve URLs is not needed because we already have them in the previous scope.
+     };
+
+     // Enhance: handleFilesDrop needs the URLs to update UI; adjust to capture them from the action result
+     const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
+          if (!poll?.id) {
+               toast.error(t('common.actionSaveError') || 'Save poll first');
+               return;
+          }
+
+          let fakeProgress = 0;
+          setUploadProgress(0);
+          const interval = setInterval(() => {
+               fakeProgress += 5;
+               if (fakeProgress <= 99) setUploadProgress(fakeProgress);
+          }, 300);
+
+          try {
+               const res = await uploadPollImagesAndGetUrls(newFiles, formik.values.client_id, poll.id);
+               clearInterval(interval);
+               setUploadProgress(100);
+               setTimeout(() => setUploadProgress(undefined), 700);
+               if (!res.success || !res.urls) throw new Error(res.error || 'Upload failed');
+               setFiles((prev) => [...prev, ...newFiles]);
+               toast.success(t('common.actionUploadSuccess') || 'Uploaded');
+          } catch (e: any) {
+               clearInterval(interval);
+               setUploadProgress(undefined);
+               toast.error(e?.message || t('common.actionUploadError') || 'Upload error');
+          }
+     };
+
+     const handleFileRemove = async (image: DBStoredImage) => {
+          if (!poll?.id) return;
+          try {
+               const { success, error } = await removePollAttachmentFilePath(poll.id, image.storage_path);
+               if (!success) {
+                    toast.error(error || t('common.actionDeleteError') || 'Delete failed');
+                    return;
+               }
+               toast.success(t('common.actionDeleteSuccess') || 'Deleted');
+          } catch (e: any) {
+               toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
+          }
+     };
+
+     const handleFileRemoveAll = async () => {
+          if (!poll?.id) return;
+          try {
+               const res = await removeAllPollAttachments(poll.id);
+               if (!res.success) {
+                    toast.error(res.error || t('common.actionDeleteError') || 'Delete failed');
+                    return;
+               }
+               toast.success(t('common.actionDeleteSuccess') || 'Deleted');
+          } catch (e: any) {
+               toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
           }
      };
 
@@ -803,58 +873,52 @@ export default function PollCreate({
                                         <Divider />
                                         <CardContent>
                                              <Stack spacing={1}>
-                                                  {formik.values?.options.length !== 0 ? formik.values.options.map((r, idx) => {
-                                                       const base = `options[${idx}]`;
-                                                       return (
-                                                            <Stack
-                                                                 key={r.id ?? `option-${idx}`}
-                                                                 direction="row"
-                                                                 spacing={1}
-                                                                 alignItems="center"
-                                                            >
-                                                                 <TextField
-                                                                      disabled={isFormLocked}
-                                                                      size="small"
-                                                                      name={`${base}.label`}
-                                                                      label={t('polls.optionLabel') || 'Label'}
-                                                                      value={r.label}
-                                                                      onChange={(e) => {
-                                                                           formik.setFieldValue(`${base}.label`, e.target.value);
-                                                                      }}
-                                                                      onBlur={formik.handleBlur}
-                                                                 />
-                                                                 <TextField
-                                                                      disabled={isFormLocked}
-                                                                      size="small"
-                                                                      name={`${base}.sort_order`}
-                                                                      type="text"
-                                                                      slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
-                                                                      onKeyDown={allowIntegerKeyDown}
-                                                                      label={t('polls.sortOrder') || 'Order'}
-                                                                      value={r.sort_order}
-                                                                      onChange={(e) => {
-                                                                           const v = coerceInt(e.target.value) ?? idx;
-                                                                           formik.setFieldValue(`${base}.sort_order`, v);
-                                                                      }}
-                                                                      onBlur={formik.handleBlur}
-                                                                      {...fe(`${base}.sort_order`)}
-                                                                 />
-                                                                 <Button
-                                                                      disabled={isFormLocked}
-                                                                      color="error"
-                                                                      variant="outlined"
-                                                                      onClick={() =>
-                                                                           formik.setFieldValue(
-                                                                                'options',
-                                                                                formik.values.options.filter((_, i) => i !== idx)
-                                                                           )
+
+                                                  {formik.values.options.length > 0 ?
+                                                       <SortableOptionsList
+                                                            options={formik.values.options}
+                                                            disabled={isFormLocked}
+                                                            onDelete={(idx) => formik.setFieldValue('options', formik.values.options.filter((_, i) => i !== idx))}
+                                                            onLabelChange={(idx, value) => formik.setFieldValue(`options[${idx}].label`, value)}
+                                                            onReorder={async (newOptions: PollOption[]) => {
+                                                                 // Optimistically update local order in the form only
+                                                                 formik.setFieldValue('options', newOptions);
+
+                                                                 // If poll exists, persist order for options that already have ids
+                                                                 const pollId = poll?.id;
+                                                                 const optionIds = newOptions.map((o) => o.id).filter(Boolean) as string[];
+
+                                                                 if (!pollId) {
+                                                                      // New poll not saved yet
+                                                                      toast.success(t('polls.optionsReorderedLocal') || 'Order updated (not yet saved)');
+                                                                      return;
+                                                                 }
+                                                                 try {
+                                                                      if (optionIds.length < 2) {
+                                                                           // Nothing meaningful to persist
+                                                                           toast.success(t('polls.optionsReorderedLocal') || 'Order updated (not yet saved)');
+                                                                           return;
                                                                       }
-                                                                 >
-                                                                      {t('common.btnDelete')}
-                                                                 </Button>
-                                                            </Stack>
-                                                       );
-                                                  })
+                                                                      const res = await reorderPolls(pollId, optionIds);
+                                                                      if (!res.success) {
+                                                                           toast.error(res.error || 'Failed to update order');
+                                                                      } else {
+                                                                           // Normalize local sort_order to match persisted order and clear dirty state
+                                                                           const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i } as PollOption));
+                                                                           formik.setFieldValue('options', normalized);
+                                                                           // Reset formik's dirty flag without losing current values
+                                                                           formik.resetForm({
+                                                                                values: { ...formik.values, options: normalized },
+                                                                                touched: formik.touched,
+                                                                                errors: formik.errors,
+                                                                           });
+                                                                           toast.success(t('common.actionSaveSuccess') || 'Order updated');
+                                                                      }
+                                                                 } catch (e: any) {
+                                                                      toast.error(e?.message || 'Failed to update order');
+                                                                 }
+                                                            }}
+                                                       />
                                                        : (
                                                             <Typography variant="body2" color="text.secondary">
                                                                  {t('polls.noOptions') || 'No options available'}
@@ -952,45 +1016,27 @@ export default function PollCreate({
                               <Divider />
                               <CardContent>
                                    <Stack spacing={2}>
-                                        {!!attachmentsSigned.length && (
-                                             <Stack spacing={1}>
-                                                  <Typography variant="subtitle2">
-                                                       {t('polls.existingAttachments') || 'Existing attachments'}
-                                                  </Typography>
-                                                  <Stack spacing={1}>
-                                                       {attachmentsSigned.map((a, i) => (
-                                                            <a key={i} href={a.url} target="_blank" rel="noreferrer">
-                                                                 {a.name || a.url}
-                                                            </a>
-                                                       ))}
-                                                  </Stack>
-                                             </Stack>
-                                        )}
-                                        <Button
-                                             variant="outlined"
-                                             component="label"
-                                             disabled={isFormLocked}
-                                             sx={{ width: '150px' }}
-                                        >
-                                             {t('polls.selectFiles') || 'Select files'}
-                                             <input
-                                                  type="file"
-                                                  multiple
-                                                  hidden
-                                                  onChange={handleFileChange}
+                                        {poll?.id ? (
+                                             <FileDropzone
+                                                  entityId={poll.id}
+                                                  accept={{
+                                                       'image/*': [],
+                                                       'application/pdf': [],
+                                                       'application/msword': [],
+                                                       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
+                                                  }}
+                                                  caption={t('polls.attachmentsHint') || 'Images, PDF, DOC/DOCX'}
+                                                  onDrop={handleFilesDropWithUrls}
+                                                  uploadProgress={uploadProgress}
+                                                  images={(poll.attachments as unknown as DBStoredImage[]) || []}
+                                                  onRemoveImage={handleFileRemove}
+                                                  onRemoveAll={handleFileRemoveAll}
                                              />
-                                        </Button>
-                                        <Button
-                                             variant="outlined"
-                                             onClick={uploadAttachments}
-                                             disabled={!files.length || isFormLocked}
-                                             loading={uploading}
-                                             sx={{
-                                                  width: '150px'
-                                             }}
-                                        >
-                                             {t('common.btnUpload') || 'Upload'}
-                                        </Button>
+                                        ) : (
+                                             <Typography variant="body2" color="text.secondary">
+                                                  {t('common.actionSaveError') || 'Save poll first to upload images.'}
+                                             </Typography>
+                                        )}
                                    </Stack>
                               </CardContent>
                          </Card>
@@ -999,9 +1045,6 @@ export default function PollCreate({
                               <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
-                              {/* <Typography sx={{ flexGrow: 1 }} >
-                                   {JSON.stringify(formik.errors) + JSON.stringify(formik.touched)}
-                              </Typography> */}
                               <Button
                                    variant="contained"
                                    type="submit"

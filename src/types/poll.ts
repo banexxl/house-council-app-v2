@@ -157,6 +157,8 @@ export interface Poll {
      status: PollStatus;
      created_at: string;                           // ISO
      closed_at: string | null;                     // ISO
+
+     attachments: PollAttachment[];
 }
 
 export interface PollOption {
@@ -189,17 +191,19 @@ export const pollInitialValues: Poll = {
      status: 'draft',
      created_at: '',
      closed_at: null,
+     attachments: [],
 }
 
 
 
 export interface PollAttachment {
-     id: string;
+     id?: string;
      poll_id: string;
-     file_url: string;
-     title: string | null;
-     uploaded_by: string | null;                   // auth.users.id
-     uploaded_at: string;                          // ISO
+     created_at: string;
+     updated_at: string;
+     storage_bucket: string;
+     storage_path: string;
+     is_cover_image: boolean;
 }
 
 /** =========================
@@ -272,13 +276,6 @@ export interface PollVote {
 /** tblPollOptions */
 export type PollOptionInsert = Omit<PollOption, 'id'> & { id?: string };
 export type PollOptionUpdate = Partial<Omit<PollOption, 'id'>> & { id?: string };
-
-/** tblPollAttachments */
-export type PollAttachmentInsert = Omit<PollAttachment, 'id' | 'uploaded_at'> & {
-     id?: string;
-     uploaded_at?: string;
-};
-export type PollAttachmentUpdate = Partial<Omit<PollAttachment, 'id'>> & { id?: string };
 
 /** tblPollVotes */
 export type PollVoteInsert = Omit<PollVote, 'id' | 'cast_at' | 'status'> & {

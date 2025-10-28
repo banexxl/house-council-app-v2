@@ -1,4 +1,4 @@
-"use server";
+'use server'
 
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
@@ -7,6 +7,82 @@ import { Poll, PollStatus } from 'src/types/poll';
 import { createOrUpdatePollOptions } from './poll-options';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
+
+/**
+ * Reorder poll options for a poll by updating sort_order in the database.
+ * @param pollId - The poll ID
+ * @param optionIds - Array of option IDs in the new order
+ */
+export async function reorderPolls(pollId: string, optionIds: string[]): Promise<{ success: boolean; error?: string }> {
+    const t0 = Date.now();
+    const supabase = await useServerSideSupabaseAnonClient();
+
+    // Fetch existing options for this poll
+    const { data: existingOptions, error: fetchErr } = await supabase
+        .from(TABLES.POLL_OPTIONS)
+        .select('id, sort_order')
+        .eq('poll_id', pollId);
+    if (fetchErr) {
+        await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: fetchErr.message, payload: { pollId, optionIds }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: fetchErr.message };
+    }
+
+    const existingSet = new Set<string>((existingOptions ?? []).map((o: any) => o.id as string));
+    const orderedIds = optionIds.filter((id) => existingSet.has(id));
+    if (orderedIds.length !== optionIds.length) {
+        await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: 'One or more option ids not found for poll', payload: { pollId, optionIds }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: 'One or more option ids not found for this poll' };
+    }
+
+    // Two-phase update to avoid unique collisions on (poll_id, sort_order)
+    const maxSort = Math.max(
+        0,
+        ...((existingOptions ?? []).map((o: any) => (typeof o.sort_order === 'number' ? o.sort_order : -1)))
+    );
+    const tempBase = maxSort + 1000;
+
+    // Phase 1: move selected rows into a temporary, non-conflicting range
+    for (let idx = 0; idx < orderedIds.length; idx++) {
+        const id = orderedIds[idx];
+        const { data: phase1, error } = await supabase
+            .from(TABLES.POLL_OPTIONS)
+            .update({ sort_order: tempBase + idx })
+            .eq('id', id)
+            .eq('poll_id', pollId)
+            .select('id, sort_order');
+        if (error) {
+            await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: error.message, payload: { pollId, optionIds }, status: 'fail', type: 'db', user_id: null });
+            return { success: false, error: error.message };
+        }
+        if (!phase1 || phase1.length === 0) {
+            await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: 'No rows updated in phase 1', payload: { pollId, optionIds, id }, status: 'fail', type: 'db', user_id: null });
+            return { success: false, error: 'No rows updated' };
+        }
+    }
+
+    // Phase 2: assign final contiguous order
+    for (let idx = 0; idx < orderedIds.length; idx++) {
+        const id = orderedIds[idx];
+        const { data: phase2, error } = await supabase
+            .from(TABLES.POLL_OPTIONS)
+            .update({ sort_order: idx })
+            .eq('id', id)
+            .eq('poll_id', pollId)
+            .select('id, sort_order');
+        if (error) {
+            await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: error.message, payload: { pollId, optionIds }, status: 'fail', type: 'db', user_id: null });
+            return { success: false, error: error.message };
+        }
+        if (!phase2 || phase2.length === 0) {
+            await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: 'No rows updated in phase 2', payload: { pollId, optionIds, id }, status: 'fail', type: 'db', user_id: null });
+            return { success: false, error: 'No rows updated' };
+        }
+    }
+
+    revalidatePath(`/dashboard/polls/${pollId}`);
+    await logServerAction({ action: 'reorderPolls', duration_ms: Date.now() - t0, error: '', payload: { pollId, optionIds }, status: 'success', type: 'db', user_id: null });
+    return { success: true };
+}
 
 export async function getPollsFromClient(params?: { client_id?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
     const t0 = Date.now();
@@ -143,3 +219,4 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: '', payload: { mode: 'create', id: pollId }, status: 'success', type: 'db', user_id: null });
     return { success: true, data: created as Poll };
 }
+
