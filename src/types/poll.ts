@@ -1,4 +1,6 @@
 import * as Yup from 'yup';
+import { UUID } from 'crypto';
+import { isUUIDv4 } from 'src/utils/uuid';
 
 /** =========================
  *  ENUMS (string literal types)
@@ -129,7 +131,7 @@ export const getScoreAggOptions = (t: I18nFn) => SCORE_AGG_VALUES.map(v => ({ va
  *  TABLE ROW TYPES (as returned from DB)
  *  ========================= */
 export interface Poll {
-     id: string;
+     id?: string;
      client_id: string;
      building_id: string;
 
@@ -171,7 +173,7 @@ export interface PollOption {
 }
 
 export const pollInitialValues: Poll = {
-     id: '',
+     // id: '',
      client_id: '',
      building_id: '',
      type: 'yes_no',
@@ -321,6 +323,7 @@ export const isVoteScore = (v: unknown): v is VoteScore =>
  *  VALIDATION SCHEMA (Yup)
  *  ========================= */
 export const buildPollValidationSchema = (t: (k: string) => string) => {
+
      const msg = (k: string, fallback: string) => t(k) || fallback;
      const numberPct = () =>
           Yup.number()
@@ -338,6 +341,13 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
                });
 
      return Yup.object({
+          id: Yup.string()
+               .test('is-uuid-or-empty', msg('polls.validation.invalidId', 'Invalid ID'), v => {
+                    if (!v) return true; // allow empty string
+                    // UUID v4 regex
+                    return isUUIDv4(v as UUID);
+               })
+               .optional(),
           client_id: Yup.string().trim().required(msg('polls.validation.clientRequired', 'Client required')),
           building_id: Yup.string().trim().required(msg('polls.validation.buildingRequired', 'Building required')),
           type: Yup.mixed<PollType>()
@@ -352,21 +362,39 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
           allow_comments: Yup.boolean().required(),
           allow_anonymous: Yup.boolean().required(),
 
-          options: Yup.array().of(
-               Yup.object({
-                    label: Yup.string().trim().required(msg('polls.validation.optionLabelRequired', 'Option label required')),
-                    // pick ONE convention: 0-based or 1-based; here we use 0-based:
-                    sort_order: Yup.number().integer().min(0).required(),
-               })
-          )
-               .when('type', (type, schema: any) => {
+          // Disable validations for options until `id` is a valid UUID
+          options: Yup.array()
+               .when(['id', 'type'], ([id, type], schema: any) => {
                     const pollType = Array.isArray(type) ? type[0] : type;
+                    const idValue = Array.isArray(id) ? id[0] : id;
+
+                    // Loose schema (no requireds) while creating before we have a real id
+                    const loose = Yup.array().of(
+                         Yup.object({
+                              label: Yup.string().trim().notRequired(),
+                              // keep constraints shape, but not required
+                              sort_order: Yup.number().integer().min(0).notRequired(),
+                         })
+                    );
+
+                    // Strict schema used once id is a valid UUID
+                    const strictBase = Yup.array().of(
+                         Yup.object({
+                              label: Yup.string().trim().required(msg('polls.validation.optionLabelRequired', 'Option label required')),
+                              // pick ONE convention: 0-based or 1-based; here we use 0-based:
+                              sort_order: Yup.number().integer().min(0).required(),
+                         })
+                    );
+
+                    // If id is empty or not a valid UUID, skip strict validations
+                    if (!idValue || !isUUIDv4(idValue)) return loose;
+
                     if (pollType === 'yes_no') {
                          // yes/no can be auto-generated; allow 0 or 2; keep min(0)
-                         return schema.min(0);
+                         return strictBase.min(0);
                     }
                     if (['single_choice', 'multiple_choice', 'ranked_choice', 'score'].includes(pollType)) {
-                         return schema
+                         return strictBase
                               .min(2, msg('polls.validation.atLeastTwoOptions', 'At least two options'))
                               .test('unique-labels', msg('polls.validation.uniqueOptions', 'Option labels must be unique'), (opts?: any[]) => {
                                    if (!opts) return true;
@@ -374,23 +402,30 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
                                    return new Set(keys).size === keys.length;
                               });
                     }
-                    return schema;
+                    return strictBase;
                }),
 
-          max_choices: Yup.number().nullable().when('type', (type, s: any) => {
+          // Disable validations until id is not an empty string but a valid uuid
+          max_choices: Yup.number().nullable().when(['id', 'type'], ([id, type], s: any) => {
                const pollType = Array.isArray(type) ? type[0] : type;
-               return pollType === 'multiple_choice'
-                    ? s
-                         .typeError(msg('polls.validation.number', 'Must be a number'))
-                         .integer(msg('polls.validation.integer', 'Must be an integer'))
-                         .min(1, msg('polls.validation.maxChoicesMin', 'Must be ≥ 1'))
-                         .required(msg('polls.validation.maxChoicesReq', 'Max choices required'))
-                         .test('lte-options', msg('polls.validation.maxChoicesLteOptions', 'Must be ≤ number of options'), function (this: Yup.TestContext, value: any) {
-                              const options = this.parent?.options ?? [];
-                              if (typeof value !== 'number') return true;
-                              return value <= options.length;
-                         })
-                    : s.nullable();
+               const idValue = Array.isArray(id) ? id[0] : id;
+               // Only validate if id is a valid UUID (not empty string)
+               if (idValue && isUUIDv4(idValue)) {
+                    return pollType === 'multiple_choice'
+                         ? s
+                              .typeError(msg('polls.validation.number', 'Must be a number'))
+                              .integer(msg('polls.validation.integer', 'Must be an integer'))
+                              .min(1, msg('polls.validation.maxChoicesMin', 'Must be ≥ 1'))
+                              .required(msg('polls.validation.maxChoicesReq', 'Max choices required'))
+                              .test('lte-options', msg('polls.validation.maxChoicesLteOptions', 'Must be ≤ number of options'), function (this: Yup.TestContext, value: any) {
+                                   const options = this.parent?.options ?? [];
+                                   if (typeof value !== 'number') return true;
+                                   return value <= options.length;
+                              })
+                         : s.nullable();
+               }
+               // If id is empty or not a valid UUID, skip validation
+               return s.nullable();
           }),
 
           // RULE constraints differ by type

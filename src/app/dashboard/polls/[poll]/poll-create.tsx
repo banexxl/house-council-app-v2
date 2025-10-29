@@ -66,7 +66,6 @@ import dayjs from 'dayjs';
 import log from 'src/utils/logger';
 import { SortableOptionsList } from 'src/components/drag-and-drop';
 import type { DBStoredImage } from 'src/components/file-dropzone';
-import { a } from 'framer-motion/dist/types.d-Cjd591yU';
 
 type Props = {
      clientId: string;
@@ -149,7 +148,7 @@ export default function PollCreate({
 
      const formik = useFormik<Poll>({
           // Prevent large lists like attachments/votes from being part of the form state
-          initialValues: poll ? { ...poll, attachments: [], votes: [] } : pollInitialValues,
+          initialValues: poll ? { ...poll, attachments: [], votes: [] } : { ...pollInitialValues, client_id: clientId },
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
           validateOnChange: true,
@@ -167,9 +166,18 @@ export default function PollCreate({
                          sort_order: i,
                     }));
 
-                    // Exclude non-column props from payload
-                    const { attachments: _attachments, votes: _votes, ...valuesNoExtras } = values as any;
-                    const pollInsert = { ...valuesNoExtras, options: desiredOptions };
+                    // Exclude non-column props and server-managed timestamps from payload
+                    const { attachments: _attachments, votes: _votes, created_at: _created_at, closed_at: _closed_at, ...valuesNoExtras } = values as any;
+
+                    // Normalize date-time fields: send null or ISO 8601 (UTC)
+                    const toIsoOrNull = (v: any) => (v ? dayjs(v).toDate().toISOString() : null);
+
+                    const pollInsert = {
+                         ...valuesNoExtras,
+                         starts_at: toIsoOrNull(valuesNoExtras.starts_at),
+                         ends_at: toIsoOrNull(valuesNoExtras.ends_at),
+                         options: desiredOptions,
+                    } as any;
                     const { success, data, error } = await createOrUpdatePoll(pollInsert);
                     if (!success || !data) throw new Error(error || 'Failed to create poll');
                     // Fetch latest poll with options
@@ -192,7 +200,7 @@ export default function PollCreate({
      });
 
      // Ensure poll options edits do not toggle main form dirty state
-     const setOptionsAndClearDirty = (newOptions: any[]) => {
+     const setOptionsAndClearDirty = async (newOptions: any[]) => {
           // Update options value and immediately reset Formik with same values
           // so that formik.dirty remains false for option-only edits.
           formik.setFieldValue('options', newOptions, false);
@@ -201,6 +209,8 @@ export default function PollCreate({
                touched: formik.touched,
                errors: formik.errors,
           });
+          // Re-run validation to reflect new options (e.g., min count, uniqueness, winners <= options)
+          await formik.validateForm();
      };
 
      const isFormLocked = formik.isSubmitting || !!poll?.closed_at || (poll?.status && poll.status !== 'draft' && poll.status !== 'active');
@@ -991,13 +1001,15 @@ export default function PollCreate({
                                                                       } else {
                                                                            // Normalize local sort_order to match persisted order and clear dirty state
                                                                            const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i } as PollOption));
-                                                                           formik.setFieldValue('options', normalized);
+                                                                           formik.setFieldValue('options', normalized, false);
                                                                            // Reset formik's dirty flag without losing current values
                                                                            formik.resetForm({
                                                                                 values: { ...formik.values, options: normalized },
                                                                                 touched: formik.touched,
                                                                                 errors: formik.errors,
                                                                            });
+                                                                           // Revalidate to sync any dependent constraints
+                                                                           await formik.validateForm();
                                                                            toast.success(t('common.actionSaveSuccess') || 'Order updated');
                                                                       }
                                                                  } catch (e: any) {
@@ -1020,7 +1032,7 @@ export default function PollCreate({
                                                        sx={{
                                                             width: '150px'
                                                        }}
-                                                       disabled={isFormLocked}
+                                                       disabled={isFormLocked || !poll?.id || poll.id == ''}
                                                   >
                                                        {t('polls.addOption') || 'Add option'}
                                                   </Button>
@@ -1062,7 +1074,7 @@ export default function PollCreate({
                                                             accept={{
                                                                  'image/*': [],
                                                             }}
-                                                            caption={t('polls.attachmentsHintImagesOnly') || 'Images only (JPG, PNG, GIF)'}
+                                                            caption={'(SVG, JPG, PNG or GIF up to 900x400)'}
                                                             onDrop={handleFilesDropWithUrls}
                                                             uploadProgress={uploadProgress}
                                                             images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
@@ -1131,6 +1143,9 @@ export default function PollCreate({
                               <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
+                              <Typography>
+                                   {JSON.stringify(formik.errors) /* For debugging purposes */}
+                              </Typography>
                               <Button
                                    variant="contained"
                                    type="submit"

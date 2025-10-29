@@ -193,7 +193,7 @@ export async function reopenPoll(id: string): Promise<{ success: boolean; error?
 export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
-
+    log(`createOrUpdatePoll: entered with poll: ${JSON.stringify(poll)}`);
     // Update path: options first, then poll update
     if (poll.id) {
         const pollId = poll.id;
