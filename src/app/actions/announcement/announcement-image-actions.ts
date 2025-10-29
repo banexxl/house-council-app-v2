@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
+import log from 'src/utils/logger';
 import { toStorageRef } from 'src/utils/sb-bucket';
 
 const ANNOUNCEMENT_IMAGES_TABLE = 'tblAnnouncementImages';
@@ -49,8 +50,6 @@ async function signMany(
 export async function uploadAnnouncementImages(
      files: File[],
      announcementId: string,
-     client_name: string,               // kept for compat; not used
-     announcement_title?: string        // kept for compat; not used
 ): Promise<{ success: boolean; urls?: string[]; error?: string }> {
      const supabase = await useServerSideSupabaseAnonClient();
      const bucket = getBucket();

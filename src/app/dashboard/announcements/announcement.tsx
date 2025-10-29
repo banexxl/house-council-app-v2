@@ -307,7 +307,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
           const fileList = Array.from(e.target.files);
           try {
                setImagesUploading(true);
-               const result = await uploadAnnouncementImages(fileList as any, editingEntity.id, client.name, editingEntity.title); // casting for server action transport
+               const result = await uploadAnnouncementImages(fileList as any, editingEntity.id); // casting for server action transport
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
                } else if (result.urls) {
@@ -944,7 +944,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                         </Stack>
                                    </Paper>
                               </Grid>
-                            
+
                          </Grid>
                     </Card>
                </Stack >
