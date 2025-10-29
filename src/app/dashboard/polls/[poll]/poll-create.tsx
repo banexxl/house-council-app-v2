@@ -492,81 +492,81 @@ export default function PollCreate({
                                                        </Grid>
                                                   )}
 
-                                                   <Grid size={{ xs: 12 }}>
-                                                        <Grid container spacing={2}>
-                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                                             <FormControlLabel
-                                                                  disabled={isFormLocked}
-                                                                  control={
-                                                                       <Switch
-                                                                            disabled={isFormLocked}
-                                                                            checked={!!formik.values.allow_abstain}
-                                                                            onChange={(e) =>
-                                                                                 formik.setFieldValue('allow_abstain', e.target.checked)
-                                                                            }
-                                                                            onBlur={() => formik.setFieldTouched('allow_abstain', true)}
-                                                                       />
-                                                                  }
-                                                                  label={t('polls.allowAbstain') || 'Allow abstain'}
-                                                             />
-                                                             </Grid>
-                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                                             <FormControlLabel
-                                                                  disabled={isFormLocked}
-                                                                  control={
-                                                                       <Switch
-                                                                            disabled={isFormLocked}
-                                                                            checked={!!formik.values.allow_comments}
-                                                                            onChange={(e) =>
-                                                                                 formik.setFieldValue('allow_comments', e.target.checked)
-                                                                            }
-                                                                            onBlur={() => formik.setFieldTouched('allow_comments', true)}
-                                                                       />
-                                                                  }
-                                                                  label={t('polls.allowComments') || 'Allow comments'}
-                                                             />
-                                                             </Grid>
-                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                                             <FormControlLabel
-                                                                  disabled={isFormLocked}
-                                                                  control={
-                                                                       <Switch
-                                                                            disabled={isFormLocked}
-                                                                            checked={!!formik.values.allow_anonymous}
-                                                                            onChange={(e) =>
-                                                                                 formik.setFieldValue('allow_anonymous', e.target.checked)
-                                                                            }
-                                                                            onBlur={() => formik.setFieldTouched('allow_anonymous', true)}
-                                                                       />
-                                                                  }
-                                                                  label={t('polls.allowAnonymous') || 'Allow anonymous'}
-                                                             />
-                                                             </Grid>
-                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                                             <FormControlLabel
-                                                                  disabled={isFormLocked}
-                                                                  control={
-                                                                       <Switch
-                                                                            disabled={isFormLocked}
-                                                                            checked={!!formik.values.allow_change_until_deadline}
-                                                                            onChange={(e) =>
-                                                                                 formik.setFieldValue(
-                                                                                      'allow_change_until_deadline',
-                                                                                      e.target.checked
-                                                                                 )
-                                                                            }
-                                                                            onBlur={() =>
-                                                                                 formik.setFieldTouched('allow_change_until_deadline', true)
-                                                                            }
-                                                                       />
-                                                                  }
-                                                                  label={
-                                                                       t('polls.allowChangeUntilDeadline') || 'Allow change until deadline'
-                                                                  }
-                                                             />
-                                                             </Grid>
-                                                        </Grid>
-                                                   </Grid>
+                                                  <Grid size={{ xs: 12 }}>
+                                                       <Grid container spacing={2}>
+                                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                                 <FormControlLabel
+                                                                      disabled={isFormLocked}
+                                                                      control={
+                                                                           <Switch
+                                                                                disabled={isFormLocked}
+                                                                                checked={!!formik.values.allow_abstain}
+                                                                                onChange={(e) =>
+                                                                                     formik.setFieldValue('allow_abstain', e.target.checked)
+                                                                                }
+                                                                                onBlur={() => formik.setFieldTouched('allow_abstain', true)}
+                                                                           />
+                                                                      }
+                                                                      label={t('polls.allowAbstain') || 'Allow abstain'}
+                                                                 />
+                                                            </Grid>
+                                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                                 <FormControlLabel
+                                                                      disabled={isFormLocked}
+                                                                      control={
+                                                                           <Switch
+                                                                                disabled={isFormLocked}
+                                                                                checked={!!formik.values.allow_comments}
+                                                                                onChange={(e) =>
+                                                                                     formik.setFieldValue('allow_comments', e.target.checked)
+                                                                                }
+                                                                                onBlur={() => formik.setFieldTouched('allow_comments', true)}
+                                                                           />
+                                                                      }
+                                                                      label={t('polls.allowComments') || 'Allow comments'}
+                                                                 />
+                                                            </Grid>
+                                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                                 <FormControlLabel
+                                                                      disabled={isFormLocked}
+                                                                      control={
+                                                                           <Switch
+                                                                                disabled={isFormLocked}
+                                                                                checked={!!formik.values.allow_anonymous}
+                                                                                onChange={(e) =>
+                                                                                     formik.setFieldValue('allow_anonymous', e.target.checked)
+                                                                                }
+                                                                                onBlur={() => formik.setFieldTouched('allow_anonymous', true)}
+                                                                           />
+                                                                      }
+                                                                      label={t('polls.allowAnonymous') || 'Allow anonymous'}
+                                                                 />
+                                                            </Grid>
+                                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                                 <FormControlLabel
+                                                                      disabled={isFormLocked}
+                                                                      control={
+                                                                           <Switch
+                                                                                disabled={isFormLocked}
+                                                                                checked={!!formik.values.allow_change_until_deadline}
+                                                                                onChange={(e) =>
+                                                                                     formik.setFieldValue(
+                                                                                          'allow_change_until_deadline',
+                                                                                          e.target.checked
+                                                                                     )
+                                                                                }
+                                                                                onBlur={() =>
+                                                                                     formik.setFieldTouched('allow_change_until_deadline', true)
+                                                                                }
+                                                                           />
+                                                                      }
+                                                                      label={
+                                                                           t('polls.allowChangeUntilDeadline') || 'Allow change until deadline'
+                                                                      }
+                                                                 />
+                                                            </Grid>
+                                                       </Grid>
+                                                  </Grid>
 
                                                   <Grid size={{ xs: 12 }}>
                                                        <Typography variant="subtitle2">
@@ -672,20 +672,20 @@ export default function PollCreate({
                                                        </FormControl>
                                                   </Grid>
 
-                                                   <Grid size={{ xs: 12, sm: 6 }}>
-                                                        <TextField
-                                                             disabled={isFormLocked}
-                                                             name="supermajority_percent"
-                                                             label={
-                                                                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                                                       {t('polls.supermajorityPercent') || 'Supermajority %'}
-                                                                       <Tooltip title={t('polls.help.supermajority_percent') || ''}>
-                                                                            <InfoOutlinedIcon fontSize="small" />
-                                                                       </Tooltip>
-                                                                  </Box>
-                                                             }
-                                                             fullWidth
-                                                             type="text"
+                                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                                       <TextField
+                                                            disabled={isFormLocked}
+                                                            name="supermajority_percent"
+                                                            label={
+                                                                 <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                      {t('polls.supermajorityPercent') || 'Supermajority %'}
+                                                                      <Tooltip title={t('polls.help.supermajority_percent') || ''}>
+                                                                           <InfoOutlinedIcon fontSize="small" />
+                                                                      </Tooltip>
+                                                                 </Box>
+                                                            }
+                                                            fullWidth
+                                                            type="text"
                                                             slotProps={{
                                                                  htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', max: 100, min: 0 },
                                                             }}
@@ -703,20 +703,20 @@ export default function PollCreate({
                                                        />
                                                   </Grid>
 
-                                                   <Grid size={{ xs: 12, sm: 6 }}>
-                                                        <TextField
-                                                             disabled={isFormLocked}
-                                                             name="threshold_percent"
-                                                             label={
-                                                                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                                                       {t('polls.thresholdPercent') || 'Threshold %'}
-                                                                       <Tooltip title={t('polls.help.threshold_percent') || ''}>
-                                                                            <InfoOutlinedIcon fontSize="small" />
-                                                                       </Tooltip>
-                                                                  </Box>
-                                                             }
-                                                             fullWidth
-                                                             type="text"
+                                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                                       <TextField
+                                                            disabled={isFormLocked}
+                                                            name="threshold_percent"
+                                                            label={
+                                                                 <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                      {t('polls.thresholdPercent') || 'Threshold %'}
+                                                                      <Tooltip title={t('polls.help.threshold_percent') || ''}>
+                                                                           <InfoOutlinedIcon fontSize="small" />
+                                                                      </Tooltip>
+                                                                 </Box>
+                                                            }
+                                                            fullWidth
+                                                            type="text"
                                                             slotProps={{
                                                                  htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', max: 100, min: 0 },
                                                             }}
@@ -734,20 +734,20 @@ export default function PollCreate({
                                                        />
                                                   </Grid>
 
-                                                   <Grid size={{ xs: 12, sm: 6 }}>
-                                                        <TextField
-                                                             disabled={isFormLocked}
-                                                             name="winners_count"
-                                                             label={
-                                                                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                                                       {t('polls.winnersCount') || 'Winners count'}
-                                                                       <Tooltip title={t('polls.help.winners_count') || ''}>
-                                                                            <InfoOutlinedIcon fontSize="small" />
-                                                                       </Tooltip>
-                                                                  </Box>
-                                                             }
-                                                             fullWidth
-                                                             type="text"
+                                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                                       <TextField
+                                                            disabled={isFormLocked}
+                                                            name="winners_count"
+                                                            label={
+                                                                 <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                      {t('polls.winnersCount') || 'Winners count'}
+                                                                      <Tooltip title={t('polls.help.winners_count') || ''}>
+                                                                           <InfoOutlinedIcon fontSize="small" />
+                                                                      </Tooltip>
+                                                                 </Box>
+                                                            }
+                                                            fullWidth
+                                                            type="text"
                                                             slotProps={{
                                                                  htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', min: 1 },
                                                             }}
@@ -1048,35 +1048,35 @@ export default function PollCreate({
                                    </Card>
                               </Grid>
 
-                               {/* Attachments moved into right column so votes can be last on mobile */}
-                               <Grid size={{ xs: 12, md: 5 }}>
-                                    <Card>
-                                         <CardHeader title={t('polls.attachments') || 'Attachments'} />
-                                         <Divider />
-                                         <CardContent>
-                                              <Stack spacing={2}>
-                                                   {poll?.id ? (
-                                                        <FileDropzone
-                                                             entityId={poll.id}
-                                                             accept={{
-                                                                  'image/*': [],
-                                                             }}
-                                                             caption={t('polls.attachmentsHintImagesOnly') || 'Images only (JPG, PNG, GIF)'}
-                                                             onDrop={handleFilesDropWithUrls}
-                                                             uploadProgress={uploadProgress}
-                                                             images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
-                                                             onRemoveImage={handleFileRemove}
-                                                             onRemoveAll={handleFileRemoveAll}
-                                                        />
-                                                   ) : (
-                                                        <Typography variant="body2" color="text.secondary">
-                                                             {t('common.actionSaveError') || 'Save poll first to upload images.'}
-                                                        </Typography>
-                                                   )}
-                                              </Stack>
-                                         </CardContent>
-                                    </Card>
-                               </Grid>
+                              {/* Attachments moved into right column so votes can be last on mobile */}
+                              <Grid size={{ xs: 12, md: 5 }}>
+                                   <Card>
+                                        <CardHeader title={t('polls.attachments') || 'Attachments'} />
+                                        <Divider />
+                                        <CardContent>
+                                             <Stack spacing={2}>
+                                                  {poll?.id ? (
+                                                       <FileDropzone
+                                                            entityId={poll.id}
+                                                            accept={{
+                                                                 'image/*': [],
+                                                            }}
+                                                            caption={t('polls.attachmentsHintImagesOnly') || 'Images only (JPG, PNG, GIF)'}
+                                                            onDrop={handleFilesDropWithUrls}
+                                                            uploadProgress={uploadProgress}
+                                                            images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
+                                                            onRemoveImage={handleFileRemove}
+                                                            onRemoveAll={handleFileRemoveAll}
+                                                       />
+                                                  ) : (
+                                                       <Typography variant="body2" color="text.secondary">
+                                                            {t('common.actionSaveError') || 'Save poll first to upload images.'}
+                                                       </Typography>
+                                                  )}
+                                             </Stack>
+                                        </CardContent>
+                                   </Card>
+                              </Grid>
                          </Grid>
 
                          {/* Votes moved after the grid so they appear last on mobile */}
