@@ -1062,34 +1062,32 @@ export default function PollCreate({
                               </Grid>
 
                               {/* Attachments moved into right column so votes can be last on mobile */}
-                              <Grid size={{ xs: 12, md: 5 }}>
-                                   <Card>
-                                        <CardHeader title={t('polls.attachments') || 'Attachments'} />
-                                        <Divider />
-                                        <CardContent>
-                                             <Stack spacing={2}>
-                                                  {poll?.id ? (
-                                                       <FileDropzone
-                                                            entityId={poll.id}
-                                                            accept={{
-                                                                 'image/*': [],
-                                                            }}
-                                                            caption={'(SVG, JPG, PNG or GIF up to 900x400)'}
-                                                            onDrop={handleFilesDropWithUrls}
-                                                            uploadProgress={uploadProgress}
-                                                            images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
-                                                            onRemoveImage={handleFileRemove}
-                                                            onRemoveAll={handleFileRemoveAll}
-                                                       />
-                                                  ) : (
-                                                       <Typography variant="body2" color="text.secondary">
-                                                            {t('common.actionSaveError') || 'Save poll first to upload images.'}
-                                                       </Typography>
-                                                  )}
-                                             </Stack>
-                                        </CardContent>
-                                   </Card>
-                              </Grid>
+                              {
+                                   poll && poll.id && (
+                                        <Grid size={{ xs: 12, md: 5 }}>
+                                             <Card>
+                                                  <CardHeader title={t('polls.attachments') || 'Attachments'} />
+                                                  <Divider />
+                                                  <CardContent>
+                                                       <Stack spacing={2}>
+                                                            <FileDropzone
+                                                                 entityId={poll.id}
+                                                                 accept={{
+                                                                      'image/*': [],
+                                                                 }}
+                                                                 caption={'(SVG, JPG, PNG or GIF up to 900x400)'}
+                                                                 onDrop={handleFilesDropWithUrls}
+                                                                 uploadProgress={uploadProgress}
+                                                                 images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
+                                                                 onRemoveImage={handleFileRemove}
+                                                                 onRemoveAll={handleFileRemoveAll}
+                                                            />
+                                                       </Stack>
+                                                  </CardContent>
+                                             </Card>
+                                        </Grid>
+                                   )
+                              }
                          </Grid>
 
                          {/* Votes moved after the grid so they appear last on mobile */}
@@ -1143,17 +1141,53 @@ export default function PollCreate({
                               <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
-                              <Typography>
-                                   {JSON.stringify(formik.errors) /* For debugging purposes */}
-                              </Typography>
-                              <Button
-                                   variant="contained"
-                                   type="submit"
-                                   loading={saving}
-                                   disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                              <Tooltip
+                                   title={
+                                        <Box>
+                                             {!formik.isValid && (
+                                                  <Box>
+                                                       <Typography variant="subtitle2" color="error">
+                                                            {t('common.formInvalid') || 'Form is invalid:'}
+                                                       </Typography>
+                                                       <List dense>
+                                                            {Object.entries(formik.errors).map(([key, err]) => (
+                                                                 <ListItem key={key}>
+                                                                      <ListItemText
+                                                                           primary={`${key}: ${typeof err === 'string' ? err : JSON.stringify(err)}`}
+                                                                           slotProps={{ primary: { variant: 'caption', color: 'error' } }}
+                                                                      />
+                                                                 </ListItem>
+                                                            ))}
+                                                       </List>
+                                                  </Box>
+                                             )}
+                                             {!formik.dirty && (
+                                                  <Typography variant="caption" color="text.secondary">
+                                                       {t('common.formNotChanged') || 'No changes to save'}
+                                                  </Typography>
+                                             )}
+                                             {formik.isSubmitting && (
+                                                  <Typography variant="caption" color="text.secondary">
+                                                       {t('common.formSubmitting') || 'Submitting...'}
+                                                  </Typography>
+                                             )}
+                                        </Box>
+                                   }
+                                   arrow
+                                   placement="top"
+                                   disableHoverListener={formik.isValid && formik.dirty && !formik.isSubmitting}
                               >
-                                   {t('common.btnSave')}
-                              </Button>
+                                   <span>
+                                        <Button
+                                             variant="contained"
+                                             type="submit"
+                                             loading={saving}
+                                             disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                                        >
+                                             {t('common.btnSave')}
+                                        </Button>
+                                   </span>
+                              </Tooltip>
 
                               {(
                                    poll?.closed_at ? (

@@ -291,6 +291,7 @@ export const de = {
   [tokens.common.rowsPerPage]: 'Zeilen pro Seite',
   [tokens.common.updated_at]: 'Aktualisiert am',
   [tokens.common.emptyTableInfo]: 'Keine Daten vorhanden',
+  [tokens.common.formInvalid]: 'Bitte korrigieren Sie die Fehler im Formular',
   [tokens.common.btnSave]: 'Speichern',
   [tokens.common.btnDelete]: 'Löschen',
   [tokens.common.btnEdit]: 'Bearbeiten',
@@ -411,6 +412,7 @@ export const de = {
   [tokens.common.tableFilterNoFilterSelected]: 'Kein Filter ausgewählt',
   [tokens.common.filterSearchByName]: 'Suche nach Name',
   [tokens.common.filterSearchByAddress]: 'Suche nach Adresse',
+  [tokens.common.formNotChanged]: 'Formular nicht geändert',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'Keine Kundendaten verfügbar',

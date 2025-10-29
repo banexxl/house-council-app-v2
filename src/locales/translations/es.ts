@@ -431,6 +431,8 @@ export const es = {
   [tokens.common.tableFilterNoFilterSelected]: 'No se ha seleccionado ningun filtro',
   [tokens.common.filterSearchByName]: 'Buscar por nombre',
   [tokens.common.filterSearchByAddress]: 'Buscar por dirección',
+  [tokens.common.formInvalid]: 'Por favor corrige los errores del formulario',
+  [tokens.common.formNotChanged]: 'No se han realizado cambios en el formulario',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No hay datos de cliente disponibles',

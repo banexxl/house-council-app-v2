@@ -6,7 +6,6 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Poll, PollStatus } from 'src/types/poll';
 import { createOrUpdatePollOptions } from './poll-options';
 import { TABLES } from 'src/libs/supabase/tables';
-import log from 'src/utils/logger';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -193,13 +192,11 @@ export async function reopenPoll(id: string): Promise<{ success: boolean; error?
 export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
-    log(`createOrUpdatePoll: entered with poll: ${JSON.stringify(poll)}`);
     // Update path: options first, then poll update
     if (poll.id) {
         const pollId = poll.id;
         if (poll.options !== undefined) {
             const optRes = await createOrUpdatePollOptions(pollId, poll.options);
-            log(`createOrUpdatePoll: options upsert result: ${JSON.stringify(optRes)}`);
             if (!optRes.success) {
                 await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: optRes.error || 'options error', payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
                 return { success: false, error: optRes.error || 'Failed to update poll options' };
@@ -209,7 +206,6 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
         // Exclude options from the poll object before updating
         const { options, attachments, votes, ...pollWithoutNonColumns } = poll as any;
         const { data, error } = await supabase.from(TABLES.POLLS).update(pollWithoutNonColumns).eq('id', pollId).select().single();
-        log(`createOrUpdatePoll: poll update result: ${JSON.stringify(error)}`);
         if (error) {
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: error.message, payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
             return { success: false, error: error.message };
@@ -221,7 +217,6 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     // Create path: create poll to get id, upsert options; if options fail, rollback poll
     const { options, attachments, votes, ...pollWithoutNonColumns } = poll as any;
     const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([pollWithoutNonColumns]).select().single();
-    log(`createOrUpdatePoll: poll create result: ${JSON.stringify(createErr)}`);
     if (createErr || !created) {
         await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: createErr?.message || 'create error', payload: { mode: 'create' }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: createErr?.message || 'Failed to create poll' };
@@ -230,7 +225,6 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     const pollId = created.id as string;
     if (options !== undefined) {
         const optRes = await createOrUpdatePollOptions(pollId, options);
-        log(`createOrUpdatePoll: options upsert result: ${JSON.stringify(optRes)}`);
         if (!optRes.success) {
             // Roll back the created poll so we don't leave orphaned rows
             await supabase.from(TABLES.POLLS).delete().eq('id', pollId);

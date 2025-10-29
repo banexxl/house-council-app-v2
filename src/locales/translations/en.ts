@@ -176,6 +176,7 @@ export const en = {
   [tokens.common.summary]: 'Summary',
   [tokens.common.updated_at]: 'Updated at',
   [tokens.common.emptyTableInfo]: 'No data available',
+  [tokens.common.formInvalid]: 'Please fix the errors in the form',
   [tokens.common.btnSave]: 'Save',
   [tokens.common.btnDelete]: 'Delete',
   [tokens.common.btnEdit]: 'Edit',
@@ -296,6 +297,7 @@ export const en = {
   [tokens.common.tableFilterNoFilterSelected]: 'No filter selected',
   [tokens.common.filterSearchByName]: 'Search by name',
   [tokens.common.filterSearchByAddress]: 'Search by address',
+  [tokens.common.formNotChanged]: 'Form not changed',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No client data available',

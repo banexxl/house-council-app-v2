@@ -318,6 +318,7 @@ export const rs = {
      [tokens.common.comment]: 'Komentar',
      [tokens.common.summary]: 'Rezime',
      [tokens.common.emptyTableInfo]: 'Nema podataka',
+     [tokens.common.formInvalid]: 'Forma nije validna',
      [tokens.common.btnSave]: 'Sačuvaj',
      [tokens.common.btnDelete]: 'Obriši',
      [tokens.common.btnEdit]: 'Izmeni',
@@ -445,6 +446,7 @@ export const rs = {
      [tokens.common.tableFilterNoFilterSelected]: 'Nema odabranih filtera',
      [tokens.common.filterSearchByName]: 'Tražite po nazivu',
      [tokens.common.filterSearchByAddress]: 'Tražite po adresi',
+     [tokens.common.formNotChanged]: 'Forma nije izmenjena',
      //#endregion
      // Clients
      [tokens.clients.noClientData]: 'Nema podataka o klijentu',

@@ -22,6 +22,7 @@ export const tokens = {
     emptyTableInfo: 'common.emptyTableInfo',
     formBasicInfo: 'common.formBasicInfo',
     formAdvancedInfo: 'common.formAdvancedInfo',
+    formInvalid: 'common.formInvalid',
     btnSave: 'common.btnSave',
     btnDelete: 'common.btnDelete',
     btnEdit: 'common.btnEdit',
@@ -147,6 +148,7 @@ export const tokens = {
     filterSearchByAddress: 'common.filterSearchByAddress',
     editorStartTyping: 'common.editorStartTyping',
     imageUploadRequirements: 'common.imageUploadRequirements',
+    formNotChanged: 'common.formNotChanged'
   },
   // (whatsapp section removed; keys moved under clients)
   account: {
