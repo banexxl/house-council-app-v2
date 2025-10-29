@@ -1020,6 +1020,7 @@ export default function PollCreate({
                                                        sx={{
                                                             width: '150px'
                                                        }}
+                                                       disabled={isFormLocked}
                                                   >
                                                        {t('polls.addOption') || 'Add option'}
                                                   </Button>
