@@ -21,11 +21,12 @@ export type SortableOptionsListProps<T extends SortableItem = SortableItem> = {
      options: T[];
      disabled?: boolean;
      onDelete: (idx: number) => void;
+     onSave?: (idx: number) => void;
      onLabelChange: (idx: number, value: string) => void;
      onReorder: (newOptions: T[]) => void;
 };
 
-export function SortableOptionsList<T extends SortableItem>({ options, disabled, onDelete, onLabelChange, onReorder }: SortableOptionsListProps<T>) {
+export function SortableOptionsList<T extends SortableItem>({ options, disabled, onDelete, onSave, onLabelChange, onReorder }: SortableOptionsListProps<T>) {
      const sensors = useSensors(
           useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
      );
@@ -53,7 +54,9 @@ export function SortableOptionsList<T extends SortableItem>({ options, disabled,
                               idx={idx}
                               label={opt.label}
                               disabled={disabled}
+                              canDelete={Boolean((opt as any).id)}
                               onDelete={() => onDelete(idx)}
+                              onSave={onSave ? () => onSave(idx) : undefined}
                               onLabelChange={(value) => onLabelChange(idx, value)}
                          />
                     ))}
@@ -67,11 +70,13 @@ type SortableOptionItemProps = {
      idx: number;
      label: string;
      disabled?: boolean;
+     canDelete?: boolean;
      onDelete: () => void;
+     onSave?: () => void;
      onLabelChange: (value: string) => void;
 };
 
-function SortableOptionItem({ id, label, disabled, onDelete, onLabelChange }: SortableOptionItemProps) {
+function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, onLabelChange }: SortableOptionItemProps) {
      const {
           attributes,
           listeners,
@@ -110,6 +115,15 @@ function SortableOptionItem({ id, label, disabled, onDelete, onLabelChange }: So
                     onClick={onDelete}
                >
                     Delete
+               </Button>
+               <Button
+                    type="button"
+                    disabled={disabled || !label || label.trim().length === 0}
+                    color="primary"
+                    variant="contained"
+                    onClick={onSave}
+               >
+                    Save
                </Button>
           </div>
      );

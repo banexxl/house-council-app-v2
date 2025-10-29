@@ -494,6 +494,9 @@ export const tokens = {
       supermajority: 'polls.help.supermajority',
       threshold: 'polls.help.threshold',
       top_k: 'polls.help.top_k',
+      supermajority_percent: 'polls.help.supermajority_percent',
+      threshold_percent: 'polls.help.threshold_percent',
+      winners_count: 'polls.help.winners_count',
     },
   },
   calendar: {

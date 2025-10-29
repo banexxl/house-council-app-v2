@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
   Box,
@@ -31,6 +32,7 @@ interface PollsProps {
 
 const Polls = ({ polls, buildings = [] }: PollsProps) => {
   const { t } = useTranslation();
+  const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<{ search?: string; status?: string }>({});
 
@@ -54,15 +56,21 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
   }, [polls, filters]);
 
   const handleDelete = useCallback(async (id: string) => {
-    setDeletingId(id);
-    const res = await deletePoll(id);
-    if (res.success) {
-      toast.success(t('common.actionDeleteSuccess'));
-    } else {
-      toast.error(t('common.actionDeleteError'));
+    try {
+      setDeletingId(id);
+      const res = await deletePoll(id);
+      if (res.success) {
+        toast.success(t('common.actionDeleteSuccess'));
+        router.refresh();
+      } else {
+        toast.error(res.error || t('common.actionDeleteError'));
+      }
+    } catch (e: any) {
+      toast.error(e?.message || t('common.actionDeleteError'));
+    } finally {
+      setDeletingId(null);
     }
-    setDeletingId(null);
-  }, [t]);
+  }, [t, router]);
 
   // Helper to format ISO date string to readable format
   const formatDate = (iso?: string | null) => {

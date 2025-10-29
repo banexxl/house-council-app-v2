@@ -375,6 +375,9 @@ export const en = {
   [tokens.polls.help.supermajority]: 'Winner must have at least X% of votes (from supermajority percent). Example: require 2/3 (66.67%) support to pass a rule change.',
   [tokens.polls.help.threshold]: 'Option(s) are accepted if they reach a minimum % (from threshold percent). Example: “Any proposal with ≥ 50% votes passes.” Multiple can pass.',
   [tokens.polls.help.top_k]: 'The top N options win (from winners count). Example: “Vote for up to 3 projects — the top 2 are funded.”',
+  [tokens.polls.help.supermajority_percent]: 'Percentage of votes required to approve the proposal. Used by Supermajority rule.',
+  [tokens.polls.help.threshold_percent]: 'Minimum percentage a choice must reach to be considered. Used by Threshold rule.',
+  [tokens.polls.help.winners_count]: 'How many options can be declared winners under the Top‑K rule.',
   //#region Locations
   [tokens.locations.geoLocationAvailable]: 'Geolocation available',
   [tokens.locations.geoLocationNotAvailable]: 'Geolocation not available',

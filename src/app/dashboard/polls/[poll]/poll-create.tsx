@@ -56,6 +56,7 @@ import {
      pollInitialValues,
 } from 'src/types/poll';
 import { closePoll, createOrUpdatePoll, getPollById, reopenPoll, reorderPolls } from 'src/app/actions/poll/polls';
+import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-options';
 import { uploadPollImagesAndGetUrls, removePollAttachmentFilePath, removeAllPollAttachments } from 'src/app/actions/poll/poll-attachments';
 import { FileDropzone, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
@@ -189,6 +190,18 @@ export default function PollCreate({
                }
           },
      });
+
+     // Ensure poll options edits do not toggle main form dirty state
+     const setOptionsAndClearDirty = (newOptions: any[]) => {
+          // Update options value and immediately reset Formik with same values
+          // so that formik.dirty remains false for option-only edits.
+          formik.setFieldValue('options', newOptions, false);
+          formik.resetForm({
+               values: { ...formik.values, options: newOptions },
+               touched: formik.touched,
+               errors: formik.errors,
+          });
+     };
 
      const isFormLocked = formik.isSubmitting || !!poll?.closed_at || (poll?.status && poll.status !== 'draft' && poll.status !== 'active');
 
@@ -355,7 +368,7 @@ export default function PollCreate({
 
                          {/* Two-column layout */}
                          <Grid container spacing={2} >
-                              <Grid size={{ xs: 12, md: 8 }}>
+                              <Grid size={{ xs: 12, md: 7 }}>
                                    <Card >
                                         <CardHeader title={t('polls.details') || 'Details'} />
                                         <Divider />
@@ -479,73 +492,81 @@ export default function PollCreate({
                                                        </Grid>
                                                   )}
 
-                                                  <Grid size={{ xs: 12 }}>
-                                                       <Stack direction="row" spacing={2}>
-                                                            <FormControlLabel
-                                                                 disabled={isFormLocked}
-                                                                 control={
-                                                                      <Switch
-                                                                           disabled={isFormLocked}
-                                                                           checked={!!formik.values.allow_abstain}
-                                                                           onChange={(e) =>
-                                                                                formik.setFieldValue('allow_abstain', e.target.checked)
-                                                                           }
-                                                                           onBlur={() => formik.setFieldTouched('allow_abstain', true)}
-                                                                      />
-                                                                 }
-                                                                 label={t('polls.allowAbstain') || 'Allow abstain'}
-                                                            />
-                                                            <FormControlLabel
-                                                                 disabled={isFormLocked}
-                                                                 control={
-                                                                      <Switch
-                                                                           disabled={isFormLocked}
-                                                                           checked={!!formik.values.allow_comments}
-                                                                           onChange={(e) =>
-                                                                                formik.setFieldValue('allow_comments', e.target.checked)
-                                                                           }
-                                                                           onBlur={() => formik.setFieldTouched('allow_comments', true)}
-                                                                      />
-                                                                 }
-                                                                 label={t('polls.allowComments') || 'Allow comments'}
-                                                            />
-                                                            <FormControlLabel
-                                                                 disabled={isFormLocked}
-                                                                 control={
-                                                                      <Switch
-                                                                           disabled={isFormLocked}
-                                                                           checked={!!formik.values.allow_anonymous}
-                                                                           onChange={(e) =>
-                                                                                formik.setFieldValue('allow_anonymous', e.target.checked)
-                                                                           }
-                                                                           onBlur={() => formik.setFieldTouched('allow_anonymous', true)}
-                                                                      />
-                                                                 }
-                                                                 label={t('polls.allowAnonymous') || 'Allow anonymous'}
-                                                            />
-                                                            <FormControlLabel
-                                                                 disabled={isFormLocked}
-                                                                 control={
-                                                                      <Switch
-                                                                           disabled={isFormLocked}
-                                                                           checked={!!formik.values.allow_change_until_deadline}
-                                                                           onChange={(e) =>
-                                                                                formik.setFieldValue(
-                                                                                     'allow_change_until_deadline',
-                                                                                     e.target.checked
-                                                                                )
-                                                                           }
-                                                                           onBlur={() =>
-                                                                                formik.setFieldTouched('allow_change_until_deadline', true)
-                                                                           }
-                                                                      />
-                                                                 }
-                                                                 label={
-                                                                      t('polls.allowChangeUntilDeadline') || 'Allow change until deadline'
-                                                                 }
-                                                            />
-                                                       </Stack>
-                                                  </Grid>
+                                                   <Grid size={{ xs: 12 }}>
+                                                        <Grid container spacing={2}>
+                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                             <FormControlLabel
+                                                                  disabled={isFormLocked}
+                                                                  control={
+                                                                       <Switch
+                                                                            disabled={isFormLocked}
+                                                                            checked={!!formik.values.allow_abstain}
+                                                                            onChange={(e) =>
+                                                                                 formik.setFieldValue('allow_abstain', e.target.checked)
+                                                                            }
+                                                                            onBlur={() => formik.setFieldTouched('allow_abstain', true)}
+                                                                       />
+                                                                  }
+                                                                  label={t('polls.allowAbstain') || 'Allow abstain'}
+                                                             />
+                                                             </Grid>
+                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                             <FormControlLabel
+                                                                  disabled={isFormLocked}
+                                                                  control={
+                                                                       <Switch
+                                                                            disabled={isFormLocked}
+                                                                            checked={!!formik.values.allow_comments}
+                                                                            onChange={(e) =>
+                                                                                 formik.setFieldValue('allow_comments', e.target.checked)
+                                                                            }
+                                                                            onBlur={() => formik.setFieldTouched('allow_comments', true)}
+                                                                       />
+                                                                  }
+                                                                  label={t('polls.allowComments') || 'Allow comments'}
+                                                             />
+                                                             </Grid>
+                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                             <FormControlLabel
+                                                                  disabled={isFormLocked}
+                                                                  control={
+                                                                       <Switch
+                                                                            disabled={isFormLocked}
+                                                                            checked={!!formik.values.allow_anonymous}
+                                                                            onChange={(e) =>
+                                                                                 formik.setFieldValue('allow_anonymous', e.target.checked)
+                                                                            }
+                                                                            onBlur={() => formik.setFieldTouched('allow_anonymous', true)}
+                                                                       />
+                                                                  }
+                                                                  label={t('polls.allowAnonymous') || 'Allow anonymous'}
+                                                             />
+                                                             </Grid>
+                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                             <FormControlLabel
+                                                                  disabled={isFormLocked}
+                                                                  control={
+                                                                       <Switch
+                                                                            disabled={isFormLocked}
+                                                                            checked={!!formik.values.allow_change_until_deadline}
+                                                                            onChange={(e) =>
+                                                                                 formik.setFieldValue(
+                                                                                      'allow_change_until_deadline',
+                                                                                      e.target.checked
+                                                                                 )
+                                                                            }
+                                                                            onBlur={() =>
+                                                                                 formik.setFieldTouched('allow_change_until_deadline', true)
+                                                                            }
+                                                                       />
+                                                                  }
+                                                                  label={
+                                                                       t('polls.allowChangeUntilDeadline') || 'Allow change until deadline'
+                                                                  }
+                                                             />
+                                                             </Grid>
+                                                        </Grid>
+                                                   </Grid>
 
                                                   <Grid size={{ xs: 12 }}>
                                                        <Typography variant="subtitle2">
@@ -651,13 +672,20 @@ export default function PollCreate({
                                                        </FormControl>
                                                   </Grid>
 
-                                                  <Grid size={{ xs: 12, sm: 6 }}>
-                                                       <TextField
-                                                            disabled={isFormLocked}
-                                                            name="supermajority_percent"
-                                                            label={t('polls.supermajorityPercent') || 'Supermajority %'}
-                                                            fullWidth
-                                                            type="text"
+                                                   <Grid size={{ xs: 12, sm: 6 }}>
+                                                        <TextField
+                                                             disabled={isFormLocked}
+                                                             name="supermajority_percent"
+                                                             label={
+                                                                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                       {t('polls.supermajorityPercent') || 'Supermajority %'}
+                                                                       <Tooltip title={t('polls.help.supermajority_percent') || ''}>
+                                                                            <InfoOutlinedIcon fontSize="small" />
+                                                                       </Tooltip>
+                                                                  </Box>
+                                                             }
+                                                             fullWidth
+                                                             type="text"
                                                             slotProps={{
                                                                  htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', max: 100, min: 0 },
                                                             }}
@@ -675,13 +703,20 @@ export default function PollCreate({
                                                        />
                                                   </Grid>
 
-                                                  <Grid size={{ xs: 12, sm: 6 }}>
-                                                       <TextField
-                                                            disabled={isFormLocked}
-                                                            name="threshold_percent"
-                                                            label={t('polls.thresholdPercent') || 'Threshold %'}
-                                                            fullWidth
-                                                            type="text"
+                                                   <Grid size={{ xs: 12, sm: 6 }}>
+                                                        <TextField
+                                                             disabled={isFormLocked}
+                                                             name="threshold_percent"
+                                                             label={
+                                                                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                       {t('polls.thresholdPercent') || 'Threshold %'}
+                                                                       <Tooltip title={t('polls.help.threshold_percent') || ''}>
+                                                                            <InfoOutlinedIcon fontSize="small" />
+                                                                       </Tooltip>
+                                                                  </Box>
+                                                             }
+                                                             fullWidth
+                                                             type="text"
                                                             slotProps={{
                                                                  htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', max: 100, min: 0 },
                                                             }}
@@ -699,13 +734,20 @@ export default function PollCreate({
                                                        />
                                                   </Grid>
 
-                                                  <Grid size={{ xs: 12, sm: 6 }}>
-                                                       <TextField
-                                                            disabled={isFormLocked}
-                                                            name="winners_count"
-                                                            label={t('polls.winnersCount') || 'Winners count'}
-                                                            fullWidth
-                                                            type="text"
+                                                   <Grid size={{ xs: 12, sm: 6 }}>
+                                                        <TextField
+                                                             disabled={isFormLocked}
+                                                             name="winners_count"
+                                                             label={
+                                                                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                       {t('polls.winnersCount') || 'Winners count'}
+                                                                       <Tooltip title={t('polls.help.winners_count') || ''}>
+                                                                            <InfoOutlinedIcon fontSize="small" />
+                                                                       </Tooltip>
+                                                                  </Box>
+                                                             }
+                                                             fullWidth
+                                                             type="text"
                                                             slotProps={{
                                                                  htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', min: 1 },
                                                             }}
@@ -876,11 +918,57 @@ export default function PollCreate({
                                                        <SortableOptionsList
                                                             options={formik.values.options}
                                                             disabled={isFormLocked}
-                                                            onDelete={(idx) => formik.setFieldValue('options', formik.values.options.filter((_, i) => i !== idx))}
-                                                            onLabelChange={(idx, value) => formik.setFieldValue(`options[${idx}].label`, value)}
+                                                            onDelete={async (idx) => {
+                                                                 const opt = formik.values.options[idx];
+                                                                 if (!opt) return;
+                                                                 try {
+                                                                      if (opt.id) {
+                                                                           const res = await deletePollOption(opt.id);
+                                                                           if (!res.success) throw new Error(res.error || 'Delete failed');
+                                                                      }
+                                                                      setOptionsAndClearDirty(formik.values.options.filter((_, i) => i !== idx));
+                                                                      toast.success(t('common.actionDeleteSuccess') || 'Deleted');
+                                                                 } catch (e: any) {
+                                                                      toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
+                                                                 }
+                                                            }}
+                                                            onSave={async (idx) => {
+                                                                 const pollId = poll?.id;
+                                                                 if (!pollId) {
+                                                                      toast.error(t('common.actionSaveError') || 'Save poll first');
+                                                                      return;
+                                                                 }
+                                                                 const opt = formik.values.options[idx];
+                                                                 if (!opt) return;
+                                                                 const label = (opt.label || '').trim();
+                                                                 if (!label) return;
+                                                                 try {
+                                                                      if (opt.id) {
+                                                                           const res = await updatePollOption(opt.id, { label, sort_order: opt.sort_order ?? idx });
+                                                                           if (!res.success || !res.data) throw new Error(res.error || 'Update failed');
+                                                                           const updated = formik.values.options.slice();
+                                                                           updated[idx] = { ...updated[idx], label: res.data.label, sort_order: res.data.sort_order } as PollOption;
+                                                                           setOptionsAndClearDirty(updated);
+                                                                      } else {
+                                                                           const res = await createPollOption({ poll_id: pollId, label, sort_order: idx } as any);
+                                                                           if (!res.success || !res.data) throw new Error(res.error || 'Create failed');
+                                                                           const updated = formik.values.options.slice();
+                                                                           updated[idx] = { ...updated[idx], id: res.data.id, sort_order: res.data.sort_order } as PollOption;
+                                                                           setOptionsAndClearDirty(updated);
+                                                                      }
+                                                                      toast.success(t('common.actionSaveSuccess') || 'Saved');
+                                                                 } catch (e: any) {
+                                                                      toast.error(e?.message || t('common.actionSaveError') || 'Save failed');
+                                                                 }
+                                                            }}
+                                                            onLabelChange={(idx, value) => {
+                                                                 const updated = formik.values.options.slice();
+                                                                 updated[idx] = { ...updated[idx], label: value } as PollOption;
+                                                                 setOptionsAndClearDirty(updated);
+                                                            }}
                                                             onReorder={async (newOptions: PollOption[]) => {
                                                                  // Optimistically update local order in the form only
-                                                                 formik.setFieldValue('options', newOptions);
+                                                                 setOptionsAndClearDirty(newOptions);
 
                                                                  // If poll exists, persist order for options that already have ids
                                                                  const pollId = poll?.id;
@@ -923,9 +1011,8 @@ export default function PollCreate({
                                                             </Typography>
                                                        )}
                                                   <Button
-                                                       disabled={isFormLocked}
                                                        onClick={() =>
-                                                            formik.setFieldValue('options', [
+                                                            setOptionsAndClearDirty([
                                                                  ...formik.values.options,
                                                                  { label: '', sort_order: formik.values.options.length },
                                                             ])
@@ -961,77 +1048,80 @@ export default function PollCreate({
                                    </Card>
                               </Grid>
 
-                              {/* Current votes table */}
-                              <Grid size={{ xs: 12, md: 4 }}>
-                                   <Card>
-                                        <CardHeader title={t('polls.votesList') || 'Votes'} />
-                                        <Divider />
-                                        <CardContent>
-                                             <Stack spacing={1}>
-                                                  <Typography variant="subtitle2">{(poll?.votes!.length || 0)} votes</Typography>
-                                                  <Table size="small">
-                                                       <TableHead>
-                                                            <TableRow>
-                                                                 <TableCell>{t('common.lblTime') || 'Time'}</TableCell>
-                                                                 <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
-                                                                 <TableCell>{t('polls.anonymous') || 'Anonymous'}</TableCell>
-                                                                 <TableCell>{t('common.comment') || 'Comment'}</TableCell>
-                                                                 <TableCell>{t('common.summary') || 'Summary'}</TableCell>
-                                                            </TableRow>
-                                                       </TableHead>
-                                                       <TableBody>
-                                                            {!votes || votes.length === 0 ? (
-                                                                 <TableRow>
-                                                                      <TableCell colSpan={5}>
-                                                                           <Typography variant="body2" color="text.secondary">
-                                                                                {t('polls.noVotesYet') || 'No votes yet'}
-                                                                           </Typography>
-                                                                      </TableCell>
-                                                                 </TableRow>
-                                                            ) : (
-                                                                 (votes || []).map((v) => (
-                                                                      <TableRow key={v.id}>
-                                                                           <TableCell>{new Date(v.cast_at).toLocaleString()}</TableCell>
-                                                                           <TableCell>{voteStatusLabel(t, v.status)}</TableCell>
-                                                                           <TableCell>
-                                                                                {v.is_anonymous ? t('common.lblYes') || 'Yes' : t('common.lblNo') || 'No'}
-                                                                           </TableCell>
-                                                                           <TableCell>{v.comment || ''}</TableCell>
-                                                                           <TableCell>{summarizeVote(v)}</TableCell>
-                                                                      </TableRow>
-                                                                 ))
-                                                            )}
-                                                       </TableBody>
-                                                  </Table>
-                                             </Stack>
-                                        </CardContent>
-                                   </Card>
-                              </Grid>
+                               {/* Attachments moved into right column so votes can be last on mobile */}
+                               <Grid size={{ xs: 12, md: 5 }}>
+                                    <Card>
+                                         <CardHeader title={t('polls.attachments') || 'Attachments'} />
+                                         <Divider />
+                                         <CardContent>
+                                              <Stack spacing={2}>
+                                                   {poll?.id ? (
+                                                        <FileDropzone
+                                                             entityId={poll.id}
+                                                             accept={{
+                                                                  'image/*': [],
+                                                             }}
+                                                             caption={t('polls.attachmentsHintImagesOnly') || 'Images only (JPG, PNG, GIF)'}
+                                                             onDrop={handleFilesDropWithUrls}
+                                                             uploadProgress={uploadProgress}
+                                                             images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
+                                                             onRemoveImage={handleFileRemove}
+                                                             onRemoveAll={handleFileRemoveAll}
+                                                        />
+                                                   ) : (
+                                                        <Typography variant="body2" color="text.secondary">
+                                                             {t('common.actionSaveError') || 'Save poll first to upload images.'}
+                                                        </Typography>
+                                                   )}
+                                              </Stack>
+                                         </CardContent>
+                                    </Card>
+                               </Grid>
                          </Grid>
 
+                         {/* Votes moved after the grid so they appear last on mobile */}
                          <Card>
-                              <CardHeader title={t('polls.attachments') || 'Attachments'} />
+                              <CardHeader title={t('polls.votesList') || 'Votes'} />
                               <Divider />
                               <CardContent>
-                                   <Stack spacing={2}>
-                                        {poll?.id ? (
-                                             <FileDropzone
-                                                  entityId={poll.id}
-                                                  accept={{
-                                                       'image/*': [],
-                                                  }}
-                                                  caption={t('polls.attachmentsHintImagesOnly') || 'Images only (JPG, PNG, GIF)'}
-                                                  onDrop={handleFilesDropWithUrls}
-                                                  uploadProgress={uploadProgress}
-                                                  images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
-                                                  onRemoveImage={handleFileRemove}
-                                                  onRemoveAll={handleFileRemoveAll}
-                                             />
-                                        ) : (
-                                             <Typography variant="body2" color="text.secondary">
-                                                  {t('common.actionSaveError') || 'Save poll first to upload images.'}
-                                             </Typography>
-                                        )}
+                                   <Stack spacing={1}>
+                                        <Typography variant="subtitle2">{(poll?.votes!.length || 0)} votes</Typography>
+                                        <Box sx={{ overflowX: 'auto' }}>
+                                             <Table size="small" sx={{ minWidth: 800 }}>
+                                                  <TableHead>
+                                                       <TableRow>
+                                                            <TableCell>{t('common.lblTime') || 'Time'}</TableCell>
+                                                            <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
+                                                            <TableCell>{t('polls.anonymous') || 'Anonymous'}</TableCell>
+                                                            <TableCell>{t('common.comment') || 'Comment'}</TableCell>
+                                                            <TableCell>{t('common.summary') || 'Summary'}</TableCell>
+                                                       </TableRow>
+                                                  </TableHead>
+                                                  <TableBody>
+                                                       {!votes || votes.length === 0 ? (
+                                                            <TableRow>
+                                                                 <TableCell colSpan={5}>
+                                                                      <Typography variant="body2" color="text.secondary">
+                                                                           {t('polls.noVotesYet') || 'No votes yet'}
+                                                                      </Typography>
+                                                                 </TableCell>
+                                                            </TableRow>
+                                                       ) : (
+                                                            (votes || []).map((v) => (
+                                                                 <TableRow key={v.id}>
+                                                                      <TableCell>{new Date(v.cast_at).toLocaleString()}</TableCell>
+                                                                      <TableCell>{voteStatusLabel(t, v.status)}</TableCell>
+                                                                      <TableCell>
+                                                                           {v.is_anonymous ? t('common.lblYes') || 'Yes' : t('common.lblNo') || 'No'}
+                                                                      </TableCell>
+                                                                      <TableCell>{v.comment || ''}</TableCell>
+                                                                      <TableCell>{summarizeVote(v)}</TableCell>
+                                                                 </TableRow>
+                                                            ))
+                                                       )}
+                                                  </TableBody>
+                                             </Table>
+                                        </Box>
                                    </Stack>
                               </CardContent>
                          </Card>

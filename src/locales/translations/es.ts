@@ -162,6 +162,10 @@ export const es = {
   [tokens.notifications.col.sender]: 'Remitente',
   [tokens.notifications.col.receiver]: 'Destinatario',
   [tokens.notifications.col.severity]: 'Severidad',
+  // Polls help (additional)
+  [tokens.polls.help.supermajority_percent]: 'Porcentaje de votos necesario para aprobar la propuesta (supermayoría).',
+  [tokens.polls.help.threshold_percent]: 'Porcentaje mínimo que una opción debe alcanzar para ser considerada (umbral).',
+  [tokens.polls.help.winners_count]: 'Cuántas opciones pueden declararse ganadoras según la regla Top‑K.',
   // Announcements
   [tokens.announcements.managementTitle]: 'Gestión de anuncios',
   [tokens.announcements.createNew]: 'Crear nuevo anuncio',

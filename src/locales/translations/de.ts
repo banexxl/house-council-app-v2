@@ -142,6 +142,10 @@ export const de = {
   [tokens.notifications.col.sender]: 'Absender',
   [tokens.notifications.col.receiver]: 'Empfänger',
   [tokens.notifications.col.severity]: 'Schweregrad',
+  // Polls help (additional)
+  [tokens.polls.help.supermajority_percent]: 'Prozentsatz der Stimmen, der zur Annahme des Vorschlags erforderlich ist (Supermajorität).',
+  [tokens.polls.help.threshold_percent]: 'Mindestprozentsatz, den eine Option erreichen muss, um berücksichtigt zu werden (Schwellenwert).',
+  [tokens.polls.help.winners_count]: 'Wie viele Optionen unter der Top‑K‑Regel als Gewinner gelten.',
   // Announcements
   [tokens.announcements.managementTitle]: 'Ankündigungsverwaltung',
   [tokens.announcements.createNew]: 'Neue Ankündigung erstellen',
