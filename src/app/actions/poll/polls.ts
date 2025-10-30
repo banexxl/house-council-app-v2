@@ -6,6 +6,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Poll, PollStatus } from 'src/types/poll';
 import { createOrUpdatePollOptions } from './poll-options';
 import { TABLES } from 'src/libs/supabase/tables';
+import { isUUIDv4 } from 'src/utils/uuid';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -217,7 +218,7 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
     // Update path: options first, then poll update
-    if (poll.id) {
+    if (poll.id !== undefined && poll.id !== null && poll.id.trim() !== '' && isUUIDv4(poll.id)) {
         const pollId = poll.id;
         if (poll.options !== undefined) {
             const optRes = await createOrUpdatePollOptions(pollId, poll.options);
@@ -228,8 +229,9 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
         }
 
         // Exclude options from the poll object before updating
-        const { options, attachments, votes, ...pollWithoutNonColumns } = poll as any;
+        const { id, options, attachments, votes, ...pollWithoutNonColumns } = poll as Poll;
         const { data, error } = await supabase.from(TABLES.POLLS).update(pollWithoutNonColumns).eq('id', pollId).select().single();
+
         if (error) {
             await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: error.message, payload: { mode: 'update', pollId }, status: 'fail', type: 'db', user_id: null });
             return { success: false, error: error.message };
@@ -239,8 +241,9 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
     }
 
     // Create path: create poll to get id, upsert options; if options fail, rollback poll
-    const { options, attachments, votes, ...pollWithoutNonColumns } = poll as any;
+    const { id, options, attachments, votes, ...pollWithoutNonColumns } = poll as Poll;
     const { data: created, error: createErr } = await supabase.from(TABLES.POLLS).insert([pollWithoutNonColumns]).select().single();
+
     if (createErr || !created) {
         await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: createErr?.message || 'create error', payload: { mode: 'create' }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: createErr?.message || 'Failed to create poll' };
