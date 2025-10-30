@@ -146,11 +146,35 @@ export async function getPollById(id: string): Promise<{ success: boolean; error
 export async function deletePoll(id: string): Promise<{ success: boolean; error?: string }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
+
+    // Delete poll options
+    const { error: optionsError } = await supabase.from(TABLES.POLL_OPTIONS).delete().eq('poll_id', id);
+    if (optionsError) {
+        await logServerAction({ action: 'deletePoll', duration_ms: Date.now() - t0, error: optionsError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: optionsError.message };
+    }
+
+    // Delete poll votes
+    const { error: votesError } = await supabase.from(TABLES.POLL_VOTES).delete().eq('poll_id', id);
+    if (votesError) {
+        await logServerAction({ action: 'deletePoll', duration_ms: Date.now() - t0, error: votesError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: votesError.message };
+    }
+
+    // Delete poll attachments
+    const { error: attachmentsError } = await supabase.from(TABLES.POLL_ATTACHMENTS).delete().eq('poll_id', id);
+    if (attachmentsError) {
+        await logServerAction({ action: 'deletePoll', duration_ms: Date.now() - t0, error: attachmentsError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: attachmentsError.message };
+    }
+
+    // Delete the poll itself
     const { error } = await supabase.from(TABLES.POLLS).delete().eq('id', id);
     if (error) {
         await logServerAction({ action: 'deletePoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: error.message };
     }
+
     revalidatePath(`/dashboard/polls/`);
     await logServerAction({ action: 'deletePoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
     return { success: true };

@@ -503,3 +503,27 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
      });
 };
 
+/**
+ * Returns all schema keys with their translation keys for i18n token generation.
+ */
+export const pollSchemaTranslationTokens: Record<string, string> = {
+     id: 'polls.validation.invalidId',
+     client_id: 'polls.validation.clientRequired',
+     building_id: 'polls.validation.buildingRequired',
+     type: 'polls.types', // Use POLL_TYPE_META for specific types
+     title: 'polls.validation.titleRequired',
+     description: 'polls.validation.description',
+     allow_change_until_deadline: 'polls.validation.allowChangeUntilDeadline',
+     allow_abstain: 'polls.validation.allowAbstain',
+     allow_comments: 'polls.validation.allowComments',
+     allow_anonymous: 'polls.validation.allowAnonymous',
+     options: 'polls.validation.options',
+     max_choices: 'polls.validation.maxChoicesReq',
+     rule: 'polls.validation.ruleReq',
+     supermajority_percent: 'polls.validation.supermajorityRequired',
+     threshold_percent: 'polls.validation.thresholdRequired',
+     winners_count: 'polls.validation.winnersRequired',
+     score_aggregation: 'polls.validation.scoreAggRequired',
+     starts_at: 'polls.validation.startsRequired',
+     ends_at: 'polls.validation.endsAfterStarts',
+};

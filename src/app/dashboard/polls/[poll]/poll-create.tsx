@@ -1,5 +1,6 @@
 'use client';
 
+import { pollSchemaTranslationTokens } from 'src/types/poll';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormik, getIn } from 'formik';
@@ -39,7 +40,6 @@ import {
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-
 import { Building } from 'src/types/building';
 import {
      Poll,
@@ -86,6 +86,24 @@ export default function PollCreate({
      const [files, setFiles] = useState<DropFile[]>([]);
      const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
      const [infoOpen, setInfoOpen] = useState(false);
+
+
+     // Handler for publishing the poll
+     const handlePublishPoll = async () => {
+          if (!poll?.id) return;
+          setSaving(true);
+          try {
+               // Call backend to update status to 'active'
+               const { success, error } = await createOrUpdatePoll({ ...poll, status: 'active' });
+               if (!success) throw new Error(error || 'Failed to publish poll');
+               toast.success(t('polls.actionPublishSuccess') || 'Poll published');
+               router.refresh();
+          } catch (e: any) {
+               toast.error(e.message || 'Error publishing poll');
+          } finally {
+               setSaving(false);
+          }
+     };
 
      // helper for MUI fields: injects error + helperText from Formik by path
      const fe = (name: string) => {
@@ -1150,14 +1168,19 @@ export default function PollCreate({
                                                             {t('common.formInvalid') || 'Form is invalid:'}
                                                        </Typography>
                                                        <List dense>
-                                                            {Object.entries(formik.errors).map(([key, err]) => (
-                                                                 <ListItem key={key}>
-                                                                      <ListItemText
-                                                                           primary={`${key}: ${typeof err === 'string' ? err : JSON.stringify(err)}`}
-                                                                           slotProps={{ primary: { variant: 'caption', color: 'error' } }}
-                                                                      />
-                                                                 </ListItem>
-                                                            ))}
+                                                            {Object.entries(formik.errors).map(([key, err]) => {
+                                                                 // Use pollSchemaTranslationTokens for translation key lookup
+                                                                 const schemaToken = pollSchemaTranslationTokens[key];
+                                                                 const label = schemaToken ? t(schemaToken) : key;
+                                                                 return (
+                                                                      <ListItem key={key}>
+                                                                           <ListItemText
+                                                                                primary={`${label}: ${typeof err === 'string' ? err : JSON.stringify(err)}`}
+                                                                                slotProps={{ primary: { variant: 'caption', color: 'error' } }}
+                                                                           />
+                                                                      </ListItem>
+                                                                 );
+                                                            })}
                                                        </List>
                                                   </Box>
                                              )}
@@ -1190,13 +1213,14 @@ export default function PollCreate({
                               </Tooltip>
 
                               {(
-                                   poll?.closed_at ? (
+                                   poll?.status === 'draft' ? (
                                         <Button
                                              variant="outlined"
-                                             color="success"
-                                             onClick={handleReopenPoll}
+                                             color="primary"
+                                             onClick={handlePublishPoll}
+                                             disabled={saving || !formik.isValid || !formik.dirty}
                                         >
-                                             {t('polls.btnReopenPoll') || 'Reopen Poll'}
+                                             {t('polls.btnPublishPoll') || 'Publish Poll'}
                                         </Button>
                                    ) : (
                                         <Button
@@ -1204,6 +1228,7 @@ export default function PollCreate({
                                              color="warning"
                                              onClick={handleClosePoll}
                                              loading={saving}
+                                             disabled={poll?.status !== 'active'}
                                         >
                                              {t('polls.btnClosePoll') || 'Close Poll'}
                                         </Button>
