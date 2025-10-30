@@ -419,6 +419,13 @@ export const tokens = {
     noVotesYet: 'polls.noVotesYet',
     selectFiles: 'polls.selectFiles',
     validation: {
+      invalidId: 'polls.validation.invalidId',
+      description: 'polls.validation.description',
+      allowChangeUntilDeadline: 'polls.validation.allowChangeUntilDeadline',
+      allowAbstain: 'polls.validation.allowAbstain',
+      allowComments: 'polls.validation.allowComments',
+      allowAnonymous: 'polls.validation.allowAnonymous',
+      options: 'polls.validation.options',
       min0: 'polls.validation.min0',
       max100: 'polls.validation.max100',
       clientRequired: 'polls.validation.clientRequired',
