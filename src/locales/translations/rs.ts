@@ -618,7 +618,7 @@ export const rs = {
      [tokens.polls.help.title]: 'Kako funkcioniše sistem glasanja',
      [tokens.polls.help.tooltip]: 'Kako glasanje radi',
      [tokens.polls.help.plurality]: 'Opcija sa najviše glasova pobeđuje (čak i ako nije >50%). Primer: „Izaberite novog upravnika zgrade”.',
-     [tokens.polls.help.absolute_majority]: 'Pobednik mora imati >50% glasova. Primer: Da/Ne ili glasanje sa jednim izborom („Odobriti ovu renovaciju?”).',
+     [tokens.polls.help.absolute_majority]: 'Pobednik mora imati >50% glasova. Primer: Da/Ne ili glasanje sa jednim izborom („Odobriti renoviranje?”).',
      [tokens.polls.help.supermajority]: 'Pobednik mora imati najmanje X% glasova (prema polju za kvalifikovanu većinu). Primer: zahtevati 2/3 (66,67%) podrške za izmenu pravila.',
      [tokens.polls.help.threshold]: 'Opcija(e) se prihvata(ju) ako dostigne minimalni procenat (prema polju prag). Primer: „Svaki predlog sa ≥ 50% glasova prolazi.” Više njih može proći.',
      [tokens.polls.help.top_k]: 'Pobeđuje prvih N opcija (prema broju pobednika). Primer: „Glasajte za do 3 projekta — prva 2 se finansiraju.”',
