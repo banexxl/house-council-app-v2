@@ -391,7 +391,7 @@ export default function PollCreate({
                <Container maxWidth="xl">
                     <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
                          <Typography variant="h4">
-                              {poll ? t('polls.editTitle') || 'Edit Poll' : t('polls.createTitle') || 'Create Poll'}
+                              {poll ? t('polls.editTitle') + ' - ' + poll.title : t('polls.createTitle')}
                          </Typography>
 
                          {/* Two-column layout */}
