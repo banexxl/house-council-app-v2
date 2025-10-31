@@ -936,147 +936,7 @@ export default function PollCreate({
                                         </CardContent>
                                    </Card>
 
-                                   <Card>
-                                        <CardHeader title={t('polls.options') || 'Options'} />
-                                        <Divider />
-                                        <CardContent>
-                                             <Stack spacing={1}>
 
-                                                  {formik.values.options.length > 0 ?
-                                                       <SortableOptionsList
-                                                            options={formik.values.options}
-                                                            disabled={isFormLocked}
-                                                            onDelete={async (idx) => {
-                                                                 const opt = formik.values.options[idx];
-                                                                 if (!opt) return;
-                                                                 try {
-                                                                      if (opt.id) {
-                                                                           const res = await deletePollOption(opt.id);
-                                                                           if (!res.success) throw new Error(res.error || 'Delete failed');
-                                                                      }
-                                                                      setOptionsAndClearDirty(formik.values.options.filter((_, i) => i !== idx));
-                                                                      toast.success(t('common.actionDeleteSuccess') || 'Deleted');
-                                                                 } catch (e: any) {
-                                                                      toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
-                                                                 }
-                                                            }}
-                                                            onSave={async (idx) => {
-                                                                 const pollId = poll?.id;
-                                                                 if (!pollId) {
-                                                                      toast.error(t('common.actionSaveError') || 'Save poll first');
-                                                                      return;
-                                                                 }
-                                                                 const opt = formik.values.options[idx];
-                                                                 if (!opt) return;
-                                                                 const label = (opt.label || '').trim();
-                                                                 if (!label) return;
-                                                                 try {
-                                                                      if (opt.id) {
-                                                                           const res = await updatePollOption(opt.id, { label, sort_order: opt.sort_order ?? idx });
-                                                                           if (!res.success || !res.data) throw new Error(res.error || 'Update failed');
-                                                                           const updated = formik.values.options.slice();
-                                                                           updated[idx] = { ...updated[idx], label: res.data.label, sort_order: res.data.sort_order } as PollOption;
-                                                                           setOptionsAndClearDirty(updated);
-                                                                      } else {
-                                                                           const res = await createPollOption({ poll_id: pollId, label, sort_order: idx } as any);
-                                                                           if (!res.success || !res.data) throw new Error(res.error || 'Create failed');
-                                                                           const updated = formik.values.options.slice();
-                                                                           updated[idx] = { ...updated[idx], id: res.data.id, sort_order: res.data.sort_order } as PollOption;
-                                                                           setOptionsAndClearDirty(updated);
-                                                                      }
-                                                                      toast.success(t('common.actionSaveSuccess') || 'Saved');
-                                                                 } catch (e: any) {
-                                                                      toast.error(e?.message || t('common.actionSaveError') || 'Save failed');
-                                                                 }
-                                                            }}
-                                                            onLabelChange={(idx, value) => {
-                                                                 const updated = formik.values.options.slice();
-                                                                 updated[idx] = { ...updated[idx], label: value } as PollOption;
-                                                                 setOptionsAndClearDirty(updated);
-                                                            }}
-                                                            onReorder={async (newOptions: PollOption[]) => {
-                                                                 // Optimistically update local order in the form only
-                                                                 setOptionsAndClearDirty(newOptions);
-
-                                                                 // If poll exists, persist order for options that already have ids
-                                                                 const pollId = poll?.id;
-                                                                 const optionIds = newOptions.map((o) => o.id).filter(Boolean) as string[];
-
-                                                                 if (!pollId) {
-                                                                      // New poll not saved yet
-                                                                      toast.success(t('polls.optionsReorderedLocal') || 'Order updated (not yet saved)');
-                                                                      return;
-                                                                 }
-                                                                 try {
-                                                                      if (optionIds.length < 2) {
-                                                                           // Nothing meaningful to persist
-                                                                           toast.success(t('polls.optionsReorderedLocal') || 'Order updated (not yet saved)');
-                                                                           return;
-                                                                      }
-                                                                      const res = await reorderPolls(pollId, optionIds);
-                                                                      if (!res.success) {
-                                                                           toast.error(res.error || 'Failed to update order');
-                                                                      } else {
-                                                                           // Normalize local sort_order to match persisted order and clear dirty state
-                                                                           const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i } as PollOption));
-                                                                           formik.setFieldValue('options', normalized, false);
-                                                                           // Reset formik's dirty flag without losing current values
-                                                                           formik.resetForm({
-                                                                                values: { ...formik.values, options: normalized },
-                                                                                touched: formik.touched,
-                                                                                errors: formik.errors,
-                                                                           });
-                                                                           // Revalidate to sync any dependent constraints
-                                                                           await formik.validateForm();
-                                                                           toast.success(t('common.actionSaveSuccess') || 'Order updated');
-                                                                      }
-                                                                 } catch (e: any) {
-                                                                      toast.error(e?.message || 'Failed to update order');
-                                                                 }
-                                                            }}
-                                                       />
-                                                       : (
-                                                            <Typography variant="body2" color="text.secondary">
-                                                                 {t('polls.noOptions') || 'No options available'}
-                                                            </Typography>
-                                                       )}
-                                                  <Button
-                                                       onClick={() =>
-                                                            setOptionsAndClearDirty([
-                                                                 ...formik.values.options,
-                                                                 { label: '', sort_order: formik.values.options.length },
-                                                            ])
-                                                       }
-                                                       sx={{
-                                                            width: '150px'
-                                                       }}
-                                                       disabled={isFormLocked || !poll?.id || poll.id == ''}
-                                                  >
-                                                       {t('polls.addOption') || 'Add option'}
-                                                  </Button>
-
-                                                  {Array.isArray(formik.errors.options) &&
-                                                       formik.errors.options.map((err, idx) => {
-                                                            if (!err) return null;
-                                                            if (typeof err === 'string') {
-                                                                 return (
-                                                                      <Typography key={idx} variant="caption" color="error">
-                                                                           Option {idx + 1}: {err}
-                                                                      </Typography>
-                                                                 );
-                                                            }
-                                                            if (typeof err === 'object' && err.label) {
-                                                                 return (
-                                                                      <Typography key={idx} variant="caption" color="error">
-                                                                           Option {idx + 1}: {err.label}
-                                                                      </Typography>
-                                                                 );
-                                                            }
-                                                            return null;
-                                                       })}
-                                             </Stack>
-                                        </CardContent>
-                                   </Card>
                               </Grid>
 
                               {/* Attachments moved into right column so votes can be last on mobile */}
@@ -1100,6 +960,147 @@ export default function PollCreate({
                                                                  onRemoveImage={handleFileRemove}
                                                                  onRemoveAll={handleFileRemoveAll}
                                                             />
+                                                       </Stack>
+                                                  </CardContent>
+                                             </Card>
+                                             <Card>
+                                                  <CardHeader title={t('polls.options') || 'Options'} />
+                                                  <Divider />
+                                                  <CardContent>
+                                                       <Stack spacing={1}>
+
+                                                            {formik.values.options.length > 0 ?
+                                                                 <SortableOptionsList
+                                                                      options={formik.values.options}
+                                                                      disabled={isFormLocked}
+                                                                      onDelete={async (idx) => {
+                                                                           const opt = formik.values.options[idx];
+                                                                           if (!opt) return;
+                                                                           try {
+                                                                                if (opt.id) {
+                                                                                     const res = await deletePollOption(opt.id);
+                                                                                     if (!res.success) throw new Error(res.error || 'Delete failed');
+                                                                                }
+                                                                                setOptionsAndClearDirty(formik.values.options.filter((_, i) => i !== idx));
+                                                                                toast.success(t('common.actionDeleteSuccess') || 'Deleted');
+                                                                           } catch (e: any) {
+                                                                                toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
+                                                                           }
+                                                                      }}
+                                                                      onSave={async (idx) => {
+                                                                           const pollId = poll?.id;
+                                                                           if (!pollId) {
+                                                                                toast.error(t('common.actionSaveError') || 'Save poll first');
+                                                                                return;
+                                                                           }
+                                                                           const opt = formik.values.options[idx];
+                                                                           if (!opt) return;
+                                                                           const label = (opt.label || '').trim();
+                                                                           if (!label) return;
+                                                                           try {
+                                                                                if (opt.id) {
+                                                                                     const res = await updatePollOption(opt.id, { label, sort_order: opt.sort_order ?? idx });
+                                                                                     if (!res.success || !res.data) throw new Error(res.error || 'Update failed');
+                                                                                     const updated = formik.values.options.slice();
+                                                                                     updated[idx] = { ...updated[idx], label: res.data.label, sort_order: res.data.sort_order } as PollOption;
+                                                                                     setOptionsAndClearDirty(updated);
+                                                                                } else {
+                                                                                     const res = await createPollOption({ poll_id: pollId, label, sort_order: idx } as any);
+                                                                                     if (!res.success || !res.data) throw new Error(res.error || 'Create failed');
+                                                                                     const updated = formik.values.options.slice();
+                                                                                     updated[idx] = { ...updated[idx], id: res.data.id, sort_order: res.data.sort_order } as PollOption;
+                                                                                     setOptionsAndClearDirty(updated);
+                                                                                }
+                                                                                toast.success(t('common.actionSaveSuccess') || 'Saved');
+                                                                           } catch (e: any) {
+                                                                                toast.error(e?.message || t('common.actionSaveError') || 'Save failed');
+                                                                           }
+                                                                      }}
+                                                                      onLabelChange={(idx, value) => {
+                                                                           const updated = formik.values.options.slice();
+                                                                           updated[idx] = { ...updated[idx], label: value } as PollOption;
+                                                                           setOptionsAndClearDirty(updated);
+                                                                      }}
+                                                                      onReorder={async (newOptions: PollOption[]) => {
+                                                                           // Optimistically update local order in the form only
+                                                                           setOptionsAndClearDirty(newOptions);
+
+                                                                           // If poll exists, persist order for options that already have ids
+                                                                           const pollId = poll?.id;
+                                                                           const optionIds = newOptions.map((o) => o.id).filter(Boolean) as string[];
+
+                                                                           if (!pollId) {
+                                                                                // New poll not saved yet
+                                                                                toast.success(t('polls.optionsReorderedLocal') || 'Order updated (not yet saved)');
+                                                                                return;
+                                                                           }
+                                                                           try {
+                                                                                if (optionIds.length < 2) {
+                                                                                     // Nothing meaningful to persist
+                                                                                     toast.success(t('polls.optionsReorderedLocal') || 'Order updated (not yet saved)');
+                                                                                     return;
+                                                                                }
+                                                                                const res = await reorderPolls(pollId, optionIds);
+                                                                                if (!res.success) {
+                                                                                     toast.error(res.error || 'Failed to update order');
+                                                                                } else {
+                                                                                     // Normalize local sort_order to match persisted order and clear dirty state
+                                                                                     const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i } as PollOption));
+                                                                                     formik.setFieldValue('options', normalized, false);
+                                                                                     // Reset formik's dirty flag without losing current values
+                                                                                     formik.resetForm({
+                                                                                          values: { ...formik.values, options: normalized },
+                                                                                          touched: formik.touched,
+                                                                                          errors: formik.errors,
+                                                                                     });
+                                                                                     // Revalidate to sync any dependent constraints
+                                                                                     await formik.validateForm();
+                                                                                     toast.success(t('common.actionSaveSuccess') || 'Order updated');
+                                                                                }
+                                                                           } catch (e: any) {
+                                                                                toast.error(e?.message || 'Failed to update order');
+                                                                           }
+                                                                      }}
+                                                                 />
+                                                                 : (
+                                                                      <Typography variant="body2" color="text.secondary">
+                                                                           {t('polls.noOptions') || 'No options available'}
+                                                                      </Typography>
+                                                                 )}
+                                                            <Button
+                                                                 onClick={() =>
+                                                                      setOptionsAndClearDirty([
+                                                                           ...formik.values.options,
+                                                                           { label: '', sort_order: formik.values.options.length },
+                                                                      ])
+                                                                 }
+                                                                 sx={{
+                                                                      width: '150px'
+                                                                 }}
+                                                                 disabled={isFormLocked || !poll?.id || poll.id == ''}
+                                                            >
+                                                                 {t('polls.addOption') || 'Add option'}
+                                                            </Button>
+
+                                                            {Array.isArray(formik.errors.options) &&
+                                                                 formik.errors.options.map((err, idx) => {
+                                                                      if (!err) return null;
+                                                                      if (typeof err === 'string') {
+                                                                           return (
+                                                                                <Typography key={idx} variant="caption" color="error">
+                                                                                     Option {idx + 1}: {err}
+                                                                                </Typography>
+                                                                           );
+                                                                      }
+                                                                      if (typeof err === 'object' && err.label) {
+                                                                           return (
+                                                                                <Typography key={idx} variant="caption" color="error">
+                                                                                     Option {idx + 1}: {err.label}
+                                                                                </Typography>
+                                                                           );
+                                                                      }
+                                                                      return null;
+                                                                 })}
                                                        </Stack>
                                                   </CardContent>
                                              </Card>
@@ -1235,6 +1236,44 @@ export default function PollCreate({
                                    )
                               )}
                          </Stack>
+                         {/* Show error list below buttons on mobile */}
+                         <Grid sx={{ display: { xs: 'block', md: 'none' }, mt: 2 }}>
+                              {(!formik.isValid || !formik.dirty || formik.isSubmitting) && (
+                                   <Box>
+                                        {!formik.isValid && (
+                                             <Box>
+                                                  <Typography variant="subtitle2" color="error">
+                                                       {t('common.formInvalid') || 'Form is invalid:'}
+                                                  </Typography>
+                                                  <List dense>
+                                                       {Object.entries(formik.errors).map(([key, err]) => {
+                                                            const schemaToken = pollSchemaTranslationTokens[key];
+                                                            const label = schemaToken ? t(schemaToken) : key;
+                                                            return (
+                                                                 <ListItem key={key}>
+                                                                      <ListItemText
+                                                                           primary={`${label}: ${typeof err === 'string' ? err : JSON.stringify(err)}`}
+                                                                           slotProps={{ primary: { variant: 'caption', color: 'error' } }}
+                                                                      />
+                                                                 </ListItem>
+                                                            );
+                                                       })}
+                                                  </List>
+                                             </Box>
+                                        )}
+                                        {!formik.dirty && (
+                                             <Typography variant="caption" color="text.secondary">
+                                                  {t('common.formNotChanged') || 'No changes to save'}
+                                             </Typography>
+                                        )}
+                                        {formik.isSubmitting && (
+                                             <Typography variant="caption" color="text.secondary">
+                                                  {t('common.formSubmitting') || 'Submitting...'}
+                                             </Typography>
+                                        )}
+                                   </Box>
+                              )}
+                         </Grid>
                     </Stack>
                </Container>
 
