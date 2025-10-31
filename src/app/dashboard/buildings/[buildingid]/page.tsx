@@ -1,7 +1,6 @@
 import { getBuildingById } from "src/app/actions/building/building-actions";
 import { BuildingCreateForm } from "./new-building";
 import { Box, Container, Stack } from "@mui/material";
-import { BuildingFormHeader } from "src/sections/dashboard/buildings/building-new-header";
 import { getAllNotOcupiedLocationsAddedByClient } from "src/app/actions/location/location-services";
 import { getViewer } from "src/libs/supabase/server-auth";
 import { logout } from "src/app/auth/actions";
@@ -38,7 +37,6 @@ export default async function Page({ params }: {
     >
       <Container maxWidth="lg">
         <Stack spacing={4}>
-          <BuildingFormHeader building={buildingData.success ? buildingData.data : undefined} />
           <BuildingCreateForm
             buildingData={buildingData.success ? buildingData.data : undefined}
             userData={{ client, clientMember, tenant, admin, userData, error }}

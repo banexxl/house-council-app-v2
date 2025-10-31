@@ -24,6 +24,7 @@ import { createOrUpdateApartment } from 'src/app/actions/apartment/apartment-act
 import { removeAllImagesFromApartment, removeApartmentImageFilePath, setAsApartmentCoverImage, uploadApartmentImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
 import { Building } from 'src/types/building';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 interface ApartmentCreateFormProps {
   apartmentData?: Apartment;
@@ -150,6 +151,22 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack spacing={4}>
+        <EntityFormHeader
+          backHref={paths.dashboard.apartments.index}
+          backLabel={t('apartments.apartmentList')}
+          title={apartmentData
+            ? `${t('apartments.apartmentEdit')}: ${apartmentData.apartment_number}`
+            : t('apartments.apartmentCreate')}
+          breadcrumbs={[
+            { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+            { title: t('apartments.apartmentList'), href: paths.dashboard.apartments.index },
+            {
+              title: apartmentData
+                ? `${t('apartments.apartmentEdit')}: ${apartmentData.apartment_number}`
+                : t('apartments.apartmentCreate')
+            }
+          ]}
+        />
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>{t('common.formBasicInfo')}</Typography>

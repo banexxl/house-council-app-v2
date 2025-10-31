@@ -7,7 +7,6 @@ import { Seo } from 'src/components/seo';
 import { getAllBuildingsWithApartmentsForClient, readTenantByIdAction } from 'src/app/actions/tenant/tenant-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
-import { TenantFormHeader } from 'src/sections/dashboard/tenant/tenant-form-header';
 import { TenantForm } from 'src/app/dashboard/tenants/[tenantid]/tenant-form';
 
 export default async function Page({ params }: {
@@ -42,7 +41,6 @@ export default async function Page({ params }: {
       >
         <Container maxWidth="lg">
           <Stack spacing={4}>
-            <TenantFormHeader tenant={getTenantByIdActionData} />
             <TenantForm tenantData={getTenantByIdActionData} buildings={buildings} />
           </Stack>
         </Container>

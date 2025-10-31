@@ -33,6 +33,7 @@ import dayjs from 'dayjs';
 import { PopupModal } from 'src/components/modal-dialog';
 import { banUser, removeAllMfaFactors, sendMagicLink, sendPasswordRecoveryEmail, unbanUser } from 'src/app/actions/client/client-actions';
 import { sendWhatsAppSandboxInvite } from 'src/libs/whatsapp/twilio';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 interface TenantFormProps {
      tenantData?: Tenant;
@@ -205,7 +206,24 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
 
      return (
           <form onSubmit={formik.handleSubmit}>
-               <Card>
+               <Stack spacing={4}>
+                    <EntityFormHeader
+                         backHref={paths.dashboard.tenants.index}
+                         backLabel={t('tenants.tenantsList')}
+                         title={tenantData
+                              ? `${t('tenants.tenantEdit')}: ${tenantData.first_name} ${tenantData.last_name}`
+                              : t('tenants.tenantCreate')}
+                         breadcrumbs={[
+                              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                              { title: t('tenants.tenantsList'), href: paths.dashboard.tenants.index },
+                              {
+                                   title: tenantData
+                                        ? `${t('tenants.tenantEdit')}: ${tenantData.first_name} ${tenantData.last_name}`
+                                        : t('tenants.tenantCreate')
+                              }
+                         ]}
+                    />
+                    <Card>
                     <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
                     <CardContent>
                          <Grid container spacing={3}>
@@ -637,7 +655,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                          </Button>
                     </Stack>
 
-               </Card>
+                    </Card>
+               </Stack>
           </form>
      );
 };

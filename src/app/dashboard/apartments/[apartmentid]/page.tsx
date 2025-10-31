@@ -2,7 +2,6 @@ import { getAllBuildingsFromClient, getBuildingById, getAllBuildings } from "src
 import { getApartmentById } from "src/app/actions/apartment/apartment-actions";
 import { getViewer } from "src/libs/supabase/server-auth";
 import { Box, Container, Stack } from "@mui/material";
-import { ApartmentFormHeader } from "src/sections/dashboard/apartments/apartment-form-header";
 import { ApartmentCreateForm } from "./new-apartment";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
@@ -57,9 +56,6 @@ export default async function Page({ params }: {
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="lg">
         <Stack spacing={4}>
-          <ApartmentFormHeader
-            apartment={apartment}
-          />
           <ApartmentCreateForm
             buildings={buildings}
             apartmentData={apartment}

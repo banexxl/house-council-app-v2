@@ -32,6 +32,7 @@ import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
 import { removeAllImagesFromBuilding, removeBuildingImageFilePath, setAsBuildingCoverImage, uploadBuildingImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -266,6 +267,22 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack spacing={4}>
+        <EntityFormHeader
+          backHref={paths.dashboard.buildings.index}
+          backLabel={t('buildings.buildingList')}
+          title={buildingData
+            ? `${t('buildings.buildingEdit')}: ${buildingData.building_location?.street_address ?? ''}`
+            : t('buildings.buildingCreate')}
+          breadcrumbs={[
+            { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+            { title: t('buildings.buildingList'), href: paths.dashboard.buildings.index },
+            {
+              title: buildingData
+                ? `${t('buildings.buildingEdit')}: ${buildingData.building_location?.street_address ?? ''}`
+                : t('buildings.buildingCreate')
+            }
+          ]}
+        />
 
         <Card>
           <CardContent>
