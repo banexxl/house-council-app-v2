@@ -31,6 +31,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { thunks } from 'src/thunks/calendar';
 import type { CalendarEvent, EventType } from 'src/types/calendar';
 import type { Building } from 'src/types/building';
+import { EntityFormHeader } from 'src/components/entity-form-header';
+import { paths } from 'src/paths';
 
 export interface CalendarClientProps { initialEvents: CalendarEvent[]; clientId: string | null; isTenant: boolean; isAdmin: boolean; buildings?: Building[]; }
 
@@ -225,49 +227,87 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      const showRightPanel = !mdDown; // collapse right panel below md
 
      return (
-          <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
-               {/* Left: Calendar grid */}
-               <Card sx={{ flex: 3, p: { xs: 1.5, md: 2 } }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: { xs: 1.5, md: 2 } }}>
-                         <Typography variant={mdDown ? 'h6' : 'h5'}>{t(tokens.calendar.title)}</Typography>
-                         {mdDown ? (
-                              <Stack direction="row" spacing={0.5} alignItems="center">
-                                   <Tooltip title={t(tokens.calendar.prev)}><span><IconButton size="small" onClick={handlePrevMonth}><ChevronLeftIcon fontSize="small" /></IconButton></span></Tooltip>
-                                   <Tooltip title={t(tokens.calendar.today)}><span><IconButton size="small" onClick={handleToday}><TodayIcon fontSize="small" /></IconButton></span></Tooltip>
-                                   <Tooltip title={t(tokens.calendar.next)}><span><IconButton size="small" onClick={handleNextMonth}><ChevronRightIcon fontSize="small" /></IconButton></span></Tooltip>
-                                   {!readOnly && (
-                                        <Tooltip title={t(tokens.calendar.addEvent)}>
-                                             <span>
-                                                  <IconButton size="small" color="primary" onClick={handleOpenCreateModal}>
-                                                       <AddIcon fontSize="small" />
-                                                  </IconButton>
-                                             </span>
-                                        </Tooltip>
-                                   )}
-                              </Stack>
-                         ) : (
-                              <Stack direction="row" spacing={1}>
-                                   <Button variant="outlined" onClick={handlePrevMonth}>{t(tokens.calendar.prev)}</Button>
-                                   <Button variant="outlined" onClick={handleToday}>{t(tokens.calendar.today)}</Button>
-                                   <Button variant="outlined" onClick={handleNextMonth}>{t(tokens.calendar.next)}</Button>
-                                   {!readOnly && <Button variant="contained" onClick={handleOpenCreateModal}>{t(tokens.calendar.addEvent)}</Button>}
-                              </Stack>
+          <Stack spacing={3}>
+               <EntityFormHeader
+                    backHref={paths.dashboard.index}
+                    backLabel={t('nav.adminDashboard')}
+                    title={t(tokens.calendar.title)}
+                    breadcrumbs={[
+                         { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                         { title: t(tokens.calendar.title) },
+                    ]}
+               />
+               <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
+                    {/* Left: Calendar grid */}
+                    <Card sx={{ flex: 3, p: { xs: 1.5, md: 2 } }}>
+                         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: { xs: 1.5, md: 2 } }}>
+                              <Typography variant={mdDown ? 'h6' : 'h5'}>{t(tokens.calendar.title)}</Typography>
+                              {mdDown ? (
+                                   <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <Tooltip title={t(tokens.calendar.prev)}><span><IconButton size="small" onClick={handlePrevMonth}><ChevronLeftIcon fontSize="small" /></IconButton></span></Tooltip>
+                                        <Tooltip title={t(tokens.calendar.today)}><span><IconButton size="small" onClick={handleToday}><TodayIcon fontSize="small" /></IconButton></span></Tooltip>
+                                        <Tooltip title={t(tokens.calendar.next)}><span><IconButton size="small" onClick={handleNextMonth}><ChevronRightIcon fontSize="small" /></IconButton></span></Tooltip>
+                                        {!readOnly && (
+                                             <Tooltip title={t(tokens.calendar.addEvent)}>
+                                                  <span>
+                                                       <IconButton size="small" color="primary" onClick={handleOpenCreateModal}>
+                                                            <AddIcon fontSize="small" />
+                                                       </IconButton>
+                                                  </span>
+                                             </Tooltip>
+                                        )}
+                                   </Stack>
+                              ) : (
+                                   <Stack direction="row" spacing={1}>
+                                        <Button variant="outlined" onClick={handlePrevMonth}>{t(tokens.calendar.prev)}</Button>
+                                        <Button variant="outlined" onClick={handleToday}>{t(tokens.calendar.today)}</Button>
+                                        <Button variant="outlined" onClick={handleNextMonth}>{t(tokens.calendar.next)}</Button>
+                                        {!readOnly && <Button variant="contained" onClick={handleOpenCreateModal}>{t(tokens.calendar.addEvent)}</Button>}
+                                   </Stack>
+                              )}
+                         </Stack>
+                         <Typography variant="subtitle2" sx={{ mb: 1 }}>{new Date(viewYear, viewMonth).toLocaleString(undefined, { month: 'long', year: 'numeric' })}</Typography>
+                         <MonthGrid
+                              year={viewYear}
+                              month={viewMonth}
+                              selectedDate={selectedDate}
+                              events={mergedEvents}
+                              onSelectDate={handleSelectDay}
+                              eventTypeMeta={EVENT_TYPE_META}
+                         />
+                         {/* Mobile events list (below grid) */}
+                         {mdDown && (
+                              <Box sx={{ mt: 2 }}>
+                                   <Typography variant="subtitle1" gutterBottom>{t(tokens.calendar.eventsOnDate, { date: selectedDate.toLocaleDateString() })}</Typography>
+                                   <Divider sx={{ mb: 1.5 }} />
+                                   {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">{t(tokens.calendar.noEvents)}</Typography>}
+                                   {creating && <Typography variant="caption" color="primary.main">{t(tokens.calendar.creating)}</Typography>}
+                                   <Stack spacing={1}>
+                                        {dayEvents.map(ev => {
+                                             const start = new Date(ev.start_date_time);
+                                             const end = new Date(ev.end_date_time);
+                                             const bAddr = ev.building_id ? buildingMap.get(ev.building_id) : null;
+                                             return (
+                                                  <Box key={ev.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, cursor: 'pointer' }} onClick={() => handleOpenEditModal(ev)}>
+                                                       <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                                            <Typography variant="subtitle2" noWrap>{ev.title}</Typography>
+                                                            <Chip size="small" label={EVENT_TYPE_META[ev.calendar_event_type || 'other'].label} sx={{ bgcolor: EVENT_TYPE_META[ev.calendar_event_type || 'other'].color, color: '#fff' }} />
+                                                       </Stack>
+                                                       {bAddr && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{bAddr}</Typography>}
+                                                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
+                                                       {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }} noWrap>{ev.description}</Typography>}
+                                                  </Box>
+                                             );
+                                        })}
+                                   </Stack>
+                              </Box>
                          )}
-                    </Stack>
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>{new Date(viewYear, viewMonth).toLocaleString(undefined, { month: 'long', year: 'numeric' })}</Typography>
-                    <MonthGrid
-                         year={viewYear}
-                         month={viewMonth}
-                         selectedDate={selectedDate}
-                         events={mergedEvents}
-                         onSelectDate={handleSelectDay}
-                         eventTypeMeta={EVENT_TYPE_META}
-                    />
-                    {/* Mobile events list (below grid) */}
-                    {mdDown && (
-                         <Box sx={{ mt: 2 }}>
-                              <Typography variant="subtitle1" gutterBottom>{t(tokens.calendar.eventsOnDate, { date: selectedDate.toLocaleDateString() })}</Typography>
-                              <Divider sx={{ mb: 1.5 }} />
+                    </Card>
+                    {/* Right: Selected day events (hidden below md) */}
+                    {showRightPanel && (
+                         <Card sx={{ flex: 2, p: 2 }}>
+                              <Typography variant="h6" gutterBottom>{t(tokens.calendar.eventsOnDate, { date: selectedDate.toLocaleDateString() })}</Typography>
+                              <Divider sx={{ mb: 2 }} />
                               {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">{t(tokens.calendar.noEvents)}</Typography>}
                               {creating && <Typography variant="caption" color="primary.main">{t(tokens.calendar.creating)}</Typography>}
                               <Stack spacing={1}>
@@ -278,86 +318,59 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                                         return (
                                              <Box key={ev.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, cursor: 'pointer' }} onClick={() => handleOpenEditModal(ev)}>
                                                   <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                                       <Typography variant="subtitle2" noWrap>{ev.title}</Typography>
+                                                       <Typography variant="subtitle2">{ev.title}</Typography>
                                                        <Chip size="small" label={EVENT_TYPE_META[ev.calendar_event_type || 'other'].label} sx={{ bgcolor: EVENT_TYPE_META[ev.calendar_event_type || 'other'].color, color: '#fff' }} />
                                                   </Stack>
                                                   {bAddr && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{bAddr}</Typography>}
                                                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
-                                                  {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }} noWrap>{ev.description}</Typography>}
+                                                  {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }}>{ev.description}</Typography>}
                                              </Box>
                                         );
                                    })}
                               </Stack>
-                         </Box>
+                         </Card>
                     )}
-               </Card>
-               {/* Right: Selected day events (hidden below md) */}
-               {showRightPanel && (
-                    <Card sx={{ flex: 2, p: 2 }}>
-                         <Typography variant="h6" gutterBottom>{t(tokens.calendar.eventsOnDate, { date: selectedDate.toLocaleDateString() })}</Typography>
-                         <Divider sx={{ mb: 2 }} />
-                         {dayEvents.length === 0 && <Typography variant="body2" color="text.secondary">{t(tokens.calendar.noEvents)}</Typography>}
-                         {creating && <Typography variant="caption" color="primary.main">{t(tokens.calendar.creating)}</Typography>}
-                         <Stack spacing={1}>
-                              {dayEvents.map(ev => {
-                                   const start = new Date(ev.start_date_time);
-                                   const end = new Date(ev.end_date_time);
-                                   const bAddr = ev.building_id ? buildingMap.get(ev.building_id) : null;
-                                   return (
-                                        <Box key={ev.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, cursor: 'pointer' }} onClick={() => handleOpenEditModal(ev)}>
-                                             <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                                  <Typography variant="subtitle2">{ev.title}</Typography>
-                                                  <Chip size="small" label={EVENT_TYPE_META[ev.calendar_event_type || 'other'].label} sx={{ bgcolor: EVENT_TYPE_META[ev.calendar_event_type || 'other'].color, color: '#fff' }} />
-                                             </Stack>
-                                             {bAddr && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{bAddr}</Typography>}
-                                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
-                                             {ev.description && <Typography variant="body2" sx={{ mt: 0.5 }}>{ev.description}</Typography>}
-                                        </Box>
-                                   );
-                              })}
-                         </Stack>
-                    </Card>
-               )}
-               {!readOnly && mdDown && (
-                    <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: (theme) => theme.zIndex.fab }} onClick={handleOpenCreateModal} aria-label={t(tokens.calendar.addEvent)}>
-                         <AddIcon />
-                    </Fab>
-               )}
-               {/* Modal for adding event */}
-               <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
-                    <DialogTitle>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</DialogTitle>
-                    <DialogContent>
-                         <Typography variant="body2" sx={{ mb: 2 }}>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</Typography>
-                         <Stack spacing={2}>
-                              <TextField label={t(tokens.calendar.titleLabel)} value={formTitle} onChange={e => { setFormTitle(e.target.value); if (errors.title) setErrors(prev => ({ ...prev, title: undefined })); }} fullWidth error={!!errors.title} helperText={errors.title} />
-                              <TextField label={t(tokens.calendar.descriptionLabel)} value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
-                              <Stack direction="row" spacing={2}>
-                                   <TextField label={t(tokens.calendar.startTimeLabel)} type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); if (errors.start) setErrors(p => ({ ...p, start: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.start} helperText={errors.start} />
-                                   <TextField label={t(tokens.calendar.endTimeLabel)} type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); if (errors.end) setErrors(p => ({ ...p, end: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.end} helperText={errors.end} />
-                              </Stack>
-                              <TextField select label={t(tokens.calendar.eventTypeLabel)} value={formType} onChange={e => { setFormType(e.target.value as EventType); if (errors.type) setErrors(p => ({ ...p, type: undefined })); }} fullWidth error={!!errors.type} helperText={errors.type}>
-                                   {Object.entries(BASE_EVENT_TYPE_META).map(([key, meta]) => (
-                                        <MenuItem key={key} value={key}>{t((tokens.calendar.types as any)[key])}</MenuItem>
-                                   ))}
-                              </TextField>
-                              {buildings.length > 0 && (
-                                   <TextField select label={t(tokens.calendar.buildingLabel)} value={formBuildingId} onChange={e => { setFormBuildingId(e.target.value); if (errors.building) setErrors(p => ({ ...p, building: undefined })); }} fullWidth error={!!errors.building} helperText={errors.building}>
-                                        <MenuItem value="">{t(tokens.calendar.noBuildingOption)}</MenuItem>
-                                        {buildings.map(b => (
-                                             <MenuItem key={b.id} value={b.id}>
-                                                  {b.building_location ? `${b.building_location.street_address || ''} ${b.building_location.street_number || ''}, ${b.building_location.city}` : b.id}
-                                             </MenuItem>
+                    {!readOnly && mdDown && (
+                         <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: (theme) => theme.zIndex.fab }} onClick={handleOpenCreateModal} aria-label={t(tokens.calendar.addEvent)}>
+                              <AddIcon />
+                         </Fab>
+                    )}
+                    {/* Modal for adding event */}
+                    <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
+                         <DialogTitle>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</DialogTitle>
+                         <DialogContent>
+                              <Typography variant="body2" sx={{ mb: 2 }}>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</Typography>
+                              <Stack spacing={2}>
+                                   <TextField label={t(tokens.calendar.titleLabel)} value={formTitle} onChange={e => { setFormTitle(e.target.value); if (errors.title) setErrors(prev => ({ ...prev, title: undefined })); }} fullWidth error={!!errors.title} helperText={errors.title} />
+                                   <TextField label={t(tokens.calendar.descriptionLabel)} value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
+                                   <Stack direction="row" spacing={2}>
+                                        <TextField label={t(tokens.calendar.startTimeLabel)} type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); if (errors.start) setErrors(p => ({ ...p, start: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.start} helperText={errors.start} />
+                                        <TextField label={t(tokens.calendar.endTimeLabel)} type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); if (errors.end) setErrors(p => ({ ...p, end: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.end} helperText={errors.end} />
+                                   </Stack>
+                                   <TextField select label={t(tokens.calendar.eventTypeLabel)} value={formType} onChange={e => { setFormType(e.target.value as EventType); if (errors.type) setErrors(p => ({ ...p, type: undefined })); }} fullWidth error={!!errors.type} helperText={errors.type}>
+                                        {Object.entries(BASE_EVENT_TYPE_META).map(([key, meta]) => (
+                                             <MenuItem key={key} value={key}>{t((tokens.calendar.types as any)[key])}</MenuItem>
                                         ))}
                                    </TextField>
-                              )}
-                         </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                         <Button onClick={handleCloseModal} color="inherit">{t(tokens.calendar.cancel)}</Button>
-                         {editingEventId && !readOnly && <Button onClick={handleDeleteEvent} color="error" disabled={creating}>{creating ? t(tokens.calendar.deleting) : t(tokens.calendar.delete)}</Button>}
-                         {!readOnly && <Button onClick={handleSubmit} variant="contained" disabled={!formTitle || creating}>{creating ? (editingEventId ? t(tokens.calendar.saving) : t(tokens.calendar.creating)) : (editingEventId ? t(tokens.calendar.save) : t(tokens.calendar.create))}</Button>}
-                    </DialogActions>
-               </Dialog>
+                                   {buildings.length > 0 && (
+                                        <TextField select label={t(tokens.calendar.buildingLabel)} value={formBuildingId} onChange={e => { setFormBuildingId(e.target.value); if (errors.building) setErrors(p => ({ ...p, building: undefined })); }} fullWidth error={!!errors.building} helperText={errors.building}>
+                                             <MenuItem value="">{t(tokens.calendar.noBuildingOption)}</MenuItem>
+                                             {buildings.map(b => (
+                                                  <MenuItem key={b.id} value={b.id}>
+                                                       {b.building_location ? `${b.building_location.street_address || ''} ${b.building_location.street_number || ''}, ${b.building_location.city}` : b.id}
+                                                  </MenuItem>
+                                             ))}
+                                        </TextField>
+                                   )}
+                              </Stack>
+                         </DialogContent>
+                         <DialogActions>
+                              <Button onClick={handleCloseModal} color="inherit">{t(tokens.calendar.cancel)}</Button>
+                              {editingEventId && !readOnly && <Button onClick={handleDeleteEvent} color="error" disabled={creating}>{creating ? t(tokens.calendar.deleting) : t(tokens.calendar.delete)}</Button>}
+                              {!readOnly && <Button onClick={handleSubmit} variant="contained" disabled={!formTitle || creating}>{creating ? (editingEventId ? t(tokens.calendar.saving) : t(tokens.calendar.creating)) : (editingEventId ? t(tokens.calendar.save) : t(tokens.calendar.create))}</Button>}
+                         </DialogActions>
+                    </Dialog>
+               </Stack>
           </Stack>
      );
 };

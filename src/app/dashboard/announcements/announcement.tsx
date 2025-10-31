@@ -57,6 +57,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { Client } from 'src/types/client';
 import { Building } from 'src/types/building';
+import { EntityFormHeader } from 'src/components/entity-form-header';
+import { paths } from 'src/paths';
 
 interface AnnouncementProps {
      announcements: Announcement[];
@@ -459,10 +461,16 @@ export default function Announcements({ client, announcements, buildings }: Anno
      return (
           <Container maxWidth="xl">
                <Stack spacing={4}>
-                    <Box
-                         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                    >
-                         <Typography variant="h4" sx={{ mb: 3 }}>{t(tokens.announcements.managementTitle)}</Typography>
+                    <EntityFormHeader
+                         backHref={paths.dashboard.index}
+                         backLabel={t('nav.adminDashboard')}
+                         title={t(tokens.announcements.managementTitle)}
+                         breadcrumbs={[
+                              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                              { title: t(tokens.announcements.managementTitle) },
+                         ]}
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                          <Button
                               variant="contained"
                               color="primary"

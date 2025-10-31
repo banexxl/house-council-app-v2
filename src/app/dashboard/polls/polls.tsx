@@ -5,21 +5,18 @@ import { useRouter } from 'next/navigation';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
   Box,
-  Breadcrumbs,
   Button,
   Card,
   Container,
-  Link,
   Stack,
   SvgIcon,
-  Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { GenericTable } from 'src/components/generic-table';
 import toast from 'react-hot-toast';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 import { type Poll, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
 import { type Building } from 'src/types/building';
@@ -93,17 +90,15 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
       <Container maxWidth="xl">
         <Stack spacing={4}>
           <Stack direction="row" justifyContent="space-between" spacing={4}>
-            <Stack spacing={1}>
-              <Typography variant="h4">{t('polls.listTitle') || 'Polls'}</Typography>
-              <Breadcrumbs separator={<BreadcrumbsSeparator />}>
-                <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
-                  {t('nav.adminDashboard')}
-                </Link>
-                <Typography color="text.secondary" variant="subtitle2">
-                  {t('polls.listTitle') || 'Polls'}
-                </Typography>
-              </Breadcrumbs>
-            </Stack>
+            <EntityFormHeader
+              backHref={paths.dashboard.index}
+              backLabel={t('nav.adminDashboard')}
+              title={t('polls.listTitle') || 'Polls'}
+              breadcrumbs={[
+                { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                { title: t('polls.listTitle') || 'Polls' },
+              ]}
+            />
             <Button
               sx={{ height: 40 }}
               component={RouterLink}

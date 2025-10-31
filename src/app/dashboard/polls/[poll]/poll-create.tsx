@@ -66,6 +66,7 @@ import dayjs from 'dayjs';
 import log from 'src/utils/logger';
 import { SortableOptionsList } from 'src/components/drag-and-drop';
 import type { DBStoredImage } from 'src/components/file-dropzone';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 type Props = {
      clientId: string;
@@ -386,13 +387,20 @@ export default function PollCreate({
           return parseInt(digits, 10);
      };
 
-     return (
-          <Box component="main" sx={{ flexGrow: 1, py: 6 }}>
-               <Container maxWidth="xl">
-                    <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
-                         <Typography variant="h4">
-                              {poll ? t('polls.editTitle') + ' - ' + poll.title : t('polls.createTitle')}
-                         </Typography>
+      return (
+           <Box component="main" sx={{ flexGrow: 1, py: 6 }}>
+                <Container maxWidth="xl">
+                     <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
+                          <EntityFormHeader
+                               backHref={paths.dashboard.polls.index}
+                               backLabel={t('polls.listTitle') || 'Polls'}
+                               title={poll ? (t('polls.editTitle') || 'Edit Poll') + ': ' + (poll.title || '') : (t('polls.createTitle') || 'Create Poll')}
+                               breadcrumbs={[
+                                    { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                                    { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
+                                    { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
+                               ]}
+                          />
 
                          {/* Two-column layout */}
                          <Grid container spacing={2} >
