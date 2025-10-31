@@ -587,6 +587,7 @@ export const rs = {
      [tokens.polls.existingAttachments]: 'Postojeći prilozi',
      [tokens.polls.btnClosePoll]: 'Zatvori glasanje',
      [tokens.polls.btnReopenPoll]: 'Ponovo otvori glasanje',
+     [tokens.polls.btnPublishPoll]: 'Objavi anketu',
      [tokens.polls.closed]: 'Glasanje zatvoreno',
      [tokens.polls.reopened]: 'Glasanje ponovo otvoreno',
      [tokens.polls.votesList]: 'Lista glasova',

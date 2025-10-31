@@ -1022,6 +1022,7 @@ export const en = {
   [tokens.polls.existingAttachments]: 'Existing attachments',
   [tokens.polls.btnClosePoll]: 'Close Poll',
   [tokens.polls.btnReopenPoll]: 'Reopen Poll',
+  [tokens.polls.btnPublishPoll]: 'Publish Poll',
   [tokens.polls.closed]: 'Poll closed',
   [tokens.polls.reopened]: 'Poll reopened',
   [tokens.polls.selectFiles]: 'Select files',

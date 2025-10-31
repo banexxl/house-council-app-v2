@@ -413,6 +413,7 @@ export const tokens = {
     existingAttachments: 'polls.existingAttachments',
     btnClosePoll: 'polls.btnClosePoll',
     btnReopenPoll: 'polls.btnReopenPoll',
+    btnPublishPoll: 'polls.btnPublishPoll',
     closed: 'polls.closed',
     reopened: 'polls.reopened',
     votesList: 'polls.votesList',
