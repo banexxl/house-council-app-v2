@@ -14,9 +14,9 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
-
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { blogApi } from 'src/app/api/blog';
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
+
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 ;
@@ -72,7 +72,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={1}>
             <Typography variant="h3">Blog</Typography>
-            <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+            <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
               <Link
                 color="text.primary"
                 component={RouterLink}

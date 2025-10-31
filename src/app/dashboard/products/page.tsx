@@ -12,9 +12,9 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
-
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { productsApi } from 'src/app/api/products';
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
+
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 ;
@@ -146,7 +146,7 @@ const Page = () => {
             >
               <Stack spacing={1}>
                 <Typography variant="h4">Products</Typography>
-                <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+                <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
                   <Link
                     color="text.primary"
                     component={RouterLink}

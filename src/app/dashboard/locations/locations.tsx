@@ -4,7 +4,7 @@ import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import { Box, Breadcrumbs, Button, Card, Container, Link, Stack, SvgIcon, Typography } from '@mui/material';
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
@@ -103,7 +103,7 @@ const Locations = ({ locations }: LocationsProps) => {
                          <Stack direction="row" justifyContent="space-between" spacing={4}>
                               <Stack spacing={1}>
                                    <Typography variant="h4">{t('locations.locationList')}</Typography>
-                                   <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+                                   <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
                                         <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
                                              {t('nav.adminDashboard')}
                                         </Link>

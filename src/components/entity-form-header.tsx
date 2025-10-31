@@ -7,7 +7,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import { Box } from '@mui/system';
 import { RouterLink } from 'src/components/router-link';
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
 export type BreadcrumbItem = {
   title: string;
@@ -44,7 +44,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
 
       {Array.isArray(breadcrumbs) && breadcrumbs.length > 0 && (
         <Box sx={{ mt: 1 }}>
-          <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+          <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
             {breadcrumbs.map((item, index) => {
               const isLast = index === breadcrumbs.length - 1;
               if (isLast || !item.href) {

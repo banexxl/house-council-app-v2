@@ -16,7 +16,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import type { File } from 'src/components/file-dropzone';
 import { FileDropzone } from 'src/components/file-dropzone';
 import QuillEditor from 'src/components/quill-editor';
@@ -55,7 +55,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={1}>
             <Typography variant="h3">Create a new post</Typography>
-            <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+            <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
               <Link
                 color="text.primary"
                 component={RouterLink}

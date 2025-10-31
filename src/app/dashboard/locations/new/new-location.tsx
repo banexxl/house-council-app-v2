@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { RouterLink } from 'src/components/router-link';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { paths } from 'src/paths';
@@ -79,7 +79,7 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                                         {t('locations.locationsTitle')}
                                    </Button>
                               </Box>
-                              <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+                              <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
                                    <Link
                                         color="text.primary"
                                         component={RouterLink}

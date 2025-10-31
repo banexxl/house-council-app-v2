@@ -13,8 +13,8 @@ import {
   SvgIcon,
   Typography,
 } from '@mui/material';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-import { BreadcrumbsSeparator } from 'src/components/breadcrumbs-separator';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
@@ -88,7 +88,7 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
           <Stack direction="row" justifyContent="space-between" spacing={4}>
             <Stack spacing={1}>
               <Typography variant="h4">{t('apartments.apartmentList')}</Typography>
-              <Breadcrumbs separator={<BreadcrumbsSeparator />}>
+              <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
                 <Link
                   color="text.primary"
                   component={RouterLink}
