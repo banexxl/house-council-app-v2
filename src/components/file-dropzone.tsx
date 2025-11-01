@@ -9,7 +9,7 @@ import XIcon from '@untitled-ui/icons-react/build/esm/X';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar, Box, Button, Card, CardContent, Dialog,
-  Fade, Grid, IconButton, Stack, SvgIcon, Tooltip, Typography,
+  Fade, Grid, IconButton, Skeleton, Stack, SvgIcon, Tooltip, Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -43,9 +43,14 @@ interface FileDropzoneProps extends DropzoneOptions {
 const fileNameFromPath = (p: string) => decodeURIComponent(p.split('/').pop() ?? '');
 
 function Thumb({ image, onClick }: { image: DBStoredImage; onClick?: () => void }) {
-  const { url } = useSignedUrl(image.storage_bucket, image.storage_path, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
+  const { url, loading } = useSignedUrl(image.storage_bucket, image.storage_path, { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 });
+
+  if (loading) {
+    return <Skeleton variant="rectangular" animation="wave" sx={{ width: '100%', height: '100%', borderRadius: 1 }} />;
+  }
+
   if (!url) {
-    return <span style={{ display: 'block', width: '100%', height: '100%', background: '#f4f4f5' }} />;
+    return <Skeleton variant="rectangular" animation="wave" sx={{ width: '100%', height: '100%', borderRadius: 1 }} />;
   }
   return (
     <img
