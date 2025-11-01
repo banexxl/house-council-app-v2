@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Poll, PollStatus } from 'src/types/poll';
-import { createOrUpdatePollOptions } from './poll-options';
+import { createOrUpdatePollOptions } from './poll-option-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 import { isUUIDv4 } from 'src/utils/uuid';
 

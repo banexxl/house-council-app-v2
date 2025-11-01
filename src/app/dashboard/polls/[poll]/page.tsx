@@ -2,12 +2,7 @@ import { redirect } from 'next/navigation';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
-import { getPollById } from 'src/app/actions/poll/polls';
-import { getPollOptions } from 'src/app/actions/poll/poll-options';
-import { getAttachments } from 'src/app/actions/poll/poll-attachments';
-import { getVotesByPoll } from 'src/app/actions/poll/poll-votes';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
-import { toStorageRef } from 'src/utils/sb-bucket';
+import { getPollById } from 'src/app/actions/poll/poll-actions';
 import PollCreate from './poll-create';
 
 type Props = { params: Promise<{ poll: string }> };
@@ -38,17 +33,24 @@ export default async function PollCreatePage({ params }: Props) {
   }
 
   // Edit existing poll
-  const [
-    { data: pollRes },
-  ] = await Promise.all([
-    getPollById(idOrCreate),
-  ]);
+  const { data: pollRes } = await getPollById(idOrCreate);
+
+  const normalizedPoll = pollRes
+    ? {
+      ...pollRes,
+      attachments: (pollRes.attachments ?? []).map((attachment: any) => ({
+        ...attachment,
+        storage_bucket:
+          attachment.storage_bucket || process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET || '',
+      })),
+    }
+    : undefined;
 
   return (
     <PollCreate
       buildings={buildings}
       clientId={client_id || ''}
-      poll={pollRes}
+      poll={normalizedPoll}
     />
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { pollSchemaTranslationTokens } from 'src/types/poll';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormik, getIn } from 'formik';
 import {
@@ -44,20 +44,15 @@ import { Building } from 'src/types/building';
 import {
      Poll,
      PollOption,
-     PollAttachment,
      PollVote,
-     PollType,
-     DecisionRule,
-     ScoreAgg,
      voteStatusLabel,
      DECISION_RULE_TRANSLATIONS,
      SCORE_AGG_TRANSLATIONS,
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { closePoll, createOrUpdatePoll, getPollById, reopenPoll, reorderPolls } from 'src/app/actions/poll/polls';
-import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-options';
-import { uploadPollImagesAndGetUrls, removePollAttachmentFilePath, removeAllPollAttachments } from 'src/app/actions/poll/poll-attachments';
+import { closePoll, createOrUpdatePoll, getPollById, reopenPoll, reorderPolls } from 'src/app/actions/poll/poll-actions';
+import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-option-actions';
 import { FileDropzone, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -67,6 +62,7 @@ import log from 'src/utils/logger';
 import { SortableOptionsList } from 'src/components/drag-and-drop';
 import type { DBStoredImage } from 'src/components/file-dropzone';
 import { EntityFormHeader } from 'src/components/entity-form-header';
+import { removeAllEntityFiles, removeEntityFile, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 
 type Props = {
      clientId: string;
@@ -84,9 +80,15 @@ export default function PollCreate({
      const { t } = useTranslation();
      const router = useRouter();
      const [saving, setSaving] = useState(false);
-     const [files, setFiles] = useState<DropFile[]>([]);
      const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
      const [infoOpen, setInfoOpen] = useState(false);
+     const [attachments, setAttachments] = useState<DBStoredImage[]>(() => {
+          return ((poll?.attachments ?? []) as unknown as DBStoredImage[]) || [];
+     });
+
+     useEffect(() => {
+          setAttachments(((poll?.attachments ?? []) as unknown as DBStoredImage[]) || []);
+     }, [poll?.attachments]);
 
 
      // Handler for publishing the poll
@@ -234,49 +236,12 @@ export default function PollCreate({
 
      const isFormLocked = formik.isSubmitting || !!poll?.closed_at || (poll?.status && poll.status !== 'draft' && poll.status !== 'active');
 
-     const handleFilesDrop = async (newFiles: DropFile[]) => {
-          if (!poll?.id) {
-               toast.error(t('common.actionSaveError') || 'Save poll first');
-               return;
-          }
-
-          let fakeProgress = 0;
-          setUploadProgress(0);
-          const interval = setInterval(() => {
-               fakeProgress += 5;
-               if (fakeProgress <= 99) setUploadProgress(fakeProgress);
-          }, 300);
-
-          try {
-               const { success, error } = await uploadPollImagesAndGetUrls(
-                    newFiles,
-                    formik.values.client_id,
-                    poll.id
-               );
-               clearInterval(interval);
-               setUploadProgress(100);
-               setTimeout(() => setUploadProgress(undefined), 700);
-               if (!success) throw new Error(error || 'Upload failed');
-               setFiles((prev) => [...prev, ...newFiles]);
-               // Optimistically append new signed URLs to the local attachments list for immediate display
-               // Note: Server returns signed URLs in the same order as provided files
-               // We cannot read URLs here (not returned inline), so we refetch from argument? The action returns urls; adapt to it.
-          } catch (e: any) {
-               clearInterval(interval);
-               setUploadProgress(undefined);
-               toast.error(e?.message || t('common.actionUploadError') || 'Upload error');
-               return;
-          }
-
-          // Fetch signed URLs were returned by the action via its return value; re-call to retrieve URLs is not needed because we already have them in the previous scope.
-     };
-
-     // Enhance: handleFilesDrop needs the URLs to update UI; adjust to capture them from the action result
      const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
           if (!poll?.id) {
                toast.error(t('common.actionSaveError') || 'Save poll first');
                return;
           }
+          if (!newFiles.length) return;
 
           let fakeProgress = 0;
           setUploadProgress(0);
@@ -286,12 +251,25 @@ export default function PollCreate({
           }, 300);
 
           try {
-               const res = await uploadPollImagesAndGetUrls(newFiles, formik.values.client_id, poll.id);
+               const res = await uploadEntityFiles({
+                    entity: 'poll-attachment',
+                    entityId: poll.id,
+                    files: newFiles as unknown as globalThis.File[],
+                    clientId,
+               });
                clearInterval(interval);
                setUploadProgress(100);
                setTimeout(() => setUploadProgress(undefined), 700);
-               if (!res.success || !res.urls) throw new Error(res.error || 'Upload failed');
-               setFiles((prev) => [...prev, ...newFiles]);
+               if (!res.success || !res.records?.length) {
+                    throw new Error(res.error || t('common.actionUploadError') || 'Upload failed');
+               }
+
+               const newAttachments = res.records as unknown as DBStoredImage[];
+               setAttachments((prev) => {
+                    const merged = [...prev, ...newAttachments];
+                    formik.setFieldValue('attachments', merged, false);
+                    return merged;
+               });
                toast.success(t('common.actionUploadSuccess') || 'Uploaded');
           } catch (e: any) {
                clearInterval(interval);
@@ -303,11 +281,21 @@ export default function PollCreate({
      const handleFileRemove = async (image: DBStoredImage) => {
           if (!poll?.id) return;
           try {
-               const { success, error } = await removePollAttachmentFilePath(poll.id, image.storage_path);
-               if (!success) {
-                    toast.error(error || t('common.actionDeleteError') || 'Delete failed');
+               const result = await removeEntityFile({
+                    entity: 'poll-attachment',
+                    entityId: poll.id,
+                    storagePathOrUrl: image.storage_path,
+               });
+
+               if (!result.success) {
+                    toast.error(result.error || t('common.actionDeleteError') || 'Delete failed');
                     return;
                }
+               setAttachments((prev) => {
+                    const filtered = prev.filter((att) => att.id !== image.id);
+                    formik.setFieldValue('attachments', filtered, false);
+                    return filtered;
+               });
                toast.success(t('common.actionDeleteSuccess') || 'Deleted');
           } catch (e: any) {
                toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
@@ -317,11 +305,18 @@ export default function PollCreate({
      const handleFileRemoveAll = async () => {
           if (!poll?.id) return;
           try {
-               const res = await removeAllPollAttachments(poll.id);
+               const res = await removeAllEntityFiles({
+                    entity: 'poll-attachment',
+                    entityId: poll.id,
+               });
                if (!res.success) {
                     toast.error(res.error || t('common.actionDeleteError') || 'Delete failed');
                     return;
                }
+               setAttachments(() => {
+                    formik.setFieldValue('attachments', [], false);
+                    return [];
+               });
                toast.success(t('common.actionDeleteSuccess') || 'Deleted');
           } catch (e: any) {
                toast.error(e?.message || t('common.actionDeleteError') || 'Delete failed');
@@ -387,20 +382,20 @@ export default function PollCreate({
           return parseInt(digits, 10);
      };
 
-      return (
-           <Box component="main" sx={{ flexGrow: 1, py: 6 }}>
-                <Container maxWidth="xl">
-                     <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
-                          <EntityFormHeader
-                               backHref={paths.dashboard.polls.index}
-                               backLabel={t('polls.listTitle') || 'Polls'}
-                               title={poll ? (t('polls.editTitle') || 'Edit Poll') + ': ' + (poll.title || '') : (t('polls.createTitle') || 'Create Poll')}
-                               breadcrumbs={[
-                                    { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                                    { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
-                                    { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
-                               ]}
-                          />
+     return (
+          <Box component="main" sx={{ flexGrow: 1, py: 6 }}>
+               <Container maxWidth="xl">
+                    <Stack spacing={3} component="form" onSubmit={formik.handleSubmit}>
+                         <EntityFormHeader
+                              backHref={paths.dashboard.polls.index}
+                              backLabel={t('polls.listTitle') || 'Polls'}
+                              title={poll ? (t('polls.editTitle') || 'Edit Poll') + ': ' + (poll.title || '') : (t('polls.createTitle') || 'Create Poll')}
+                              breadcrumbs={[
+                                   { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                                   { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
+                                   { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
+                              ]}
+                         />
 
                          {/* Two-column layout */}
                          <Grid container spacing={2} >
@@ -964,7 +959,7 @@ export default function PollCreate({
                                                                  caption={'(SVG, JPG, PNG or GIF up to 900x400)'}
                                                                  onDrop={handleFilesDropWithUrls}
                                                                  uploadProgress={uploadProgress}
-                                                                 images={(((poll.attachments ?? (poll?.attachments as any)) as unknown as DBStoredImage[]) || [])}
+                                                                 images={attachments}
                                                                  onRemoveImage={handleFileRemove}
                                                                  onRemoveAll={handleFileRemoveAll}
                                                             />

@@ -20,7 +20,7 @@ import { EntityFormHeader } from 'src/components/entity-form-header';
 
 import { type Poll, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
 import { type Building } from 'src/types/building';
-import { deletePoll } from 'src/app/actions/poll/polls';
+import { deletePoll } from 'src/app/actions/poll/poll-actions';
 
 interface PollsProps {
   polls: Poll[];

@@ -23,7 +23,7 @@ import OpacityIcon from '@mui/icons-material/Opacity';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { buildingInitialValues, buildingValidationSchema, buildingStatusMap, type Building } from 'src/types/building';
+import { buildingInitialValues, buildingValidationSchema, buildingStatusMap, type Building, type BuildingImage } from 'src/types/building';
 import type { DBStoredImage, File } from 'src/components/file-dropzone';
 import { createBuilding, deleteBuilding, updateBuilding } from 'src/app/actions/building/building-actions';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
@@ -31,7 +31,7 @@ import { BuildingLocation } from 'src/types/location';
 import { CustomAutocomplete } from 'src/components/autocomplete-custom';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
-import { removeAllImagesFromBuilding, removeBuildingImageFilePath, setAsBuildingCoverImage, uploadBuildingImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { removeAllEntityFiles, removeEntityFile, setEntityFileAsCover, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 
 type BuildingCreateFormProps = {
@@ -45,7 +45,6 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
 
   const locationDataWithNoBuildingId = locationData.filter((location) => !location.building_id);
   const router = useRouter();
-  const [files, setFiles] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const [deletingBuilding, setDeletingBuilding] = useState(false);
@@ -110,6 +109,10 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
 
   const handleFilesDrop = useCallback(async (newFiles: File[]): Promise<void> => {
+    if (!buildingData?.id || !newFiles.length) {
+      toast.error(t('common.actionUploadError'));
+      return;
+    }
 
     let fakeProgress = 0;
     setUploadProgress(0);
@@ -123,12 +126,12 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
     }, 300); // adjust speed here
 
     try {
-      // Start upload
-      const uploadResponse = await uploadBuildingImagesAndGetUrls(
-        newFiles,
-        userData.userData?.id!,
-        buildingData?.id!,
-      );
+      const uploadResponse = await uploadEntityFiles({
+        entity: 'building-image',
+        entityId: buildingData.id,
+        files: newFiles as unknown as globalThis.File[],
+        clientId: userData.client?.id ?? userData.clientMember?.client_id ?? undefined,
+      });
 
       // Stop progress simulation
       clearInterval(interval);
@@ -139,47 +142,67 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
         setUploadProgress(undefined);
       }, 700);
 
-      if (uploadResponse.success) {
-        setFiles((prev) => [...prev, ...newFiles]);
-        formik.setFieldValue('building_images', uploadResponse.urls);
-        toast.success(t('common.actionUploadSuccess'));
-      } else {
-        toast.error(t('common.actionUploadError'));
+      if (!uploadResponse.success || !uploadResponse.records?.length) {
+        toast.error(uploadResponse.error ?? t('common.actionUploadError'));
+        return;
       }
+
+      const existing = (formik.values.building_images || []).filter(
+        (img): img is BuildingImage => typeof img !== 'string'
+      );
+      const appended = [...existing, ...(uploadResponse.records as unknown as BuildingImage[])];
+      formik.setFieldValue('building_images', appended);
+      toast.success(t('common.actionUploadSuccess'));
     } catch (error) {
       clearInterval(interval);
       setUploadProgress(undefined);
       toast.error(t('common.actionUploadError'));
     }
-  }, [formik, userData.client?.name]);
+  }, [buildingData?.id, formik, t, userData.client?.id, userData.clientMember?.client_id]);
 
   const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
     try {
-      const { success, error } = await removeBuildingImageFilePath(buildingData?.id!, filePath);
+      if (!buildingData?.id) {
+        toast.error(t('common.actionDeleteError'));
+        return;
+      }
 
-      if (!success) {
-        toast.error(error ?? t('common.actionDeleteError'));
+      const result = await removeEntityFile({
+        entity: 'building-image',
+        entityId: buildingData.id,
+        storagePathOrUrl: filePath,
+      });
+
+      if (!result.success) {
+        toast.error(result.error ?? t('common.actionDeleteError'));
         return;
       }
 
       // Update local form state (UI)
-      const newImages = formik.values.building_images!.filter((url) => url !== filePath);
+      const newImages = (formik.values.building_images || []).filter((img) => {
+        if (typeof img === 'string') {
+          return img !== filePath;
+        }
+        return img.storage_path !== filePath;
+      });
       formik.setFieldValue('building_images', newImages);
       toast.success(t('common.actionDeleteSuccess'));
     } catch (error) {
       toast.error(t('common.actionDeleteError'));
     }
-  }, [formik, buildingData?.id]);
+  }, [formik, buildingData?.id, t]);
 
   const handleFileRemoveAll = useCallback(async (): Promise<void> => {
     if (!formik.values.building_images?.length || !buildingData?.id) return;
 
     try {
-
-      const removeAllImagesResponse = await removeAllImagesFromBuilding(buildingData.id);
+      const removeAllImagesResponse = await removeAllEntityFiles({
+        entity: 'building-image',
+        entityId: buildingData.id,
+      });
 
       if (!removeAllImagesResponse.success) {
-        toast.error(t('common.actionDeleteError'));
+        toast.error(removeAllImagesResponse.error ?? t('common.actionDeleteError'));
         return;
       }
 
@@ -190,7 +213,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
     } catch (error) {
       toast.error(t('common.actionDeleteError'));
     }
-  }, [formik, buildingData?.id]);
+  }, [formik, buildingData?.id, t]);
 
   const handleDeleteBuilding = useCallback(async (buildingId: string): Promise<void> => {
     setDeletingBuilding(true);
@@ -444,15 +467,51 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 onDrop={handleFilesDrop}
                 onRemoveAll={handleFileRemoveAll}
                 onRemoveImage={async (image: DBStoredImage) => {
-                  const { success, error } = await removeBuildingImageFilePath(buildingData.id!, image.storage_path);
-                  if (!success) toast.error(error ?? t('common.actionDeleteError'));
-                  else toast.success(t('common.actionDeleteSuccess'));
+                  if (!buildingData?.id) {
+                    toast.error(t('common.actionDeleteError'));
+                    return;
+                  }
+                  const result = await removeEntityFile({
+                    entity: 'building-image',
+                    entityId: buildingData.id,
+                    storagePathOrUrl: image.storage_path,
+                  });
+                  if (!result.success) {
+                    toast.error(result.error ?? t('common.actionDeleteError'));
+                    return;
+                  }
+                  const nextImages = (formik.values.building_images || []).filter((img) => {
+                    if (typeof img === 'string') {
+                      return img !== image.storage_path;
+                    }
+                    return img.id !== image.id;
+                  });
+                  formik.setFieldValue('building_images', nextImages);
+                  toast.success(t('common.actionDeleteSuccess'));
                 }}
                 uploadProgress={uploadProgress}
-                images={(buildingData.building_images as unknown as DBStoredImage[]) || []}
+                images={((formik.values.building_images || []).filter(
+                  (img): img is BuildingImage => typeof img !== 'string'
+                )) as unknown as DBStoredImage[]}
                 onSetAsCover={async (image: DBStoredImage) => {
-                  const { success, error } = await setAsBuildingCoverImage(buildingData.id!, image.id);
-                  if (!success) throw new Error(error ?? 'Failed to set cover');
+                  if (!buildingData?.id) {
+                    throw new Error(t('common.actionSaveError'));
+                  }
+                  const result = await setEntityFileAsCover({
+                    entity: 'building-image',
+                    entityId: buildingData.id,
+                    fileId: image.id,
+                  });
+                  if (!result.success) {
+                    throw new Error(result.error ?? 'Failed to set cover');
+                  }
+                  const updated = (formik.values.building_images || []).map((img) => {
+                    if (typeof img === 'string') {
+                      return img;
+                    }
+                    return { ...img, is_cover_image: img.id === image.id };
+                  });
+                  formik.setFieldValue('building_images', updated);
                 }}
               />
               {formik.errors.building_images && (

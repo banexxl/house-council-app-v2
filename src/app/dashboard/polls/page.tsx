@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
-import { getPollsFromClient } from 'src/app/actions/poll/polls';
+import { getPollsFromClient } from 'src/app/actions/poll/poll-actions';
 import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import Polls from './polls';
 

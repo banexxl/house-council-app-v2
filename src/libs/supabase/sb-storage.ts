@@ -1,14 +1,15 @@
 'use server';
 
-import { revalidatePath } from "next/cache";
-import { useServerSideSupabaseAnonClient } from "./sb-server";
-import { logServerAction } from "./server-logging";
-import { toStorageRef } from "src/utils/sb-bucket";
-import { TABLES } from "src/libs/supabase/tables";
+import { revalidatePath } from 'next/cache';
+import { useServerSideSupabaseAnonClient } from './sb-server';
+import { logServerAction } from './server-logging';
+import { toStorageRef } from 'src/utils/sb-bucket';
+import { TABLES } from 'src/libs/supabase/tables';
 
 const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
+const DEFAULT_CACHE_CONTROL = '3600';
 
-// Helper to sanitize file paths for S3
 const sanitizeSegmentForS3 = (segment: string): string => {
      return segment
           .normalize('NFD')
@@ -18,826 +19,844 @@ const sanitizeSegmentForS3 = (segment: string): string => {
           .replace(/^_+|_+$/g, '');
 };
 
-// ===================== CLIENT IMAGES (LOGO / PROFILE) =====================
-// These helpers mirror the building/apartment patterns but target a per-client
-// images folder: clients/<clientId>/images/<file>
-// They intentionally rely on the anon client so existing RLS path rules that
-// key off auth.uid() (when clientId == user id) still apply. If later you allow
-// staff to upload on behalf of a client you can swap in service-role after
-// validating authorization.
+type StorageEntity =
+     | 'client-image'
+     | 'building-image'
+     | 'apartment-image'
+     | 'announcement-image'
+     | 'announcement-document'
+     | 'poll-attachment';
 
-export const uploadClientImagesAndGetUrls = async (
-     files: File[],
-     clientId: string
-): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-     const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
+interface PathContext {
+     entityId: string;
+     clientId?: string;
+     userId?: string;
+     file: File;
+     index: number;
+     meta?: Record<string, unknown>;
+}
 
-     if (!clientId) return { success: false, error: 'Missing clientId' };
+interface FileValidationResult {
+     ok: boolean;
+     error?: string;
+     meta?: Record<string, unknown>;
+}
 
-     try {
-          const { data: userData, error: userErr } = await supabase.auth.getUser();
-          if (userErr || !userData?.user) {
-               await logServerAction({
-                    action: 'Upload Client Images - Missing auth user',
-                    duration_ms: 0,
-                    error: userErr?.message ?? 'No user in session',
-                    payload: { clientId },
-                    status: 'fail',
-                    type: 'auth',
-                    user_id: null,
-               });
-               return { success: false, error: 'Not signed in' };
-          }
+interface DbConfig {
+     table: string;
+     foreignKeyColumn: string;
+     mode: 'insert' | 'upsert';
+     conflictTarget?: string[];
+     ignoreDuplicates?: boolean;
+     extraColumns?: (ctx: PathContext) => Record<string, unknown>;
+}
 
-          const storagePaths: string[] = [];
+interface StorageEntityConfig {
+     bucket: string;
+     requiresAuth?: boolean;
+     getPathSegments: (ctx: PathContext) => string[];
+     db?: DbConfig;
+     revalidate?: (entityId: string) => string[];
+     supportsCover?: {
+          column: string;
+          match: (entityId: string) => Record<string, unknown>;
+     };
+     validateFile?: (ctx: PathContext) => FileValidationResult;
+     getUploadOptions?: (ctx: PathContext) => {
+          cacheControl?: string;
+          upsert?: boolean;
+          contentType?: string;
+     };
+     returnSignedUrls?: boolean;
+}
 
-          for (const file of files) {
-               const storagePath = [
-                    'clients',
-                    clientId,
-                    'images',
-                    'logos',
-                    sanitizeSegmentForS3(file.name)
-               ].join('/');
+export interface UploadEntityFilesParams {
+     entity: StorageEntity;
+     entityId: string;
+     files: File[];
+     clientId?: string;
+}
 
-               const { error: uploadError } = await supabase.storage
-                    .from(bucket)
-                    .upload(storagePath, file, {
-                         cacheControl: '3600',
-                         upsert: true,
-                    });
+export interface UploadEntityFilesResult {
+     success: boolean;
+     records?: Record<string, unknown>[];
+     signedUrls?: string[];
+     error?: string;
+}
 
-               if (uploadError) {
-                    await logServerAction({
-                         action: 'Upload Client Image - Storage upload failed',
-                         duration_ms: 0,
-                         error: uploadError.message,
-                         payload: { bucket, storagePath, clientId },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: userData.user.id,
-                    });
-                    return { success: false, error: `${uploadError.message} for file ${file.name}` };
-               }
+export interface RemoveEntityFileParams {
+     entity: StorageEntity;
+     entityId: string;
+     storagePathOrUrl: string;
+}
 
-               storagePaths.push(storagePath);
-          }
+export interface RemoveAllEntityFilesParams {
+     entity: StorageEntity;
+     entityId: string;
+}
 
-          // Generate signed URLs so UI can display immediately (if you prefer public URLs,
-          // switch to getPublicUrl like in uploadClientLogoAndGetUrl)
-          const { data: signedArr, error: signErr } = await supabase.storage
-               .from(bucket)
-               .createSignedUrls(storagePaths, SIGNED_URL_TTL_SECONDS);
+export interface SetEntityFileAsCoverParams {
+     entity: StorageEntity;
+     entityId: string;
+     fileId: string;
+}
 
-          if (signErr || !signedArr) {
-               await logServerAction({
-                    action: 'Upload Client Images - signing failed',
-                    duration_ms: 0,
-                    error: signErr?.message ?? 'No signed URLs',
-                    payload: { bucket, clientId, count: storagePaths.length },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: userData.user.id,
-               });
-               return { success: false, error: 'Failed to create signed URLs' };
-          }
+interface BasicResult {
+     success: boolean;
+     error?: string;
+}
 
-          const urls = signedArr.map(x => x.signedUrl).filter(Boolean) as string[];
-
-          await logServerAction({
-               action: 'Upload Client Images - Success',
-               duration_ms: 0,
-               error: '',
-               payload: { clientId, count: urls.length },
-               status: 'success',
-               type: 'db',
-               user_id: userData.user.id,
-          });
-
-          return { success: true, urls };
-     } catch (error: any) {
-          return { success: false, error: error.message };
-     }
+const ANNOUNCEMENT_DOCUMENT_EXTENSIONS: Record<string, string> = {
+     pdf: 'application/pdf',
+     doc: 'application/msword',
+     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+     xls: 'application/vnd.ms-excel',
+     xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+     csv: 'text/csv',
+     txt: 'text/plain',
+     ppt: 'application/vnd.ms-powerpoint',
+     pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+     odt: 'application/vnd.oasis.opendocument.text',
+     ods: 'application/vnd.oasis.opendocument.spreadsheet',
+     zip: 'application/zip',
 };
 
-export const removeClientImageFilePath = async (
-     clientId: string,
-     filePathOrUrl: string
-): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-     try {
-          const ref = toStorageRef(filePathOrUrl) ?? { bucket, path: filePathOrUrl };
-          const bkt = ref.bucket ?? bucket;
-          const path = ref.path;
+const SAFE_CONTENT_TYPES = new Set<string>([
+     'application/pdf',
+     'application/msword',
+     'application/vnd.ms-excel',
+     'text/csv',
+     'text/plain',
+     'application/vnd.ms-powerpoint',
+     'application/zip',
+     'application/octet-stream',
+]);
 
-          const { error: deleteError } = await supabase.storage.from(bkt).remove([path]);
-          if (deleteError) {
-               await logServerAction({
-                    action: 'Delete Client Image - Storage remove failed',
-                    duration_ms: 0,
-                    error: deleteError.message,
-                    payload: { clientId, bucket: bkt, path },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-               });
-               return { success: false, error: deleteError.message };
-          }
+const MAX_ANNOUNCEMENT_DOC_SIZE_BYTES = 15 * 1024 * 1024;
 
+const ensureValue = (value: string | undefined, message: string): string => {
+     if (!value) {
+          throw new Error(message);
+     }
+     return value;
+};
+
+const validateAnnouncementDocumentFile = (ctx: PathContext): FileValidationResult => {
+     const name = ctx.file.name || 'file';
+     const size = (ctx.file as unknown as { size?: number }).size ?? 0;
+     const ext = (name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1]) || '';
+
+     if (!ext || !ANNOUNCEMENT_DOCUMENT_EXTENSIONS[ext]) {
+          return { ok: false, error: `File type not allowed: ${name}` };
+     }
+
+     if (size > MAX_ANNOUNCEMENT_DOC_SIZE_BYTES) {
+          const limitMb = Math.floor(MAX_ANNOUNCEMENT_DOC_SIZE_BYTES / (1024 * 1024));
+          return { ok: false, error: `File too large (> ${limitMb}MB): ${name}` };
+     }
+
+     const mimeFromExt = ANNOUNCEMENT_DOCUMENT_EXTENSIONS[ext];
+     const fileType = ((ctx.file as any)?.type as string | undefined) || '';
+     const finalMime = fileType.trim() ? fileType : mimeFromExt;
+
+     return {
+          ok: true,
+          meta: {
+               fileName: name,
+               mimeType: finalMime,
+          },
+     };
+};
+
+const determineAnnouncementDocumentContentType = (mimeType: string): string => {
+     return SAFE_CONTENT_TYPES.has(mimeType) ? mimeType : 'application/octet-stream';
+};
+
+const defaultUploadOptions = (ctx: PathContext) => ({
+     cacheControl: DEFAULT_CACHE_CONTROL,
+     upsert: true,
+     contentType: ((ctx.file as any)?.type as string | undefined) || undefined,
+});
+
+const requireAuthUserId = async (
+     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
+     action: string,
+     payload: Record<string, unknown>,
+): Promise<{ ok: boolean; userId?: string; error?: string }> => {
+     const { data: userData, error } = await supabase.auth.getUser();
+     if (error || !userData?.user) {
           await logServerAction({
-               action: 'Delete Client Image - Success',
+               action,
                duration_ms: 0,
-               error: '',
-               payload: { clientId, bucket: bkt },
-               status: 'success',
-               type: 'db',
+               error: error?.message ?? 'No user in session',
+               payload,
+               status: 'fail',
+               type: 'auth',
                user_id: null,
           });
-          return { success: true };
-     } catch (error: any) {
-          return { success: false, error: error.message };
+          return { ok: false, error: 'Not signed in' };
      }
+
+     return { ok: true, userId: userData.user.id };
 };
 
-/**
- * Uploads one or more images to Supabase Storage and links them to a building in `tblBuildingImages`
- */
-export const uploadBuildingImagesAndGetUrls = async (
-     files: File[],
-     client: string,          // kept for backward compatibility; not used
-     buildingId: string
-): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
+const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
+     'client-image': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ clientId, userId }) => {
+               const owner = clientId ?? userId;
+               return ['clients', ensureValue(owner, 'clientId or userId is required'), 'images', 'logos'];
+          },
+          returnSignedUrls: true,
+     },
+     'building-image': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ clientId, userId, entityId }) => {
+               const owner = clientId ?? userId;
+               return ['clients', ensureValue(owner, 'clientId or userId is required'), 'buildings', ensureValue(entityId, 'entityId is required'), 'images'];
+          },
+          db: {
+               table: TABLES.BUILDING_IMAGES ?? 'tblBuildingImages',
+               foreignKeyColumn: 'building_id',
+               mode: 'insert',
+               extraColumns: () => ({ is_cover_image: false }),
+          },
+          revalidate: (entityId) => [`/dashboard/buildings/${entityId}`],
+          supportsCover: {
+               column: 'is_cover_image',
+               match: (entityId) => ({ building_id: entityId }),
+          },
+     },
+     'apartment-image': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'apartments', ensureValue(entityId, 'entityId is required'), 'images'];
+          },
+          db: {
+               table: TABLES.APARTMENT_IMAGES ?? 'tblApartmentImages',
+               foreignKeyColumn: 'apartment_id',
+               mode: 'insert',
+               extraColumns: () => ({ is_cover_image: false }),
+          },
+          revalidate: (entityId) => [`/dashboard/apartments/${entityId}`],
+          supportsCover: {
+               column: 'is_cover_image',
+               match: (entityId) => ({ apartment_id: entityId }),
+          },
+     },
+     'announcement-image': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'announcements', ensureValue(entityId, 'entityId is required'), 'images'];
+          },
+          db: {
+               table: TABLES.ANNOUNCEMENT_IMAGES ?? 'tblAnnouncementImages',
+               foreignKeyColumn: 'announcement_id',
+               mode: 'upsert',
+               conflictTarget: ['announcement_id', 'storage_bucket', 'storage_path'],
+               ignoreDuplicates: true,
+          },
+          revalidate: () => ['/dashboard/announcements'],
+          returnSignedUrls: true,
+     },
+     'announcement-document': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'announcements', ensureValue(entityId, 'entityId is required'), 'docs'];
+          },
+          validateFile: validateAnnouncementDocumentFile,
+          db: {
+               table: TABLES.ANNOUNCEMENT_DOCUMENTS ?? 'tblAnnouncementDocuments',
+               foreignKeyColumn: 'announcement_id',
+               mode: 'upsert',
+               conflictTarget: ['announcement_id', 'storage_bucket', 'storage_path'],
+               ignoreDuplicates: false,
+               extraColumns: (ctx) => ({
+                    file_name: ctx.meta?.fileName,
+                    mime_type: ctx.meta?.mimeType,
+               }),
+          },
+          getUploadOptions: (ctx) => ({
+               cacheControl: DEFAULT_CACHE_CONTROL,
+               upsert: true,
+               contentType: determineAnnouncementDocumentContentType(String(ctx.meta?.mimeType ?? 'application/octet-stream')),
+          }),
+          revalidate: () => ['/dashboard/announcements'],
+          returnSignedUrls: true,
+     },
+     'poll-attachment': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ clientId, entityId }) => {
+               return ['clients', ensureValue(clientId, 'clientId is required'), 'polls', ensureValue(entityId, 'entityId is required'), 'images'];
+          },
+          validateFile: ({ file }) => {
+               const type = ((file as any)?.type || '').toString();
+               if (!type.startsWith('image/')) {
+                    return { ok: false, error: 'Only image files are allowed' };
+               }
+               return { ok: true };
+          },
+          db: {
+               table: TABLES.POLL_ATTACHMENTS ?? 'tblPollAttachments',
+               foreignKeyColumn: 'poll_id',
+               mode: 'insert',
+               extraColumns: () => {
+                    const now = new Date().toISOString();
+                    return {
+                         created_at: now,
+                         updated_at: now,
+                         is_cover_image: false,
+                    };
+               },
+          },
+          revalidate: (entityId) => [`/dashboard/polls/${entityId}`],
+          supportsCover: {
+               column: 'is_cover_image',
+               match: (entityId) => ({ poll_id: entityId }),
+          },
+     },
+};
+
+export const uploadEntityFiles = async (
+     params: UploadEntityFilesParams,
+): Promise<UploadEntityFilesResult> => {
+     const startedAt = Date.now();
+     const config = ENTITY_CONFIG[params.entity];
+
+     if (!config) {
+          return { success: false, error: `Unsupported storage entity: ${params.entity}` };
+     }
+
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-     const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
+     const bucket = config.bucket ?? DEFAULT_BUCKET;
+     let userId: string | undefined;
 
      try {
-          // Require an authenticated user (auth.uid()) for RLS path checks
-          const { data: userData, error: userErr } = await supabase.auth.getUser();
-          if (userErr || !userData?.user) {
-               await logServerAction({
-                    action: 'Upload Image - Missing auth user',
-                    duration_ms: 0,
-                    error: userErr?.message ?? 'No user in session',
-                    payload: { buildingId },
-                    status: 'fail',
-                    type: 'auth',
-                    user_id: null,
+          if (config.requiresAuth !== false) {
+               const auth = await requireAuthUserId(supabase, `storage.upload.${params.entity}`, {
+                    entityId: params.entityId,
                });
-               return { success: false, error: 'Not signed in' };
+               if (!auth.ok) {
+                    return { success: false, error: auth.error };
+               }
+               userId = auth.userId;
           }
-          const uid = userData.user.id;
 
-          // Upload all files and collect storage paths
-          const storagePaths: string[] = [];
+          if (!params.files.length) {
+               await logServerAction({
+                    action: `storage.upload.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: '',
+                    payload: { entityId: params.entityId, files: 0 },
+                    status: 'success',
+                    type: 'storage',
+                    user_id: userId ?? null,
+               });
+               return { success: true, records: [], signedUrls: [] };
+          }
 
-          for (const singleFile of files) {
-               const storagePath = [
-                    'clients',
-                    client,
-                    'buildings',
-                    buildingId,
-                    'images',
-                    sanitizeSegmentForS3(singleFile.name),
-               ].join('/');
+          const storageRefs: { bucket: string; path: string; ctx: PathContext }[] = [];
+          const dbRows: Record<string, unknown>[] = [];
+          const seenPaths = new Set<string>();
 
-               const { error: uploadError } = await supabase.storage
-                    .from(bucket)
-                    .upload(storagePath, singleFile, {
-                         cacheControl: '3600',
-                         upsert: true, // requires your UPDATE policy (you have it)
+          for (let index = 0; index < params.files.length; index += 1) {
+               const file = params.files[index];
+               const ctx: PathContext = {
+                    entityId: params.entityId,
+                    clientId: params.clientId,
+                    userId,
+                    file,
+                    index,
+               };
+
+               if (config.validateFile) {
+                    const validation = config.validateFile(ctx);
+                    if (!validation.ok) {
+                         await logServerAction({
+                              action: `storage.upload.${params.entity}`,
+                              duration_ms: Date.now() - startedAt,
+                              error: validation.error ?? 'Invalid file',
+                              payload: { entityId: params.entityId, fileIndex: index },
+                              status: 'fail',
+                              type: 'storage',
+                              user_id: userId ?? null,
+                         });
+                         return { success: false, error: validation.error ?? 'Invalid file' };
+                    }
+                    ctx.meta = validation.meta;
+               }
+
+               const segments = config.getPathSegments(ctx);
+               if (!segments || segments.some((segment) => !segment)) {
+                    await logServerAction({
+                         action: `storage.upload.${params.entity}`,
+                         duration_ms: Date.now() - startedAt,
+                         error: 'Invalid storage path configuration',
+                         payload: { entityId: params.entityId },
+                         status: 'fail',
+                         type: 'storage',
+                         user_id: userId ?? null,
                     });
+                    return { success: false, error: 'Invalid storage path configuration' };
+               }
 
+               const sanitizedSegments = segments.map(sanitizeSegmentForS3);
+               const storagePath = [...sanitizedSegments, sanitizeSegmentForS3(file.name)].join('/');
+
+               if (seenPaths.has(storagePath)) {
+                    continue;
+               }
+               seenPaths.add(storagePath);
+
+               const uploadOptions = {
+                    ...defaultUploadOptions(ctx),
+                    ...(config.getUploadOptions ? config.getUploadOptions(ctx) : {}),
+               };
+
+               const { error: uploadError } = await supabase.storage.from(bucket).upload(storagePath, file, uploadOptions);
                if (uploadError) {
                     await logServerAction({
-                         action: 'Upload Image - Failed to upload to Storage',
-                         duration_ms: 0,
+                         action: `storage.upload.${params.entity}`,
+                         duration_ms: Date.now() - startedAt,
                          error: uploadError.message,
-                         payload: { bucket, storagePath },
+                         payload: { entityId: params.entityId, path: storagePath },
                          status: 'fail',
-                         type: 'db',
-                         user_id: uid,
+                         type: 'storage',
+                         user_id: userId ?? null,
                     });
-                    return { success: false, error: `${uploadError.message} for file ${singleFile.name}` };
+                    return { success: false, error: uploadError.message };
                }
 
-               // Store bucket + path in DB (not a signed URL)
-               const { error: insertError } = await supabase
-                    .from(TABLES.BUILDING_IMAGES)
-                    .insert({
-                         building_id: buildingId,
+               storageRefs.push({ bucket, path: storagePath, ctx });
+
+               if (config.db) {
+                    const extra = config.db.extraColumns ? config.db.extraColumns(ctx) : {};
+                    dbRows.push({
+                         [config.db.foreignKeyColumn]: params.entityId,
                          storage_bucket: bucket,
                          storage_path: storagePath,
-                         // optional extras:
-                         // original_name: singleFile.name,
-                         // uploaded_by: uid,
+                         ...extra,
                     });
+               }
+          }
 
-               if (insertError) {
-                    await logServerAction({
-                         action: 'Upload Image - Failed DB insert',
-                         duration_ms: 0,
-                         error: insertError.message,
-                         payload: { bucket, storagePath },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: uid,
-                    });
-                    return { success: false, error: insertError.message };
+          let records: Record<string, unknown>[] | undefined;
+
+          if (config.db && dbRows.length) {
+               const table = config.db.table;
+               const conflict = config.db.conflictTarget?.join(',');
+
+               if (config.db.mode === 'insert') {
+                    const { data, error } = await supabase.from(table).insert(dbRows).select();
+                    if (error) {
+                         await logServerAction({
+                              action: `storage.upload.${params.entity}`,
+                              duration_ms: Date.now() - startedAt,
+                              error: error.message,
+                              payload: { entityId: params.entityId },
+                              status: 'fail',
+                              type: 'db',
+                              user_id: userId ?? null,
+                         });
+                         return { success: false, error: error.message };
+                    }
+                    records = data ?? [];
+               } else {
+                    const { data, error } = await supabase
+                         .from(table)
+                         .upsert(dbRows, {
+                              onConflict: conflict,
+                              ignoreDuplicates: config.db.ignoreDuplicates ?? false,
+                         })
+                         .select();
+
+                    if (error) {
+                         await logServerAction({
+                              action: `storage.upload.${params.entity}`,
+                              duration_ms: Date.now() - startedAt,
+                              error: error.message,
+                              payload: { entityId: params.entityId },
+                              status: 'fail',
+                              type: 'db',
+                              user_id: userId ?? null,
+                         });
+                         return { success: false, error: error.message };
+                    }
+
+                    records = data ?? [];
                }
 
-               storagePaths.push(storagePath);
+               if (records.length && records.length !== storageRefs.length) {
+                    const byPath = new Map(records.map((row) => [row.storage_path, row]));
+                    records = storageRefs
+                         .map((ref) => byPath.get(ref.path))
+                         .filter((row): row is Record<string, unknown> => Boolean(row));
+               }
           }
 
-          // Create signed URLs (batch) for immediate UI use
-          const { data: signedArr, error: signErr } = await supabase.storage
-               .from(bucket)
-               .createSignedUrls(storagePaths, SIGNED_URL_TTL_SECONDS);
+          let signedUrls: string[] | undefined;
 
-          if (signErr || !signedArr) {
-               await logServerAction({
-                    action: 'Upload Image - Failed to create signed URLs',
-                    duration_ms: 0,
-                    error: signErr?.message ?? 'No signed URLs returned',
-                    payload: { bucket, storagePaths },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: uid,
-               });
-               return { success: false, error: 'Failed to create signed URLs' };
+          if (config.returnSignedUrls && storageRefs.length) {
+               const { data, error } = await supabase.storage
+                    .from(bucket)
+                    .createSignedUrls(storageRefs.map((ref) => ref.path), SIGNED_URL_TTL_SECONDS);
+
+               if (error || !data) {
+                    await logServerAction({
+                         action: `storage.upload.${params.entity}`,
+                         duration_ms: Date.now() - startedAt,
+                         error: error?.message ?? 'Failed to create signed URLs',
+                         payload: { entityId: params.entityId },
+                         status: 'fail',
+                         type: 'storage',
+                         user_id: userId ?? null,
+                    });
+                    return { success: false, error: error?.message ?? 'Failed to create signed URLs' };
+               }
+
+               signedUrls = data.map((entry) => entry.signedUrl || '').filter(Boolean);
           }
 
-          const urls = signedArr.map(x => x.signedUrl).filter(Boolean) as string[];
+          if (config.revalidate) {
+               for (const path of config.revalidate(params.entityId)) {
+                    revalidatePath(path);
+               }
+          }
 
           await logServerAction({
-               action: 'Upload Image - Success',
-               duration_ms: 0,
+               action: `storage.upload.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
                error: '',
-               payload: { count: urls.length, bucket },
+               payload: { entityId: params.entityId, files: storageRefs.length },
                status: 'success',
-               type: 'db',
-               user_id: uid,
+               type: 'storage',
+               user_id: userId ?? null,
           });
 
-          revalidatePath(`/dashboard/buildings/${buildingId}`);
-          return { success: true, urls };
+          return { success: true, records, signedUrls };
      } catch (error: any) {
-          return { success: false, error: error.message };
+          await logServerAction({
+               action: `storage.upload.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
+               error: error?.message ?? 'Unexpected error',
+               payload: { entityId: params.entityId },
+               status: 'fail',
+               type: 'storage',
+               user_id: userId ?? null,
+          });
+          return { success: false, error: error?.message ?? 'Unexpected error' };
      }
 };
 
-/**
- * Removes an image file from Supabase Storage and deletes the image record from `tblBuildingImages`
- */
-export const removeBuildingImageFilePath = async (
-     buildingId: string,
-     filePathOrUrl: string
-): Promise<{ success: boolean; error?: string }> => {
+export const removeEntityFile = async (
+     params: RemoveEntityFileParams,
+): Promise<BasicResult> => {
+     const startedAt = Date.now();
+     const config = ENTITY_CONFIG[params.entity];
+
+     if (!config) {
+          return { success: false, error: `Unsupported storage entity: ${params.entity}` };
+     }
+
      const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = DEFAULT_BUCKET;
+     const defaultBucket = config.bucket ?? DEFAULT_BUCKET;
 
      try {
-          // Derive bucket+path from the input
-          const ref = toStorageRef(filePathOrUrl) ?? { bucket, path: filePathOrUrl };
-          const { bucket: bkt, path } = ref;
+          const ref = toStorageRef(params.storagePathOrUrl) ?? { bucket: defaultBucket, path: params.storagePathOrUrl };
+          const bucket = ref.bucket ?? defaultBucket;
+          const path = ref.path;
 
-          // Delete file from Storage
-          const { error: deleteError } = await supabase.storage.from(bkt).remove([path]);
-          if (deleteError) {
+          const { error: storageError } = await supabase.storage.from(bucket).remove([path]);
+          if (storageError) {
                await logServerAction({
-                    action: 'Delete Image - Failed to delete from Storage',
-                    duration_ms: 0,
-                    error: deleteError.message,
-                    payload: { buildingId, filePathOrUrl, bucket: bkt, path },
+                    action: `storage.remove.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: storageError.message,
+                    payload: { entityId: params.entityId, path },
                     status: 'fail',
-                    type: 'db',
+                    type: 'storage',
                     user_id: null,
                });
-               return { success: false, error: deleteError.message };
+               return { success: false, error: storageError.message };
           }
 
-          // Delete DB row by new columns first
-          const { error: dbDeleteNewErr } = await supabase
-               .from(TABLES.BUILDING_IMAGES)
-               .delete()
-               .match({ building_id: buildingId, storage_bucket: bkt, storage_path: path });
+          if (config.db) {
+               const table = config.db.table;
+               const primaryMatch = {
+                    [config.db.foreignKeyColumn]: params.entityId,
+                    storage_bucket: bucket,
+                    storage_path: path,
+               } as Record<string, unknown>;
 
-          if (dbDeleteNewErr) {
-               const { error: dbDeleteLegacyErr } = await supabase
-                    .from(TABLES.BUILDING_IMAGES)
-                    .delete()
-                    .match({ building_id: buildingId, storage_path: filePathOrUrl });
+               const { error: dbError } = await supabase.from(table).delete().match(primaryMatch);
 
-               if (dbDeleteLegacyErr) {
-                    await logServerAction({
-                         action: 'Delete Image - Failed to delete DB row',
-                         duration_ms: 0,
-                         error: dbDeleteLegacyErr.message,
-                         payload: { buildingId, filePathOrUrl, bucket: bkt, path },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: null,
-                    });
-                    return { success: false, error: dbDeleteLegacyErr.message };
+               if (dbError) {
+                    const fallbackMatch = {
+                         [config.db.foreignKeyColumn]: params.entityId,
+                         storage_path: path,
+                    } as Record<string, unknown>;
+
+                    const { error: fallbackError } = await supabase.from(table).delete().match(fallbackMatch);
+                    if (fallbackError) {
+                         await logServerAction({
+                              action: `storage.remove.${params.entity}`,
+                              duration_ms: Date.now() - startedAt,
+                              error: fallbackError.message,
+                              payload: { entityId: params.entityId, path },
+                              status: 'fail',
+                              type: 'db',
+                              user_id: null,
+                         });
+                         return { success: false, error: fallbackError.message };
+                    }
                }
           }
 
-          revalidatePath(`/dashboard/buildings/${buildingId}`);
+          if (config.revalidate) {
+               for (const url of config.revalidate(params.entityId)) {
+                    revalidatePath(url);
+               }
+          }
+
+          await logServerAction({
+               action: `storage.remove.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
+               error: '',
+               payload: { entityId: params.entityId, path },
+               status: 'success',
+               type: 'storage',
+               user_id: null,
+          });
+
           return { success: true };
      } catch (error: any) {
-          return { success: false, error: error.message };
+          await logServerAction({
+               action: `storage.remove.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
+               error: error?.message ?? 'Unexpected error',
+               payload: { entityId: params.entityId },
+               status: 'fail',
+               type: 'storage',
+               user_id: null,
+          });
+          return { success: false, error: error?.message ?? 'Unexpected error' };
      }
 };
 
-/**
- * Removes all images from Supabase Storage and deletes the image records from `tblBuildingImages`
- */
-export const removeAllImagesFromBuilding = async (
-     buildingId: string
-): Promise<{ success: boolean; error?: string }> => {
+export const removeAllEntityFiles = async (
+     params: RemoveAllEntityFilesParams,
+): Promise<BasicResult> => {
+     const startedAt = Date.now();
+     const config = ENTITY_CONFIG[params.entity];
+
+     if (!config) {
+          return { success: false, error: `Unsupported storage entity: ${params.entity}` };
+     }
+
+     if (!config.db) {
+          return { success: false, error: 'removeAllEntityFiles is not supported for this entity' };
+     }
+
      const supabase = await useServerSideSupabaseAnonClient();
+     const defaultBucket = config.bucket ?? DEFAULT_BUCKET;
 
      try {
-          // Pull both legacy and new columns
-          const { data: images, error: imagesError } = await supabase
-               .from(TABLES.BUILDING_IMAGES)
-               .select('storage_path, storage_bucket, storage_path')
-               .eq('building_id', buildingId);
+          const { data, error } = await supabase
+               .from(config.db.table)
+               .select('storage_bucket, storage_path')
+               .eq(config.db.foreignKeyColumn, params.entityId);
 
-          if (imagesError) {
+          if (error) {
                await logServerAction({
-                    action: 'Delete All Images - Failed to fetch rows',
-                    duration_ms: 0,
-                    error: imagesError.message,
-                    payload: { buildingId },
+                    action: `storage.removeAll.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: error.message,
+                    payload: { entityId: params.entityId },
                     status: 'fail',
                     type: 'db',
                     user_id: null,
                });
-               return { success: false, error: imagesError.message };
+               return { success: false, error: error.message };
           }
 
-          if (!images?.length) {
-               // Nothing to delete
+          const rows = data ?? [];
+          if (!rows.length) {
+               await logServerAction({
+                    action: `storage.removeAll.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: '',
+                    payload: { entityId: params.entityId, removed: 0 },
+                    status: 'success',
+                    type: 'storage',
+                    user_id: null,
+               });
                return { success: true };
           }
 
-          // Build {bucket -> [paths]} map from new refs or fallback parse of legacy URLs
-          const byBucket = new Map<string, string[]>();
-
-          for (const row of images) {
-               let bucket = row.storage_bucket ?? DEFAULT_BUCKET;
-               let path = row.storage_path ?? '';
-
-               if (!row.storage_path && row.storage_path) {
-                    const ref = toStorageRef(row.storage_path);
-                    if (ref) {
-                         bucket = ref.bucket;
-                         path = ref.path;
-                    }
-               }
-
-               if (bucket && path) {
-                    const arr = byBucket.get(bucket) ?? [];
-                    arr.push(path);
-                    byBucket.set(bucket, arr);
-               }
+          const grouped = new Map<string, string[]>();
+          for (const row of rows as Array<{ storage_bucket?: string | null; storage_path?: string | null }>) {
+               if (!row.storage_path) continue;
+               const bucket = row.storage_bucket ?? defaultBucket;
+               const list = grouped.get(bucket) ?? [];
+               list.push(row.storage_path);
+               grouped.set(bucket, list);
           }
 
-          // Delete files per bucket
-          for (const [bucket, paths] of byBucket) {
+          for (const [bucket, paths] of grouped) {
                if (!paths.length) continue;
-               const { error: delErr } = await supabase.storage.from(bucket).remove(paths);
-               if (delErr) {
+               const { error: removeError } = await supabase.storage.from(bucket).remove(paths);
+               if (removeError) {
                     await logServerAction({
-                         action: 'Delete All Images - Storage remove failed',
-                         duration_ms: 0,
-                         error: delErr.message,
-                         payload: { buildingId, bucket, count: paths.length },
+                         action: `storage.removeAll.${params.entity}`,
+                         duration_ms: Date.now() - startedAt,
+                         error: removeError.message,
+                         payload: { entityId: params.entityId, bucket },
                          status: 'fail',
-                         type: 'db',
+                         type: 'storage',
                          user_id: null,
                     });
-                    return { success: false, error: delErr.message };
+                    return { success: false, error: removeError.message };
                }
           }
 
-          // Delete DB rows for this building (covers both legacy and new)
-          const { error: dbDeleteError } = await supabase
-               .from(TABLES.BUILDING_IMAGES)
+          const { error: deleteRowsError } = await supabase
+               .from(config.db.table)
                .delete()
-               .eq('building_id', buildingId);
-          if (dbDeleteError) {
+               .eq(config.db.foreignKeyColumn, params.entityId);
+
+          if (deleteRowsError) {
                await logServerAction({
-                    action: 'Delete All Images - DB rows delete failed',
-                    duration_ms: 0,
-                    error: dbDeleteError.message,
-                    payload: { buildingId },
+                    action: `storage.removeAll.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: deleteRowsError.message,
+                    payload: { entityId: params.entityId },
                     status: 'fail',
                     type: 'db',
                     user_id: null,
                });
-               return { success: false, error: dbDeleteError.message };
+               return { success: false, error: deleteRowsError.message };
+          }
+
+          if (config.revalidate) {
+               for (const path of config.revalidate(params.entityId)) {
+                    revalidatePath(path);
+               }
           }
 
           await logServerAction({
-               action: 'Delete All Images - Success',
-               duration_ms: 0,
+               action: `storage.removeAll.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
                error: '',
-               payload: { buildingId, buckets: Array.from(byBucket.keys()), total: images.length },
+               payload: { entityId: params.entityId, removed: rows.length },
+               status: 'success',
+               type: 'storage',
+               user_id: null,
+          });
+
+          return { success: true };
+     } catch (error: any) {
+          await logServerAction({
+               action: `storage.removeAll.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
+               error: error?.message ?? 'Unexpected error',
+               payload: { entityId: params.entityId },
+               status: 'fail',
+               type: 'storage',
+               user_id: null,
+          });
+          return { success: false, error: error?.message ?? 'Unexpected error' };
+     }
+};
+
+export const setEntityFileAsCover = async (
+     params: SetEntityFileAsCoverParams,
+): Promise<BasicResult> => {
+     const startedAt = Date.now();
+     const config = ENTITY_CONFIG[params.entity];
+
+     if (!config) {
+          return { success: false, error: `Unsupported storage entity: ${params.entity}` };
+     }
+
+     if (!config.db || !config.supportsCover) {
+          return { success: false, error: 'setEntityFileAsCover is not supported for this entity' };
+     }
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const table = config.db.table;
+     const column = config.supportsCover.column;
+     const matchFilter = config.supportsCover.match(params.entityId);
+
+     try {
+          const { error: unsetError } = await supabase
+               .from(table)
+               .update({ [column]: false })
+               .match(matchFilter);
+
+          if (unsetError) {
+               await logServerAction({
+                    action: `storage.setCover.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: unsetError.message,
+                    payload: { entityId: params.entityId },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+               });
+               return { success: false, error: unsetError.message };
+          }
+
+          const { error: setError } = await supabase
+               .from(table)
+               .update({ [column]: true })
+               .match({ id: params.fileId, ...matchFilter });
+
+          if (setError) {
+               await logServerAction({
+                    action: `storage.setCover.${params.entity}`,
+                    duration_ms: Date.now() - startedAt,
+                    error: setError.message,
+                    payload: { entityId: params.entityId, fileId: params.fileId },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+               });
+               return { success: false, error: setError.message };
+          }
+
+          if (config.revalidate) {
+               for (const path of config.revalidate(params.entityId)) {
+                    revalidatePath(path);
+               }
+          }
+
+          await logServerAction({
+               action: `storage.setCover.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
+               error: '',
+               payload: { entityId: params.entityId, fileId: params.fileId },
                status: 'success',
                type: 'db',
                user_id: null,
           });
 
-          revalidatePath(`/dashboard/buildings/${buildingId}`);
           return { success: true };
      } catch (error: any) {
-          return { success: false, error: error.message };
-     }
-};
-
-/**
- * Sets the cover image for a specific building.
- *
- * @param buildingId - The unique identifier of the building.
- * @param imageURL - The URL of the image to be set as the cover.
- * @returns An object indicating success or failure, with an optional error message.
- *
- * This function updates the `cover_image` field in the `tblBuildings` table
- * with the provided image URL for the specified building. It also logs the
- * action and revalidates the associated path. If an error occurs during the 
- * update, it logs the error and returns an object with the error message.
- */
-
-export const setAsBuildingCoverImage = async (
-     buildingId: string,
-     imageId: string
-): Promise<{ success: boolean; error?: string }> => {
-
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          // Unset previous cover(s)
-          const { error: unsetErr } = await supabase
-               .from(TABLES.BUILDING_IMAGES)
-               .update({ is_cover_image: false })
-               .eq('building_id', buildingId);
-          if (unsetErr) {
-               await logServerAction({
-                    action: 'setAsBuildingCoverImage - unset',
-                    duration_ms: 0,
-                    error: unsetErr.message,
-                    payload: { buildingId },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-               });
-               return { success: false, error: unsetErr.message };
-          }
-
-          // Set new cover image row
-          const { error: setErr } = await supabase
-               .from(TABLES.BUILDING_IMAGES)
-               .update({ is_cover_image: true })
-               .match({ id: imageId, building_id: buildingId });
-          if (setErr) {
-               await logServerAction({
-                    action: 'setAsBuildingCoverImage - set',
-                    duration_ms: 0,
-                    error: setErr.message,
-                    payload: { buildingId, imageId },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-               });
-               return { success: false, error: setErr.message };
-          }
-
-          revalidatePath(`/dashboard/buildings/${buildingId}`);
-          return { success: true };
-     } catch (error: any) {
-          return { success: false, error: error.message };
-     }
-}
-
-// ======================= UPLOAD =======================
-
-/**
- * Uploads images to Storage and links them in tblApartmentImages.
- * Returns fresh signed URLs for immediate UI rendering.
- */
-export const uploadApartmentImagesAndGetUrls = async (
-     files: File[],
-     client: string,      // kept for backward-compat; not used
-     address: string,     // kept for backward-compat; not used
-     apartmentid: string
-): Promise<{ success: boolean; urls?: string[]; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-     const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
-
-     try {
-          // must be signed-in; RLS checks the UID segment in the path
-          const { data: userData, error: userErr } = await supabase.auth.getUser();
-          if (userErr || !userData?.user) {
-               await logServerAction({
-                    action: 'Upload Apartment Images - Missing auth user',
-                    duration_ms: 0,
-                    error: userErr?.message ?? 'No user in session',
-                    payload: { apartmentid },
-                    status: 'fail',
-                    type: 'auth',
-                    user_id: null,
-               });
-               return { success: false, error: 'Not signed in' };
-          }
-          const uid = userData.user.id;
-
-          const storagePaths: string[] = [];
-
-          for (const singleFile of files) {
-               const storagePath = [
-                    'clients',
-                    uid,                   // 👈 auth.uid() second segment (RLS)
-                    'apartments',
-                    apartmentid,
-                    'images',
-                    sanitizeSegmentForS3(singleFile.name),
-               ].join('/');
-
-               const { error: uploadError } = await supabase.storage
-                    .from(bucket)
-                    .upload(storagePath, singleFile, {
-                         cacheControl: '3600',
-                         upsert: true,       // needs UPDATE policy (you have it)
-                    });
-
-               if (uploadError) {
-                    await logServerAction({
-                         action: 'Upload Apartment Image - Storage upload failed',
-                         duration_ms: 0,
-                         error: uploadError.message,
-                         payload: { bucket, storagePath, apartmentid },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: uid,
-                    });
-                    return { success: false, error: `${uploadError.message} for file ${singleFile.name}` };
-               }
-
-               // store refs in DB (not a URL)
-               const { error: insertError } = await supabase
-                    .from(TABLES.APARTMENT_IMAGES)
-                    .insert({
-                         apartment_id: apartmentid,
-                         storage_bucket: bucket,
-                         storage_path: storagePath,
-                    });
-
-               if (insertError) {
-                    await logServerAction({
-                         action: 'Upload Apartment Image - DB insert failed',
-                         duration_ms: 0,
-                         error: insertError.message,
-                         payload: { bucket, storagePath, apartmentid },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: uid,
-                    });
-                    return { success: false, error: insertError.message };
-               }
-
-               storagePaths.push(storagePath);
-          }
-
-          // sign URLs in batch for the UI
-          const { data: signedArr, error: signErr } = await supabase.storage
-               .from(bucket)
-               .createSignedUrls(storagePaths, SIGNED_URL_TTL_SECONDS);
-
-          if (signErr || !signedArr) {
-               await logServerAction({
-                    action: 'Upload Apartment Images - signing failed',
-                    duration_ms: 0,
-                    error: signErr?.message ?? 'No signed URLs returned',
-                    payload: { bucket, apartmentid, count: storagePaths.length },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: uid,
-               });
-               return { success: false, error: 'Failed to create signed URLs' };
-          }
-
-          const urls = signedArr.map(x => x.signedUrl).filter(Boolean) as string[];
-
           await logServerAction({
-               action: 'Upload Apartment Images - Success',
-               duration_ms: 0,
-               error: '',
-               payload: { apartmentid, count: urls.length },
-               status: 'success',
+               action: `storage.setCover.${params.entity}`,
+               duration_ms: Date.now() - startedAt,
+               error: error?.message ?? 'Unexpected error',
+               payload: { entityId: params.entityId, fileId: params.fileId },
+               status: 'fail',
                type: 'db',
-               user_id: uid,
+               user_id: null,
           });
-
-          revalidatePath(`/dashboard/apartments/${apartmentid}`);
-          return { success: true, urls };
-     } catch (error: any) {
-          return { success: false, error: error.message };
+          return { success: false, error: error?.message ?? 'Unexpected error' };
      }
 };
-
-// =================== REMOVE SINGLE ====================
-
-/**
- * Removes an image file from Storage and deletes the row from tblApartmentImages.
- * Accepts either a full Supabase URL (public or signed) or a plain storage path.
- */
-export const removeApartmentImageFilePath = async (
-     apartmentid: string,
-     filePathOrUrl: string
-): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-
-     try {
-          // derive { bucket, path } from URL or path
-          const ref = toStorageRef(filePathOrUrl) ?? { bucket, path: filePathOrUrl };
-          const bkt = ref.bucket ?? bucket;
-          const path = ref.path;
-
-          // delete from Storage
-          const { error: deleteError } = await supabase.storage.from(bkt).remove([path]);
-          if (deleteError) {
-               await logServerAction({
-                    action: 'Delete Apartment Image - Storage remove failed',
-                    duration_ms: 0,
-                    error: deleteError.message,
-                    payload: { apartmentid, bucket: bkt, path },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-               });
-               return { success: false, error: deleteError.message };
-          }
-
-          // delete DB row (new columns);
-          const { error: dbDeleteNewErr } = await supabase
-               .from(TABLES.APARTMENT_IMAGES)
-               .delete()
-               .match({ apartment_id: apartmentid, storage_bucket: bkt, storage_path: path });
-
-          if (dbDeleteNewErr) {
-               const { error: dbDeleteLegacyErr } = await supabase
-                    .from(TABLES.APARTMENT_IMAGES)
-                    .delete()
-                    .match({ apartment_id: apartmentid });
-
-               if (dbDeleteLegacyErr) {
-                    await logServerAction({
-                         action: 'Delete Apartment Image - DB delete failed',
-                         duration_ms: 0,
-                         error: dbDeleteLegacyErr.message,
-                         payload: { apartmentid, bucket: bkt, path },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: null,
-                    });
-                    return { success: false, error: dbDeleteLegacyErr.message };
-               }
-          }
-
-          revalidatePath(`/dashboard/apartments/${apartmentid}`);
-          return { success: true };
-     } catch (error: any) {
-          return { success: false, error: error.message };
-     }
-};
-
-// ===================== REMOVE ALL =====================
-
-/**
- * Deletes all images for an apartment from Storage and tblApartmentImages.
- */
-export const removeAllImagesFromApartment = async (
-     apartmentid: string
-): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          // fetch both new & legacy fields
-          const { data: images, error: imagesError } = await supabase
-               .from(TABLES.APARTMENT_IMAGES)
-               .select('storage_bucket, storage_path')
-               .eq('apartment_id', apartmentid);
-
-          if (imagesError) {
-               await logServerAction({
-                    action: 'Delete All Apartment Images - fetch failed',
-                    duration_ms: 0,
-                    error: imagesError.message,
-                    payload: { apartmentid },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-               });
-               return { success: false, error: imagesError.message };
-          }
-
-          if (!images?.length) return { success: true };
-
-          // group paths by bucket
-          const byBucket = new Map<string, string[]>();
-          for (const row of images) {
-               let bkt = row.storage_bucket ?? process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-               let pth = row.storage_path;
-
-               if (!pth) continue;
-
-               const arr = byBucket.get(bkt) ?? [];
-               arr.push(pth);
-               byBucket.set(bkt, arr);
-          }
-
-          // delete from Storage
-          for (const [bkt, paths] of byBucket) {
-               if (!paths.length) continue;
-               const { error: delErr } = await supabase.storage.from(bkt).remove(paths);
-               if (delErr) {
-                    await logServerAction({
-                         action: 'Delete All Apartment Images - Storage remove failed',
-                         duration_ms: 0,
-                         error: delErr.message,
-                         payload: { apartmentid, bucket: bkt, count: paths.length },
-                         status: 'fail',
-                         type: 'db',
-                         user_id: null,
-                    });
-                    return { success: false, error: delErr.message };
-               }
-          }
-
-          // delete DB rows
-          const { error: dbDeleteError } = await supabase
-               .from(TABLES.APARTMENT_IMAGES)
-               .delete()
-               .eq('apartment_id', apartmentid);
-
-          if (dbDeleteError) {
-               await logServerAction({
-                    action: 'Delete All Apartment Images - DB delete failed',
-                    duration_ms: 0,
-                    error: dbDeleteError.message,
-                    payload: { apartmentid },
-                    status: 'fail',
-                    type: 'db',
-                    user_id: null,
-               });
-               return { success: false, error: dbDeleteError.message };
-          }
-
-          revalidatePath(`/dashboard/apartments/${apartmentid}`);
-          return { success: true };
-     } catch (error: any) {
-          return { success: false, error: error.message };
-     }
-};
-
-
-/**
- * Sets the given URL as the cover image for the apartment with the given ID.
- * Returns a promise resolving to an object with a success boolean.
- * @param apartmentid The ID of the apartment to set the cover image for.
- * @param url The URL of the image to set as the cover image.
- * @returns A promise resolving to an object with a success boolean.
- */
-export const setAsApartmentCoverImage = async (apartmentid: string, imageId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     try {
-          // Unset previous covers
-          const { error: unsetErr } = await supabase
-               .from(TABLES.APARTMENT_IMAGES)
-               .update({ is_cover_image: false })
-               .eq('apartment_id', apartmentid);
-          if (unsetErr) return { success: false, error: unsetErr.message };
-
-          // Set new cover
-          const { error: setErr } = await supabase
-               .from(TABLES.APARTMENT_IMAGES)
-               .update({ is_cover_image: true })
-               .match({ id: imageId, apartment_id: apartmentid });
-          if (setErr) return { success: false, error: setErr.message };
-
-          revalidatePath(`/dashboard/apartments/${apartmentid}`);
-          return { success: true };
-     } catch (e: any) {
-          return { success: false, error: e?.message || 'Unexpected error' };
-     }
-}
-
-
-

@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -19,9 +18,9 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { FileDropzone } from 'src/components/file-dropzone';
 import type { File, DBStoredImage } from 'src/components/file-dropzone';
-import { apartmentInitialValues, apartmentValidationSchema, type Apartment } from 'src/types/apartment';
+import { apartmentInitialValues, apartmentValidationSchema, type Apartment, type ApartmentImage } from 'src/types/apartment';
 import { createOrUpdateApartment } from 'src/app/actions/apartment/apartment-actions';
-import { removeAllImagesFromApartment, removeApartmentImageFilePath, setAsApartmentCoverImage, uploadApartmentImagesAndGetUrls } from 'src/libs/supabase/sb-storage';
+import { removeAllEntityFiles, removeEntityFile, setEntityFileAsCover, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 import { Building } from 'src/types/building';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { EntityFormHeader } from 'src/components/entity-form-header';
@@ -32,7 +31,7 @@ interface ApartmentCreateFormProps {
   buildings: Building[];
 }
 
-export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: ApartmentCreateFormProps) => {
+export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildings }: ApartmentCreateFormProps) => {
 
   const router = useRouter();
   const { t } = useTranslation();
@@ -79,6 +78,11 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
   const showFieldError = (name: keyof Apartment | string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
 
   const handleImageUpload = useCallback(async (newFiles: File[]) => {
+    if (!apartmentData?.id || !newFiles.length) {
+      toast.error(t('common.actionUploadError'));
+      return;
+    }
+
     setUploadProgress(0);
     let progress = 0;
     const interval = setInterval(() => {
@@ -86,53 +90,43 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
       if (progress <= 95) setUploadProgress(progress);
     }, 200);
 
-    const upload = await uploadApartmentImagesAndGetUrls(
-      newFiles,
-      userData.client?.name!,
-      buildings[0].building_location?.city + ' ' + buildings[0].building_location?.street_address,
-      apartmentData?.id || ''
-    );
-
-    clearInterval(interval);
-    setUploadProgress(100);
-    setTimeout(() => setUploadProgress(undefined), 500);
-
-    if (upload.success && upload.urls) {
-      const newImages = upload.urls.map((url) => url); // just strings
-
-      formik.setFieldValue(
-        'apartment_images',
-        [...(formik.values.apartment_images || []), ...newImages]
-      );
-    } else {
-      toast.error(t('common.actionUploadError'));
-    }
-  }, [apartmentData?.id, buildings, userData.client?.name, formik, t]);
-
-  const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
     try {
-      const { success, error } = await removeApartmentImageFilePath(apartmentData?.id!, filePath);
+      const upload = await uploadEntityFiles({
+        entity: 'apartment-image',
+        entityId: apartmentData.id,
+        files: newFiles as unknown as globalThis.File[],
+      });
 
-      if (!success) {
-        toast.error(error ?? t('common.actionDeleteError'));
+      if (!upload.success || !upload.records) {
+        toast.error(upload.error ?? t('common.actionUploadError'));
         return;
       }
 
-      // Update local form state (UI)
-      const newImages = formik.values.apartment_images!.filter((url) => url !== filePath);
-      formik.setFieldValue('apartment_images', newImages);
-      toast.success(t('common.actionDeleteSuccess'));
+      const existing = (formik.values.apartment_images || []).filter(
+        (img): img is ApartmentImage => typeof img !== 'string'
+      );
+      const newImages = upload.records as unknown as ApartmentImage[];
+      const appended = [...existing, ...newImages];
+      formik.setFieldValue('apartment_images', appended);
+      toast.success(t('common.actionSaveSuccess'));
     } catch (error) {
-      toast.error(t('common.actionDeleteError'));
+      toast.error(t('common.actionUploadError'));
+    } finally {
+      clearInterval(interval);
+      setUploadProgress(100);
+      setTimeout(() => setUploadProgress(undefined), 500);
     }
-  }, [formik, apartmentData?.id]);
+  }, [apartmentData?.id, formik, t]);
 
   const handleFileRemoveAll = useCallback(async (): Promise<void> => {
     if (!formik.values.apartment_images?.length || !apartmentData?.id) return;
 
     try {
 
-      const removeAllImagesResponse = await removeAllImagesFromApartment(apartmentData.id);
+      const removeAllImagesResponse = await removeAllEntityFiles({
+        entity: 'apartment-image',
+        entityId: apartmentData.id,
+      });
 
       if (!removeAllImagesResponse.success) {
         toast.error(t('common.actionDeleteError'));
@@ -146,7 +140,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
     } catch (error) {
       toast.error(t('common.actionDeleteError'));
     }
-  }, [formik, apartmentData?.id]);
+  }, [formik, apartmentData?.id, t]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -371,19 +365,50 @@ export const ApartmentCreateForm = ({ apartmentData, userData, buildings }: Apar
               <FileDropzone
                 entityId={apartmentData.id}
                 onRemoveImage={async (image: DBStoredImage) => {
-                  const { success, error } = await removeApartmentImageFilePath(apartmentData.id!, image.storage_path);
-                  if (!success) toast.error(error ?? t('common.actionDeleteError'));
-                  else toast.success(t('common.actionDeleteSuccess'));
+                  if (!apartmentData?.id) {
+                    toast.error(t('common.actionDeleteError'));
+                    return;
+                  }
+                  const result = await removeEntityFile({
+                    entity: 'apartment-image',
+                    entityId: apartmentData.id,
+                    storagePathOrUrl: image.storage_path,
+                  });
+                  if (!result.success) {
+                    toast.error(result.error ?? t('common.actionDeleteError'));
+                    return;
+                  }
+                  const remaining = (formik.values.apartment_images || []).filter(
+                    (img): img is ApartmentImage => typeof img !== 'string' && img.id !== image.id
+                  );
+                  formik.setFieldValue('apartment_images', remaining);
+                  toast.success(t('common.actionDeleteSuccess'));
                 }}
                 onRemoveAll={handleFileRemoveAll}
                 accept={{ 'image/*': [] }}
                 caption="(SVG, JPG, PNG or GIF up to 900x400)"
                 onDrop={handleImageUpload}
                 uploadProgress={uploadProgress}
-                images={(apartmentData.apartment_images as unknown as import('src/components/file-dropzone').DBStoredImage[]) || []}
+                images={((formik.values.apartment_images || []).filter(
+                  (img): img is ApartmentImage => typeof img !== 'string'
+                )) as unknown as import('src/components/file-dropzone').DBStoredImage[]}
                 onSetAsCover={async (image) => {
-                  const { success } = await setAsApartmentCoverImage(apartmentData.id!, image.id);
-                  if (!success) throw new Error();
+                  if (!apartmentData?.id) {
+                    throw new Error(t('common.actionSaveError'));
+                  }
+                  const result = await setEntityFileAsCover({
+                    entity: 'apartment-image',
+                    entityId: apartmentData.id,
+                    fileId: image.id,
+                  });
+                  if (!result.success) {
+                    throw new Error(result.error ?? t('common.actionSaveError'));
+                  }
+                  const updated = (formik.values.apartment_images || []).map((img) => {
+                    if (typeof img === 'string') return img;
+                    return { ...img, is_cover_image: img.id === image.id };
+                  });
+                  formik.setFieldValue('apartment_images', updated);
                 }}
                 disabled={formik.isSubmitting || !formik.values.building_id}
               />

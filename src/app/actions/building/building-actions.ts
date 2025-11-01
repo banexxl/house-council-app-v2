@@ -4,8 +4,8 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { resolveClientFromClientOrMember } from "../client/client-members";
 import { Building } from "src/types/building";
+import { removeAllEntityFiles } from "src/libs/supabase/sb-storage";
 import { validate as isUUID } from 'uuid';
-import { removeAllImagesFromBuilding } from "src/libs/supabase/sb-storage";
 import { toStorageRef } from "src/utils/sb-bucket";
 
 // ===== Helpers =====
@@ -313,15 +313,12 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
      const supabase = await useServerSideSupabaseAnonClient();
 
      // Delete from Storage first (kept as-is; ensure it uses storage_bucket/storage_path internally)
-     const { success, error } = await removeAllImagesFromBuilding(id);
-     if (!success) {
-          await logServerAction({ user_id: null, action: 'Delete Building - deleting images from SB S3 failed.', duration_ms: Date.now() - t0, error: error!, payload: { id }, status: 'fail', type: 'db' });
-     }
-
-     // Delete related image rows
-     const { error: deleteImagesError } = await supabase.from('tblBuildingImages').delete().eq('building_id', id);
-     if (deleteImagesError) {
-          await logServerAction({ user_id: null, action: 'Delete Building - deleting images from tblBuildingImages failed.', duration_ms: Date.now() - t0, error: deleteImagesError.message, payload: { id }, status: 'fail', type: 'db' });
+     const removeMediaResult = await removeAllEntityFiles({
+          entity: 'building-image',
+          entityId: id,
+     });
+     if (!removeMediaResult.success) {
+          await logServerAction({ user_id: null, action: 'Delete Building - deleting images via helper failed.', duration_ms: Date.now() - t0, error: removeMediaResult.error ?? 'Unknown error', payload: { id }, status: 'fail', type: 'storage' });
      }
 
      // Clear linked location

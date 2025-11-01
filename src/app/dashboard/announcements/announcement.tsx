@@ -45,7 +45,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import QuillEditor from 'src/components/quill-editor';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useFormik } from 'formik';
-import { uploadAnnouncementImages } from 'src/app/actions/announcement/announcement-image-actions'
 import { announcementInitialValues, buildAnnouncementValidationSchema, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
 import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
@@ -309,14 +308,22 @@ export default function Announcements({ client, announcements, buildings }: Anno
           const fileList = Array.from(e.target.files);
           try {
                setImagesUploading(true);
-               const result = await uploadAnnouncementImages(fileList as any, editingEntity.id); // casting for server action transport
+               const { uploadEntityFiles } = await import('src/libs/supabase/sb-storage');
+               const result = await uploadEntityFiles({
+                    entity: 'announcement-image',
+                    entityId: editingEntity.id,
+                    files: fileList as any,
+               });
+
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
-               } else if (result.urls) {
-                    toast.success(t(tokens.announcements.toasts.imagesUploaded));
-                    // Immediate optimistic update of form images
-                    const current = formik.values.images || [];
-                    formik.setFieldValue('images', [...current, ...result.urls]);
+               } else {
+                    const newUrls = result.signedUrls ?? [];
+                    if (newUrls.length) {
+                         toast.success(t(tokens.announcements.toasts.imagesUploaded));
+                         const current = formik.values.images || [];
+                         formik.setFieldValue('images', [...current, ...newUrls]);
+                    }
                }
           } finally {
                setImagesUploading(false);
@@ -328,8 +335,12 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const handleRemoveImage = async (url: string) => {
           if (!editingEntity) return;
-          const { removeAnnouncementImage } = await import('src/app/actions/announcement/announcement-image-actions');
-          const res = await removeAnnouncementImage(editingEntity.id, url);
+          const { removeEntityFile } = await import('src/libs/supabase/sb-storage');
+          const res = await removeEntityFile({
+               entity: 'announcement-image',
+               entityId: editingEntity.id,
+               storagePathOrUrl: url,
+          });
           if (!res.success) {
                toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed));
           } else {
@@ -354,15 +365,31 @@ export default function Announcements({ client, announcements, buildings }: Anno
           const fileList = Array.from(e.target.files);
           try {
                setDocsUploading(true);
-               const { uploadAnnouncementDocuments } = await import('src/app/actions/announcement/announcement-document-actions');
-               const result = await uploadAnnouncementDocuments(fileList as any, editingEntity.id, client.name, editingEntity.title); // casting for server action transport
+               const { uploadEntityFiles } = await import('src/libs/supabase/sb-storage');
+               const result = await uploadEntityFiles({
+                    entity: 'announcement-document',
+                    entityId: editingEntity.id,
+                    files: fileList as any,
+               });
+
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));
-               } else if (result.urls) {
-                    toast.success(t(tokens.announcements.toasts.documentsUploaded || tokens.announcements.toasts.imagesUploaded));
-                    // Optimistically append documents to formik
-                    const current = formik.values.documents || [];
-                    formik.setFieldValue('documents', [...current, ...result.urls]);
+               } else {
+                    const signedUrls = result.signedUrls ?? [];
+                    const records = result.records ?? [];
+                    if (signedUrls.length) {
+                         toast.success(t(tokens.announcements.toasts.documentsUploaded || tokens.announcements.toasts.imagesUploaded));
+                         const docsToAppend = signedUrls.map((url, idx) => {
+                              const record = records[idx] as Record<string, any> | undefined;
+                              return {
+                                   url,
+                                   name: (record?.file_name as string) ?? url.split('?')[0]?.split('/').pop() ?? 'document',
+                                   mime: (record?.mime_type as string) ?? undefined,
+                              };
+                         });
+                         const current = (formik.values.documents || []) as { url: string; name: string; mime?: string }[];
+                         formik.setFieldValue('documents', [...current, ...docsToAppend]);
+                    }
                }
           } finally {
                setDocsUploading(false);
@@ -373,8 +400,12 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const handleRemoveDocument = async (url: string) => {
           if (!editingEntity) return;
-          const { removeAnnouncementDocument } = await import('src/app/actions/announcement/announcement-document-actions');
-          const res = await removeAnnouncementDocument(editingEntity.id, url);
+          const { removeEntityFile } = await import('src/libs/supabase/sb-storage');
+          const res = await removeEntityFile({
+               entity: 'announcement-document',
+               entityId: editingEntity.id,
+               storagePathOrUrl: url,
+          });
           if (!res.success) {
                toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed));
           } else {
@@ -390,8 +421,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
      };
 
      const performRemoveAllDocuments = async (id: string) => {
-          const { removeAllAnnouncementDocuments } = await import('src/app/actions/announcement/announcement-document-actions');
-          const res = await removeAllAnnouncementDocuments(id);
+          const { removeAllEntityFiles } = await import('src/libs/supabase/sb-storage');
+          const res = await removeAllEntityFiles({
+               entity: 'announcement-document',
+               entityId: id,
+          });
           if (!res.success) {
                toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed));
           } else {
@@ -403,8 +437,11 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      const performRemoveAllImages = async (id: string) => {
           formik.setSubmitting(true);
-          const { removeAllAnnouncementImages } = await import('src/app/actions/announcement/announcement-image-actions');
-          const res = await removeAllAnnouncementImages(id);
+          const { removeAllEntityFiles } = await import('src/libs/supabase/sb-storage');
+          const res = await removeAllEntityFiles({
+               entity: 'announcement-image',
+               entityId: id,
+          });
           if (!res.success) {
                toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed));
           } else {

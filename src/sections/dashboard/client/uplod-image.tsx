@@ -18,9 +18,8 @@ import {
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
-import { uploadClientImagesAndGetUrls } from "src/libs/supabase/sb-storage"
+import { uploadEntityFiles } from "src/libs/supabase/sb-storage"
 import { useSignedUrl } from "src/hooks/use-signed-urls"
-import log from "src/utils/logger"
 
 type ImageUploadProps = {
      buttonDisabled: boolean
@@ -37,58 +36,31 @@ export type ImageUploadRef = {
 export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
      ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx }, ref) => {
 
-          const bucket = "nla-clients-data" // Use the actual bucket name directly since env vars aren't accessible client-side
-
-          // Helper function to extract path from signed URL
-          const extractPathFromSignedUrl = (url: string): string | null => {
-               try {
-                    if (!url) return null;
-
-                    // If it's already a simple path (not a full URL), return as is
-                    if (!url.includes('http')) return url;
-
-                    // Extract path from signed URL
-                    const urlObj = new URL(url);
-                    const pathMatch = urlObj.pathname.match(/\/storage\/v1\/object\/sign\/[^/]+\/(.+)$/);
-                    return pathMatch ? pathMatch[1] : null;
-               } catch (error) {
-                    console.error('Error extracting path from URL:', error);
-                    return null;
-               }
-          };
-
-          // Extract the actual file path from initialValue (which might be a signed URL)
-          const actualPath = extractPathFromSignedUrl(initialValue || '');
-          const shouldFetchSignedUrl = !!actualPath;
-
-          log(`'ImageUpload Debug:', ${JSON.stringify({
-               initialValue,
-               actualPath,
-               shouldFetchSignedUrl,
-               userId,
-               bucket
-          })}`);
-
+          const [storedRef, setStoredRef] = useState<string | null>(initialValue ?? null)
           const { url, loading: isLoading } = useSignedUrl(
-               shouldFetchSignedUrl ? bucket : '',
-               shouldFetchSignedUrl ? actualPath : '',
+               storedRef ? storedRef.split('::')[0] : '',
+               storedRef ? storedRef.split('::')[1] ?? '' : '',
                { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
-          ); const [avatarUrl, setAvatarUrl] = useState<string>(shouldFetchSignedUrl ? (url || initialValue || "") : "")
+          );
+          const [avatarUrl, setAvatarUrl] = useState<string>(initialValue || "")
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()
 
           // Update avatar URL when signed URL is loaded
           useEffect(() => {
-               if (shouldFetchSignedUrl && url) {
+               if (url) {
                     setAvatarUrl(url);
                }
-          }, [url, shouldFetchSignedUrl]);
+          }, [url]);
 
 
           // Expose clearImage method to the parent
           useImperativeHandle(ref, () => ({
-               clearImage: () => setAvatarUrl(""),
+               clearImage: () => {
+                    setAvatarUrl("");
+                    setStoredRef(null);
+               },
           }))
 
           const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -107,27 +79,29 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     reader.readAsDataURL(selectedFile)
 
                     reader.onloadend = async () => {
-                         const base64Data = reader.result
-                         const formData = new FormData()
-                         formData.append("file", base64Data as string)
-                         formData.append("title", title)
-                         formData.append("extension", fileExtension)
-                         formData.append("fileName", selectedFile.name)
-                         // Provide the client id (preferred) to server action so storage path = clients/<userId>/logos/<file>
                          if (!userId) {
                               toast.error('Client must be saved before uploading an image');
                               setLoading(false);
                               return;
                          }
-                         const { success, urls, error: imageUploadResponse } = await uploadClientImagesAndGetUrls([selectedFile], userId);
 
-                         if (success && urls && urls[0]) {
-                              const firstUrl = urls[0];
-                              setAvatarUrl(firstUrl);
+                         const uploadResult = await uploadEntityFiles({
+                              entity: 'client-image',
+                              entityId: userId,
+                              files: [selectedFile],
+                              clientId: userId,
+                         });
+
+                         if (uploadResult.success && uploadResult.records && uploadResult.records[0]) {
+                              const record = uploadResult.records[0] as any;
+                              const bucket = record.storage_bucket as string;
+                              const path = record.storage_path as string;
+                              const refKey = `${bucket}::${path}`;
+                              setStoredRef(refKey);
+                              onUploadSuccess(refKey);
                               toast.success("Image uploaded successfully");
-                              onUploadSuccess(firstUrl);
                          } else {
-                              toast.error(imageUploadResponse || "Failed to upload image");
+                              toast.error(uploadResult.error || "Failed to upload image");
                               onUploadSuccess("");
                          }
                     }
