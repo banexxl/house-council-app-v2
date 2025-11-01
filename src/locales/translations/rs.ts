@@ -352,7 +352,7 @@ export const rs = {
      [tokens.common.btnDownload]: 'Preuzmi',
      [tokens.common.btnUpload]: 'Otpremi',
      [tokens.common.btnAdd]: 'Dodaj',
-     [tokens.common.btnUpdate]: 'Ažuriraj',
+     [tokens.common.btnUpdate]: 'Sačuvaj',
      [tokens.common.btnRemove]: 'Ukloni',
      [tokens.common.btnRemoveAll]: 'Ukloni sve',
      [tokens.common.logout]: 'Odjava',
