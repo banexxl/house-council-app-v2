@@ -45,6 +45,7 @@ import { Building } from 'src/types/building';
 import {
      Poll,
      PollOption,
+     PollStatus,
      PollVote,
      voteStatusLabel,
      DECISION_RULE_TRANSLATIONS,
@@ -65,11 +66,19 @@ import type { DBStoredImage } from 'src/components/file-dropzone';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { removeAllEntityFiles, removeEntityFile, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 
+const POLL_STATUS_SEQUENCE: PollStatus[] = ['draft', 'scheduled', 'active', 'closed', 'archived'];
+
 type Props = {
      clientId: string;
      buildings: Building[];
      poll?: Poll | null;
      votes?: PollVote[] | null;
+};
+
+type PollLifecycleActionArgs = {
+     action: (pollId: string) => Promise<{ success: boolean; error?: string | null | undefined }>;
+     successMessage: string;
+     errorMessage: string;
 };
 
 export default function PollCreate({
@@ -92,22 +101,49 @@ export default function PollCreate({
      }, [poll?.attachments]);
 
 
-     // Handler for publishing the poll
-     const handlePublishPoll = async () => {
-          if (!poll?.id) return;
-          setSaving(true);
-          try {
-               // Call backend to update status to 'active'
-               const { success, error } = await createOrUpdatePoll({ ...poll, status: 'active' });
-               if (!success) throw new Error(error || 'Failed to publish poll');
-               toast.success(t('polls.actionPublishSuccess') || 'Poll published');
-               router.refresh();
-          } catch (e: any) {
-               toast.error(e.message || 'Error publishing poll');
-          } finally {
-               setSaving(false);
-          }
-     };
+     const updatePollStatus = useCallback(
+          async (status: PollStatus, messages?: { success?: string; error?: string }) => {
+               if (!poll?.id || poll.status === status) return;
+               setSaving(true);
+               const fallbackLabel = status.charAt(0).toUpperCase() + status.slice(1);
+               const statusLabel = t(`polls.status.${status}` as any, { defaultValue: fallbackLabel });
+               const successMessage = messages?.success ?? `${statusLabel} status applied`;
+               const errorMessage = messages?.error ?? `Failed to set status ${statusLabel}`;
+               try {
+                    const { success, error } = await createOrUpdatePoll({ ...poll, status } as Poll);
+                    if (!success) throw new Error(error || errorMessage);
+                    toast.success(successMessage);
+                    router.refresh();
+               } catch (e: any) {
+                    toast.error(e?.message || errorMessage);
+               } finally {
+                    setSaving(false);
+               }
+          },
+          [poll, router, t]
+     );
+
+     const handlePublishPoll = useCallback(async () => {
+          await updatePollStatus('active', {
+               success: t('polls.actionPublishSuccess', { defaultValue: 'Poll published' }),
+               error: t('polls.actionPublishError', { defaultValue: 'Failed to publish poll' }),
+          });
+     }, [updatePollStatus, t]);
+
+     const handleReturnToDraft = useCallback(async () => {
+          await updatePollStatus('draft', {
+               success: t('polls.returnedToDraft', { defaultValue: 'Poll moved back to draft' }),
+               error: t('polls.returnToDraftError', { defaultValue: 'Failed to move poll to draft' }),
+          });
+     }, [updatePollStatus, t]);
+
+     const handleSchedulePoll = useCallback(async () => {
+          await updatePollStatus('scheduled');
+     }, [updatePollStatus]);
+
+     const handleArchivePoll = useCallback(async () => {
+          await updatePollStatus('archived');
+     }, [updatePollStatus]);
 
      // helper for MUI fields: injects error + helperText from Formik by path
      const fe = (name: string) => {
@@ -168,9 +204,16 @@ export default function PollCreate({
           [buildings]
      );
 
+     const defaultStartAt = useMemo(
+          () => dayjs().add(1, 'hour').second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss'),
+          []
+     );
+
      const formik = useFormik<Poll>({
           // Prevent large lists like attachments/votes from being part of the form state
-          initialValues: poll ? { ...poll, attachments: [], votes: [] } : { ...pollInitialValues, client_id: clientId },
+          initialValues: poll
+               ? { ...poll, attachments: [], votes: [] }
+               : { ...pollInitialValues, client_id: clientId, starts_at: defaultStartAt },
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
           validateOnChange: true,
@@ -275,6 +318,37 @@ export default function PollCreate({
      const hasErrors = useMemo(() => Object.keys(formik.errors).length > 0, [formik.errors]);
 
      const publishDisabled = saving || formik.isSubmitting || hasErrors || !startsAtIsFutureOrToday;
+     const statusControlsDisabled = !poll?.id || saving || formik.isSubmitting || formik.dirty;
+
+     const canTransitionToStatus = useCallback(
+          (status: PollStatus) => {
+               if (!poll?.id) return false;
+               const current = poll.status as PollStatus | undefined;
+               if (!current || current === status) return false;
+
+               switch (status) {
+                    case 'draft':
+                         return current !== 'archived';
+                    case 'scheduled':
+                         return current === 'draft' || current === 'scheduled';
+                    case 'active':
+                         if (current === 'closed') return true;
+                         return (current === 'draft' || current === 'scheduled') && !publishDisabled;
+                    case 'closed':
+                         return current === 'active';
+                    case 'archived':
+                         return current === 'closed';
+                    default:
+                         return false;
+               }
+          },
+          [poll?.id, poll?.status, publishDisabled]
+     );
+
+     const availableStatuses = useMemo(() => {
+          if (!poll?.id) return [] as PollStatus[];
+          return POLL_STATUS_SEQUENCE.filter((status) => canTransitionToStatus(status));
+     }, [poll?.id, canTransitionToStatus]);
 
      const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
           if (isFormLocked) return;
@@ -366,46 +440,77 @@ export default function PollCreate({
           }
      };
 
-     const handleClosePoll = async () => {
-          setSaving(true);
-          try {
-               const { success, error } = await closePoll(poll?.id!);
-               if (!success) throw new Error(error || 'Failed to close poll');
-               toast.success(t('polls.closed') || 'Poll closed');
-          } catch (e: any) {
-               toast.error(e.message || 'Error');
-          } finally {
-               setSaving(false);
-          }
-     };
+     const handleLifecycleAction = useCallback(
+          async ({ action, successMessage, errorMessage }: PollLifecycleActionArgs) => {
+               if (!poll?.id) return;
+               setSaving(true);
+               try {
+                    const { success, error } = await action(poll.id);
+                    if (!success) throw new Error(error || errorMessage);
+                    toast.success(successMessage);
+                    router.refresh();
+               } catch (e: any) {
+                    toast.error(e?.message || errorMessage);
+               } finally {
+                    setSaving(false);
+               }
+          },
+          [poll?.id, router]
+     );
 
-     const handleReturnToDraft = async () => {
-          if (!poll?.id) return;
-          setSaving(true);
-          try {
-               const { success, error } = await createOrUpdatePoll({ ...poll, status: 'draft' } as Poll);
-               if (!success) throw new Error(error || 'Failed to return poll to draft');
-               toast.success(t('polls.returnedToDraft') || 'Poll moved back to draft');
-               router.refresh();
-          } catch (e: any) {
-               toast.error(e.message || 'Error');
-          } finally {
-               setSaving(false);
-          }
-     };
-
-     const handleReopenPoll = async () => {
-          setSaving(true);
-          try {
-               const { success, error } = await reopenPoll(poll?.id!);
-               if (!success) throw new Error(error || 'Failed to reopen poll');
-               toast.success(t('polls.reopened') || 'Poll reopened');
-          } catch (e: any) {
-               toast.error(e.message || 'Error');
-          } finally {
-               setSaving(false);
-          }
-     }
+     const handleStatusClick = useCallback(
+          async (status: PollStatus) => {
+               if (!poll?.id || saving || !canTransitionToStatus(status)) return;
+               switch (status) {
+                    case 'draft':
+                         await handleReturnToDraft();
+                         break;
+                    case 'scheduled':
+                         await handleSchedulePoll();
+                         break;
+                    case 'active':
+                         if (poll.status === 'closed') {
+                              await handleLifecycleAction({
+                                   action: reopenPoll,
+                                   successMessage: t('polls.reopened', { defaultValue: 'Poll reopened' }),
+                                   errorMessage: t('polls.reopenError', { defaultValue: 'Failed to reopen poll' }),
+                              });
+                         } else {
+                              await handlePublishPoll();
+                         }
+                         break;
+                    case 'closed':
+                         if (poll.status === 'active') {
+                              await handleLifecycleAction({
+                                   action: closePoll,
+                                   successMessage: t('polls.closed', { defaultValue: 'Poll closed' }),
+                                   errorMessage: t('polls.closeError', { defaultValue: 'Failed to close poll' }),
+                              });
+                         } else {
+                              await updatePollStatus('closed');
+                         }
+                         break;
+                    case 'archived':
+                         await handleArchivePoll();
+                         break;
+                    default:
+                         break;
+               }
+          },
+          [
+               poll?.id,
+               poll?.status,
+               saving,
+               canTransitionToStatus,
+               handleReturnToDraft,
+               handleSchedulePoll,
+               handlePublishPoll,
+               handleLifecycleAction,
+               handleArchivePoll,
+               updatePollStatus,
+               t,
+          ]
+     );
 
      const canConfigureMaxChoices = formik.values.type === 'multiple_choice';
 
@@ -459,7 +564,42 @@ export default function PollCreate({
                          <Grid container spacing={2} >
                               <Grid size={{ xs: 12, md: 7 }}>
                                    <Card >
-                                        <CardHeader title={t('polls.details') || 'Details'} />
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                             <CardHeader title={t('polls.details') || 'Details'} />
+                                             {/* Poll status pill */}
+                                             {poll?.status && (
+                                                  <Box sx={{ mr: 4, mt: 2 }}>
+                                                       <Typography
+                                                            variant="caption"
+                                                            sx={{
+                                                                 px: 1.5,
+                                                                 py: 0.5,
+                                                                 borderRadius: 12,
+                                                                 backgroundColor:
+                                                                      poll.status === 'draft'
+                                                                           ? 'warning.light'
+                                                                           : poll.status === 'active'
+                                                                                ? 'success.light'
+                                                                                : poll.status === 'closed'
+                                                                                     ? 'grey.300'
+                                                                                     : 'grey.100',
+                                                                 color:
+                                                                      poll.status === 'draft'
+                                                                           ? 'warning.dark'
+                                                                           : poll.status === 'active'
+                                                                                ? 'success.dark'
+                                                                                : poll.status === 'closed'
+                                                                                     ? 'text.secondary'
+                                                                                     : 'text.primary',
+                                                                 fontWeight: 500,
+                                                                 display: 'inline-block',
+                                                            }}
+                                                       >
+                                                            {t(`polls.status.${poll.status}`) || poll.status}
+                                                       </Typography>
+                                                  </Box>
+                                             )}
+                                        </Box>
                                         <Divider />
                                         <CardContent>
                                              <Grid container spacing={2}>
@@ -1279,47 +1419,25 @@ export default function PollCreate({
                                         </Button>
                                    </span>
                               </Tooltip>
-
-                              {poll?.status === 'draft' ? (
-                                   <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        onClick={handlePublishPoll}
-                                        disabled={publishDisabled}
-                                   >
-                                        {t('polls.btnPublishPoll') || 'Publish Poll'}
-                                   </Button>
-                              ) : poll?.status === 'active' ? (
-                                   <>
-                                        <Button
-                                             variant="outlined"
-                                             color="secondary"
-                                             onClick={handleReturnToDraft}
-                                             loading={saving}
-                                             disabled={saving}
-                                        >
-                                             {t('polls.btnReturnToDraft') || 'Return to Draft'}
-                                        </Button>
-                                        <Button
-                                             variant="outlined"
-                                             color="warning"
-                                             onClick={handleClosePoll}
-                                             loading={saving}
-                                             disabled={saving}
-                                        >
-                                             {t('polls.btnClosePoll') || 'Close Poll'}
-                                        </Button>
-                                   </>
-                              ) : (
-                                   <Button
-                                        variant="outlined"
-                                        color="warning"
-                                        onClick={handleClosePoll}
-                                        loading={saving}
-                                        disabled
-                                   >
-                                        {t('polls.btnClosePoll') || 'Close Poll'}
-                                   </Button>
+                              {poll?.id && availableStatuses.length > 0 && (
+                                   <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ ml: 1 }}>
+                                        {availableStatuses.map((status) => {
+                                             const fallbackLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                                             const statusLabel = t(`polls.status.${status}` as any, { defaultValue: fallbackLabel });
+                                             const isDisabled = statusControlsDisabled || !canTransitionToStatus(status);
+                                             return (
+                                                  <Button
+                                                       key={status}
+                                                       variant="outlined"
+                                                       color="primary"
+                                                       disabled={isDisabled}
+                                                       onClick={() => handleStatusClick(status)}
+                                                  >
+                                                       {statusLabel}
+                                                  </Button>
+                                             );
+                                        })}
+                                   </Stack>
                               )}
                          </Stack>
                          {/* Show error list below buttons on mobile */}
