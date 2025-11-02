@@ -205,7 +205,7 @@ export default function PollCreate({
      );
 
      const defaultStartAt = useMemo(
-          () => dayjs().add(1, 'hour').second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss'),
+          () => dayjs().add(2, 'hour').second(0).millisecond(0).format('YYYY-MM-DDTHH:mm:ss'),
           []
      );
 
