@@ -1004,6 +1004,7 @@ export const de = {
   [tokens.polls.btnClosePoll]: 'Umfrage schließen',
   [tokens.polls.btnReopenPoll]: 'Umfrage wiedereröffnen',
   [tokens.polls.btnPublishPoll]: 'Umfrage veröffentlichen',
+  [tokens.polls.btnReturnToDraft]: 'In Entwurf zurücksetzen',
   [tokens.polls.closed]: 'Umfrage geschlossen',
   [tokens.polls.reopened]: 'Umfrage wiedereröffnet',
   [tokens.polls.selectFiles]: 'Dateien auswählen',

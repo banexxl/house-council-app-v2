@@ -1,7 +1,8 @@
 'use client';
 
 import { pollSchemaTranslationTokens } from 'src/types/poll';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import { useTranslation } from 'react-i18next';
 import { useFormik, getIn } from 'formik';
 import {
@@ -220,11 +221,37 @@ export default function PollCreate({
           },
      });
 
+     const markFieldTouched = useCallback(
+          (field: string) => {
+               formik.setFieldTouched(field, true, false);
+          },
+          [formik]
+     );
+
+     const handleFieldChange = useCallback(
+          (event: React.ChangeEvent<any> | SelectChangeEvent<unknown>, _child?: React.ReactNode) => {
+               const name = (event.target as { name?: string })?.name;
+               if (name) {
+                    markFieldTouched(name);
+               }
+               formik.handleChange(event as any);
+          },
+          [formik, markFieldTouched]
+     );
+
+     const setFieldValueAndTouch = useCallback(
+          <ValueType,>(field: string, value: ValueType, shouldValidate?: boolean) => {
+               markFieldTouched(field);
+               return formik.setFieldValue(field, value, shouldValidate);
+          },
+          [formik, markFieldTouched]
+     );
+
      // Ensure poll options edits do not toggle main form dirty state
      const setOptionsAndClearDirty = async (newOptions: any[]) => {
           // Update options value and immediately reset Formik with same values
           // so that formik.dirty remains false for option-only edits.
-          formik.setFieldValue('options', newOptions, false);
+          setFieldValueAndTouch('options', newOptions, false);
           formik.resetForm({
                values: { ...formik.values, options: newOptions },
                touched: formik.touched,
@@ -234,9 +261,23 @@ export default function PollCreate({
           await formik.validateForm();
      };
 
-     const isFormLocked = formik.isSubmitting || !!poll?.closed_at || (poll?.status && poll.status !== 'draft' && poll.status !== 'active');
+     const isFormLocked = formik.isSubmitting || (!!poll && poll.status !== 'draft');
+
+     const startsAtIsFutureOrToday = useMemo(() => {
+          const raw = formik.values.starts_at;
+          if (!raw) return true;
+          const start = dayjs(raw);
+          if (!start.isValid()) return true;
+          const now = dayjs();
+          return start.isSame(now, 'day') || start.isAfter(now, 'day');
+     }, [formik.values.starts_at]);
+
+     const hasErrors = useMemo(() => Object.keys(formik.errors).length > 0, [formik.errors]);
+
+     const publishDisabled = saving || formik.isSubmitting || hasErrors || !startsAtIsFutureOrToday;
 
      const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
+          if (isFormLocked) return;
           if (!poll?.id) {
                toast.error(t('common.actionSaveError') || 'Save poll first');
                return;
@@ -267,7 +308,7 @@ export default function PollCreate({
                const newAttachments = res.records as unknown as DBStoredImage[];
                setAttachments((prev) => {
                     const merged = [...prev, ...newAttachments];
-                    formik.setFieldValue('attachments', merged, false);
+                    setFieldValueAndTouch('attachments', merged, false);
                     return merged;
                });
                toast.success(t('common.actionUploadSuccess') || 'Uploaded');
@@ -279,6 +320,7 @@ export default function PollCreate({
      };
 
      const handleFileRemove = async (image: DBStoredImage) => {
+          if (isFormLocked) return;
           if (!poll?.id) return;
           try {
                const result = await removeEntityFile({
@@ -293,7 +335,7 @@ export default function PollCreate({
                }
                setAttachments((prev) => {
                     const filtered = prev.filter((att) => att.id !== image.id);
-                    formik.setFieldValue('attachments', filtered, false);
+                    setFieldValueAndTouch('attachments', filtered, false);
                     return filtered;
                });
                toast.success(t('common.actionDeleteSuccess') || 'Deleted');
@@ -303,6 +345,7 @@ export default function PollCreate({
      };
 
      const handleFileRemoveAll = async () => {
+          if (isFormLocked) return;
           if (!poll?.id) return;
           try {
                const res = await removeAllEntityFiles({
@@ -314,7 +357,7 @@ export default function PollCreate({
                     return;
                }
                setAttachments(() => {
-                    formik.setFieldValue('attachments', [], false);
+                    setFieldValueAndTouch('attachments', [], false);
                     return [];
                });
                toast.success(t('common.actionDeleteSuccess') || 'Deleted');
@@ -329,6 +372,21 @@ export default function PollCreate({
                const { success, error } = await closePoll(poll?.id!);
                if (!success) throw new Error(error || 'Failed to close poll');
                toast.success(t('polls.closed') || 'Poll closed');
+          } catch (e: any) {
+               toast.error(e.message || 'Error');
+          } finally {
+               setSaving(false);
+          }
+     };
+
+     const handleReturnToDraft = async () => {
+          if (!poll?.id) return;
+          setSaving(true);
+          try {
+               const { success, error } = await createOrUpdatePoll({ ...poll, status: 'draft' } as Poll);
+               if (!success) throw new Error(error || 'Failed to return poll to draft');
+               toast.success(t('polls.returnedToDraft') || 'Poll moved back to draft');
+               router.refresh();
           } catch (e: any) {
                toast.error(e.message || 'Error');
           } finally {
@@ -412,7 +470,7 @@ export default function PollCreate({
                                                             name="title"
                                                             label={t('polls.title') || 'Title'}
                                                             value={formik.values.title}
-                                                            onChange={formik.handleChange}
+                                                            onChange={handleFieldChange}
                                                             onBlur={formik.handleBlur}
                                                             {...fe('title')}
                                                        />
@@ -427,7 +485,7 @@ export default function PollCreate({
                                                             multiline
                                                             minRows={3}
                                                             value={formik.values.description || ''}
-                                                            onChange={formik.handleChange}
+                                                            onChange={handleFieldChange}
                                                             onBlur={formik.handleBlur}
                                                             {...fe('description')}
                                                        />
@@ -446,7 +504,7 @@ export default function PollCreate({
                                                                  name="type"
                                                                  label={t('polls.type') || 'Type'}
                                                                  value={formik.values.type}
-                                                                 onChange={formik.handleChange}
+                                                                 onChange={handleFieldChange}
                                                                  onBlur={() => formik.setFieldTouched('type', true)}
                                                             >
                                                                  <MenuItem value={'yes_no'}>{t('polls.types.yes_no') || 'Yes/No'}</MenuItem>
@@ -484,8 +542,8 @@ export default function PollCreate({
                                                                  disabled={isFormLocked}
                                                                  name="building_id"
                                                                  label={t('polls.building') || 'Building'}
-                                                                 value={formik.values.building_id}
-                                                                 onChange={formik.handleChange}
+                                                                 value={formik.values.building_id || ''}
+                                                                 onChange={handleFieldChange}
                                                                  onBlur={() => formik.setFieldTouched('building_id', true)}
                                                             >
                                                                  {buildingOptions.map((b) => (
@@ -514,9 +572,9 @@ export default function PollCreate({
                                                                  name="max_choices"
                                                                  label={t('polls.maxChoices') || 'Max choices'}
                                                                  value={formik.values.max_choices ?? ''}
-                                                                 onChange={(e) =>
-                                                                      formik.setFieldValue('max_choices', coerceInt(e.target.value))
-                                                                 }
+                                                                 onChange={(e) => {
+                                                                      setFieldValueAndTouch('max_choices', coerceInt(e.target.value));
+                                                                 }}
                                                                  onBlur={formik.handleBlur}
                                                                  {...fe('max_choices')}
                                                             />
@@ -532,9 +590,9 @@ export default function PollCreate({
                                                                            <Switch
                                                                                 disabled={isFormLocked}
                                                                                 checked={!!formik.values.allow_abstain}
-                                                                                onChange={(e) =>
-                                                                                     formik.setFieldValue('allow_abstain', e.target.checked)
-                                                                                }
+                                                                                onChange={(e) => {
+                                                                                     setFieldValueAndTouch('allow_abstain', e.target.checked);
+                                                                                }}
                                                                                 onBlur={() => formik.setFieldTouched('allow_abstain', true)}
                                                                            />
                                                                       }
@@ -548,9 +606,9 @@ export default function PollCreate({
                                                                            <Switch
                                                                                 disabled={isFormLocked}
                                                                                 checked={!!formik.values.allow_comments}
-                                                                                onChange={(e) =>
-                                                                                     formik.setFieldValue('allow_comments', e.target.checked)
-                                                                                }
+                                                                                onChange={(e) => {
+                                                                                     setFieldValueAndTouch('allow_comments', e.target.checked);
+                                                                                }}
                                                                                 onBlur={() => formik.setFieldTouched('allow_comments', true)}
                                                                            />
                                                                       }
@@ -564,9 +622,9 @@ export default function PollCreate({
                                                                            <Switch
                                                                                 disabled={isFormLocked}
                                                                                 checked={!!formik.values.allow_anonymous}
-                                                                                onChange={(e) =>
-                                                                                     formik.setFieldValue('allow_anonymous', e.target.checked)
-                                                                                }
+                                                                                onChange={(e) => {
+                                                                                     setFieldValueAndTouch('allow_anonymous', e.target.checked);
+                                                                                }}
                                                                                 onBlur={() => formik.setFieldTouched('allow_anonymous', true)}
                                                                            />
                                                                       }
@@ -580,12 +638,12 @@ export default function PollCreate({
                                                                            <Switch
                                                                                 disabled={isFormLocked}
                                                                                 checked={!!formik.values.allow_change_until_deadline}
-                                                                                onChange={(e) =>
-                                                                                     formik.setFieldValue(
+                                                                                onChange={(e) => {
+                                                                                     setFieldValueAndTouch(
                                                                                           'allow_change_until_deadline',
                                                                                           e.target.checked
-                                                                                     )
-                                                                                }
+                                                                                     );
+                                                                                }}
                                                                                 onBlur={() =>
                                                                                      formik.setFieldTouched('allow_change_until_deadline', true)
                                                                                 }
@@ -630,7 +688,9 @@ export default function PollCreate({
                                                                  name="rule"
                                                                  label={t('polls.decisionRule') || 'Decision rule'}
                                                                  value={(formik.values.rule || '') as any}
-                                                                 onChange={(e) => formik.setFieldValue('rule', (e.target.value || null) as any)}
+                                                                 onChange={(e) =>
+                                                                      setFieldValueAndTouch('rule', (e.target.value || null) as any)
+                                                                 }
                                                                  onBlur={() => formik.setFieldTouched('rule', true)}
                                                             >
                                                                  {DECISION_RULE_TRANSLATIONS.map((r) => (
@@ -673,7 +733,10 @@ export default function PollCreate({
                                                                  label={t('polls.scoreAggregation') || 'Score aggregation'}
                                                                  value={(formik.values.score_aggregation || '') as any}
                                                                  onChange={(e) =>
-                                                                      formik.setFieldValue('score_aggregation', (e.target.value || null) as any)
+                                                                      setFieldValueAndTouch(
+                                                                           'score_aggregation',
+                                                                           (e.target.value || null) as any
+                                                                      )
                                                                  }
                                                                  onBlur={() => formik.setFieldTouched('score_aggregation', true)}
                                                             >
@@ -724,7 +787,7 @@ export default function PollCreate({
                                                             value={formik.values.supermajority_percent ?? ''}
                                                             onChange={(e) =>
                                                                  /^\d*$/.test(e.target.value) &&
-                                                                 formik.setFieldValue(
+                                                                 setFieldValueAndTouch(
                                                                       'supermajority_percent',
                                                                       e.target.value === '' ? null : Number(e.target.value)
                                                                  )
@@ -755,7 +818,7 @@ export default function PollCreate({
                                                             value={formik.values.threshold_percent ?? ''}
                                                             onChange={(e) =>
                                                                  /^\d*$/.test(e.target.value) &&
-                                                                 formik.setFieldValue(
+                                                                 setFieldValueAndTouch(
                                                                       'threshold_percent',
                                                                       e.target.value === '' ? null : Number(e.target.value)
                                                                  )
@@ -786,7 +849,7 @@ export default function PollCreate({
                                                             value={formik.values.winners_count ?? ''}
                                                             onChange={(e) =>
                                                                  /^\d*$/.test(e.target.value) &&
-                                                                 formik.setFieldValue(
+                                                                 setFieldValueAndTouch(
                                                                       'winners_count',
                                                                       e.target.value === '' ? null : Number(e.target.value)
                                                                  )
@@ -825,7 +888,7 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      formik.setFieldValue('starts_at', composed);
+                                                                      setFieldValueAndTouch('starts_at', composed);
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('starts_at', true)}
                                                                  slotProps={{
@@ -856,7 +919,7 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      formik.setFieldValue('starts_at', composed);
+                                                                      setFieldValueAndTouch('starts_at', composed);
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('starts_at', true)}
                                                                  slotProps={{
@@ -891,7 +954,7 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      formik.setFieldValue('ends_at', composed);
+                                                                      setFieldValueAndTouch('ends_at', composed);
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('ends_at', true)}
                                                                  slotProps={{
@@ -922,7 +985,7 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      formik.setFieldValue('ends_at', composed);
+                                                                      setFieldValueAndTouch('ends_at', composed);
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('ends_at', true)}
                                                                  slotProps={{
@@ -957,11 +1020,12 @@ export default function PollCreate({
                                                                       'image/*': [],
                                                                  }}
                                                                  caption={'(SVG, JPG, PNG or GIF up to 900x400)'}
+                                                                 disabled={isFormLocked}
                                                                  onDrop={handleFilesDropWithUrls}
                                                                  uploadProgress={uploadProgress}
                                                                  images={attachments}
-                                                                 onRemoveImage={handleFileRemove}
-                                                                 onRemoveAll={handleFileRemoveAll}
+                                                                 onRemoveImage={isFormLocked ? undefined : handleFileRemove}
+                                                                 onRemoveAll={isFormLocked ? undefined : handleFileRemoveAll}
                                                             />
                                                        </Stack>
                                                   </CardContent>
@@ -1049,7 +1113,7 @@ export default function PollCreate({
                                                                                 } else {
                                                                                      // Normalize local sort_order to match persisted order and clear dirty state
                                                                                      const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i } as PollOption));
-                                                                                     formik.setFieldValue('options', normalized, false);
+                                                                                     setFieldValueAndTouch('options', normalized, false);
                                                                                      // Reset formik's dirty flag without losing current values
                                                                                      formik.resetForm({
                                                                                           values: { ...formik.values, options: normalized },
@@ -1202,41 +1266,60 @@ export default function PollCreate({
                                    }
                                    arrow
                                    placement="top"
-                                   disableHoverListener={formik.isValid && formik.dirty && !formik.isSubmitting}
+                                   disableHoverListener={formik.isValid && formik.dirty && !formik.isSubmitting && !isFormLocked}
                               >
                                    <span>
                                         <Button
                                              variant="contained"
                                              type="submit"
                                              loading={saving}
-                                             disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                                             disabled={isFormLocked || !formik.dirty || !formik.isValid}
                                         >
                                              {t('common.btnSave')}
                                         </Button>
                                    </span>
                               </Tooltip>
 
-                              {(
-                                   poll?.status === 'draft' ? (
+                              {poll?.status === 'draft' ? (
+                                   <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        onClick={handlePublishPoll}
+                                        disabled={publishDisabled}
+                                   >
+                                        {t('polls.btnPublishPoll') || 'Publish Poll'}
+                                   </Button>
+                              ) : poll?.status === 'active' ? (
+                                   <>
                                         <Button
                                              variant="outlined"
-                                             color="primary"
-                                             onClick={handlePublishPoll}
-                                             disabled={saving || !formik.isValid || !formik.dirty}
+                                             color="secondary"
+                                             onClick={handleReturnToDraft}
+                                             loading={saving}
+                                             disabled={saving}
                                         >
-                                             {t('polls.btnPublishPoll') || 'Publish Poll'}
+                                             {t('polls.btnReturnToDraft') || 'Return to Draft'}
                                         </Button>
-                                   ) : (
                                         <Button
                                              variant="outlined"
                                              color="warning"
                                              onClick={handleClosePoll}
                                              loading={saving}
-                                             disabled={poll?.status !== 'active'}
+                                             disabled={saving}
                                         >
                                              {t('polls.btnClosePoll') || 'Close Poll'}
                                         </Button>
-                                   )
+                                   </>
+                              ) : (
+                                   <Button
+                                        variant="outlined"
+                                        color="warning"
+                                        onClick={handleClosePoll}
+                                        loading={saving}
+                                        disabled
+                                   >
+                                        {t('polls.btnClosePoll') || 'Close Poll'}
+                                   </Button>
                               )}
                          </Stack>
                          {/* Show error list below buttons on mobile */}

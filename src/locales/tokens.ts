@@ -414,6 +414,7 @@ export const tokens = {
     btnClosePoll: 'polls.btnClosePoll',
     btnReopenPoll: 'polls.btnReopenPoll',
     btnPublishPoll: 'polls.btnPublishPoll',
+    btnReturnToDraft: 'polls.btnReturnToDraft',
     closed: 'polls.closed',
     reopened: 'polls.reopened',
     votesList: 'polls.votesList',

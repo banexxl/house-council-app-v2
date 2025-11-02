@@ -1006,6 +1006,7 @@ export const es = {
   [tokens.polls.btnClosePoll]: 'Cerrar encuesta',
   [tokens.polls.btnReopenPoll]: 'Reabrir encuesta',
   [tokens.polls.btnPublishPoll]: 'Publicar encuesta',
+  [tokens.polls.btnReturnToDraft]: 'Volver a borrador',
   [tokens.polls.closed]: 'Encuesta cerrada',
   [tokens.polls.reopened]: 'Encuesta reabierta',
   [tokens.polls.selectFiles]: 'Seleccionar archivos',
