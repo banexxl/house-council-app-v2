@@ -212,7 +212,7 @@ export default function PollCreate({
      const formik = useFormik<Poll>({
           // Prevent large lists like attachments/votes from being part of the form state
           initialValues: poll
-               ? { ...poll, attachments: [], votes: [] }
+               ? { ...poll }
                : { ...pollInitialValues, client_id: clientId, starts_at: defaultStartAt },
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
