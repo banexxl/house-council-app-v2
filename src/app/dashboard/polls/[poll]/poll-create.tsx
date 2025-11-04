@@ -66,6 +66,7 @@ import { SortableOptionsList } from 'src/components/drag-and-drop';
 import type { DBStoredImage } from 'src/components/file-dropzone';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { removeAllEntityFiles, removeEntityFile, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
+import { status } from 'nprogress';
 
 const POLL_STATUS_SEQUENCE: PollStatus[] = ['draft', 'scheduled', 'active', 'closed', 'archived'];
 
@@ -1422,7 +1423,7 @@ export default function PollCreate({
                               <Tooltip
                                    title={
                                         <Box>
-                                             {!formik.isValid && (
+                                             {!formik.isValid && poll?.status !== 'archived' && poll?.status !== 'closed' && (
                                                   <Box>
                                                        <Typography variant="subtitle2" color="error">
                                                             {t('common.formInvalid') || 'Form is invalid:'}
