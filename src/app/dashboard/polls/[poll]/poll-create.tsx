@@ -53,7 +53,7 @@ import {
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { closePoll, createOrUpdatePoll, getPollById, reopenPoll, reorderPolls } from 'src/app/actions/poll/poll-actions';
+import { closePoll, createOrUpdatePoll, getPollById, reorderPolls } from 'src/app/actions/poll/poll-actions';
 import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-option-actions';
 import { FileDropzone, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
@@ -341,18 +341,29 @@ export default function PollCreate({
                const current = poll.status as PollStatus | undefined;
                if (!current || current === status) return false;
 
-               switch (status) {
-                    case 'draft':
-                         return current !== 'archived';
-                    case 'scheduled':
-                         return (current === 'draft' || current === 'scheduled') && hasAtLeastOneOption;
-                    case 'active':
-                         if (current === 'closed') return true;
-                         return (current === 'draft' || current === 'scheduled') && !publishDisabled;
-                    case 'closed':
-                         return current === 'active';
+               // Decide allowed targets based on current status
+               switch (current) {
                     case 'archived':
-                         return current === 'closed';
+                         // Archived is terminal; no further transitions
+                         return false;
+                    case 'closed':
+                         // From Closed, only Archive is allowed
+                         return status === 'archived';
+                    case 'active':
+                         // From Active: can only Close, or move back to Draft
+                         if (status === 'closed') return true;
+                         if (status === 'draft') return true;
+                         return false;
+                    case 'scheduled':
+                         // From Scheduled: can go to Draft or Activate (publish)
+                         if (status === 'draft') return true;
+                         if (status === 'active') return !publishDisabled;
+                         return false;
+                    case 'draft':
+                         // From Draft: can Schedule (needs options) or Activate (publish)
+                         if (status === 'scheduled') return hasAtLeastOneOption;
+                         if (status === 'active') return !publishDisabled;
+                         return false;
                     default:
                          return false;
                }
@@ -362,8 +373,25 @@ export default function PollCreate({
 
      const availableStatuses = useMemo(() => {
           if (!poll?.id) return [] as PollStatus[];
-          return POLL_STATUS_SEQUENCE.filter((status) => canTransitionToStatus(status));
-     }, [poll?.id, canTransitionToStatus]);
+          const current = poll.status as PollStatus;
+          switch (current) {
+               case 'draft':
+                    // Show actions user expects from Draft
+                    return ['scheduled', 'active'] as PollStatus[];
+               case 'scheduled':
+                    // From Scheduled, allow moving back to Draft or Activating
+                    return ['draft', 'active'] as PollStatus[];
+               case 'active':
+                    // From Active, show Close and (optionally) Draft backtrack
+                    return ['draft', 'closed'] as PollStatus[];
+               case 'closed':
+                    // From Closed, only Archive is visible
+                    return ['archived'] as PollStatus[];
+               case 'archived':
+               default:
+                    return [] as PollStatus[];
+          }
+     }, [poll?.id, poll?.status]);
 
      const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
           if (isFormLocked) return;
@@ -484,15 +512,8 @@ export default function PollCreate({
                          await handleSchedulePoll();
                          break;
                     case 'active':
-                         if (poll.status === 'closed') {
-                              await handleLifecycleAction({
-                                   action: reopenPoll,
-                                   successMessage: t('polls.reopened', { defaultValue: 'Poll reopened' }),
-                                   errorMessage: t('polls.reopenError', { defaultValue: 'Failed to reopen poll' }),
-                              });
-                         } else {
-                              await handlePublishPoll();
-                         }
+                         // Reopen from closed is disabled; only allow publish from draft/scheduled
+                         await handlePublishPoll();
                          break;
                     case 'closed':
                          if (poll.status === 'active') {
@@ -1043,7 +1064,9 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      setFieldValueAndTouch('starts_at', composed);
+                                                                      setFieldValueAndTouch('starts_at', composed, false);
+                                                                      formik.validateField('starts_at');
+                                                                      if (formik.values.ends_at) formik.validateField('ends_at');
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('starts_at', true)}
                                                                  slotProps={{
@@ -1074,7 +1097,9 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      setFieldValueAndTouch('starts_at', composed);
+                                                                      setFieldValueAndTouch('starts_at', composed, false);
+                                                                      formik.validateField('starts_at');
+                                                                      if (formik.values.ends_at) formik.validateField('ends_at');
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('starts_at', true)}
                                                                  slotProps={{
@@ -1109,7 +1134,9 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      setFieldValueAndTouch('ends_at', composed);
+                                                                      setFieldValueAndTouch('ends_at', composed, false);
+                                                                      formik.validateField('ends_at');
+                                                                      if (formik.values.starts_at) formik.validateField('starts_at');
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('ends_at', true)}
                                                                  slotProps={{
@@ -1140,7 +1167,9 @@ export default function PollCreate({
                                                                                      .millisecond(0)
                                                                                      .format('YYYY-MM-DDTHH:mm:ss')
                                                                                 : null;
-                                                                      setFieldValueAndTouch('ends_at', composed);
+                                                                      setFieldValueAndTouch('ends_at', composed, false);
+                                                                      formik.validateField('ends_at');
+                                                                      if (formik.values.starts_at) formik.validateField('starts_at');
                                                                  }}
                                                                  onClose={() => formik.setFieldTouched('ends_at', true)}
                                                                  slotProps={{
@@ -1446,7 +1475,10 @@ export default function PollCreate({
                                         {availableStatuses.map((status) => {
                                              const fallbackLabel = status.charAt(0).toUpperCase() + status.slice(1);
                                              const statusLabel = t(`polls.status.${status}` as any, { defaultValue: fallbackLabel });
-                                             const isDisabled = statusControlsDisabled || !canTransitionToStatus(status);
+                                             const isDisabled =
+                                                  statusControlsDisabled ||
+                                                  !canTransitionToStatus(status) ||
+                                                  ((status === 'scheduled' || status === 'active') && (hasErrors || !hasAtLeastOneOption));
                                              return (
                                                   <Button
                                                        key={status}
@@ -1511,7 +1543,7 @@ export default function PollCreate({
                          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
                               <Box
                                    component="img"
-                                   src="/assets/polls/poll_transitions.png"
+                                   src="/assets/polls/poll_transitions_new.png"
                                    alt={'Poll state image'}
                                    sx={{ maxWidth: '100%', borderRadius: 1 }}
                               />
