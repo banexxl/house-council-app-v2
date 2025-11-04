@@ -38,6 +38,7 @@ import {
      ListItem,
      ListItemText,
 } from '@mui/material';
+import Image from 'next/image';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -1537,15 +1538,56 @@ export default function PollCreate({
                </Container>
 
                {/* Submission info dialog (image only) */}
-               <Dialog open={submitInfoOpen} onClose={() => setSubmitInfoOpen(false)} maxWidth="sm" fullWidth>
+               <Dialog
+                    open={submitInfoOpen}
+                    onClose={() => setSubmitInfoOpen(false)}
+                    maxWidth={false}
+                    fullWidth
+                    slotProps={{
+                         paper: {
+                              sx: {
+                                   // Centered by default; ensure generous canvas for the image
+                                   width: { xs: '97vw', md: '70vw' },
+                                   maxWidth: 1600,
+                                   height: { xs: '90vh', md: '50vh' },
+                              },
+                         },
+                    }}
+               >
                     <DialogTitle>{t('polls.help.submissionStateTransitions') || 'Submitting a poll'}</DialogTitle>
-                    <DialogContent dividers>
-                         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-                              <Box
-                                   component="img"
-                                   src="/assets/polls/poll_transitions_new.png"
-                                   alt={'Poll state image'}
-                                   sx={{ maxWidth: '100%', borderRadius: 1 }}
+                    <DialogContent dividers sx={{ pt: 0 }}>
+                         {/* Mobile (vertical) */}
+                         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                              <Image
+                                   src="/assets/polls/poll_transitions_vertical.png"
+                                   alt="Poll state image"
+                                   width={800}
+                                   height={1400}
+                                   style={{
+                                        width: '100%',
+                                        height: 'auto',
+                                        borderRadius: 4,
+                                        display: 'block',
+                                        maxHeight: 'calc(95vh - 96px)'
+                                   }}
+                                   priority
+                              />
+                         </Box>
+                         {/* Desktop / tablet (horizontal) */}
+                         <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                              <Image
+                                   src="/assets/polls/poll_transitions_horizontal.png"
+                                   alt="Poll state image"
+                                   width={1600}
+                                   height={1100}
+                                   style={{
+                                        width: '100%',
+                                        height: 'auto',
+                                        borderRadius: 4,
+                                        display: 'block',
+                                        maxHeight: 'calc(95vh - 96px)'
+                                   }}
+                                   priority
                               />
                          </Box>
                     </DialogContent>
