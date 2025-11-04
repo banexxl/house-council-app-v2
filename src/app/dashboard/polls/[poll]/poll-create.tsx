@@ -318,7 +318,21 @@ export default function PollCreate({
 
      const hasErrors = useMemo(() => Object.keys(formik.errors).length > 0, [formik.errors]);
 
-     const publishDisabled = saving || formik.isSubmitting || hasErrors || !startsAtIsFutureOrToday;
+     const hasAtLeastOneOption = useMemo(
+          () => (Array.isArray((formik.values as any)?.options) ? (formik.values as any).options.length : (poll?.options?.length ?? 0)) > 0,
+          [formik.values, poll?.options]
+     );
+
+     const publishDisabled =
+          saving || formik.isSubmitting || hasErrors || !startsAtIsFutureOrToday || !hasAtLeastOneOption;
+
+     // Revalidate when options list changes to keep constraints in sync
+     useEffect(() => {
+          // Validate the whole form to catch cross-field rules involving options
+          formik.validateForm();
+          // Alternatively, to validate only options: formik.validateField('options');
+          // We choose validateForm because rules like winners <= options may live elsewhere
+     }, [formik.values.options]);
      const statusControlsDisabled = !poll?.id || saving || formik.isSubmitting || formik.dirty;
 
      const canTransitionToStatus = useCallback(
@@ -331,7 +345,7 @@ export default function PollCreate({
                     case 'draft':
                          return current !== 'archived';
                     case 'scheduled':
-                         return current === 'draft' || current === 'scheduled';
+                         return (current === 'draft' || current === 'scheduled') && hasAtLeastOneOption;
                     case 'active':
                          if (current === 'closed') return true;
                          return (current === 'draft' || current === 'scheduled') && !publishDisabled;
@@ -343,7 +357,7 @@ export default function PollCreate({
                          return false;
                }
           },
-          [poll?.id, poll?.status, publishDisabled]
+          [poll?.id, poll?.status, publishDisabled, hasAtLeastOneOption]
      );
 
      const availableStatuses = useMemo(() => {
