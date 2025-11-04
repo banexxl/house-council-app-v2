@@ -92,6 +92,7 @@ export default function PollCreate({
      const [saving, setSaving] = useState(false);
      const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
      const [infoOpen, setInfoOpen] = useState(false);
+     const [submitInfoOpen, setSubmitInfoOpen] = useState(false);
      const [attachments, setAttachments] = useState<DBStoredImage[]>(() => {
           return ((poll?.attachments ?? []) as unknown as DBStoredImage[]) || [];
      });
@@ -1364,6 +1365,13 @@ export default function PollCreate({
                          </Card>
 
                          <Stack direction="row" spacing={2} justifyContent="flex-start" sx={{ mb: 2 }}>
+                              <Box sx={{ mt: 0.5 }}>
+                                   <Tooltip title={t('polls.help.openInfo') || 'More info'}>
+                                        <IconButton size="small" onClick={() => setSubmitInfoOpen(true)}>
+                                             <InfoOutlinedIcon fontSize="small" />
+                                        </IconButton>
+                                   </Tooltip>
+                              </Box>
                               <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
                                    {t('common.btnBack') || 'Back'}
                               </Button>
@@ -1478,8 +1486,27 @@ export default function PollCreate({
                                    </Box>
                               )}
                          </Grid>
+
                     </Stack>
                </Container>
+
+               {/* Submission info dialog (image only) */}
+               <Dialog open={submitInfoOpen} onClose={() => setSubmitInfoOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle>{t('polls.help.submissionStateTransitions') || 'Submitting a poll'}</DialogTitle>
+                    <DialogContent dividers>
+                         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                              <Box
+                                   component="img"
+                                   src="/assets/polls/poll_transitions.png"
+                                   alt={'Poll state image'}
+                                   sx={{ maxWidth: '100%', borderRadius: 1 }}
+                              />
+                         </Box>
+                    </DialogContent>
+                    <DialogActions>
+                         <Button onClick={() => setSubmitInfoOpen(false)}>{t('common.btnClose') || 'Close'}</Button>
+                    </DialogActions>
+               </Dialog>
 
                {/* Info dialog about how the poll system works */}
                <Dialog open={infoOpen} onClose={() => setInfoOpen(false)} maxWidth="sm" fullWidth>

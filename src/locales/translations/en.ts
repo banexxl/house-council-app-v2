@@ -380,6 +380,7 @@ export const en = {
   [tokens.polls.help.supermajority_percent]: 'Percentage of votes required to approve the proposal. Used by Supermajority rule.',
   [tokens.polls.help.threshold_percent]: 'Minimum percentage a choice must reach to be considered. Used by Threshold rule.',
   [tokens.polls.help.winners_count]: 'How many options can be declared winners under the Top‑K rule.',
+  [tokens.polls.help.submissionStateTransitions]: 'State transitions',
   //#region Locations
   [tokens.locations.geoLocationAvailable]: 'Geolocation available',
   [tokens.locations.geoLocationNotAvailable]: 'Geolocation not available',

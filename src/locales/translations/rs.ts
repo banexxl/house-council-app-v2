@@ -624,7 +624,7 @@ export const rs = {
      [tokens.polls.help.supermajority]: 'Pobednik mora imati najmanje X% glasova (prema polju za kvalifikovanu većinu). Primer: zahtevati 2/3 (66,67%) podrške za izmenu pravila.',
      [tokens.polls.help.threshold]: 'Opcija(e) se prihvata(ju) ako dostigne minimalni procenat (prema polju prag). Primer: „Svaki predlog sa ≥ 50% glasova prolazi.” Više njih može proći.',
      [tokens.polls.help.top_k]: 'Pobeđuje prvih N opcija (prema broju pobednika). Primer: „Glasajte za do 3 projekta — prva 2 se finansiraju.”',
-
+     [tokens.polls.help.submissionStateTransitions]: 'Stanja ankete i prelazi',
      [tokens.apartments.lblApartmentNumber]: 'Broj stana',
      [tokens.apartments.lblCoverImage]: 'Naslovna slika',
      [tokens.apartments.lblFloor]: 'Sprat',

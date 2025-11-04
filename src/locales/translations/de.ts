@@ -1077,6 +1077,7 @@ export const de = {
   [tokens.polls.help.supermajority]: 'Der Gewinner muss mindestens X % der Stimmen erreichen (aus supermajority_percent). Beispiel: Für eine Satzungsänderung 2/3 (66,67 %) Zustimmung verlangen.',
   [tokens.polls.help.threshold]: 'Option(en) gelten als angenommen, wenn sie einen Mindest‑% erreichen (aus threshold_percent). Beispiel: „Jeder Vorschlag mit ≥ 50 % gilt als angenommen.“ Mehrere können bestehen.',
   [tokens.polls.help.top_k]: 'Die besten N Optionen gewinnen (aus winners_count). Beispiel: „Für bis zu 3 Projekte stimmen — die Top 2 werden finanziert.“',
+  [tokens.polls.help.submissionStateTransitions]: 'Abstimmungsstatus-Übergänge',
   [tokens.common.comment]: 'Kommentar',
   [tokens.common.summary]: 'Zusammenfassung',
   [tokens.common.lblGeneral]: 'Allgemein',

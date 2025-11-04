@@ -1079,6 +1079,7 @@ export const es = {
   [tokens.polls.help.supermajority]: 'El ganador debe alcanzar al menos X % de los votos (de supermajority_percent). Ejemplo: Para un cambio de estatutos se requiere un 2/3 (66,67 %) de aprobación.',
   [tokens.polls.help.threshold]: 'La(s) opción(es) se consideran aprobadas si alcanzan un % mínimo (de threshold_percent). Ejemplo: "Cualquier propuesta con ≥ 50 % se considera aprobada." Pueden existir varias.',
   [tokens.polls.help.top_k]: 'Las mejores N opciones ganan (de winners_count). Ejemplo: "Votar por hasta 3 proyectos — los 2 mejores serán financiados."',
+  [tokens.polls.help.submissionStateTransitions]: 'Transiciones de estado de envío:',
   [tokens.common.comment]: 'Comentario',
   [tokens.common.summary]: 'Resumen',
   [tokens.common.lblGeneral]: 'General',
