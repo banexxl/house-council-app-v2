@@ -1,11 +1,9 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
-import { use, useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';

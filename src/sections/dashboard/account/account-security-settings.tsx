@@ -35,7 +35,7 @@ export const AccountSecuritySettings: FC<AccountSecuritySettingsProps> = (props)
 
   const LoginEventRow = memo(({ event }: { event: ServerLog }) => {
     const { location } = useIpLocation(event.payload.ip);
-    const created_at = format(new Date(event.created_at!), 'HH:mm a MM/dd/yyyy');
+    const created_at = format(new Date(event.created_at!), 'HH:mm a yyyy-MM-dd');
     return (
       <TableRow
         key={event.id}
