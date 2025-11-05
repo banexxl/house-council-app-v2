@@ -6,6 +6,7 @@ import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/buil
 import Polls from './polls';
 
 export default async function PollsPage() {
+
   const { client, clientMember, tenant, admin } = await getViewer();
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
 
