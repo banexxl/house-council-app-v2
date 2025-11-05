@@ -1056,6 +1056,11 @@ export const es = {
   [tokens.polls.status.active]: 'Activo',
   [tokens.polls.status.closed]: 'Cerrado',
   [tokens.polls.status.archived]: 'Archivado',
+  [tokens.polls.status.actions.draft]: 'Marcar como borrador',
+  [tokens.polls.status.actions.scheduled]: 'Programar',
+  [tokens.polls.status.actions.active]: 'Activar',
+  [tokens.polls.status.actions.closed]: 'Cerrar',
+  [tokens.polls.status.actions.archived]: 'Archivar',
   [tokens.polls.voteStatus.cast]: 'Emitido',
   [tokens.polls.voteStatus.revoked]: 'Revocado',
   [tokens.polls.votesList]: 'Votaciones',
@@ -1080,6 +1085,40 @@ export const es = {
   [tokens.polls.help.threshold]: 'La(s) opción(es) se consideran aprobadas si alcanzan un % mínimo (de threshold_percent). Ejemplo: "Cualquier propuesta con ≥ 50 % se considera aprobada." Pueden existir varias.',
   [tokens.polls.help.top_k]: 'Las mejores N opciones ganan (de winners_count). Ejemplo: "Votar por hasta 3 proyectos — los 2 mejores serán financiados."',
   [tokens.polls.help.submissionStateTransitions]: 'Transiciones de estado de envío:',
+  [tokens.polls.help.openInfo]: 'Más información',
+  [tokens.polls.help.supermajority_percent]: 'El porcentaje requerido para la regla de decisión de supermayoría (típicamente 60-67%)',
+  [tokens.polls.help.threshold_percent]: 'El porcentaje mínimo requerido para la regla de decisión de umbral',
+  [tokens.polls.help.winners_count]: 'Número de opciones ganadoras a seleccionar (usado con la regla Top-K)',
+
+  // Polls: Razones de deshabilitación
+  [tokens.polls.disableReason.saving]: 'Por favor espere, guardando en progreso',
+  [tokens.polls.disableReason.unsaved]: 'Por favor guarde sus cambios primero',
+  [tokens.polls.disableReason.noPoll]: 'La encuesta debe ser guardada primero',
+  [tokens.polls.disableReason.invalidTransition]: 'Esta transición de estado no está permitida',
+  [tokens.polls.disableReason.hasErrors]: 'El formulario tiene errores de validación',
+  [tokens.polls.disableReason.noOptions]: 'Por favor agregue opciones de encuesta en la sección Opciones a continuación',
+  [tokens.polls.disableReason.pastDate]: 'La fecha de inicio debe ser hoy o en el futuro',
+
+  // Polls: Mensajes de acción
+  [tokens.polls.actionPublishSuccess]: 'Encuesta publicada',
+  [tokens.polls.actionPublishError]: 'Error al publicar la encuesta',
+  [tokens.polls.returnedToDraft]: 'Encuesta movida de vuelta a borrador',
+  [tokens.polls.returnToDraftError]: 'Error al mover la encuesta a borrador',
+  [tokens.polls.closeError]: 'Error al cerrar la encuesta',
+
+  // Polls: Diálogos de confirmación
+  [tokens.polls.confirmActivate.title]: 'Activar Encuesta',
+  [tokens.polls.confirmActivate.confirm]: 'Activar Ahora',
+  [tokens.polls.confirmActivate.message]: '¿Está seguro de que desea activar esta encuesta? Cuando se active, todos los clientes serán notificados inmediatamente y podrán comenzar a votar. La fecha/hora programada será ignorada.',
+  [tokens.polls.confirmSchedule.title]: 'Programar Encuesta',
+  [tokens.polls.confirmSchedule.confirm]: 'Programar',
+  [tokens.polls.confirmSchedule.message]: 'Esta encuesta será programada y activada automáticamente en la fecha y hora de inicio especificadas. Los clientes serán notificados cuando la encuesta se active.',
+  [tokens.polls.confirmClose.title]: 'Cerrar Encuesta',
+  [tokens.polls.confirmClose.confirm]: 'Cerrar Encuesta',
+  [tokens.polls.confirmClose.message]: '¿Está seguro de que desea cerrar esta encuesta? Una encuesta cerrada no se puede reabrir, y los resultados de la votación serán finales.',
+
+  // Common: Estados de formulario
+  [tokens.common.formSubmitting]: 'Enviando...',
   [tokens.common.comment]: 'Comentario',
   [tokens.common.summary]: 'Resumen',
   [tokens.common.lblGeneral]: 'General',

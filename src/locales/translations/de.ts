@@ -1054,6 +1054,11 @@ export const de = {
   [tokens.polls.status.active]: 'Aktiv',
   [tokens.polls.status.closed]: 'Geschlossen',
   [tokens.polls.status.archived]: 'Archiviert',
+  [tokens.polls.status.actions.draft]: 'Auf Entwurf zurücksetzen',
+  [tokens.polls.status.actions.scheduled]: 'Planen',
+  [tokens.polls.status.actions.active]: 'Aktivieren',
+  [tokens.polls.status.actions.closed]: 'Schließen',
+  [tokens.polls.status.actions.archived]: 'Archivieren',
   [tokens.polls.voteStatus.cast]: 'Abgegeben',
   [tokens.polls.voteStatus.revoked]: 'Zurückgezogen',
   [tokens.polls.votesList]: 'Abstimmungen',
@@ -1122,4 +1127,40 @@ export const de = {
   [tokens.clients.confirmRemoveMfa]: 'Sind Sie sicher, dass Sie alle MFA-Faktoren entfernen möchten?',
   [tokens.subscriptionPlans.subscriptionPlansList]: 'Abonnementpläne',
   [tokens.subscriptionPlans.subscriptionPlanPricePerMonth]: 'Preis pro Monat',
+
+  // Polls: Missing help tokens
+  [tokens.polls.help.openInfo]: 'Weitere Informationen',
+  [tokens.polls.help.supermajority_percent]: 'Der für die Supermajoritäts-Entscheidungsregel erforderliche Prozentsatz (typischerweise 60-67%)',
+  [tokens.polls.help.threshold_percent]: 'Der für die Schwellenwert-Entscheidungsregel erforderliche Mindestprozentsatz',
+  [tokens.polls.help.winners_count]: 'Anzahl der zu wählenden Gewinneroptionen (verwendet mit Top-K-Regel)',
+
+  // Polls: Deaktivierungsgründe
+  [tokens.polls.disableReason.saving]: 'Bitte warten, Speichervorgang läuft',
+  [tokens.polls.disableReason.unsaved]: 'Bitte speichern Sie zuerst Ihre Änderungen',
+  [tokens.polls.disableReason.noPoll]: 'Umfrage muss zuerst gespeichert werden',
+  [tokens.polls.disableReason.invalidTransition]: 'Diese Statusübergang ist nicht erlaubt',
+  [tokens.polls.disableReason.hasErrors]: 'Formular hat Validierungsfehler',
+  [tokens.polls.disableReason.noOptions]: 'Bitte fügen Sie Umfrageoptionen im Bereich Optionen unten hinzu',
+  [tokens.polls.disableReason.pastDate]: 'Startdatum muss heute oder in der Zukunft sein',
+
+  // Polls: Aktionsmeldungen
+  [tokens.polls.actionPublishSuccess]: 'Umfrage veröffentlicht',
+  [tokens.polls.actionPublishError]: 'Fehler beim Veröffentlichen der Umfrage',
+  [tokens.polls.returnedToDraft]: 'Umfrage zurück zum Entwurf verschoben',
+  [tokens.polls.returnToDraftError]: 'Fehler beim Verschieben der Umfrage zum Entwurf',
+  [tokens.polls.closeError]: 'Fehler beim Schließen der Umfrage',
+
+  // Polls: Bestätigungsdialoge
+  [tokens.polls.confirmActivate.title]: 'Umfrage Aktivieren',
+  [tokens.polls.confirmActivate.confirm]: 'Jetzt Aktivieren',
+  [tokens.polls.confirmActivate.message]: 'Sind Sie sicher, dass Sie diese Umfrage aktivieren möchten? Wenn aktiviert, werden alle Kunden sofort benachrichtigt und können mit der Abstimmung beginnen. Das geplante Datum/Zeit wird ignoriert.',
+  [tokens.polls.confirmSchedule.title]: 'Umfrage Planen',
+  [tokens.polls.confirmSchedule.confirm]: 'Planen',
+  [tokens.polls.confirmSchedule.message]: 'Diese Umfrage wird geplant und automatisch zum angegebenen Startdatum und -zeit aktiviert. Kunden werden benachrichtigt, wenn die Umfrage aktiv wird.',
+  [tokens.polls.confirmClose.title]: 'Umfrage Schließen',
+  [tokens.polls.confirmClose.confirm]: 'Umfrage Schließen',
+  [tokens.polls.confirmClose.message]: 'Sind Sie sicher, dass Sie diese Umfrage schließen möchten? Eine geschlossene Umfrage kann nicht wieder geöffnet werden, und die Abstimmungsergebnisse sind endgültig.',
+
+  // Common: Formularstatus
+  [tokens.common.formSubmitting]: 'Senden...',
 };

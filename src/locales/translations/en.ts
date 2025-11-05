@@ -1074,6 +1074,11 @@ export const en = {
   [tokens.polls.status.active]: 'Active',
   [tokens.polls.status.closed]: 'Closed',
   [tokens.polls.status.archived]: 'Archived',
+  [tokens.polls.status.actions.draft]: 'Return to draft',
+  [tokens.polls.status.actions.scheduled]: 'Schedule',
+  [tokens.polls.status.actions.active]: 'Activate',
+  [tokens.polls.status.actions.closed]: 'Close',
+  [tokens.polls.status.actions.archived]: 'Archive',
   [tokens.polls.voteStatus.cast]: 'Cast',
   [tokens.polls.voteStatus.revoked]: 'Revoked',
   [tokens.polls.votesList]: 'Votes List',
@@ -1090,6 +1095,50 @@ export const en = {
   [tokens.polls.scoreAggHelp.tooltip]: 'How score aggregation works',
   [tokens.polls.scoreAggHelp.sum]: 'Sum: Adds all voter scores for each option',
   [tokens.polls.scoreAggHelp.avg]: 'Average: Averages voter scores for each option',
+
+  // Polls: Help section
+  [tokens.polls.help.title]: 'How the poll system works',
+  [tokens.polls.help.tooltip]: 'How voting works',
+  [tokens.polls.help.openInfo]: 'More info',
+  [tokens.polls.help.plurality]: 'Plurality: Option with the most votes wins, regardless of majority.',
+  [tokens.polls.help.absolute_majority]: 'Absolute Majority: Option must receive more than 50% of total votes to win.',
+  [tokens.polls.help.supermajority]: 'Supermajority: Option must receive the specified percentage (usually 60-67%) to win.',
+  [tokens.polls.help.threshold]: 'Threshold: Option must receive at least the specified percentage to be considered.',
+  [tokens.polls.help.top_k]: 'Top-K: The top K options with the most votes are selected as winners.',
+  [tokens.polls.help.supermajority_percent]: 'The percentage required for supermajority decision rule (typically 60-67%)',
+  [tokens.polls.help.threshold_percent]: 'The minimum percentage required for threshold decision rule',
+  [tokens.polls.help.winners_count]: 'Number of winning options to select (used with Top-K rule)',
+  [tokens.polls.help.submissionStateTransitions]: 'Submitting a poll',
+
+  // Polls: Disable reasons
+  [tokens.polls.disableReason.saving]: 'Please wait, saving in progress',
+  [tokens.polls.disableReason.unsaved]: 'Please save your changes first',
+  [tokens.polls.disableReason.noPoll]: 'Poll must be saved first',
+  [tokens.polls.disableReason.invalidTransition]: 'This status transition is not allowed',
+  [tokens.polls.disableReason.hasErrors]: 'Form has validation errors',
+  [tokens.polls.disableReason.noOptions]: 'Please add poll options in the Options section below',
+  [tokens.polls.disableReason.pastDate]: 'Start date must be today or in the future',
+
+  // Polls: Action messages
+  [tokens.polls.actionPublishSuccess]: 'Poll published',
+  [tokens.polls.actionPublishError]: 'Failed to publish poll',
+  [tokens.polls.returnedToDraft]: 'Poll moved back to draft',
+  [tokens.polls.returnToDraftError]: 'Failed to move poll to draft',
+  [tokens.polls.closeError]: 'Failed to close poll',
+
+  // Polls: Confirmation dialogs
+  [tokens.polls.confirmActivate.title]: 'Activate Poll',
+  [tokens.polls.confirmActivate.confirm]: 'Activate Now',
+  [tokens.polls.confirmActivate.message]: 'Are you sure you want to activate this poll? When activated, all clients will be immediately notified and can start voting. The scheduled date/time will be ignored.',
+  [tokens.polls.confirmSchedule.title]: 'Schedule Poll',
+  [tokens.polls.confirmSchedule.confirm]: 'Schedule',
+  [tokens.polls.confirmSchedule.message]: 'This poll will be scheduled and automatically activated at the specified start date and time. Clients will be notified when the poll becomes active.',
+  [tokens.polls.confirmClose.title]: 'Close Poll',
+  [tokens.polls.confirmClose.confirm]: 'Close Poll',
+  [tokens.polls.confirmClose.message]: 'Are you sure you want to close this poll? A closed poll cannot be reopened, and the poll vote results will be final.',
+
+  // Common: Form states
+  [tokens.common.formSubmitting]: 'Submitting...',
 
   // Added automatically: missing tokens (2025-10-30T07:18:42.664Z)
   [tokens.common.lblGeneral]: 'General',

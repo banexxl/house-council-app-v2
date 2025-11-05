@@ -1471,7 +1471,7 @@ export default function PollCreate({
                                                                  return (
                                                                       <ListItem key={key}>
                                                                            <ListItemText
-                                                                                primary={`${label}: ${typeof err === 'string' ? err : JSON.stringify(err)}`}
+                                                                                primary={`${typeof err === 'string' ? err : JSON.stringify(err)}`}
                                                                                 slotProps={{ primary: { variant: 'caption', color: 'error' } }}
                                                                            />
                                                                       </ListItem>
@@ -1511,7 +1511,9 @@ export default function PollCreate({
                                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ ml: 1 }}>
                                         {availableStatuses.map((status) => {
                                              const fallbackLabel = status.charAt(0).toUpperCase() + status.slice(1);
-                                             const statusLabel = t(`polls.status.${status}` as any, { defaultValue: fallbackLabel });
+                                             console.log('status', t(`polls.status.actions.${status}`));
+
+                                             const statusLabel = t(`polls.status.actions.${status}`, { defaultValue: fallbackLabel });
                                              const isDisabled =
                                                   statusControlsDisabled ||
                                                   !canTransitionToStatus(status) ||

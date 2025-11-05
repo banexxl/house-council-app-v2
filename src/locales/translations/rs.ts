@@ -542,7 +542,7 @@ export const rs = {
      [tokens.nav.orderList]: 'Porudžbine',
      [tokens.nav.overview]: 'Pregled',
      [tokens.nav.pages]: 'Stranice',
-     [tokens.nav.polls]: 'Glasanja',
+     [tokens.nav.polls]: 'Ankete',
      [tokens.nav.pollsCreate]: 'Kreiraj anketu',
      [tokens.nav.postCreate]: 'Kreiraj objavu',
      [tokens.nav.postDetails]: 'Detalji objave',
@@ -589,8 +589,8 @@ export const rs = {
      [tokens.polls.btnReopenPoll]: 'Ponovo otvori glasanje',
      [tokens.polls.btnPublishPoll]: 'Objavi anketu',
      [tokens.polls.btnReturnToDraft]: 'Vrati u nacrt',
-     [tokens.polls.closed]: 'Glasanje zatvoreno',
-     [tokens.polls.reopened]: 'Glasanje ponovo otvoreno',
+     [tokens.polls.closed]: 'Anketa zatvorena',
+     [tokens.polls.reopened]: 'Anketa ponovo otvorena',
      [tokens.polls.votesList]: 'Lista glasova',
      [tokens.polls.noVotesYet]: 'Još nema glasova',
      [tokens.polls.selectFiles]: 'Izaberi fajlove',
@@ -605,6 +605,11 @@ export const rs = {
      [tokens.polls.status.active]: 'Aktivno',
      [tokens.polls.status.closed]: 'Zatvoreno',
      [tokens.polls.status.archived]: 'Arhivirano',
+     [tokens.polls.status.actions.draft]: 'Vrati u nacrt',
+     [tokens.polls.status.actions.scheduled]: 'Zakaži',
+     [tokens.polls.status.actions.active]: 'Aktiviraj',
+     [tokens.polls.status.actions.closed]: 'Zatvori',
+     [tokens.polls.status.actions.archived]: 'Arhiviraj',
      [tokens.polls.voteStatus.cast]: 'Glasano',
      [tokens.polls.voteStatus.revoked]: 'Povučeno',
      [tokens.polls.rules.plurality]: 'Relativna većina',
@@ -1088,4 +1093,40 @@ export const rs = {
      [tokens.errors.unauthorized.header]: 'Greška autorizacije',
      [tokens.errors.unauthorized.subheader]: 'Greška autorizacije',
      [tokens.errors.unauthorized.description]: 'Nemate dozvolu za pristup ovoj stranici',
+
+     // Polls: Pomoć
+     [tokens.polls.help.openInfo]: 'Više informacija',
+     [tokens.polls.help.supermajority_percent]: 'Procenat potreban za superveću deciziju (obično 60-67%)',
+     [tokens.polls.help.threshold_percent]: 'Minimalni procenat potreban za prag deciziju',
+     [tokens.polls.help.winners_count]: 'Broj pobedničkih opcija za odabir (koristi se sa Top-K pravilom)',
+
+     // Polls: Razlozi onemogućavanja
+     [tokens.polls.disableReason.saving]: 'Molimo sačekajte, snimanje u toku',
+     [tokens.polls.disableReason.unsaved]: 'Molimo prvo sačuvajte vaše izmene',
+     [tokens.polls.disableReason.noPoll]: 'Anketa mora prvo biti sačuvana',
+     [tokens.polls.disableReason.invalidTransition]: 'Ovaj prelazak stanja nije dozvoljen',
+     [tokens.polls.disableReason.hasErrors]: 'Forma ima greške validacije',
+     [tokens.polls.disableReason.noOptions]: 'Molimo dodajte opcije ankete u sekciji Opcije ispod',
+     [tokens.polls.disableReason.pastDate]: 'Datum početka mora biti danas ili u budućnosti',
+
+     // Polls: Poruke o akcijama
+     [tokens.polls.actionPublishSuccess]: 'Anketa objavljena',
+     [tokens.polls.actionPublishError]: 'Neuspešno objavljivanje ankete',
+     [tokens.polls.returnedToDraft]: 'Anketa vraćena u nacrt',
+     [tokens.polls.returnToDraftError]: 'Neuspešno vraćanje ankete u nacrt',
+     [tokens.polls.closeError]: 'Neuspešno zatvaranje ankete',
+
+     // Polls: Dijalozi za potvrdu
+     [tokens.polls.confirmActivate.title]: 'Aktiviraj Anketu',
+     [tokens.polls.confirmActivate.confirm]: 'Aktiviraj Sada',
+     [tokens.polls.confirmActivate.message]: 'Da li ste sigurni da želite da aktivirate ovu anketu? Kada se aktivira, svi klijenti će biti odmah obavešteni i moći će da počnu glasanje. Zakazano vreme/datum će biti ignorisano.',
+     [tokens.polls.confirmSchedule.title]: 'Zakaži Anketu',
+     [tokens.polls.confirmSchedule.confirm]: 'Zakaži',
+     [tokens.polls.confirmSchedule.message]: 'Ova anketa će biti zakazana i automatski aktivirana u specificiranom datumu i vremenu početka. Klijenti će biti obavešteni kada anketa postane aktivna.',
+     [tokens.polls.confirmClose.title]: 'Zatvori Anketu',
+     [tokens.polls.confirmClose.confirm]: 'Zatvori Anketu',
+     [tokens.polls.confirmClose.message]: 'Da li ste sigurni da želite da zatvorite ovu anketu? Zatvorena anketa ne može biti ponovo otvorena, i rezultati glasanja će biti konačni.',
+
+     // Common: Stanja forme
+     [tokens.common.formSubmitting]: 'Slanje...',
 };

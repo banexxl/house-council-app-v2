@@ -148,7 +148,8 @@ export const tokens = {
     filterSearchByAddress: 'common.filterSearchByAddress',
     editorStartTyping: 'common.editorStartTyping',
     imageUploadRequirements: 'common.imageUploadRequirements',
-    formNotChanged: 'common.formNotChanged'
+    formNotChanged: 'common.formNotChanged',
+    formSubmitting: 'common.formSubmitting',
   },
   // (whatsapp section removed; keys moved under clients)
   account: {
@@ -476,6 +477,13 @@ export const tokens = {
       active: 'polls.status.active',
       closed: 'polls.status.closed',
       archived: 'polls.status.archived',
+      actions: {
+        draft: 'polls.status.actions.draft',
+        scheduled: 'polls.status.actions.scheduled',
+        active: 'polls.status.actions.active',
+        closed: 'polls.status.actions.closed',
+        archived: 'polls.status.actions.archived',
+      },
     },
     voteStatus: {
       cast: 'polls.voteStatus.cast',
@@ -500,6 +508,7 @@ export const tokens = {
     help: {
       title: 'polls.help.title',
       tooltip: 'polls.help.tooltip',
+      openInfo: 'polls.help.openInfo',
       plurality: 'polls.help.plurality',
       absolute_majority: 'polls.help.absolute_majority',
       supermajority: 'polls.help.supermajority',
@@ -509,6 +518,35 @@ export const tokens = {
       threshold_percent: 'polls.help.threshold_percent',
       winners_count: 'polls.help.winners_count',
       submissionStateTransitions: 'polls.help.submissionStateTransitions',
+    },
+    disableReason: {
+      saving: 'polls.disableReason.saving',
+      unsaved: 'polls.disableReason.unsaved',
+      noPoll: 'polls.disableReason.noPoll',
+      invalidTransition: 'polls.disableReason.invalidTransition',
+      hasErrors: 'polls.disableReason.hasErrors',
+      noOptions: 'polls.disableReason.noOptions',
+      pastDate: 'polls.disableReason.pastDate',
+    },
+    actionPublishSuccess: 'polls.actionPublishSuccess',
+    actionPublishError: 'polls.actionPublishError',
+    returnedToDraft: 'polls.returnedToDraft',
+    returnToDraftError: 'polls.returnToDraftError',
+    closeError: 'polls.closeError',
+    confirmActivate: {
+      title: 'polls.confirmActivate.title',
+      confirm: 'polls.confirmActivate.confirm',
+      message: 'polls.confirmActivate.message',
+    },
+    confirmSchedule: {
+      title: 'polls.confirmSchedule.title',
+      confirm: 'polls.confirmSchedule.confirm',
+      message: 'polls.confirmSchedule.message',
+    },
+    confirmClose: {
+      title: 'polls.confirmClose.title',
+      confirm: 'polls.confirmClose.confirm',
+      message: 'polls.confirmClose.message',
     },
   },
   calendar: {
