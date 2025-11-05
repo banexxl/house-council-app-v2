@@ -54,7 +54,7 @@ import {
      buildPollValidationSchema,
      pollInitialValues,
 } from 'src/types/poll';
-import { closePoll, createOrUpdatePoll, getPollById, reorderPolls } from 'src/app/actions/poll/poll-actions';
+import { closePoll, createOrUpdatePoll, getPollById, reorderPolls, updatePollStatus as updatePollStatusAction } from 'src/app/actions/poll/poll-actions';
 import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-option-actions';
 import { FileDropzone, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
@@ -66,9 +66,7 @@ import { SortableOptionsList } from 'src/components/drag-and-drop';
 import type { DBStoredImage } from 'src/components/file-dropzone';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { removeAllEntityFiles, removeEntityFile, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
-import { status } from 'nprogress';
-
-const POLL_STATUS_SEQUENCE: PollStatus[] = ['draft', 'scheduled', 'active', 'closed', 'archived'];
+import { PopupModal } from 'src/components/modal-dialog';
 
 type Props = {
      clientId: string;
@@ -95,6 +93,9 @@ export default function PollCreate({
      const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
      const [infoOpen, setInfoOpen] = useState(false);
      const [submitInfoOpen, setSubmitInfoOpen] = useState(false);
+     const [activateConfirmOpen, setActivateConfirmOpen] = useState(false);
+     const [scheduleConfirmOpen, setScheduleConfirmOpen] = useState(false);
+     const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
      const [attachments, setAttachments] = useState<DBStoredImage[]>(() => {
           return ((poll?.attachments ?? []) as unknown as DBStoredImage[]) || [];
      });
@@ -113,7 +114,7 @@ export default function PollCreate({
                const successMessage = messages?.success ?? `${statusLabel} status applied`;
                const errorMessage = messages?.error ?? `Failed to set status ${statusLabel}`;
                try {
-                    const { success, error } = await createOrUpdatePoll({ ...poll, status } as Poll);
+                    const { success, error } = await updatePollStatusAction(poll.id, status);
                     if (!success) throw new Error(error || errorMessage);
                     toast.success(successMessage);
                     router.refresh();
@@ -131,6 +132,7 @@ export default function PollCreate({
                success: t('polls.actionPublishSuccess', { defaultValue: 'Poll published' }),
                error: t('polls.actionPublishError', { defaultValue: 'Failed to publish poll' }),
           });
+          setActivateConfirmOpen(false);
      }, [updatePollStatus, t]);
 
      const handleReturnToDraft = useCallback(async () => {
@@ -142,6 +144,7 @@ export default function PollCreate({
 
      const handleSchedulePoll = useCallback(async () => {
           await updatePollStatus('scheduled');
+          setScheduleConfirmOpen(false);
      }, [updatePollStatus]);
 
      const handleArchivePoll = useCallback(async () => {
@@ -354,7 +357,6 @@ export default function PollCreate({
                     case 'active':
                          // From Active: can only Close, or move back to Draft
                          if (status === 'closed') return true;
-                         if (status === 'draft') return true;
                          return false;
                     case 'scheduled':
                          // From Scheduled: can go to Draft or Activate (publish)
@@ -385,7 +387,7 @@ export default function PollCreate({
                     return ['draft', 'active'] as PollStatus[];
                case 'active':
                     // From Active, show Close and (optionally) Draft backtrack
-                    return ['draft', 'closed'] as PollStatus[];
+                    return ['closed'] as PollStatus[];
                case 'closed':
                     // From Closed, only Archive is visible
                     return ['archived'] as PollStatus[];
@@ -395,7 +397,34 @@ export default function PollCreate({
           }
      }, [poll?.id, poll?.status]);
 
-     const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
+     const getDisableReason = useCallback((status: PollStatus): string => {
+          if (statusControlsDisabled) {
+               if (saving || formik.isSubmitting) return t('polls.disableReason.saving', { defaultValue: 'Please wait, saving in progress' });
+               if (formik.dirty) return t('polls.disableReason.unsaved', { defaultValue: 'Please save your changes first' });
+               if (!poll?.id) return t('polls.disableReason.noPoll', { defaultValue: 'Poll must be saved first' });
+          }
+
+          // Check specific reasons for schedule/activate buttons first
+          if (status === 'scheduled' || status === 'active') {
+               const reasons = [];
+               if (hasErrors) reasons.push(t('polls.disableReason.hasErrors', { defaultValue: 'Form has validation errors' }));
+               if (!hasAtLeastOneOption) {
+                    const optionCount = Array.isArray((formik.values as any)?.options) ? (formik.values as any).options.length : (poll?.options?.length ?? 0);
+                    reasons.push(t('polls.disableReason.noOptions', {
+                         defaultValue: optionCount === 0 ? 'Please add poll options in the Options section below' : 'At least one poll option is required'
+                    }));
+               }
+               if (status === 'active' && !startsAtIsFutureOrToday) reasons.push(t('polls.disableReason.pastDate', { defaultValue: 'Start date must be today or in the future' }));
+               if (reasons.length > 0) return reasons.join('. ');
+          }
+
+          // Only check general transition rules if no specific reasons were found
+          if (!canTransitionToStatus(status)) {
+               return t('polls.disableReason.invalidTransition', { defaultValue: 'This status transition is not allowed' });
+          }
+
+          return '';
+     }, [statusControlsDisabled, saving, formik.isSubmitting, formik.dirty, poll?.id, canTransitionToStatus, hasErrors, hasAtLeastOneOption, startsAtIsFutureOrToday, t]); const handleFilesDropWithUrls = async (newFiles: DropFile[]) => {
           if (isFormLocked) return;
           if (!poll?.id) {
                toast.error(t('common.actionSaveError') || 'Save poll first');
@@ -503,6 +532,15 @@ export default function PollCreate({
           [poll?.id, router]
      );
 
+     const handleClosePoll = useCallback(async () => {
+          await handleLifecycleAction({
+               action: closePoll,
+               successMessage: t('polls.closed', { defaultValue: 'Poll closed' }),
+               errorMessage: t('polls.closeError', { defaultValue: 'Failed to close poll' }),
+          });
+          setCloseConfirmOpen(false);
+     }, [handleLifecycleAction, t]);
+
      const handleStatusClick = useCallback(
           async (status: PollStatus) => {
                if (!poll?.id || saving || !canTransitionToStatus(status)) return;
@@ -511,19 +549,15 @@ export default function PollCreate({
                          await handleReturnToDraft();
                          break;
                     case 'scheduled':
-                         await handleSchedulePoll();
+                         setScheduleConfirmOpen(true);
                          break;
                     case 'active':
                          // Reopen from closed is disabled; only allow publish from draft/scheduled
-                         await handlePublishPoll();
+                         setActivateConfirmOpen(true);
                          break;
                     case 'closed':
                          if (poll.status === 'active') {
-                              await handleLifecycleAction({
-                                   action: closePoll,
-                                   successMessage: t('polls.closed', { defaultValue: 'Poll closed' }),
-                                   errorMessage: t('polls.closeError', { defaultValue: 'Failed to close poll' }),
-                              });
+                              setCloseConfirmOpen(true);
                          } else {
                               await updatePollStatus('closed');
                          }
@@ -545,6 +579,7 @@ export default function PollCreate({
                handlePublishPoll,
                handleLifecycleAction,
                handleArchivePoll,
+               handleClosePoll,
                updatePollStatus,
                t,
           ]
@@ -1481,6 +1516,26 @@ export default function PollCreate({
                                                   statusControlsDisabled ||
                                                   !canTransitionToStatus(status) ||
                                                   ((status === 'scheduled' || status === 'active') && (hasErrors || !hasAtLeastOneOption));
+                                             const disableReason = isDisabled ? getDisableReason(status) : '';
+
+                                             // Show tooltips for schedule and activate buttons when disabled
+                                             if ((status === 'scheduled' || status === 'active') && isDisabled && disableReason) {
+                                                  return (
+                                                       <Tooltip key={status} title={disableReason} placement="top">
+                                                            <span>
+                                                                 <Button
+                                                                      variant="outlined"
+                                                                      color="primary"
+                                                                      disabled={isDisabled}
+                                                                      onClick={() => handleStatusClick(status)}
+                                                                 >
+                                                                      {statusLabel}
+                                                                 </Button>
+                                                            </span>
+                                                       </Tooltip>
+                                                  );
+                                             }
+
                                              return (
                                                   <Button
                                                        key={status}
@@ -1647,6 +1702,57 @@ export default function PollCreate({
                          <Button onClick={() => setInfoOpen(false)}>{t('common.btnClose') || 'Close'}</Button>
                     </DialogActions>
                </Dialog>
+
+               {/* Activate Poll Confirmation Dialog */}
+               <PopupModal
+                    isOpen={activateConfirmOpen}
+                    onClose={() => setActivateConfirmOpen(false)}
+                    onConfirm={handlePublishPoll}
+                    title={t('polls.confirmActivate.title', { defaultValue: 'Activate Poll' })}
+                    type="confirmation"
+                    confirmText={t('polls.confirmActivate.confirm', { defaultValue: 'Activate Now' })}
+                    cancelText={t('common.btnCancel', { defaultValue: 'Cancel' })}
+               >
+                    <Typography>
+                         {t('polls.confirmActivate.message', {
+                              defaultValue: 'Are you sure you want to activate this poll? When activated, all clients will be immediately notified and can start voting. The scheduled date/time will be ignored.'
+                         })}
+                    </Typography>
+               </PopupModal>
+
+               {/* Schedule Poll Confirmation Dialog */}
+               <PopupModal
+                    isOpen={scheduleConfirmOpen}
+                    onClose={() => setScheduleConfirmOpen(false)}
+                    onConfirm={handleSchedulePoll}
+                    title={t('polls.confirmSchedule.title', { defaultValue: 'Schedule Poll' })}
+                    type="confirmation"
+                    confirmText={t('polls.confirmSchedule.confirm', { defaultValue: 'Schedule' })}
+                    cancelText={t('common.btnCancel', { defaultValue: 'Cancel' })}
+               >
+                    <Typography>
+                         {t('polls.confirmSchedule.message', {
+                              defaultValue: 'This poll will be scheduled and automatically activated at the specified start date and time. Clients will be notified when the poll becomes active.'
+                         })}
+                    </Typography>
+               </PopupModal>
+
+               {/* Close Poll Confirmation Dialog */}
+               <PopupModal
+                    isOpen={closeConfirmOpen}
+                    onClose={() => setCloseConfirmOpen(false)}
+                    onConfirm={handleClosePoll}
+                    title={t('polls.confirmClose.title', { defaultValue: 'Close Poll' })}
+                    type="confirmation"
+                    confirmText={t('polls.confirmClose.confirm', { defaultValue: 'Close Poll' })}
+                    cancelText={t('common.btnCancel', { defaultValue: 'Cancel' })}
+               >
+                    <Typography>
+                         {t('polls.confirmClose.message', {
+                              defaultValue: 'Are you sure you want to close this poll? A closed poll cannot be reopened, and the poll vote results will be final.'
+                         })}
+                    </Typography>
+               </PopupModal>
           </Box >
      );
 }

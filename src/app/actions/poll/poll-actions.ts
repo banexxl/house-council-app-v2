@@ -182,31 +182,11 @@ export async function deletePoll(id: string): Promise<{ success: boolean; error?
 }
 
 export async function closePoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
-    const t0 = Date.now();
-    const supabase = await useServerSideSupabaseAnonClient();
-    const payload: Poll = { status: 'closed', closed_at: new Date().toISOString() } as Poll;
-    const { data, error } = await supabase.from(TABLES.POLLS).update(payload).eq('id', id).select().single();
-    if (error) {
-        await logServerAction({ action: 'closePoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
-        return { success: false, error: error.message };
-    }
-    revalidatePath(`/dashboard/polls/${data?.id}`);
-    await logServerAction({ action: 'closePoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
-    return { success: true, data: data as Poll };
+    return updatePollStatus(id, 'closed');
 }
 
 export async function reopenPoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
-    const t0 = Date.now();
-    const supabase = await useServerSideSupabaseAnonClient();
-    const payload: Poll = { status: 'active', closed_at: null } as Poll;
-    const { data, error } = await supabase.from(TABLES.POLLS).update(payload).eq('id', id).select().single();
-    if (error) {
-        await logServerAction({ action: 'reopenPoll', duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
-        return { success: false, error: error.message };
-    }
-    revalidatePath(`/dashboard/polls/${data?.id}`);
-    await logServerAction({ action: 'reopenPoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
-    return { success: true, data: data as Poll };
+    return updatePollStatus(id, 'active');
 }
 
 /**
@@ -262,5 +242,87 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
 
     await logServerAction({ action: 'createOrUpdatePoll', duration_ms: Date.now() - t0, error: '', payload: { mode: 'create', id: pollId }, status: 'success', type: 'db', user_id: null });
     return { success: true, data: created as Poll };
+}
+
+/**
+ * Generic function to update poll status
+ */
+export async function updatePollStatus(id: string, status: PollStatus): Promise<{ success: boolean; error?: string; data?: Poll }> {
+    const t0 = Date.now();
+    const supabase = await useServerSideSupabaseAnonClient();
+
+    // Prepare update payload based on status
+    const updatePayload: Partial<Poll> = { status };
+
+    // Add specific fields for certain status transitions
+    if (status === 'closed') {
+        updatePayload.closed_at = new Date().toISOString();
+    } else if (status === 'active') {
+        updatePayload.closed_at = null; // Clear closed_at when reopening
+    }
+
+    const { data, error } = await supabase
+        .from(TABLES.POLLS)
+        .update(updatePayload)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        await logServerAction({ action: 'updatePollStatus', duration_ms: Date.now() - t0, error: error.message, payload: { id, status }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: error.message };
+    }
+
+    revalidatePath(`/dashboard/polls/${data?.id}`);
+    await logServerAction({ action: 'updatePollStatus', duration_ms: Date.now() - t0, error: '', payload: { id, status }, status: 'success', type: 'db', user_id: null });
+    return { success: true, data: data as Poll };
+}
+
+/**
+ * Activate a scheduled poll if its start time has arrived
+ */
+export async function activateScheduledPoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
+    const t0 = Date.now();
+    const supabase = await useServerSideSupabaseAnonClient();
+
+    // First get the poll to check its status and start time
+    const { data: poll, error: fetchError } = await supabase
+        .from(TABLES.POLLS)
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (fetchError) {
+        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: fetchError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error: fetchError.message };
+    }
+
+    if (poll.status !== 'scheduled') {
+        const error = `Poll is not scheduled (current status: ${poll.status})`;
+        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error };
+    }
+
+    // Check if start time has arrived (using current time)
+    const now = new Date();
+    const startsAt = poll.starts_at ? new Date(poll.starts_at) : null;
+
+    if (!startsAt || now < startsAt) {
+        const error = 'Poll start time is in the future';
+        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        return { success: false, error };
+    }
+
+    // Use the generic status update function
+    const result = await updatePollStatus(id, 'active');
+
+    // Log the specific action completion
+    if (result.success) {
+        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
+    } else {
+        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: result.error || 'Update failed', payload: { id }, status: 'fail', type: 'db', user_id: null });
+    }
+
+    return result;
 }
 
