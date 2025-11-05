@@ -1511,8 +1511,6 @@ export default function PollCreate({
                                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ ml: 1 }}>
                                         {availableStatuses.map((status) => {
                                              const fallbackLabel = status.charAt(0).toUpperCase() + status.slice(1);
-                                             console.log('status', t(`polls.status.actions.${status}`));
-
                                              const statusLabel = t(`polls.status.actions.${status}`, { defaultValue: fallbackLabel });
                                              const isDisabled =
                                                   statusControlsDisabled ||
