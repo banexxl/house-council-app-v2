@@ -1096,8 +1096,8 @@ export const rs = {
 
      // Polls: Pomoć
      [tokens.polls.help.openInfo]: 'Više informacija',
-     [tokens.polls.help.supermajority_percent]: 'Procenat potreban za superveću deciziju (obično 60-67%)',
-     [tokens.polls.help.threshold_percent]: 'Minimalni procenat potreban za prag deciziju',
+     [tokens.polls.help.supermajority_percent]: 'Procenat potreban za odluku (obično 60-67%)',
+     [tokens.polls.help.threshold_percent]: 'Minimalni procenat potreban za olduku',
      [tokens.polls.help.winners_count]: 'Broj pobedničkih opcija za odabir (koristi se sa Top-K pravilom)',
 
      // Polls: Razlozi onemogućavanja

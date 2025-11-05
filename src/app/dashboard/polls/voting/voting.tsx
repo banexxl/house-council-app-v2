@@ -27,7 +27,7 @@ import {
      ListItemText,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { Poll, PollVote, PollType } from 'src/types/poll';
+import { Poll, PollVote, PollType, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
 import { Tenant } from 'src/types/tenant';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { submitVote, getTenantVote, revokeTenantVote } from 'src/app/actions/poll/votes/voting-actions';
@@ -393,7 +393,7 @@ export function Voting({ polls, tenant }: VotingProps) {
                                                                       {poll.title}
                                                                  </Typography>
                                                                  <Chip
-                                                                      label={poll.status}
+                                                                      label={pollStatusLabel(t, poll.status)}
                                                                       color={poll.status === 'active' ? 'success' : 'warning'}
                                                                       size="small"
                                                                  />
@@ -404,7 +404,7 @@ export function Voting({ polls, tenant }: VotingProps) {
                                                                  </Typography>
                                                             )}
                                                             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                                 <Chip label={poll.type.replace('_', ' ')} size="small" variant="outlined" />
+                                                                 <Chip label={pollTypeLabel(t, poll.type)} size="small" variant="outlined" />
                                                                  {poll.ends_at && (
                                                                       <Chip
                                                                            label={`Ends: ${new Date(poll.ends_at).toLocaleDateString()}`}

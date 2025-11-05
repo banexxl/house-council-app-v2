@@ -449,6 +449,7 @@ export async function getTenantVote(poll_id: string): Promise<{
                .eq('poll_id', poll_id)
                .eq('tenant_id', tenant.id)
                .single();
+          console.log('poll votes error', voteError);
 
           if (voteError && voteError.code !== 'PGRST116') {
                await logServerAction({
