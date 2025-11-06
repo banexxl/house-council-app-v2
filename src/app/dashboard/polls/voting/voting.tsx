@@ -38,7 +38,7 @@ import {
      Tab,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { Poll, PollVote, PollType, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
+import { Poll, PollVote, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
 import { Tenant } from 'src/types/tenant';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { submitVote, getTenantVote, revokeTenantVote, getPollResults } from 'src/app/actions/poll/votes/voting-actions';
@@ -141,12 +141,12 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                if (success && data) {
                     setPollResults(data);
                } else {
-                    toast.error(error || 'Failed to load poll results');
+                    toast.error(error || t('polls.errors.failedToLoadResults'));
                     setPollResults(null);
                }
           } catch (error) {
                console.error('Failed to load poll results:', error);
-               toast.error('Failed to load poll results');
+               toast.error(t('polls.errors.failedToLoadResults'));
                setPollResults(null);
           } finally {
                setIsLoadingResults(false);
@@ -167,18 +167,18 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                });
 
                if (success) {
-                    toast.success(existingVote ? 'Vote updated successfully!' : 'Vote submitted successfully!');
+                    toast.success(existingVote ? t('polls.errors.voteUpdatedSuccess') : t('polls.errors.voteSubmittedSuccess'));
                     // Reload the existing vote to reflect changes
                     const { success: loadSuccess, data } = await getTenantVote(selectedPoll.id);
                     if (loadSuccess && data) {
                          setExistingVote(data);
                     }
                } else {
-                    toast.error(error || 'Failed to submit vote');
+                    toast.error(error || t('polls.errors.failedToSubmitVote'));
                }
           } catch (error) {
                console.error('Vote submission failed:', error);
-               toast.error('Failed to submit vote');
+               toast.error(t('polls.errors.failedToSubmitVote'));
           } finally {
                setIsSubmitting(false);
           }
@@ -192,15 +192,15 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                const { success, error } = await revokeTenantVote(selectedPoll.id);
 
                if (success) {
-                    toast.success('Vote revoked successfully!');
+                    toast.success(t('polls.errors.voteRevokedSuccess'));
                     setExistingVote(null);
                     resetVoteForm();
                } else {
-                    toast.error(error || 'Failed to revoke vote');
+                    toast.error(error || t('polls.errors.failedToRevokeVote'));
                }
           } catch (error) {
                console.error('Vote revocation failed:', error);
-               toast.error('Failed to revoke vote');
+               toast.error(t('polls.errors.failedToRevokeVote'));
           } finally {
                setIsSubmitting(false);
           }
@@ -213,13 +213,13 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                case 'yes_no':
                     return (
                          <FormControl component="fieldset">
-                              <FormLabel component="legend">Your Choice</FormLabel>
+                              <FormLabel component="legend">{t('polls.voting.yourChoice')}</FormLabel>
                               <RadioGroup
                                    value={voteData.choice_bool?.toString() || ''}
                                    onChange={(e) => setVoteData({ choice_bool: e.target.value === 'true' })}
                               >
-                                   <FormControlLabel value="true" control={<Radio />} label="Yes" />
-                                   <FormControlLabel value="false" control={<Radio />} label="No" />
+                                   <FormControlLabel value="true" control={<Radio />} label={t('common.lblYes')} />
+                                   <FormControlLabel value="false" control={<Radio />} label={t('common.lblNo')} />
                               </RadioGroup>
                          </FormControl>
                     );
@@ -227,7 +227,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                case 'single_choice':
                     return (
                          <FormControl component="fieldset">
-                              <FormLabel component="legend">Select One Option</FormLabel>
+                              <FormLabel component="legend">{t('polls.voting.selectOneOption')}</FormLabel>
                               <RadioGroup
                                    value={voteData.choice_option_ids?.[0] || ''}
                                    onChange={(e) => setVoteData({ choice_option_ids: [e.target.value] })}
@@ -249,7 +249,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                     return (
                          <FormControl component="fieldset">
                               <FormLabel component="legend">
-                                   Select Options (max {maxChoices})
+                                   {t('polls.voting.selectMultipleOptions')} {maxChoices})
                               </FormLabel>
                               <FormGroup>
                                    {selectedPoll.options.map((option) => (
@@ -285,7 +285,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                     const ranks = voteData.ranks || [];
                     return (
                          <FormControl component="fieldset" sx={{ width: '100%' }}>
-                              <FormLabel component="legend">Rank Your Preferences (1 = highest)</FormLabel>
+                              <FormLabel component="legend">{t('polls.voting.rankPreferences')}</FormLabel>
                               <Stack spacing={2}>
                                    {selectedPoll.options.map((option) => {
                                         const currentRank = ranks.find(r => r.option_id === option.id)?.rank || '';
@@ -322,7 +322,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                     const scores = voteData.scores || [];
                     return (
                          <FormControl component="fieldset" sx={{ width: '100%' }}>
-                              <FormLabel component="legend">Rate Each Option (0-5 stars)</FormLabel>
+                              <FormLabel component="legend">{t('polls.voting.rateOptions')}</FormLabel>
                               <Stack spacing={2}>
                                    {selectedPoll.options.map((option) => {
                                         const currentScore = scores.find(s => s.option_id === option.id)?.score || 0;
@@ -385,7 +385,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                     if (statistics.yes_no_results) {
                          const pieOptions = {
                               chart: { type: 'pie' as const },
-                              labels: ['Yes', 'No'],
+                              labels: [t('common.lblYes'), t('common.lblNo')],
                               colors: ['#4caf50', '#f44336'],
                               legend: { position: 'bottom' as const },
                               responsive: [{
@@ -404,7 +404,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
 
                          return (
                               <Box>
-                                   <Typography variant="h6" gutterBottom>Vote Distribution</Typography>
+                                   <Typography variant="h6" gutterBottom>{t('polls.voting.voteDistribution')}</Typography>
                                    <Chart options={pieOptions} series={pieSeries} type="pie" height={300} />
                               </Box>
                          );
@@ -420,7 +420,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    categories: statistics.results_by_option.map((r: any) => r.option_label),
                                    labels: { style: { fontSize: '12px' } }
                               },
-                              yaxis: { title: { text: 'Number of Votes' } },
+                              yaxis: { title: { text: t('polls.voting.numberVotes') } },
                               colors: ['#2196f3'],
                               plotOptions: {
                                    bar: { horizontal: false, borderRadius: 4 }
@@ -429,7 +429,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                          };
 
                          const barSeries = [{
-                              name: 'Votes',
+                              name: t('polls.voting.votes'),
                               data: statistics.results_by_option.map((r: any) => r.count)
                          }];
 
@@ -451,11 +451,11 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                          return (
                               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="h6" gutterBottom>Vote Count by Option</Typography>
+                                        <Typography variant="h6" gutterBottom>{t('polls.voting.voteCountByOption')}</Typography>
                                         <Chart options={barOptions} series={barSeries} type="bar" height={300} />
                                    </Box>
                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="h6" gutterBottom>Vote Distribution</Typography>
+                                        <Typography variant="h6" gutterBottom>{t('polls.voting.voteDistribution')}</Typography>
                                         <Chart options={pieOptions} series={pieSeries} type="pie" height={300} />
                                    </Box>
                               </Box>
@@ -471,7 +471,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    categories: statistics.ranking_results.map((r: any) => r.option_label),
                                    labels: { style: { fontSize: '12px' } }
                               },
-                              yaxis: { title: { text: 'Total Points' } },
+                              yaxis: { title: { text: t('polls.voting.totalPoints') } },
                               colors: ['#ff9800'],
                               plotOptions: {
                                    bar: { horizontal: false, borderRadius: 4 }
@@ -480,13 +480,13 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                          };
 
                          const barSeries = [{
-                              name: 'Points',
+                              name: t('polls.voting.totalPoints'),
                               data: statistics.ranking_results.map((r: any) => r.total_points)
                          }];
 
                          return (
                               <Box>
-                                   <Typography variant="h6" gutterBottom>Ranking Results (by Total Points)</Typography>
+                                   <Typography variant="h6" gutterBottom>{t('polls.voting.rankingResults')}</Typography>
                                    <Chart options={barOptions} series={barSeries} type="bar" height={350} />
                               </Box>
                          );
@@ -501,7 +501,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    categories: statistics.score_results.map((r: any) => r.option_label),
                                    labels: { style: { fontSize: '12px' } }
                               },
-                              yaxis: { title: { text: 'Average Score' }, max: 5 },
+                              yaxis: { title: { text: t('polls.voting.averageScore') }, max: 5 },
                               colors: ['#9c27b0'],
                               plotOptions: {
                                    bar: { horizontal: false, borderRadius: 4 }
@@ -510,13 +510,13 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                          };
 
                          const barSeries = [{
-                              name: 'Average Score',
+                              name: t('polls.voting.averageScore'),
                               data: statistics.score_results.map((r: any) => r.average_score)
                          }];
 
                          return (
                               <Box>
-                                   <Typography variant="h6" gutterBottom>Score Results (Average Rating)</Typography>
+                                   <Typography variant="h6" gutterBottom>{t('polls.voting.scoreResults')}</Typography>
                                    <Chart options={barOptions} series={barSeries} type="bar" height={350} />
                               </Box>
                          );
@@ -540,19 +540,19 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    <Table>
                                         <TableHead>
                                              <TableRow>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Votes</TableCell>
-                                                  <TableCell align="right">Percentage</TableCell>
+                                                  <TableCell>{t('polls.voting.option')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.votes')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.percentage')}</TableCell>
                                              </TableRow>
                                         </TableHead>
                                         <TableBody>
                                              <TableRow>
-                                                  <TableCell>Yes</TableCell>
+                                                  <TableCell>{t('common.lblYes')}</TableCell>
                                                   <TableCell align="right">{statistics.yes_no_results.yes}</TableCell>
                                                   <TableCell align="right">{statistics.yes_no_results.yes_percentage}%</TableCell>
                                              </TableRow>
                                              <TableRow>
-                                                  <TableCell>No</TableCell>
+                                                  <TableCell>{t('common.lblNo')}</TableCell>
                                                   <TableCell align="right">{statistics.yes_no_results.no}</TableCell>
                                                   <TableCell align="right">{statistics.yes_no_results.no_percentage}%</TableCell>
                                              </TableRow>
@@ -571,10 +571,10 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    <Table>
                                         <TableHead>
                                              <TableRow>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Votes</TableCell>
-                                                  <TableCell align="right">Percentage</TableCell>
-                                                  <TableCell>Progress</TableCell>
+                                                  <TableCell>{t('polls.voting.option')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.votes')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.percentage')}</TableCell>
+                                                  <TableCell>{t('polls.voting.progress')}</TableCell>
                                              </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -608,10 +608,10 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    <Table>
                                         <TableHead>
                                              <TableRow>
-                                                  <TableCell>Rank</TableCell>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Total Points</TableCell>
-                                                  <TableCell align="right">Average Score</TableCell>
+                                                  <TableCell>{t('polls.voting.rank')}</TableCell>
+                                                  <TableCell>{t('polls.voting.option')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.totalPoints')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.averageRank')}</TableCell>
                                              </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -637,12 +637,12 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    <Table>
                                         <TableHead>
                                              <TableRow>
-                                                  <TableCell>Rank</TableCell>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Average Score</TableCell>
-                                                  <TableCell align="right">Total Score</TableCell>
-                                                  <TableCell align="right">Vote Count</TableCell>
-                                                  <TableCell>Rating</TableCell>
+                                                  <TableCell>{t('polls.voting.rank')}</TableCell>
+                                                  <TableCell>{t('polls.voting.option')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.averageScore')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.totalScore')}</TableCell>
+                                                  <TableCell align="right">{t('polls.voting.voteCount')}</TableCell>
+                                                  <TableCell>{t('polls.voting.rating')}</TableCell>
                                              </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -674,40 +674,77 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                <Stack spacing={3}>
                     <EntityFormHeader
                          backHref="/dashboard/polls"
-                         backLabel="Back to Polls"
-                         title="Voting"
+                         backLabel={t('polls.voting.backToPolls')}
+                         title={t('polls.voting.title')}
                          breadcrumbs={[
-                              { title: 'Dashboard', href: '/dashboard' },
-                              { title: 'Polls', href: '/dashboard/polls' },
-                              { title: 'Voting' }
+                              { title: t('polls.voting.dashboard'), href: '/dashboard' },
+                              { title: t('polls.listTitle'), href: '/dashboard/polls' },
+                              { title: t('polls.voting.title') }
                          ]}
                     />
 
                     <Box sx={{ mb: 2 }}>
                          <Typography variant="body1" color="text.secondary">
-                              Participate in active building polls • {activePollsCount} active, {scheduledPollsCount} scheduled
+                              {t('polls.voting.participateText')} • {activePollsCount} {t('polls.status.active')}, {scheduledPollsCount} {t('polls.status.scheduled')}
                          </Typography>
                     </Box>
 
-                    {/* Tabs for Active/Closed Polls */}
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                         <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-                              <Tab label={`Active Polls (${activePollsCount + scheduledPollsCount})`} />
-                              <Tab label={`Results (${closedPolls.length})`} />
+                    {/* Tabs for Active/Closed Polls - Mobile Only */}
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', display: { xs: 'block', md: 'none' } }}>
+                         <Tabs
+                              value={tabValue}
+                              onChange={(_, newValue) => setTabValue(newValue)}
+                              slotProps={{
+                                   scrollButtons: {
+                                        sx: {
+                                             '&.Mui-disabled': {
+                                                  opacity: 0.4,
+                                                  display: 'inline-flex'
+                                             }
+                                        }
+                                   }
+                              }}
+                              sx={{
+                                   px: 0.5,
+                                   borderBottom: 1,
+                                   borderColor: 'divider',
+                              }}
+                         >
+                              <Tab
+                                   label={`${t('polls.voting.activePollsTab')} (${activePollsCount + scheduledPollsCount})`}
+                                   sx={{
+                                        px: 1.5,
+                                        minHeight: 42,
+                                        flexShrink: 0,
+                                        '&.Mui-selected': { fontWeight: 600 },
+                                   }}
+                              />
+                              <Tab
+                                   label={`${t('polls.voting.resultsTab')} (${closedPolls.length})`}
+                                   sx={{
+                                        px: 1.5,
+                                        minHeight: 42,
+                                        flexShrink: 0,
+                                        '&.Mui-selected': { fontWeight: 600 },
+                                   }}
+                              />
                          </Tabs>
                     </Box>
 
-                    {/* Active Polls Tab */}
-                    {tabValue === 0 && (
+                    {/* Active Polls Section */}
+                    <Box sx={{ display: { xs: tabValue === 0 ? 'block' : 'none', md: 'block' } }}>
+                         <Typography variant="h5" gutterBottom sx={{ display: { xs: 'none', md: 'block' } }}>
+                              {t('polls.voting.activePollsTab')} ({activePollsCount + scheduledPollsCount})
+                         </Typography>
                          <>
                               {polls.length === 0 ? (
                                    <Card>
                                         <CardContent>
                                              <Typography variant="h6" align="center" color="text.secondary">
-                                                  No active or scheduled polls found for your building
+                                                  {t('polls.voting.noActivePollsTitle')}
                                              </Typography>
                                              <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
-                                                  Check back later for new polls from your building management
+                                                  {t('polls.voting.noActivePollsMessage')}
                                              </Typography>
                                         </CardContent>
                                    </Card>
@@ -717,7 +754,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                         <Card sx={{ flex: 1 }}>
                                              <CardContent>
                                                   <Typography variant="h6" gutterBottom>
-                                                       Available Polls
+                                                       {t('polls.voting.availablePolls')}
                                                   </Typography>
                                                   <Stack spacing={2}>
                                                        {polls.map((poll) => (
@@ -754,7 +791,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                            <Chip label={pollTypeLabel(t, poll.type)} size="small" variant="outlined" />
                                                                            {poll.ends_at && (
                                                                                 <Chip
-                                                                                     label={`Ends: ${new Date(poll.ends_at).toLocaleDateString()}`}
+                                                                                     label={`${t('polls.voting.ends')}: ${new Date(poll.ends_at).toLocaleDateString()}`}
                                                                                      size="small"
                                                                                      variant="outlined"
                                                                                 />
@@ -773,7 +810,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                   {!selectedPoll ? (
                                                        <Box sx={{ textAlign: 'center', py: 4 }}>
                                                             <Typography variant="h6" color="text.secondary">
-                                                                 Select a poll to start voting
+                                                                 {t('polls.voting.selectPollToVote')}
                                                             </Typography>
                                                        </Box>
                                                   ) : (
@@ -797,10 +834,10 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                  <>
                                                                       {existingVote && existingVote.status === 'cast' && (
                                                                            <Alert severity="info">
-                                                                                You have already voted on this poll.
+                                                                                {t('polls.voting.alreadyVotedMessage')}
                                                                                 {selectedPoll.allow_change_until_deadline
-                                                                                     ? ' You can update your vote until the deadline.'
-                                                                                     : ' Vote changes are not allowed.'}
+                                                                                     ? ` ${t('polls.voting.canUpdateVote')}`
+                                                                                     : ''}
                                                                            </Alert>
                                                                       )}
 
@@ -821,7 +858,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                           onChange={(e) => setAbstain(e.target.checked)}
                                                                                      />
                                                                                 }
-                                                                                label="I choose to abstain from this vote"
+                                                                                label={t('polls.voting.abstainOption')}
                                                                            />
                                                                       )}
 
@@ -838,13 +875,13 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                                onChange={(e) => setIsAnonymous(e.target.checked)}
                                                                                           />
                                                                                      }
-                                                                                     label="Submit vote anonymously"
+                                                                                     label={t('polls.voting.anonymousVote')}
                                                                                 />
                                                                            )}
 
                                                                            {selectedPoll.allow_comments && (
                                                                                 <TextField
-                                                                                     label="Comment (optional)"
+                                                                                     label={t('polls.voting.commentOptional')}
                                                                                      multiline
                                                                                      rows={3}
                                                                                      value={comment}
@@ -865,7 +902,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                           onClick={handleVoteRevoke}
                                                                                           disabled={isSubmitting}
                                                                                      >
-                                                                                          Revoke Vote
+                                                                                          {t('polls.voting.revokeVote')}
                                                                                      </Button>
                                                                                 )}
 
@@ -876,10 +913,10 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
                                                                            >
                                                                                 {isSubmitting
-                                                                                     ? 'Submitting...'
+                                                                                     ? t('common.formSubmitting')
                                                                                      : existingVote?.status === 'cast'
-                                                                                          ? 'Update Vote'
-                                                                                          : 'Submit Vote'}
+                                                                                          ? t('polls.voting.updateVote')
+                                                                                          : t('polls.voting.submitVote')}
                                                                            </Button>
                                                                       </Stack>
 
@@ -897,16 +934,17 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                    </Stack>
                               )}
                          </>
-                    )}
 
-                    {/* Closed Polls Results Tab */}
-                    {tabValue === 1 && (
-                         <>
+                         {/* Closed Polls Results Section */}
+                         <Box sx={{ display: { xs: tabValue === 1 ? 'block' : 'none', md: 'block' }, mt: { md: 4 } }}>
+                              <Typography variant="h5" gutterBottom sx={{ display: { xs: 'none', md: 'block' } }}>
+                                   {t('polls.voting.resultsTab')} ({closedPolls.length})
+                              </Typography>
                               {closedPolls.length === 0 ? (
                                    <Card>
                                         <CardContent>
                                              <Typography variant="h6" align="center" color="text.secondary">
-                                                  No closed polls found for your building
+                                                  {t('polls.voting.noClosedPolls')}
                                              </Typography>
                                              <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
                                                   Completed polls will appear here with their results
@@ -975,7 +1013,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                   {!selectedClosedPoll ? (
                                                        <Box sx={{ textAlign: 'center', py: 4 }}>
                                                             <Typography variant="h6" color="text.secondary">
-                                                                 Select a poll to view results
+                                                                 {t('polls.voting.selectPollToViewResults')}
                                                             </Typography>
                                                        </Box>
                                                   ) : isLoadingResults ? (
@@ -998,7 +1036,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                             {/* Poll Statistics */}
                                                             <Paper sx={{ p: 2 }}>
                                                                  <Typography variant="h6" gutterBottom>
-                                                                      Participation Statistics
+                                                                      {t('polls.voting.participation')} Statistics
                                                                  </Typography>
                                                                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 3 }}>
                                                                       <Box sx={{ textAlign: 'center' }}>
@@ -1006,7 +1044,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                 {pollResults.statistics.total_votes}
                                                                            </Typography>
                                                                            <Typography variant="body2" color="text.secondary">
-                                                                                Total Votes
+                                                                                {t('polls.voting.totalVotes')}
                                                                            </Typography>
                                                                       </Box>
                                                                       <Box sx={{ textAlign: 'center' }}>
@@ -1014,7 +1052,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                 {pollResults.statistics.total_eligible}
                                                                            </Typography>
                                                                            <Typography variant="body2" color="text.secondary">
-                                                                                Eligible Voters
+                                                                                {t('polls.voting.eligibleVoters')}
                                                                            </Typography>
                                                                       </Box>
                                                                       <Box sx={{ textAlign: 'center' }}>
@@ -1022,7 +1060,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                 {pollResults.statistics.participation_rate}%
                                                                            </Typography>
                                                                            <Typography variant="body2" color="text.secondary">
-                                                                                Participation
+                                                                                {t('polls.voting.participation')}
                                                                            </Typography>
                                                                       </Box>
                                                                       <Box sx={{ textAlign: 'center' }}>
@@ -1030,7 +1068,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                                                 {pollResults.statistics.abstentions}
                                                                            </Typography>
                                                                            <Typography variant="body2" color="text.secondary">
-                                                                                Abstentions
+                                                                                {t('polls.voting.abstentions')}
                                                                            </Typography>
                                                                       </Box>
                                                                  </Box>
@@ -1044,7 +1082,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                             {/* Detailed Results Table */}
                                                             <Paper sx={{ p: 2 }}>
                                                                  <Typography variant="h6" gutterBottom>
-                                                                      Detailed Results
+                                                                      {t('polls.voting.pollResults')}
                                                                  </Typography>
                                                                  {renderResultsTable()}
                                                             </Paper>
@@ -1052,7 +1090,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                   ) : (
                                                        <Box sx={{ textAlign: 'center', py: 4 }}>
                                                             <Typography variant="h6" color="error">
-                                                                 Failed to load poll results
+                                                                 {t('polls.errors.failedToLoadResults')}
                                                             </Typography>
                                                        </Box>
                                                   )}
@@ -1060,8 +1098,8 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                         </Card>
                                    </Stack>
                               )}
-                         </>
-                    )}
+                         </Box>
+                    </Box>
                </Stack>
           </Container>
      );
