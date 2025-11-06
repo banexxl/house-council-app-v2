@@ -572,6 +572,7 @@ export async function revokeTenantVote(poll_id: string): Promise<{
                })
                .eq('poll_id', poll_id)
                .eq('tenant_id', tenant.id);
+          console.log('updateError', updateError);
 
           if (updateError) {
                await logServerAction({

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { useTranslation } from 'react-i18next';
 import { useFormik, getIn } from 'formik';
+import dynamic from 'next/dynamic';
 import {
      Box,
      Button,
@@ -37,6 +38,11 @@ import {
      List,
      ListItem,
      ListItemText,
+     Paper,
+     TableContainer,
+     LinearProgress,
+     Rating,
+     CircularProgress,
 } from '@mui/material';
 import Image from 'next/image';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -56,6 +62,7 @@ import {
 } from 'src/types/poll';
 import { closePoll, createOrUpdatePoll, getPollById, reorderPolls, updatePollStatus as updatePollStatusAction } from 'src/app/actions/poll/poll-actions';
 import { createPollOption, updatePollOption, deletePollOption } from 'src/app/actions/poll/poll-option-actions';
+import { getPollResults } from 'src/app/actions/poll/votes/voting-actions';
 import { FileDropzone, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -67,6 +74,9 @@ import type { DBStoredImage } from 'src/components/file-dropzone';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { removeAllEntityFiles, removeEntityFile, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 import { PopupModal } from 'src/components/modal-dialog';
+
+// Dynamic import for ApexCharts to avoid SSR issues
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 type Props = {
      clientId: string;
@@ -99,10 +109,39 @@ export default function PollCreate({
      const [attachments, setAttachments] = useState<DBStoredImage[]>(() => {
           return ((poll?.attachments ?? []) as unknown as DBStoredImage[]) || [];
      });
+     const [pollResults, setPollResults] = useState<any>(null);
+     const [loadingResults, setLoadingResults] = useState(false);
 
      useEffect(() => {
           setAttachments(((poll?.attachments ?? []) as unknown as DBStoredImage[]) || []);
      }, [poll?.attachments]);
+
+     // Load poll results when poll is present
+     useEffect(() => {
+          const loadPollResults = async () => {
+               if (!poll?.id) {
+                    setPollResults(null);
+                    return;
+               }
+
+               setLoadingResults(true);
+               try {
+                    const results = await getPollResults(poll.id);
+                    if (results.success && results.data) {
+                         setPollResults(results.data);
+                    } else {
+                         setPollResults(null);
+                    }
+               } catch (error) {
+                    console.error('Failed to load poll results:', error);
+                    setPollResults(null);
+               } finally {
+                    setLoadingResults(false);
+               }
+          };
+
+          loadPollResults();
+     }, [poll?.id]);
 
 
      const updatePollStatus = useCallback(
@@ -616,6 +655,300 @@ export default function PollCreate({
           const digits = raw.replace(/\D+/g, '');
           if (digits === '') return null;
           return parseInt(digits, 10);
+     };
+
+     const renderResultsChart = () => {
+          if (!pollResults || !poll) return null;
+
+          const { poll: resultPoll, statistics } = pollResults;
+
+          switch (poll.type) {
+               case 'yes_no':
+                    if (statistics.yes_no_results) {
+                         const pieOptions = {
+                              chart: { type: 'pie' as const },
+                              labels: ['Yes', 'No'],
+                              colors: ['#4caf50', '#f44336'],
+                              legend: { position: 'bottom' as const },
+                              responsive: [{
+                                   breakpoint: 480,
+                                   options: {
+                                        chart: { width: 200 },
+                                        legend: { position: 'bottom' as const }
+                                   }
+                              }]
+                         };
+
+                         const pieSeries = [
+                              statistics.yes_no_results.yes,
+                              statistics.yes_no_results.no
+                         ];
+
+                         return (
+                              <Box>
+                                   <Typography variant="h6" gutterBottom>Vote Distribution</Typography>
+                                   <Chart options={pieOptions} series={pieSeries} type="pie" height={300} />
+                              </Box>
+                         );
+                    }
+                    break;
+
+               case 'single_choice':
+               case 'multiple_choice':
+                    if (statistics.results_by_option) {
+                         const barOptions = {
+                              chart: { type: 'bar' as const },
+                              xaxis: {
+                                   categories: statistics.results_by_option.map((r: any) => r.option_label),
+                                   labels: { style: { fontSize: '12px' } }
+                              },
+                              yaxis: { title: { text: 'Number of Votes' } },
+                              colors: ['#2196f3'],
+                              plotOptions: {
+                                   bar: { horizontal: false, borderRadius: 4 }
+                              },
+                              dataLabels: { enabled: true }
+                         };
+
+                         const barSeries = [{
+                              name: 'Votes',
+                              data: statistics.results_by_option.map((r: any) => r.count)
+                         }];
+
+                         const pieOptions = {
+                              chart: { type: 'pie' as const },
+                              labels: statistics.results_by_option.map((r: any) => r.option_label),
+                              legend: { position: 'bottom' as const },
+                              responsive: [{
+                                   breakpoint: 480,
+                                   options: {
+                                        chart: { width: 200 },
+                                        legend: { position: 'bottom' as const }
+                                   }
+                              }]
+                         };
+
+                         const pieSeries = statistics.results_by_option.map((r: any) => r.count);
+
+                         return (
+                              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+                                   <Box sx={{ flex: 1 }}>
+                                        <Typography variant="h6" gutterBottom>Vote Count by Option</Typography>
+                                        <Chart options={barOptions} series={barSeries} type="bar" height={300} />
+                                   </Box>
+                                   <Box sx={{ flex: 1 }}>
+                                        <Typography variant="h6" gutterBottom>Vote Distribution</Typography>
+                                        <Chart options={pieOptions} series={pieSeries} type="pie" height={300} />
+                                   </Box>
+                              </Box>
+                         );
+                    }
+                    break;
+
+               case 'ranked_choice':
+                    if (statistics.ranking_results) {
+                         const barOptions = {
+                              chart: { type: 'bar' as const },
+                              xaxis: {
+                                   categories: statistics.ranking_results.map((r: any) => r.option_label),
+                                   labels: { style: { fontSize: '12px' } }
+                              },
+                              yaxis: { title: { text: 'Total Points' } },
+                              colors: ['#ff9800'],
+                              plotOptions: {
+                                   bar: { horizontal: false, borderRadius: 4 }
+                              },
+                              dataLabels: { enabled: true }
+                         };
+
+                         const barSeries = [{
+                              name: 'Points',
+                              data: statistics.ranking_results.map((r: any) => r.total_points)
+                         }];
+
+                         return (
+                              <Box>
+                                   <Typography variant="h6" gutterBottom>Ranking Results (by Total Points)</Typography>
+                                   <Chart options={barOptions} series={barSeries} type="bar" height={350} />
+                              </Box>
+                         );
+                    }
+                    break;
+
+               case 'score':
+                    if (statistics.score_results) {
+                         const barOptions = {
+                              chart: { type: 'bar' as const },
+                              xaxis: {
+                                   categories: statistics.score_results.map((r: any) => r.option_label),
+                                   labels: { style: { fontSize: '12px' } }
+                              },
+                              yaxis: { title: { text: 'Average Score' }, max: 5 },
+                              colors: ['#9c27b0'],
+                              plotOptions: {
+                                   bar: { horizontal: false, borderRadius: 4 }
+                              },
+                              dataLabels: { enabled: true, formatter: (val: number) => val.toFixed(2) }
+                         };
+
+                         const barSeries = [{
+                              name: 'Average Score',
+                              data: statistics.score_results.map((r: any) => r.average_score)
+                         }];
+
+                         return (
+                              <Box>
+                                   <Typography variant="h6" gutterBottom>Score Results (Average Rating)</Typography>
+                                   <Chart options={barOptions} series={barSeries} type="bar" height={350} />
+                              </Box>
+                         );
+                    }
+                    break;
+          }
+
+          return null;
+     };
+
+     const renderResultsTable = () => {
+          if (!pollResults || !poll) return null;
+
+          const { poll: resultPoll, statistics } = pollResults;
+
+          switch (poll.type) {
+               case 'yes_no':
+                    if (statistics.yes_no_results) {
+                         return (
+                              <TableContainer component={Paper}>
+                                   <Table>
+                                        <TableHead>
+                                             <TableRow>
+                                                  <TableCell>Option</TableCell>
+                                                  <TableCell align="right">Votes</TableCell>
+                                                  <TableCell align="right">Percentage</TableCell>
+                                             </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                             <TableRow>
+                                                  <TableCell>Yes</TableCell>
+                                                  <TableCell align="right">{statistics.yes_no_results.yes}</TableCell>
+                                                  <TableCell align="right">{statistics.yes_no_results.yes_percentage}%</TableCell>
+                                             </TableRow>
+                                             <TableRow>
+                                                  <TableCell>No</TableCell>
+                                                  <TableCell align="right">{statistics.yes_no_results.no}</TableCell>
+                                                  <TableCell align="right">{statistics.yes_no_results.no_percentage}%</TableCell>
+                                             </TableRow>
+                                        </TableBody>
+                                   </Table>
+                              </TableContainer>
+                         );
+                    }
+                    break;
+
+               case 'single_choice':
+               case 'multiple_choice':
+                    if (statistics.results_by_option) {
+                         return (
+                              <TableContainer component={Paper}>
+                                   <Table>
+                                        <TableHead>
+                                             <TableRow>
+                                                  <TableCell>Option</TableCell>
+                                                  <TableCell align="right">Votes</TableCell>
+                                                  <TableCell align="right">Percentage</TableCell>
+                                                  <TableCell>Progress</TableCell>
+                                             </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                             {statistics.results_by_option.map((result: any) => (
+                                                  <TableRow key={result.option_id}>
+                                                       <TableCell>{result.option_label}</TableCell>
+                                                       <TableCell align="right">{result.count}</TableCell>
+                                                       <TableCell align="right">{result.percentage}%</TableCell>
+                                                       <TableCell>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', width: 100 }}>
+                                                                 <LinearProgress
+                                                                      variant="determinate"
+                                                                      value={result.percentage}
+                                                                      sx={{ flex: 1, mr: 1 }}
+                                                                 />
+                                                            </Box>
+                                                       </TableCell>
+                                                  </TableRow>
+                                             ))}
+                                        </TableBody>
+                                   </Table>
+                              </TableContainer>
+                         );
+                    }
+                    break;
+
+               case 'ranked_choice':
+                    if (statistics.ranking_results) {
+                         return (
+                              <TableContainer component={Paper}>
+                                   <Table>
+                                        <TableHead>
+                                             <TableRow>
+                                                  <TableCell>Rank</TableCell>
+                                                  <TableCell>Option</TableCell>
+                                                  <TableCell align="right">Total Points</TableCell>
+                                                  <TableCell align="right">Average Score</TableCell>
+                                             </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                             {statistics.ranking_results.map((result: any, index: number) => (
+                                                  <TableRow key={result.option_id}>
+                                                       <TableCell>#{index + 1}</TableCell>
+                                                       <TableCell>{result.option_label}</TableCell>
+                                                       <TableCell align="right">{result.total_points}</TableCell>
+                                                       <TableCell align="right">{result.average_rank}</TableCell>
+                                                  </TableRow>
+                                             ))}
+                                        </TableBody>
+                                   </Table>
+                              </TableContainer>
+                         );
+                    }
+                    break;
+
+               case 'score':
+                    if (statistics.score_results) {
+                         return (
+                              <TableContainer component={Paper}>
+                                   <Table>
+                                        <TableHead>
+                                             <TableRow>
+                                                  <TableCell>Rank</TableCell>
+                                                  <TableCell>Option</TableCell>
+                                                  <TableCell align="right">Average Score</TableCell>
+                                                  <TableCell align="right">Total Score</TableCell>
+                                                  <TableCell align="right">Vote Count</TableCell>
+                                                  <TableCell>Rating</TableCell>
+                                             </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                             {statistics.score_results.map((result: any, index: number) => (
+                                                  <TableRow key={result.option_id}>
+                                                       <TableCell>#{index + 1}</TableCell>
+                                                       <TableCell>{result.option_label}</TableCell>
+                                                       <TableCell align="right">{result.average_score}</TableCell>
+                                                       <TableCell align="right">{result.total_score}</TableCell>
+                                                       <TableCell align="right">{result.vote_count}</TableCell>
+                                                       <TableCell>
+                                                            <Rating value={result.average_score} max={5} readOnly size="small" />
+                                                       </TableCell>
+                                                  </TableRow>
+                                             ))}
+                                        </TableBody>
+                                   </Table>
+                              </TableContainer>
+                         );
+                    }
+                    break;
+          }
+
+          return null;
      };
 
      return (
@@ -1397,52 +1730,75 @@ export default function PollCreate({
                               }
                          </Grid>
 
-                         {/* Votes moved after the grid so they appear last on mobile */}
-                         <Card>
-                              <CardHeader title={t('polls.votesList') || 'Votes'} />
-                              <Divider />
-                              <CardContent>
-                                   <Stack spacing={1}>
-                                        <Typography variant="subtitle2">{(poll?.votes!.length || 0)} votes</Typography>
-                                        <Box sx={{ overflowX: 'auto' }}>
-                                             <Table size="small" sx={{ minWidth: 800 }}>
-                                                  <TableHead>
-                                                       <TableRow>
-                                                            <TableCell>{t('common.lblTime') || 'Time'}</TableCell>
-                                                            <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
-                                                            <TableCell>{t('polls.anonymous') || 'Anonymous'}</TableCell>
-                                                            <TableCell>{t('common.comment') || 'Comment'}</TableCell>
-                                                            <TableCell>{t('common.summary') || 'Summary'}</TableCell>
-                                                       </TableRow>
-                                                  </TableHead>
-                                                  <TableBody>
-                                                       {!votes || votes.length === 0 ? (
-                                                            <TableRow>
-                                                                 <TableCell colSpan={5}>
-                                                                      <Typography variant="body2" color="text.secondary">
-                                                                           {t('polls.noVotesYet') || 'No votes yet'}
-                                                                      </Typography>
-                                                                 </TableCell>
-                                                            </TableRow>
-                                                       ) : (
-                                                            (votes || []).map((v) => (
-                                                                 <TableRow key={v.id}>
-                                                                      <TableCell>{new Date(v.cast_at).toLocaleString()}</TableCell>
-                                                                      <TableCell>{voteStatusLabel(t, v.status)}</TableCell>
-                                                                      <TableCell>
-                                                                           {v.is_anonymous ? t('common.lblYes') || 'Yes' : t('common.lblNo') || 'No'}
-                                                                      </TableCell>
-                                                                      <TableCell>{v.comment || ''}</TableCell>
-                                                                      <TableCell>{summarizeVote(v)}</TableCell>
-                                                                 </TableRow>
-                                                            ))
-                                                       )}
-                                                  </TableBody>
-                                             </Table>
-                                        </Box>
-                                   </Stack>
-                              </CardContent>
-                         </Card>
+                         {/* Poll Results moved after the grid so they appear last on mobile */}
+                         {poll && (
+                              <Card>
+                                   <CardHeader
+                                        title={t('polls.results') || 'Results'}
+                                        action={
+                                             loadingResults && (
+                                                  <CircularProgress size={20} />
+                                             )
+                                        }
+                                   />
+                                   <Divider />
+                                   <CardContent>
+                                        {loadingResults ? (
+                                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                                  <CircularProgress />
+                                             </Box>
+                                        ) : pollResults && pollResults.statistics ? (
+                                             <Stack spacing={3}>
+                                                  {/* Statistics Summary */}
+                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                                                       <Paper sx={{ p: 2, minWidth: 120 }}>
+                                                            <Typography variant="h6" color="primary">
+                                                                 {pollResults.statistics.total_votes}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                 Total Votes
+                                                            </Typography>
+                                                       </Paper>
+                                                       <Paper sx={{ p: 2, minWidth: 120 }}>
+                                                            <Typography variant="h6" color="primary">
+                                                                 {pollResults.statistics.eligible_voters}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                 Eligible Voters
+                                                            </Typography>
+                                                       </Paper>
+                                                       <Paper sx={{ p: 2, minWidth: 120 }}>
+                                                            <Typography variant="h6" color="primary">
+                                                                 {pollResults.statistics.participation_rate}%
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                 Participation
+                                                            </Typography>
+                                                       </Paper>
+                                                       <Paper sx={{ p: 2, minWidth: 120 }}>
+                                                            <Typography variant="h6" color="primary">
+                                                                 {pollResults.statistics.abstentions}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                 Abstentions
+                                                            </Typography>
+                                                       </Paper>
+                                                  </Box>
+
+                                                  {/* Charts */}
+                                                  {renderResultsChart()}
+
+                                                  {/* Tables */}
+                                                  {renderResultsTable()}
+                                             </Stack>
+                                        ) : (
+                                             <Typography variant="body2" color="text.secondary">
+                                                  {t('polls.noResultsAvailable') || 'No results available yet'}
+                                             </Typography>
+                                        )}
+                                   </CardContent>
+                              </Card>
+                         )}
 
                          <Stack direction="row" spacing={2} justifyContent="flex-start" sx={{ mb: 2 }}>
                               <Box sx={{ mt: 0.5 }}>

@@ -1041,7 +1041,7 @@ export const de = {
   [tokens.polls.validation.activateWindow]: 'Aktivierungsfenster',
   [tokens.polls.validation.mustBeofPluralityAbsoluteMajoritySupermajorityThreshold]: 'Muss Pluralität, absolute Mehrheit, qualifizierte Mehrheit oder Schwellenwert sein',
   [tokens.polls.validation.mustBeofAbsMajoritySuperMajorityThreshold]: 'Muss absolute Mehrheit, qualifizierte Mehrheit oder Schwellenwert sein',
-  [tokens.polls.validation.mustBeofTopKThreshold]: 'Muss Top-K oder Schwellenwert sein',
+  [tokens.polls.validation.mustBeofTopKThreshold]: 'Muss Top-N oder Schwellenwert sein',
   // Polls meta labels
   [tokens.polls.anonymous]: 'Anonym',
   [tokens.polls.types.yes_no]: 'Ja / Nein',
@@ -1067,7 +1067,7 @@ export const de = {
   [tokens.polls.rules.absolute_majority]: 'Absolute Mehrheit',
   [tokens.polls.rules.supermajority]: 'Qualifizierte Mehrheit',
   [tokens.polls.rules.threshold]: 'Schwellenwert',
-  [tokens.polls.rules.top_k]: 'Top-K',
+  [tokens.polls.rules.top_k]: 'Top-N',
   [tokens.polls.scoreAgg.sum]: 'Summe',
   [tokens.polls.scoreAgg.avg]: 'Durchschnitt',
   // Polls: Score aggregation help
@@ -1132,7 +1132,7 @@ export const de = {
   [tokens.polls.help.openInfo]: 'Weitere Informationen',
   [tokens.polls.help.supermajority_percent]: 'Der für die Supermajoritäts-Entscheidungsregel erforderliche Prozentsatz (typischerweise 60-67%)',
   [tokens.polls.help.threshold_percent]: 'Der für die Schwellenwert-Entscheidungsregel erforderliche Mindestprozentsatz',
-  [tokens.polls.help.winners_count]: 'Anzahl der zu wählenden Gewinneroptionen (verwendet mit Top-K-Regel)',
+  [tokens.polls.help.winners_count]: 'Anzahl der zu wählenden Gewinneroptionen (verwendet mit Top-N-Regel)',
 
   // Polls: Deaktivierungsgründe
   [tokens.polls.disableReason.saving]: 'Bitte warten, Speichervorgang läuft',
@@ -1160,6 +1160,8 @@ export const de = {
   [tokens.polls.confirmClose.title]: 'Umfrage Schließen',
   [tokens.polls.confirmClose.confirm]: 'Umfrage Schließen',
   [tokens.polls.confirmClose.message]: 'Sind Sie sicher, dass Sie diese Umfrage schließen möchten? Eine geschlossene Umfrage kann nicht wieder geöffnet werden, und die Abstimmungsergebnisse sind endgültig.',
+  [tokens.polls.results]: 'Ergebnisse',
+  [tokens.polls.noResultsAvailable]: 'Noch keine Ergebnisse verfügbar',
 
   // Common: Formularstatus
   [tokens.common.formSubmitting]: 'Senden...',

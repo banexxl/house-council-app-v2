@@ -548,6 +548,8 @@ export const tokens = {
       confirm: 'polls.confirmClose.confirm',
       message: 'polls.confirmClose.message',
     },
+    results: 'polls.results',
+    noResultsAvailable: 'polls.noResultsAvailable',
   },
   calendar: {
     title: 'calendar.title',

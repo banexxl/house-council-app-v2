@@ -187,7 +187,7 @@ export const rs = {
      // Polls help (additional)
      [tokens.polls.help.supermajority_percent]: 'Procenat glasova potreban za odobravanje predloga...',
      [tokens.polls.help.threshold_percent]: 'Minimalan procenat glasova potreban da bi opcija bila uzeta u obzir...',
-     [tokens.polls.help.winners_count]: 'Koliko opcija može biti proglašeno pobedničkim u pravilima tipa „Top-K“...',
+     [tokens.polls.help.winners_count]: 'Koliko opcija može biti proglašeno pobedničkim u pravilima tipa „Top-N“...',
      // Announcements
      [tokens.announcements.managementTitle]: 'Upravljanje objavama',
      [tokens.announcements.createNew]: 'Kreiraj novu objavu',
@@ -307,7 +307,7 @@ export const rs = {
      [tokens.polls.validation.activateWindow]: 'Prozor aktivacije je obavezan',
      [tokens.polls.validation.mustBeofPluralityAbsoluteMajoritySupermajorityThreshold]: 'Mora biti jedno od: Pluralnost, Apsolutna većina, Supervećina ili Prag',
      [tokens.polls.validation.mustBeofAbsMajoritySuperMajorityThreshold]: 'Mora biti jedno od: Apsolutna većina, Supervećina ili Prag',
-     [tokens.polls.validation.mustBeofTopKThreshold]: 'Mora biti jedno od: Top-K ili Prag',
+     [tokens.polls.validation.mustBeofTopKThreshold]: 'Mora biti jedno od: Top-N ili Prag',
      // Added automatically: missing tokens (2025-10-30T07:19:15.421Z)
      [tokens.common.languageChanged]: 'Jezik je promenjen',
      [tokens.common.title]: 'Kućni savet',
@@ -1098,7 +1098,7 @@ export const rs = {
      [tokens.polls.help.openInfo]: 'Više informacija',
      [tokens.polls.help.supermajority_percent]: 'Procenat potreban za odluku (obično 60-67%)',
      [tokens.polls.help.threshold_percent]: 'Minimalni procenat potreban za olduku',
-     [tokens.polls.help.winners_count]: 'Broj pobedničkih opcija za odabir (koristi se sa Top-K pravilom)',
+     [tokens.polls.help.winners_count]: 'Broj pobedničkih opcija za odabir (koristi se sa Top-N pravilom)',
 
      // Polls: Razlozi onemogućavanja
      [tokens.polls.disableReason.saving]: 'Molimo sačekajte, snimanje u toku',
@@ -1126,6 +1126,8 @@ export const rs = {
      [tokens.polls.confirmClose.title]: 'Zatvori Anketu',
      [tokens.polls.confirmClose.confirm]: 'Zatvori Anketu',
      [tokens.polls.confirmClose.message]: 'Da li ste sigurni da želite da zatvorite ovu anketu? Zatvorena anketa ne može biti ponovo otvorena, i rezultati glasanja će biti konačni.',
+     [tokens.polls.results]: 'Rezultati',
+     [tokens.polls.noResultsAvailable]: 'Rezultati još uvek nisu dostupni',
 
      // Common: Stanja forme
      [tokens.common.formSubmitting]: 'Slanje...',

@@ -376,7 +376,7 @@ export const en = {
   [tokens.polls.help.absolute_majority]: 'Winner must have >50% of votes. Example: Yes/No or Single Choice polls (“Approve this renovation?”).',
   [tokens.polls.help.supermajority]: 'Winner must have at least X% of votes (from supermajority percent). Example: require 2/3 (66.67%) support to pass a rule change.',
   [tokens.polls.help.threshold]: 'Option(s) are accepted if they reach a minimum % (from threshold percent). Example: “Any proposal with ≥ 50% votes passes.” Multiple can pass.',
-  [tokens.polls.help.top_k]: 'The top N options win (from winners count). Example: “Vote for up to 3 projects — the top 2 are funded.”',
+  [tokens.polls.help.top_k]: 'The top K options win (from winners count). Example: “Vote for up to 3 projects — the top 2 are funded.”',
   [tokens.polls.help.supermajority_percent]: 'Percentage of votes required to approve the proposal. Used by Supermajority rule.',
   [tokens.polls.help.threshold_percent]: 'Minimum percentage a choice must reach to be considered. Used by Threshold rule.',
   [tokens.polls.help.winners_count]: 'How many options can be declared winners under the Top‑K rule.',
@@ -1061,7 +1061,7 @@ export const en = {
   [tokens.polls.validation.activateWindow]: 'Activation window is required',
   [tokens.polls.validation.mustBeofPluralityAbsoluteMajoritySupermajorityThreshold]: 'Must be one of: Plurality, Absolute Majority, Supermajority, or Threshold',
   [tokens.polls.validation.mustBeofAbsMajoritySuperMajorityThreshold]: 'Must be one of: Absolute Majority, Supermajority, or Threshold',
-  [tokens.polls.validation.mustBeofTopKThreshold]: 'Must be one of: Top-K or Threshold',
+  [tokens.polls.validation.mustBeofTopKThreshold]: 'Must be one of: Top-N or Threshold',
   // Polls meta labels
   [tokens.polls.anonymous]: 'Anonymous',
   [tokens.polls.types.yes_no]: 'Yes / No',
@@ -1087,7 +1087,7 @@ export const en = {
   [tokens.polls.rules.absolute_majority]: 'Absolute Majority',
   [tokens.polls.rules.supermajority]: 'Supermajority',
   [tokens.polls.rules.threshold]: 'Threshold',
-  [tokens.polls.rules.top_k]: 'Top-K',
+  [tokens.polls.rules.top_k]: 'Top-N',
   [tokens.polls.scoreAgg.sum]: 'Sum',
   [tokens.polls.scoreAgg.avg]: 'Average',
 
@@ -1104,10 +1104,10 @@ export const en = {
   [tokens.polls.help.absolute_majority]: 'Absolute Majority: Option must receive more than 50% of total votes to win.',
   [tokens.polls.help.supermajority]: 'Supermajority: Option must receive the specified percentage (usually 60-67%) to win.',
   [tokens.polls.help.threshold]: 'Threshold: Option must receive at least the specified percentage to be considered.',
-  [tokens.polls.help.top_k]: 'Top-K: The top K options with the most votes are selected as winners.',
+  [tokens.polls.help.top_k]: 'Top-N: The top N options with the most votes are selected as winners.',
   [tokens.polls.help.supermajority_percent]: 'The percentage required for supermajority decision rule (typically 60-67%)',
   [tokens.polls.help.threshold_percent]: 'The minimum percentage required for threshold decision rule',
-  [tokens.polls.help.winners_count]: 'Number of winning options to select (used with Top-K rule)',
+  [tokens.polls.help.winners_count]: 'Number of winning options to select (used with Top-N rule)',
   [tokens.polls.help.submissionStateTransitions]: 'Submitting a poll',
 
   // Polls: Disable reasons
@@ -1136,6 +1136,8 @@ export const en = {
   [tokens.polls.confirmClose.title]: 'Close Poll',
   [tokens.polls.confirmClose.confirm]: 'Close Poll',
   [tokens.polls.confirmClose.message]: 'Are you sure you want to close this poll? A closed poll cannot be reopened, and the poll vote results will be final.',
+  [tokens.polls.results]: 'Results',
+  [tokens.polls.noResultsAvailable]: 'No results available yet',
 
   // Common: Form states
   [tokens.common.formSubmitting]: 'Submitting...',

@@ -1043,7 +1043,7 @@ export const es = {
   [tokens.polls.validation.activateWindow]: 'Ventana de activación',
   [tokens.polls.validation.mustBeofPluralityAbsoluteMajoritySupermajorityThreshold]: 'Debe ser pluralidad, mayoría absoluta, supermayoría o umbral',
   [tokens.polls.validation.mustBeofAbsMajoritySuperMajorityThreshold]: 'Debe ser mayoría absoluta, supermayoría o umbral',
-  [tokens.polls.validation.mustBeofTopKThreshold]: 'Debe ser Top-K o umbral',
+  [tokens.polls.validation.mustBeofTopKThreshold]: 'Debe ser Top-N o umbral',
   // Polls meta labels
   [tokens.polls.anonymous]: 'Anónimo',
   [tokens.polls.types.yes_no]: 'Sí / No',
@@ -1069,7 +1069,7 @@ export const es = {
   [tokens.polls.rules.absolute_majority]: 'Mayoría absoluta',
   [tokens.polls.rules.supermajority]: 'Supermayoría',
   [tokens.polls.rules.threshold]: 'Umbral',
-  [tokens.polls.rules.top_k]: 'Top-K',
+  [tokens.polls.rules.top_k]: 'Top-N',
   [tokens.polls.scoreAgg.sum]: 'Suma',
   [tokens.polls.scoreAgg.avg]: 'Promedio',
   // Polls: Score aggregation help
@@ -1088,7 +1088,7 @@ export const es = {
   [tokens.polls.help.openInfo]: 'Más información',
   [tokens.polls.help.supermajority_percent]: 'El porcentaje requerido para la regla de decisión de supermayoría (típicamente 60-67%)',
   [tokens.polls.help.threshold_percent]: 'El porcentaje mínimo requerido para la regla de decisión de umbral',
-  [tokens.polls.help.winners_count]: 'Número de opciones ganadoras a seleccionar (usado con la regla Top-K)',
+  [tokens.polls.help.winners_count]: 'Número de opciones ganadoras a seleccionar (usado con la regla Top-N)',
 
   // Polls: Razones de deshabilitación
   [tokens.polls.disableReason.saving]: 'Por favor espere, guardando en progreso',
@@ -1116,6 +1116,8 @@ export const es = {
   [tokens.polls.confirmClose.title]: 'Cerrar Encuesta',
   [tokens.polls.confirmClose.confirm]: 'Cerrar Encuesta',
   [tokens.polls.confirmClose.message]: '¿Está seguro de que desea cerrar esta encuesta? Una encuesta cerrada no se puede reabrir, y los resultados de la votación serán finales.',
+  [tokens.polls.results]: 'Resultados',
+  [tokens.polls.noResultsAvailable]: 'Aún no hay resultados disponibles',
 
   // Common: Estados de formulario
   [tokens.common.formSubmitting]: 'Enviando...',
