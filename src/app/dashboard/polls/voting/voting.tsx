@@ -756,51 +756,86 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                   <Typography variant="h6" gutterBottom>
                                                        {t('polls.voting.availablePolls')}
                                                   </Typography>
-                                                  <Stack spacing={2}>
-                                                       {polls.map((poll) => (
-                                                            <Card
-                                                                 key={poll.id}
-                                                                 variant={selectedPoll?.id === poll.id ? 'outlined' : 'elevation'}
-                                                                 sx={{
-                                                                      cursor: 'pointer',
-                                                                      border: selectedPoll?.id === poll.id ? 2 : 1,
-                                                                      borderColor: selectedPoll?.id === poll.id ? 'primary.main' : 'divider',
-                                                                      '&:hover': {
-                                                                           boxShadow: 2,
-                                                                      },
-                                                                 }}
-                                                                 onClick={() => handlePollSelect(poll)}
-                                                            >
-                                                                 <CardContent>
-                                                                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                                                                           <Typography variant="subtitle1" fontWeight="medium">
-                                                                                {poll.title}
-                                                                           </Typography>
-                                                                           <Chip
-                                                                                label={pollStatusLabel(t, poll.status)}
-                                                                                color={poll.status === 'active' ? 'success' : 'warning'}
-                                                                                size="small"
-                                                                           />
-                                                                      </Box>
-                                                                      {poll.description && (
-                                                                           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                                                                {poll.description}
-                                                                           </Typography>
-                                                                      )}
-                                                                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                                           <Chip label={pollTypeLabel(t, poll.type)} size="small" variant="outlined" />
-                                                                           {poll.ends_at && (
+                                                  <Box
+                                                       sx={{
+                                                            maxHeight: 400,
+                                                            overflowY: 'auto',
+                                                            pr: 1,
+                                                            '&::-webkit-scrollbar': {
+                                                                 width: '6px',
+                                                            },
+                                                            '&::-webkit-scrollbar-track': {
+                                                                 background: '#f1f1f1',
+                                                                 borderRadius: '3px',
+                                                            },
+                                                            '&::-webkit-scrollbar-thumb': {
+                                                                 background: '#c1c1c1',
+                                                                 borderRadius: '3px',
+                                                            },
+                                                            '&::-webkit-scrollbar-thumb:hover': {
+                                                                 background: '#a8a8a8',
+                                                            },
+                                                       }}
+                                                  >
+                                                       <Stack spacing={2}>
+                                                            {polls.map((poll) => (
+                                                                 <Card
+                                                                      key={poll.id}
+                                                                      variant={selectedPoll?.id === poll.id ? 'outlined' : 'elevation'}
+                                                                      sx={{
+                                                                           cursor: 'pointer',
+                                                                           border: selectedPoll?.id === poll.id ? 2 : 1,
+                                                                           borderColor: selectedPoll?.id === poll.id ? 'primary.main' : 'divider',
+                                                                           '&:hover': {
+                                                                                boxShadow: 2,
+                                                                           },
+                                                                      }}
+                                                                      onClick={() => handlePollSelect(poll)}
+                                                                 >
+                                                                      <CardContent>
+                                                                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                                                                                <Typography variant="subtitle1" fontWeight="medium">
+                                                                                     {poll.title}
+                                                                                </Typography>
                                                                                 <Chip
-                                                                                     label={`${t('polls.voting.ends')}: ${new Date(poll.ends_at).toLocaleDateString()}`}
+                                                                                     label={pollStatusLabel(t, poll.status)}
+                                                                                     color={poll.status === 'active' ? 'success' : 'warning'}
                                                                                      size="small"
-                                                                                     variant="outlined"
                                                                                 />
+                                                                           </Box>
+                                                                           {poll.description && (
+                                                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                                                     {poll.description}
+                                                                                </Typography>
                                                                            )}
-                                                                      </Box>
-                                                                 </CardContent>
-                                                            </Card>
-                                                       ))}
-                                                  </Stack>
+                                                                           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                                                <Chip label={pollTypeLabel(t, poll.type)} size="small" variant="outlined" />
+                                                                                {poll.starts_at && (
+                                                                                     <Chip
+                                                                                          label={
+                                                                                               poll.ends_at
+                                                                                                    ? `${new Date(poll.starts_at).toLocaleDateString()} - ${new Date(poll.ends_at).toLocaleDateString()}`
+                                                                                                    : `${t('common.lblStartDate')}: ${new Date(poll.starts_at).toLocaleDateString()}`
+                                                                                          }
+                                                                                          size="small"
+                                                                                          variant="outlined"
+                                                                                          color="primary"
+                                                                                     />
+                                                                                )}
+                                                                                {!poll.starts_at && poll.ends_at && (
+                                                                                     <Chip
+                                                                                          label={`${t('polls.voting.ends')}: ${new Date(poll.ends_at).toLocaleDateString()}`}
+                                                                                          size="small"
+                                                                                          variant="outlined"
+                                                                                          color="secondary"
+                                                                                     />
+                                                                                )}
+                                                                           </Box>
+                                                                      </CardContent>
+                                                                 </Card>
+                                                            ))}
+                                                       </Stack>
+                                                  </Box>
                                              </CardContent>
                                         </Card>
 
@@ -959,51 +994,73 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                                                   <Typography variant="h6" gutterBottom>
                                                        Completed Polls
                                                   </Typography>
-                                                  <Stack spacing={2}>
-                                                       {closedPolls.map((poll) => (
-                                                            <Card
-                                                                 key={poll.id}
-                                                                 variant={selectedClosedPoll?.id === poll.id ? 'outlined' : 'elevation'}
-                                                                 sx={{
-                                                                      cursor: 'pointer',
-                                                                      border: selectedClosedPoll?.id === poll.id ? 2 : 1,
-                                                                      borderColor: selectedClosedPoll?.id === poll.id ? 'primary.main' : 'divider',
-                                                                      '&:hover': {
-                                                                           boxShadow: 2,
-                                                                      },
-                                                                 }}
-                                                                 onClick={() => handleClosedPollSelect(poll)}
-                                                            >
-                                                                 <CardContent>
-                                                                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                                                                           <Typography variant="subtitle1" fontWeight="medium">
-                                                                                {poll.title}
-                                                                           </Typography>
-                                                                           <Chip
-                                                                                label={pollStatusLabel(t, poll.status)}
-                                                                                color="default"
-                                                                                size="small"
-                                                                           />
-                                                                      </Box>
-                                                                      {poll.description && (
-                                                                           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                                                                {poll.description}
-                                                                           </Typography>
-                                                                      )}
-                                                                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                                           <Chip label={pollTypeLabel(t, poll.type)} size="small" variant="outlined" />
-                                                                           {poll.closed_at && (
+                                                  <Box
+                                                       sx={{
+                                                            maxHeight: 400,
+                                                            overflowY: 'auto',
+                                                            pr: 1,
+                                                            '&::-webkit-scrollbar': {
+                                                                 width: '6px',
+                                                            },
+                                                            '&::-webkit-scrollbar-track': {
+                                                                 background: '#f1f1f1',
+                                                                 borderRadius: '3px',
+                                                            },
+                                                            '&::-webkit-scrollbar-thumb': {
+                                                                 background: '#c1c1c1',
+                                                                 borderRadius: '3px',
+                                                            },
+                                                            '&::-webkit-scrollbar-thumb:hover': {
+                                                                 background: '#a8a8a8',
+                                                            },
+                                                       }}
+                                                  >
+                                                       <Stack spacing={2}>
+                                                            {closedPolls.map((poll) => (
+                                                                 <Card
+                                                                      key={poll.id}
+                                                                      variant={selectedClosedPoll?.id === poll.id ? 'outlined' : 'elevation'}
+                                                                      sx={{
+                                                                           cursor: 'pointer',
+                                                                           border: selectedClosedPoll?.id === poll.id ? 2 : 1,
+                                                                           borderColor: selectedClosedPoll?.id === poll.id ? 'primary.main' : 'divider',
+                                                                           '&:hover': {
+                                                                                boxShadow: 2,
+                                                                           },
+                                                                      }}
+                                                                      onClick={() => handleClosedPollSelect(poll)}
+                                                                 >
+                                                                      <CardContent>
+                                                                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                                                                                <Typography variant="subtitle1" fontWeight="medium">
+                                                                                     {poll.title}
+                                                                                </Typography>
                                                                                 <Chip
-                                                                                     label={`Closed: ${new Date(poll.closed_at).toLocaleDateString()}`}
+                                                                                     label={pollStatusLabel(t, poll.status)}
+                                                                                     color="default"
                                                                                      size="small"
-                                                                                     variant="outlined"
                                                                                 />
+                                                                           </Box>
+                                                                           {poll.description && (
+                                                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                                                     {poll.description}
+                                                                                </Typography>
                                                                            )}
-                                                                      </Box>
-                                                                 </CardContent>
-                                                            </Card>
-                                                       ))}
-                                                  </Stack>
+                                                                           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                                                <Chip label={pollTypeLabel(t, poll.type)} size="small" variant="outlined" />
+                                                                                {poll.closed_at && (
+                                                                                     <Chip
+                                                                                          label={`Closed: ${new Date(poll.closed_at).toLocaleDateString()}`}
+                                                                                          size="small"
+                                                                                          variant="outlined"
+                                                                                     />
+                                                                                )}
+                                                                           </Box>
+                                                                      </CardContent>
+                                                                 </Card>
+                                                            ))}
+                                                       </Stack>
+                                                  </Box>
                                              </CardContent>
                                         </Card>
 

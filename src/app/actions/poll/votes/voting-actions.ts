@@ -449,8 +449,6 @@ export async function getTenantVote(poll_id: string): Promise<{
                .eq('poll_id', poll_id)
                .eq('tenant_id', tenant.id)
                .single();
-          console.log('poll votes error', voteError);
-
           if (voteError && voteError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: viewer.userData?.id || null,
@@ -572,8 +570,6 @@ export async function revokeTenantVote(poll_id: string): Promise<{
                })
                .eq('poll_id', poll_id)
                .eq('tenant_id', tenant.id);
-          console.log('updateError', updateError);
-
           if (updateError) {
                await logServerAction({
                     user_id: viewer.userData?.id || null,
