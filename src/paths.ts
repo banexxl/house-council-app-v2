@@ -84,6 +84,7 @@ export const paths = {
     polls: {
       index: '/dashboard/polls',
       create: '/dashboard/polls/create',
+      voting: '/dashboard/polls/voting',
     },
     social: {
       index: '/dashboard/social',

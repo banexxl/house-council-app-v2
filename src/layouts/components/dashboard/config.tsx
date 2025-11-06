@@ -281,6 +281,16 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
       },
+      {
+        title: t(tokens.nav.polls),
+        path: paths.dashboard.polls.voting,
+        roles: ["tenant"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <HowToVoteIcon />
+          </SvgIcon>
+        ),
+      }
     ],
   },
 ];
