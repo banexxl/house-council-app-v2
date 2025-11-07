@@ -268,6 +268,17 @@ export const tokens = {
       missingClientId: 'account.notifications.missingClientId',
     }
   },
+  contacts: {
+    title: 'contacts.title',
+    tooltip: 'contacts.tooltip',
+    noContactsAvailable: 'contacts.noContactsAvailable',
+    loading: 'contacts.loading',
+    online: 'contacts.online',
+    lastSeen: 'contacts.lastSeen',
+    buildingNeighbors: 'contacts.buildingNeighbors',
+    tenantsList: 'contacts.tenantsList',
+    failedToLoad: 'contacts.failedToLoad',
+  },
   settings: {
     drawer: {
       title: 'settings.drawer.title',

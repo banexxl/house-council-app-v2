@@ -10,6 +10,8 @@ import { usePopover } from 'src/hooks/use-popover';
 import { useAuth } from 'src/contexts/auth/auth-provider';
 import { getAllTenantsFromClientsBuildings, getTenantsFromSameBuilding } from 'src/app/actions/tenant/tenant-actions';
 import { Tenant } from 'src/types/tenant';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 import { ContactsPopover } from './contacts-popover';
 
@@ -72,13 +74,13 @@ const useContacts = () => {
 };
 
 export const ContactsButton: FC = () => {
-
+  const { t } = useTranslation();
   const popover = usePopover<HTMLButtonElement>();
   const { contacts, loading } = useContacts();
 
   return (
     <>
-      <Tooltip title="Contacts">
+      <Tooltip title={t('contacts.tooltip')}>
         <IconButton
           onClick={popover.handleOpen}
           ref={popover.anchorRef}

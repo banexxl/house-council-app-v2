@@ -13,6 +13,8 @@ import Typography from '@mui/material/Typography';
 
 import { Presence } from 'src/components/presence';
 import { customLocale } from 'src/utils/date-locale';
+import { useTranslation } from 'react-i18next';
+import { Divider } from '@mui/material';
 
 interface Contact {
   id: string;
@@ -31,6 +33,7 @@ interface ContactsPopoverProps {
 
 export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
   const { anchorEl, contacts = [], onClose, open = false, ...other } = props;
+  const { t } = useTranslation();
 
   return (
     <Popover
@@ -46,8 +49,9 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
       {...other}
     >
       <Box sx={{ p: 2 }}>
-        <Typography variant="h6">Contacts</Typography>
+        <Typography variant="h6">{t('contacts.title')}</Typography>
       </Box>
+      <Divider />
       <Box sx={{ p: 2 }}>
         <List disablePadding>
           {
@@ -107,7 +111,7 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
               })
               :
               <ListItem>
-                <ListItemText primary="No contacts available" />
+                <ListItemText primary={t('contacts.noContactsAvailable')} />
               </ListItem>
           }
         </List>

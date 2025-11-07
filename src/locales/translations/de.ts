@@ -971,6 +971,18 @@ export const de = {
   [tokens.account.notifications.optinWhatsApp]: 'WhatsApp',
   [tokens.account.notifications.optinWhatsAppDesc]: 'Einwilligen, WhatsApp-Nachrichten zu erhalten.',
   [tokens.account.notifications.missingClientId]: 'Aktualisierung nicht möglich: fehlende Client-ID',
+
+  // Kontakte
+  [tokens.contacts.title]: 'Kontakte',
+  [tokens.contacts.tooltip]: 'Kontakte',
+  [tokens.contacts.noContactsAvailable]: 'Keine Kontakte verfügbar',
+  [tokens.contacts.loading]: 'Kontakte werden geladen...',
+  [tokens.contacts.online]: 'Online',
+  [tokens.contacts.lastSeen]: 'Zuletzt gesehen',
+  [tokens.contacts.buildingNeighbors]: 'Gebäude-Nachbarn',
+  [tokens.contacts.tenantsList]: 'Mieterliste',
+  [tokens.contacts.failedToLoad]: 'Fehler beim Laden der Kontakte',
+
   // Umfragen
   [tokens.polls.details]: 'Umfrage-Details',
   [tokens.polls.listTitle]: 'Umfragen',

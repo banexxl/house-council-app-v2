@@ -991,6 +991,17 @@ export const en = {
   [tokens.account.notifications.optinWhatsAppDesc]: 'Opt in to receive WhatsApp messages.',
   [tokens.account.notifications.missingClientId]: 'Cannot update: missing client id',
 
+  // Contacts
+  [tokens.contacts.title]: 'Contacts',
+  [tokens.contacts.tooltip]: 'Contacts',
+  [tokens.contacts.noContactsAvailable]: 'No contacts available',
+  [tokens.contacts.loading]: 'Loading contacts...',
+  [tokens.contacts.online]: 'Online',
+  [tokens.contacts.lastSeen]: 'Last seen',
+  [tokens.contacts.buildingNeighbors]: 'Building Neighbors',
+  [tokens.contacts.tenantsList]: 'Tenants List',
+  [tokens.contacts.failedToLoad]: 'Failed to load contacts',
+
   // Polls
   [tokens.polls.details]: 'Poll Details',
   [tokens.polls.listTitle]: 'Polls',

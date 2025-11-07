@@ -29,6 +29,18 @@ export const rs = {
      [tokens.account.notifications.optinWhatsApp]: 'WhatsApp',
      [tokens.account.notifications.optinWhatsAppDesc]: 'Prijava za primanje WhatsApp poruka.',
      [tokens.account.notifications.missingClientId]: 'Nije moguće ažurirati: nedostaje ID klijenta',
+
+     // Kontakti
+     [tokens.contacts.title]: 'Kontakti',
+     [tokens.contacts.tooltip]: 'Kontakti',
+     [tokens.contacts.noContactsAvailable]: 'Nema dostupnih kontakata',
+     [tokens.contacts.loading]: 'Učitavanje kontakata...',
+     [tokens.contacts.online]: 'Online',
+     [tokens.contacts.lastSeen]: 'Poslednji put viđen',
+     [tokens.contacts.buildingNeighbors]: 'Susedi iz zgrade',
+     [tokens.contacts.tenantsList]: 'Lista stanara',
+     [tokens.contacts.failedToLoad]: 'Neuspešno učitavanje kontakata',
+
      [tokens.account.security.changePassword]: 'Promeni lozinku',
      [tokens.account.security.changePasswordHint]: 'Preporučuje se jaka lozinka koju ne koristite na drugim mestima.',
      [tokens.account.security.passwordStrength]: 'Jačina lozinke:',

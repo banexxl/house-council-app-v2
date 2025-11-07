@@ -973,6 +973,18 @@ export const es = {
   [tokens.account.notifications.optinWhatsApp]: 'WhatsApp',
   [tokens.account.notifications.optinWhatsAppDesc]: 'Consentir recibir mensajes de WhatsApp.',
   [tokens.account.notifications.missingClientId]: 'Actualización no posible: falta ID de cliente',
+
+  // Contactos
+  [tokens.contacts.title]: 'Contactos',
+  [tokens.contacts.tooltip]: 'Contactos',
+  [tokens.contacts.noContactsAvailable]: 'No hay contactos disponibles',
+  [tokens.contacts.loading]: 'Cargando contactos...',
+  [tokens.contacts.online]: 'En línea',
+  [tokens.contacts.lastSeen]: 'Visto por última vez',
+  [tokens.contacts.buildingNeighbors]: 'Vecinos del edificio',
+  [tokens.contacts.tenantsList]: 'Lista de inquilinos',
+  [tokens.contacts.failedToLoad]: 'Error al cargar contactos',
+
   // Umfragen
   [tokens.polls.details]: 'Detalles de la encuesta',
   [tokens.polls.listTitle]: 'Encuestas',
