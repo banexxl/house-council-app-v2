@@ -42,7 +42,7 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
       disableScrollLock
       onClose={onClose}
       open={open}
-      PaperProps={{ sx: { width: 320 } }}
+      slotProps={{ paper: { sx: { width: 320 } } }}
       {...other}
     >
       <Box sx={{ p: 2 }}>
@@ -50,59 +50,66 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
       </Box>
       <Box sx={{ p: 2 }}>
         <List disablePadding>
-          {contacts.map((contact) => {
-            const showOnline = contact.isActive;
-            const lastActivity =
-              !contact.isActive && contact.lastActivity
-                ? formatDistanceStrict(contact.lastActivity, new Date(), {
-                    addSuffix: true,
-                    locale: customLocale,
-                  })
-                : undefined;
+          {
+            contacts && contacts.length > 0 ?
+              contacts.map((contact) => {
+                const showOnline = contact.isActive;
+                const lastActivity =
+                  !contact.isActive && contact.lastActivity
+                    ? formatDistanceStrict(contact.lastActivity, new Date(), {
+                      addSuffix: true,
+                      locale: customLocale,
+                    })
+                    : undefined;
 
-            return (
-              <ListItem
-                disableGutters
-                key={contact.id}
-              >
-                <ListItemAvatar>
-                  <Avatar
-                    src={contact.avatar}
-                    sx={{ cursor: 'pointer' }}
-                  />
-                </ListItemAvatar>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Link
-                      color="text.primary"
-                      noWrap
-                      sx={{ cursor: 'pointer' }}
-                      underline="none"
-                      variant="subtitle2"
-                    >
-                      {contact.name}
-                    </Link>
-                  }
-                />
-                {showOnline && (
-                  <Presence
-                    size="small"
-                    status="online"
-                  />
-                )}
-                {lastActivity && (
-                  <Typography
-                    color="text.secondary"
-                    noWrap
-                    variant="caption"
+                return (
+                  <ListItem
+                    disableGutters
+                    key={contact.id}
                   >
-                    {lastActivity}
-                  </Typography>
-                )}
+                    <ListItemAvatar>
+                      <Avatar
+                        src={contact.avatar}
+                        sx={{ cursor: 'pointer' }}
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Link
+                          color="text.primary"
+                          noWrap
+                          sx={{ cursor: 'pointer' }}
+                          underline="none"
+                          variant="subtitle2"
+                        >
+                          {contact.name}
+                        </Link>
+                      }
+                    />
+                    {showOnline && (
+                      <Presence
+                        size="small"
+                        status="online"
+                      />
+                    )}
+                    {lastActivity && (
+                      <Typography
+                        color="text.secondary"
+                        noWrap
+                        variant="caption"
+                      >
+                        {lastActivity}
+                      </Typography>
+                    )}
+                  </ListItem>
+                );
+              })
+              :
+              <ListItem>
+                <ListItemText primary="No contacts available" />
               </ListItem>
-            );
-          })}
+          }
         </List>
       </Box>
     </Popover>

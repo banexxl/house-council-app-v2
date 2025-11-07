@@ -506,3 +506,79 @@ export const readTenantContactByUserIds = async (
           return { success: false, error: e?.message || 'Unexpected error', data: [] };
      }
 }
+
+/**
+ * Get all tenants from the same building as the specified tenant
+ */
+export const getTenantsFromSameBuilding = async (
+     tenantId: string
+): Promise<{
+     success: boolean;
+     data?: Tenant[];
+     error?: string
+}> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          // 1. Get the current tenant's apartment and building info
+          const { data: currentTenant, error: tenantError } = await supabase
+               .from(TABLES.TENANTS)
+               .select(`
+                    apartment_id,
+                    apartment:tblApartments (
+                         building_id
+                    )
+               `)
+               .eq('id', tenantId)
+               .single();
+
+          if (tenantError || !currentTenant?.apartment?.[0]?.building_id) {
+               return { success: false, error: tenantError?.message || 'Tenant not found' };
+          }
+
+          const buildingId = currentTenant.apartment[0].building_id;
+
+          // 2. Get all apartments in the same building
+          const { data: apartments, error: apartmentsError } = await supabase
+               .from(TABLES.APARTMENTS)
+               .select('id')
+               .eq('building_id', buildingId);
+
+          if (apartmentsError) {
+               return { success: false, error: apartmentsError.message };
+          }
+
+          const apartmentIds = apartments.map((a) => a.id);
+          if (apartmentIds.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          // 3. Get all tenants in those apartments
+          const { data: tenants, error: tenantsError } = await supabase
+               .from(TABLES.TENANTS)
+               .select(`
+                    *,
+                    apartment:tblApartments (
+                         id,
+                         apartment_number,
+                         building:tblBuildings (
+                              id,
+                              building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                                   street_address,
+                                   city
+                              )
+                         )
+                    )
+               `)
+               .in('apartment_id', apartmentIds)
+               .neq('id', tenantId); // Exclude the current tenant
+
+          if (tenantsError) {
+               return { success: false, error: tenantsError.message };
+          }
+
+          return { success: true, data: tenants || [] };
+     } catch (e: any) {
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+}

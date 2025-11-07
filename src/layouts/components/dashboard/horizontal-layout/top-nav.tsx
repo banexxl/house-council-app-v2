@@ -29,8 +29,6 @@ const useCssVars = (color: NavColor): Record<string, string> => {
 
   const theme = useTheme();
 
-  const user = supabaseBrowserClient.auth.getUser();
-
   return useMemo((): Record<string, string> => {
     switch (color) {
       case 'blend-in':
