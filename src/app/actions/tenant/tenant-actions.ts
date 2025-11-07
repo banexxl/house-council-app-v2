@@ -389,6 +389,108 @@ export const getAllTenantsFromClientsBuildings = async (
      return { success: true, data: tenants ?? [] };
 };
 
+/**
+ * Get all tenants from client's buildings with their last sign-in data
+ */
+export const getAllTenantsFromClientsBuildingsWithAuthData = async (
+     clientId: string
+): Promise<{
+     success: boolean;
+     data?: (Tenant & { last_sign_in_at?: string })[];
+     error?: string
+}> => {
+     const anonSupabase = await useServerSideSupabaseAnonClient();
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          // 1. Get buildings owned by the client
+          const { data: buildings, error: buildingsError } = await anonSupabase
+               .from(TABLES.BUILDINGS)
+               .select('id')
+               .eq('client_id', clientId);
+
+          if (buildingsError) {
+               return { success: false, error: buildingsError.message };
+          }
+
+          const buildingIds = buildings.map((b) => b.id);
+          if (buildingIds.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          // 2. Get apartments in those buildings
+          const { data: apartments, error: apartmentsError } = await anonSupabase
+               .from(TABLES.APARTMENTS)
+               .select('id')
+               .in('building_id', buildingIds);
+
+          if (apartmentsError) {
+               return { success: false, error: apartmentsError.message };
+          }
+
+          const apartmentIds = apartments.map((a) => a.id);
+          if (apartmentIds.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          // 3. Get tenants with nested apartment → building → building_location
+          const { data: tenants, error: tenantsError } = await anonSupabase
+               .from(TABLES.TENANTS)
+               .select(`
+                    *,
+                    apartment:tblApartments (
+                         id,
+                         apartment_number,
+                         building:tblBuildings (
+                              id,
+                              building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                                   street_address,
+                                   city
+                              )
+                         )
+                    )
+               `)
+               .in('apartment_id', apartmentIds);
+
+          if (tenantsError) {
+               return { success: false, error: tenantsError.message };
+          }
+
+          if (!tenants || tenants.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          // 4. Get auth data for all tenants using service role client
+          const userIds = tenants.map(tenant => tenant.user_id).filter(Boolean);
+
+          if (userIds.length === 0) {
+               return { success: true, data: tenants };
+          }
+
+          const { data: authUsers, error: authError } = await adminSupabase.auth.admin.listUsers();
+
+          if (authError) {
+               log(`Failed to fetch auth users: ${authError.message}`);
+               // Return tenants without auth data if auth fetch fails
+               return { success: true, data: tenants };
+          }
+
+          // 5. Merge tenant data with auth data
+          const tenantsWithAuthData = tenants.map(tenant => {
+               const authUser = authUsers.users.find(user => user.id === tenant.user_id);
+               return {
+                    ...tenant,
+                    last_sign_in_at: authUser?.last_sign_in_at || null
+               };
+          });
+
+          return { success: true, data: tenantsWithAuthData };
+     } catch (e: any) {
+          log(`Error in getAllTenantsFromClientsBuildingsWithAuthData: ${e?.message}`);
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+};
+
 // GET all buildings with apartments for a client
 export const getAllBuildingsWithApartmentsForClient = async (
      clientId: string
@@ -508,6 +610,113 @@ export const readTenantContactByUserIds = async (
 }
 
 /**
+ * Get all tenants from the same building as the specified tenant with their last sign-in data
+ */
+export const getTenantsFromSameBuildingWithAuthData = async (
+     tenantId: string
+): Promise<{
+     success: boolean;
+     data?: (Tenant & { last_sign_in_at?: string })[];
+     error?: string
+}> => {
+     const anonSupabase = await useServerSideSupabaseAnonClient();
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          // 1. Get the current tenant's apartment and building info
+          const { data: currentTenant, error: tenantError } = await anonSupabase
+               .from(TABLES.TENANTS)
+               .select(`
+                    apartment_id,
+                    apartment:tblApartments (
+                         building_id
+                    )
+               `)
+               .eq('id', tenantId)
+               .single();
+
+          if (tenantError || !(currentTenant?.apartment as any)?.building_id) {
+               log(`Failed to fetch current tenant's building info: ${tenantError?.message || 'Unknown error'}`);
+               return { success: false, error: tenantError?.message || 'Tenant not found' };
+          }
+
+          const buildingId = (currentTenant.apartment as any).building_id;
+
+          // 2. Get all apartments in the same building
+          const { data: apartments, error: apartmentsError } = await anonSupabase
+               .from(TABLES.APARTMENTS)
+               .select('id')
+               .eq('building_id', buildingId);
+          if (apartmentsError) {
+               return { success: false, error: apartmentsError.message };
+          }
+
+          const apartmentIds = apartments.map((a) => a.id);
+          log(`Apartment IDs in building ${buildingId}: ${JSON.stringify(apartmentIds)}`);
+          if (apartmentIds.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          // 3. Get all tenants in those apartments
+          const { data: tenants, error: tenantsError } = await anonSupabase
+               .from(TABLES.TENANTS)
+               .select(`
+                    *,
+                    apartment:tblApartments (
+                         id,
+                         apartment_number,
+                         building:tblBuildings (
+                              id,
+                              building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                                   street_address,
+                                   city
+                              )
+                         )
+                    )
+               `)
+               .in('apartment_id', apartmentIds)
+               .neq('id', tenantId); // Exclude the current tenant
+
+          if (tenantsError) {
+               return { success: false, error: tenantsError.message };
+          }
+
+          if (!tenants || tenants.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          // 4. Get auth data for all tenants using service role client
+          const userIds = tenants.map(tenant => tenant.user_id).filter(Boolean);
+
+          if (userIds.length === 0) {
+               return { success: true, data: tenants };
+          }
+
+          const { data: authUsers, error: authError } = await adminSupabase.auth.admin.listUsers();
+
+          if (authError) {
+               log(`Failed to fetch auth users: ${authError.message}`);
+               // Return tenants without auth data if auth fetch fails
+               return { success: true, data: tenants };
+          }
+
+          // 5. Merge tenant data with auth data
+          const tenantsWithAuthData = tenants.map(tenant => {
+               const authUser = authUsers.users.find(user => user.id === tenant.user_id);
+               return {
+                    ...tenant,
+                    last_sign_in_at: authUser?.last_sign_in_at || null
+               };
+          });
+
+          return { success: true, data: tenantsWithAuthData };
+     } catch (e: any) {
+          log(`Error in getTenantsFromSameBuildingWithAuthData: ${e?.message}`);
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+};
+
+/**
  * Get all tenants from the same building as the specified tenant
  */
 export const getTenantsFromSameBuilding = async (
@@ -580,3 +789,5 @@ export const getTenantsFromSameBuilding = async (
           return { success: false, error: e?.message || 'Unexpected error' };
      }
 }
+
+

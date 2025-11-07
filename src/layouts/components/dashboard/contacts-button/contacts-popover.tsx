@@ -115,29 +115,25 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                         sx={{ cursor: 'pointer' }}
                       />
                     </ListItemAvatar>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Link
-                          color="text.primary"
-                          noWrap
-                          sx={{ cursor: 'pointer' }}
-                          underline="none"
-                          variant="subtitle2"
-                        >
-                          {contact.name}
-                        </Link>
-                      }
-                      secondary={
-                        <Typography
-                          variant="caption"
-                          color="success.main"
-                          sx={{ fontWeight: 500 }}
-                        >
-                          Online now
-                        </Typography>
-                      }
-                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Link
+                        color="text.primary"
+                        noWrap
+                        sx={{ cursor: 'pointer' }}
+                        underline="none"
+                        variant="subtitle2"
+                        display="block"
+                      >
+                        {contact.name}
+                      </Link>
+                      <Typography
+                        variant="caption"
+                        color="success.main"
+                        sx={{ fontWeight: 500, display: 'block' }}
+                      >
+                        Online now
+                      </Typography>
+                    </Box>
                     <Presence
                       size="small"
                       status="online"
@@ -160,6 +156,11 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                   })
                   : undefined;
 
+              // Determine if user was recently online (less than 1 hour ago)
+              const isRecentlyOnline = contact.lastActivity
+                ? (new Date().getTime() - contact.lastActivity) < (60 * 60 * 1000) // 1 hour in milliseconds
+                : false;
+
               return (
                 <ListItem
                   disableGutters
@@ -179,29 +180,36 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                       sx={{ cursor: 'pointer' }}
                     />
                   </ListItemAvatar>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Link
-                        color="text.primary"
-                        noWrap
-                        sx={{ cursor: 'pointer' }}
-                        underline="none"
-                        variant="subtitle2"
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Link
+                      color="text.primary"
+                      noWrap
+                      sx={{ cursor: 'pointer' }}
+                      underline="none"
+                      variant="subtitle2"
+                      display="block"
+                    >
+                      {contact.name}
+                    </Link>
+                    {lastActivity && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block' }}
                       >
-                        {contact.name}
-                      </Link>
-                    }
-                    secondary={
-                      lastActivity && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                        >
-                          Last seen {lastActivity}
-                        </Typography>
-                      )
-                    }
+                        Last online {lastActivity}
+                      </Typography>
+                    )}
+                  </Box>
+                  {/* Status dot for offline users */}
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: isRecentlyOnline ? 'warning.main' : 'error.main',
+                      ml: 1,
+                    }}
                   />
                 </ListItem>
               );

@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { subHours, subMinutes } from 'date-fns';
 import Users03Icon from '@untitled-ui/icons-react/build/esm/Users03';
 import IconButton from '@mui/material/IconButton';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -8,15 +7,17 @@ import Tooltip from '@mui/material/Tooltip';
 
 import { usePopover } from 'src/hooks/use-popover';
 import { useAuth } from 'src/contexts/auth/auth-provider';
-import { getAllTenantsFromClientsBuildings, getTenantsFromSameBuilding } from 'src/app/actions/tenant/tenant-actions';
+import { getAllTenantsFromClientsBuildingsWithAuthData, getTenantsFromSameBuildingWithAuthData } from 'src/app/actions/tenant/tenant-actions';
 import { Tenant } from 'src/types/tenant';
 import { useTranslation } from 'react-i18next';
-import { tokens } from 'src/locales/tokens';
 import { useBuildingPresence, PresenceUser } from 'src/realtime/user-presence';
-
 import { ContactsPopover } from './contacts-popover';
 
-const now = new Date();
+// Helper function to calculate last activity from last_sign_in_at
+const calculateLastActivity = (lastSignInAt: string | null | undefined): number | undefined => {
+  if (!lastSignInAt) return undefined;
+  return new Date(lastSignInAt).getTime();
+};
 
 interface Contact {
   id: string;
@@ -82,10 +83,10 @@ const useContacts = () => {
 
         if (auth.tenant) {
           // If user is a tenant, get other tenants from the same building
-          tenantsResult = await getTenantsFromSameBuilding(auth.tenant.id);
+          tenantsResult = await getTenantsFromSameBuildingWithAuthData(auth.tenant.id);
         } else if (auth.client) {
           // If user is a client, get all tenants from their buildings
-          tenantsResult = await getAllTenantsFromClientsBuildings(auth.client.id);
+          tenantsResult = await getAllTenantsFromClientsBuildingsWithAuthData(auth.client.id);
         }
 
         if (tenantsResult?.success && tenantsResult.data) {
@@ -93,12 +94,12 @@ const useContacts = () => {
           const extractedBuildingId = extractBuildingId(tenantsResult.data);
           setBuildingId(extractedBuildingId);
 
-          const transformedContacts: Contact[] = tenantsResult.data.map((tenant: Tenant) => ({
+          const transformedContacts: Contact[] = tenantsResult.data.map((tenant: Tenant & { last_sign_in_at?: string }) => ({
             id: tenant.id,
             userId: tenant.user_id, // Add user ID for presence tracking
             avatar: `/assets/avatars/avatar-${tenant.first_name.toLowerCase()}-${tenant.last_name.toLowerCase()}.png`,
             isActive: false, // Will be updated by presence system
-            lastActivity: subHours(now, Math.floor(Math.random() * 24)).getTime(),
+            lastActivity: calculateLastActivity(tenant.last_sign_in_at),
             name: `${tenant.first_name} ${tenant.last_name}`,
           }));
           setBaseContacts(transformedContacts);
