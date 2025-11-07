@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { subHours, subMinutes } from 'date-fns';
 import Users03Icon from '@untitled-ui/icons-react/build/esm/Users03';
 import IconButton from '@mui/material/IconButton';
@@ -28,7 +28,7 @@ interface Contact {
 }
 
 const useContacts = () => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [baseContacts, setBaseContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [buildingId, setBuildingId] = useState<string | null>(null);
   const auth = useAuth();
@@ -71,7 +71,7 @@ const useContacts = () => {
   useEffect(() => {
     const fetchContacts = async () => {
       if (!auth.tenant && !auth.client) {
-        setContacts([]);
+        setBaseContacts([]);
         setBuildingId(null);
         setLoading(false);
         return;
@@ -101,11 +101,11 @@ const useContacts = () => {
             lastActivity: subHours(now, Math.floor(Math.random() * 24)).getTime(),
             name: `${tenant.first_name} ${tenant.last_name}`,
           }));
-          setContacts(transformedContacts);
+          setBaseContacts(transformedContacts);
         }
       } catch (error) {
         console.error('Failed to fetch contacts:', error);
-        setContacts([]);
+        setBaseContacts([]);
         setBuildingId(null);
       } finally {
         setLoading(false);
@@ -115,17 +115,13 @@ const useContacts = () => {
     fetchContacts();
   }, [auth.tenant, auth.client, extractBuildingId]);
 
-  // Update contact online status based on presence
-  useEffect(() => {
-    if (contacts.length > 0 && onlineUserIds.length > 0) {
-      setContacts(prevContacts =>
-        prevContacts.map(contact => ({
-          ...contact,
-          isActive: contact.userId ? onlineUserIds.includes(contact.userId) : false
-        }))
-      );
-    }
-  }, [onlineUserIds, contacts.length]);
+  // Compute contacts with updated presence status using useMemo
+  const contacts = useMemo(() => {
+    return baseContacts.map(contact => ({
+      ...contact,
+      isActive: contact.userId ? onlineUserIds.includes(contact.userId) : false
+    }));
+  }, [baseContacts, onlineUserIds]);
 
   return { contacts, loading, buildingId, isConnected, onlineCount: onlineUserIds.length };
 };
