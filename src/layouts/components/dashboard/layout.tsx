@@ -7,6 +7,7 @@ import { useSettings } from 'src/hooks/use-settings';
 import { useSections } from './config';
 import { HorizontalLayout } from './horizontal-layout';
 import { VerticalLayout } from './vertical-layout';
+import { PresenceInitializer } from 'src/components/presence-initializer';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
 
@@ -61,7 +62,18 @@ export const Layout: FC<LayoutProps> = (props) => {
   }
 
   if (settings.layout === 'horizontal') {
-    return <HorizontalLayout sections={sections} navColor={settings.navColor} {...props} />;
+    return (
+      <>
+        <PresenceInitializer />
+        <HorizontalLayout sections={sections} navColor={settings.navColor} {...props} />
+      </>
+    );
   }
-  return <VerticalLayout sections={sections} navColor={settings.navColor} {...props} />;
+
+  return (
+    <>
+      <PresenceInitializer />
+      <VerticalLayout sections={sections} navColor={settings.navColor} {...props} />
+    </>
+  );
 };
