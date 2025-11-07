@@ -531,26 +531,17 @@ export const getTenantsFromSameBuilding = async (
                `)
                .eq('id', tenantId)
                .single();
-          log(`Fetched current tenant: ${JSON.stringify(currentTenant)} error: ${JSON.stringify(tenantError)}`);
 
-          // Handle both array and object cases for apartment relationship
-          const apartment = Array.isArray(currentTenant?.apartment)
-               ? currentTenant.apartment[0]
-               : currentTenant?.apartment;
-
-          if (tenantError || !apartment?.building_id) {
+          if (tenantError || !(currentTenant?.apartment as any)?.building_id) {
                log(`Failed to fetch current tenant's building info: ${tenantError?.message || 'Unknown error'}`);
                return { success: false, error: tenantError?.message || 'Tenant not found' };
           }
 
-          const buildingId = apartment.building_id;
-
-          // 2. Get all apartments in the same building
+          const buildingId = (currentTenant.apartment as any).building_id;          // 2. Get all apartments in the same building
           const { data: apartments, error: apartmentsError } = await supabase
                .from(TABLES.APARTMENTS)
                .select('id')
                .eq('building_id', buildingId);
-          log(`Fetched apartments in building ${buildingId}: ${JSON.stringify(apartments)}, error: ${JSON.stringify(apartmentsError)}  `);
           if (apartmentsError) {
                return { success: false, error: apartmentsError.message };
           }
@@ -580,7 +571,6 @@ export const getTenantsFromSameBuilding = async (
                `)
                .in('apartment_id', apartmentIds)
                .neq('id', tenantId); // Exclude the current tenant
-          log(`Fetched tenants from same building as tenant ${tenantId}: ${JSON.stringify(tenants)}, error: ${JSON.stringify(tenantsError)}`);
           if (tenantsError) {
                return { success: false, error: tenantsError.message };
           }
