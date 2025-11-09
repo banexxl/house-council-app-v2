@@ -13,13 +13,14 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 
-import { chatApi } from 'src/app/api/chat';
+import { searchBuildingUsers, type BuildingUser } from 'src/app/actions/tenant/tenant-actions';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { useSelector } from 'src/store';
 import type { Contact, Thread } from 'src/types/chat';
+import type { ChatRoomWithMembers } from 'src/types/chat';
 
 import { ChatSidebarSearch } from './chat-sidebar-search';
 import { ChatThreadItem } from './chat-thread-item';
@@ -49,17 +50,56 @@ const useCurrentThreadId = (): string | undefined => {
 };
 
 interface ChatSidebarProps {
-  container?: HTMLDivElement | null;
+  container?: HTMLElement | null;
   onClose?: () => void;
   open?: boolean;
+  // New props for Supabase integration
+  rooms?: ChatRoomWithMembers[];
+  selectedRoom?: ChatRoomWithMembers | null;
+  onRoomSelect?: (room: ChatRoomWithMembers) => void;
+  onCreateRoom?: () => void;
+  onSearchSelect?: (contact: Contact) => void;
+  loading?: boolean;
+  // Legacy props for Redux integration
+  threads?: { byId: Record<string, Thread>; allIds: string[] };
+  currentThreadId?: string | null;
+  onThreadSelect?: (threadId: string) => void;
 }
 
 export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
-  const { container, onClose, open, ...other } = props;
+  const {
+    container,
+    onClose,
+    open,
+    // New Supabase props
+    rooms = [],
+    selectedRoom,
+    onRoomSelect,
+    onCreateRoom,
+    onSearchSelect,
+    loading = false,
+    // Legacy Redux props
+    threads: propThreads,
+    currentThreadId: propCurrentThreadId,
+    onThreadSelect: propOnThreadSelect,
+    ...other
+  } = props;
+
   const user = useMockedUser();
   const router = useRouter();
-  const threads = useThreads();
-  const currentThreadId = useCurrentThreadId();
+
+  // Use Redux hooks only if not using Supabase props
+  const reduxThreads = useThreads();
+  const reduxCurrentThreadId = useCurrentThreadId();
+
+  // Determine which system we're using
+  const isSupabaseMode = rooms.length > 0 || propThreads;
+  const threads = propThreads || reduxThreads;
+  const currentThreadId = propCurrentThreadId || reduxCurrentThreadId;
+  const onThreadSelect = propOnThreadSelect || ((threadId: string) => {
+    router.push(paths.dashboard.chat + `/${threadId}`);
+  });
+
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Contact[]>([]);
@@ -81,11 +121,33 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
       }
 
       try {
-        const contacts = await chatApi.getContacts({ query: value });
+        // Use building users search instead of hardcoded contacts
+        const result = await searchBuildingUsers(value);
 
-        setSearchResults(contacts);
+        if (result.success && result.data) {
+          // Convert BuildingUser to Contact format
+          const contacts = result.data.map((user: BuildingUser) => ({
+            id: user.id,
+            name: `${user.first_name} ${user.last_name}`.trim() || user.email,
+            email: user.email,
+            avatar: user.avatar || '',
+            lastActivity: undefined,
+            isActive: user.is_online || false,
+            // Add user type and other data for later use
+            userType: user.user_type,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            apartmentNumber: user.apartment_number,
+            companyName: user.company_name
+          }));
+
+          setSearchResults(contacts);
+        } else {
+          setSearchResults([]);
+        }
       } catch (err) {
-        console.error(err);
+        console.error('Error searching building users:', err);
+        setSearchResults([]);
       }
     },
     []
@@ -104,15 +166,19 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
 
   const handleSearchSelect = useCallback(
     (contact: Contact): void => {
-      // We use the contact ID as a thread key
-      const threadKey = contact.id;
-
       setSearchFocused(false);
       setSearchQuery('');
 
-      router.push(paths.dashboard.chat + `?threadKey=${threadKey}`);
+      if (isSupabaseMode && onSearchSelect) {
+        // For Supabase mode, use the callback provided by parent
+        onSearchSelect(contact);
+      } else {
+        // Original Redux behavior
+        const threadKey = contact.id;
+        router.push(paths.dashboard.chat + `?threadKey=${threadKey}`);
+      }
     },
-    [router]
+    [router, isSupabaseMode, onSearchSelect]
   );
 
   const handleThreadSelect = useCallback(
@@ -144,7 +210,7 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
           Chats
         </Typography>
         <Button
-          onClick={handleCompose}
+          onClick={isSupabaseMode && onCreateRoom ? onCreateRoom : handleCompose}
           startIcon={
             <SvgIcon>
               <PlusIcon />
@@ -182,14 +248,46 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
               p: 2,
             }}
           >
-            {threads.allIds.map((threadId) => (
-              <ChatThreadItem
-                active={currentThreadId === threadId}
-                key={threadId}
-                onSelect={(): void => handleThreadSelect(threadId)}
-                thread={threads.byId[threadId]}
-              />
-            ))}
+            {isSupabaseMode && rooms.length > 0 ? (
+              // Render Supabase rooms
+              rooms.map((room) => (
+                <ChatThreadItem
+                  active={selectedRoom?.id === room.id}
+                  key={room.id}
+                  onSelect={() => onRoomSelect?.(room)}
+                  thread={{
+                    id: room.id,
+                    type: room.room_type === 'group' ? 'GROUP' : 'ONE_TO_ONE',
+                    participantIds: room.members?.map(m => m.user_id) || [],
+                    participants: room.members?.map(member => ({
+                      id: member.user_id,
+                      name: member.user ? `${member.user.first_name || ''} ${member.user.last_name || ''}`.trim() || member.user.email || 'Unknown User' : 'Unknown User',
+                      avatar: null as string | null,
+                      lastActivity: undefined
+                    })) || [],
+                    messages: room.last_message ? [{
+                      id: room.last_message.id,
+                      body: room.last_message.message_text,
+                      created_at: new Date(room.last_message.created_at).getTime(),
+                      authorId: room.last_message.sender_id || '',
+                      contentType: room.last_message.message_type,
+                      attachments: []
+                    }] : [],
+                    unreadCount: 0 // TODO: Calculate from read receipts
+                  }}
+                />
+              ))
+            ) : (
+              // Render Redux threads
+              threads.allIds.map((threadId) => (
+                <ChatThreadItem
+                  active={currentThreadId === threadId}
+                  key={threadId}
+                  onSelect={(): void => onThreadSelect(threadId)}
+                  thread={threads.byId[threadId]}
+                />
+              ))
+            )}
           </Stack>
         </Scrollbar>
       </Box>

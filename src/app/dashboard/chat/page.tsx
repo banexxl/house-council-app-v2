@@ -1,157 +1,100 @@
-'use client';
+'use server';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import Menu01Icon from '@untitled-ui/icons-react/build/esm/Menu01';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import SvgIcon from '@mui/material/SvgIcon';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import type { Theme } from '@mui/material/styles/createTheme';
+import { getViewer, type UserDataCombined } from "src/libs/supabase/server-auth";
+import { logout } from "src/app/auth/actions";
+import { redirect } from "next/navigation";
+import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
+import { getAllBuildingsFromClient, getAllBuildings } from "src/app/actions/building/building-actions";
+import { getBuildingUsers } from "src/app/actions/tenant/tenant-actions";
+import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { TABLES } from 'src/libs/supabase/tables';
+import { ChatPageClient } from "./chat-client";
 
-import { Seo } from 'src/components/seo';
+export default async function Page() {
+  // Get the current user and their role
+  const viewerData = await getViewer();
+  const { client, clientMember, tenant, admin } = viewerData;
 
-import { useSearchParams } from 'src/hooks/use-search-params';
-import { ChatBlank } from 'src/sections/dashboard/chat/chat-blank';
-import { ChatComposer } from 'src/sections/dashboard/chat/chat-composer';
-import { ChatContainer } from 'src/sections/dashboard/chat/chat-container';
-import { ChatSidebar } from 'src/sections/dashboard/chat/chat-sidebar';
-import { ChatThread } from 'src/sections/dashboard/chat/chat-thread';
-import { useDispatch } from 'src/store';
-import { thunks } from 'src/thunks/chat';
+  // Redirect if not authenticated
+  if (!client && !clientMember && !tenant && !admin) {
+    logout();
+    redirect('/auth/login');
+  }
 
-/**
- * NOTE:
- * In our case there two possible routes
- * one that contains /chat and one with a chat?threadKey={{threadKey}}
- * if threadKey does not exist, it means that the chat is in compose mode
- */
+  // Get building context based on user type
+  let buildingId: string | undefined;
+  let buildings: any[] = [];
+  let userType: 'admin' | 'client' | 'clientMember' | 'tenant';
 
-const useThreads = (): void => {
-  const dispatch = useDispatch();
-
-  const handleThreadsGet = useCallback((): void => {
-    dispatch(thunks.getThreads());
-  }, [dispatch]);
-
-  useEffect(
-    () => {
-      handleThreadsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-};
-
-const useSidebar = () => {
-  const searchParams = useSearchParams();
-  const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
-  const [open, setOpen] = useState(mdUp);
-
-  const handleScreenResize = useCallback((): void => {
-    if (!mdUp) {
-      setOpen(false);
-    } else {
-      setOpen(true);
+  if (admin) {
+    userType = 'admin';
+    // Admins can access all buildings - we'll use the first building or allow them to select
+    const { success, data } = await getAllBuildings();
+    buildings = success ? data! : [];
+    buildingId = buildings.length > 0 ? buildings[0].id : undefined;
+  } else if (client) {
+    userType = 'client';
+    // Clients can access their own buildings
+    const { success, data } = await getAllBuildingsFromClient(client.id);
+    buildings = success ? data! : [];
+    buildingId = buildings.length > 0 ? buildings[0].id : undefined;
+  } else if (clientMember) {
+    userType = 'clientMember';
+    // Client members access buildings through their client
+    const { success, data } = await resolveClientFromClientOrMember(clientMember.id);
+    if (success && data?.id) {
+      const { success: success2, data: data2 } = await getAllBuildingsFromClient(data.id);
+      buildings = success2 ? data2! : [];
+      buildingId = buildings.length > 0 ? buildings[0].id : undefined;
     }
-  }, [mdUp]);
+  } else if (tenant) {
+    userType = 'tenant';
+    // For tenants, get their building context and building ID
+    const result = await getBuildingUsers();
 
-  useEffect(
-    () => {
-      handleScreenResize();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mdUp]
-  );
+    if (result.success && result.data && result.data.length > 0) {
+      // Get the building ID from the tenant's apartment relationship
+      try {
+        const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
+        const { data: tenantData } = await serviceSupabase
+          .from(TABLES.TENANTS)
+          .select(`
+            apartment_id,
+            ${TABLES.APARTMENTS}!inner(building_id)
+          `)
+          .eq('user_id', viewerData.userData?.id)
+          .single();
 
-  const handeParamsUpdate = useCallback((): void => {
-    if (!mdUp) {
-      setOpen(false);
+        if (tenantData && (tenantData as any)[TABLES.APARTMENTS]?.building_id) {
+          buildingId = (tenantData as any)[TABLES.APARTMENTS].building_id;
+        }
+      } catch (error) {
+        console.error('Error getting tenant building ID:', error);
+        // Fallback: let chat actions auto-detect building from tenant context
+        buildingId = undefined;
+      }
     }
-  }, [mdUp]);
+  } else {
+    // This should never happen due to the earlier auth check, but just in case
+    redirect('/dashboard');
+  }
 
-  useEffect(
-    () => {
-      handeParamsUpdate();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchParams]
-  );
+  // If no building access, redirect or show error
+  if (!buildingId && buildings.length === 0 && userType !== 'tenant') {
+    redirect('/dashboard');
+  }
 
-  const handleToggle = useCallback((): void => {
-    setOpen((prevState) => !prevState);
-  }, []);
-
-  const handleClose = useCallback((): void => {
-    setOpen(false);
-  }, []);
-
-  return {
-    handleToggle,
-    handleClose,
-    open,
-  };
-};
-
-const Page = () => {
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const searchParams = useSearchParams();
-  const compose = searchParams.get('compose') === 'true';
-  const threadKey = searchParams.get('threadKey') || undefined;
-  const sidebar = useSidebar();
-
-
-
-  useThreads();
-
-  const view = threadKey ? 'thread' : compose ? 'compose' : 'blank';
+  // For tenants, if getBuildingUsers failed or no building ID found, they don't have access
+  if (userType === 'tenant' && !buildingId) {
+    redirect('/dashboard');
+  }
 
   return (
-    <>
-      <Seo title="Dashboard: Chat" />
-      <Divider />
-      <Box
-        component="main"
-        sx={{
-          backgroundColor: 'background.paper',
-          flex: '1 1 auto',
-          overflow: 'hidden',
-          position: 'relative',
-        }}
-      >
-        <Box
-          ref={rootRef}
-          sx={{
-            bottom: 0,
-            display: 'flex',
-            left: 0,
-            position: 'absolute',
-            right: 0,
-            top: 0,
-          }}
-        >
-          <ChatSidebar
-            container={rootRef.current}
-            onClose={sidebar.handleClose}
-            open={sidebar.open}
-          />
-          <ChatContainer open={sidebar.open}>
-            <Box sx={{ p: 2 }}>
-              <IconButton onClick={sidebar.handleToggle}>
-                <SvgIcon>
-                  <Menu01Icon />
-                </SvgIcon>
-              </IconButton>
-            </Box>
-            <Divider />
-            {view === 'thread' && <ChatThread threadKey={threadKey!} />}
-            {view === 'compose' && <ChatComposer />}
-            {view === 'blank' && <ChatBlank />}
-          </ChatContainer>
-        </Box>
-      </Box>
-    </>
+    <ChatPageClient
+      buildingId={buildingId}
+      userType={userType}
+      buildings={buildings}
+      user={viewerData}
+    />
   );
-};
-
-export default Page;
+}

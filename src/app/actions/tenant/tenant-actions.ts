@@ -652,7 +652,6 @@ export const getTenantsFromSameBuildingWithAuthData = async (
           }
 
           const apartmentIds = apartments.map((a) => a.id);
-          log(`Apartment IDs in building ${buildingId}: ${JSON.stringify(apartmentIds)}`);
           if (apartmentIds.length === 0) {
                return { success: true, data: [] };
           }
@@ -756,7 +755,6 @@ export const getTenantsFromSameBuilding = async (
           }
 
           const apartmentIds = apartments.map((a) => a.id);
-          log(`Apartment IDs in building ${buildingId}: ${JSON.stringify(apartmentIds)}`);
           if (apartmentIds.length === 0) {
                return { success: true, data: [] };
           }
@@ -789,5 +787,227 @@ export const getTenantsFromSameBuilding = async (
           return { success: false, error: e?.message || 'Unexpected error' };
      }
 }
+
+export interface BuildingUser {
+     id: string;
+     email: string;
+     first_name: string;
+     last_name: string;
+     user_type: 'tenant' | 'client';
+     apartment_number?: string;
+     company_name?: string;
+     avatar?: string;
+     is_online?: boolean;
+}
+
+/**
+ * Get all users from the same building as the current user
+ */
+export const getBuildingUsers = async (): Promise<{
+     success: boolean;
+     data?: BuildingUser[];
+     error?: string;
+}> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) {
+               return { success: false, error: 'User not authenticated' };
+          }
+
+          // Determine current user type and get their building IDs
+          let buildingIds: string[] = [];
+
+          // Check if user is a tenant
+          const { data: tenantData } = await serviceSupabase
+               .from(TABLES.TENANTS)
+               .select(`
+        apartment_id,
+        ${TABLES.APARTMENTS}!inner(building_id)
+      `)
+               .eq('user_id', user.id);
+
+          if (tenantData && tenantData.length > 0) {
+               // User is a tenant - get building IDs from their apartments
+               buildingIds = tenantData
+                    .map((t: any) => t[TABLES.APARTMENTS]?.building_id)
+                    .filter(Boolean);
+          } else {
+               // Check if user is a client
+               const { data: clientData } = await serviceSupabase
+                    .from(TABLES.CLIENTS)
+                    .select('id')
+                    .eq('user_id', user.id);
+
+               if (clientData && clientData.length > 0) {
+                    // User is a client - get their buildings
+                    const { data: buildings } = await serviceSupabase
+                         .from(TABLES.BUILDINGS)
+                         .select('id')
+                         .eq('client_id', clientData[0].id);
+
+                    buildingIds = buildings?.map(b => b.id) || [];
+               }
+          }
+
+          if (buildingIds.length === 0) {
+               return { success: true, data: [] };
+          }
+
+          return await getUsersFromBuildings(buildingIds);
+     } catch (error: any) {
+          log(`Error in getBuildingUsers: ${error.message}`);
+          return { success: false, error: error.message };
+     }
+};
+
+/**
+ * Get users from specific buildings
+ */
+export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
+     success: boolean;
+     data?: BuildingUser[];
+     error?: string;
+}> => {
+     const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          const users: BuildingUser[] = [];
+
+          // Get tenants from these buildings
+          const { data: apartments } = await serviceSupabase
+               .from(TABLES.APARTMENTS)
+               .select('id')
+               .in('building_id', buildingIds);
+
+          if (apartments && apartments.length > 0) {
+               const apartmentIds = apartments.map(a => a.id);
+               const { data: tenants } = await serviceSupabase
+                    .from(TABLES.TENANTS)
+                    .select(`
+          id,
+          user_id,
+          email,
+          first_name,
+          last_name,
+          ${TABLES.APARTMENTS}!inner(apartment_number)
+        `)
+                    .in('apartment_id', apartmentIds);
+
+               if (tenants) {
+                    users.push(...tenants.map((tenant: any) => ({
+                         id: tenant.user_id,
+                         email: tenant.email,
+                         first_name: tenant.first_name,
+                         last_name: tenant.last_name,
+                         user_type: 'tenant' as const,
+                         apartment_number: tenant[TABLES.APARTMENTS]?.apartment_number
+                    })));
+               }
+          }
+
+          // Get clients who own these buildings
+          const { data: clientsFromBuildings } = await serviceSupabase
+               .from(TABLES.BUILDINGS)
+               .select(`
+        client_id,
+        ${TABLES.CLIENTS}!inner(
+          id,
+          user_id,
+          email,
+          first_name,
+          last_name,
+          company_name
+        )
+      `)
+               .in('id', buildingIds);
+
+          if (clientsFromBuildings) {
+               const uniqueClients = new Map();
+               clientsFromBuildings.forEach((building: any) => {
+                    const client = building[TABLES.CLIENTS];
+                    if (client) {
+                         uniqueClients.set(client.user_id, {
+                              id: client.user_id,
+                              email: client.email,
+                              first_name: client.first_name,
+                              last_name: client.last_name,
+                              user_type: 'client' as const,
+                              company_name: client.company_name
+                         });
+                    }
+               });
+               users.push(...Array.from(uniqueClients.values()));
+          }
+
+          return { success: true, data: users };
+     } catch (error: any) {
+          log(`Error in getUsersFromBuildings: ${error.message}`);
+          return { success: false, error: error.message };
+     }
+};
+
+/**
+ * Get users from a specific building
+ */
+export const getUsersFromBuilding = async (buildingId: string): Promise<{
+     success: boolean;
+     data?: BuildingUser[];
+     error?: string;
+}> => {
+     return await getUsersFromBuildings([buildingId]);
+};
+
+/**
+ * Search for users in buildings with a query
+ */
+export const searchBuildingUsers = async (query: string): Promise<{
+     success: boolean;
+     data?: BuildingUser[];
+     error?: string;
+}> => {
+     try {
+          // Get current user to exclude from results
+          const supabase = await useServerSideSupabaseAnonClient();
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) {
+               return { success: false, error: 'Failed to get current user' };
+          }
+
+          // Get all building users first
+          const result = await getBuildingUsers();
+          if (!result.success || !result.data) {
+               return result;
+          }
+
+          // Filter users based on query and exclude current user
+          const searchTerm = query.toLowerCase();
+          const filteredUsers = result.data.filter(buildingUser => {
+               // Exclude current logged-in user
+               if (buildingUser.id === user.id) {
+                    return false;
+               }
+
+               const fullName = `${buildingUser.first_name} ${buildingUser.last_name}`.toLowerCase();
+               const email = buildingUser.email.toLowerCase();
+               const apartmentNumber = buildingUser.apartment_number?.toLowerCase() || '';
+               const companyName = buildingUser.company_name?.toLowerCase() || '';
+
+               return (
+                    fullName.includes(searchTerm) ||
+                    email.includes(searchTerm) ||
+                    apartmentNumber.includes(searchTerm) ||
+                    companyName.includes(searchTerm)
+               );
+          });
+
+          return { success: true, data: filteredUsers };
+     } catch (error: any) {
+          log(`Error in searchBuildingUsers: ${error.message}`);
+          return { success: false, error: error.message };
+     }
+};
 
 

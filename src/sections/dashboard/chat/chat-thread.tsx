@@ -6,14 +6,15 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 
-import { chatApi } from 'src/app/api/chat';
+import { getParticipants } from 'src/app/actions/chat/chat-actions';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { useDispatch, useSelector } from 'src/store';
 import { thunks } from 'src/thunks/chat';
-import type { Participant, Thread } from 'src/types/chat';
+import type { Participant, Thread, Message } from 'src/types/chat';
+import type { User } from 'src/types/user';
 
 import { ChatMessageAdd } from './chat-message-add';
 import { ChatMessages } from './chat-messages';
@@ -25,8 +26,10 @@ const useParticipants = (threadKey: string): Participant[] => {
 
   const handleParticipantsGet = useCallback(async (): Promise<void> => {
     try {
-      const participants = await chatApi.getParticipants({ threadKey });
-      setParticipants(participants);
+      const response = await getParticipants(threadKey);
+      if (response.success && response.data) {
+        setParticipants(response.data);
+      }
     } catch (err) {
       console.error(err);
       router.push(paths.dashboard.chat);
@@ -104,37 +107,70 @@ const useThread = (threadKey: string): Thread | undefined => {
 };
 
 const useMessagesScroll = (
-  thread?: Thread
+  thread?: Thread,
+  messages?: Message[]
 ): {
   messagesRef: MutableRefObject<SimpleBarCore | null>;
 } => {
   const messagesRef = useRef<SimpleBarCore | null>(null);
+  const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
 
-  const handleUpdate = useCallback((): void => {
-    // Thread does not exist
-    if (!thread) {
-      return;
-    }
-
-    // Ref is not used
+  const scrollToBottom = useCallback((force = false) => {
     if (!messagesRef.current) {
       return;
     }
 
-    const container = messagesRef.current;
-    const scrollElement = container!.getScrollElement();
+    const scrollElement = messagesRef.current.getScrollElement();
 
     if (scrollElement) {
-      scrollElement.scrollTop = container.el.scrollHeight;
+      if (force) {
+        // Force scroll to bottom (initial load)
+        setTimeout(() => {
+          scrollElement.scrollTop = scrollElement.scrollHeight;
+          setHasInitialScrolled(true);
+          console.log('📜 Initial scroll to bottom completed', {
+            scrollTop: scrollElement.scrollTop,
+            scrollHeight: scrollElement.scrollHeight,
+            clientHeight: scrollElement.clientHeight
+          });
+        }, 100);
+      } else {
+        // Check if user was near the bottom before new message
+        const wasNearBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 100;
+
+        // Only auto-scroll if user was near the bottom
+        if (wasNearBottom) {
+          setTimeout(() => {
+            scrollElement.scrollTop = scrollElement.scrollHeight;
+            console.log('📜 Auto-scrolled to bottom (new message)');
+          }, 100);
+        } else {
+          console.log('📜 User scrolled up, not auto-scrolling');
+        }
+      }
     }
-  }, [thread]);
+  }, []); const handleUpdate = useCallback((): void => {
+    // Thread does not exist
+    if (!thread && !messages) {
+      return;
+    }
+
+    // Initial scroll to bottom when messages first load
+    if (!hasInitialScrolled && messages && messages.length > 0) {
+      scrollToBottom(true);
+      return;
+    }
+
+    // Regular update scroll behavior
+    scrollToBottom(false);
+  }, [thread, messages, hasInitialScrolled, scrollToBottom]);
 
   useEffect(
     () => {
       handleUpdate();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [thread]
+    [thread, messages]
   );
 
   return {
@@ -144,20 +180,49 @@ const useMessagesScroll = (
 
 interface ChatThreadProps {
   threadKey: string;
+  messages?: Message[];
+  participants?: Participant[];
+  currentUser?: User;
+  onSendMessage?: (body: string) => Promise<void>;
 }
 
 export const ChatThread: FC<ChatThreadProps> = (props) => {
-  const { threadKey, ...other } = props;
+  console.log('props.messages', props.messages);
+
+  const { threadKey, messages: messagesProp, participants: participantsProp, currentUser, onSendMessage, ...other } = props;
   const dispatch = useDispatch();
   const user = useMockedUser();
   const thread = useThread(threadKey);
-  const participants = useParticipants(threadKey);
-  const { messagesRef } = useMessagesScroll(thread);
+  const participantsFromHook = useParticipants(threadKey);
+
+  // Use props if provided, otherwise fall back to thread data
+  const messages = messagesProp || thread?.messages || [];
+  const participants = participantsProp || participantsFromHook || thread?.participants || [];
+
+  console.log('💬 ChatThread Debug:', {
+    messagesProp: messagesProp?.length,
+    threadMessages: thread?.messages?.length,
+    finalMessages: messages.length,
+    participants: participants.length,
+    currentUser: currentUser?.id || user?.id
+  });
+
+  const { messagesRef } = useMessagesScroll(thread, messages);
 
   const handleSend = useCallback(
     async (body: string): Promise<void> => {
-      // If we have the thread, we use its ID to add a new message
+      // Use custom onSendMessage if provided (for Supabase chat)
+      if (onSendMessage) {
+        try {
+          await onSendMessage(body);
+        } catch (err) {
+          console.error(err);
+        }
+        return;
+      }
 
+      // Otherwise use the legacy Redux-based approach
+      // If we have the thread, we use its ID to add a new message
       if (thread) {
         try {
           await dispatch(
@@ -215,7 +280,7 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
 
       dispatch(thunks.setCurrentThread({ threadId }));
     },
-    [dispatch, participants, thread, user]
+    [dispatch, participants, thread, user, onSendMessage]
   );
 
   // Maybe implement a loading state
@@ -225,6 +290,7 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
       sx={{
         flexGrow: 1,
         overflow: 'hidden',
+        height: '100%', // Ensure full height
       }}
       {...other}
     >
@@ -234,17 +300,34 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
         sx={{
           flexGrow: 1,
           overflow: 'hidden',
+          height: 0, // This ensures proper flex behavior
+          minHeight: 300, // Minimum height for debugging
         }}
       >
-        <Scrollbar
-          ref={messagesRef}
-          sx={{ maxHeight: '100%' }}
+        <Box
+          ref={(el) => {
+            if (el && messagesRef.current === null) {
+              // Create a simple ref that mimics SimpleBarCore interface for compatibility
+              messagesRef.current = {
+                getScrollElement: () => el,
+                el: el
+              } as SimpleBarCore;
+            }
+          }}
+          sx={{
+            height: '100%',
+            overflow: 'auto',
+            overflowX: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
         >
           <ChatMessages
-            messages={thread?.messages || []}
-            participants={thread?.participants || []}
+            messages={messages}
+            participants={participants}
+            currentUser={currentUser}
           />
-        </Scrollbar>
+        </Box>
       </Box>
       <Divider />
       <ChatMessageAdd onSend={handleSend} />
@@ -254,4 +337,8 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
 
 ChatThread.propTypes = {
   threadKey: PropTypes.string.isRequired,
+  messages: PropTypes.array,
+  participants: PropTypes.array,
+  currentUser: PropTypes.any,
+  onSendMessage: PropTypes.func,
 };

@@ -1,21 +1,34 @@
-import { chatApi } from 'src/app/api/chat';
+import {
+  getContacts as getContactsAction,
+  getThreads as getThreadsAction,
+  getThread as getThreadAction,
+  markThreadAsSeen as markThreadAsSeenAction,
+  addMessage as addMessageAction,
+  getUserChatRooms,
+  getRoomMessages,
+} from 'src/app/actions/chat/chat-actions';
 import { slice } from 'src/slices/chat';
 import type { AppThunk } from 'src/store';
+import type { ChatRoomWithMembers, ChatMessageWithSender } from 'src/types/chat';
 
 const getContacts =
   (): AppThunk =>
     async (dispatch): Promise<void> => {
-      const response = await chatApi.getContacts({});
+      const response = await getContactsAction();
 
-      dispatch(slice.actions.getContacts(response));
+      if (response.success && response.data) {
+        dispatch(slice.actions.getContacts(response.data));
+      }
     };
 
 const getThreads =
   (): AppThunk =>
     async (dispatch): Promise<void> => {
-      const response = await chatApi.getThreads();
+      const response = await getThreadsAction();
 
-      dispatch(slice.actions.getThreads(response));
+      if (response.success && response.data) {
+        dispatch(slice.actions.getThreads(response.data));
+      }
     };
 
 type GetThreadParams = {
@@ -25,11 +38,14 @@ type GetThreadParams = {
 const getThread =
   (params: GetThreadParams): AppThunk =>
     async (dispatch): Promise<string | undefined> => {
-      const response = await chatApi.getThread(params);
+      const response = await getThreadAction(params.threadKey);
 
-      dispatch(slice.actions.getThread(response));
+      if (response.success && response.data) {
+        dispatch(slice.actions.getThread(response.data));
+        return response.data.id;
+      }
 
-      return response?.id;
+      return undefined;
     };
 
 type MarkThreadAsSeenParams = {
@@ -39,9 +55,11 @@ type MarkThreadAsSeenParams = {
 const markThreadAsSeen =
   (params: MarkThreadAsSeenParams): AppThunk =>
     async (dispatch): Promise<void> => {
-      await chatApi.markThreadAsSeen(params);
+      const response = await markThreadAsSeenAction(params.threadId);
 
-      dispatch(slice.actions.markThreadAsSeen(params.threadId));
+      if (response.success) {
+        dispatch(slice.actions.markThreadAsSeen(params.threadId));
+      }
     };
 
 type SetCurrentThreadParams = {
@@ -63,11 +81,75 @@ type AddMessageParams = {
 const addMessage =
   (params: AddMessageParams): AppThunk =>
     async (dispatch): Promise<string> => {
-      const response = await chatApi.addMessage(params);
+      const response = await addMessageAction({
+        threadId: params.threadId,
+        recipientIds: params.recipientIds,
+        body: params.body
+      });
 
-      dispatch(slice.actions.addMessage(response));
+      if (response.success && response.data) {
+        dispatch(slice.actions.addMessage(response.data));
+        return response.data.threadId;
+      }
 
-      return response.threadId;
+      return '';
+    };
+
+// Supabase thunks
+const getSupabaseRooms =
+  (): AppThunk =>
+    async (dispatch): Promise<void> => {
+      try {
+        const response = await getUserChatRooms();
+
+        if (response.success && response.data) {
+          dispatch(slice.actions.setSupabaseRooms(response.data));
+        }
+      } catch (error) {
+        console.error('Error fetching Supabase rooms:', error);
+      }
+    };
+
+type GetSupabaseMessagesParams = {
+  roomId: string;
+};
+
+const getSupabaseMessages =
+  (params: GetSupabaseMessagesParams): AppThunk =>
+    async (dispatch): Promise<void> => {
+      try {
+        const response = await getRoomMessages(params.roomId);
+
+        if (response.success && response.data) {
+          dispatch(slice.actions.setSupabaseMessages({
+            roomId: params.roomId,
+            messages: response.data
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching Supabase messages:', error);
+      }
+    };
+
+type AddSupabaseMessageParams = {
+  roomId: string;
+  message: ChatMessageWithSender;
+};
+
+const addSupabaseMessage =
+  (params: AddSupabaseMessageParams): AppThunk =>
+    (dispatch): void => {
+      dispatch(slice.actions.addSupabaseMessage(params));
+    };
+
+type SetCurrentSupabaseRoomParams = {
+  roomId?: string;
+};
+
+const setCurrentSupabaseRoom =
+  (params: SetCurrentSupabaseRoomParams): AppThunk =>
+    (dispatch): void => {
+      dispatch(slice.actions.setCurrentSupabaseRoom(params.roomId));
     };
 
 export const thunks = {
@@ -77,4 +159,9 @@ export const thunks = {
   getThreads,
   markThreadAsSeen,
   setCurrentThread,
+  // Supabase thunks
+  getSupabaseRooms,
+  getSupabaseMessages,
+  addSupabaseMessage,
+  setCurrentSupabaseRoom,
 };

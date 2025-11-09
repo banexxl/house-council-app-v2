@@ -18,7 +18,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
-import { chatApi } from 'src/app/api/chat';
+import { getContacts } from 'src/app/actions/chat/chat-actions';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Contact } from 'src/types/chat';
 
@@ -50,14 +50,15 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
       }
 
       try {
-        const contacts = await chatApi.getContacts({ query });
+        const response = await getContacts(query);
 
-        // Filter already picked recipients
+        if (response.success && response.data) {
+          // Filter already picked recipients
+          const recipientIds = recipients.map((recipient) => recipient.id);
+          const filtered = response.data.filter((contact) => !recipientIds.includes(contact.id));
 
-        const recipientIds = recipients.map((recipient) => recipient.id);
-        const filtered = contacts.filter((contact) => !recipientIds.includes(contact.id));
-
-        setSearchResults(filtered);
+          setSearchResults(filtered);
+        }
       } catch (err) {
         console.error(err);
       }
