@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { useAuth } from 'src/contexts/auth/auth-provider';
 import { TABLES } from 'src/libs/supabase/tables';
@@ -154,6 +154,12 @@ export const useChatMessages = (roomId: string | null) => {
      const [hasMore, setHasMore] = useState(true);
      const auth = useAuth();
      const user = auth.tenant;
+     const messageCountRef = useRef(0);
+
+     // Update ref when messages change
+     useEffect(() => {
+          messageCountRef.current = messages.length;
+     }, [messages.length]);
 
      // Load messages from cache when roomId changes
      useEffect(() => {
@@ -178,9 +184,11 @@ export const useChatMessages = (roomId: string | null) => {
                          // Save to localStorage for persistence
                          saveChatMessages(roomId, result.data);
                     } else {
-                         const newMessages = [...result.data!, ...messages];
-                         setMessages(newMessages);
-                         saveChatMessages(roomId, newMessages);
+                         setMessages(prevMessages => {
+                              const newMessages = [...result.data!, ...prevMessages];
+                              saveChatMessages(roomId, newMessages);
+                              return newMessages;
+                         });
                     }
                     setHasMore(result.data.length === limit);
                     setError(null);
@@ -193,7 +201,7 @@ export const useChatMessages = (roomId: string | null) => {
           } finally {
                setLoading(false);
           }
-     }, [roomId, user, messages]);
+     }, [roomId, user]);
 
      const sendNewMessage = useCallback(async (content: string, messageType: 'text' | 'image' | 'file' = 'text') => {
           if (!roomId || !user) return false;
@@ -221,10 +229,12 @@ export const useChatMessages = (roomId: string | null) => {
           } as ChatMessageWithSender & { _pending: boolean };
 
           // Add optimistic message immediately
-          const newMessages = [...messages, optimisticMessage];
-          setMessages(newMessages);
-          // Save optimistic message to cache
-          saveChatMessages(roomId, newMessages);
+          setMessages(prevMessages => {
+               const newMessages = [...prevMessages, optimisticMessage];
+               // Save optimistic message to cache
+               saveChatMessages(roomId, newMessages);
+               return newMessages;
+          });
 
           try {
                const result = await sendMessage({
@@ -235,48 +245,54 @@ export const useChatMessages = (roomId: string | null) => {
 
                if (result.success && result.data) {
                     // Replace optimistic message with real one, ensuring proper typing
-                    const updatedMessages = messages.map(msg => {
-                         if (msg.id === optimisticMessage.id) {
-                              // Create properly typed message from server response
-                              const realMessage: ChatMessageWithSender = {
-                                   id: result.data!.id,
-                                   room_id: result.data!.room_id,
-                                   sender_id: result.data!.sender_id,
-                                   sender_type: result.data!.sender_type as 'tenant' | 'client' | 'admin',
-                                   message_text: result.data!.message_text,
-                                   message_type: result.data!.message_type as 'text' | 'image' | 'file' | 'system',
-                                   created_at: result.data!.created_at,
-                                   is_edited: result.data!.is_edited || false,
-                                   reaction_data: result.data!.reaction_data || {},
-                                   reply_to_message_id: result.data!.reply_to_message_id,
-                                   file_url: result.data!.file_url,
-                                   file_name: result.data!.file_name,
-                                   file_size: result.data!.file_size,
-                                   deleted_at: result.data!.deleted_at,
-                                   edited_at: result.data!.edited_at,
-                                   sender: optimisticMessage.sender
-                              };
-                              return realMessage;
-                         }
-                         return msg;
+                    setMessages(prevMessages => {
+                         const updatedMessages = prevMessages.map(msg => {
+                              if (msg.id === optimisticMessage.id) {
+                                   // Create properly typed message from server response
+                                   const realMessage: ChatMessageWithSender = {
+                                        id: result.data!.id,
+                                        room_id: result.data!.room_id,
+                                        sender_id: result.data!.sender_id,
+                                        sender_type: result.data!.sender_type as 'tenant' | 'client' | 'admin',
+                                        message_text: result.data!.message_text,
+                                        message_type: result.data!.message_type as 'text' | 'image' | 'file' | 'system',
+                                        created_at: result.data!.created_at,
+                                        is_edited: result.data!.is_edited || false,
+                                        reaction_data: result.data!.reaction_data || {},
+                                        reply_to_message_id: result.data!.reply_to_message_id,
+                                        file_url: result.data!.file_url,
+                                        file_name: result.data!.file_name,
+                                        file_size: result.data!.file_size,
+                                        deleted_at: result.data!.deleted_at,
+                                        edited_at: result.data!.edited_at,
+                                        sender: optimisticMessage.sender
+                                   };
+                                   return realMessage;
+                              }
+                              return msg;
+                         });
+                         // Save real message to cache
+                         saveChatMessages(roomId, updatedMessages);
+                         return updatedMessages;
                     });
-                    setMessages(updatedMessages);
-                    // Save real message to cache
-                    saveChatMessages(roomId, updatedMessages);
                     return true;
                } else {
                     // Remove optimistic message on failure
-                    const failedMessages = messages.filter(msg => msg.id !== optimisticMessage.id);
-                    setMessages(failedMessages);
-                    saveChatMessages(roomId, failedMessages);
+                    setMessages(prevMessages => {
+                         const failedMessages = prevMessages.filter(msg => msg.id !== optimisticMessage.id);
+                         saveChatMessages(roomId, failedMessages);
+                         return failedMessages;
+                    });
                     setError(result.error || 'Failed to send message');
                     return false;
                }
           } catch (e: any) {
                // Remove optimistic message on error
-               const errorMessages = messages.filter(msg => msg.id !== optimisticMessage.id);
-               setMessages(errorMessages);
-               saveChatMessages(roomId, errorMessages);
+               setMessages(prevMessages => {
+                    const errorMessages = prevMessages.filter(msg => msg.id !== optimisticMessage.id);
+                    saveChatMessages(roomId, errorMessages);
+                    return errorMessages;
+               });
                log(`Error sending message: ${e.message}`);
                setError(e.message);
                return false;
@@ -295,8 +311,8 @@ export const useChatMessages = (roomId: string | null) => {
 
      const loadMoreMessages = useCallback(() => {
           if (!hasMore || loading) return;
-          loadMessages(messages.length);
-     }, [hasMore, loading, loadMessages, messages.length]);
+          loadMessages(messageCountRef.current);
+     }, [hasMore, loading, loadMessages]);
 
      // Load messages when room changes
      useEffect(() => {
