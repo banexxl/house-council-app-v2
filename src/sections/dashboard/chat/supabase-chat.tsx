@@ -16,9 +16,6 @@ import { ChatSidebar } from './chat-sidebar';
 import { ChatThread } from './chat-thread';
 import { ChatBlank } from './chat-blank';
 
-// Import test function for development
-import '../../../utils/test-realtime';
-
 interface SupabaseChatProps {
      buildingId?: string;
 }
@@ -113,35 +110,18 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
           hasMore,
           refreshMessages
      } = useChatMessages(currentThreadId);
-     const { typingUsers, setIsTyping } = useTypingIndicators(currentThreadId);     // Debug logging for messages
+     const { typingUsers, setIsTyping } = useTypingIndicators(currentThreadId);
+
+     // Debug logging for messages
      useEffect(() => {
           if (currentThreadId) {
-               console.log('💬 Messages for thread:', {
-                    threadId: currentThreadId,
-                    messageCount: messages.length,
-                    loading: messagesLoading,
-                    latestMessages: messages.slice(-3).map(m => ({
-                         id: m.id,
-                         text: m.message_text,
-                         sender: m.sender_id,
-                         time: m.created_at
-                    }))
-               });
+               // Messages debug logging removed for production
           }
      }, [currentThreadId, messages, messagesLoading]);
 
      // Debug logging for rooms
      useEffect(() => {
-          console.log('🏠 Current user rooms:', {
-               count: rooms.length,
-               rooms: rooms.map(r => ({
-                    id: r.id,
-                    name: r.name,
-                    type: r.room_type,
-                    members: r.members?.length || 0,
-                    lastMessage: r.last_message?.message_text
-               }))
-          });
+          // Rooms debug logging removed for production  
      }, [rooms]);
 
      // Handle creating new chat options
@@ -153,7 +133,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      const handleCreateRoom = useCallback(() => {
           // For now, we'll just show the create menu
           // In a real implementation, this might open a different dialog
-          console.log('Create room called from sidebar');
      }, []);
 
      const handleCreateMenuClose = useCallback(() => {
@@ -169,14 +148,9 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      // Handle direct message creation
      const handleSelectUser = useCallback(async (user: BuildingUser) => {
           try {
-               console.log('Creating direct message room with user:', user);
-               console.log('Building ID:', buildingId);
-               console.log('Current user:', auth.userData?.id);
-
                // If no buildingId provided, try to get one from the current user
                let effectiveBuildingId = buildingId;
                if (!effectiveBuildingId) {
-                    console.log('No buildingId provided, will use empty string as fallback');
                     effectiveBuildingId = '';
                }
 
@@ -186,24 +160,18 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                     buildingId || undefined // Pass undefined instead of empty string
                );
 
-               console.log('Direct message room creation result:', result);
-
                if (result.success && result.data) {
                     const room = result.data as any;
-                    console.log('Setting selected room:', room);
                     setSelectedRoom(room);
                     setCurrentThreadId(room.id);
 
                     // Refresh rooms to get the latest data
-                    console.log('Refreshing rooms...');
                     await refreshRooms();
 
                     // Close mobile sidebar
                     if (!mdUp) {
                          setSidebarOpen(false);
                     }
-
-                    console.log('Direct message creation completed successfully');
                } else {
                     console.error('Failed to create direct message room:', result.error);
                     // Show user-friendly error message
@@ -284,8 +252,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      // Handle search selection - create direct message with selected user
      const handleSearchSelection = useCallback(async (contact: any) => {
           try {
-               console.log('Search selection:', contact);
-
                // Create BuildingUser from the contact data
                const user: BuildingUser = {
                     id: contact.id,
@@ -299,7 +265,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                     is_online: contact.isActive
                };
 
-               console.log('Creating direct message with user:', user);
                await handleSelectUser(user);
           } catch (error) {
                console.error('Error handling search selection:', error);
@@ -391,12 +356,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                          rooms={rooms}
                          selectedRoom={selectedRoom}
                          onRoomSelect={(room) => {
-                              console.log('🎯 Room selected:', {
-                                   id: room.id,
-                                   name: room.name,
-                                   type: room.room_type,
-                                   members: room.members?.length
-                              });
                               setSelectedRoom(room);
                               setCurrentThreadId(room.id);
                               if (!mdUp) {
@@ -425,6 +384,8 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                               participants={adaptedParticipants}
                               currentUser={adaptedCurrentUser}
                               onSendMessage={handleSendMessage}
+                              typingUsers={typingUsers}
+                              onTyping={setIsTyping}
                          />
                     ) : (
                          <ChatBlank />

@@ -57,7 +57,6 @@ export const useChatRooms = () => {
           const cachedRooms = loadChatRooms();
           if (cachedRooms.length > 0) {
                setRooms(cachedRooms);
-               console.log('🏠 Loaded cached rooms:', cachedRooms.length);
           }
           // Clean up expired data
           cleanupExpiredData();
@@ -66,7 +65,6 @@ export const useChatRooms = () => {
      const loadRooms = useCallback(async () => {
           if (!user) return;
 
-          console.log('🏠 Loading chat rooms for user:', user.id);
           setLoading(true);
           setError(null);
 
@@ -76,7 +74,6 @@ export const useChatRooms = () => {
                     setRooms(result.data);
                     // Save to localStorage for persistence
                     saveChatRooms(result.data);
-                    console.log('🏠 Successfully loaded and cached rooms:', result.data.length);
                } else {
                     setError(result.error || 'Failed to load chat rooms');
                }
@@ -167,7 +164,6 @@ export const useChatMessages = (roomId: string | null) => {
                const cachedMessages = loadChatMessages(roomId);
                if (cachedMessages.length > 0) {
                     setMessages(cachedMessages);
-                    console.log('💬 Loaded cached messages for room:', roomId, cachedMessages.length);
                }
           }
      }, [roomId]);
@@ -317,11 +313,20 @@ export const useChatMessages = (roomId: string | null) => {
      // Load messages when room changes
      useEffect(() => {
           if (roomId) {
+               // Check if we have recent cached messages first
+               const cachedMessages = loadChatMessages(roomId);
+               if (cachedMessages.length > 0) {
+                    setMessages(cachedMessages);
+                    setHasMore(cachedMessages.length >= 50); // Assume more if we have 50+ messages
+                    return;
+               }
+
+               // Only clear and reload if no cache
                setMessages([]);
                setHasMore(true);
                loadMessages(0);
           }
-     }, [roomId, loadMessages]);
+     }, [roomId]); // Remove loadMessages from dependencies to prevent unnecessary reloads
 
      // Subscribe to realtime message changes
      useEffect(() => {
@@ -338,17 +343,8 @@ export const useChatMessages = (roomId: string | null) => {
                     },
                     async (payload: any) => {
                          const newMessage = payload.new as any;
-
-                         console.log('📨 Real-time message received:', {
-                              id: newMessage.id,
-                              sender_id: newMessage.sender_id,
-                              message_text: newMessage.message_text,
-                              room_id: newMessage.room_id
-                         });
-
                          // Don't add our own messages twice (they're added optimistically when sending)
                          if (newMessage.sender_id === user.id) {
-                              console.log('🚫 Skipping own message (already added optimistically)');
                               return;
                          }
 
@@ -395,7 +391,6 @@ export const useChatMessages = (roomId: string | null) => {
                                    sender
                               };
 
-                              console.log('✅ Adding new message with sender info:', messageWithSender);
                               setMessages(prev => {
                                    const deduplicatedMessages = deduplicateMessages([...prev, messageWithSender]);
                                    // Save updated messages to cache
@@ -446,8 +441,16 @@ export const useChatMessages = (roomId: string | null) => {
                          table: TABLES.CHAT_MESSAGES,
                          filter: `room_id=eq.${roomId}`
                     },
-                    () => {
-                         loadMessages(0); // Reload messages on update
+                    (payload: any) => {
+                         // Instead of reloading all messages, just update the specific message
+                         const updatedMessage = payload.new as any;
+                         setMessages(prev => {
+                              const updated = prev.map(msg =>
+                                   msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg
+                              );
+                              saveChatMessages(roomId, updated);
+                              return updated;
+                         });
                     }
                )
                .on('postgres_changes',
@@ -457,8 +460,14 @@ export const useChatMessages = (roomId: string | null) => {
                          table: TABLES.CHAT_MESSAGES,
                          filter: `room_id=eq.${roomId}`
                     },
-                    () => {
-                         loadMessages(0); // Reload messages on delete
+                    (payload: any) => {
+                         // Remove the deleted message instead of reloading all
+                         const deletedMessage = payload.old as any;
+                         setMessages(prev => {
+                              const filtered = prev.filter(msg => msg.id !== deletedMessage.id);
+                              saveChatMessages(roomId, filtered);
+                              return filtered;
+                         });
                     }
                )
                .subscribe();
@@ -487,75 +496,224 @@ export const useChatMessages = (roomId: string | null) => {
 };
 
 /**
- * Hook for managing typing indicators
+ * Hook for managing typing indicators using Supabase broadcast
  */
 export const useTypingIndicators = (roomId: string | null) => {
      const [typingUsers, setTypingUsers] = useState<any[]>([]);
      const auth = useAuth();
      const user = auth.userData;
+     const channelRef = useRef<any>(null);
+     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+     const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+     const isCurrentlyTypingRef = useRef(false);
+     const subscriptionInitializedRef = useRef<string | null>(null); // Track if subscription is already set up
+
+     // Debug log to track hook re-initialization
+     useEffect(() => {
+          // Hook initialization tracking removed for production
+     }, [roomId, user?.id, typingUsers.length]);
 
      const setIsTyping = useCallback(async (isTyping: boolean) => {
-          if (!roomId || !user) return;
+          if (!roomId || !user || !channelRef.current) {
+               return;
+          }
 
           try {
-               await setTypingIndicator(roomId, user.id, isTyping);
+               if (isTyping) {
+                    // Clear any existing timeout when user starts typing
+                    if (typingTimeoutRef.current) {
+                         clearTimeout(typingTimeoutRef.current);
+                         typingTimeoutRef.current = null;
+                    }
+
+                    // Set typing state
+                    isCurrentlyTypingRef.current = true;
+
+                    // Broadcast typing start event
+                    const typingData = {
+                         user_id: user.id,
+                         user_name: (user as any).first_name || user.email || 'Unknown User',
+                         user_email: user.email,
+                         is_typing: true,
+                         timestamp: new Date().toISOString()
+                    };
+
+                    const result = await channelRef.current.send({
+                         type: 'broadcast',
+                         event: 'typing',
+                         payload: typingData
+                    });
+
+                    // Start heartbeat to refresh typing indicator every 1.5 seconds while typing
+                    if (heartbeatIntervalRef.current) {
+                         clearInterval(heartbeatIntervalRef.current);
+                    }
+
+                    heartbeatIntervalRef.current = setInterval(async () => {
+                         if (isCurrentlyTypingRef.current && channelRef.current) {
+                              const heartbeatData = {
+                                   user_id: user.id,
+                                   user_name: (user as any).first_name || user.email || 'Unknown User',
+                                   user_email: user.email,
+                                   is_typing: true,
+                                   timestamp: new Date().toISOString()
+                              };
+
+                              try {
+                                   await channelRef.current.send({
+                                        type: 'broadcast',
+                                        event: 'typing',
+                                        payload: heartbeatData
+                                   });
+                              } catch (error) {
+                                   // Heartbeat failed silently
+                              }
+                         }
+                    }, 1500); // Send heartbeat every 1.5 seconds
+
+               } else {
+                    // Stop typing
+                    isCurrentlyTypingRef.current = false;
+
+                    // Clear any existing timeout and heartbeat
+                    if (typingTimeoutRef.current) {
+                         clearTimeout(typingTimeoutRef.current);
+                         typingTimeoutRef.current = null;
+                    }
+                    if (heartbeatIntervalRef.current) {
+                         clearInterval(heartbeatIntervalRef.current);
+                         heartbeatIntervalRef.current = null;
+                    }
+
+                    // Broadcast typing stop event
+                    const stopData = {
+                         user_id: user.id,
+                         user_name: (user as any).first_name || user.email || 'Unknown User',
+                         user_email: user.email,
+                         is_typing: false,
+                         timestamp: new Date().toISOString()
+                    };
+
+                    const result = await channelRef.current.send({
+                         type: 'broadcast',
+                         event: 'typing',
+                         payload: stopData
+                    });
+               }
+
           } catch (e: any) {
-               log(`Error setting typing indicator: ${e.message}`);
+               log(`Error broadcasting typing indicator: ${e.message}`);
           }
      }, [roomId, user]);
 
-     // Subscribe to typing indicators
+     // Subscribe to typing broadcasts
      useEffect(() => {
-          if (!roomId) return;
+          if (!roomId || !user?.id) {
+               return;
+          }
+
+          // Prevent duplicate subscriptions for the same room
+          if (subscriptionInitializedRef.current === roomId) {
+               return;
+          }
+
+          // Mark this subscription as initialized
+          subscriptionInitializedRef.current = roomId;
 
           const channel = supabaseBrowserClient
-               .channel(`typing-${roomId}`)
-               .on('postgres_changes',
-                    {
-                         event: '*',
-                         schema: 'public',
-                         table: TABLES.CHAT_TYPING,
-                         filter: `room_id=eq.${roomId}`
-                    },
+               .channel(`typing-room-${roomId}`)
+               .on('broadcast',
+                    { event: 'typing' },
                     (payload: any) => {
-                         // Update typing users list
-                         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-                              const typingUser = payload.new as any;
-                              if (typingUser.user_id !== user?.id) { // Don't show own typing
-                                   setTypingUsers(prev => {
-                                        const filtered = prev.filter(u => u.user_id !== typingUser.user_id);
-                                        return [...filtered, typingUser];
-                                   });
-                              }
-                         } else if (payload.eventType === 'DELETE') {
-                              const deletedUser = payload.old as any;
-                              setTypingUsers(prev => prev.filter(u => u.user_id !== deletedUser.user_id));
+                         const typingData = payload.payload;
+
+                         // Don't show own typing
+                         if (typingData.user_id === user.id) {
+                              return;
+                         }
+
+                         if (typingData.is_typing) {
+                              setTypingUsers(prev => {
+                                   // Check if user already exists
+                                   const existingUserIndex = prev.findIndex(u => u.user_id === typingData.user_id);
+
+                                   if (existingUserIndex !== -1) {
+                                        // Update existing user's timestamp (heartbeat)
+                                        const updated = [...prev];
+                                        updated[existingUserIndex] = {
+                                             ...updated[existingUserIndex],
+                                             started_at: typingData.timestamp,
+                                             timestamp: typingData.timestamp
+                                        };
+                                        return updated;
+                                   } else {
+                                        // Add new typing user
+                                        const newUser = {
+                                             ...typingData,
+                                             started_at: typingData.timestamp
+                                        };
+                                        return [...prev, newUser];
+                                   }
+                              });
+                         } else {
+                              setTypingUsers(prev => prev.filter(u => u.user_id !== typingData.user_id));
                          }
                     }
                )
                .subscribe();
 
-          // Clean up old typing indicators every 5 seconds
+          // Store channel reference for broadcasting
+          channelRef.current = channel;
+
+          // Clean up old typing indicators every 5 seconds, but with a longer timeout
           const cleanupInterval = setInterval(() => {
-               const fiveSecondsAgo = new Date(Date.now() - 5000);
-               setTypingUsers(prev =>
-                    prev.filter(u => new Date(u.started_at) > fiveSecondsAgo)
-               );
-          }, 5000);
+               const twentySecondsAgo = new Date(Date.now() - 20000); // 20 seconds timeout
+               setTypingUsers(prev => {
+                    if (prev.length === 0) {
+                         // Don't run cleanup if no users to avoid unnecessary processing
+                         return prev;
+                    }
+
+                    const filtered = prev.filter(u => new Date(u.started_at) > twentySecondsAgo);
+                    return filtered;
+               });
+          }, 5000); // Check every 5 seconds
 
           return () => {
-               supabaseBrowserClient.removeChannel(channel);
+               // Clear timeout and heartbeat
+               if (typingTimeoutRef.current) {
+                    clearTimeout(typingTimeoutRef.current);
+               }
+               if (heartbeatIntervalRef.current) {
+                    clearInterval(heartbeatIntervalRef.current);
+               }
+
+               // Reset typing state
+               isCurrentlyTypingRef.current = false;
+
+               // Clean up channel
+               if (channelRef.current) {
+                    supabaseBrowserClient.removeChannel(channelRef.current);
+                    channelRef.current = null;
+               }
+
                clearInterval(cleanupInterval);
+
+               // Clear typing users only if this cleanup is for the current room
+               if (subscriptionInitializedRef.current === roomId) {
+                    setTypingUsers([]);
+               }
+
+               // Reset subscription tracking after potential cleanup
+               subscriptionInitializedRef.current = null;
           };
-     }, [roomId, user]);
+     }, [roomId]); // Remove user?.id from dependencies to prevent reinitialization
 
      return {
           typingUsers: typingUsers.filter(u => u.user_id !== user?.id),
           setIsTyping
      };
-};
-
-/**
+};/**
  * Hook for managing unread message count
  */
 export const useUnreadCount = () => {

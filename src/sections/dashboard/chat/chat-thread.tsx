@@ -18,6 +18,9 @@ import type { User } from 'src/types/user';
 
 import { ChatMessageAdd } from './chat-message-add';
 import { ChatMessages } from './chat-messages';
+import { ChatMessage } from './chat-message';
+import { ChatTypingIndicator } from './chat-typing-indicator';
+import { SimpleTypingIndicator } from './simple-typing-indicator';
 import { ChatThreadToolbar } from './chat-thread-toolbar';
 
 const useParticipants = (threadKey: string): Participant[] => {
@@ -114,6 +117,8 @@ const useMessagesScroll = (
 } => {
   const messagesRef = useRef<SimpleBarCore | null>(null);
   const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
+  const wasAtBottomRef = useRef(true); // Track if user was at bottom before reload
+  const lastMessageCountRef = useRef(0);
 
   const scrollToBottom = useCallback((force = false) => {
     if (!messagesRef.current) {
@@ -124,68 +129,63 @@ const useMessagesScroll = (
 
     if (scrollElement) {
       if (force) {
-        // Force scroll to bottom (initial load)
+        // Force scroll to bottom (initial load or user was at bottom)
         setTimeout(() => {
           scrollElement.scrollTop = scrollElement.scrollHeight;
           setHasInitialScrolled(true);
-          console.log('📜 Initial scroll to bottom completed', {
-            scrollTop: scrollElement.scrollTop,
-            scrollHeight: scrollElement.scrollHeight,
-            clientHeight: scrollElement.clientHeight
-          });
         }, 100);
       } else {
-        // For regular updates, be more aggressive about scrolling
-        // Check if user was near the bottom (increased threshold)
+        // Check if user was near the bottom before new message (increased threshold)
         const wasNearBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 200;
+
+        // Update the ref for future use
+        wasAtBottomRef.current = wasNearBottom;
 
         // Auto-scroll if user was reasonably near the bottom
         if (wasNearBottom) {
           // Use requestAnimationFrame for smoother scrolling
           requestAnimationFrame(() => {
             scrollElement.scrollTop = scrollElement.scrollHeight;
-            console.log('📜 Auto-scrolled to bottom (new message)', {
-              wasNearBottom,
-              finalScrollTop: scrollElement.scrollTop,
-              scrollHeight: scrollElement.scrollHeight
-            });
           });
         } else {
-          console.log('📜 User scrolled up, not auto-scrolling', {
-            scrollTop: scrollElement.scrollTop,
-            clientHeight: scrollElement.clientHeight,
-            scrollHeight: scrollElement.scrollHeight,
-            distanceFromBottom: scrollElement.scrollHeight - (scrollElement.scrollTop + scrollElement.clientHeight)
-          });
+
         }
       }
     }
   }, []);
 
   const handleUpdate = useCallback((): void => {
-    console.log('📜 handleUpdate called:', {
-      thread: !!thread,
-      messages: messages?.length,
-      hasInitialScrolled,
-      messagesRefCurrent: !!messagesRef.current
-    });
+
+    const currentMessageCount = messages?.length || 0;
 
     // Thread does not exist
     if (!thread && !messages) {
-      console.log('📜 No thread and no messages, skipping scroll');
+      return;
+    }
+
+    // If messages were cleared (count went to 0 then back up), check if user was at bottom
+    if (lastMessageCountRef.current === 0 && currentMessageCount > 0 && hasInitialScrolled) {
+      if (wasAtBottomRef.current) {
+        scrollToBottom(true);
+      } else {
+      }
+      lastMessageCountRef.current = currentMessageCount;
       return;
     }
 
     // Initial scroll to bottom when messages first load
-    if (!hasInitialScrolled && messages && messages.length > 0) {
-      console.log('📜 Initial scroll triggered, messages count:', messages.length);
+    if (!hasInitialScrolled && currentMessageCount > 0) {
       scrollToBottom(true);
+      lastMessageCountRef.current = currentMessageCount;
       return;
     }
 
-    // Regular update scroll behavior
-    console.log('📜 Regular scroll triggered, messages count:', messages?.length);
-    scrollToBottom(false);
+    // Regular update scroll behavior (only for new messages, not reloads)
+    if (currentMessageCount > lastMessageCountRef.current) {
+      scrollToBottom(false);
+    }
+
+    lastMessageCountRef.current = currentMessageCount;
   }, [thread, messages, hasInitialScrolled, scrollToBottom]);
 
   useEffect(
@@ -207,28 +207,23 @@ interface ChatThreadProps {
   participants?: Participant[];
   currentUser?: User;
   onSendMessage?: (body: string) => Promise<void>;
+  typingUsers?: any[];
+  onTyping?: (isTyping: boolean) => void;
 }
 
 export const ChatThread: FC<ChatThreadProps> = (props) => {
-  console.log('props.messages', props.messages);
-
-  const { threadKey, messages: messagesProp, participants: participantsProp, currentUser, onSendMessage, ...other } = props;
+  const { threadKey, messages: messagesProp, participants: participantsProp, currentUser, onSendMessage, typingUsers = [], onTyping, ...other } = props;
   const dispatch = useDispatch();
   const user = useMockedUser();
   const thread = useThread(threadKey);
   const participantsFromHook = useParticipants(threadKey);
 
+  // Local state for testing typing indicators  
+  const [localTypingState, setLocalTypingState] = useState(false);
+
   // Use props if provided, otherwise fall back to thread data
   const messages = messagesProp || thread?.messages || [];
   const participants = participantsProp || participantsFromHook || thread?.participants || [];
-
-  console.log('💬 ChatThread Debug:', {
-    messagesProp: messagesProp?.length,
-    threadMessages: thread?.messages?.length,
-    finalMessages: messages.length,
-    participants: participants.length,
-    currentUser: currentUser?.id || user?.id
-  });
 
   const { messagesRef } = useMessagesScroll(thread, messages);
 
@@ -269,17 +264,8 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
       const currentCount = messagesProp.length;
       const prevCount = prevMessageCountRef.current;
 
-      console.log('📜 Supabase messages updated:', {
-        currentCount,
-        prevCount,
-        isNearBottom: isNearBottomRef.current,
-        difference: currentCount - prevCount
-      });
-
       // If we have new messages and user was near bottom
       if (currentCount > prevCount && (isNearBottomRef.current || prevCount === 0)) {
-        console.log('📜 New message detected, forcing scroll to bottom');
-
         // Use requestAnimationFrame to ensure DOM is fully updated
         requestAnimationFrame(() => {
           setTimeout(() => {
@@ -287,16 +273,11 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
               const scrollElement = messagesRef.current.getScrollElement();
               if (scrollElement) {
                 scrollElement.scrollTop = scrollElement.scrollHeight;
-                console.log('📜 Forced scroll completed:', {
-                  scrollTop: scrollElement.scrollTop,
-                  scrollHeight: scrollElement.scrollHeight
-                });
               }
             }
           }, 50);
         });
       } else if (currentCount > prevCount) {
-        console.log('📜 New message received but user scrolled up, not auto-scrolling');
       }
 
       // Update the previous count
@@ -311,8 +292,6 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
 
       // Only handle events for the current thread
       if (eventRoomId === threadKey) {
-        console.log('🔄 Real-time message event received, forcing scroll');
-
         // Force scroll to bottom with multiple strategies
         const forceScroll = () => {
           if (messagesRef.current) {
@@ -327,11 +306,6 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
                 lastMessage.scrollIntoView({ behavior: 'auto', block: 'end' });
               }
 
-              console.log('🔄 Forced scroll after real-time message:', {
-                scrollTop: scrollElement.scrollTop,
-                scrollHeight: scrollElement.scrollHeight,
-                strategy: lastMessage ? 'scrollIntoView + direct' : 'direct only'
-              });
             }
           }
         };
@@ -469,8 +443,18 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
           />
         </Box>
       </Box>
+      {/* Typing Indicator - Show only remote users typing */}
+      {typingUsers.length > 0 && (
+        <ChatTypingIndicator typingUsers={typingUsers} />
+      )}
       <Divider />
-      <ChatMessageAdd onSend={handleSend} />
+      <ChatMessageAdd
+        onSend={handleSend}
+        onTyping={(isTyping) => {
+          setLocalTypingState(isTyping);
+          onTyping?.(isTyping);
+        }}
+      />
     </Stack>
   );
 };
@@ -481,4 +465,6 @@ ChatThread.propTypes = {
   participants: PropTypes.array,
   currentUser: PropTypes.any,
   onSendMessage: PropTypes.func,
+  typingUsers: PropTypes.array,
+  onTyping: PropTypes.func,
 };

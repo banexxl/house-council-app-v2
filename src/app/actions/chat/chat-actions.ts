@@ -44,8 +44,6 @@ export const getUserChatRooms = async (): Promise<{
                .from(TABLES.CHAT_ROOM_MEMBERS)
                .select('room_id')
                .eq('user_id', user.id);
-          console.log('usermembers', userMemberships);
-
           if (membershipError) {
                log(`Error fetching user memberships: ${membershipError.message}`);
                return { success: false, error: membershipError.message };
@@ -56,15 +54,11 @@ export const getUserChatRooms = async (): Promise<{
           }
 
           const roomIds = userMemberships.map(m => m.room_id);
-          console.log('roomids', roomIds);
-
           // First, let's see all rooms without the is_active filter
           const { data: allRooms } = await supabase
                .from(TABLES.CHAT_ROOMS)
                .select('id, name, is_active')
                .in('id', roomIds);
-          console.log('all rooms (without is_active filter):', allRooms);
-
           // Get rooms
           const { data: rooms, error: roomsError } = await supabase
                .from(TABLES.CHAT_ROOMS)
@@ -72,8 +66,6 @@ export const getUserChatRooms = async (): Promise<{
                .in('id', roomIds)
                .eq('is_active', true)
                .order('last_message_at', { ascending: false });
-          console.log('rooms (with is_active=true filter):', rooms);
-
           if (roomsError) {
                log(`Error fetching chat rooms: ${roomsError.message}`);
                return { success: false, error: roomsError.message };
@@ -733,35 +725,6 @@ export const setTypingIndicator = async (
 };
 
 /**
- * Get typing indicators for a room
- */
-export const getTypingIndicators = async (roomId: string): Promise<ActionResult<any[]>> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          const { data: typingUsers, error } = await supabase
-               .from(TABLES.CHAT_TYPING)
-               .select(`
-        user_id,
-        started_at,
-        users:user_id (email)
-      `)
-               .eq('room_id', roomId)
-               .gt('started_at', new Date(Date.now() - 5000).toISOString()); // Only recent typing (5 seconds)
-
-          if (error) {
-               log(`Error getting typing indicators: ${error.message}`);
-               return { success: false, error: error.message };
-          }
-
-          return { success: true, data: typingUsers || [] };
-     } catch (e: any) {
-          log(`Error in getTypingIndicators: ${e.message}`);
-          return { success: false, error: e.message || 'Unexpected error' };
-     }
-};
-
-/**
  * Leave a chat room
  */
 export const leaveChatRoom = async (roomId: string, userId: string): Promise<ActionResult<null>> => {
@@ -956,8 +919,6 @@ export const getThreads = async (): Promise<ActionResult<Thread[]>> => {
                `)
                .in('id', roomIds)
                .order('last_message_at', { ascending: false });
-          console.log('chatrooms', rooms);
-
           if (error) {
                log(`Error fetching chat rooms: ${error.message}`);
                return { success: false, error: 'Failed to fetch chat rooms' };

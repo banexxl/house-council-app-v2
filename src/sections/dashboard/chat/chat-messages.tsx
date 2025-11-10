@@ -47,21 +47,7 @@ interface ChatMessagesProps {
 
 export const ChatMessages: FC<ChatMessagesProps> = (props) => {
   const { messages = [], participants = [], currentUser, ...other } = props;
-  const mockedUser = useMockedUser();
 
-  // Use provided currentUser or fall back to mocked user
-  const user = currentUser || mockedUser;
-
-  console.log('📨 ChatMessages Debug:', {
-    messagesCount: messages.length,
-    participantsCount: participants.length,
-    currentUserId: user?.id,
-    firstFewMessages: messages.slice(0, 3).map(m => ({
-      id: m.id,
-      body: m.body?.substring(0, 50),
-      authorId: m.authorId
-    }))
-  });
 
   return (
     <Stack
@@ -82,7 +68,7 @@ export const ChatMessages: FC<ChatMessagesProps> = (props) => {
         </Box>
       ) : (
         messages.map((message) => {
-          const author = getAuthor(message, participants, user);
+          const author = getAuthor(message, participants, currentUser!);
 
           return (
             <Box key={message.id} data-message={message.id}>
