@@ -400,6 +400,14 @@ export const useChatMessages = (roomId: string | null) => {
                                    const deduplicatedMessages = deduplicateMessages([...prev, messageWithSender]);
                                    // Save updated messages to cache
                                    saveChatMessages(roomId, deduplicatedMessages);
+
+                                   // Dispatch custom event to notify components about new message
+                                   setTimeout(() => {
+                                        window.dispatchEvent(new CustomEvent('newRealtimeMessage', {
+                                             detail: { roomId, messageId: messageWithSender.id }
+                                        }));
+                                   }, 100);
+
                                    return deduplicatedMessages;
                               });
                          } catch (error) {
@@ -418,6 +426,14 @@ export const useChatMessages = (roomId: string | null) => {
                                    const deduplicatedMessages = deduplicateMessages([...prev, fallbackMessage]);
                                    // Save fallback messages to cache
                                    saveChatMessages(roomId, deduplicatedMessages);
+
+                                   // Dispatch custom event to notify components about new message
+                                   setTimeout(() => {
+                                        window.dispatchEvent(new CustomEvent('newRealtimeMessage', {
+                                             detail: { roomId, messageId: fallbackMessage.id }
+                                        }));
+                                   }, 100);
+
                                    return deduplicatedMessages;
                               });
                          }
@@ -468,7 +484,9 @@ export const useChatMessages = (roomId: string | null) => {
           loadMoreMessages,
           refreshMessages: () => loadMessages(0)
      };
-};/**
+};
+
+/**
  * Hook for managing typing indicators
  */
 export const useTypingIndicators = (roomId: string | null) => {

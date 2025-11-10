@@ -85,15 +85,16 @@ export const ChatMessages: FC<ChatMessagesProps> = (props) => {
           const author = getAuthor(message, participants, user);
 
           return (
-            <ChatMessage
-              authorAvatar={author.avatar}
-              authorName={author.name}
-              body={message.body}
-              contentType={message.contentType}
-              created_at={message.created_at}
-              key={message.id}
-              position={author.isUser ? 'right' : 'left'}
-            />
+            <Box key={message.id} data-message={message.id}>
+              <ChatMessage
+                authorAvatar={author.avatar}
+                authorName={author.name}
+                body={message.body}
+                contentType={message.contentType}
+                created_at={message.created_at}
+                position={author.isUser ? 'right' : 'left'}
+              />
+            </Box>
           );
         })
       )}

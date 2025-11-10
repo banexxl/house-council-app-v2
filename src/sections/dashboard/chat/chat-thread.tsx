@@ -135,33 +135,56 @@ const useMessagesScroll = (
           });
         }, 100);
       } else {
-        // Check if user was near the bottom before new message
-        const wasNearBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 100;
+        // For regular updates, be more aggressive about scrolling
+        // Check if user was near the bottom (increased threshold)
+        const wasNearBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 200;
 
-        // Only auto-scroll if user was near the bottom
+        // Auto-scroll if user was reasonably near the bottom
         if (wasNearBottom) {
-          setTimeout(() => {
+          // Use requestAnimationFrame for smoother scrolling
+          requestAnimationFrame(() => {
             scrollElement.scrollTop = scrollElement.scrollHeight;
-            console.log('📜 Auto-scrolled to bottom (new message)');
-          }, 100);
+            console.log('📜 Auto-scrolled to bottom (new message)', {
+              wasNearBottom,
+              finalScrollTop: scrollElement.scrollTop,
+              scrollHeight: scrollElement.scrollHeight
+            });
+          });
         } else {
-          console.log('📜 User scrolled up, not auto-scrolling');
+          console.log('📜 User scrolled up, not auto-scrolling', {
+            scrollTop: scrollElement.scrollTop,
+            clientHeight: scrollElement.clientHeight,
+            scrollHeight: scrollElement.scrollHeight,
+            distanceFromBottom: scrollElement.scrollHeight - (scrollElement.scrollTop + scrollElement.clientHeight)
+          });
         }
       }
     }
-  }, []); const handleUpdate = useCallback((): void => {
+  }, []);
+
+  const handleUpdate = useCallback((): void => {
+    console.log('📜 handleUpdate called:', {
+      thread: !!thread,
+      messages: messages?.length,
+      hasInitialScrolled,
+      messagesRefCurrent: !!messagesRef.current
+    });
+
     // Thread does not exist
     if (!thread && !messages) {
+      console.log('📜 No thread and no messages, skipping scroll');
       return;
     }
 
     // Initial scroll to bottom when messages first load
     if (!hasInitialScrolled && messages && messages.length > 0) {
+      console.log('📜 Initial scroll triggered, messages count:', messages.length);
       scrollToBottom(true);
       return;
     }
 
     // Regular update scroll behavior
+    console.log('📜 Regular scroll triggered, messages count:', messages?.length);
     scrollToBottom(false);
   }, [thread, messages, hasInitialScrolled, scrollToBottom]);
 
@@ -170,7 +193,7 @@ const useMessagesScroll = (
       handleUpdate();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [thread, messages]
+    [thread, messages?.length, hasInitialScrolled] // Track messages.length instead of messages object reference
   );
 
   return {
@@ -208,6 +231,123 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
   });
 
   const { messagesRef } = useMessagesScroll(thread, messages);
+
+  // Keep track of the previous message count to detect new messages
+  const prevMessageCountRef = useRef(0);
+  const isNearBottomRef = useRef(true); // Track if user is near bottom
+
+  // Track scroll position to know if user is near bottom
+  useEffect(() => {
+    const checkScrollPosition = () => {
+      if (messagesRef.current) {
+        const scrollElement = messagesRef.current.getScrollElement();
+        if (scrollElement) {
+          const isNearBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 150;
+          isNearBottomRef.current = isNearBottom;
+        }
+      }
+    };
+
+    // Check immediately
+    checkScrollPosition();
+
+    // Add scroll listener to track position
+    if (messagesRef.current) {
+      const scrollElement = messagesRef.current.getScrollElement();
+      if (scrollElement) {
+        scrollElement.addEventListener('scroll', checkScrollPosition);
+        return () => {
+          scrollElement.removeEventListener('scroll', checkScrollPosition);
+        };
+      }
+    }
+  }, [messagesRef.current]);
+
+  // Enhanced effect specifically for Supabase message updates with better scroll detection
+  useEffect(() => {
+    if (messagesProp && messagesProp.length > 0) {
+      const currentCount = messagesProp.length;
+      const prevCount = prevMessageCountRef.current;
+
+      console.log('📜 Supabase messages updated:', {
+        currentCount,
+        prevCount,
+        isNearBottom: isNearBottomRef.current,
+        difference: currentCount - prevCount
+      });
+
+      // If we have new messages and user was near bottom
+      if (currentCount > prevCount && (isNearBottomRef.current || prevCount === 0)) {
+        console.log('📜 New message detected, forcing scroll to bottom');
+
+        // Use requestAnimationFrame to ensure DOM is fully updated
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            if (messagesRef.current) {
+              const scrollElement = messagesRef.current.getScrollElement();
+              if (scrollElement) {
+                scrollElement.scrollTop = scrollElement.scrollHeight;
+                console.log('📜 Forced scroll completed:', {
+                  scrollTop: scrollElement.scrollTop,
+                  scrollHeight: scrollElement.scrollHeight
+                });
+              }
+            }
+          }, 50);
+        });
+      } else if (currentCount > prevCount) {
+        console.log('📜 New message received but user scrolled up, not auto-scrolling');
+      }
+
+      // Update the previous count
+      prevMessageCountRef.current = currentCount;
+    }
+  }, [messagesProp?.length, messagesRef]);
+
+  // Listen for real-time message events to force scroll
+  useEffect(() => {
+    const handleNewRealtimeMessage = (event: CustomEvent) => {
+      const { roomId: eventRoomId } = event.detail;
+
+      // Only handle events for the current thread
+      if (eventRoomId === threadKey) {
+        console.log('🔄 Real-time message event received, forcing scroll');
+
+        // Force scroll to bottom with multiple strategies
+        const forceScroll = () => {
+          if (messagesRef.current) {
+            const scrollElement = messagesRef.current.getScrollElement();
+            if (scrollElement) {
+              // Strategy 1: Direct scroll to bottom
+              scrollElement.scrollTop = scrollElement.scrollHeight;
+
+              // Strategy 2: Find last message element and scroll into view
+              const lastMessage = scrollElement.querySelector('[data-message]:last-child');
+              if (lastMessage) {
+                lastMessage.scrollIntoView({ behavior: 'auto', block: 'end' });
+              }
+
+              console.log('🔄 Forced scroll after real-time message:', {
+                scrollTop: scrollElement.scrollTop,
+                scrollHeight: scrollElement.scrollHeight,
+                strategy: lastMessage ? 'scrollIntoView + direct' : 'direct only'
+              });
+            }
+          }
+        };
+
+        // Try multiple times with increasing delays to ensure it works
+        setTimeout(forceScroll, 100);
+        setTimeout(forceScroll, 300);
+      }
+    };
+
+    window.addEventListener('newRealtimeMessage', handleNewRealtimeMessage as EventListener);
+
+    return () => {
+      window.removeEventListener('newRealtimeMessage', handleNewRealtimeMessage as EventListener);
+    };
+  }, [threadKey, messagesRef]);
 
   const handleSend = useCallback(
     async (body: string): Promise<void> => {

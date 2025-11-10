@@ -32,6 +32,7 @@ export const ChatPageClient: FC<ChatPageClientProps> = ({
      buildings,
      user
 }) => {
+
      const [selectedBuildingId, setSelectedBuildingId] = useState(buildingId);
 
      // Show building selector for admins and clients with multiple buildings

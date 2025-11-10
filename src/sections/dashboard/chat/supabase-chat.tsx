@@ -1,13 +1,11 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Drawer, useMediaQuery, Theme, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, SvgIcon, Button } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Box, Drawer, useMediaQuery, Theme, Menu, MenuItem, ListItemIcon, ListItemText, SvgIcon, Button } from '@mui/material';
 import PersonIcon from '@untitled-ui/icons-react/build/esm/User01';
 import GroupIcon from '@untitled-ui/icons-react/build/esm/Users01';
 import { useChatRooms, useChatMessages, useTypingIndicators } from 'src/hooks/use-chat';
-import { sendMessage, createBuildingGroupChat, createDirectMessageRoom, fixExistingChatRooms } from 'src/app/actions/chat/chat-actions';
-import { searchBuildingUsers } from 'src/app/actions/tenant/tenant-actions';
+import { sendMessage, createBuildingGroupChat, createDirectMessageRoom } from 'src/app/actions/chat/chat-actions';
 import { useAuth } from 'src/contexts/auth/auth-provider';
 import { UserSelectionDialog } from 'src/components/chat/UserSelectionDialog';
 import type { ChatRoomWithMembers, ChatMessageWithSender, SendMessagePayload } from 'src/types/chat';
@@ -92,6 +90,7 @@ const adaptMembersToParticipants = (members: any[]) => {
 };
 
 export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
+
      const [sidebarOpen, setSidebarOpen] = useState(true);
      const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
      const [selectedRoom, setSelectedRoom] = useState<ChatRoomWithMembers | null>(null);
@@ -100,23 +99,9 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      const [groupCreationMode, setGroupCreationMode] = useState(false);
      const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
      const [newGroupName, setNewGroupName] = useState('');
-
      const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
      const auth = useAuth();
      const currentUser = auth.userData;
-
-     // One-time fix for existing chat rooms
-     useEffect(() => {
-          const runFix = async () => {
-               try {
-                    const result = await fixExistingChatRooms();
-                    console.log('🔧 Fixed existing chat rooms:', result);
-               } catch (error) {
-                    console.error('❌ Failed to fix existing chat rooms:', error);
-               }
-          };
-          runFix();
-     }, []); // Run only once
 
      // Use our Supabase hooks
      const { rooms, loading: roomsLoading, error: roomsError, refreshRooms } = useChatRooms();
@@ -483,29 +468,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                          setSelectedGroupMembers(users.map(u => u.id));
                     }}
                />
-
-               {/* Temporary debug button - remove in production */}
-               {process.env.NODE_ENV === 'development' && (
-                    <Button
-                         variant="outlined"
-                         color="secondary"
-                         onClick={async () => {
-                              try {
-                                   const result = await fixExistingChatRooms();
-                                   console.log('🔧 Manual fix result:', result);
-                                   alert(`Fixed ${result.data || 0} chat rooms`);
-                                   // Refresh rooms after fix
-                                   refreshRooms();
-                              } catch (error) {
-                                   console.error('❌ Manual fix failed:', error);
-                                   alert('Failed to fix chat rooms');
-                              }
-                         }}
-                         sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999 }}
-                    >
-                         Fix Chat Rooms
-                    </Button>
-               )}
           </Box>
      );
 };
