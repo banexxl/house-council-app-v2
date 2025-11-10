@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Drawer, useMediaQuery, Theme, Menu, MenuItem, ListItemIcon, ListItemText, SvgIcon, Button } from '@mui/material';
+import { Box, Drawer, useMediaQuery, Theme, Menu, MenuItem, ListItemIcon, ListItemText, SvgIcon, Button, IconButton } from '@mui/material';
 import PersonIcon from '@untitled-ui/icons-react/build/esm/User01';
 import GroupIcon from '@untitled-ui/icons-react/build/esm/Users01';
+import MenuIcon from '@untitled-ui/icons-react/build/esm/Menu01';
 import { useChatRooms, useChatMessages, useTypingIndicators } from 'src/hooks/use-chat';
 import { sendMessage, createBuildingGroupChat, createDirectMessageRoom } from 'src/app/actions/chat/chat-actions';
 import { useAuth } from 'src/contexts/auth/auth-provider';
@@ -87,8 +88,9 @@ const adaptMembersToParticipants = (members: any[]) => {
 };
 
 export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
+     const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
-     const [sidebarOpen, setSidebarOpen] = useState(true);
+     const [sidebarOpen, setSidebarOpen] = useState(mdUp); // Start open on desktop, closed on mobile
      const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
      const [selectedRoom, setSelectedRoom] = useState<ChatRoomWithMembers | null>(null);
      const [userSelectionOpen, setUserSelectionOpen] = useState(false);
@@ -96,7 +98,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      const [groupCreationMode, setGroupCreationMode] = useState(false);
      const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
      const [newGroupName, setNewGroupName] = useState('');
-     const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
      const auth = useAuth();
      const currentUser = auth.userData;
 
@@ -299,6 +300,12 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
           }
      }, [currentThreadId, selectedRoom]);
 
+     // Handle responsive sidebar behavior
+     useEffect(() => {
+          // On screen size change, set appropriate default state
+          setSidebarOpen(mdUp);
+     }, [mdUp]);
+
      // Close sidebar on mobile when thread is selected
      useEffect(() => {
           if (currentThreadId && !mdUp) {
@@ -344,11 +351,12 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                     onClose={() => setSidebarOpen(false)}
                     variant={mdUp ? 'persistent' : 'temporary'}
                     sx={{
-                         width: 380,
+                         width: mdUp ? 380 : '100%',
                          flexShrink: 0,
                          '& .MuiDrawer-paper': {
-                              position: 'relative',
-                              width: 380
+                              position: mdUp ? 'relative' : 'fixed',
+                              width: mdUp ? 380 : '80%',
+                              maxWidth: mdUp ? 380 : '320px'
                          }
                     }}
                >
@@ -377,6 +385,33 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
 
                {/* Main chat area */}
                <ChatContainer open={sidebarOpen}>
+                    {/* Mobile header with hamburger menu - always present on mobile */}
+                    {!mdUp && (
+                         <Box
+                              sx={{
+                                   display: 'flex',
+                                   alignItems: 'center',
+                                   p: 2,
+                                   borderBottom: 1,
+                                   borderColor: 'divider',
+                                   bgcolor: 'background.paper'
+                              }}
+                         >
+                              <IconButton
+                                   onClick={handleSidebarToggle}
+                                   edge="start"
+                                   sx={{ mr: 1 }}
+                              >
+                                   <SvgIcon>
+                                        <MenuIcon />
+                                   </SvgIcon>
+                              </IconButton>
+                              <Box sx={{ fontWeight: 'medium' }}>
+                                   {selectedRoom ? selectedRoom.name : 'Chat'}
+                              </Box>
+                         </Box>
+                    )}
+
                     {currentThreadId && selectedRoom ? (
                          <ChatThread
                               threadKey={threadKey}
