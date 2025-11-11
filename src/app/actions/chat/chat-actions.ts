@@ -13,7 +13,7 @@ import type {
      Message,
      Thread
 } from 'src/types/chat';
-import { Tenant } from 'src/types/tenant';
+import { Tenant, tenantKeyFields } from 'src/types/tenant';
 
 type ActionResult<T> = {
      success: boolean;
@@ -286,7 +286,6 @@ export const sendMessage = async (payload: SendMessagePayload): Promise<{
  */
 export const createDirectMessageRoom = async (
      otherUserId: string,
-     otherUserType: 'tenant' | 'client',
      buildingId?: string
 ): Promise<{
      success: boolean;
@@ -348,28 +347,16 @@ export const createDirectMessageRoom = async (
 
           // Get the other user's name for the room name
           let otherUserName = 'Unknown User';
-          if (otherUserType === 'tenant') {
-               const { data: otherTenant } = await serviceSupabase
-                    .from(TABLES.TENANTS)
-                    .select('first_name, last_name')
-                    .eq('user_id', otherUserId)
-                    .single();
 
-               if (otherTenant) {
-                    otherUserName = `${otherTenant.first_name} ${otherTenant.last_name}`.trim();
-               }
-          } else if (otherUserType === 'client') {
-               const { data: otherClient } = await serviceSupabase
-                    .from(TABLES.CLIENTS)
-                    .select('first_name, last_name, company_name')
-                    .eq('user_id', otherUserId)
-                    .single();
+          const { data: otherTenant } = await serviceSupabase
+               .from(TABLES.TENANTS)
+               .select('first_name, last_name')
+               .eq('user_id', otherUserId)
+               .single();
 
-               if (otherClient) {
-                    otherUserName = otherClient.company_name || `${otherClient.first_name} ${otherClient.last_name}`.trim();
-               }
+          if (otherTenant) {
+               otherUserName = `${otherTenant.first_name} ${otherTenant.last_name}`.trim();
           }
-
           // Generate a room name for direct message
           const roomName = `DM: ${otherUserName}`;
 
@@ -451,7 +438,6 @@ export const createDirectMessageRoom = async (
                .insert({
                     room_id: newRoom.id,
                     user_id: otherUserId,
-                    user_type: otherUserType,
                     chat_role: 'member',
                     joined_at: new Date().toISOString()
                });
@@ -770,88 +756,97 @@ export const getContacts = async (query?: string): Promise<ActionResult<Tenant[]
                buildingId = currentUserData.building_id;
           }
 
+          const allTenantKeys = tenantKeyFields.join(',');
+
           // Get all users in the same building (both tenants and clients)
           let tenantQuery = supabase
                .from(TABLES.TENANTS)
-               .select('user_id, first_name, last_name, email, avatar, apartment_number, user_type')
+               .select(`
+                    id,
+                    user_id,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    date_of_birth,
+                    apartment_id,
+                    apartments!inner(apartment_number, buildings!inner(street_address, city)),
+                    avatar_url,
+                    is_primary,
+                    move_in_date,
+                    tenant_type,
+                    notes,
+                    created_at,
+                    updated_at,
+                    email_opt_in,
+                    sms_opt_in,
+                    viber_opt_in,
+                    whatsapp_opt_in
+               `)
                .eq('building_id', buildingId)
                .neq('user_id', currentUser.id); // Exclude current user
 
-          let clientQuery = supabase
-               .from(TABLES.CLIENTS)
-               .select('user_id, first_name, last_name, email, avatar, company_name, user_type')
-               .eq('building_id', buildingId)
-               .neq('user_id', currentUser.id); // Exclude current user
+          // let clientQuery = supabase
+          //      .from(TABLES.CLIENTS)
+          //      .select('user_id, first_name, last_name, email, avatar, company_name, user_type')
+          //      .eq('building_id', buildingId)
+          //      .neq('user_id', currentUser.id); // Exclude current user
 
           if (query) {
                const searchTerm = `%${query.toLowerCase()}%`;
                tenantQuery = tenantQuery.or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm}`);
-               clientQuery = clientQuery.or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},company_name.ilike.${searchTerm}`);
+               // clientQuery = clientQuery.or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},company_name.ilike.${searchTerm}`);
           }
 
-          const [{ data: tenants }, { data: clients }] = await Promise.all([
+          const [{ data: tenants, error: tenantsError }] = await Promise.all([
                tenantQuery,
-               clientQuery
           ]);
 
-          const contacts: Tenant[] = [];
+          if (tenantsError) {
+               log(`Error fetching tenants: ${tenantsError.message}`);
+               return { success: false, error: tenantsError.message };
+          }
 
-          // Add tenants
-          (tenants || []).forEach(tenant => {
-               contacts.push({
-                    id: tenant.user_id,
-                    first_name: tenant.first_name || '',
-                    last_name: tenant.last_name || '',
-                    email: tenant.email,
-                    avatar_url: tenant.avatar || '',
-                    avatar: tenant.avatar || '',
-                    user_type: 'tenant',
-                    apartment_number: tenant.apartment_number,
-                    is_online: false,
-                    last_activity: new Date().getTime(),
-                    name: `${tenant.first_name} ${tenant.last_name}`.trim(),
-                    // Required tenant fields with defaults
-                    apartment_id: '',
-                    apartment: { apartment_number: tenant.apartment_number || '', building: { street_address: '', city: '' } },
-                    is_primary: false,
-                    move_in_date: '',
-                    tenant_type: 'owner' as const,
-                    email_opt_in: false,
-                    sms_opt_in: false,
-                    viber_opt_in: false,
-                    whatsapp_opt_in: false,
-               });
-          });
+          // Transform the raw database data to match Tenant interface
+          const transformedTenants: Tenant[] = (tenants || []).map((tenant: any) => ({
+               id: tenant.id || '',
+               first_name: tenant.first_name || '',
+               last_name: tenant.last_name || '',
+               email: tenant.email,
+               phone_number: tenant.phone_number || '',
+               date_of_birth: tenant.date_of_birth || '',
+               apartment_id: tenant.apartment_id || '',
+               apartment: {
+                    apartment_number: tenant.apartments?.[0]?.apartment_number || '',
+                    building: {
+                         street_address: tenant.apartments?.[0]?.buildings?.[0]?.street_address || '',
+                         city: tenant.apartments?.[0]?.buildings?.[0]?.city || ''
+                    }
+               },
+               avatar_url: tenant.avatar_url,
+               is_primary: tenant.is_primary || false,
+               move_in_date: tenant.move_in_date || '',
+               tenant_type: tenant.tenant_type || 'owner',
+               notes: tenant.notes,
+               created_at: tenant.created_at,
+               updated_at: tenant.updated_at,
+               user_id: tenant.user_id,
+               email_opt_in: tenant.email_opt_in || false,
+               sms_opt_in: tenant.sms_opt_in || false,
+               viber_opt_in: tenant.viber_opt_in || false,
+               whatsapp_opt_in: tenant.whatsapp_opt_in || false,
+               // Chat-related properties with defaults
+               last_activity: tenant.last_activity,
+               is_online: tenant.is_online || false,
+               role: tenant.role || 'member',
+               joined_at: tenant.joined_at,
+               last_read_at: tenant.last_read_at,
+               is_muted: tenant.is_muted || false
+          }));
 
-          // Add clients
-          (clients || []).forEach(client => {
-               contacts.push({
-                    id: client.user_id,
-                    first_name: client.first_name || '',
-                    last_name: client.last_name || '',
-                    email: client.email,
-                    avatar_url: client.avatar || '',
-                    avatar: client.avatar || '',
-                    user_type: 'client',
-                    is_online: false,
-                    last_activity: new Date().getTime(),
-                    name: `${client.first_name} ${client.last_name}`.trim(),
-                    // Required tenant fields with defaults
-                    apartment_id: '',
-                    apartment: { apartment_number: '', building: { street_address: '', city: '' } },
-                    is_primary: false,
-                    move_in_date: '',
-                    tenant_type: 'owner' as const,
-                    email_opt_in: false,
-                    sms_opt_in: false,
-                    viber_opt_in: false,
-                    whatsapp_opt_in: false,
-               });
-          });
-
-          return { success: true, data: contacts };
+          return { success: true, data: transformedTenants };
      } catch (e: any) {
-          log(`Error in getContacts: ${e.message}`);
+          log(`Error in getTenants: ${e.message}`);
           return { success: false, error: e.message || 'Unexpected error' };
      }
 };
@@ -1131,7 +1126,7 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<T
                     // Try to fetch from tenants table first
                     const { data: tenantData } = await supabase
                          .from(TABLES.TENANTS)
-                         .select('user_id, first_name, last_name, email, avatar, apartment_number')
+                         .select('user_id, first_name, last_name, email, avatar_url, apartment_number')
                          .eq('user_id', member.user_id)
                          .single();
 
@@ -1141,13 +1136,9 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<T
                               first_name: tenantData.first_name || '',
                               last_name: tenantData.last_name || '',
                               email: tenantData.email,
-                              avatar_url: tenantData.avatar || '',
-                              avatar: tenantData.avatar || '',
-                              user_type: 'tenant',
-                              apartment_number: tenantData.apartment_number,
+                              avatar_url: tenantData.avatar_url || '',
                               is_online: false,
-                              last_activity: new Date(member.joined_at).getTime(),
-                              name: `${tenantData.first_name} ${tenantData.last_name}`.trim(),
+                              last_activity: new Date(member.joined_at).toISOString(),
                               // Required tenant fields with defaults
                               apartment_id: '',
                               apartment: { apartment_number: tenantData.apartment_number || '', building: { street_address: '', city: '' } },
@@ -1163,22 +1154,19 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<T
                          // Try to fetch from clients table
                          const { data: clientData } = await supabase
                               .from(TABLES.CLIENTS)
-                              .select('user_id, first_name, last_name, email, avatar, company_name')
+                              .select('user_id, contact_person, email, avatar, name')
                               .eq('user_id', member.user_id)
                               .single();
 
                          if (clientData) {
                               participants.push({
                                    id: clientData.user_id,
-                                   first_name: clientData.first_name || '',
-                                   last_name: clientData.last_name || '',
+                                   first_name: clientData.contact_person || '',
+                                   last_name: '',
                                    email: clientData.email,
                                    avatar_url: clientData.avatar || '',
-                                   avatar: clientData.avatar || '',
-                                   user_type: 'client',
                                    is_online: false,
-                                   last_activity: new Date(member.joined_at).getTime(),
-                                   name: `${clientData.first_name} ${clientData.last_name}`.trim(),
+                                   last_activity: new Date(member.joined_at).toISOString(),
                                    // Required tenant fields with defaults
                                    apartment_id: '',
                                    apartment: { apartment_number: '', building: { street_address: '', city: '' } },

@@ -10,7 +10,6 @@ import { sendMessage, createBuildingGroupChat, createDirectMessageRoom } from 's
 import { useAuth } from 'src/contexts/auth/auth-provider';
 import { UserSelectionDialog } from 'src/components/chat/UserSelectionDialog';
 import type { ChatRoomWithMembers, ChatMessageWithSender, SendMessagePayload } from 'src/types/chat';
-import type { BuildingUser } from 'src/app/actions/tenant/tenant-actions';
 import type { Tenant } from 'src/types/tenant';
 
 import { ChatContainer } from './chat-container';
@@ -169,7 +168,6 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
 
                const result = await createDirectMessageRoom(
                     user.id,
-                    user.user_type || 'tenant',
                     buildingId || undefined // Pass undefined instead of empty string
                );
 
@@ -271,13 +269,11 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                     email: contact.email,
                     first_name: contact.first_name,
                     last_name: contact.last_name,
-                    user_type: contact.user_type || 'tenant',
-                    avatar: contact.avatar,
-                    apartment_number: contact.apartment_number,
+                    avatar_url: contact.avatar_url,
                     is_online: contact.is_online,
                     apartment_id: contact.apartment_id || '',
                     apartment: {
-                         apartment_number: contact.apartment_number || '',
+                         apartment_number: contact.apartment.apartment_number || '',
                          building: {
                               street_address: contact.apartment.building.street_address || '',
                               city: contact.apartment.building.city || ''

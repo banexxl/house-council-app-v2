@@ -21,7 +21,6 @@ import Typography from '@mui/material/Typography';
 import { getContacts } from 'src/app/actions/chat/chat-actions';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Tenant } from 'src/types/tenant';
-import { getTenantFirstName, getTenantAvatar } from 'src/types/tenant';
 
 interface ChatComposerRecipientsProps {
   onRecipientAdd?: (contact: Tenant) => void;
@@ -158,13 +157,15 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
                                 onClick={(): void => handleSearchSelect(contact)}
                               >
                                 <ListItemAvatar>
-                                  <Avatar src={getTenantAvatar(contact)} />
+                                  <Avatar src={contact.avatar_url} />
                                 </ListItemAvatar>
                                 <ListItemText
-                                  primary={getTenantFirstName(contact)}
-                                  primaryTypographyProps={{
-                                    noWrap: true,
-                                    variant: 'subtitle2',
+                                  primary={contact.first_name}
+                                  slotProps={{
+                                    primary: {
+                                      noWrap: true,
+                                      variant: 'subtitle2',
+                                    },
                                   }}
                                 />
                               </ListItemButton>
@@ -212,9 +213,9 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
             >
               {recipients.map((recipient) => (
                 <Chip
-                  avatar={<Avatar src={recipient.avatar} />}
+                  avatar={<Avatar src={recipient.avatar_url} />}
                   key={recipient.id}
-                  label={recipient.name}
+                  label={recipient.first_name}
                   onDelete={(): void => onRecipientRemove?.(recipient.id)}
                 />
               ))}

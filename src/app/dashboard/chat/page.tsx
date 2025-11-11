@@ -5,7 +5,7 @@ import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
 import { getAllBuildingsFromClient, getAllBuildings } from "src/app/actions/building/building-actions";
-import { getBuildingUsers } from "src/app/actions/tenant/tenant-actions";
+import { getBuildingTenants } from "src/app/actions/tenant/tenant-actions";
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { TABLES } from 'src/libs/supabase/tables';
 import { ChatPageClient } from "./chat-client";
@@ -50,7 +50,7 @@ export default async function Page() {
   } else if (tenant) {
     userType = 'tenant';
     // For tenants, get their building context and building ID
-    const result = await getBuildingUsers();
+    const result = await getBuildingTenants();
 
     if (result.success && result.data && result.data.length > 0) {
       // Get the building ID from the tenant's apartment relationship

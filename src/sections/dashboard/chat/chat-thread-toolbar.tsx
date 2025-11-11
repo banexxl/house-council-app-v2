@@ -23,21 +23,20 @@ import Typography from '@mui/material/Typography';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { usePopover } from 'src/hooks/use-popover';
 import type { Tenant } from 'src/types/tenant';
-import { getTenantFirstName } from 'src/types/tenant';
 
 const getRecipients = (participants: Tenant[], userId: string): Tenant[] => {
   return participants.filter((participant) => participant.id !== userId);
 };
 
 const getDisplayName = (recipients: Tenant[]): string => {
-  return recipients.map((participant) => getTenantFirstName(participant)).join(', ');
+  return recipients.map((participant) => participant.first_name).join(', ');
 };
 
 const getLastActive = (recipients: Tenant[]): string | null => {
   const hasLastActive = recipients.length === 1 && recipients[0].last_activity;
 
   if (hasLastActive) {
-    return formatDistanceToNowStrict(recipients[0].last_activity!, { addSuffix: true });
+    return formatDistanceToNowStrict(new Date(recipients[0].last_activity!), { addSuffix: true });
   }
 
   return null;
@@ -95,7 +94,7 @@ export const ChatThreadToolbar: FC<ChatThreadToolbarProps> = (props) => {
             {recipients.map((recipient) => (
               <Avatar
                 key={recipient.id}
-                src={recipient.avatar || undefined}
+                src={recipient.avatar_url || undefined}
               />
             ))}
           </AvatarGroup>

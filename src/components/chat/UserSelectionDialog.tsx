@@ -29,9 +29,8 @@ import {
      Business as BusinessIcon,
      Add as AddIcon
 } from '@mui/icons-material';
-import { getBuildingUsers, searchBuildingUsers, type BuildingUser } from 'src/app/actions/tenant/tenant-actions';
+import { getBuildingTenants, searchBuildingTenants } from 'src/app/actions/tenant/tenant-actions';
 import type { Tenant } from 'src/types/tenant';
-import { getTenantFirstName, getTenantAvatar } from 'src/types/tenant';
 import { createDirectMessageRoom } from 'src/app/actions/chat/chat-actions';
 
 interface UserSelectionDialogProps {
@@ -81,37 +80,13 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
      selectedUsers = [],
      onSelectedUsersChange
 }) => {
-     const [users, setUsers] = useState<BuildingUser[]>([]);
-     const [filteredUsers, setFilteredUsers] = useState<BuildingUser[]>([]);
+     const [users, setUsers] = useState<Tenant[]>([]);
+     const [filteredUsers, setFilteredUsers] = useState<Tenant[]>([]);
      const [searchQuery, setSearchQuery] = useState('');
      const [loading, setLoading] = useState(true);
      const [error, setError] = useState<string | null>(null);
      const [creatingRoom, setCreatingRoom] = useState(false);
      const [tabValue, setTabValue] = useState(0);
-
-     // Convert BuildingUser to Tenant for consistency
-     const convertToTenant = useCallback((user: BuildingUser): Tenant => ({
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          avatar_url: user.avatar || '',
-          avatar: user.avatar || '',
-          user_type: user.user_type,
-          apartment_number: user.apartment_number,
-          is_online: user.is_online,
-          name: `${user.first_name} ${user.last_name}`.trim(),
-          // Required tenant fields with defaults
-          apartment_id: '',
-          apartment: { apartment_number: user.apartment_number || '', building: { street_address: '', city: '' } },
-          is_primary: false,
-          move_in_date: '',
-          tenant_type: 'owner' as const,
-          email_opt_in: false,
-          sms_opt_in: false,
-          viber_opt_in: false,
-          whatsapp_opt_in: false,
-     }), []);
 
      // Load building users
      const loadUsers = useCallback(async () => {
@@ -119,7 +94,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           setError(null);
 
           try {
-               const result = await getBuildingUsers();
+               const result = await getBuildingTenants();
                if (result.success && result.data) {
                     setUsers(result.data);
                     setFilteredUsers(result.data);
@@ -143,7 +118,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           }
 
           try {
-               const result = await searchBuildingUsers(query);
+               const result = await searchBuildingTenants(query);
                if (result.success && result.data) {
                     setFilteredUsers(result.data);
                }
@@ -153,15 +128,13 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                const filtered = users.filter(user => {
                     const searchTerm = query.toLowerCase();
                     const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
-                    const email = user.email.toLowerCase();
-                    const apartmentNumber = user.apartment_number?.toLowerCase() || '';
-                    const companyName = user.company_name?.toLowerCase() || '';
+                    const email = user.email && user.email.toLowerCase() || '';
+                    const apartmentNumber = user.apartment.apartment_number?.toLowerCase() || '';
 
                     return (
                          fullName.includes(searchTerm) ||
                          email.includes(searchTerm) ||
-                         apartmentNumber.includes(searchTerm) ||
-                         companyName.includes(searchTerm)
+                         apartmentNumber.includes(searchTerm)
                     );
                });
                setFilteredUsers(filtered);
@@ -175,20 +148,14 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           }
      }, [open, loadUsers]);
 
-     // Filter users by type
-     const tenants = filteredUsers.filter(user => user.user_type === 'tenant');
-     const clients = filteredUsers.filter(user => user.user_type === 'client');
-
      // Handle user selection
-     const handleUserClick = async (user: BuildingUser) => {
-          const tenantUser = convertToTenant(user);
-
+     const handleUserClick = async (user: Tenant) => {
           if (mode === 'direct-message') {
                setCreatingRoom(true);
                try {
-                    const result = await createDirectMessageRoom(user.id, user.user_type, buildingId);
+                    const result = await createDirectMessageRoom(user.id, buildingId);
                     if (result.success && result.data) {
-                         onStartDirectMessage?.(tenantUser);
+                         onStartDirectMessage?.(user);
                          onClose();
                     } else {
                          setError(result.error || 'Failed to create direct message');
@@ -204,10 +171,10 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                if (isSelected) {
                     onSelectedUsersChange?.(selectedUsers.filter(selected => selected.id !== user.id));
                } else {
-                    onSelectedUsersChange?.([...selectedUsers, tenantUser]);
+                    onSelectedUsersChange?.([...selectedUsers, user]);
                }
           } else {
-               onUserSelect?.(tenantUser);
+               onUserSelect?.(user);
                onClose();
           }
      };
@@ -221,7 +188,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           setTabValue(newValue);
      };
 
-     const getUserDisplayName = (user: BuildingUser | Tenant) => {
+     const getUserDisplayName = (user: Tenant) => {
           const userType = 'user_type' in user ? user.user_type : 'tenant';
           if (userType === 'tenant') {
                return `${user.first_name} ${user.last_name}`;
@@ -231,7 +198,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           }
      };
 
-     const getUserSecondaryText = (user: BuildingUser | Tenant) => {
+     const getUserSecondaryText = (user: Tenant) => {
           const userType = 'user_type' in user ? user.user_type : 'tenant';
           if (userType === 'tenant') {
                const apartmentNumber = 'apartment_number' in user ? user.apartment_number :
@@ -242,8 +209,8 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           }
      };
 
-     const getUserAvatar = (user: BuildingUser | Tenant) => {
-          const avatarUrl = ('avatar' in user ? user.avatar : undefined) ||
+     const getUserAvatar = (user: Tenant) => {
+          const avatarUrl = ('avatar' in user ? user.avatar_url : undefined) ||
                ('avatar_url' in user ? user.avatar_url : undefined);
 
           if (avatarUrl) {
@@ -251,11 +218,10 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           }
 
           const userType = 'user_type' in user ? user.user_type : 'tenant';
-          const companyName = 'company_name' in user ? user.company_name : undefined;
 
           const initials = userType === 'tenant'
                ? `${user.first_name?.charAt(0) || ''}${user.last_name?.charAt(0) || ''}`
-               : companyName?.charAt(0) || user.first_name?.charAt(0) || 'P';
+               : user.first_name?.charAt(0) || 'P';
 
           return (
                <Avatar sx={{ bgcolor: userType === 'tenant' ? 'primary.main' : 'secondary.main' }}>
@@ -264,7 +230,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
           );
      };
 
-     const renderUserList = (userList: BuildingUser[]) => (
+     const renderUserList = (userList: Tenant[]) => (
           <List sx={{ maxHeight: 300, overflow: 'auto' }}>
                {userList.map((user) => {
                     const isSelected = selectedUsers.some(selected => selected.id === user.id);
@@ -282,13 +248,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                                    <ListItemText
                                         primary={
                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                  {getUserDisplayName(user)}
-                                                  {user.user_type === 'tenant' && (
-                                                       <Chip size="small" label="Tenant" color="primary" variant="outlined" />
-                                                  )}
-                                                  {user.user_type === 'client' && (
-                                                       <Chip size="small" label="Manager" color="secondary" variant="outlined" />
-                                                  )}
+                                                  {user.first_name}
                                                   {user.is_online && (
                                                        <Chip size="small" label="Online" color="success" variant="outlined" />
                                                   )}
@@ -369,7 +329,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                                    {selectedUsers.map((user) => (
                                         <Chip
                                              key={user.id}
-                                             label={getUserDisplayName(user)}
+                                             label={user.first_name}
                                              onDelete={() => handleRemoveSelectedUser(user)}
                                              avatar={getUserAvatar(user)}
                                              size="small"
@@ -385,22 +345,9 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                          </Box>
                     ) : (
                          <>
-                              {/* Tabs for filtering by user type */}
-                              <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 2 }}>
-                                   <Tab label={`All (${filteredUsers.length})`} />
-                                   <Tab label={`Tenants (${tenants.length})`} icon={<PersonIcon />} iconPosition="start" />
-                                   <Tab label={`Managers (${clients.length})`} icon={<BusinessIcon />} iconPosition="start" />
-                              </Tabs>
-
                               {/* User Lists */}
                               <TabPanel value={tabValue} index={0}>
                                    {renderUserList(filteredUsers)}
-                              </TabPanel>
-                              <TabPanel value={tabValue} index={1}>
-                                   {renderUserList(tenants)}
-                              </TabPanel>
-                              <TabPanel value={tabValue} index={2}>
-                                   {renderUserList(clients)}
                               </TabPanel>
                          </>
                     )}
@@ -425,7 +372,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                          </Box>
                     )}
                </DialogActions>
-          </Dialog>
+          </Dialog >
      );
 };
 

@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import type { Message } from 'src/types/chat';
 import type { Tenant } from 'src/types/tenant';
-import { getTenantAvatar, getTenantFullName } from 'src/types/tenant';
 import type { User } from 'src/types/user';
 
 import { ChatMessage } from './chat-message';
@@ -33,8 +32,8 @@ const getAuthor = (message: Message, participants: Tenant[], user: User) => {
   }
 
   return {
-    avatar: getTenantAvatar(participant),
-    name: getTenantFullName(participant),
+    avatar: participant.avatar_url || '',
+    name: `${participant.first_name} ${participant.last_name}`,
     isUser: false,
   };
 };

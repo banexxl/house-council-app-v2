@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 
-import { searchBuildingUsers, type BuildingUser } from 'src/app/actions/tenant/tenant-actions';
+import { searchBuildingTenants } from 'src/app/actions/tenant/tenant-actions';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
@@ -21,7 +21,6 @@ import { paths } from 'src/paths';
 import { useSelector } from 'src/store';
 import type { Thread } from 'src/types/chat';
 import type { Tenant } from 'src/types/tenant';
-import { tenantToContact, getTenantFirstName } from 'src/types/tenant';
 import type { ChatRoomWithMembers } from 'src/types/chat';
 
 import { ChatSidebarSearch } from './chat-sidebar-search';
@@ -124,26 +123,22 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
 
       try {
         // Use building users search instead of hardcoded contacts
-        const result = await searchBuildingUsers(value);
+        const result = await searchBuildingTenants(value);
 
         if (result.success && result.data) {
           // Convert BuildingUser to Tenant format with chat properties
-          const tenants: Tenant[] = result.data.map((user: BuildingUser) => ({
+          const tenants: Tenant[] = result.data.map((user: Tenant) => ({
             id: user.id,
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
-            avatar_url: user.avatar || '',
-            avatar: user.avatar || '',
-            isActive: user.is_online || false,
+            avatar_url: user.avatar_url || '',
             is_online: user.is_online || false,
-            user_type: user.user_type,
-            apartment_number: user.apartment_number,
-            company_name: user.company_name,
+            apartment_number: user.apartment.apartment_number,
             name: `${user.first_name} ${user.last_name}`.trim(),
             // Required tenant fields with defaults
             apartment_id: '',
-            apartment: { apartment_number: user.apartment_number || '', building: { street_address: '', city: '' } },
+            apartment: { apartment_number: user.apartment.apartment_number || '', building: { street_address: '', city: '' } },
             is_primary: false,
             move_in_date: '',
             tenant_type: 'owner' as const,
@@ -271,10 +266,10 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
                     id: room.id,
                     type: room.room_type === 'group' ? 'GROUP' : 'ONE_TO_ONE',
                     participantIds: room.members?.map(m => m.user_id) || [],
-                    participants: room.members?.map(member => ({
+                    participants: room.members?.map((member) => ({
                       ...member.user,
-                      name: member.user ? getTenantFirstName(member.user) : 'Unknown User',
-                      avatar: member.user?.avatar_url || undefined,
+                      name: member.user.first_name ? `${member.user.first_name} ${member.user.last_name}`.trim() : 'Unknown User',
+                      avatar_url: member.user?.avatar_url || undefined,
                       lastActivity: undefined
                     } as Tenant)) || [],
                     messages: room.last_message ? [{

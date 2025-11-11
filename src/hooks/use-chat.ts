@@ -206,7 +206,6 @@ export const useChatMessages = (roomId: string | null) => {
                id: `temp-${Date.now()}`, // Temporary ID
                room_id: roomId,
                sender_id: user.id,
-               sender_type: 'tenant' as const,
                message_text: content,
                message_type: messageType,
                created_at: new Date().toISOString(),
@@ -217,7 +216,6 @@ export const useChatMessages = (roomId: string | null) => {
                     first_name: user.first_name || 'You',
                     last_name: user.last_name || '',
                     email: user.email || '',
-                    user_type: 'tenant' as const
                },
                // Mark as pending (extra property not in type)
                _pending: true

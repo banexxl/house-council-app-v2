@@ -16,7 +16,6 @@ import Typography from '@mui/material/Typography';
 
 import { Tip } from 'src/components/tip';
 import type { Tenant } from 'src/types/tenant';
-import { getTenantFirstName, getTenantAvatar } from 'src/types/tenant';
 
 interface ChatSidebarSearchProps {
   isFocused?: boolean;
@@ -96,7 +95,7 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={getTenantAvatar(contact)}
+                            src={contact.avatar_url}
                             sx={{
                               height: 32,
                               width: 32,
@@ -104,10 +103,12 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
                           />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={getTenantFirstName(contact)}
-                          primaryTypographyProps={{
-                            noWrap: true,
-                            variant: 'subtitle2',
+                          primary={contact.first_name}
+                          slotProps={{
+                            primary: {
+                              noWrap: true,
+                              variant: 'subtitle2',
+                            },
                           }}
                         />
                       </ListItemButton>

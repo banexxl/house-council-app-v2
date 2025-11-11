@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import type { Message, Thread } from 'src/types/chat';
 import type { Tenant } from 'src/types/tenant';
-import { getTenantFirstName } from 'src/types/tenant';
 import { customLocale } from 'src/utils/date-locale';
 
 const getLastMessage = (thread: Thread): Message | undefined => {
@@ -22,7 +21,7 @@ const getRecipients = (participants: Tenant[], userId: string): Tenant[] => {
 };
 
 const getDisplayName = (recipients: Tenant[]): string => {
-  return recipients.map((participant) => getTenantFirstName(participant)).join(', ');
+  return recipients.map((participant) => (participant.first_name)).join(', ');
 };
 
 const getDisplayContent = (userId: string, lastMessage?: Message): string => {
@@ -106,7 +105,7 @@ export const ChatThreadItem: FC<ChatThreadItemProps> = (props) => {
           {recipients.map((recipient) => (
             <Avatar
               key={recipient.id}
-              src={recipient.avatar || undefined}
+              src={recipient.avatar_url || undefined}
             />
           ))}
         </AvatarGroup>

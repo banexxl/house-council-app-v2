@@ -38,19 +38,43 @@ export interface Tenant {
      whatsapp_opt_in: boolean;
 
      // Chat-related properties (from Contact, Participant, BuildingUser types)
-     avatar?: string; // Alternative avatar field (for compatibility)
-     last_activity?: number; // Last activity timestamp
-     name?: string; // Computed full name (for compatibility)
+     last_activity?: string; // Last activity timestamp
      is_online?: boolean; // Online status
-     user_type?: 'tenant' | 'client';
-     apartment_number?: string; // Computed from apartment relation
-
      // Chat room membership properties
      role?: 'member' | 'admin' | 'moderator'; // Chat room role
      joined_at?: string; // When user joined chat room
      last_read_at?: string; // Last message read timestamp
      is_muted?: boolean; // Chat notifications muted
 }
+
+export const tenantKeyFields: (keyof Tenant)[] = [
+     'id',
+     'first_name',
+     'last_name',
+     'email',
+     'phone_number',
+     'date_of_birth',
+     'apartment_id',
+     'apartment',
+     'avatar_url',
+     'is_primary',
+     'move_in_date',
+     'tenant_type',
+     'notes',
+     'created_at',
+     'updated_at',
+     'user_id',
+     'email_opt_in',
+     'sms_opt_in',
+     'viber_opt_in',
+     'whatsapp_opt_in',
+     'last_activity',
+     'is_online',
+     'role',
+     'joined_at',
+     'last_read_at',
+     'is_muted',
+];
 
 export const tenantInitialValues: Tenant = {
      id: '',
@@ -100,61 +124,3 @@ export const tenantValidationSchema = (t: (key: string) => string) => Yup.object
      is_primary: Yup.boolean().required(t('tenants.isPrimaryRequired')),
      move_in_date: Yup.date().nullable(),
 });
-
-// Helper functions for chat compatibility
-export const tenantToContact = (tenant: Tenant) => ({
-     id: tenant.id,
-     avatar: tenant.avatar || tenant.avatar_url || '',
-     is_online: tenant.is_online || false,
-     lastActivity: tenant.last_activity,
-     name: tenant.name || `${tenant.first_name} ${tenant.last_name}`.trim(),
-});
-
-export const tenantToParticipant = (tenant: Tenant) => ({
-     id: tenant.id,
-     avatar: tenant.avatar || tenant.avatar_url || null,
-     lastActivity: tenant.last_activity,
-     name: tenant.name || `${tenant.first_name} ${tenant.last_name}`.trim(),
-});
-
-export const tenantToBuildingUser = (tenant: Tenant) => ({
-     id: tenant.id,
-     email: tenant.email || '',
-     first_name: tenant.first_name,
-     last_name: tenant.last_name,
-     user_type: (tenant.user_type || 'tenant') as 'tenant' | 'client',
-     apartment_number: tenant.apartment_number || tenant.apartment?.apartment_number,
-     avatar: tenant.avatar || tenant.avatar_url,
-     is_online: tenant.is_online || false,
-});
-
-export const tenantToChatSender = (tenant: Tenant) => ({
-     id: tenant.id,
-     email: tenant.email,
-     first_name: tenant.first_name,
-     last_name: tenant.last_name,
-     user_type: (tenant.user_type || 'tenant') as 'tenant' | 'admin',
-});
-
-export const tenantToChatMemberUser = (tenant: Tenant) => ({
-     id: tenant.id,
-     email: tenant.email,
-     first_name: tenant.first_name,
-     last_name: tenant.last_name,
-});
-
-// Helper to get display name (first name only)
-export const getTenantFirstName = (tenant: Tenant): string => {
-     return tenant.first_name || tenant.name?.split(' ')[0] || tenant.email || 'Unknown';
-};
-
-// Helper to get full display name
-export const getTenantFullName = (tenant: Tenant): string => {
-     if (tenant.name) return tenant.name;
-     return `${tenant.first_name} ${tenant.last_name}`.trim() || tenant.email || 'Unknown';
-};
-
-// Helper to get avatar URL
-export const getTenantAvatar = (tenant: Tenant): string => {
-     return tenant.avatar || tenant.avatar_url || '';
-};
