@@ -9,7 +9,6 @@ import {
      getRoomMessages,
      sendMessage,
      markRoomAsRead,
-     setTypingIndicator,
      getUnreadMessageCount
 } from 'src/app/actions/chat/chat-actions';
 import type {

@@ -679,52 +679,6 @@ export const getUnreadMessageCount = async (userId: string): Promise<ActionResul
 };
 
 /**
- * Set typing indicator
- */
-export const setTypingIndicator = async (
-     roomId: string,
-     userId: string,
-     isTyping: boolean
-): Promise<ActionResult<null>> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          if (isTyping) {
-               // Insert or update typing indicator
-               const { error } = await supabase
-                    .from(TABLES.CHAT_TYPING)
-                    .upsert({
-                         room_id: roomId,
-                         user_id: userId,
-                         started_at: new Date().toISOString()
-                    });
-
-               if (error) {
-                    log(`Error setting typing indicator: ${error.message}`);
-                    return { success: false, error: error.message };
-               }
-          } else {
-               // Remove typing indicator
-               const { error } = await supabase
-                    .from(TABLES.CHAT_TYPING)
-                    .delete()
-                    .eq('room_id', roomId)
-                    .eq('user_id', userId);
-
-               if (error) {
-                    log(`Error removing typing indicator: ${error.message}`);
-                    return { success: false, error: error.message };
-               }
-          }
-
-          return { success: true, data: null };
-     } catch (e: any) {
-          log(`Error in setTypingIndicator: ${e.message}`);
-          return { success: false, error: e.message || 'Unexpected error' };
-     }
-};
-
-/**
  * Leave a chat room
  */
 export const leaveChatRoom = async (roomId: string, userId: string): Promise<ActionResult<null>> => {
