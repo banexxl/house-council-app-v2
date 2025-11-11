@@ -24,6 +24,7 @@ export interface Tenant {
                city: string;
           };
      };
+     avatar_url?: string;
      is_primary: boolean;
      move_in_date: string;   // ISO string
      tenant_type: TenantType;
@@ -35,6 +36,20 @@ export interface Tenant {
      sms_opt_in: boolean;
      viber_opt_in: boolean;
      whatsapp_opt_in: boolean;
+
+     // Chat-related properties (from Contact, Participant, BuildingUser types)
+     avatar?: string; // Alternative avatar field (for compatibility)
+     last_activity?: number; // Last activity timestamp
+     name?: string; // Computed full name (for compatibility)
+     is_online?: boolean; // Online status
+     user_type?: 'tenant' | 'client';
+     apartment_number?: string; // Computed from apartment relation
+
+     // Chat room membership properties
+     role?: 'member' | 'admin' | 'moderator'; // Chat room role
+     joined_at?: string; // When user joined chat room
+     last_read_at?: string; // Last message read timestamp
+     is_muted?: boolean; // Chat notifications muted
 }
 
 export const tenantInitialValues: Tenant = {
@@ -46,6 +61,7 @@ export const tenantInitialValues: Tenant = {
      date_of_birth: '',
      apartment_id: '',
      apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+     avatar_url: '',
      is_primary: false,
      move_in_date: '',
      tenant_type: 'owner',
@@ -84,3 +100,61 @@ export const tenantValidationSchema = (t: (key: string) => string) => Yup.object
      is_primary: Yup.boolean().required(t('tenants.isPrimaryRequired')),
      move_in_date: Yup.date().nullable(),
 });
+
+// Helper functions for chat compatibility
+export const tenantToContact = (tenant: Tenant) => ({
+     id: tenant.id,
+     avatar: tenant.avatar || tenant.avatar_url || '',
+     is_online: tenant.is_online || false,
+     lastActivity: tenant.last_activity,
+     name: tenant.name || `${tenant.first_name} ${tenant.last_name}`.trim(),
+});
+
+export const tenantToParticipant = (tenant: Tenant) => ({
+     id: tenant.id,
+     avatar: tenant.avatar || tenant.avatar_url || null,
+     lastActivity: tenant.last_activity,
+     name: tenant.name || `${tenant.first_name} ${tenant.last_name}`.trim(),
+});
+
+export const tenantToBuildingUser = (tenant: Tenant) => ({
+     id: tenant.id,
+     email: tenant.email || '',
+     first_name: tenant.first_name,
+     last_name: tenant.last_name,
+     user_type: (tenant.user_type || 'tenant') as 'tenant' | 'client',
+     apartment_number: tenant.apartment_number || tenant.apartment?.apartment_number,
+     avatar: tenant.avatar || tenant.avatar_url,
+     is_online: tenant.is_online || false,
+});
+
+export const tenantToChatSender = (tenant: Tenant) => ({
+     id: tenant.id,
+     email: tenant.email,
+     first_name: tenant.first_name,
+     last_name: tenant.last_name,
+     user_type: (tenant.user_type || 'tenant') as 'tenant' | 'admin',
+});
+
+export const tenantToChatMemberUser = (tenant: Tenant) => ({
+     id: tenant.id,
+     email: tenant.email,
+     first_name: tenant.first_name,
+     last_name: tenant.last_name,
+});
+
+// Helper to get display name (first name only)
+export const getTenantFirstName = (tenant: Tenant): string => {
+     return tenant.first_name || tenant.name?.split(' ')[0] || tenant.email || 'Unknown';
+};
+
+// Helper to get full display name
+export const getTenantFullName = (tenant: Tenant): string => {
+     if (tenant.name) return tenant.name;
+     return `${tenant.first_name} ${tenant.last_name}`.trim() || tenant.email || 'Unknown';
+};
+
+// Helper to get avatar URL
+export const getTenantAvatar = (tenant: Tenant): string => {
+     return tenant.avatar || tenant.avatar_url || '';
+};

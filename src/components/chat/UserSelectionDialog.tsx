@@ -30,18 +30,20 @@ import {
      Add as AddIcon
 } from '@mui/icons-material';
 import { getBuildingUsers, searchBuildingUsers, type BuildingUser } from 'src/app/actions/tenant/tenant-actions';
+import type { Tenant } from 'src/types/tenant';
+import { getTenantFirstName, getTenantAvatar } from 'src/types/tenant';
 import { createDirectMessageRoom } from 'src/app/actions/chat/chat-actions';
 
 interface UserSelectionDialogProps {
      open: boolean;
      onClose: () => void;
-     onUserSelect?: (user: BuildingUser) => void;
-     onStartDirectMessage?: (user: BuildingUser) => void;
+     onUserSelect?: (user: Tenant) => void;
+     onStartDirectMessage?: (user: Tenant) => void;
      mode: 'select' | 'direct-message' | 'group-members';
      title?: string;
      buildingId: string;
-     selectedUsers?: BuildingUser[];
-     onSelectedUsersChange?: (users: BuildingUser[]) => void;
+     selectedUsers?: Tenant[];
+     onSelectedUsersChange?: (users: Tenant[]) => void;
 }
 
 interface TabPanelProps {
@@ -86,6 +88,30 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
      const [error, setError] = useState<string | null>(null);
      const [creatingRoom, setCreatingRoom] = useState(false);
      const [tabValue, setTabValue] = useState(0);
+
+     // Convert BuildingUser to Tenant for consistency
+     const convertToTenant = useCallback((user: BuildingUser): Tenant => ({
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          avatar_url: user.avatar || '',
+          avatar: user.avatar || '',
+          user_type: user.user_type,
+          apartment_number: user.apartment_number,
+          is_online: user.is_online,
+          name: `${user.first_name} ${user.last_name}`.trim(),
+          // Required tenant fields with defaults
+          apartment_id: '',
+          apartment: { apartment_number: user.apartment_number || '', building: { street_address: '', city: '' } },
+          is_primary: false,
+          move_in_date: '',
+          tenant_type: 'owner' as const,
+          email_opt_in: false,
+          sms_opt_in: false,
+          viber_opt_in: false,
+          whatsapp_opt_in: false,
+     }), []);
 
      // Load building users
      const loadUsers = useCallback(async () => {
@@ -155,12 +181,14 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
 
      // Handle user selection
      const handleUserClick = async (user: BuildingUser) => {
+          const tenantUser = convertToTenant(user);
+
           if (mode === 'direct-message') {
                setCreatingRoom(true);
                try {
                     const result = await createDirectMessageRoom(user.id, user.user_type, buildingId);
                     if (result.success && result.data) {
-                         onStartDirectMessage?.(user);
+                         onStartDirectMessage?.(tenantUser);
                          onClose();
                     } else {
                          setError(result.error || 'Failed to create direct message');
@@ -176,45 +204,61 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                if (isSelected) {
                     onSelectedUsersChange?.(selectedUsers.filter(selected => selected.id !== user.id));
                } else {
-                    onSelectedUsersChange?.([...selectedUsers, user]);
+                    onSelectedUsersChange?.([...selectedUsers, tenantUser]);
                }
           } else {
-               onUserSelect?.(user);
+               onUserSelect?.(tenantUser);
                onClose();
           }
+     };
+
+     // Handle removing selected user
+     const handleRemoveSelectedUser = (user: Tenant) => {
+          onSelectedUsersChange?.(selectedUsers.filter(selected => selected.id !== user.id));
      };
 
      const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
           setTabValue(newValue);
      };
 
-     const getUserDisplayName = (user: BuildingUser) => {
-          if (user.user_type === 'tenant') {
+     const getUserDisplayName = (user: BuildingUser | Tenant) => {
+          const userType = 'user_type' in user ? user.user_type : 'tenant';
+          if (userType === 'tenant') {
                return `${user.first_name} ${user.last_name}`;
           } else {
-               return user.company_name || `${user.first_name} ${user.last_name}`;
+               const companyName = 'company_name' in user ? user.company_name : undefined;
+               return companyName || `${user.first_name} ${user.last_name}`;
           }
      };
 
-     const getUserSecondaryText = (user: BuildingUser) => {
-          if (user.user_type === 'tenant') {
-               return user.apartment_number ? `Apartment ${user.apartment_number}` : 'Tenant';
+     const getUserSecondaryText = (user: BuildingUser | Tenant) => {
+          const userType = 'user_type' in user ? user.user_type : 'tenant';
+          if (userType === 'tenant') {
+               const apartmentNumber = 'apartment_number' in user ? user.apartment_number :
+                    ('apartment' in user ? user.apartment?.apartment_number : undefined);
+               return apartmentNumber ? `Apartment ${apartmentNumber}` : 'Tenant';
           } else {
                return 'Property Manager';
           }
      };
 
-     const getUserAvatar = (user: BuildingUser) => {
-          if (user.avatar) {
-               return <Avatar src={user.avatar} />;
+     const getUserAvatar = (user: BuildingUser | Tenant) => {
+          const avatarUrl = ('avatar' in user ? user.avatar : undefined) ||
+               ('avatar_url' in user ? user.avatar_url : undefined);
+
+          if (avatarUrl) {
+               return <Avatar src={avatarUrl} />;
           }
 
-          const initials = user.user_type === 'tenant'
+          const userType = 'user_type' in user ? user.user_type : 'tenant';
+          const companyName = 'company_name' in user ? user.company_name : undefined;
+
+          const initials = userType === 'tenant'
                ? `${user.first_name?.charAt(0) || ''}${user.last_name?.charAt(0) || ''}`
-               : user.company_name?.charAt(0) || user.first_name?.charAt(0) || 'P';
+               : companyName?.charAt(0) || user.first_name?.charAt(0) || 'P';
 
           return (
-               <Avatar sx={{ bgcolor: user.user_type === 'tenant' ? 'primary.main' : 'secondary.main' }}>
+               <Avatar sx={{ bgcolor: userType === 'tenant' ? 'primary.main' : 'secondary.main' }}>
                     {initials}
                </Avatar>
           );
@@ -326,7 +370,7 @@ export const UserSelectionDialog: React.FC<UserSelectionDialogProps> = ({
                                         <Chip
                                              key={user.id}
                                              label={getUserDisplayName(user)}
-                                             onDelete={() => handleUserClick(user)}
+                                             onDelete={() => handleRemoveSelectedUser(user)}
                                              avatar={getUserAvatar(user)}
                                              size="small"
                                         />

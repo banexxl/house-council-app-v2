@@ -7,15 +7,14 @@ import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { useDispatch } from 'src/store';
 import { thunks } from 'src/thunks/chat';
-import type { Contact } from 'src/types/chat';
-
 import { ChatComposerRecipients } from './chat-composer-recipients';
 import { ChatMessageAdd } from './chat-message-add';
+import { Tenant } from 'src/types/tenant';
 
 const useRecipients = () => {
-  const [recipients, setRecipients] = useState<Contact[]>([]);
+  const [recipients, setRecipients] = useState<Tenant[]>([]);
 
-  const handleRecipientAdd = useCallback((recipient: Contact): void => {
+  const handleRecipientAdd = useCallback((recipient: Tenant): void => {
     setRecipients((prevState) => {
       const found = prevState.find((_recipient) => _recipient.id === recipient.id);
 

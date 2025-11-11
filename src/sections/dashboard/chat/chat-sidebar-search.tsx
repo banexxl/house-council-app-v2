@@ -15,16 +15,17 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { Tip } from 'src/components/tip';
-import type { Contact } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
+import { getTenantFirstName, getTenantAvatar } from 'src/types/tenant';
 
 interface ChatSidebarSearchProps {
   isFocused?: boolean;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   onClickAway?: () => void;
   onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
-  onSelect?: (result: Contact) => void;
+  onSelect?: (result: Tenant) => void;
   query?: string;
-  results?: Contact[];
+  results?: Tenant[];
 }
 
 export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchProps>(
@@ -41,7 +42,7 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
     } = props;
 
     const handleSelect = useCallback(
-      (result: Contact): void => {
+      (result: Tenant): void => {
         onSelect?.(result);
       },
       [onSelect]
@@ -95,7 +96,7 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={contact.avatar}
+                            src={getTenantAvatar(contact)}
                             sx={{
                               height: 32,
                               width: 32,
@@ -103,7 +104,7 @@ export const ChatSidebarSearch = forwardRef<HTMLDivElement, ChatSidebarSearchPro
                           />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={contact.name}
+                          primary={getTenantFirstName(contact)}
                           primaryTypographyProps={{
                             noWrap: true,
                             variant: 'subtitle2',

@@ -8,19 +8,21 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { useMockedUser } from 'src/hooks/use-mocked-user';
-import type { Message, Participant, Thread } from 'src/types/chat';
+import type { Message, Thread } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
+import { getTenantFirstName } from 'src/types/tenant';
 import { customLocale } from 'src/utils/date-locale';
 
 const getLastMessage = (thread: Thread): Message | undefined => {
   return thread.messages?.[thread.messages.length - 1];
 };
 
-const getRecipients = (participants: Participant[], userId: string): Participant[] => {
+const getRecipients = (participants: Tenant[], userId: string): Tenant[] => {
   return participants.filter((participant) => participant.id !== userId);
 };
 
-const getDisplayName = (recipients: Participant[]): string => {
-  return recipients.map((participant) => participant.name).join(', ');
+const getDisplayName = (recipients: Tenant[]): string => {
+  return recipients.map((participant) => getTenantFirstName(participant)).join(', ');
 };
 
 const getDisplayContent = (userId: string, lastMessage?: Message): string => {

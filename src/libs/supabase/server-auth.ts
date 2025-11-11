@@ -7,6 +7,7 @@ import { Tenant } from 'src/types/tenant'
 import { Admin } from 'src/types/admin'
 import { cache } from 'react';
 import { TABLES } from 'src/libs/supabase/tables';
+import { updateTenantActivityStatus } from 'src/app/actions/tenant/tenant-actions';
 
 export type UserDataCombined = {
      client: Client | null
@@ -71,6 +72,13 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
 
      if (!client && !clientMember && !tenant && !admin) {
           result.error = 'User record not found';
+     }
+
+     if (tenant) {
+          const { error } = await updateTenantActivityStatus(tenant.id, true, new Date());
+          if (error) {
+               console.error('Failed to update tenant activity status:', error);
+          }
      }
 
      return result;

@@ -7,25 +7,23 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 
 import { getParticipants } from 'src/app/actions/chat/chat-actions';
-import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { useDispatch, useSelector } from 'src/store';
 import { thunks } from 'src/thunks/chat';
-import type { Participant, Thread, Message } from 'src/types/chat';
+import type { Thread, Message } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
 import type { User } from 'src/types/user';
 
 import { ChatMessageAdd } from './chat-message-add';
 import { ChatMessages } from './chat-messages';
-import { ChatMessage } from './chat-message';
 import { ChatTypingIndicator } from './chat-typing-indicator';
-import { SimpleTypingIndicator } from './simple-typing-indicator';
 import { ChatThreadToolbar } from './chat-thread-toolbar';
 
-const useParticipants = (threadKey: string): Participant[] => {
+const useParticipants = (threadKey: string): Tenant[] => {
   const router = useRouter();
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [participants, setParticipants] = useState<Tenant[]>([]);
 
   const handleParticipantsGet = useCallback(async (): Promise<void> => {
     try {
@@ -204,7 +202,7 @@ const useMessagesScroll = (
 interface ChatThreadProps {
   threadKey: string;
   messages?: Message[];
-  participants?: Participant[];
+  participants?: Tenant[];
   currentUser?: User;
   onSendMessage?: (body: string) => Promise<void>;
   typingUsers?: any[];

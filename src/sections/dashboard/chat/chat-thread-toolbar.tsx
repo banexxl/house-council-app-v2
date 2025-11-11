@@ -22,28 +22,29 @@ import Typography from '@mui/material/Typography';
 
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { usePopover } from 'src/hooks/use-popover';
-import type { Participant } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
+import { getTenantFirstName } from 'src/types/tenant';
 
-const getRecipients = (participants: Participant[], userId: string): Participant[] => {
+const getRecipients = (participants: Tenant[], userId: string): Tenant[] => {
   return participants.filter((participant) => participant.id !== userId);
 };
 
-const getDisplayName = (recipients: Participant[]): string => {
-  return recipients.map((participant) => participant.name).join(', ');
+const getDisplayName = (recipients: Tenant[]): string => {
+  return recipients.map((participant) => getTenantFirstName(participant)).join(', ');
 };
 
-const getLastActive = (recipients: Participant[]): string | null => {
-  const hasLastActive = recipients.length === 1 && recipients[0].lastActivity;
+const getLastActive = (recipients: Tenant[]): string | null => {
+  const hasLastActive = recipients.length === 1 && recipients[0].last_activity;
 
   if (hasLastActive) {
-    return formatDistanceToNowStrict(recipients[0].lastActivity!, { addSuffix: true });
+    return formatDistanceToNowStrict(recipients[0].last_activity!, { addSuffix: true });
   }
 
   return null;
 };
 
 interface ChatThreadToolbarProps {
-  participants?: Participant[];
+  participants?: Tenant[];
 }
 
 export const ChatThreadToolbar: FC<ChatThreadToolbarProps> = (props) => {

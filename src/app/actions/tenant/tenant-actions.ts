@@ -788,6 +788,7 @@ export const getTenantsFromSameBuilding = async (
      }
 }
 
+// Deprecated: Use Tenant type instead
 export interface BuildingUser {
      id: string;
      email: string;
@@ -1009,5 +1010,25 @@ export const searchBuildingUsers = async (query: string): Promise<{
           return { success: false, error: error.message };
      }
 };
+
+export const updateTenantActivityStatus = async (tenant_id: string, is_online: boolean, last_activity: Date): Promise<{
+     success: boolean;
+     error?: string;
+}> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          const { error } = await supabase
+               .from(TABLES.TENANTS)
+               .update({ is_online, last_activity })
+               .eq('id', tenant_id);
+          if (error) {
+               return { success: false, error: error.message };
+          }
+          return { success: true };
+     } catch (error) {
+          return { success: false, error: (error as any).message || 'Unexpected error' };
+     }
+}
 
 

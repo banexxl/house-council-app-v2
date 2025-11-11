@@ -1,5 +1,7 @@
 // Chat System Types for Real-time Building Communication
 
+import type { Tenant } from './tenant';
+
 export interface ChatRoom {
   id: string;
   name?: string;
@@ -59,25 +61,14 @@ export interface ChatTyping {
 
 // Extended types with joined data
 export interface ChatMessageWithSender extends ChatMessage {
-  sender?: {
-    id: string;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    user_type: 'tenant' | 'client' | 'admin';
-  };
+  sender?: Tenant;
   reply_to_message?: ChatMessage;
   read_receipts?: ChatMessageRead[];
 }
 
 export interface ChatRoomWithMembers extends ChatRoom {
   members: (ChatRoomMember & {
-    user: {
-      id: string;
-      email?: string;
-      first_name?: string;
-      last_name?: string;
-    };
+    user: Tenant;
   })[];
   last_message?: ChatMessageWithSender;
   unread_count?: number;
@@ -129,15 +120,6 @@ export interface MarkAsReadPayload {
   message_id: string;
 }
 
-// Legacy types (kept for backward compatibility)
-export interface Contact {
-  id: string;
-  avatar: string;
-  isActive: boolean;
-  lastActivity?: number;
-  name: string;
-}
-
 interface Attachment {
   id: string;
   url: string;
@@ -152,18 +134,11 @@ export interface Message {
   authorId: string;
 }
 
-export interface Participant {
-  id: string;
-  avatar: string | null;
-  lastActivity?: number;
-  name: string;
-}
-
 export interface Thread {
   id?: string;
   messages: Message[];
   participantIds: string[];
-  participants?: Participant[];
+  participants?: Tenant[];
   type: 'ONE_TO_ONE' | 'GROUP';
   unreadCount?: number;
 }

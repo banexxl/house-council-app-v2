@@ -20,12 +20,13 @@ import Typography from '@mui/material/Typography';
 
 import { getContacts } from 'src/app/actions/chat/chat-actions';
 import { Scrollbar } from 'src/components/scrollbar';
-import type { Contact } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
+import { getTenantFirstName, getTenantAvatar } from 'src/types/tenant';
 
 interface ChatComposerRecipientsProps {
-  onRecipientAdd?: (contact: Contact) => void;
+  onRecipientAdd?: (contact: Tenant) => void;
   onRecipientRemove?: (recipientId: string) => void;
-  recipients?: Contact[];
+  recipients?: Tenant[];
 }
 
 export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) => {
@@ -33,7 +34,7 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
   const searchRef = useRef<HTMLDivElement | null>(null);
   const [searchFocused, setSearchFocused] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<Contact[]>([]);
+  const [searchResults, setSearchResults] = useState<Tenant[]>([]);
 
   const showSearchResults = !!(searchFocused && searchQuery);
   const hasSearchResults = searchResults.length > 0;
@@ -77,7 +78,7 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
   }, []);
 
   const handleSearchSelect = useCallback(
-    (contact: Contact): void => {
+    (contact: Tenant): void => {
       setSearchQuery('');
       onRecipientAdd?.(contact);
     },
@@ -157,10 +158,10 @@ export const ChatComposerRecipients: FC<ChatComposerRecipientsProps> = (props) =
                                 onClick={(): void => handleSearchSelect(contact)}
                               >
                                 <ListItemAvatar>
-                                  <Avatar src={contact.avatar} />
+                                  <Avatar src={getTenantAvatar(contact)} />
                                 </ListItemAvatar>
                                 <ListItemText
-                                  primary={contact.name}
+                                  primary={getTenantFirstName(contact)}
                                   primaryTypographyProps={{
                                     noWrap: true,
                                     variant: 'subtitle2',

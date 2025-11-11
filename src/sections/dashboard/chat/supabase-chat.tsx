@@ -11,6 +11,7 @@ import { useAuth } from 'src/contexts/auth/auth-provider';
 import { UserSelectionDialog } from 'src/components/chat/UserSelectionDialog';
 import type { ChatRoomWithMembers, ChatMessageWithSender, SendMessagePayload } from 'src/types/chat';
 import type { BuildingUser } from 'src/app/actions/tenant/tenant-actions';
+import type { Tenant } from 'src/types/tenant';
 
 import { ChatContainer } from './chat-container';
 import { ChatSidebar } from './chat-sidebar';
@@ -76,14 +77,27 @@ const adaptMessagesToOldFormat = (messages: ChatMessageWithSender[]) => {
 };
 
 // Adapter function to convert room members to participants format
-const adaptMembersToParticipants = (members: any[]) => {
+const adaptMembersToParticipants = (members: any[]): Tenant[] => {
      return members.map(member => ({
           id: member.user_id,
+          first_name: member.user?.first_name || '',
+          last_name: member.user?.last_name || '',
+          email: member.user?.email || '',
           name: member.user ? `${member.user.first_name || ''} ${member.user.last_name || ''}`.trim() || member.user.email : 'Unknown User',
           avatar: '', // We don't have avatar URLs in our current system
-          email: member.user?.email,
           user_type: member.user_type,
-          isOnline: false // This would be determined by presence system
+          isActive: false, // This would be determined by presence system
+          is_online: false,
+          // Required tenant fields with defaults
+          apartment_id: '',
+          apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+          is_primary: false,
+          move_in_date: '',
+          tenant_type: 'owner' as const,
+          email_opt_in: false,
+          sms_opt_in: false,
+          viber_opt_in: false,
+          whatsapp_opt_in: false,
      }));
 };
 
@@ -140,14 +154,12 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
           setCreateMenuAnchor(null);
      }, []);
 
-     const handleStartDirectMessage = useCallback((user: BuildingUser) => {
-          // The UserSelectionDialog handles creating the direct message room
-          // We just need to refresh the rooms list
-          refreshRooms();
-     }, [refreshRooms]);
+     const handleStartDirectMessage = useCallback((user: Tenant) => {
+          handleSelectUser(user);
+     }, []);
 
      // Handle direct message creation
-     const handleSelectUser = useCallback(async (user: BuildingUser) => {
+     const handleSelectUser = useCallback(async (user: Tenant) => {
           try {
                // If no buildingId provided, try to get one from the current user
                let effectiveBuildingId = buildingId;
@@ -251,19 +263,33 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      }, []);
 
      // Handle search selection - create direct message with selected user
-     const handleSearchSelection = useCallback(async (contact: any) => {
+     const handleSearchSelection = useCallback(async (contact: Tenant) => {
           try {
                // Create BuildingUser from the contact data
-               const user: BuildingUser = {
+               const user: Tenant = {
                     id: contact.id,
                     email: contact.email,
-                    first_name: contact.firstName || contact.name.split(' ')[0] || '',
-                    last_name: contact.lastName || contact.name.split(' ').slice(1).join(' ') || '',
-                    user_type: contact.userType || 'tenant',
+                    first_name: contact.first_name,
+                    last_name: contact.last_name,
+                    user_type: contact.user_type || 'tenant',
                     avatar: contact.avatar,
-                    apartment_number: contact.apartmentNumber,
-                    company_name: contact.companyName,
-                    is_online: contact.isActive
+                    apartment_number: contact.apartment_number,
+                    is_online: contact.is_online,
+                    apartment_id: contact.apartment_id || '',
+                    apartment: {
+                         apartment_number: contact.apartment_number || '',
+                         building: {
+                              street_address: contact.apartment.building.street_address || '',
+                              city: contact.apartment.building.city || ''
+                         }
+                    },
+                    is_primary: contact.is_primary || false,
+                    tenant_type: contact.tenant_type,
+                    email_opt_in: contact.email_opt_in || false,
+                    sms_opt_in: contact.sms_opt_in || false,
+                    viber_opt_in: contact.viber_opt_in || false,
+                    whatsapp_opt_in: contact.whatsapp_opt_in || false,
+                    move_in_date: contact.move_in_date || ''
                };
 
                await handleSelectUser(user);
@@ -455,11 +481,25 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                <UserSelectionDialog
                     open={userSelectionOpen}
                     onClose={handleUserSelectionClose}
-                    onStartDirectMessage={handleSelectUser}
+                    onStartDirectMessage={handleStartDirectMessage}
                     mode={groupCreationMode ? 'group-members' : 'direct-message'}
                     title={groupCreationMode ? 'Select Group Members' : 'Start Direct Message'}
                     buildingId={buildingId || ''}
-                    selectedUsers={selectedGroupMembers.map(id => ({ id } as BuildingUser))}
+                    selectedUsers={selectedGroupMembers.map(id => ({
+                         id,
+                         first_name: 'Selected',
+                         last_name: 'User',
+                         email: '',
+                         apartment_id: '',
+                         apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+                         is_primary: false,
+                         move_in_date: '',
+                         tenant_type: 'owner' as const,
+                         email_opt_in: false,
+                         sms_opt_in: false,
+                         viber_opt_in: false,
+                         whatsapp_opt_in: false,
+                    } as Tenant))}
                     onSelectedUsersChange={(users) => {
                          setSelectedGroupMembers(users.map(u => u.id));
                     }}

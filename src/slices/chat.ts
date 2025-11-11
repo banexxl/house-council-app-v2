@@ -1,13 +1,14 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
-import type { Contact, Message, Thread } from 'src/types/chat';
+import type { Message, Thread } from 'src/types/chat';
 import type { ChatRoomWithMembers, ChatMessageWithSender } from 'src/types/chat';
+import { Tenant } from 'src/types/tenant';
 import { objFromArray } from 'src/utils/obj-from-array';
 
 interface ChatState {
   contacts: {
-    byId: Record<string, Contact>;
+    byId: Record<string, Tenant>;
     allIds: string[];
   };
   currentThreadId?: string;
@@ -26,7 +27,7 @@ interface ChatState {
   currentSupabaseRoomId?: string;
 }
 
-type GetContactsAction = PayloadAction<Contact[]>;
+type GetContactsAction = PayloadAction<Tenant[]>;
 
 type GetThreadsAction = PayloadAction<Thread[]>;
 

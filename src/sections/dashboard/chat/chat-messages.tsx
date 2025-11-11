@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-
-import { useMockedUser } from 'src/hooks/use-mocked-user';
-import type { Message, Participant } from 'src/types/chat';
+import type { Message } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
+import { getTenantAvatar, getTenantFullName } from 'src/types/tenant';
 import type { User } from 'src/types/user';
 
 import { ChatMessage } from './chat-message';
 
-const getAuthor = (message: Message, participants: Participant[], user: User) => {
+const getAuthor = (message: Message, participants: Tenant[], user: User) => {
   const participant = participants.find((participant) => participant.id === message.authorId);
 
   // This should never happen
@@ -33,15 +33,15 @@ const getAuthor = (message: Message, participants: Participant[], user: User) =>
   }
 
   return {
-    avatar: participant!.avatar,
-    name: participant!.name,
+    avatar: getTenantAvatar(participant),
+    name: getTenantFullName(participant),
     isUser: false,
   };
 };
 
 interface ChatMessagesProps {
   messages?: Message[];
-  participants?: Participant[];
+  participants?: Tenant[];
   currentUser?: User;
 }
 

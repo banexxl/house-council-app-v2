@@ -19,7 +19,9 @@ import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
 import { useSelector } from 'src/store';
-import type { Contact, Thread } from 'src/types/chat';
+import type { Thread } from 'src/types/chat';
+import type { Tenant } from 'src/types/tenant';
+import { tenantToContact, getTenantFirstName } from 'src/types/tenant';
 import type { ChatRoomWithMembers } from 'src/types/chat';
 
 import { ChatSidebarSearch } from './chat-sidebar-search';
@@ -58,7 +60,7 @@ interface ChatSidebarProps {
   selectedRoom?: ChatRoomWithMembers | null;
   onRoomSelect?: (room: ChatRoomWithMembers) => void;
   onCreateRoom?: () => void;
-  onSearchSelect?: (contact: Contact) => void;
+  onSearchSelect?: (contact: Tenant) => void;
   loading?: boolean;
   // Legacy props for Redux integration
   threads?: { byId: Record<string, Thread>; allIds: string[] };
@@ -102,7 +104,7 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
 
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<Contact[]>([]);
+  const [searchResults, setSearchResults] = useState<Tenant[]>([]);
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
   const handleCompose = useCallback((): void => {
@@ -125,23 +127,33 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
         const result = await searchBuildingUsers(value);
 
         if (result.success && result.data) {
-          // Convert BuildingUser to Contact format
-          const contacts = result.data.map((user: BuildingUser) => ({
+          // Convert BuildingUser to Tenant format with chat properties
+          const tenants: Tenant[] = result.data.map((user: BuildingUser) => ({
             id: user.id,
-            name: `${user.first_name} ${user.last_name}`.trim() || user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
             email: user.email,
+            avatar_url: user.avatar || '',
             avatar: user.avatar || '',
-            lastActivity: undefined,
             isActive: user.is_online || false,
-            // Add user type and other data for later use
-            userType: user.user_type,
-            firstName: user.first_name,
-            lastName: user.last_name,
-            apartmentNumber: user.apartment_number,
-            companyName: user.company_name
+            is_online: user.is_online || false,
+            user_type: user.user_type,
+            apartment_number: user.apartment_number,
+            company_name: user.company_name,
+            name: `${user.first_name} ${user.last_name}`.trim(),
+            // Required tenant fields with defaults
+            apartment_id: '',
+            apartment: { apartment_number: user.apartment_number || '', building: { street_address: '', city: '' } },
+            is_primary: false,
+            move_in_date: '',
+            tenant_type: 'owner' as const,
+            email_opt_in: false,
+            sms_opt_in: false,
+            viber_opt_in: false,
+            whatsapp_opt_in: false,
           }));
 
-          setSearchResults(contacts);
+          setSearchResults(tenants);
         } else {
           setSearchResults([]);
         }
@@ -165,7 +177,7 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
   }, []);
 
   const handleSearchSelect = useCallback(
-    (contact: Contact): void => {
+    (contact: Tenant): void => {
       setSearchFocused(false);
       setSearchQuery('');
 
@@ -260,11 +272,11 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
                     type: room.room_type === 'group' ? 'GROUP' : 'ONE_TO_ONE',
                     participantIds: room.members?.map(m => m.user_id) || [],
                     participants: room.members?.map(member => ({
-                      id: member.user_id,
-                      name: member.user ? `${member.user.first_name || ''} ${member.user.last_name || ''}`.trim() || member.user.email || 'Unknown User' : 'Unknown User',
-                      avatar: null as string | null,
+                      ...member.user,
+                      name: member.user ? getTenantFirstName(member.user) : 'Unknown User',
+                      avatar: member.user?.avatar_url || undefined,
                       lastActivity: undefined
-                    })) || [],
+                    } as Tenant)) || [],
                     messages: room.last_message ? [{
                       id: room.last_message.id,
                       body: room.last_message.message_text,

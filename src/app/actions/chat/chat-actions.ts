@@ -9,13 +9,11 @@ import type {
      ChatMessage,
      ChatRoomWithMembers,
      ChatMessageWithSender,
-     CreateRoomPayload,
      SendMessagePayload,
-     Contact,
      Message,
-     Participant,
      Thread
 } from 'src/types/chat';
+import { Tenant } from 'src/types/tenant';
 
 type ActionResult<T> = {
      success: boolean;
@@ -738,7 +736,7 @@ export const addMemberToChatRoom = async (
 /**
  * Get contacts (users) in the same building for chat
  */
-export const getContacts = async (query?: string): Promise<ActionResult<Contact[]>> => {
+export const getContacts = async (query?: string): Promise<ActionResult<Tenant[]>> => {
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
@@ -796,16 +794,32 @@ export const getContacts = async (query?: string): Promise<ActionResult<Contact[
                clientQuery
           ]);
 
-          const contacts: Contact[] = [];
+          const contacts: Tenant[] = [];
 
           // Add tenants
           (tenants || []).forEach(tenant => {
                contacts.push({
                     id: tenant.user_id,
-                    avatar: tenant.avatar || '/assets/avatars/avatar-default.png',
-                    name: `${tenant.first_name} ${tenant.last_name}`,
-                    lastActivity: new Date().getTime(),
-                    isActive: false
+                    first_name: tenant.first_name || '',
+                    last_name: tenant.last_name || '',
+                    email: tenant.email,
+                    avatar_url: tenant.avatar || '',
+                    avatar: tenant.avatar || '',
+                    user_type: 'tenant',
+                    apartment_number: tenant.apartment_number,
+                    is_online: false,
+                    last_activity: new Date().getTime(),
+                    name: `${tenant.first_name} ${tenant.last_name}`.trim(),
+                    // Required tenant fields with defaults
+                    apartment_id: '',
+                    apartment: { apartment_number: tenant.apartment_number || '', building: { street_address: '', city: '' } },
+                    is_primary: false,
+                    move_in_date: '',
+                    tenant_type: 'owner' as const,
+                    email_opt_in: false,
+                    sms_opt_in: false,
+                    viber_opt_in: false,
+                    whatsapp_opt_in: false,
                });
           });
 
@@ -813,10 +827,25 @@ export const getContacts = async (query?: string): Promise<ActionResult<Contact[
           (clients || []).forEach(client => {
                contacts.push({
                     id: client.user_id,
-                    avatar: client.avatar || '/assets/avatars/avatar-default.png',
-                    name: `${client.first_name} ${client.last_name}`,
-                    lastActivity: new Date().getTime(),
-                    isActive: false
+                    first_name: client.first_name || '',
+                    last_name: client.last_name || '',
+                    email: client.email,
+                    avatar_url: client.avatar || '',
+                    avatar: client.avatar || '',
+                    user_type: 'client',
+                    is_online: false,
+                    last_activity: new Date().getTime(),
+                    name: `${client.first_name} ${client.last_name}`.trim(),
+                    // Required tenant fields with defaults
+                    apartment_id: '',
+                    apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+                    is_primary: false,
+                    move_in_date: '',
+                    tenant_type: 'owner' as const,
+                    email_opt_in: false,
+                    sms_opt_in: false,
+                    viber_opt_in: false,
+                    whatsapp_opt_in: false,
                });
           });
 
@@ -1067,7 +1096,7 @@ export const markThreadAsSeen = async (threadId: string): Promise<ActionResult<b
 /**
  * Get participants for a thread (chat room)
  */
-export const getParticipants = async (threadKey: string): Promise<ActionResult<Participant[]>> => {
+export const getParticipants = async (threadKey: string): Promise<ActionResult<Tenant[]>> => {
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
@@ -1095,7 +1124,7 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<P
                     return { success: false, error: 'Failed to fetch room participants' };
                }
 
-               const participants: Participant[] = [];
+               const participants: Tenant[] = [];
 
                // For each member, fetch their details from the appropriate table
                for (const member of members || []) {
@@ -1109,9 +1138,26 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<P
                     if (tenantData) {
                          participants.push({
                               id: tenantData.user_id,
-                              avatar: tenantData.avatar || '/assets/avatars/avatar-default.png',
-                              name: `${tenantData.first_name} ${tenantData.last_name}`,
-                              lastActivity: member.joined_at,
+                              first_name: tenantData.first_name || '',
+                              last_name: tenantData.last_name || '',
+                              email: tenantData.email,
+                              avatar_url: tenantData.avatar || '',
+                              avatar: tenantData.avatar || '',
+                              user_type: 'tenant',
+                              apartment_number: tenantData.apartment_number,
+                              is_online: false,
+                              last_activity: new Date(member.joined_at).getTime(),
+                              name: `${tenantData.first_name} ${tenantData.last_name}`.trim(),
+                              // Required tenant fields with defaults
+                              apartment_id: '',
+                              apartment: { apartment_number: tenantData.apartment_number || '', building: { street_address: '', city: '' } },
+                              is_primary: false,
+                              move_in_date: '',
+                              tenant_type: 'owner' as const,
+                              email_opt_in: false,
+                              sms_opt_in: false,
+                              viber_opt_in: false,
+                              whatsapp_opt_in: false,
                          });
                     } else {
                          // Try to fetch from clients table
@@ -1124,9 +1170,25 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<P
                          if (clientData) {
                               participants.push({
                                    id: clientData.user_id,
-                                   avatar: clientData.avatar || '/assets/avatars/avatar-default.png',
-                                   name: `${clientData.first_name} ${clientData.last_name}`,
-                                   lastActivity: member.joined_at,
+                                   first_name: clientData.first_name || '',
+                                   last_name: clientData.last_name || '',
+                                   email: clientData.email,
+                                   avatar_url: clientData.avatar || '',
+                                   avatar: clientData.avatar || '',
+                                   user_type: 'client',
+                                   is_online: false,
+                                   last_activity: new Date(member.joined_at).getTime(),
+                                   name: `${clientData.first_name} ${clientData.last_name}`.trim(),
+                                   // Required tenant fields with defaults
+                                   apartment_id: '',
+                                   apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+                                   is_primary: false,
+                                   move_in_date: '',
+                                   tenant_type: 'owner' as const,
+                                   email_opt_in: false,
+                                   sms_opt_in: false,
+                                   viber_opt_in: false,
+                                   whatsapp_opt_in: false,
                               });
                          }
                     }
