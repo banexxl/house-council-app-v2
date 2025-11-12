@@ -797,13 +797,13 @@ export const getBuildingTenants = async (): Promise<{
      error?: string;
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
 
      try {
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser();
           if (userError || !user) {
                return { success: false, error: 'User not authenticated' };
           }
-
           // Determine current user type and get their building IDs
           let buildingIds: string[] = [];
 
