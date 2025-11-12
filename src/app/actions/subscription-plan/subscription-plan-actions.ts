@@ -797,3 +797,28 @@ export const updateClientSubscriptionForClient = async (
      revalidatePath(`/dashboard/clients/${clientId}`);
      return { success: true };
 };
+
+export const checkClientSubscriptionStatus = async (
+     clientId: string
+): Promise<{ success: boolean; isActive?: boolean; error?: string }> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data, error } = await supabase
+          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .select('status')
+          .eq('client_id', clientId)
+          .single();
+     if (error) {
+          await logServerAction({
+               user_id: clientId ?? '',
+               action: 'Check Client Subscription Status',
+               payload: { clientId },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { success: false, error: error.message };
+     }
+     return { success: true, isActive: data?.status === 'active' || data?.status === 'trialing' };
+};

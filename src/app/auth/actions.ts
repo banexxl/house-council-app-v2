@@ -7,6 +7,8 @@ import { redirect } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { readClientFromClientMemberID } from '../actions/client/client-members';
 import { TABLES } from 'src/libs/supabase/tables';
+import { checkClientSubscriptionStatus } from '../actions/subscription-plan/subscription-plan-actions';
+import { getClientIdFromTenantBuilding } from '../actions/tenant/tenant-actions';
 
 export type SignInFormValues = {
      email: string;
@@ -81,6 +83,80 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                userType = 'tenant';
                userId = tenant.id;
                userFound = true;
+
+               try {
+                    // Additional null check for TypeScript
+                    if (!userId) {
+                         await logServerAction({
+                              user_id: null,
+                              action: 'NLA - Magic link failed - tenant ID is null',
+                              payload: { email },
+                              status: 'fail',
+                              error: 'Tenant ID is null',
+                              duration_ms: 0,
+                              type: 'auth'
+                         });
+                         return { error: 'Account data is invalid. Please contact support.' };
+                    }
+
+                    // Get client ID from tenant's building
+                    const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
+
+                    if (!clientIdSuccess || !client_id) {
+                         await logServerAction({
+                              user_id: userId,
+                              action: 'NLA - Magic link failed - could not get client ID from tenant building',
+                              payload: { email, tenantId: userId, error: clientIdError },
+                              status: 'fail',
+                              error: clientIdError || 'Failed to get client ID',
+                              duration_ms: 0,
+                              type: 'auth'
+                         });
+                         return { error: 'Unable to verify your building association. Please contact support.' };
+                    }
+
+                    // Check client subscription status
+                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
+
+                    if (!subscriptionSuccess) {
+                         await logServerAction({
+                              user_id: userId,
+                              action: 'NLA - Magic link failed - subscription check failed',
+                              payload: { email, tenantId: userId, clientId: client_id, error: subscriptionError },
+                              status: 'fail',
+                              error: subscriptionError || 'Subscription check failed',
+                              duration_ms: 0,
+                              type: 'auth'
+                         });
+                         return { error: 'Unable to verify subscription. Please contact support.' };
+                    }
+
+                    if (!isActive) {
+                         await logServerAction({
+                              user_id: userId,
+                              action: 'NLA - Magic link blocked - no active subscription for tenant building',
+                              payload: { email, tenantId: userId, clientId: client_id },
+                              status: 'fail',
+                              error: 'No active subscription found for building client',
+                              duration_ms: 0,
+                              type: 'auth'
+                         });
+                         return { error: 'Your building does not have an active subscription. Please contact your property manager.' };
+                    }
+
+               } catch (error: any) {
+                    await logServerAction({
+                         user_id: userId,
+                         action: 'NLA - Magic link failed - unexpected error during tenant validation',
+                         payload: { email, tenantId: userId },
+                         status: 'fail',
+                         error: error.message || 'Unexpected error',
+                         duration_ms: 0,
+                         type: 'auth'
+                    });
+                    return { error: 'An unexpected error occurred. Please try again.' };
+               }
+
           } else if (tenantError && tenantError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: null,
@@ -286,6 +362,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
      // 3. If not found, check tblTenants
      if (!userFound) {
+
           const { data: tenant, error: tenantError } = await supabase
                .from(TABLES.TENANTS)
                .select('id')
@@ -295,6 +372,80 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                userType = 'tenant';
                userId = tenant.id;
                userFound = true;
+
+               try {
+                    // Additional null check for TypeScript
+                    if (!userId) {
+                         await logServerAction({
+                              user_id: null,
+                              action: 'Signing in failed - tenant ID is null',
+                              payload: { email: values.email },
+                              status: 'fail',
+                              error: 'Tenant ID is null',
+                              duration_ms: Date.now() - start,
+                              type: 'auth'
+                         });
+                         return { success: false, error: { code: 'invalid_tenant', details: 'Invalid tenant data', message: 'Account data is invalid. Please contact support.' } };
+                    }
+
+                    // Get client ID from tenant's building
+                    const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
+
+                    if (!clientIdSuccess || !client_id) {
+                         await logServerAction({
+                              user_id: userId,
+                              action: 'Signing in failed - could not get client ID from tenant building',
+                              payload: { email: values.email, tenantId: userId, error: clientIdError },
+                              status: 'fail',
+                              error: clientIdError || 'Failed to get client ID',
+                              duration_ms: Date.now() - start,
+                              type: 'auth'
+                         });
+                         return { success: false, error: { code: 'client_lookup_failed', details: 'Could not determine building client', message: 'Unable to verify your building association. Please contact support.' } };
+                    }
+
+                    // Check client subscription status
+                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
+
+                    if (!subscriptionSuccess) {
+                         await logServerAction({
+                              user_id: userId,
+                              action: 'Signing in failed - subscription check failed',
+                              payload: { email: values.email, tenantId: userId, clientId: client_id, error: subscriptionError },
+                              status: 'fail',
+                              error: subscriptionError || 'Subscription check failed',
+                              duration_ms: Date.now() - start,
+                              type: 'auth'
+                         });
+                         return { success: false, error: { code: 'subscription_check_failed', details: 'Could not verify subscription status', message: 'Unable to verify subscription. Please contact support.' } };
+                    }
+
+                    if (!isActive) {
+                         await logServerAction({
+                              user_id: userId,
+                              action: 'Signing in blocked - no active subscription for tenant building',
+                              payload: { email: values.email, tenantId: userId, clientId: client_id },
+                              status: 'fail',
+                              error: 'No active subscription found for building client',
+                              duration_ms: Date.now() - start,
+                              type: 'auth'
+                         });
+                         return { success: false, error: { code: 'no_subscription', details: 'No active subscription found for your building', message: 'Your building does not have an active subscription. Please contact your property manager.' } };
+                    }
+
+               } catch (error: any) {
+                    await logServerAction({
+                         user_id: userId,
+                         action: 'Signing in failed - unexpected error during tenant validation',
+                         payload: { email: values.email, tenantId: userId },
+                         status: 'fail',
+                         error: error.message || 'Unexpected error',
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    });
+                    return { success: false, error: { code: 'validation_error', details: 'Unexpected error during validation', message: 'An unexpected error occurred. Please try again.' } };
+               }
+
                await logServerAction({
                     user_id: null,
                     action: 'Signing in with email and password - user found in tblTenants',

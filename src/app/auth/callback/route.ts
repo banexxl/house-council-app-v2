@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { getClientIdFromTenantBuilding } from "src/app/actions/tenant/tenant-actions";
+import { checkClientSubscriptionStatus } from "src/app/actions/subscription-plan/subscription-plan-actions";
 
 export async function GET(request: Request) {
 
@@ -107,6 +109,39 @@ export async function GET(request: Request) {
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
+    }
+  }
+
+  if (role === "tenant") {
+    try {
+      // Get client ID from tenant's building
+      const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId!);
+
+      if (!clientIdSuccess || !client_id) {
+        await supabase.auth.signOut();
+        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=building_association_failed&error=${encodeURIComponent(clientIdError || 'Failed to get client ID')}`);
+      }
+
+      // Check client subscription status
+      const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
+
+      if (!subscriptionSuccess) {
+        await supabase.auth.signOut();
+        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=subscription_check_failed&error=${encodeURIComponent(subscriptionError || 'Subscription check failed')}`);
+      }
+
+      if (!isActive) {
+        await supabase.auth.signOut();
+        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_building_subscription`);
+      }
+
+    } catch (error: any) {
+      await supabase.auth.signOut();
+      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=validation_error&error=${encodeURIComponent(error.message || 'Unexpected error')}`);
     }
   }
 

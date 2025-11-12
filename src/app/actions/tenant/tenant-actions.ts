@@ -1069,4 +1069,76 @@ export const updateTenantActivityStatus = async (tenant_id: string, is_online: b
      }
 }
 
+/**
+ * Get the client ID from the building that a tenant is part of
+ */
+export const getClientIdFromTenantBuilding = async (tenantId: string): Promise<{
+     success: boolean;
+     data?: string;
+     error?: string;
+}> => {
+
+     if (!isUUID(tenantId)) {
+          return { success: false, error: 'Invalid tenant ID' };
+     }
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          // Get tenant's apartment_id
+          const { data: tenant, error: tenantError } = await supabase
+               .from(TABLES.TENANTS)
+               .select('apartment_id')
+               .eq('id', tenantId)
+               .single();
+
+          if (tenantError) {
+               log(`Error fetching tenant: ${tenantError.message}`);
+               return { success: false, error: tenantError.message };
+          }
+
+          if (!tenant?.apartment_id) {
+               return { success: false, error: 'Tenant has no apartment assigned' };
+          }
+
+          // Get apartment's building_id
+          const { data: apartment, error: apartmentError } = await supabase
+               .from(TABLES.APARTMENTS)
+               .select('building_id')
+               .eq('id', tenant.apartment_id)
+               .single();
+
+          if (apartmentError) {
+               log(`Error fetching apartment: ${apartmentError.message}`);
+               return { success: false, error: apartmentError.message };
+          }
+
+          if (!apartment?.building_id) {
+               return { success: false, error: 'Apartment has no building assigned' };
+          }
+
+          // Get building's client_id
+          const { data: building, error: buildingError } = await supabase
+               .from(TABLES.BUILDINGS)
+               .select('client_id')
+               .eq('id', apartment.building_id)
+               .single();
+
+          if (buildingError) {
+               log(`Error fetching building: ${buildingError.message}`);
+               return { success: false, error: buildingError.message };
+          }
+
+          if (!building?.client_id) {
+               return { success: false, error: 'Building has no client assigned' };
+          }
+
+          return { success: true, data: building.client_id };
+     } catch (error: any) {
+          log(`Error in getClientIdFromTenantBuilding: ${error.message}`);
+          return { success: false, error: error.message || 'Unexpected error' };
+     }
+};
+
+
+
 
