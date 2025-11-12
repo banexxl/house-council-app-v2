@@ -801,6 +801,7 @@ export const getBuildingTenants = async (): Promise<{
 
      try {
           const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser();
+
           if (userError || !user) {
                return { success: false, error: 'User not authenticated' };
           }
@@ -821,6 +822,7 @@ export const getBuildingTenants = async (): Promise<{
                buildingIds = tenantData
                     .map((t: any) => t[TABLES.APARTMENTS]?.building_id)
                     .filter(Boolean);
+
           } else {
                // Check if user is a client
                const { data: clientData } = await supabase
@@ -858,20 +860,19 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
      data?: Tenant[];
      error?: string;
 }> => {
-     const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           const users: Tenant[] = [];
 
           // Get tenants from these buildings
-          const { data: apartments } = await serviceSupabase
+          const { data: apartments } = await supabase
                .from(TABLES.APARTMENTS)
                .select('id')
                .in('building_id', buildingIds);
-
           if (apartments && apartments.length > 0) {
                const apartmentIds = apartments.map(a => a.id);
-               const { data: tenants } = await serviceSupabase
+               const { data: tenants } = await supabase
                     .from(TABLES.TENANTS)
                     .select(`
           id,
@@ -923,7 +924,7 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
           }
 
           // Get clients who own these buildings
-          const { data: clientsFromBuildings } = await serviceSupabase
+          const { data: clientsFromBuildings, error } = await supabase
                .from(TABLES.BUILDINGS)
                .select(`
         client_id,
@@ -931,13 +932,11 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
           id,
           user_id,
           email,
-          first_name,
-          last_name,
-          company_name
+          name,
+          contact_person
         )
       `)
                .in('id', buildingIds);
-
           if (clientsFromBuildings) {
                const uniqueClients = new Map();
                clientsFromBuildings.forEach((building: any) => {
@@ -982,7 +981,6 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
                });
                users.push(...Array.from(uniqueClients.values()));
           }
-
           return { success: true, data: users };
      } catch (error: any) {
           log(`Error in getUsersFromBuildings: ${error.message}`);

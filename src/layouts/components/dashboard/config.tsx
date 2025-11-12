@@ -231,6 +231,16 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           },
         ],
       },
+      {
+        title: t(tokens.nav.chat),
+        path: paths.dashboard.chat,
+        roles: ["client", "clientMember", "admin"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <ChatIcon />
+          </SvgIcon>
+        ),
+      }
       // {
       //   title: t(tokens.nav.analytics),
       //   path: paths.dashboard.analytics,
