@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
 import { getAllBuildingsFromClient, getAllBuildings } from "src/app/actions/building/building-actions";
 import { getBuildingTenants } from "src/app/actions/tenant/tenant-actions";
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { TABLES } from 'src/libs/supabase/tables';
 import { ChatPageClient } from "./chat-client";
 
@@ -55,7 +55,7 @@ export default async function Page() {
     if (result.success && result.data && result.data.length > 0) {
       // Get the building ID from the tenant's apartment relationship
       try {
-        const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
+        const serviceSupabase = await useServerSideSupabaseAnonClient();
         const { data: tenantData } = await serviceSupabase
           .from(TABLES.TENANTS)
           .select(`
