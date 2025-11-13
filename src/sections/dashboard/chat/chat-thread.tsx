@@ -207,10 +207,11 @@ interface ChatThreadProps {
   onSendMessage?: (body: string) => Promise<void>;
   typingUsers?: any[];
   onTyping?: (isTyping: boolean) => void;
+  onMarkAsRead?: () => Promise<void>;
 }
 
 export const ChatThread: FC<ChatThreadProps> = (props) => {
-  const { threadKey, messages: messagesProp, participants: participantsProp, currentUser, onSendMessage, typingUsers = [], onTyping, ...other } = props;
+  const { threadKey, messages: messagesProp, participants: participantsProp, currentUser, onSendMessage, typingUsers = [], onTyping, onMarkAsRead, ...other } = props;
   const dispatch = useDispatch();
   const user = useMockedUser();
   const thread = useThread(threadKey);
@@ -452,6 +453,7 @@ export const ChatThread: FC<ChatThreadProps> = (props) => {
           setLocalTypingState(isTyping);
           onTyping?.(isTyping);
         }}
+        onMarkAsRead={onMarkAsRead}
       />
     </Stack>
   );

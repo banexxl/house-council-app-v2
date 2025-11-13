@@ -44,23 +44,63 @@ export const ChatMessage: FC<ChatMessageProps> = (props) => {
         <Avatar
           src={authorAvatar || undefined}
           sx={{
-            height: 32,
-            width: 32,
+            height: 40,
+            width: 40,
+            border: '3px solid white',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           }}
         />
         <Box sx={{ flexGrow: 1 }}>
           <Card
             sx={{
-              backgroundColor: position === 'right' ? 'primary.main' : 'background.paper',
-              color: position === 'right' ? 'primary.contrastText' : 'text.primary',
-              px: 2,
-              py: 1,
+              background: position === 'right'
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: position === 'right' ? 'white' : 'white',
+              px: 2.5,
+              py: 1.5,
+              borderRadius: position === 'right' ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              border: 'none',
+              position: 'relative',
+              overflow: 'visible',
+              '&::before': position === 'right' ? {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                right: -8,
+                width: 0,
+                height: 0,
+                border: '8px solid transparent',
+                borderTopColor: '#764ba2',
+                borderLeft: 'none',
+                borderBottomColor: 'transparent',
+              } : {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: -8,
+                width: 0,
+                height: 0,
+                border: '8px solid transparent',
+                borderTopColor: '#f5576c',
+                borderRight: 'none',
+                borderBottomColor: 'transparent',
+              },
             }}
           >
             <Box sx={{ mb: 1 }}>
               <Link
                 color="inherit"
-                sx={{ cursor: 'pointer' }}
+                sx={{
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                  '&:hover': {
+                    textDecoration: 'none',
+                    opacity: 0.8,
+                  }
+                }}
                 variant="subtitle2"
               >
                 {authorName}
@@ -80,6 +120,10 @@ export const ChatMessage: FC<ChatMessageProps> = (props) => {
               <Typography
                 color="inherit"
                 variant="body1"
+                sx={{
+                  lineHeight: 1.5,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                }}
               >
                 {body}
               </Typography>

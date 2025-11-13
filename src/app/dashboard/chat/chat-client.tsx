@@ -98,7 +98,7 @@ export const ChatPageClient: FC<ChatPageClientProps> = ({
                                              </CardContent>
                                         </Card>
 
-                                        <Card>
+                                        {/* <Card>
                                              <CardContent>
                                                   <Typography variant="h6" gutterBottom>
                                                        Chat System Features
@@ -146,7 +146,7 @@ export const ChatPageClient: FC<ChatPageClientProps> = ({
                                                        </Box>
                                                   </Stack>
                                              </CardContent>
-                                        </Card>
+                                        </Card> */}
                                    </>
                               )}
                          </Stack>

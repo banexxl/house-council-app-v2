@@ -1283,3 +1283,40 @@ export const addMessage = async (params: {
           return { success: false, error: e.message || 'Unexpected error' };
      }
 };
+
+/**
+ * Get unread message count for a specific room and user
+ */
+export const getRoomUnreadCount = async (roomId: string, userId: string): Promise<ActionResult<number>> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          // Get the user's last read time for this room
+          const { data: membership } = await supabase
+               .from(TABLES.CHAT_ROOM_MEMBERS)
+               .select('last_read_at')
+               .eq('room_id', roomId)
+               .eq('user_id', userId)
+               .single();
+
+          const lastReadAt = membership?.last_read_at || '1970-01-01';
+
+          // Count unread messages (messages created after last read time, excluding own messages)
+          const { count, error } = await supabase
+               .from(TABLES.CHAT_MESSAGES)
+               .select('*', { count: 'exact', head: true })
+               .eq('room_id', roomId)
+               .neq('sender_id', userId) // Don't count own messages
+               .gt('created_at', lastReadAt);
+
+          if (error) {
+               log(`Error counting unread messages: ${error.message}`);
+               return { success: false, error: error.message };
+          }
+
+          return { success: true, data: count || 0 };
+     } catch (e: any) {
+          log(`Error in getRoomUnreadCount: ${e.message}`);
+          return { success: false, error: e.message || 'Unexpected error' };
+     }
+};

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface TypingUser {
      user_id: string;
@@ -59,7 +59,7 @@ const TypingDots: FC = () => (
 
 export const ChatTypingIndicator: FC<ChatTypingIndicatorProps> = (props) => {
      const { typingUsers = [] } = props;
-
+     const theme = useTheme();
      if (typingUsers.length === 0) {
           return null;
      }
@@ -85,12 +85,14 @@ export const ChatTypingIndicator: FC<ChatTypingIndicatorProps> = (props) => {
           <Box
                sx={{
                     px: 3,
-                    py: 1.5,
+                    py: 2,
                     display: 'flex',
                     alignItems: 'center',
-                    borderTop: 1,
-                    borderColor: 'divider',
-                    backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.8),
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.95) 100%)',
+                    backdropFilter: 'blur(10px)',
+                    borderTop: '1px solid rgba(255,255,255,0.3)',
+                    position: 'relative',
+                    zIndex: 2,
                }}
           >
                <Chip
@@ -98,17 +100,26 @@ export const ChatTypingIndicator: FC<ChatTypingIndicatorProps> = (props) => {
                     variant="outlined"
                     sx={{
                          fontSize: '0.75rem',
-                         height: 24,
-                         backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-                         borderColor: (theme) => alpha(theme.palette.primary.main, 0.3),
-                         color: 'text.secondary',
+                         height: 28,
+                         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                         color: 'white',
+                         border: 'none',
+                         borderRadius: '20px',
+                         boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
                          '& .MuiChip-label': {
-                              px: 1,
+                              px: 1.5,
+                              fontWeight: 500,
                          },
                     }}
                     label={
                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Typography variant="caption" component="span">
+                              <Typography
+                                   variant="caption"
+                                   component="span"
+                                   sx={{
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                                   }}
+                              >
                                    {getTypingText()}
                               </Typography>
                               <TypingDots />

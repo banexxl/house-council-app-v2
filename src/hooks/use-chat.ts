@@ -9,7 +9,8 @@ import {
      getRoomMessages,
      sendMessage,
      markRoomAsRead,
-     getUnreadMessageCount
+     getUnreadMessageCount,
+     getRoomUnreadCount
 } from 'src/app/actions/chat/chat-actions';
 import type {
      ChatRoomWithMembers,
@@ -68,9 +69,24 @@ export const useChatRooms = () => {
           try {
                const result = await getUserChatRooms();
                if (result.success && result.data) {
-                    setRooms(result.data);
+                    // Get unread counts for each room
+                    const roomsWithUnreadCounts = await Promise.all(
+                         result.data.map(async (room, index) => {
+                              const unreadResult = await getRoomUnreadCount(room.id, user.id);
+                              // Test mode: Add fake unread counts for testing (set TEST_MODE to false for production)
+                              const TEST_MODE = false; // Disabled for real functionality
+                              const testUnreadCount = TEST_MODE ? (index === 0 ? 3 : index === 1 ? 7 : index === 2 ? 15 : 0) : 0;
+
+                              return {
+                                   ...room,
+                                   unread_count: TEST_MODE ? testUnreadCount : (unreadResult.success ? unreadResult.data : 0)
+                              };
+                         })
+                    );
+
+                    setRooms(roomsWithUnreadCounts);
                     // Save to localStorage for persistence
-                    saveChatRooms(result.data);
+                    saveChatRooms(roomsWithUnreadCounts);
                } else {
                     setError(result.error || 'Failed to load chat rooms');
                }
@@ -130,11 +146,35 @@ export const useChatRooms = () => {
           };
      }, [user, loadRooms]);
 
-     return {
+     // Function to manually update unread count for a specific room
+     const updateRoomUnreadCount = useCallback((roomId: string, newCount: number) => {
+          console.log(`🔄 Updating unread count for room ${roomId}: ${newCount}`);
+          setRooms(prevRooms =>
+               prevRooms.map(room =>
+                    room.id === roomId
+                         ? { ...room, unread_count: newCount }
+                         : room
+               )
+          );
+     }, []);
+
+     // Function to increment unread count for a room (when new message received)
+     const incrementRoomUnreadCount = useCallback((roomId: string, increment: number = 1) => {
+          console.log(`📈 Incrementing unread count for room ${roomId} by ${increment}`);
+          setRooms(prevRooms =>
+               prevRooms.map(room =>
+                    room.id === roomId
+                         ? { ...room, unread_count: (room.unread_count || 0) + increment }
+                         : room
+               )
+          );
+     }, []); return {
           rooms,
           loading,
           error,
-          refreshRooms: loadRooms
+          refreshRooms: loadRooms,
+          updateRoomUnreadCount,
+          incrementRoomUnreadCount
      };
 };
 

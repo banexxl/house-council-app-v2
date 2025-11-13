@@ -18,10 +18,11 @@ interface ChatMessageAddProps {
   disabled?: boolean;
   onSend?: (value: string) => void;
   onTyping?: (isTyping: boolean) => void;
+  onMarkAsRead?: () => Promise<void>;
 }
 
 export const ChatMessageAdd: FC<ChatMessageAddProps> = (props) => {
-  const { disabled = false, onSend, onTyping, ...other } = props;
+  const { disabled = false, onSend, onTyping, onMarkAsRead, ...other } = props;
   const user = useMockedUser();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [body, setBody] = useState<string>('');
@@ -111,6 +112,11 @@ export const ChatMessageAdd: FC<ChatMessageAddProps> = (props) => {
     };
   }, []); // Remove onTyping dependency to prevent cleanup on every re-render
 
+  // Handle input focus to mark room as read
+  const handleFocus = useCallback(() => {
+    onMarkAsRead?.();
+  }, [onMarkAsRead]);
+
   return (
     <Stack
       alignItems="center"
@@ -136,6 +142,7 @@ export const ChatMessageAdd: FC<ChatMessageAddProps> = (props) => {
         fullWidth
         onChange={handleChange}
         onKeyUp={handleKeyUp}
+        onFocus={handleFocus}
         placeholder="Leave a message"
         size="small"
         value={body}

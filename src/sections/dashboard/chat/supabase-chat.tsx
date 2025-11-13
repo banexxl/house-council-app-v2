@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Drawer, useMediaQuery, Theme, Menu, MenuItem, ListItemIcon, ListItemText, SvgIcon, Button, IconButton } from '@mui/material';
+import { Box, Drawer, useMediaQuery, Theme, Menu, MenuItem, ListItemIcon, ListItemText, SvgIcon, Button, IconButton, Chip, Typography } from '@mui/material';
 import PersonIcon from '@untitled-ui/icons-react/build/esm/User01';
 import GroupIcon from '@untitled-ui/icons-react/build/esm/Users01';
 import MenuIcon from '@untitled-ui/icons-react/build/esm/Menu01';
 import { useChatRooms, useChatMessages, useTypingIndicators } from 'src/hooks/use-chat';
-import { sendMessage, createBuildingGroupChat, createDirectMessageRoom } from 'src/app/actions/chat/chat-actions';
+import { sendMessage, createBuildingGroupChat, createDirectMessageRoom, markRoomAsRead } from 'src/app/actions/chat/chat-actions';
 import { useAuth } from 'src/contexts/auth/auth-provider';
 import { UserSelectionDialog } from 'src/components/chat/UserSelectionDialog';
 import type { ChatRoomWithMembers, ChatMessageWithSender, SendMessagePayload } from 'src/types/chat';
@@ -16,6 +16,7 @@ import { ChatContainer } from './chat-container';
 import { ChatSidebar } from './chat-sidebar';
 import { ChatThread } from './chat-thread';
 import { ChatBlank } from './chat-blank';
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 
 interface SupabaseChatProps {
      buildingId?: string;
@@ -100,6 +101,17 @@ const adaptMembersToParticipants = (members: any[]): Tenant[] => {
      }));
 };
 
+// Helper function to format total unread count (max 9, then show 9+)
+const formatTotalUnreadCount = (count: number): string => {
+     if (count === 0) return '';
+     return count > 9 ? '9+' : count.toString();
+};
+
+// Helper function to calculate total unread count from rooms
+const getTotalUnreadCount = (rooms: ChatRoomWithMembers[]): number => {
+     return rooms.reduce((total, room) => total + (room.unread_count || 0), 0);
+};
+
 export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
@@ -115,7 +127,7 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
      const currentUser = auth.userData;
 
      // Use our Supabase hooks
-     const { rooms, loading: roomsLoading, error: roomsError, refreshRooms } = useChatRooms();
+     const { rooms, loading: roomsLoading, error: roomsError, refreshRooms, updateRoomUnreadCount, incrementRoomUnreadCount } = useChatRooms();
      const {
           messages,
           loading: messagesLoading,
@@ -125,6 +137,51 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
           refreshMessages
      } = useChatMessages(currentThreadId);
      const { typingUsers, setIsTyping } = useTypingIndicators(currentThreadId);
+
+     // Temporary: Add test unread counts for demonstration
+     useEffect(() => {
+          if (rooms.length > 0 && !roomsLoading) {
+               // Add test unread counts after 2 seconds to demonstrate functionality
+               setTimeout(() => {
+                    console.log('🧪 Adding test unread counts...');
+                    rooms.forEach((room, index) => {
+                         if (index < 3) { // First 3 rooms
+                              const testCount = index === 0 ? 2 : index === 1 ? 5 : 1;
+                              updateRoomUnreadCount(room.id, testCount);
+                         }
+                    });
+               }, 2000);
+          }
+     }, [rooms.length, roomsLoading, updateRoomUnreadCount]);
+
+     // Subscribe to realtime message changes for unread count management
+     useEffect(() => {
+          if (!currentUser?.id) return;
+
+          const channel = supabaseBrowserClient
+               .channel('unread-count-manager')
+               .on('postgres_changes',
+                    {
+                         event: 'INSERT',
+                         schema: 'public',
+                         table: 'chat_messages'
+                    },
+                    (payload: any) => {
+                         const newMessage = payload.new;
+
+                         // If message is not from current user and not in current room, increment unread count
+                         if (newMessage.sender_id !== currentUser.id &&
+                              newMessage.room_id !== currentThreadId) {
+                              incrementRoomUnreadCount(newMessage.room_id, 1);
+                         }
+                    }
+               )
+               .subscribe();
+
+          return () => {
+               supabaseBrowserClient.removeChannel(channel);
+          };
+     }, [currentUser?.id, currentThreadId, incrementRoomUnreadCount]);
 
      // Debug logging for messages
      useEffect(() => {
@@ -299,6 +356,30 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
           setUserSelectionOpen(true);
      }, []);
 
+     // Handle marking room as read (for input focus)
+     const handleMarkAsRead = useCallback(async () => {
+          if (selectedRoom && selectedRoom.unread_count && selectedRoom.unread_count > 0 && currentUser?.id) {
+               console.log(`✅ Marking room ${selectedRoom.id} as read (${selectedRoom.unread_count} unread messages)`);
+               try {
+                    // Update local state immediately to hide badges
+                    setSelectedRoom(prev => prev ? { ...prev, unread_count: 0 } : null);
+                    updateRoomUnreadCount(selectedRoom.id, 0);
+
+                    // Mark as read in database
+                    await markRoomAsRead(selectedRoom.id, currentUser.id);
+               } catch (error) {
+                    console.error('Error marking room as read:', error);
+                    // Revert on error
+                    if (selectedRoom.unread_count) {
+                         setSelectedRoom(prev => prev ? { ...prev, unread_count: selectedRoom.unread_count } : null);
+                         updateRoomUnreadCount(selectedRoom.id, selectedRoom.unread_count);
+                    }
+               }
+          } else {
+               console.log('No unread messages to mark as read');
+          }
+     }, [selectedRoom, currentUser, updateRoomUnreadCount]);
+
 
 
      // Handle sending messages with our new system
@@ -385,11 +466,28 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                     <ChatSidebar
                          rooms={rooms}
                          selectedRoom={selectedRoom}
-                         onRoomSelect={(room) => {
+                         onRoomSelect={async (room) => {
                               setSelectedRoom(room);
                               setCurrentThreadId(room.id);
                               if (!mdUp) {
                                    setSidebarOpen(false);
+                              }
+
+                              // Mark room as read when selected if it has unread messages
+                              if (room.unread_count && room.unread_count > 0 && currentUser?.id) {
+                                   try {
+                                        // Update local state immediately to hide badges
+                                        setSelectedRoom(prev => prev ? { ...prev, unread_count: 0 } : null);
+                                        updateRoomUnreadCount(room.id, 0);
+
+                                        // Mark as read in database
+                                        await markRoomAsRead(room.id, currentUser.id);
+                                   } catch (error) {
+                                        console.error('Error marking room as read:', error);
+                                        // Revert on error
+                                        setSelectedRoom(prev => prev ? { ...prev, unread_count: room.unread_count } : null);
+                                        updateRoomUnreadCount(room.id, room.unread_count || 0);
+                                   }
                               }
                          }}
                          onCreateRoom={handleCreateRoom}
@@ -413,24 +511,62 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                               sx={{
                                    display: 'flex',
                                    alignItems: 'center',
+                                   justifyContent: 'space-between',
                                    p: 2,
                                    borderBottom: 1,
                                    borderColor: 'divider',
-                                   bgcolor: 'background.paper'
+                                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                   color: 'white',
+                                   boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
                               }}
                          >
-                              <IconButton
-                                   onClick={handleSidebarToggle}
-                                   edge="start"
-                                   sx={{ mr: 1 }}
-                              >
-                                   <SvgIcon>
-                                        <MenuIcon />
-                                   </SvgIcon>
-                              </IconButton>
-                              <Box sx={{ fontWeight: 'medium' }}>
-                                   {selectedRoom ? selectedRoom.name : 'Chat'}
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                   <IconButton
+                                        onClick={handleSidebarToggle}
+                                        edge="start"
+                                        sx={{
+                                             mr: 2,
+                                             color: 'white',
+                                             '&:hover': {
+                                                  backgroundColor: 'rgba(255,255,255,0.1)',
+                                             }
+                                        }}
+                                   >
+                                        <SvgIcon>
+                                             <MenuIcon />
+                                        </SvgIcon>
+                                   </IconButton>
+                                   <Typography
+                                        variant="h6"
+                                        sx={{
+                                             fontWeight: 600,
+                                             textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                                        }}
+                                   >
+                                        {selectedRoom ? selectedRoom.name || 'Chat' : 'Chat'}
+                                   </Typography>
                               </Box>
+                              {(() => {
+                                   const totalUnread = getTotalUnreadCount(rooms);
+                                   return totalUnread > 0 && (
+                                        <Chip
+                                             label={formatTotalUnreadCount(totalUnread)}
+                                             size="small"
+                                             sx={{
+                                                  background: 'linear-gradient(135deg, #ff4757 0%, #ff3742 100%)',
+                                                  color: 'white',
+                                                  fontWeight: 'bold',
+                                                  fontSize: '0.7rem',
+                                                  height: '22px',
+                                                  boxShadow: '0 3px 12px rgba(255, 71, 87, 0.5)',
+                                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                                  '& .MuiChip-label': {
+                                                       px: 1.2
+                                                  }
+                                             }}
+                                        />
+                                   );
+                              })()}
                          </Box>
                     )}
 
@@ -443,6 +579,7 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                               onSendMessage={handleSendMessage}
                               typingUsers={typingUsers}
                               onTyping={setIsTyping}
+                              onMarkAsRead={handleMarkAsRead}
                          />
                     ) : (
                          <ChatBlank />
