@@ -12,8 +12,6 @@ import {
      getUnreadMessageCount
 } from 'src/app/actions/chat/chat-actions';
 import type {
-     ChatRoom,
-     ChatMessage,
      ChatRoomWithMembers,
      ChatMessageWithSender
 } from 'src/types/chat';
@@ -149,7 +147,26 @@ export const useChatMessages = (roomId: string | null) => {
      const [error, setError] = useState<string | null>(null);
      const [hasMore, setHasMore] = useState(true);
      const auth = useAuth();
-     const user = auth.tenant;
+     const user = auth.tenant || auth.client || auth.clientMember
+
+     // Helper function to safely get first name from any user type
+     const getUserFirstName = (user: any): string => {
+          if (user?.first_name) return user.first_name;
+          if (user?.contact_person) return user.contact_person.split(' ')[0]; // For Client type that might have 'contact_person'
+          if (user?.name) return user.name.split('')[0];
+          return 'You';
+     };
+
+     // Helper function to safely get last name from any user type  
+     const getUserLastName = (user: any): string => {
+          if (user?.last_name) return user.last_name;
+          if (user?.name) {
+               const nameParts = user.name.split(' ');
+               return nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+          }
+          return '';
+     };
+
      const messageCountRef = useRef(0);
 
      // Update ref when messages change
@@ -213,8 +230,8 @@ export const useChatMessages = (roomId: string | null) => {
                reaction_data: {},
                sender: {
                     id: user.id,
-                    first_name: user.first_name || 'You',
-                    last_name: user.last_name || '',
+                    first_name: getUserFirstName(user),
+                    last_name: getUserLastName(user),
                     email: user.email || '',
                },
                // Mark as pending (extra property not in type)
@@ -498,7 +515,7 @@ export const useChatMessages = (roomId: string | null) => {
 export const useTypingIndicators = (roomId: string | null) => {
      const [typingUsers, setTypingUsers] = useState<any[]>([]);
      const auth = useAuth();
-     const user = auth.userData;
+     const user = auth.tenant ? auth.tenant : auth.client ? auth.client : auth.clientMember ? auth.clientMember : null;
      const channelRef = useRef<any>(null);
      const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
      const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);

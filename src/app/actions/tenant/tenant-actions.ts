@@ -253,6 +253,7 @@ export const readTenantByIdAction = async (
      if (!isUUID(tenantId)) return { getTenantByIdActionSuccess: false, getTenantByIdActionError: 'Invalid tenant ID' };
 
      const { data, error } = await supabase.from(TABLES.TENANTS).select('*').eq('id', tenantId).single();
+
      if (error) {
           return {
                getTenantByIdActionSuccess: false,

@@ -9,9 +9,12 @@ interface TypingUser {
      user_id: string;
      user_name?: string;
      user_email?: string;
+     first_name?: string;
+     last_name?: string;
      started_at: string;
      is_typing?: boolean;
      timestamp?: string;
+     tenant?: any;
 }
 
 interface ChatTypingIndicatorProps {
@@ -64,16 +67,16 @@ export const ChatTypingIndicator: FC<ChatTypingIndicatorProps> = (props) => {
      const getTypingText = () => {
           if (typingUsers.length === 1) {
                const user = typingUsers[0];
-               const displayName = user.user_name || user.user_email?.split('@')[0] || 'Someone';
+               const displayName = user.first_name || user.user_name || user.user_email?.split('@')[0] || 'Someone';
                return `${displayName} is typing`;
           } else if (typingUsers.length === 2) {
                const names = typingUsers.map(user =>
-                    user.user_name || user.user_email?.split('@')[0] || 'Someone'
+                    user.first_name || user.user_name || user.user_email?.split('@')[0] || 'Someone'
                );
                return `${names.join(' and ')} are typing`;
           } else {
                const firstUser = typingUsers[0];
-               const firstName = firstUser.user_name || firstUser.user_email?.split('@')[0] || 'Someone';
+               const firstName = firstUser.first_name || firstUser.user_name || firstUser.user_email?.split('@')[0] || 'Someone';
                return `${firstName} and ${typingUsers.length - 1} others are typing`;
           }
      };
