@@ -982,6 +982,7 @@ export const rs = {
      [tokens.tenants.phoneNumberDigitsOnly]: 'Broj telefona mora biti samo cifre (7–15)',
      [tokens.tenants.phoneAlreadyExists]: 'Broj telefona već postoji',
      [tokens.tenants.tenantAlreadyExists]: 'Email već postoji',
+     [tokens.tenants.tenantInvalidEmailOrPhoneNumber]: 'Neispravan email ili broj telefona',
      [tokens.tenants.tenantNameRequired]: 'Ime stanara je obavezno',
      [tokens.tenants.tenantFirstNameRequired]: 'Ime je obavezno',
      [tokens.tenants.tenantLastNameRequired]: 'Prezime je obavezno',

@@ -24,7 +24,7 @@ export default async function TenantsPage() {
     tenants = Array.isArray(data) ? data : [];
   } else if (tenant) {
     // Redirect tenant to products page
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   return <Tenants tenants={tenants} />;

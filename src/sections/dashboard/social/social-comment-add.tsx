@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import { useState, useCallback } from 'react';
 import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';

@@ -675,6 +675,7 @@ export const en = {
   [tokens.tenants.phoneNumberDigitsOnly]: 'Phone number must be digits only (7-15)',
   [tokens.tenants.phoneAlreadyExists]: 'Phone number already exists',
   [tokens.tenants.tenantAlreadyExists]: 'Email already exists',
+  [tokens.tenants.tenantInvalidEmailOrPhoneNumber]: 'Invalid email or phone number',
   // Tenant validation
   [tokens.tenants.tenantNameRequired]: 'Tenant name is required',
   [tokens.tenants.tenantFirstNameRequired]: 'First name is required',

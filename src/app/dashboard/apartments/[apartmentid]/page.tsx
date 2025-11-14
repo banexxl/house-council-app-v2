@@ -49,7 +49,7 @@ export default async function Page({ params }: {
     buildings = buildingsRes.success ? buildingsRes.data : undefined;
     apartment = apartmentRes.success ? apartmentRes.data : undefined;
   } else if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   return (

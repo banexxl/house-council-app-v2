@@ -1019,6 +1019,7 @@ export const tokens = {
     phoneNumberDigitsOnly: 'tenants.phoneNumberDigitsOnly',
     phoneAlreadyExists: 'tenants.phoneAlreadyExists',
     tenantAlreadyExists: 'tenants.tenantAlreadyExists',
+    tenantInvalidEmailOrPhoneNumber: 'tenants.invalidEmailOrPhoneNumber',
 
     // Tenant validation
     tenantNameRequired: 'tenants.tenantNameRequired',

@@ -141,14 +141,14 @@ const Page = () => {
                     {
                       id: '5eff2512c6f8737d08325676',
                       category: 'Accessories',
-                      image: '/assets/products/product-1.png',
+                      image: '/assets/social/profile/product-1.png',
                       name: 'Healthcare Erbology',
                       sales: 13153,
                     },
                     {
                       id: '5eff2516247f9a6fcca9f151',
                       category: 'Accessories',
-                      image: '/assets/products/product-2.png',
+                      image: '/assets/social/profile/product-2.png',
                       name: 'Makeup Lancome Rouge',
                       sales: 10300,
                     },
@@ -161,14 +161,14 @@ const Page = () => {
                     {
                       id: '5eff251e297fd17f0dc18a8b',
                       category: 'Accessories',
-                      image: '/assets/products/product-4.png',
+                      image: '/assets/social/profile/product-4.png',
                       name: 'Skincare Necessaire',
                       sales: 1203,
                     },
                     {
                       id: '5eff2524ef813f061b3ea39f',
                       category: 'Accessories',
-                      image: '/assets/products/product-5.png',
+                      image: '/assets/social/profile/product-5.png',
                       name: 'Skincare Soja CO',
                       sales: 254,
                     },

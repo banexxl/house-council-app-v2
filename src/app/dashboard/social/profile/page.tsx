@@ -1,7 +1,3 @@
-'use client';
-
-import type { ChangeEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
 import MessageChatSquareIcon from '@untitled-ui/icons-react/build/esm/MessageChatSquare';
 import DotsHorizontalIcon from '@untitled-ui/icons-react/build/esm/DotsHorizontal';
 import Image01Icon from '@untitled-ui/icons-react/build/esm/Image01';
@@ -19,312 +15,211 @@ import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { blueGrey } from '@mui/material/colors';
-
-import { socialApi } from 'src/app/api/social';
-import { RouterLink } from 'src/components/router-link';
-import { Seo } from 'src/components/seo';
-;
-
 import { paths } from 'src/paths';
-import { SocialConnections } from 'src/sections/dashboard/social/social-connections';
-import { SocialTimeline } from 'src/sections/dashboard/social/social-timeline';
-import type { Connection, Post, Profile } from 'src/types/social';
+import { getCurrentUserProfile } from 'src/app/actions/social/profile-actions';
+import { getCurrentUserPosts } from 'src/app/actions/social/post-actions';
+import { ClientProfileWrapper } from './client-wrapper';
 
-const tabs = [
-  { label: 'Timeline', value: 'timeline' },
-  { label: 'Connections', value: 'connections' },
-];
+const Page = async () => {
+     // Fetch current user's profile
+     const profileResult = await getCurrentUserProfile();
+     const profile = profileResult.success ? profileResult.data : null;
 
-const useProfile = (): Profile | null => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+     // Fetch user's posts
+     const postsResult = await getCurrentUserPosts();
+     const posts = postsResult.success ? postsResult.data || [] : [];
 
-  const handleProfileGet = useCallback(async () => {
-    try {
-      const response = await socialApi.getProfile();
+     // If no profile exists, show create profile message
+     if (!profile) {
+          return (
+               <>
+                    <Box
+                         component="main"
+                         sx={{
+                              flexGrow: 1,
+                              py: 8,
+                         }}
+                    >
+                         <Container maxWidth="lg">
+                              <Box
+                                   sx={{
+                                        textAlign: 'center',
+                                        py: 6,
+                                        color: 'text.secondary'
+                                   }}
+                              >
+                                   <Typography variant="h4" gutterBottom>
+                                        Create Your Social Profile
+                                   </Typography>
+                                   <Typography variant="body1" sx={{ mb: 4 }}>
+                                        Set up your profile to connect with your community
+                                   </Typography>
+                                   <Button
+                                        variant="contained"
+                                        size="large"
+                                        href="/dashboard/social/profile/edit"
+                                   >
+                                        Create Profile
+                                   </Button>
+                              </Box>
+                         </Container>
+                    </Box>
+               </>
+          );
+     }
 
+     return (
+          <>
+               <Box
+                    component="main"
+                    sx={{
+                         flexGrow: 1,
+                         py: 8,
+                    }}
+               >
+                    <Container maxWidth="lg">
+                         <div>
+                              <Box
+                                   style={{
+                                        backgroundImage: profile.cover_image_url
+                                             ? `url(${profile.cover_image_url})`
+                                             : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                   }}
+                                   sx={{
+                                        backgroundPosition: 'center',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundSize: 'cover',
+                                        borderRadius: 1,
+                                        height: 348,
+                                        position: 'relative',
+                                        '&:hover': {
+                                             '& button': {
+                                                  visibility: 'visible',
+                                             },
+                                        },
+                                   }}
+                              >
+                                   <Button
+                                        startIcon={
+                                             <SvgIcon>
+                                                  <Image01Icon />
+                                             </SvgIcon>
+                                        }
+                                        sx={{
+                                             backgroundColor: blueGrey[900],
+                                             bottom: {
+                                                  lg: 24,
+                                                  xs: 'auto',
+                                             },
+                                             color: 'common.white',
+                                             position: 'absolute',
+                                             right: 24,
+                                             top: {
+                                                  lg: 'auto',
+                                                  xs: 24,
+                                             },
+                                             visibility: 'hidden',
+                                             '&:hover': {
+                                                  backgroundColor: blueGrey[900],
+                                             },
+                                        }}
+                                        variant="contained"
+                                   >
+                                        Change Cover
+                                   </Button>
+                              </Box>
+                              <Stack
+                                   alignItems="center"
+                                   direction="row"
+                                   spacing={2}
+                                   sx={{ mt: 5 }}
+                              >
+                                   <Stack
+                                        alignItems="center"
+                                        direction="row"
+                                        spacing={2}
+                                   >
+                                        <Avatar
+                                             src={profile.avatar_url || ''}
+                                             sx={{
+                                                  height: 64,
+                                                  width: 64,
+                                             }}
+                                        >
+                                             {profile.first_name?.charAt(0)?.toUpperCase()}
+                                        </Avatar>
+                                        <div>
+                                             <Typography
+                                                  color="text.secondary"
+                                                  variant="overline"
+                                             >
+                                                  {profile.bio || 'No bio yet'}
+                                             </Typography>
+                                             <Typography variant="h6">{profile.first_name}</Typography>
+                                             {profile.current_city && (
+                                                  <Typography variant="body2" color="text.secondary">
+                                                       📍 {profile.current_city}
+                                                  </Typography>
+                                             )}
+                                             {profile.current_job_title && (
+                                                  <Typography variant="body2" color="text.secondary">
+                                                       💼 {profile.current_job_title}
+                                                       {profile.current_job_company && ` at ${profile.current_job_company}`}
+                                                  </Typography>
+                                             )}
+                                        </div>
+                                   </Stack>
+                                   <Box sx={{ flexGrow: 1 }} />
+                                   <Stack
+                                        alignItems="center"
+                                        direction="row"
+                                        spacing={2}
+                                        sx={{
+                                             display: {
+                                                  md: 'block',
+                                                  xs: 'none',
+                                             },
+                                        }}
+                                   >
+                                        <Button
+                                             href="/dashboard/social/profile/edit"
+                                             size="small"
+                                             variant="outlined"
+                                        >
+                                             Edit Profile
+                                        </Button>
+                                        <Button
+                                             href={paths.dashboard.chat}
+                                             size="small"
+                                             startIcon={
+                                                  <SvgIcon>
+                                                       <MessageChatSquareIcon />
+                                                  </SvgIcon>
+                                             }
+                                             variant="contained"
+                                        >
+                                             Messages
+                                        </Button>
+                                   </Stack>
+                                   <Tooltip title="More options">
+                                        <IconButton>
+                                             <SvgIcon>
+                                                  <DotsHorizontalIcon />
+                                             </SvgIcon>
+                                        </IconButton>
+                                   </Tooltip>
+                              </Stack>
+                         </div>
 
-      setProfile(response);
-
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
-
-  useEffect(
-    () => {
-      handleProfileGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  return profile;
-};
-
-const usePosts = (): Post[] => {
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  const handlePostsGet = useCallback(async () => {
-    try {
-      const response = await socialApi.getPosts();
-
-
-      setPosts(response);
-
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
-
-  useEffect(
-    () => {
-      handlePostsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  return posts;
-};
-
-const useConnections = (search: string = ''): Connection[] => {
-  const [connections, setConnections] = useState<Connection[]>([]);
-
-  const handleConnectionsGet = useCallback(async () => {
-    const response = await socialApi.getConnections();
-
-
-    setConnections(response);
-
-  }, []);
-
-  useEffect(
-    () => {
-      handleConnectionsGet();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [search]
-  );
-
-  return connections.filter((connection) => {
-    return connection.name?.toLowerCase().includes(search);
-  });
-};
-
-const Page = () => {
-  const profile = useProfile();
-  const [currentTab, setCurrentTab] = useState<string>('timeline');
-  const [status, setStatus] = useState<string>('not_connected');
-  const posts = usePosts();
-  const [connectionsQuery, setConnectionsQuery] = useState<string>('');
-  const connections = useConnections(connectionsQuery);
-
-
-
-  const handleConnectionAdd = useCallback((): void => {
-    setStatus('pending');
-  }, []);
-
-  const handleConnectionRemove = useCallback((): void => {
-    setStatus('not_connected');
-  }, []);
-
-  const handleTabsChange = useCallback((event: ChangeEvent<any>, value: string): void => {
-    setCurrentTab(value);
-  }, []);
-
-  const handleConnectionsQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-    setConnectionsQuery(event.target.value);
-  }, []);
-
-  if (!profile) {
-    return null;
-  }
-
-  const showConnect = status === 'not_connected';
-  const showPending = status === 'pending';
-
-  return (
-    <>
-      <Seo title="Dashboard: Social Profile" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="lg">
-          <div>
-            <Box
-              style={{ backgroundImage: `url(${profile.cover})` }}
-              sx={{
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover',
-                borderRadius: 1,
-                height: 348,
-                position: 'relative',
-                '&:hover': {
-                  '& button': {
-                    visibility: 'visible',
-                  },
-                },
-              }}
-            >
-              <Button
-                startIcon={
-                  <SvgIcon>
-                    <Image01Icon />
-                  </SvgIcon>
-                }
-                sx={{
-                  backgroundColor: blueGrey[900],
-                  bottom: {
-                    lg: 24,
-                    xs: 'auto',
-                  },
-                  color: 'common.white',
-                  position: 'absolute',
-                  right: 24,
-                  top: {
-                    lg: 'auto',
-                    xs: 24,
-                  },
-                  visibility: 'hidden',
-                  '&:hover': {
-                    backgroundColor: blueGrey[900],
-                  },
-                }}
-                variant="contained"
-              >
-                Change Cover
-              </Button>
-            </Box>
-            <Stack
-              alignItems="center"
-              direction="row"
-              spacing={2}
-              sx={{ mt: 5 }}
-            >
-              <Stack
-                alignItems="center"
-                direction="row"
-                spacing={2}
-              >
-                <Avatar
-                  src={profile.avatar}
-                  sx={{
-                    height: 64,
-                    width: 64,
-                  }}
-                />
-                <div>
-                  <Typography
-                    color="text.secondary"
-                    variant="overline"
-                  >
-                    {profile.bio}
-                  </Typography>
-                  <Typography variant="h6">{profile.name}</Typography>
-                </div>
-              </Stack>
-              <Box sx={{ flexGrow: 1 }} />
-              <Stack
-                alignItems="center"
-                direction="row"
-                spacing={2}
-                sx={{
-                  display: {
-                    md: 'block',
-                    xs: 'none',
-                  },
-                }}
-              >
-                {showConnect && (
-                  <Button
-                    onClick={handleConnectionAdd}
-                    size="small"
-                    startIcon={
-                      <SvgIcon>
-                        <UserPlus02Icon />
-                      </SvgIcon>
-                    }
-                    variant="outlined"
-                  >
-                    Connect
-                  </Button>
-                )}
-                {showPending && (
-                  <Button
-                    color="primary"
-                    onClick={handleConnectionRemove}
-                    size="small"
-                    variant="outlined"
-                  >
-                    Pending
-                  </Button>
-                )}
-                <Button
-                  component={RouterLink}
-                  href={paths.dashboard.chat}
-                  size="small"
-                  startIcon={
-                    <SvgIcon>
-                      <MessageChatSquareIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Send Message
-                </Button>
-              </Stack>
-              <Tooltip title="More options">
-                <IconButton>
-                  <SvgIcon>
-                    <DotsHorizontalIcon />
-                  </SvgIcon>
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </div>
-          <Tabs
-            indicatorColor="primary"
-            onChange={handleTabsChange}
-            scrollButtons="auto"
-            sx={{ mt: 5 }}
-            textColor="primary"
-            value={currentTab}
-            variant="scrollable"
-          >
-            {tabs.map((tab) => (
-              <Tab
-                key={tab.value}
-                label={tab.label}
-                value={tab.value}
-              />
-            ))}
-          </Tabs>
-          <Divider />
-          <Box sx={{ mt: 3 }}>
-            {currentTab === 'timeline' && (
-              <SocialTimeline
-                posts={posts}
-                profile={profile}
-              />
-            )}
-            {currentTab === 'connections' && (
-              <SocialConnections
-                connections={connections}
-                onQueryChange={handleConnectionsQueryChange}
-                query={connectionsQuery}
-              />
-            )}
-          </Box>
-        </Container>
-      </Box>
-    </>
-  );
+                         {/* Client-side wrapper for tabs functionality */}
+                         <ClientProfileWrapper
+                              posts={posts}
+                              profile={profile}
+                         />
+                    </Container>
+               </Box>
+          </>
+     );
 };
 
 export default Page;

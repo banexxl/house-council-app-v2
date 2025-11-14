@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -19,7 +21,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import type { Comment } from 'src/types/social';
+import type { TenantPostComment } from 'src/types/social';
 
 import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';

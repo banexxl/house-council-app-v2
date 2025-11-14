@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
 import BookOpen01Icon from '@untitled-ui/icons-react/build/esm/BookOpen01';

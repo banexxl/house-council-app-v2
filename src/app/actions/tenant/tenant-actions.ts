@@ -129,6 +129,27 @@ export const createOrUpdateTenantAction = async (
 
           });
 
+          // Update tenant profile if it exists and shared fields were modified
+          const sharedFieldsModified = tenantData.first_name !== undefined ||
+               tenantData.last_name !== undefined ||
+               tenantData.phone_number !== undefined;
+
+          if (sharedFieldsModified) {
+               const profileUpdates: any = {};
+               if (tenantData.first_name !== undefined) profileUpdates.first_name = tenantData.first_name;
+               if (tenantData.last_name !== undefined) profileUpdates.last_name = tenantData.last_name;
+               if (tenantData.phone_number !== undefined) profileUpdates.phone_number = tenantData.phone_number;
+
+               if (Object.keys(profileUpdates).length > 0) {
+                    profileUpdates.updated_at = new Date().toISOString();
+                    // Update profile if it exists - ignore error if profile doesn't exist
+                    await anonSupabase
+                         .from(TABLES.TENANT_PROFILES)
+                         .update(profileUpdates)
+                         .eq('tenant_id', id);
+               }
+          }
+
           revalidatePath(`/dashboard/tenants/${id}`);
           return {
                saveTenantActionSuccess: true,
@@ -144,7 +165,6 @@ export const createOrUpdateTenantAction = async (
                email_confirm: true,
                phone: tenantData.phone_number,
           });
-
           if (userError || !createdUser?.user) {
                await logServerAction({
                     user_id: null,
@@ -189,6 +209,7 @@ export const createOrUpdateTenantAction = async (
                })
                .select()
                .single();
+          console.log('insertError', insertError);
 
           if (insertError || !insertedTenant) {
                await logServerAction({
@@ -227,6 +248,29 @@ export const createOrUpdateTenantAction = async (
                type: 'action',
                user_id: createdUser.user.id,
           });
+
+          // Create initial tenant profile with shared fields
+          if (insertedTenant) {
+               const profileData = {
+                    tenant_id: insertedTenant.id,
+                    first_name: tenantData.first_name || '',
+                    last_name: tenantData.last_name || '',
+                    phone_number: tenantData.phone_number,
+                    is_public: true,
+                    profile_progress: 30, // Basic completion with name and phone
+               };
+
+               // Create profile - ignore error if it fails
+               const { error: profileError } = await anonSupabase
+                    .from(TABLES.TENANT_PROFILES)
+                    .insert(profileData);
+               console.log('profileError', profileError);
+               if (profileError) {
+                    adminSupabase.auth.admin.deleteUser(createdUser.user.id);
+                    return { saveTenantActionSuccess: false, saveTenantActionError: profileError };
+               }
+
+          }
 
           // If all goes well, send the invite email
           const { data: invitedUser, error: inviteError } = await adminSupabase.auth.resetPasswordForEmail(tenantData.email!, {
@@ -287,9 +331,14 @@ export const deleteTenantByIDAction = async (
           }
 
           const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
+          console.log('deleteerror', tenantToDelete.user_id, deleteUserError);
+
           if (deleteUserError) {
                return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteUserError.message };
           }
+
+          // Delete tenant profile first (if exists) - ignore error if profile doesn't exist
+          await anonSupabase.from(TABLES.TENANT_PROFILES).delete().eq('tenant_id', id);
 
           const { error: deleteTenantError } = await anonSupabase.from(TABLES.TENANTS).delete().eq('id', id);
           if (deleteTenantError) {

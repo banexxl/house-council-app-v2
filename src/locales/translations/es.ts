@@ -766,7 +766,7 @@ export const es = {
   [tokens.tenants.phoneNumberDigitsOnly]: 'El número de teléfono solo puede contener dígitos (7-15)',
   [tokens.tenants.phoneAlreadyExists]: 'El número de teléfono ya existe',
   [tokens.tenants.tenantAlreadyExists]: '¡Inquilino ya existente!',
-
+  [tokens.tenants.tenantInvalidEmailOrPhoneNumber]: 'Correo electrónico o número de teléfono inválido',
   // Tenant validation
   [tokens.tenants.tenantNameRequired]: 'Nombre requerido',
   [tokens.tenants.tenantFirstNameRequired]: 'Nombre requerido',

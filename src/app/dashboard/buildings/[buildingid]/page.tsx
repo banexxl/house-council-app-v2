@@ -19,7 +19,7 @@ export default async function Page({ params }: {
   }
 
   if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   const [buildingData, locationData] = await Promise.all([

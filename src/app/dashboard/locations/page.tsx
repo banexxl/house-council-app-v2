@@ -26,7 +26,7 @@ const Page = async () => {
     locations = success && data ? data : [];
   } else if (tenant) {
     locations = [];
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   return (

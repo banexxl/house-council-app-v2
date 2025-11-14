@@ -34,7 +34,7 @@ export default async function Page() {
       apartments = data2.apartments;
     }
   } else if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   return (

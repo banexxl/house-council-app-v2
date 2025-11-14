@@ -19,7 +19,7 @@ const Page = async () => {
   };
 
   if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   if (client || clientMember) {

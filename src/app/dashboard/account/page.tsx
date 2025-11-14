@@ -75,7 +75,7 @@ const Page = async () => {
   } else if (clientMember) {
     redirect('/dashboard');
   } else if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   return <Account

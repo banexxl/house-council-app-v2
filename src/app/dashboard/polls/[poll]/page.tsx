@@ -25,7 +25,7 @@ export default async function PollCreatePage({ params }: Props) {
     const { data } = await getAllBuildingsFromClient(client_id!);
     buildings = Array.isArray(data) ? data : [];
   } else if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   if (idOrCreate === 'create' || idOrCreate === 'new') {

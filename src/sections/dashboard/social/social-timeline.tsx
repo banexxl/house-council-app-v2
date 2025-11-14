@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
 import { Grid } from '@mui/material';;

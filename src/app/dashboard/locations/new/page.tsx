@@ -28,7 +28,7 @@ const Page = async () => {
           locations = success2 ? data2! : [];
      } else if (tenant) {
           locations = [];
-          redirect('/dashboard/products');
+          redirect('/dashboard/social/profile');
      }
 
      const mapBoxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY!;

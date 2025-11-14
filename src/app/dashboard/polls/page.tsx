@@ -24,7 +24,7 @@ export default async function PollsPage() {
     const { data } = await getPollsFromClient({ client_id: client_id! });
     polls = Array.isArray(data) ? data : [];
   } else if (tenant) {
-    redirect('/dashboard/products');
+    redirect('/dashboard/social/profile');
   }
 
   // Buildings to help render human-readable building labels
