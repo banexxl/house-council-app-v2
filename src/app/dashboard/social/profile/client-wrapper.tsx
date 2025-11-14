@@ -4,10 +4,10 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { SocialTimeline } from 'src/sections/dashboard/social/social-timeline';
-import type { TenantPost, TenantProfile } from 'src/types/social';
+import type { TenantPostWithAuthor, TenantProfile } from 'src/types/social';
 
 interface ClientProfileWrapperProps {
-     posts: TenantPost[];
+     posts: TenantPostWithAuthor[];
      profile: TenantProfile;
 }
 

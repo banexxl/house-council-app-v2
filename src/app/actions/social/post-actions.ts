@@ -146,7 +146,7 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
 /**
  * Get posts by current user
  */
-export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPost[]>> {
+export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPostWithAuthor[]>> {
      try {
           const viewer = await getViewer();
           if (!viewer.tenant) {

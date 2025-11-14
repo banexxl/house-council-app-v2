@@ -21,7 +21,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import type { TenantPostComment } from 'src/types/social';
+import type { TenantPostCommentWithAuthor } from 'src/types/social';
 
 import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';
@@ -29,7 +29,7 @@ import { SocialCommentAdd } from './social-comment-add';
 interface SocialPostCardProps {
   authorAvatar: string;
   authorName: string;
-  comments: Comment[];
+  comments: TenantPostCommentWithAuthor[];
   created_at: number;
   isLiked: boolean;
   likes: number;
@@ -183,13 +183,13 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         </Stack>
         <Divider sx={{ my: 3 }} />
         <Stack spacing={3}>
-          {comments.map((comment) => (
+          {comments.map((comment: TenantPostCommentWithAuthor) => (
             <SocialComment
-              authorAvatar={comment.author.avatar}
-              authorName={comment.author.name}
-              created_at={comment.created_at}
+              authorAvatar={comment.author.avatar_url || ''}
+              authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
+              created_at={new Date(comment.created_at).getTime()}
               key={comment.id}
-              message={comment.message}
+              message={comment.comment_text}
             />
           ))}
         </Stack>
