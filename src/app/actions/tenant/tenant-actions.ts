@@ -332,19 +332,26 @@ export const deleteTenantByIDAction = async (
                };
           }
 
-          // Delete tenant – FK with ON DELETE CASCADE will delete auth.users row automatically
-          const { error: deleteTenantError } = await supabase
-               .from(TABLES.TENANTS)
-               .delete()
-               .eq('id', id);
+          // // Delete tenant – FK with ON DELETE CASCADE will delete auth.users row automatically
+          // const { error: deleteTenantError } = await supabase
+          //      .from(TABLES.TENANTS)
+          //      .delete()
+          //      .eq('id', id);
 
-          if (deleteTenantError) {
-               return {
-                    deleteTenantByIDActionSuccess: false,
-                    deleteTenantByIDActionError: deleteTenantError.message,
-               };
+          // if (deleteTenantError) {
+          //      return {
+          //           deleteTenantByIDActionSuccess: false,
+          //           deleteTenantByIDActionError: deleteTenantError.message,
+          //      };
+          // }
+
+          // Explicitly delete auth user (if not handled by FK cascade)
+          const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
+          if (deleteUserError) {
+               console.error('deleteUserError', deleteUserError);
           }
-          await supabase.auth.admin.signOut(tenantToDelete.user_id);
+
+          await adminSupabase.auth.admin.signOut(tenantToDelete.user_id);
           // If your TENANT_PROFILES table is also ON DELETE CASCADE from tblTenants,
           // you don't need an explicit delete here.
 

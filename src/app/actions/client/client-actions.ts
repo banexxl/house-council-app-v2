@@ -60,9 +60,6 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
      });
 
      if (error) return { success: false, error: error.message };
-
-     await supabase.auth.admin.signOut(userId);
-
      return { success: true };
 };
 
