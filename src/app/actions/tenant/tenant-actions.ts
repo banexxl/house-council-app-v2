@@ -310,40 +310,43 @@ export const readTenantByIdAction = async (
           getTenantByIdActionData: data as Tenant,
      };
 };
-
-// DELETE tenant by ID (and delete linked auth.users)
+// DELETE tenant by ID (and let FK cascade delete linked auth.users)
 export const deleteTenantByIDAction = async (
      id: string
 ): Promise<{ deleteTenantByIDActionSuccess: boolean; deleteTenantByIDActionError?: string }> => {
-
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
-     const anonSupabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
-          const { data: tenantToDelete, error: fetchError } = await anonSupabase
+          // (Optional) ensure tenant exists before attempting delete
+          const { data: tenantToDelete, error: fetchError } = await supabase
                .from(TABLES.TENANTS)
-               .select('user_id')
+               .select('id, user_id')
                .eq('id', id)
                .single();
 
-          if (fetchError) {
-               return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: fetchError.message };
+          if (fetchError || !tenantToDelete) {
+               return {
+                    deleteTenantByIDActionSuccess: false,
+                    deleteTenantByIDActionError: fetchError?.message ?? 'Tenant not found',
+               };
           }
 
-          const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(tenantToDelete.user_id);
-          console.log('deleteerror', tenantToDelete.user_id, deleteUserError);
+          // Delete tenant – FK with ON DELETE CASCADE will delete auth.users row automatically
+          const { error: deleteTenantError } = await supabase
+               .from(TABLES.TENANTS)
+               .delete()
+               .eq('id', id);
 
-          if (deleteUserError) {
-               return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteUserError.message };
-          }
-
-          // Delete tenant profile first (if exists) - ignore error if profile doesn't exist
-          await anonSupabase.from(TABLES.TENANT_PROFILES).delete().eq('tenant_id', id);
-
-          const { error: deleteTenantError } = await anonSupabase.from(TABLES.TENANTS).delete().eq('id', id);
           if (deleteTenantError) {
-               return { deleteTenantByIDActionSuccess: false, deleteTenantByIDActionError: deleteTenantError.message };
+               return {
+                    deleteTenantByIDActionSuccess: false,
+                    deleteTenantByIDActionError: deleteTenantError.message,
+               };
           }
+          await supabase.auth.admin.signOut(tenantToDelete.user_id);
+          // If your TENANT_PROFILES table is also ON DELETE CASCADE from tblTenants,
+          // you don't need an explicit delete here.
 
           revalidatePath('/dashboard/tenants');
 
