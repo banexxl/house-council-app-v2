@@ -70,6 +70,7 @@ export interface TenantPost {
 }
 
 export interface CreateTenantPostPayload {
+  tenant_id: string;
   content_text: string;
   building_id: string;
 }

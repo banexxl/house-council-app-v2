@@ -22,7 +22,7 @@ import { toast } from 'react-hot-toast';
 
 import { getInitials } from 'src/utils/get-initials';
 import { TenantProfile } from 'src/types/social';
-import { createTenantPost, uploadPostImages, uploadPostDocuments } from 'src/app/actions/social-post';
+import { createTenantPost, uploadPostImages, uploadPostDocuments } from 'src/app/actions/social/post-actions';
 
 interface SocialPostAddProps {
   user: TenantProfile;
@@ -103,6 +103,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
     try {
       // Create the post
       const result = await createTenantPost({
+        tenant_id: user.tenant_id,
         content_text: content,
         building_id: buildingId,
       });
