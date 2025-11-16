@@ -620,6 +620,16 @@ export const de = {
   [tokens.clients.buildingStatusesTableName]: 'Gebäudestatus',
   [tokens.clients.clientComponentSettings]: 'Kundenkomponenteneinstellungen',
   [tokens.clients.clientComponentSettingsShortDescription]: 'Diese Tabelle wird verwendet, um Kunden-Einstellungen zu verwalten, indem neue Einträge hinzugefügt und bestehende aktualisiert werden können.',
+  // Client profile
+  [tokens.clients.clientProfileChangeCover]: 'Titelbild ändern',
+  [tokens.clients.clientProfileEdit]: 'Profil bearbeiten',
+  [tokens.clients.clientProfileMessages]: 'Nachrichten',
+  [tokens.clients.clientProfileMoreOptions]: 'Weitere Optionen',
+  [tokens.clients.clientProfileTimeline]: 'Chronik',
+  [tokens.clients.clientProfileNoBio]: 'Noch keine Biografie',
+  [tokens.clients.clientProfileLocation]: 'Standort: {{city}}',
+  [tokens.clients.clientProfileJob]: '{{title}}',
+  [tokens.clients.clientProfileJobAtCompany]: '{{title}} bei {{company}}',
   // Client form
   [tokens.common.formBasicInfo]: 'Grundlegende Informationen',
   [tokens.common.formAdvancedInfo]: 'Erweiterte Informationen',

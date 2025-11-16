@@ -8,13 +8,11 @@ import { logout } from 'src/app/auth/actions';
 
 export default async function TenantsPage() {
 
-  const { client, clientMember, tenant, admin } = await getViewer();
+  const { client, clientMember, tenant, admin, userData } = await getViewer();
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
   if (!client && !clientMember && !tenant && !admin) {
     logout();
   }
-
-
   let tenants: any[] = [];
   if (admin) {
     const { success, data } = await getAllTenants();

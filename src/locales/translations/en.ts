@@ -513,6 +513,16 @@ export const en = {
   [tokens.clients.buildingStatusesTableName]: 'Building Statuses',
   [tokens.clients.clientComponentSettings]: 'Client Component Settings',
   [tokens.clients.clientComponentSettingsShortDescription]: 'This table is used for managing client settings, allowing new entries to be added and updated as needed.',
+  // Client profile
+  [tokens.clients.clientProfileChangeCover]: 'Change Cover',
+  [tokens.clients.clientProfileEdit]: 'Edit Profile',
+  [tokens.clients.clientProfileMessages]: 'Messages',
+  [tokens.clients.clientProfileMoreOptions]: 'More options',
+  [tokens.clients.clientProfileTimeline]: 'Timeline',
+  [tokens.clients.clientProfileNoBio]: 'No bio yet',
+  [tokens.clients.clientProfileLocation]: 'Location: {{city}}',
+  [tokens.clients.clientProfileJob]: '{{title}}',
+  [tokens.clients.clientProfileJobAtCompany]: '{{title}} at {{company}}',
   // Admin actions
   [tokens.clients.sendPasswordRecovery]: 'Send password recovery',
   [tokens.clients.sendPasswordRecoveryDescription]: 'Send a password recovery email to the user.',

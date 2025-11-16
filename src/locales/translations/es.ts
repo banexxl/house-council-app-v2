@@ -622,6 +622,16 @@ export const es = {
   [tokens.clients.buildingStatusesTableName]: 'Estados de edificio',
   [tokens.clients.clientComponentSettings]: 'Configuraciones de componentes del cliente',
   [tokens.clients.clientComponentSettingsShortDescription]: 'Esta tabla se utiliza para administrar la configuración del cliente, permitiendo agregar nuevas entradas y actualizar las existentes.',
+  // Client profile
+  [tokens.clients.clientProfileChangeCover]: 'Cambiar portada',
+  [tokens.clients.clientProfileEdit]: 'Editar perfil',
+  [tokens.clients.clientProfileMessages]: 'Mensajes',
+  [tokens.clients.clientProfileMoreOptions]: 'Más opciones',
+  [tokens.clients.clientProfileTimeline]: 'Cronología',
+  [tokens.clients.clientProfileNoBio]: 'Aún no hay biografía',
+  [tokens.clients.clientProfileLocation]: 'Ubicación: {{city}}',
+  [tokens.clients.clientProfileJob]: '{{title}}',
+  [tokens.clients.clientProfileJobAtCompany]: '{{title}} en {{company}}',
   // Client form
   [tokens.common.formBasicInfo]: 'Información básica',
   [tokens.common.formAdvancedInfo]: 'Información avanzada',

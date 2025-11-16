@@ -947,6 +947,16 @@ export const tokens = {
     confirmInviteToWhatsAppSandboxMessage: 'clients.confirmInviteToWhatsAppSandboxMessage',
     invitationButtonTitle: 'clients.invitationButtonTitle',
     invitationMessage: 'clients.invitationMessage',
+    // Client profile
+    clientProfileChangeCover: 'clients.clientProfileChangeCover',
+    clientProfileEdit: 'clients.clientProfileEdit',
+    clientProfileMessages: 'clients.clientProfileMessages',
+    clientProfileMoreOptions: 'clients.clientProfileMoreOptions',
+    clientProfileTimeline: 'clients.clientProfileTimeline',
+    clientProfileNoBio: 'clients.clientProfileNoBio',
+    clientProfileLocation: 'clients.clientProfileLocation',
+    clientProfileJob: 'clients.clientProfileJob',
+    clientProfileJobAtCompany: 'clients.clientProfileJobAtCompany',
   },
   subscriptionPlans: {
     status: 'subscriptionPlans.status',
