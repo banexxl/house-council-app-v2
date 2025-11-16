@@ -80,11 +80,11 @@ export const Layout: FC<LayoutProps> = (props) => {
             textAlign: 'center',
           }}
         >
-          <Typography sx={{ mb: 1 }} variant="h4" color={theme.palette.primary.darkest}>
+          <Typography sx={{ mb: 1 }} variant="h4" color={'#78350F'}>
             Welcome to Nest Link App
           </Typography>
           <Typography
-            color={theme.palette.primary.darkest}
+            color={'#78350F'}
             sx={{ mt: 4, width: '80%' }}
           >
             A modern platform that connects tenants and supervisors,
