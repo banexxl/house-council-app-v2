@@ -38,7 +38,7 @@ const Page = async () => {
             spacing={3}
             sx={{ mt: 3 }}
           >
-            <SocialPostAdd />
+            {/* <SocialPostAdd user={} buildingId={''} />
             {posts.map((post: TenantPostWithAuthor) => (
               <SocialPostCard
                 key={post.id}
@@ -47,11 +47,11 @@ const Page = async () => {
                 comments={[]} // We'll fetch comments separately when needed
                 created_at={new Date(post.created_at).getTime()}
                 isLiked={post.is_liked || false}
-                likes={post.likes_count}
-                media={post.image_url}
+                likes={post.likes_count || 0}
+                media={post.images || []}
                 message={post.content_text}
               />
-            ))}
+            ))} */}
             {posts.length === 0 && (
               <Box
                 sx={{

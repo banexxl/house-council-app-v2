@@ -132,12 +132,7 @@ export interface TenantPostWithAuthor extends TenantPost {
 }
 
 export interface TenantPostCommentWithAuthor extends TenantPostComment {
-  author: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    avatar_url?: string;
-  };
+  author: TenantProfile
 }
 
 export const COVER_IMAGES = [

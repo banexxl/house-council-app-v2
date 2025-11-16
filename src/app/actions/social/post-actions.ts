@@ -12,6 +12,7 @@ import type {
      UpdateTenantPostPayload,
      TenantPostWithAuthor
 } from 'src/types/social';
+import { logServerAction } from 'src/libs/supabase/server-logging';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -19,11 +20,41 @@ type ActionResponse<T> = {
      error?: string;
 };
 
+type LogActionStatus = 'success' | 'fail';
+
+async function logActionResult(
+     action: string,
+     status: LogActionStatus,
+     options?: {
+          userId?: string | null;
+          payload?: Record<string, any>;
+          error?: string;
+          durationMs?: number;
+          type?: string;
+     }
+) {
+     try {
+          await logServerAction({
+               user_id: options?.userId ?? null,
+               action,
+               payload: options?.payload ?? {},
+               status,
+               error: options?.error ?? '',
+               duration_ms: options?.durationMs ?? 0,
+               type: 'db',
+          });
+     } catch (loggingError) {
+          console.error(`Failed to log server action (${action})`, loggingError);
+     }
+}
+
 /**
  * Get all posts with author information
  */
 export async function getTenantPosts(buildingId?: string): Promise<ActionResponse<TenantPostWithAuthor[]>> {
      try {
+          const action = 'Get Tenant Posts';
+          const actionPayload = { buildingId: buildingId ?? null };
           const supabase = await useServerSideSupabaseAnonClient();
 
           let query = supabase
@@ -48,6 +79,10 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
 
           if (error) {
                console.error('Error fetching tenant posts:', error);
+               await logActionResult(action, 'fail', {
+                    payload: { ...actionPayload, details: 'Supabase query' },
+                    error: error.message,
+               });
                return { success: false, error: error.message };
           }
 
@@ -79,9 +114,17 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                })
           );
 
+          await logActionResult(action, 'success', {
+               userId: currentUserId,
+               payload: { ...actionPayload, resultCount: postsWithLikes.length },
+          });
           return { success: true, data: postsWithLikes };
      } catch (error) {
           console.error('Error fetching tenant posts:', error);
+          await logActionResult('Get Tenant Posts', 'fail', {
+               payload: { buildingId: buildingId ?? null },
+               error: error instanceof Error ? error.message : 'Failed to fetch posts',
+          });
           return { success: false, error: 'Failed to fetch posts' };
      }
 }
@@ -179,13 +222,17 @@ export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPostWi
  */
 export async function createTenantPost(payload: CreateTenantPostPayload): Promise<ActionResponse<TenantPost>> {
      try {
+          const action = 'Create Tenant Post';
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: { buildingId: payload.building_id ?? null },
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
-          console.log('payload', payload);
 
           const { data, error } = await supabase
                .from(TABLES.TENANT_POSTS)
@@ -198,7 +245,13 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                .single();
 
           if (error) {
-               console.error('Error creating tenant post:', error);
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: {
+                         buildingId: payload.building_id ?? null,
+                    },
+                    error: error.message,
+               });
                return { success: false, error: error.message };
           }
 
@@ -206,9 +259,16 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
           revalidatePath('/dashboard/social/feed');
           revalidatePath('/dashboard/social');
 
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { postId: data.id },
+          });
           return { success: true, data };
      } catch (error) {
-          console.error('Error creating tenant post:', error);
+          await logActionResult('Create Tenant Post', 'fail', {
+               payload: { buildingId: payload.building_id ?? null },
+               error: error instanceof Error ? error.message : 'Failed to create post',
+          });
           return { success: false, error: 'Failed to create post' };
      }
 }
@@ -221,8 +281,13 @@ export async function updateTenantPost(
      payload: UpdateTenantPostPayload
 ): Promise<ActionResponse<TenantPost>> {
      try {
+          const action = 'Update Tenant Post';
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId, updatedFields: Object.keys(payload) },
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -236,10 +301,20 @@ export async function updateTenantPost(
                .single();
 
           if (!post) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'Post not found',
+               });
                return { success: false, error: 'Post not found' };
           }
 
           if (post.tenant_id !== viewer.tenant.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'You can only update your own posts',
+               });
                return { success: false, error: 'You can only update your own posts' };
           }
 
@@ -255,12 +330,25 @@ export async function updateTenantPost(
 
           if (error) {
                console.error('Error updating tenant post:', error);
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId, updatedFields: Object.keys(payload) },
+                    error: error.message,
+               });
                return { success: false, error: error.message };
           }
 
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { postId },
+          });
           return { success: true, data };
      } catch (error) {
           console.error('Error updating tenant post:', error);
+          await logActionResult('Update Tenant Post', 'fail', {
+               payload: { postId, updatedFields: Object.keys(payload) },
+               error: error instanceof Error ? error.message : 'Failed to update post',
+          });
           return { success: false, error: 'Failed to update post' };
      }
 }
@@ -270,8 +358,13 @@ export async function updateTenantPost(
  */
 export async function deleteTenantPost(postId: string): Promise<ActionResponse<void>> {
      try {
+          const action = 'Delete Tenant Post';
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId },
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -285,10 +378,20 @@ export async function deleteTenantPost(postId: string): Promise<ActionResponse<v
                .single();
 
           if (!post) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'Post not found',
+               });
                return { success: false, error: 'Post not found' };
           }
 
           if (post.tenant_id !== viewer.tenant.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'You can only delete your own posts',
+               });
                return { success: false, error: 'You can only delete your own posts' };
           }
 
@@ -304,15 +407,28 @@ export async function deleteTenantPost(postId: string): Promise<ActionResponse<v
 
           if (error) {
                console.error('Error deleting tenant post:', error);
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: error.message,
+               });
                return { success: false, error: error.message };
           }
 
           revalidatePath('/dashboard/social/feed');
           revalidatePath('/dashboard/social');
 
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { postId },
+          });
           return { success: true };
      } catch (error) {
           console.error('Error deleting tenant post:', error);
+          await logActionResult('Delete Tenant Post', 'fail', {
+               payload: { postId },
+               error: error instanceof Error ? error.message : 'Failed to delete post',
+          });
           return { success: false, error: 'Failed to delete post' };
      }
 }
@@ -327,12 +443,22 @@ export async function uploadPostImages(
      files: File[]
 ): Promise<ActionResponse<{ signedUrls: string[] }>> {
      try {
+          const action = 'Upload Post Images';
+          const basePayload = { postId, fileCount: files.length };
           if (!isUUID(postId)) {
+               await logActionResult(action, 'fail', {
+                    payload: { ...basePayload, reason: 'Invalid UUID' },
+                    error: 'Invalid post ID',
+               });
                return { success: false, error: 'Invalid post ID' };
           }
 
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: basePayload,
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -346,6 +472,11 @@ export async function uploadPostImages(
                .single();
 
           if (checkError || !post || post.tenant_id !== viewer.tenant.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { ...basePayload, reason: 'Ownership check failed' },
+                    error: 'Post not found or unauthorized',
+               });
                return { success: false, error: 'Post not found or unauthorized' };
           }
 
@@ -358,12 +489,25 @@ export async function uploadPostImages(
           if (result.success) {
                revalidatePath('/dashboard/social/feed');
                revalidatePath('/dashboard/social');
+               await logActionResult(action, 'success', {
+                    userId: viewer.tenant.id,
+                    payload: { ...basePayload, uploaded: result.signedUrls?.length || 0 },
+               });
                return { success: true, data: { signedUrls: result.signedUrls || [] } };
           }
 
+          await logActionResult(action, 'fail', {
+               userId: viewer.tenant.id,
+               payload: basePayload,
+               error: result.error,
+          });
           return { success: false, error: result.error };
      } catch (error) {
           console.error('Error uploading post images:', error);
+          await logActionResult('Upload Post Images', 'fail', {
+               payload: { postId, fileCount: files.length },
+               error: error instanceof Error ? error.message : 'Failed to upload images',
+          });
           return { success: false, error: 'Failed to upload images' };
      }
 }
@@ -376,12 +520,22 @@ export async function uploadPostDocuments(
      files: File[]
 ): Promise<ActionResponse<{ signedUrls: string[] }>> {
      try {
+          const action = 'Upload Post Documents';
+          const basePayload = { postId, fileCount: files.length };
           if (!isUUID(postId)) {
+               await logActionResult(action, 'fail', {
+                    payload: { ...basePayload, reason: 'Invalid UUID' },
+                    error: 'Invalid post ID',
+               });
                return { success: false, error: 'Invalid post ID' };
           }
 
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: basePayload,
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -395,6 +549,11 @@ export async function uploadPostDocuments(
                .single();
 
           if (checkError || !post || post.tenant_id !== viewer.tenant.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { ...basePayload, reason: 'Ownership check failed' },
+                    error: 'Post not found or unauthorized',
+               });
                return { success: false, error: 'Post not found or unauthorized' };
           }
 
@@ -407,12 +566,25 @@ export async function uploadPostDocuments(
           if (result.success) {
                revalidatePath('/dashboard/social/feed');
                revalidatePath('/dashboard/social');
+               await logActionResult(action, 'success', {
+                    userId: viewer.tenant.id,
+                    payload: { ...basePayload, uploaded: result.signedUrls?.length || 0 },
+               });
                return { success: true, data: { signedUrls: result.signedUrls || [] } };
           }
 
+          await logActionResult(action, 'fail', {
+               userId: viewer.tenant.id,
+               payload: basePayload,
+               error: result.error,
+          });
           return { success: false, error: result.error };
      } catch (error) {
           console.error('Error uploading post documents:', error);
+          await logActionResult('Upload Post Documents', 'fail', {
+               payload: { postId, fileCount: files.length },
+               error: error instanceof Error ? error.message : 'Failed to upload documents',
+          });
           return { success: false, error: 'Failed to upload documents' };
      }
 }
@@ -426,12 +598,22 @@ export async function removePostAttachment(
      type: 'image' | 'document'
 ): Promise<ActionResponse<void>> {
      try {
+          const action = 'Remove Post Attachment';
+          const basePayload = { postId, type, storagePathOrUrl };
           if (!isUUID(postId)) {
+               await logActionResult(action, 'fail', {
+                    payload: { ...basePayload, reason: 'Invalid UUID' },
+                    error: 'Invalid post ID',
+               });
                return { success: false, error: 'Invalid post ID' };
           }
 
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: basePayload,
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -445,6 +627,11 @@ export async function removePostAttachment(
                .single();
 
           if (checkError || !post || post.tenant_id !== viewer.tenant.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { ...basePayload, reason: 'Ownership check failed' },
+                    error: 'Post not found or unauthorized',
+               });
                return { success: false, error: 'Post not found or unauthorized' };
           }
 
@@ -458,12 +645,25 @@ export async function removePostAttachment(
           if (result.success) {
                revalidatePath('/dashboard/social/feed');
                revalidatePath('/dashboard/social');
+               await logActionResult(action, 'success', {
+                    userId: viewer.tenant.id,
+                    payload: basePayload,
+               });
                return { success: true };
           }
 
+          await logActionResult(action, 'fail', {
+               userId: viewer.tenant.id,
+               payload: basePayload,
+               error: result.error,
+          });
           return { success: false, error: result.error };
      } catch (error) {
           console.error('Error removing post attachment:', error);
+          await logActionResult('Remove Post Attachment', 'fail', {
+               payload: { postId, type, storagePathOrUrl },
+               error: error instanceof Error ? error.message : 'Failed to remove attachment',
+          });
           return { success: false, error: 'Failed to remove attachment' };
      }
 }
@@ -478,16 +678,30 @@ export async function addEmojiReaction(
      emoji: string
 ): Promise<ActionResponse<void>> {
      try {
+          const action = 'Add Emoji Reaction';
+          const basePayload = { postId, emoji };
           if (!isUUID(postId)) {
+               await logActionResult(action, 'fail', {
+                    payload: { ...basePayload, reason: 'Invalid UUID' },
+                    error: 'Invalid post ID',
+               });
                return { success: false, error: 'Invalid post ID' };
           }
 
           if (!emoji || emoji.trim().length === 0) {
+               await logActionResult(action, 'fail', {
+                    payload: { ...basePayload, reason: 'Missing emoji' },
+                    error: 'Emoji is required',
+               });
                return { success: false, error: 'Emoji is required' };
           }
 
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: basePayload,
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -503,6 +717,11 @@ export async function addEmojiReaction(
                .maybeSingle();
 
           if (existingReaction) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { ...basePayload, reason: 'Duplicate emoji' },
+                    error: 'You already reacted with this emoji',
+               });
                return { success: false, error: 'You already reacted with this emoji' };
           }
 
@@ -522,6 +741,11 @@ export async function addEmojiReaction(
                     .eq('id', anyReaction.id);
 
                if (updateError) {
+                    await logActionResult(action, 'fail', {
+                         userId: viewer.tenant.id,
+                         payload: { ...basePayload, reactionId: anyReaction.id, mode: 'update' },
+                         error: updateError.message,
+                    });
                     return { success: false, error: updateError.message };
                }
           } else {
@@ -535,6 +759,11 @@ export async function addEmojiReaction(
                     });
 
                if (insertError) {
+                    await logActionResult(action, 'fail', {
+                         userId: viewer.tenant.id,
+                         payload: { ...basePayload, mode: 'insert' },
+                         error: insertError.message,
+                    });
                     return { success: false, error: insertError.message };
                }
           }
@@ -542,9 +771,17 @@ export async function addEmojiReaction(
           revalidatePath('/dashboard/social/feed');
           revalidatePath('/dashboard/social');
 
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: basePayload,
+          });
           return { success: true };
      } catch (error) {
           console.error('Error adding emoji reaction:', error);
+          await logActionResult('Add Emoji Reaction', 'fail', {
+               payload: { postId, emoji },
+               error: error instanceof Error ? error.message : 'Failed to add reaction',
+          });
           return { success: false, error: 'Failed to add reaction' };
      }
 }
@@ -554,12 +791,21 @@ export async function addEmojiReaction(
  */
 export async function removeEmojiReaction(postId: string): Promise<ActionResponse<void>> {
      try {
+          const action = 'Remove Emoji Reaction';
           if (!isUUID(postId)) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId, reason: 'Invalid UUID' },
+                    error: 'Invalid post ID',
+               });
                return { success: false, error: 'Invalid post ID' };
           }
 
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId },
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -574,6 +820,11 @@ export async function removeEmojiReaction(postId: string): Promise<ActionRespons
                .maybeSingle();
 
           if (!existingReaction) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'No reaction found',
+               });
                return { success: false, error: 'No reaction found' };
           }
 
@@ -584,15 +835,28 @@ export async function removeEmojiReaction(postId: string): Promise<ActionRespons
                .eq('id', existingReaction.id);
 
           if (deleteError) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId, reactionId: existingReaction.id },
+                    error: deleteError.message,
+               });
                return { success: false, error: deleteError.message };
           }
 
           revalidatePath('/dashboard/social/feed');
           revalidatePath('/dashboard/social');
 
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { postId },
+          });
           return { success: true };
      } catch (error) {
           console.error('Error removing emoji reaction:', error);
+          await logActionResult('Remove Emoji Reaction', 'fail', {
+               payload: { postId },
+               error: error instanceof Error ? error.message : 'Failed to remove reaction',
+          });
           return { success: false, error: 'Failed to remove reaction' };
      }
 }
@@ -604,12 +868,21 @@ export async function getPostReactions(
      postId: string
 ): Promise<ActionResponse<{ emoji: string; count: number; userReacted: boolean }[]>> {
      try {
+          const action = 'Get Post Reactions';
           if (!isUUID(postId)) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId, reason: 'Invalid UUID' },
+                    error: 'Invalid post ID',
+               });
                return { success: false, error: 'Invalid post ID' };
           }
 
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId },
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -622,6 +895,11 @@ export async function getPostReactions(
                .eq('post_id', postId);
 
           if (error) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: error.message,
+               });
                return { success: false, error: error.message };
           }
 
@@ -642,9 +920,17 @@ export async function getPostReactions(
                userReacted: data.userReacted,
           }));
 
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { postId, reactionTypes: result.length },
+          });
           return { success: true, data: result };
      } catch (error) {
           console.error('Error getting post reactions:', error);
+          await logActionResult('Get Post Reactions', 'fail', {
+               payload: { postId },
+               error: error instanceof Error ? error.message : 'Failed to get reactions',
+          });
           return { success: false, error: 'Failed to get reactions' };
      }
 }
