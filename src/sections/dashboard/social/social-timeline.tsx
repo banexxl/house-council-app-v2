@@ -1,6 +1,7 @@
 'use client'
 
 import type { FC } from 'react';
+import { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 
@@ -18,6 +19,31 @@ interface SocialProfileTimelineProps {
 export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
   const { posts = [], profile, ...other } = props;
 
+  const profileProgress = useMemo(() => {
+    const trackedFields: Array<keyof TenantProfile> = [
+      'first_name',
+      'last_name',
+      'phone_number',
+      'bio',
+      'avatar_url',
+      'cover_image_url',
+      'current_city',
+      'current_job_title',
+      'current_job_company',
+      'previous_job_title',
+      'previous_job_company',
+      'origin_city',
+      'quote',
+    ];
+
+    const completedFields = trackedFields.filter((field) => {
+      const value = profile[field];
+      return typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
+    });
+
+    return Math.round((completedFields.length / trackedFields.length) * 100);
+  }, [profile]);
+
   return (
     <div {...other}>
       <Grid
@@ -31,12 +57,14 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
             currentCity={profile.current_city || ''}
             currentJobCompany={profile.current_job_company || ''}
             currentJobTitle={profile.current_job_title || ''}
-            email={profile.phone_number || ''}
+            email={profile.email || ''}
             originCity={profile.origin_city || ''}
             previousJobCompany={profile.previous_job_company || ''}
             previousJobTitle={profile.previous_job_title || ''}
-            profileProgress={profile.profile_progress || 0}
+            profileProgress={profileProgress}
+            phoneNumber={profile.phone_number || ''}
             quote={profile.quote || ''}
+            dateOfBirth={profile.date_of_birth || ''}
           />
         </Grid>
         <Grid

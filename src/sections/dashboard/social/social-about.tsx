@@ -2,10 +2,12 @@
 
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
-import BookOpen01Icon from '@untitled-ui/icons-react/build/esm/BookOpen01';
-import Briefcase01Icon from '@untitled-ui/icons-react/build/esm/Briefcase01';
-import Home02Icon from '@untitled-ui/icons-react/build/esm/Home02';
-import Mail01Icon from '@untitled-ui/icons-react/build/esm/Mail01';
+import BookOpen01Icon from '@mui/icons-material/MenuBook';
+import Briefcase01Icon from '@mui/icons-material/Work';
+import Home02Icon from '@mui/icons-material/Home';
+import Mail01Icon from '@mui/icons-material/Email';
+import Phone01Icon from '@mui/icons-material/Phone';
+import CakeIcon from '@mui/icons-material/Cake';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
@@ -18,6 +20,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 interface SocialAboutProps {
   currentCity: string;
@@ -28,7 +31,9 @@ interface SocialAboutProps {
   previousJobCompany: string;
   previousJobTitle: string;
   profileProgress: number;
+  phoneNumber: string;
   quote: string;
+  dateOfBirth: string;
 }
 
 export const SocialAbout: FC<SocialAboutProps> = (props) => {
@@ -37,13 +42,26 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
     currentJobCompany,
     currentJobTitle,
     email,
+    phoneNumber,
     originCity,
     previousJobCompany,
     previousJobTitle,
     profileProgress,
     quote,
+    dateOfBirth,
     ...other
   } = props;
+
+  const { t } = useTranslation();
+
+  // Format date of birth to readable format
+  const formattedDateOfBirth = dateOfBirth
+    ? new Date(dateOfBirth).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+    : '';
 
   return (
     <Stack
@@ -51,7 +69,7 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
       {...other}
     >
       <Card>
-        <CardHeader title="Profile Progress" />
+        <CardHeader title={t('tenants.socialAboutProfileProgress')} />
         <CardContent>
           <Stack spacing={2}>
             <LinearProgress
@@ -62,17 +80,21 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
               color="text.secondary"
               variant="subtitle2"
             >
-              50% Set Up Complete
+              {t('tenants.socialAboutSetupComplete', { progress: profileProgress })}
             </Typography>
           </Stack>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader title="About" />
+        <CardHeader title={t('tenants.socialAboutTitle')} />
         <CardContent>
           <Typography
+            variant="h6"
+          >
+            {t('tenants.socialAboutQuote')}
+          </Typography>
+          <Typography
             color="text.secondary"
-            sx={{ mb: 2 }}
             variant="subtitle2"
           >
             &quot;
@@ -93,14 +115,8 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
                 disableTypography
                 primary={
                   <Typography variant="subtitle2">
-                    {currentJobTitle} at{' '}
-                    <Link
-                      color="text.primary"
-                      href="#"
-                      variant="subtitle2"
-                    >
-                      {currentJobCompany}
-                    </Link>
+                    {currentJobTitle} {t('tenants.socialAboutAt')}{' '}
+                    {currentJobCompany}
                   </Typography>
                 }
                 secondary={
@@ -108,19 +124,13 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
                     color="text.secondary"
                     variant="body2"
                   >
-                    Past: {previousJobTitle}{' '}
-                    <Link
-                      color="text.secondary"
-                      href="#"
-                      variant="body2"
-                    >
-                      {previousJobCompany}
-                    </Link>
+                    {t('tenants.socialAboutPast')} {previousJobTitle}{' '}
+                    {previousJobCompany}
                   </Typography>
                 }
               />
             </ListItem>
-            <ListItem
+            {/* <ListItem
               disableGutters
               divider
             >
@@ -131,16 +141,10 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Link
-                    color="text.secondary"
-                    sx={{ cursor: 'pointer' }}
-                    variant="caption"
-                  >
-                    Add school or collage
-                  </Link>
+                    {t('tenants.socialAboutAddSchool')}
                 }
               />
-            </ListItem>
+            </ListItem> */}
             <ListItem
               disableGutters
               divider
@@ -154,14 +158,8 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
                 disableTypography
                 primary={
                   <Typography variant="subtitle2">
-                    Lives in{' '}
-                    <Link
-                      color="text.primary"
-                      href="#"
-                      variant="subtitle2"
-                    >
-                      {currentCity}
-                    </Link>
+                    {t('tenants.socialAboutLivesIn')}{' '}
+                    {currentCity}
                   </Typography>
                 }
                 secondary={
@@ -169,7 +167,7 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
                     color="text.secondary"
                     variant="body2"
                   >
-                    Originally from{' '}
+                    {t('tenants.socialAboutOriginallyFrom')}{' '}
                     <Link
                       color="text.secondary"
                       href="#"
@@ -181,13 +179,29 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
                 }
               />
             </ListItem>
-            <ListItem disableGutters>
+            <ListItem disableGutters divider>
               <ListItemAvatar>
                 <SvgIcon color="action">
                   <Mail01Icon />
                 </SvgIcon>
               </ListItemAvatar>
               <ListItemText primary={<Typography variant="subtitle2">{email}</Typography>} />
+            </ListItem>
+            <ListItem disableGutters divider>
+              <ListItemAvatar>
+                <SvgIcon color="action">
+                  <Phone01Icon />
+                </SvgIcon>
+              </ListItemAvatar>
+              <ListItemText primary={<Typography variant="subtitle2">{phoneNumber}</Typography>} />
+            </ListItem>
+            <ListItem disableGutters>
+              <ListItemAvatar>
+                <SvgIcon color="action">
+                  <CakeIcon />
+                </SvgIcon>
+              </ListItemAvatar>
+              <ListItemText primary={<Typography variant="subtitle2">{formattedDateOfBirth}</Typography>} />
             </ListItem>
           </List>
         </CardContent>

@@ -8,6 +8,8 @@ import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
 import log from 'src/utils/logger';
 import { TenantContact } from 'src/types/notification';
+import { date } from 'yup';
+import { TenantProfile } from 'src/types/social';
 
 
 /**
@@ -72,6 +74,8 @@ export const createOrUpdateTenantAction = async (
                .from(TABLES.TENANTS)
                .update({
                     ...tenantData,
+                    date_of_birth: tenantData.date_of_birth || null,
+                    move_in_date: tenantData.move_in_date || null,
                     updated_at: new Date().toISOString(),
                })
                .eq('id', id)
@@ -135,7 +139,7 @@ export const createOrUpdateTenantAction = async (
                tenantData.phone_number !== undefined;
 
           if (sharedFieldsModified) {
-               const profileUpdates: any = {};
+               const profileUpdates: Partial<TenantProfile> = {};
                if (tenantData.first_name !== undefined) profileUpdates.first_name = tenantData.first_name;
                if (tenantData.last_name !== undefined) profileUpdates.last_name = tenantData.last_name;
                if (tenantData.phone_number !== undefined) profileUpdates.phone_number = tenantData.phone_number;
@@ -201,15 +205,14 @@ export const createOrUpdateTenantAction = async (
                .from(TABLES.TENANTS)
                .insert({
                     ...tenantData,
+                    date_of_birth: tenantData.date_of_birth || null,
+                    move_in_date: tenantData.move_in_date || null,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
-                    move_in_date: tenantData.move_in_date || null,
-                    date_of_birth: tenantData.date_of_birth || null,
                     user_id: createdUser.user.id,
                })
                .select()
                .single();
-          console.log('insertError', insertError);
 
           if (insertError || !insertedTenant) {
                await logServerAction({
@@ -224,7 +227,7 @@ export const createOrUpdateTenantAction = async (
 
                // Deleting the user if tenant creation fails
 
-               const { error: deleteUserError } = await anonSupabase.auth.admin.deleteUser(createdUser.user.id);
+               const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(createdUser.user.id);
                if (deleteUserError) {
                     await logServerAction({
                          action: 'Delete Tenant Auth User - Failed',
@@ -256,7 +259,9 @@ export const createOrUpdateTenantAction = async (
                     first_name: tenantData.first_name || '',
                     last_name: tenantData.last_name || '',
                     phone_number: tenantData.phone_number,
+                    email: tenantData.email,
                     is_public: true,
+                    date_of_birth: tenantData.date_of_birth || null,
                     profile_progress: 30, // Basic completion with name and phone
                };
 
@@ -264,7 +269,6 @@ export const createOrUpdateTenantAction = async (
                const { error: profileError } = await anonSupabase
                     .from(TABLES.TENANT_PROFILES)
                     .insert(profileData);
-               console.log('profileError', profileError);
                if (profileError) {
                     adminSupabase.auth.admin.deleteUser(createdUser.user.id);
                     return { saveTenantActionSuccess: false, saveTenantActionError: profileError };
@@ -276,6 +280,19 @@ export const createOrUpdateTenantAction = async (
           const { data: invitedUser, error: inviteError } = await adminSupabase.auth.resetPasswordForEmail(tenantData.email!, {
                redirectTo: process.env.NEXT_PUBLIC_SUPABASE_PASSWORD_RECOVERY_REDIRECT_URL,
           });
+
+          if (inviteError) {
+               await logServerAction({
+                    action: 'Send Tenant Invite Email - Failed',
+                    duration_ms: Date.now() - start,
+                    error: inviteError.message,
+                    payload: { email: tenantData.email },
+                    status: 'fail',
+                    type: 'auth',
+                    user_id: createdUser.user.id,
+               });
+               // Not a critical error, so we don't rollback tenant creation
+          }
 
           revalidatePath(`/dashboard/tenants/${insertedTenant.id}`);
           return {

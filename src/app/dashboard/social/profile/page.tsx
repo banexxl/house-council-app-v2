@@ -14,7 +14,6 @@ const Page = async () => {
      // Fetch user's posts
      const postsResult = await getCurrentUserPosts();
      const posts = postsResult.success ? postsResult.data || [] : [];
-
      // If no profile exists, show create profile message
      if (!profile) {
           return (
