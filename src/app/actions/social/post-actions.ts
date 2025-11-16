@@ -191,9 +191,13 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
  * Get posts by current user
  */
 export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPostWithAuthor[]>> {
+     const action = 'Get Current User Posts';
      try {
           const viewer = await getViewer();
           if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    error: 'User not authenticated or not a tenant',
+               });
                return { success: false, error: 'User not authenticated or not a tenant' };
           }
 
@@ -201,18 +205,102 @@ export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPostWi
 
           const { data, error } = await supabase
                .from(TABLES.TENANT_POSTS)
-               .select('*')
+               .select(`
+                    *,
+                    author:tenant_id (
+                         id,
+                         first_name,
+                         last_name,
+                         avatar_url
+                    )
+               `)
                .eq('tenant_id', viewer.tenant.id)
                .order('created_at', { ascending: false });
 
           if (error) {
                console.error('Error fetching user posts:', error);
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    error: error.message,
+               });
                return { success: false, error: error.message };
           }
 
-          return { success: true, data: data || [] };
+          // Transform and enrich posts
+          let enrichedPosts: TenantPostWithAuthor[] = (data || []).map((post: any) => ({
+               ...post,
+               author: {
+                    id: post.author?.id || post.tenant_id,
+                    first_name: post.author?.first_name || 'Unknown',
+                    last_name: post.author?.last_name || 'User',
+                    avatar_url: post.author?.avatar_url,
+               },
+               tenant_profiles: undefined,
+          }));
+
+          // Get post IDs for batch queries
+          const postIds = enrichedPosts.map(p => p.id).filter(Boolean) as string[];
+
+          if (postIds.length > 0) {
+               // Get images, documents, likes count, and comments count
+               const [
+                    { data: likeCountData },
+                    { data: commentCountData }
+               ] = await Promise.all([
+                    supabase
+                         .from(TABLES.TENANT_POST_LIKES)
+                         .select('post_id')
+                         .in('post_id', postIds),
+                    supabase
+                         .from(TABLES.TENANT_POST_COMMENTS)
+                         .select('post_id')
+                         .in('post_id', postIds)
+               ]);
+
+               // Build count maps
+               const likeCountMap = new Map<string, number>();
+               for (const like of likeCountData || []) {
+                    const postId = (like as any).post_id;
+                    likeCountMap.set(postId, (likeCountMap.get(postId) || 0) + 1);
+               }
+
+               const commentCountMap = new Map<string, number>();
+               for (const comment of commentCountData || []) {
+                    const postId = (comment as any).post_id;
+                    commentCountMap.set(postId, (commentCountMap.get(postId) || 0) + 1);
+               }
+
+               // Check if user liked each post (they're all their own posts, so likely false)
+               const { data: userLikes } = await supabase
+                    .from(TABLES.TENANT_POST_LIKES)
+                    .select('post_id')
+                    .in('post_id', postIds)
+                    .eq('tenant_id', viewer.tenant.id);
+
+               const likedPostIds = new Set((userLikes || []).map((r: any) => r.post_id));
+
+               // Attach counts and like status to posts
+               enrichedPosts = enrichedPosts.map(p => ({
+                    ...p,
+                    likes_count: likeCountMap.get(p.id!) || 0,
+                    comments_count: commentCountMap.get(p.id!) || 0,
+                    is_liked: likedPostIds.has(p.id!),
+                    images: [], // Images would be fetched if needed
+                    documents: [], // Documents would be fetched if needed
+               }));
+          }
+
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { resultCount: enrichedPosts.length },
+          });
+
+          return { success: true, data: enrichedPosts };
      } catch (error) {
           console.error('Error fetching user posts:', error);
+          await logActionResult(action, 'fail', {
+               error: error instanceof Error ? error.message : 'Failed to fetch posts',
+          });
           return { success: false, error: 'Failed to fetch posts' };
      }
 }

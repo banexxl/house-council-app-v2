@@ -32,7 +32,7 @@ import { updateTenantProfile } from 'src/app/actions/social/profile-actions';
 import { AVATAR_IMAGES, COVER_IMAGES, type TenantPostWithAuthor, type TenantProfile, type UpdateTenantProfilePayload } from 'src/types/social';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 
 interface socialProfileWrapperProps {

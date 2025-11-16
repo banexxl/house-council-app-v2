@@ -43,6 +43,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
 
     return Math.round((completedFields.length / trackedFields.length) * 100);
   }, [profile]);
+  console.log('posts', posts);
 
   return (
     <div {...other}>
