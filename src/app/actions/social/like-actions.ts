@@ -50,36 +50,17 @@ export async function togglePostLike(postId: string): Promise<ActionResponse<{ l
                     return { success: false, error: deleteError.message };
                }
 
-               // Decrement likes count
-               const { data: currentPost } = await supabase
-                    .from(TABLES.TENANT_POSTS)
-                    .select('likes_count')
-                    .eq('id', postId)
-                    .single();
-
-               const newLikesCount = Math.max(0, (currentPost?.likes_count || 0) - 1);
-
-               const { data: updatedPost, error: updateError } = await supabase
-                    .from(TABLES.TENANT_POSTS)
-                    .update({ likes_count: newLikesCount })
-                    .eq('id', postId)
-                    .select('likes_count')
-                    .single();
-
-               if (updateError) {
-                    console.error('Error updating likes count:', updateError);
-                    return { success: false, error: updateError.message };
-               }
-
                liked = false;
-               likesCount = updatedPost?.likes_count || 0;
+               // Count will be calculated dynamically when fetching posts
+               likesCount = 0; // Placeholder, should be recalculated on frontend
           } else {
-               // Like: add a new like
+               // Like: add a new like with default emoji
                const { error: insertError } = await supabase
                     .from(TABLES.TENANT_POST_LIKES)
                     .insert({
                          post_id: postId,
                          tenant_id: viewer.tenant.id,
+                         emoji: '👍', // Default emoji
                     });
 
                if (insertError) {
@@ -87,32 +68,10 @@ export async function togglePostLike(postId: string): Promise<ActionResponse<{ l
                     return { success: false, error: insertError.message };
                }
 
-               // Increment likes count
-               const { data: currentPost } = await supabase
-                    .from(TABLES.TENANT_POSTS)
-                    .select('likes_count')
-                    .eq('id', postId)
-                    .single();
-
-               const newLikesCount = (currentPost?.likes_count || 0) + 1;
-
-               const { data: updatedPost, error: updateError } = await supabase
-                    .from(TABLES.TENANT_POSTS)
-                    .update({ likes_count: newLikesCount })
-                    .eq('id', postId)
-                    .select('likes_count')
-                    .single();
-
-               if (updateError) {
-                    console.error('Error updating likes count:', updateError);
-                    return { success: false, error: updateError.message };
-               }
-
                liked = true;
-               likesCount = updatedPost?.likes_count || 0;
-          }
-
-          // Optionally revalidate the path where posts are displayed
+               // Count will be calculated dynamically when fetching posts
+               likesCount = 1; // Placeholder, should be recalculated on frontend
+          }          // Optionally revalidate the path where posts are displayed
           revalidatePath('/dashboard/social');
 
           return { success: true, data: { liked, likesCount } };

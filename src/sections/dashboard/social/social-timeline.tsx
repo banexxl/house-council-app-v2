@@ -14,11 +14,11 @@ import { SocialAbout } from './social-about';
 interface SocialProfileTimelineProps {
   posts?: TenantPostWithAuthor[];
   profile: TenantProfile;
+  buildingId: string;
 }
 
 export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
-  const { posts = [], profile, ...other } = props;
-
+  const { posts = [], profile, buildingId, ...other } = props;
   const profileProgress = useMemo(() => {
     const trackedFields: Array<keyof TenantProfile> = [
       'first_name',
@@ -71,7 +71,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
           size={{ xs: 12, lg: 8 }}
         >
           <Stack spacing={3}>
-            <SocialPostAdd />
+            <SocialPostAdd user={profile} buildingId={buildingId} />
             {posts.map((post) => (
               <SocialPostCard
                 key={post.id}
@@ -80,8 +80,8 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                 comments={[]} // Comments would need to be fetched separately
                 created_at={new Date(post.created_at).getTime()}
                 isLiked={post.is_liked || false}
-                likes={post.likes_count}
-                media={post.image_url}
+                likes={post.likes_count! || 0}
+                media={post.images || []}
                 message={post.content_text}
               />
             ))}

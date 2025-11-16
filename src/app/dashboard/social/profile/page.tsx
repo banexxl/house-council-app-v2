@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { getCurrentUserProfile } from 'src/app/actions/social/profile-actions';
 import { getCurrentUserPosts } from 'src/app/actions/social/post-actions';
 import { ClientProfileWrapper } from './client-wrapper';
+import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
 
 const Page = async () => {
      // Fetch current user's profile
@@ -53,6 +54,8 @@ const Page = async () => {
           );
      }
 
+     const { data: buildingId } = await getBuildingIdFromTenantId(profile.tenant_id);
+
      return (
           <>
                <Box
@@ -66,6 +69,7 @@ const Page = async () => {
                          <ClientProfileWrapper
                               posts={posts}
                               profile={profile}
+                              buildingId={buildingId!}
                          />
                     </Container>
                </Box>

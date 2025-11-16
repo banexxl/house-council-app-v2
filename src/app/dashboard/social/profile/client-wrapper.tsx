@@ -38,9 +38,10 @@ import dayjs, { Dayjs } from 'dayjs';
 interface socialProfileWrapperProps {
      posts: TenantPostWithAuthor[];
      profile: TenantProfile;
+     buildingId: string;
 }
 
-export const ClientProfileWrapper = ({ posts, profile }: socialProfileWrapperProps) => {
+export const ClientProfileWrapper = ({ posts, profile, buildingId }: socialProfileWrapperProps) => {
 
      const theme = useTheme();
      const { t } = useTranslation();
@@ -122,7 +123,6 @@ export const ClientProfileWrapper = ({ posts, profile }: socialProfileWrapperPro
           previous_job_company: profile.previous_job_company,
           origin_city: profile.origin_city,
           quote: profile.quote,
-          is_public: profile.is_public,
           ...overrides,
      });
 
@@ -370,6 +370,7 @@ export const ClientProfileWrapper = ({ posts, profile }: socialProfileWrapperPro
                     <SocialTimeline
                          posts={posts}
                          profile={profile}
+                         buildingId={buildingId}
                     />
                </Box>
                <Dialog

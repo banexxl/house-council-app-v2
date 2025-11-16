@@ -260,7 +260,6 @@ export const createOrUpdateTenantAction = async (
                     last_name: tenantData.last_name || '',
                     phone_number: tenantData.phone_number,
                     email: tenantData.email,
-                    is_public: true,
                     date_of_birth: tenantData.date_of_birth || null,
                     profile_progress: 30, // Basic completion with name and phone
                };
@@ -1214,6 +1213,53 @@ export const getClientIdFromTenantBuilding = async (tenantId: string): Promise<{
      }
 };
 
+export const getBuildingIdFromTenantId = async (tenantId: string): Promise<{
+     success: boolean;
+     data?: string;
+     error?: string;
+}> => {
 
+     if (!isUUID(tenantId)) {
+          return { success: false, error: 'Invalid tenant ID' };
+     }
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
+     try {
+          // Get tenant's apartment_id
+          const { data: tenant, error: tenantError } = await supabase
+               .from(TABLES.TENANTS)
+               .select('apartment_id')
+               .eq('id', tenantId)
+               .single();
 
+          if (tenantError) {
+               log(`Error fetching tenant: ${tenantError.message}`);
+               return { success: false, error: tenantError.message };
+          }
+
+          if (!tenant?.apartment_id) {
+               return { success: false, error: 'Tenant has no apartment assigned' };
+          }
+
+          // Get apartment's building_id
+          const { data: apartment, error: apartmentError } = await supabase
+               .from(TABLES.APARTMENTS)
+               .select('building_id')
+               .eq('id', tenant.apartment_id)
+               .single();
+
+          if (apartmentError) {
+               log(`Error fetching apartment: ${apartmentError.message}`);
+               return { success: false, error: apartmentError.message };
+          }
+
+          if (!apartment?.building_id) {
+               return { success: false, error: 'Apartment has no building assigned' };
+          }
+
+          return { success: true, data: apartment.building_id };
+     } catch (error: any) {
+          log(`Error in getBuildingIdFromTenantId: ${error.message}`);
+          return { success: false, error: error.message || 'Unexpected error' };
+     }
+};

@@ -33,7 +33,7 @@ interface SocialPostCardProps {
   created_at: number;
   isLiked: boolean;
   likes: number;
-  media?: string;
+  media?: string[];
   message: string;
 }
 
@@ -115,17 +115,25 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         }}
       >
         <Typography variant="body1">{message}</Typography>
-        {media && (
+        {Array.isArray(media) && media.length > 0 && (
           <Box sx={{ mt: 3 }}>
-            <CardActionArea>
-              <CardMedia
-                image={media}
-                sx={{
-                  backgroundPosition: 'top',
-                  height: 500,
-                }}
-              />
-            </CardActionArea>
+            {(() => {
+              const items: JSX.Element[] = [];
+              media.forEach((src, idx) => {
+                items.push(
+                  <CardActionArea key={idx}>
+                    <CardMedia
+                      image={src}
+                      sx={{
+                        backgroundPosition: 'top',
+                        height: 500,
+                      }}
+                    />
+                  </CardActionArea>
+                );
+              });
+              return items;
+            })()}
           </Box>
         )}
         <Stack
@@ -207,6 +215,6 @@ SocialPostCard.propTypes = {
   created_at: PropTypes.number.isRequired,
   isLiked: PropTypes.bool.isRequired,
   likes: PropTypes.number.isRequired,
-  media: PropTypes.string,
+  media: PropTypes.array,
   message: PropTypes.string.isRequired,
 };

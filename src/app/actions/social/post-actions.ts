@@ -36,7 +36,6 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                     ),
                     likes:tenant_post_likes(count)
                `)
-               .eq('is_public', true);
 
           // If building ID provided, filter by building
           if (buildingId) {
@@ -190,12 +189,10 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                .insert({
                     tenant_id: viewer.tenant.id,
                     ...payload,
-                    likes_count: 0,
-                    comments_count: 0,
-                    is_public: payload.is_public ?? true,
                })
                .select()
                .single();
+          console.log('error', error);
 
           if (error) {
                console.error('Error creating tenant post:', error);

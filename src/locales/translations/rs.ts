@@ -201,7 +201,7 @@ export const rs = {
      [tokens.polls.help.threshold_percent]: 'Minimalan procenat glasova potreban da bi opcija bila uzeta u obzir...',
      [tokens.polls.help.winners_count]: 'Koliko opcija može biti proglašeno pobedničkim u pravilima tipa „Top-N“...',
      // Announcements
-     [tokens.announcements.managementTitle]: 'Upravljanje objavama',
+     [tokens.announcements.managementTitle]: 'Objave',
      [tokens.announcements.createNew]: 'Kreiraj novu objavu',
      [tokens.announcements.uploadingImages]: 'Otpremanje slika...',
      [tokens.announcements.form.title]: 'Naslov',

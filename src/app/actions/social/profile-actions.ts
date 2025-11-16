@@ -122,7 +122,6 @@ export async function getTenantProfiles(buildingId?: string): Promise<ActionResp
                     )
                 )
             `)
-               .eq('is_public', true);
 
           // If building ID provided, filter by building
           if (buildingId) {
@@ -181,7 +180,6 @@ export async function createTenantProfile(payload: CreateTenantProfilePayload): 
                first_name: payload.first_name || tenantData?.first_name || '',
                last_name: payload.last_name || tenantData?.last_name || '',
                phone_number: payload.phone_number || tenantData?.phone_number,
-               is_public: payload.is_public ?? true,
           };
 
           // Calculate profile progress

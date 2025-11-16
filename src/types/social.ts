@@ -17,7 +17,6 @@ export interface TenantProfile {
   previous_job_company?: string;
   origin_city?: string;
   quote?: string;
-  is_public: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +35,6 @@ export interface CreateTenantProfilePayload {
   previous_job_company?: string;
   origin_city?: string;
   quote?: string;
-  is_public?: boolean;
 }
 
 export interface UpdateTenantProfilePayload {
@@ -54,7 +52,6 @@ export interface UpdateTenantProfilePayload {
   previous_job_company?: string;
   origin_city?: string;
   quote?: string;
-  is_public?: boolean;
 }
 
 // Tenant Post Types
@@ -62,26 +59,23 @@ export interface TenantPost {
   id: string;
   tenant_id: string;
   content_text: string;
-  image_url?: string;
-  likes_count: number;
-  comments_count: number;
-  is_public: boolean;
   building_id?: string;
   created_at: string;
   updated_at: string;
+  // Enriched fields for UI (calculated dynamically)
+  images?: string[];
+  documents?: { url: string; name: string; mime?: string }[];
+  likes_count?: number;
+  comments_count?: number;
 }
 
 export interface CreateTenantPostPayload {
   content_text: string;
-  image_url?: string;
-  is_public?: boolean;
-  building_id?: string;
+  building_id: string;
 }
 
 export interface UpdateTenantPostPayload {
   content_text?: string;
-  image_url?: string;
-  is_public?: boolean;
 }
 
 // Tenant Post Like Types
@@ -89,11 +83,19 @@ export interface TenantPostLike {
   id: string;
   post_id: string;
   tenant_id: string;
+  emoji: string;
   created_at: string;
+}
+
+export interface EmojiReaction {
+  emoji: string;
+  count: number;
+  userReacted: boolean;
 }
 
 export interface CreateTenantPostLikePayload {
   post_id: string;
+  emoji: string;
 }
 
 // Tenant Post Comment Types
@@ -124,6 +126,8 @@ export interface TenantPostWithAuthor extends TenantPost {
     avatar_url?: string;
   };
   is_liked?: boolean;
+  reactions?: EmojiReaction[];
+  userReaction?: string; // The emoji the current user reacted with
 }
 
 export interface TenantPostCommentWithAuthor extends TenantPostComment {

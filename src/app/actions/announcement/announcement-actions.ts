@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement } from 'src/types/announcement';
-import { BaseNotification, NotificationType, NotificationTypeMap } from 'src/types/notification';
+import { BaseNotification, NotificationTypeMap } from 'src/types/notification';
 import { createAnnouncementNotification } from 'src/utils/notification';
 import { emitNotifications } from '../notification/notification-actions';
 import { validate as isUUID } from 'uuid';

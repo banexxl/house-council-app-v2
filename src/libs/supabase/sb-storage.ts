@@ -25,7 +25,9 @@ type StorageEntity =
      | 'apartment-image'
      | 'announcement-image'
      | 'announcement-document'
-     | 'poll-attachment';
+     | 'poll-attachment'
+     | 'post-image'
+     | 'post-document';
 
 interface PathContext {
      entityId: string;
@@ -320,6 +322,55 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                column: 'is_cover_image',
                match: (entityId) => ({ poll_id: entityId }),
           },
+     },
+     'post-image': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'posts', ensureValue(entityId, 'entityId is required'), 'images'];
+          },
+          validateFile: ({ file }) => {
+               const type = ((file as any)?.type || '').toString();
+               if (!type.startsWith('image/')) {
+                    return { ok: false, error: 'Only image files are allowed' };
+               }
+               return { ok: true };
+          },
+          db: {
+               table: TABLES.TENANT_POST_IMAGES ?? 'tblTenantPostImages',
+               foreignKeyColumn: 'post_id',
+               mode: 'upsert',
+               conflictTarget: ['post_id', 'storage_bucket', 'storage_path'],
+               ignoreDuplicates: true,
+          },
+          revalidate: () => ['/dashboard/social/feed'],
+          returnSignedUrls: true,
+     },
+     'post-document': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'posts', ensureValue(entityId, 'entityId is required'), 'docs'];
+          },
+          validateFile: validateAnnouncementDocumentFile,
+          db: {
+               table: TABLES.TENANT_POST_DOCUMENTS ?? 'tblTenantPostDocuments',
+               foreignKeyColumn: 'post_id',
+               mode: 'upsert',
+               conflictTarget: ['post_id', 'storage_bucket', 'storage_path'],
+               ignoreDuplicates: false,
+               extraColumns: (ctx) => ({
+                    file_name: ctx.meta?.fileName,
+                    mime_type: ctx.meta?.mimeType,
+               }),
+          },
+          getUploadOptions: (ctx) => ({
+               cacheControl: DEFAULT_CACHE_CONTROL,
+               upsert: true,
+               contentType: determineAnnouncementDocumentContentType(String(ctx.meta?.mimeType ?? 'application/octet-stream')),
+          }),
+          revalidate: () => ['/dashboard/social/feed'],
+          returnSignedUrls: true,
      },
 };
 
