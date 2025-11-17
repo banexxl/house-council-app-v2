@@ -7,6 +7,8 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import ClockIcon from '@untitled-ui/icons-react/build/esm/Clock';
 import HeartIcon from '@untitled-ui/icons-react/build/esm/Heart';
 import Share07Icon from '@untitled-ui/icons-react/build/esm/Share07';
+import DotsVerticalIcon from '@untitled-ui/icons-react/build/esm/DotsVertical';
+import Archive from '@untitled-ui/icons-react/build/esm/Archive';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,10 +18,17 @@ import CardMedia from '@mui/material/CardMedia';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { toast } from 'react-hot-toast';
+
+import { archiveTenantPost } from 'src/app/actions/social/post-actions';
 
 import type { TenantPostCommentWithAuthor } from 'src/types/social';
 
@@ -27,6 +36,7 @@ import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';
 
 interface SocialPostCardProps {
+  postId: string;
   authorAvatar: string;
   authorName: string;
   comments: TenantPostCommentWithAuthor[];
@@ -35,10 +45,13 @@ interface SocialPostCardProps {
   likes: number;
   media?: string[];
   message: string;
+  isOwner?: boolean;
+  onArchive?: () => void;
 }
 
 export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const {
+    postId,
     authorAvatar,
     authorName,
     comments,
@@ -47,10 +60,14 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     likes: likesProp,
     media,
     message,
+    isOwner = false,
+    onArchive,
     ...other
   } = props;
   const [isLiked, setIsLiked] = useState<boolean>(isLikedProp);
   const [likes, setLikes] = useState<number>(likesProp);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const handleLike = useCallback((): void => {
     setIsLiked(true);
@@ -62,6 +79,33 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     setLikes((prevLikes) => prevLikes - 1);
   }, []);
 
+  const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  }, []);
+
+  const handleMenuClose = useCallback(() => {
+    setMenuAnchorEl(null);
+  }, []);
+
+  const handleArchive = useCallback(async () => {
+    setMenuAnchorEl(null);
+    setIsArchiving(true);
+    try {
+      const result = await archiveTenantPost(postId);
+      if (result.success) {
+        toast.success('Post archived successfully');
+        onArchive?.();
+      } else {
+        toast.error(result.error || 'Failed to archive post');
+      }
+    } catch (error) {
+      console.error('Error archiving post:', error);
+      toast.error('Failed to archive post');
+    } finally {
+      setIsArchiving(false);
+    }
+  }, [postId, onArchive]);
+
   return (
     <Card {...other}>
       <CardHeader
@@ -71,6 +115,31 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             href="#"
             src={authorAvatar}
           />
+        }
+        action={
+          isOwner ? (
+            <>
+              <IconButton onClick={handleMenuOpen} disabled={isArchiving}>
+                <SvgIcon>
+                  <DotsVerticalIcon />
+                </SvgIcon>
+              </IconButton>
+              <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean(menuAnchorEl)}
+                onClose={handleMenuClose}
+              >
+                <MenuItem onClick={handleArchive}>
+                  <ListItemIcon>
+                    <SvgIcon>
+                      <Archive />
+                    </SvgIcon>
+                  </ListItemIcon>
+                  <ListItemText>Archive Post</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : null
         }
         disableTypography
         subheader={
@@ -209,6 +278,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
 };
 
 SocialPostCard.propTypes = {
+  postId: PropTypes.string.isRequired,
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
   comments: PropTypes.array.isRequired,
@@ -217,4 +287,6 @@ SocialPostCard.propTypes = {
   likes: PropTypes.number.isRequired,
   media: PropTypes.array,
   message: PropTypes.string.isRequired,
+  isOwner: PropTypes.bool,
+  onArchive: PropTypes.func,
 };

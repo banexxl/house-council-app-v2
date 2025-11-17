@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { getCurrentUserProfile } from 'src/app/actions/social/profile-actions';
-import { getCurrentUserPosts } from 'src/app/actions/social/post-actions';
+import { getCurrentUserActivePosts } from 'src/app/actions/social/post-actions';
 import { ClientProfileWrapper } from './client-wrapper';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
 
@@ -13,7 +13,7 @@ const Page = async () => {
      const profile = profileResult.success ? profileResult.data : null;
 
      // Fetch user's posts
-     const postsResult = await getCurrentUserPosts();
+     const postsResult = await getCurrentUserActivePosts();
      const posts = postsResult.success ? postsResult.data || [] : [];
      // If no profile exists, show create profile message
      if (!profile) {

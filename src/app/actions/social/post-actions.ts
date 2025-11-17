@@ -69,6 +69,7 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                     ),
                     likes:tenant_post_likes(count)
                `)
+               .eq('is_archived', false)
 
           // If building ID provided, filter by building
           if (buildingId) {
@@ -190,7 +191,7 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
 /**
  * Get posts by current user
  */
-export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPostWithAuthor[]>> {
+export async function getCurrentUserActivePosts(): Promise<ActionResponse<TenantPostWithAuthor[]>> {
      const action = 'Get Current User Posts';
      try {
           const viewer = await getViewer();
@@ -215,6 +216,7 @@ export async function getCurrentUserPosts(): Promise<ActionResponse<TenantPostWi
                     )
                `)
                .eq('tenant_id', viewer.tenant.id)
+               .eq('is_archived', false)
                .order('created_at', { ascending: false });
 
           if (error) {
@@ -521,6 +523,82 @@ export async function deleteTenantPost(postId: string): Promise<ActionResponse<v
      }
 }
 
+/**
+ * Archive a post (soft delete)
+ */
+export async function archiveTenantPost(postId: string): Promise<ActionResponse<void>> {
+     try {
+          const action = 'Archive Tenant Post';
+          const viewer = await getViewer();
+          if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    payload: { postId },
+                    error: 'User not authenticated or not a tenant',
+               });
+               return { success: false, error: 'User not authenticated or not a tenant' };
+          }
+
+          const supabase = await useServerSideSupabaseAnonClient();
+
+          // Verify ownership
+          const { data: post } = await supabase
+               .from(TABLES.TENANT_POSTS)
+               .select('tenant_id')
+               .eq('id', postId)
+               .single();
+
+          if (!post) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'Post not found',
+               });
+               return { success: false, error: 'Post not found' };
+          }
+
+          if (post.tenant_id !== viewer.tenant.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: 'You can only archive your own posts',
+               });
+               return { success: false, error: 'You can only archive your own posts' };
+          }
+
+          // Archive the post
+          const { error } = await supabase
+               .from(TABLES.TENANT_POSTS)
+               .update({ is_archived: true })
+               .eq('id', postId);
+
+          if (error) {
+               console.error('Error archiving tenant post:', error);
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { postId },
+                    error: error.message,
+               });
+               return { success: false, error: error.message };
+          }
+
+          revalidatePath('/dashboard/social/feed');
+          revalidatePath('/dashboard/social/profile');
+
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { postId },
+          });
+          return { success: true };
+     } catch (error) {
+          console.error('Error archiving tenant post:', error);
+          await logActionResult('Archive Tenant Post', 'fail', {
+               payload: { postId },
+               error: error instanceof Error ? error.message : 'Failed to archive post',
+          });
+          return { success: false, error: 'Failed to archive post' };
+     }
+}
+
 // ============================= FILE UPLOAD OPERATIONS =============================
 
 /**
@@ -558,6 +636,7 @@ export async function uploadPostImages(
                .select('tenant_id')
                .eq('id', postId)
                .single();
+          console.log('post', post);
 
           if (checkError || !post || post.tenant_id !== viewer.tenant.id) {
                await logActionResult(action, 'fail', {
@@ -573,6 +652,7 @@ export async function uploadPostImages(
                entityId: postId,
                files,
           });
+          console.log('result', result);
 
           if (result.success) {
                revalidatePath('/dashboard/social/feed');

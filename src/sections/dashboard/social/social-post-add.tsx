@@ -177,21 +177,25 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isPosting}
+
             />
 
             {/* Selected Images Preview */}
             {selectedImages.length > 0 && (
               <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                {selectedImages.map((file, index) => (
-                  <Chip
-                    key={index}
-                    label={file.name}
-                    onDelete={() => removeImage(index)}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
+                {selectedImages.map((file, index) => {
+                  const label = file.name.length > 20 ? file.name.slice(0, 20) + '...' : file.name;
+                  return (
+                    <Chip
+                      key={index}
+                      label={label}
+                      onDelete={() => removeImage(index)}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  );
+                })}
               </Stack>
             )}
 
@@ -292,7 +296,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
               <Button
                 variant="contained"
                 onClick={handlePost}
-                disabled={isPosting || (!content.trim() && selectedImages.length === 0 && selectedDocuments.length === 0)}
+                disabled={isPosting || (!content.trim())}
               >
                 {isPosting ? 'Posting...' : 'Post'}
               </Button>

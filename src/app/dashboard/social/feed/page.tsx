@@ -42,6 +42,7 @@ const Page = async () => {
             {posts.map((post: TenantPostWithAuthor) => (
               <SocialPostCard
                 key={post.id}
+                postId={post.id!}
                 authorAvatar={post.author.avatar_url || ''}
                 authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
                 comments={[]} // We'll fetch comments separately when needed
@@ -50,6 +51,7 @@ const Page = async () => {
                 likes={post.likes_count || 0}
                 media={post.images || []}
                 message={post.content_text}
+                isOwner={false}
               />
             ))} */}
             {posts.length === 0 && (

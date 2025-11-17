@@ -62,6 +62,7 @@ export interface TenantPost {
   building_id?: string;
   created_at: string;
   updated_at: string;
+  is_archived: boolean;
   // Enriched fields for UI (calculated dynamically)
   images?: string[];
   documents?: { url: string; name: string; mime?: string }[];
@@ -77,6 +78,7 @@ export interface CreateTenantPostPayload {
 
 export interface UpdateTenantPostPayload {
   content_text?: string;
+  is_archived?: boolean;
 }
 
 // Tenant Post Like Types
