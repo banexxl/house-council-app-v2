@@ -7,7 +7,6 @@ import { Notification, BaseNotification, NotificationType, NotificationTypeMap, 
 import { hydrateNotificationsFromDb } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
-import { createMessage } from 'src/libs/whatsapp/twilio';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
@@ -90,28 +89,6 @@ export async function emitNotifications(
                     body = list.map(n => htmlToPlainText(n.description)).join('\n');
                     // const uniqueTypes = Array.from(new Set(list.map(n => n.type.value)));
                     notificationType = (list[0].type)
-               }
-               try {
-                    log('usssaaaoooo')
-                    const msg = await createMessage(contact.phone_number, title, body, notificationType, { useFetch: true });
-                    log(`[emitNotifications] SMS sent to ${contact.phone_number} (uid: ${uid}): ${msg?.sid || 'no sid'}`, 'warn');
-                    if (msg && (msg.sid || msg.status)) {
-                         smsSent++;
-                    } else {
-                         smsErrors++;
-                    }
-               } catch (e: any) {
-                    log(`[emitNotifications] Error sending SMS to ${contact.phone_number} (uid: ${uid}): ${e?.message || 'no message'}`, 'error');
-                    logServerAction({
-                         user_id: uid,
-                         action: 'emitNotificationsTwilio',
-                         duration_ms: 0,
-                         error: e?.message || 'unknown',
-                         payload: { phone: contact.phone_number, user_id: uid },
-                         status: 'fail',
-                         type: 'external',
-                    })
-                    smsErrors++;
                }
           }
 
