@@ -483,6 +483,7 @@ export const uploadEntityFiles = async (
                     });
                     return { success: false, error: uploadError.message };
                }
+               console.log('uploadError', uploadError);
 
                storageRefs.push({ bucket, path: storagePath, ctx });
 

@@ -636,7 +636,6 @@ export async function uploadPostImages(
                .select('tenant_id')
                .eq('id', postId)
                .single();
-          console.log('post', post);
 
           if (checkError || !post || post.tenant_id !== viewer.tenant.id) {
                await logActionResult(action, 'fail', {
