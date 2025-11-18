@@ -6,7 +6,6 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import type { CalendarEvent, UpdateCalendarEventInput } from "src/types/calendar";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { createAnnouncementNotification } from "src/utils/notification";
-import { emitNotifications } from "../notification/notification-actions";
 import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
 import { sendNotificationEmail } from "src/libs/email/node-mailer";
 
@@ -103,14 +102,6 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                               is_for_tenant: true,
                               announcement_id: '',
                          }) as any);
-                         if (rows.length) {
-                              const emitted = await emitNotifications(rows);
-                              if (!emitted.success) {
-                                   await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
-                              } else {
-                                   await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
-                              }
-                         }
                          // Email blast (best-effort) to tenant emails
                          const emails = tenants.map(t => t.email).filter((e: any) => typeof e === 'string' && e.includes('@')) as string[];
                          if (emails.length) {
@@ -194,14 +185,6 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                               is_for_tenant: true,
                               announcement_id: '',
                          }) as any);
-                         if (rows.length) {
-                              const emitted = await emitNotifications(rows);
-                              if (!emitted.success) {
-                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
-                              } else {
-                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
-                              }
-                         }
                          // Optional email on update (could be noisy; keep for now) best-effort
                          const emails = tenants.map(t => t.email).filter((e: any) => typeof e === 'string' && e.includes('@')) as string[];
                          if (emails.length) {

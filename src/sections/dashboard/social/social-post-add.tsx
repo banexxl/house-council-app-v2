@@ -114,6 +114,8 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
       }
 
       const postId = result.data.id;
+      console.log('postid', postId);
+      console.log('imges', selectedImages);
 
       // Upload images if any
       if (selectedImages.length > 0) {

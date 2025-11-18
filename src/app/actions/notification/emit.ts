@@ -3,8 +3,8 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
-import { formatEmail, formatWhatsApp } from './notiffication-formaters';
-import { sendViaEmail, sendViaWhatsApp } from './senders';
+import { formatEmail } from './notiffication-formaters';
+import { sendViaEmail } from './senders';
 import { Notification } from 'src/types/notification';
 
 
@@ -92,33 +92,6 @@ export async function emitNotifications(
 
                // If neither channel is allowed, skip quietly.
                if (!canWhatsApp && !canEmail) continue;
-
-               // WhatsApp
-               if (canWhatsApp) {
-                    try {
-                         const wa = formatWhatsApp(items);
-                         const res = await sendViaWhatsApp(c.phone_number, wa.title, wa.body, wa.dominantType);
-                         if (res.ok) {
-                              waSent++;
-                              log(`[emitNotifications] WA sent to ${c.phone_number} (uid: ${uid}) id=${res.id || 'n/a'}`, 'warn');
-                         } else {
-                              waErrors++;
-                              log(`[emitNotifications] WA error to ${c.phone_number} (uid: ${uid}): ${res.error || 'unknown'}`, 'error');
-                              await logServerAction({
-                                   user_id: uid,
-                                   action: 'emitNotificationsWhatsApp',
-                                   duration_ms: 0,
-                                   error: res.error || 'unknown',
-                                   payload: { phone: c.phone_number, user_id: uid },
-                                   status: 'fail',
-                                   type: 'external',
-                              });
-                         }
-                    } catch (e: any) {
-                         waErrors++;
-                         log(`[emitNotifications] WA throw to ${c.phone_number} (uid: ${uid}): ${e?.message || 'unknown'}`, 'error');
-                    }
-               }
 
                // Email
                if (canEmail) {

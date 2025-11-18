@@ -6,7 +6,6 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement } from 'src/types/announcement';
 import { BaseNotification, NotificationTypeMap } from 'src/types/notification';
 import { createAnnouncementNotification } from 'src/utils/notification';
-import { emitNotifications } from '../notification/notification-actions';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
@@ -617,19 +616,7 @@ export async function deleteAnnouncement(id: string) {
                is_read: false,
                is_for_tenant: false,
           });
-          const emitted = await emitNotifications([notification]);
-          const notificationError = emitted.success ? null : emitted.error ? { message: emitted.error } as any : null;
-          if (notificationError) {
-               logServerAction({
-                    user_id: user_id ? user_id : null,
-                    action: 'deleteAnnouncementNotification',
-                    duration_ms: 0,
-                    error: (notificationError as any).message,
-                    payload: { id },
-                    status: 'fail',
-                    type: 'db',
-               });
-          }
+
      } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
@@ -744,28 +731,6 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                               is_for_tenant: true,
                          })
                     )) as unknown as BaseNotification[];
-
-                    if (rows.length > 0) {
-                         const emitted = await emitNotifications(rows);
-
-                         if (!emitted.success) {
-                              await logServerAction({ user_id: null, action: 'publishAnnouncementNotifications', duration_ms: 0, error: emitted.error || 'unknown', payload: { count: rows.length, id }, status: 'fail', type: 'db' });
-                         } else {
-                              const typeLabel = typeInfo?.labelToken ? String(typeInfo.labelToken) : 'Announcement';
-                              const recipients = (tenants || []).map(t => t.email).filter(Boolean) as string[];
-                              if (recipients.length) {
-                                   const { ok, error } = await sendNotificationEmail(
-                                        recipients,
-                                        `${typeLabel}: ${annRow?.title || ''}`,
-                                        `<p><strong>${typeLabel}</strong></p><p>${annRow?.message || ''}</p>`,
-                                        `${typeLabel}: ${annRow?.title || ''}\n\n${annRow?.message || ''}`
-                                   );
-                                   if (!ok) {
-                                        await logServerAction({ user_id: null, action: 'publishAnnouncementEmail', duration_ms: 0, error: error || 'unknown', payload: { id, recipients: recipients.length }, status: 'fail', type: 'external' });
-                                   }
-                              }
-                         }
-                    }
                }
           }
      } catch (e: any) {
@@ -781,30 +746,6 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
           type: 'db',
      });
 
-     // Fire-and-forget internal notification about publishing (mirrors deleteAnnouncement pattern)
-     try {
-          const notification = createAnnouncementNotification({
-               title: 'Announcement published',
-               description: `Announcement ${id} was published`,
-               created_at: new Date().toISOString(),
-               user_id: user ? user.data.user?.id! : null,
-               is_read: false,
-               is_for_tenant: false,
-               announcement_id: id,
-          });
-          const emitted = await emitNotifications([notification]);
-          if (!emitted.success) {
-               logServerAction({
-                    user_id: user ? user.data.user?.id! : null,
-                    action: 'publishAnnouncementNotification',
-                    duration_ms: 0,
-                    error: emitted.error || 'unknown',
-                    payload: { id },
-                    status: 'fail',
-                    type: 'db',
-               });
-          }
-     } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true };
 }

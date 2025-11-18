@@ -19,7 +19,6 @@ import {
      InputAdornment
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +31,6 @@ import { Tenant, tenantInitialValues, tenantValidationSchema, tenantTypeOptions 
 import dayjs from 'dayjs';
 import { PopupModal } from 'src/components/modal-dialog';
 import { banUser, removeAllMfaFactors, sendMagicLink, sendPasswordRecoveryEmail, unbanUser } from 'src/app/actions/client/client-actions';
-import { sendWhatsAppSandboxInvite } from 'src/libs/whatsapp/twilio';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 
 interface TenantFormProps {
@@ -190,20 +188,6 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
           setModalLoading(false);
      };
 
-     const handleInviteToWhatsAppSandbox = async () => {
-          const res = await sendWhatsAppSandboxInvite({ phone: formik.values.phone_number!, name: formik.values.first_name });
-          if (res.ok) {
-               toast.success('SMS invite sent');
-          } else {
-               if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
-                    toast.error(res.error || 'Error sending SMS invite');
-               } else {
-                    toast.error('Error sending SMS invite');
-               }
-          }
-          setModal({ open: false, type: undefined });
-     };
-
      return (
           <form onSubmit={formik.handleSubmit}>
                <Stack spacing={4}>
@@ -224,436 +208,407 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                          ]}
                     />
                     <Card>
-                    <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
-                    <CardContent>
-                         <Grid container spacing={3}>
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        select
-                                        fullWidth
-                                        label={t('tenants.selectBuilding')}
-                                        value={selectedBuildingId}
-                                        onChange={(e) => {
-                                             const val = e.target.value;
-                                             setSelectedBuildingId(val);
-                                             formik.setFieldValue('apartment_id', '');
-                                        }}
-                                        sx={{ mb: 3 }}
-                                   >
-                                        {buildings.map((building) => (
-                                             <MenuItem key={building.id} value={building.id}>
-                                                  {building.name}
-                                             </MenuItem>
-                                        ))}
-                                   </TextField>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        select
-                                        fullWidth
-                                        label={t('tenants.selectApartment')}
-                                        name="apartment_id"
-                                        value={formik.values.apartment_id}
-                                        onChange={formik.handleChange}
-                                        disabled={!selectedBuildingId}
-                                        sx={{ mb: 3 }}
-                                   >
-                                        {availableApartments.map((apt) => (
-                                             <MenuItem key={apt.id} value={apt.id}>
-                                                  {apt.apartment_number}
-                                             </MenuItem>
-                                        ))}
-                                   </TextField>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        fullWidth
-                                        label={t('tenants.firstName')}
-                                        name="first_name"
-                                        value={formik.values.first_name}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        disabled={!apartmentSelected}
-                                        error={Boolean(formik.errors.first_name) && showFieldError('first_name')}
-                                        helperText={
-                                             <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {showFieldError('first_name') ? formik.errors.first_name : ''}
-                                             </span>
-                                        }
-                                   />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        fullWidth
-                                        label={t('tenants.lastName')}
-                                        name="last_name"
-                                        value={formik.values.last_name}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        disabled={!apartmentSelected}
-                                        error={Boolean(formik.errors.last_name) && showFieldError('last_name')}
-                                        helperText={
-                                             <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {showFieldError('last_name') ? formik.errors.last_name : ''}
-                                             </span>
-                                        }
-                                   />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        fullWidth
-                                        label={t('tenants.email')}
-                                        name="email"
-                                        value={formik.values.email}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        disabled={!apartmentSelected || !!tenantData}
-                                        error={Boolean(formik.errors.email) && showFieldError('email')}
-                                        helperText={
-                                             <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {showFieldError('email') ? formik.errors.email : ''}
-                                             </span>
-                                        }
-                                   />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        select
-                                        fullWidth
-                                        label={t('tenants.tenantType')}
-                                        name="tenant_type"
-                                        value={formik.values.tenant_type}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        disabled={!apartmentSelected}
-                                        error={Boolean(formik.errors.tenant_type) && showFieldError('tenant_type')}
-                                        helperText={
-                                             <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {showFieldError('tenant_type') ? formik.errors.tenant_type : ''}
-                                             </span>
-                                        }
-                                   >
-                                        {tenantTypeOptions.map((option) => (
-                                             <MenuItem key={option.value} value={option.value}>
-                                                  {t(option.label)}
-                                             </MenuItem>
-                                        ))}
-                                   </TextField>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DatePicker
-                                             label={t('tenants.birthDate')}
-                                             value={formik.values.date_of_birth ? dayjs(formik.values.date_of_birth) : null}
-                                             onChange={(date) => {
-                                                  formik.setFieldValue('date_of_birth', date ? date.toISOString() : null);
+                         <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
+                         <CardContent>
+                              <Grid container spacing={3}>
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             select
+                                             fullWidth
+                                             label={t('tenants.selectBuilding')}
+                                             value={selectedBuildingId}
+                                             onChange={(e) => {
+                                                  const val = e.target.value;
+                                                  setSelectedBuildingId(val);
+                                                  formik.setFieldValue('apartment_id', '');
                                              }}
-                                             slotProps={{
-                                                  textField: {
-                                                       fullWidth: true,
-                                                       name: 'date_of_birth',
-                                                       error: Boolean(formik.errors.date_of_birth) && showFieldError('date_of_birth'),
-                                                       helperText: showFieldError('date_of_birth') ? formik.errors.date_of_birth : '',
-                                                  },
-                                             }}
-                                             disabled={!apartmentSelected}
-                                             disableFuture={true}
-                                        />
-                                   </LocalizationProvider>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField
-                                        fullWidth
-                                        type="text"
-                                        label={t('tenants.tenantPhoneNumber')}
-                                        name="phone_number"
-                                        value={formik.values.phone_number}
-                                        onChange={(e) => {
-                                             const raw = e.target.value;
-                                             // Strip non-digits
-                                             const digits = raw.replace(/[^0-9]/g, '');
-                                             formik.setFieldValue('phone_number', digits);
-                                        }}
-                                        onBlur={formik.handleBlur}
-                                        disabled={!apartmentSelected}
-                                        error={Boolean(formik.errors.phone_number) && showFieldError('phone_number')}
-                                        helperText={
-                                             <span style={{ display: 'block', minHeight: 24 }}>
-                                                  {showFieldError('phone_number') ? formik.errors.phone_number : ''}
-                                             </span>
-                                        }
-                                        slotProps={{
-                                             htmlInput: {
-                                                  inputMode: 'numeric',
-                                                  pattern: '[0-9]*',
-                                                  onKeyDown: (e: any) => {
-                                                       const allowedControlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
-                                                       if (allowedControlKeys.includes(e.key)) return;
-                                                       if (!/^[0-9]$/.test(e.key)) {
-                                                            e.preventDefault();
-                                                       }
-                                                  },
-                                                  style: { MozAppearance: 'textfield' }
-                                             }
-                                        }}
-                                        sx={{
-                                             '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                                                  WebkitAppearance: 'none',
-                                                  margin: 0,
-                                             },
-                                        }}
-                                        InputProps={{
-                                             startAdornment: (
-                                                  <InputAdornment position="start" sx={{ userSelect: 'none' }}>
-                                                       <span style={{ fontWeight: 600 }}>+</span>
-                                                  </InputAdornment>
-                                             ),
-                                        }}
-                                   />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <Checkbox
-                                        name="is_primary"
-                                        checked={formik.values.is_primary || false}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                             formik.setFieldValue('is_primary', e.target.checked);
-                                             formik.setFieldTouched('email', true, false);
-                                             formik.setFieldTouched('phone_number', true, false);
-                                        }}
-                                        color="primary"
-                                        id="is_primary_checkbox"
-                                        sx={{ mr: 1 }}
-                                        disabled={!apartmentSelected}
-                                   />
-                                   <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
-                                        <label htmlFor="is_primary_checkbox">
-                                             <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
-                                        </label>
-                                   </Tooltip>
-                              </Grid>
-                         </Grid>
-                    </CardContent>
-                    <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                         {
-                              tenantData ? (
-                                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
-                                        <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
-                                             {/* Opt-in communication preferences */}
-                                             <Grid size={{ xs: 12 }}>
-                                                  <Box
-                                                       sx={{
-                                                            display: 'flex',
-                                                            flexWrap: 'wrap',
-                                                            gap: 2,
-                                                            alignItems: 'center'
-                                                       }}
-                                                  >
-                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                            <Checkbox
-                                                                 name="email_opt_in"
-                                                                 checked={formik.values.email_opt_in}
-                                                                 onChange={(e) => formik.setFieldValue('email_opt_in', e.target.checked)}
-                                                                 disabled={!apartmentSelected}
-                                                            />
-                                                            <Typography variant="body2">{t('tenants.tenantOptInEmail')}</Typography>
-                                                       </Box>
-                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                            <Checkbox
-                                                                 name="sms_opt_in"
-                                                                 checked={formik.values.sms_opt_in}
-                                                                 onChange={(e) => formik.setFieldValue('sms_opt_in', e.target.checked)}
-                                                                 disabled={!apartmentSelected || !formik.values.phone_number}
-                                                            />
-                                                            <Typography variant="body2">{t('tenants.tenantOptInSms')}</Typography>
-                                                       </Box>
-                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                            <Checkbox
-                                                                 name="viber_opt_in"
-                                                                 checked={formik.values.viber_opt_in}
-                                                                 onChange={(e) => formik.setFieldValue('viber_opt_in', e.target.checked)}
-                                                                 disabled={!apartmentSelected || !formik.values.phone_number}
-                                                            />
-                                                            <Typography variant="body2">{t('tenants.tenantOptInViber')}</Typography>
-                                                       </Box>
-                                                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                            <Checkbox
-                                                                 name="whatsapp_opt_in"
-                                                                 checked={formik.values.whatsapp_opt_in}
-                                                                 onChange={(e) => formik.setFieldValue('whatsapp_opt_in', e.target.checked)}
-                                                                 disabled={!apartmentSelected || !formik.values.phone_number}
-                                                            />
-                                                            <Typography variant="body2">{t('tenants.tenantOptInWhatsApp')}</Typography>
-                                                       </Box>
-                                                  </Box>
-                                             </Grid>
-                                             <Divider sx={{ my: 3 }} />
-                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                                                       {t('clients.inviteToWhatsAppSandboxDescription')}
-                                                  </Typography>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="primary"
-                                                       startIcon={<WhatsAppIcon />}
-                                                       onClick={() => setModal({ type: 'whatsapp', open: true })}
-                                                       disabled={formik.isSubmitting || !formik.values.email || modalLoading}
-                                                       loading={modalLoading && modal.type === 'whatsapp'}
-                                                       sx={{ textTransform: 'none' }}
-                                                  >
-                                                       {t('clients.invitationButtonTitle')}
-                                                  </Button>
-                                             </Box>
-                                             <Divider sx={{ my: 3 }} />
-                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                                                       {t('clients.sendPasswordRecoveryDescription')}
-                                                  </Typography>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="primary"
-                                                       disabled={formik.isSubmitting || !formik.values.email || modalLoading}
-                                                       loading={modalLoading && modal.type === 'recovery'}
-                                                       onClick={() => setModal({ type: 'recovery', open: true })}
-                                                  >
-                                                       {t('clients.sendPasswordRecovery')}
-                                                  </Button>
-                                             </Box>
-                                             <Divider sx={{ my: 3 }} />
-                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                                                       {t('clients.sendMagicLinkDescription')}
-                                                  </Typography>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="primary"
-                                                       disabled={formik.isSubmitting || !formik.values.email || modalLoading}
-                                                       loading={modalLoading && modal.type === 'magic'}
-                                                       onClick={() => setModal({ type: 'magic', open: true })}
-                                                  >
-                                                       {t('clients.sendMagicLink')}
-                                                  </Button>
-                                             </Box>
-                                             <Divider sx={{ my: 3 }} />
-                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                                                       {t('clients.removeMfaDescription')}
-                                                  </Typography>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="warning"
-                                                       disabled={formik.isSubmitting || !formik.values.id || modalLoading}
-                                                       loading={modalLoading && modal.type === 'mfa'}
-                                                       onClick={() => setModal({ type: 'mfa', open: true })}
-                                                  >
-                                                       {t('clients.removeMfa')}
-                                                  </Button>
-                                             </Box>
-                                             <Divider sx={{ my: 3 }} />
-                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                                                       {t('clients.banUserDescription')}
-                                                  </Typography>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="error"
-                                                       disabled={formik.isSubmitting || !formik.values.id || modalLoading}
-                                                       loading={modalLoading && modal.type === 'ban'}
-                                                       onClick={() => setModal({ type: 'ban', open: true })}
-                                                  >
-                                                       {t('clients.banUser')}
-                                                  </Button>
-                                             </Box>
-                                             <Divider sx={{ my: 3 }} />
-                                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
-                                                       {t('clients.unbanUserDescription')}
-                                                  </Typography>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="success"
-                                                       disabled={formik.isSubmitting || !formik.values.id || modalLoading}
-                                                       loading={modalLoading && modal.type === 'unban'}
-                                                       onClick={() => setModal({ type: 'unban', open: true })}
-                                                  >
-                                                       {t('clients.unbanUser')}
-                                                  </Button>
-                                             </Box>
-                                        </Stack>
-                                        <PopupModal
-                                             isOpen={modal.open}
-                                             title={
-                                                  modal.type === 'recovery' ? t('clients.sendPasswordRecovery') :
-                                                       modal.type === 'magic' ? t('clients.sendMagicLink') :
-                                                            modal.type === 'mfa' ? t('clients.removeMfa') :
-                                                                 modal.type === 'ban' ? t('clients.banUser') :
-                                                                      modal.type === 'unban' ? t('clients.unbanUser') :
-                                                                           modal.type === 'whatsapp' ? t('clients.inviteToWhatsAppSandboxTitle') : ''
-                                             }
-                                             type="confirmation"
-                                             loading={modalLoading}
-                                             onClose={() => {
-                                                  setModal({ open: false, type: undefined });
-                                                  setModalResult(null);
-                                             }}
-                                             onConfirm={() => {
-                                                  if (modal.type === 'recovery') return handleSendPasswordRecovery();
-                                                  if (modal.type === 'magic') return handleSendMagicLink();
-                                                  if (modal.type === 'mfa') return handleRemoveMfa();
-                                                  if (modal.type === 'ban') return handleBanUser();
-                                                  if (modal.type === 'unban') return handleUnbanUser();
-                                                  if (modal.type === 'whatsapp') return handleInviteToWhatsAppSandbox();
-                                             }}
-                                             confirmText={t('common.btnConfirm')}
-                                             cancelText={t('common.btnCancel')}
+                                             sx={{ mb: 3 }}
                                         >
-                                             {modal.type === 'recovery' && t('clients.confirmSendPasswordRecovery')}
-                                             {modal.type === 'magic' && t('clients.confirmSendMagicLink')}
-                                             {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
-                                             {modal.type === 'ban' && t('clients.confirmBanUser')}
-                                             {modal.type === 'unban' && t('clients.confirmUnbanUser')}
-                                             {modal.type === 'whatsapp' && t('clients.confirmInviteToWhatsAppSandboxMessage')}
-                                             {modalResult && (
-                                                  <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
-                                                       {modalResult}
-                                                  </div>
-                                             )}
-                                        </PopupModal>
-                                   </Stack>
-                              ) :
-                                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                             {t('clients.noClientData')}
-                                        </Typography>
-                                   </Stack>
-                         }
-                    </Grid>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ p: 3 }}>
-                         <Button
-                              type="submit"
-                              variant="contained"
-                              disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
-                              loading={formik.isSubmitting}
-                         >
-                              {t('common.btnSave')}
-                         </Button>
-                         <Button
-                              color="inherit"
-                              component={RouterLink}
-                              href={paths.dashboard.tenants.index}
-                              disabled={formik.isSubmitting}
-                         >
-                              {t('common.btnCancel')}
-                         </Button>
-                    </Stack>
+                                             {buildings.map((building) => (
+                                                  <MenuItem key={building.id} value={building.id}>
+                                                       {building.name}
+                                                  </MenuItem>
+                                             ))}
+                                        </TextField>
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             select
+                                             fullWidth
+                                             label={t('tenants.selectApartment')}
+                                             name="apartment_id"
+                                             value={formik.values.apartment_id}
+                                             onChange={formik.handleChange}
+                                             disabled={!selectedBuildingId}
+                                             sx={{ mb: 3 }}
+                                        >
+                                             {availableApartments.map((apt) => (
+                                                  <MenuItem key={apt.id} value={apt.id}>
+                                                       {apt.apartment_number}
+                                                  </MenuItem>
+                                             ))}
+                                        </TextField>
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.firstName')}
+                                             name="first_name"
+                                             value={formik.values.first_name}
+                                             onChange={formik.handleChange}
+                                             onBlur={formik.handleBlur}
+                                             disabled={!apartmentSelected}
+                                             error={Boolean(formik.errors.first_name) && showFieldError('first_name')}
+                                             helperText={
+                                                  <span style={{ display: 'block', minHeight: 24 }}>
+                                                       {showFieldError('first_name') ? formik.errors.first_name : ''}
+                                                  </span>
+                                             }
+                                        />
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.lastName')}
+                                             name="last_name"
+                                             value={formik.values.last_name}
+                                             onChange={formik.handleChange}
+                                             onBlur={formik.handleBlur}
+                                             disabled={!apartmentSelected}
+                                             error={Boolean(formik.errors.last_name) && showFieldError('last_name')}
+                                             helperText={
+                                                  <span style={{ display: 'block', minHeight: 24 }}>
+                                                       {showFieldError('last_name') ? formik.errors.last_name : ''}
+                                                  </span>
+                                             }
+                                        />
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.email')}
+                                             name="email"
+                                             value={formik.values.email}
+                                             onChange={formik.handleChange}
+                                             onBlur={formik.handleBlur}
+                                             disabled={!apartmentSelected || !!tenantData}
+                                             error={Boolean(formik.errors.email) && showFieldError('email')}
+                                             helperText={
+                                                  <span style={{ display: 'block', minHeight: 24 }}>
+                                                       {showFieldError('email') ? formik.errors.email : ''}
+                                                  </span>
+                                             }
+                                        />
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             select
+                                             fullWidth
+                                             label={t('tenants.tenantType')}
+                                             name="tenant_type"
+                                             value={formik.values.tenant_type}
+                                             onChange={formik.handleChange}
+                                             onBlur={formik.handleBlur}
+                                             disabled={!apartmentSelected}
+                                             error={Boolean(formik.errors.tenant_type) && showFieldError('tenant_type')}
+                                             helperText={
+                                                  <span style={{ display: 'block', minHeight: 24 }}>
+                                                       {showFieldError('tenant_type') ? formik.errors.tenant_type : ''}
+                                                  </span>
+                                             }
+                                        >
+                                             {tenantTypeOptions.map((option) => (
+                                                  <MenuItem key={option.value} value={option.value}>
+                                                       {t(option.label)}
+                                                  </MenuItem>
+                                             ))}
+                                        </TextField>
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                             <DatePicker
+                                                  label={t('tenants.birthDate')}
+                                                  value={formik.values.date_of_birth ? dayjs(formik.values.date_of_birth) : null}
+                                                  onChange={(date) => {
+                                                       formik.setFieldValue('date_of_birth', date ? date.toISOString() : null);
+                                                  }}
+                                                  slotProps={{
+                                                       textField: {
+                                                            fullWidth: true,
+                                                            name: 'date_of_birth',
+                                                            error: Boolean(formik.errors.date_of_birth) && showFieldError('date_of_birth'),
+                                                            helperText: showFieldError('date_of_birth') ? formik.errors.date_of_birth : '',
+                                                       },
+                                                  }}
+                                                  disabled={!apartmentSelected}
+                                                  disableFuture={true}
+                                             />
+                                        </LocalizationProvider>
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <TextField
+                                             fullWidth
+                                             type="text"
+                                             label={t('tenants.tenantPhoneNumber')}
+                                             name="phone_number"
+                                             value={formik.values.phone_number}
+                                             onChange={(e) => {
+                                                  const raw = e.target.value;
+                                                  // Strip non-digits
+                                                  const digits = raw.replace(/[^0-9]/g, '');
+                                                  formik.setFieldValue('phone_number', digits);
+                                             }}
+                                             onBlur={formik.handleBlur}
+                                             disabled={!apartmentSelected}
+                                             error={Boolean(formik.errors.phone_number) && showFieldError('phone_number')}
+                                             helperText={
+                                                  <span style={{ display: 'block', minHeight: 24 }}>
+                                                       {showFieldError('phone_number') ? formik.errors.phone_number : ''}
+                                                  </span>
+                                             }
+                                             slotProps={{
+                                                  htmlInput: {
+                                                       inputMode: 'numeric',
+                                                       pattern: '[0-9]*',
+                                                       onKeyDown: (e: any) => {
+                                                            const allowedControlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+                                                            if (allowedControlKeys.includes(e.key)) return;
+                                                            if (!/^[0-9]$/.test(e.key)) {
+                                                                 e.preventDefault();
+                                                            }
+                                                       },
+                                                       style: { MozAppearance: 'textfield' }
+                                                  }
+                                             }}
+                                             sx={{
+                                                  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                       WebkitAppearance: 'none',
+                                                       margin: 0,
+                                                  },
+                                             }}
+                                             InputProps={{
+                                                  startAdornment: (
+                                                       <InputAdornment position="start" sx={{ userSelect: 'none' }}>
+                                                            <span style={{ fontWeight: 600 }}>+</span>
+                                                       </InputAdornment>
+                                                  ),
+                                             }}
+                                        />
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 6 }}>
+                                        <Checkbox
+                                             name="is_primary"
+                                             checked={formik.values.is_primary || false}
+                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                  formik.setFieldValue('is_primary', e.target.checked);
+                                                  formik.setFieldTouched('email', true, false);
+                                                  formik.setFieldTouched('phone_number', true, false);
+                                             }}
+                                             color="primary"
+                                             id="is_primary_checkbox"
+                                             sx={{ mr: 1 }}
+                                             disabled={!apartmentSelected}
+                                        />
+                                        <Tooltip title={t('tenants.tenantIsPrimaryDescription')}>
+                                             <label htmlFor="is_primary_checkbox">
+                                                  <Typography variant="body1">{t('tenants.tenantIsPrimary')}</Typography>
+                                             </label>
+                                        </Tooltip>
+                                   </Grid>
+                              </Grid>
+                         </CardContent>
+                         <Divider sx={{ my: 3 }} >{t('common.lblClientAccountActions')}</Divider>
+                         <Grid size={{ xs: 12, md: 6 }}>
+                              {
+                                   tenantData ? (
+                                        <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
+                                             <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
+                                                  {/* Opt-in communication preferences */}
+                                                  <Grid size={{ xs: 12 }}>
+                                                       <Box
+                                                            sx={{
+                                                                 display: 'flex',
+                                                                 flexWrap: 'wrap',
+                                                                 gap: 2,
+                                                                 alignItems: 'center'
+                                                            }}
+                                                       >
+                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                 <Checkbox
+                                                                      name="email_opt_in"
+                                                                      checked={formik.values.email_opt_in}
+                                                                      onChange={(e) => formik.setFieldValue('email_opt_in', e.target.checked)}
+                                                                      disabled={!apartmentSelected}
+                                                                 />
+                                                                 <Typography variant="body2">{t('tenants.tenantOptInEmail')}</Typography>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                 <Checkbox
+                                                                      name="sms_opt_in"
+                                                                      checked={formik.values.sms_opt_in}
+                                                                      onChange={(e) => formik.setFieldValue('sms_opt_in', e.target.checked)}
+                                                                      disabled={!apartmentSelected || !formik.values.phone_number}
+                                                                 />
+                                                                 <Typography variant="body2">{t('tenants.tenantOptInSms')}</Typography>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                 <Checkbox
+                                                                      name="viber_opt_in"
+                                                                      checked={formik.values.viber_opt_in}
+                                                                      onChange={(e) => formik.setFieldValue('viber_opt_in', e.target.checked)}
+                                                                      disabled={!apartmentSelected || !formik.values.phone_number}
+                                                                 />
+                                                                 <Typography variant="body2">{t('tenants.tenantOptInViber')}</Typography>
+                                                            </Box>
+                                                       </Box>
+                                                  </Grid>
+                                                  <Divider sx={{ my: 3 }} />
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                       <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                            {t('clients.sendPasswordRecoveryDescription')}
+                                                       </Typography>
+                                                       <Button
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            disabled={formik.isSubmitting || !formik.values.email || modalLoading}
+                                                            loading={modalLoading && modal.type === 'recovery'}
+                                                            onClick={() => setModal({ type: 'recovery', open: true })}
+                                                       >
+                                                            {t('clients.sendPasswordRecovery')}
+                                                       </Button>
+                                                  </Box>
+                                                  <Divider sx={{ my: 3 }} />
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                       <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                            {t('clients.sendMagicLinkDescription')}
+                                                       </Typography>
+                                                       <Button
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            disabled={formik.isSubmitting || !formik.values.email || modalLoading}
+                                                            loading={modalLoading && modal.type === 'magic'}
+                                                            onClick={() => setModal({ type: 'magic', open: true })}
+                                                       >
+                                                            {t('clients.sendMagicLink')}
+                                                       </Button>
+                                                  </Box>
+                                                  <Divider sx={{ my: 3 }} />
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                       <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                            {t('clients.removeMfaDescription')}
+                                                       </Typography>
+                                                       <Button
+                                                            variant="outlined"
+                                                            color="warning"
+                                                            disabled={formik.isSubmitting || !formik.values.id || modalLoading}
+                                                            loading={modalLoading && modal.type === 'mfa'}
+                                                            onClick={() => setModal({ type: 'mfa', open: true })}
+                                                       >
+                                                            {t('clients.removeMfa')}
+                                                       </Button>
+                                                  </Box>
+                                                  <Divider sx={{ my: 3 }} />
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                       <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                            {t('clients.banUserDescription')}
+                                                       </Typography>
+                                                       <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            disabled={formik.isSubmitting || !formik.values.id || modalLoading}
+                                                            loading={modalLoading && modal.type === 'ban'}
+                                                            onClick={() => setModal({ type: 'ban', open: true })}
+                                                       >
+                                                            {t('clients.banUser')}
+                                                       </Button>
+                                                  </Box>
+                                                  <Divider sx={{ my: 3 }} />
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, flexWrap: 'wrap' }}>
+                                                       <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontWeight: 'bold' }}>
+                                                            {t('clients.unbanUserDescription')}
+                                                       </Typography>
+                                                       <Button
+                                                            variant="outlined"
+                                                            color="success"
+                                                            disabled={formik.isSubmitting || !formik.values.id || modalLoading}
+                                                            loading={modalLoading && modal.type === 'unban'}
+                                                            onClick={() => setModal({ type: 'unban', open: true })}
+                                                       >
+                                                            {t('clients.unbanUser')}
+                                                       </Button>
+                                                  </Box>
+                                             </Stack>
+                                             <PopupModal
+                                                  isOpen={modal.open}
+                                                  title={
+                                                       modal.type === 'recovery' ? t('clients.sendPasswordRecovery') :
+                                                            modal.type === 'magic' ? t('clients.sendMagicLink') :
+                                                                 modal.type === 'mfa' ? t('clients.removeMfa') :
+                                                                      modal.type === 'ban' ? t('clients.banUser') :
+                                                                           modal.type === 'unban' ? t('clients.unbanUser') : ''
+                                                  }
+                                                  type="confirmation"
+                                                  loading={modalLoading}
+                                                  onClose={() => {
+                                                       setModal({ open: false, type: undefined });
+                                                       setModalResult(null);
+                                                  }}
+                                                  onConfirm={() => {
+                                                       if (modal.type === 'recovery') return handleSendPasswordRecovery();
+                                                       if (modal.type === 'magic') return handleSendMagicLink();
+                                                       if (modal.type === 'mfa') return handleRemoveMfa();
+                                                       if (modal.type === 'ban') return handleBanUser();
+                                                       if (modal.type === 'unban') return handleUnbanUser();
+                                                  }}
+                                                  confirmText={t('common.btnConfirm')}
+                                                  cancelText={t('common.btnCancel')}
+                                             >
+                                                  {modal.type === 'recovery' && t('clients.confirmSendPasswordRecovery')}
+                                                  {modal.type === 'magic' && t('clients.confirmSendMagicLink')}
+                                                  {modal.type === 'mfa' && t('clients.confirmRemoveMfa')}
+                                                  {modal.type === 'ban' && t('clients.confirmBanUser')}
+                                                  {modal.type === 'unban' && t('clients.confirmUnbanUser')}
+                                                  {modalResult && (
+                                                       <div style={{ marginTop: 16, color: modalResult.startsWith('Error') ? 'red' : 'green' }}>
+                                                            {modalResult}
+                                                       </div>
+                                                  )}
+                                             </PopupModal>
+                                        </Stack>
+                                   ) :
+                                        <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={3} sx={{ p: 3 }}>
+                                             <Typography variant="body2" color="text.secondary">
+                                                  {t('clients.noClientData')}
+                                             </Typography>
+                                        </Stack>
+                              }
+                         </Grid>
+                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ p: 3 }}>
+                              <Button
+                                   type="submit"
+                                   variant="contained"
+                                   disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                                   loading={formik.isSubmitting}
+                              >
+                                   {t('common.btnSave')}
+                              </Button>
+                              <Button
+                                   color="inherit"
+                                   component={RouterLink}
+                                   href={paths.dashboard.tenants.index}
+                                   disabled={formik.isSubmitting}
+                              >
+                                   {t('common.btnCancel')}
+                              </Button>
+                         </Stack>
 
                     </Card>
                </Stack>
