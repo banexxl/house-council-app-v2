@@ -22,7 +22,8 @@ import { toast } from 'react-hot-toast';
 
 import { getInitials } from 'src/utils/get-initials';
 import { TenantProfile } from 'src/types/social';
-import { createTenantPost, uploadPostImages, uploadPostDocuments } from 'src/app/actions/social/post-actions';
+import { createTenantPost } from 'src/app/actions/social/post-actions';
+import { uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 
 interface SocialPostAddProps {
   user: TenantProfile;
@@ -94,7 +95,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
   }, []);
 
   const handlePost = useCallback(async () => {
-    if (!content.trim() && selectedImages.length === 0 && selectedDocuments.length === 0) {
+    if (!content.trim()) {
       toast.error('Please add some content, images, or documents');
       return;
     }
@@ -114,12 +115,14 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
       }
 
       const postId = result.data.id;
-      console.log('postid', postId);
-      console.log('imges', selectedImages);
 
       // Upload images if any
       if (selectedImages.length > 0) {
-        const imageResult = await uploadPostImages(postId, selectedImages);
+        const imageResult = await uploadEntityFiles({
+          entity: 'post-image',
+          entityId: postId,
+          files: selectedImages,
+        });
         if (!imageResult.success) {
           toast.error('Post created but failed to upload images');
         }
@@ -127,7 +130,11 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
 
       // Upload documents if any
       if (selectedDocuments.length > 0) {
-        const docResult = await uploadPostDocuments(postId, selectedDocuments);
+        const docResult = await uploadEntityFiles({
+          entity: 'post-document',
+          entityId: postId,
+          files: selectedDocuments,
+        })
         if (!docResult.success) {
           toast.error('Post created but failed to upload documents');
         }

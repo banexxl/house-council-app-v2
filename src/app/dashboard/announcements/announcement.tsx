@@ -300,8 +300,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
      };
 
      const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-          console.log('aaaaaaaaaaaaaa');
-
           if (!editingEntity) {
                toast.error(t(tokens.announcements.toasts.saveDraftBeforeImages));
                return;
@@ -316,7 +314,6 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     entityId: editingEntity.id,
                     files: fileList as any,
                });
-               console.log('result', result);
 
                if (!result.success) {
                     toast.error(result.error || t(tokens.announcements.toasts.uploadFailed));

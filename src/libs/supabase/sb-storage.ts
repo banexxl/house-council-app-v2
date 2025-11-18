@@ -379,7 +379,6 @@ export const uploadEntityFiles = async (
 ): Promise<UploadEntityFilesResult> => {
      const startedAt = Date.now();
      const config = ENTITY_CONFIG[params.entity];
-
      if (!config) {
           return { success: false, error: `Unsupported storage entity: ${params.entity}` };
      }
