@@ -25,6 +25,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import ButtonBase from '@mui/material/ButtonBase';
 import { toast } from 'react-hot-toast';
 
 import { archiveTenantPost } from 'src/app/actions/social/post-actions';
@@ -246,18 +247,25 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           <Box sx={{ mt: 2 }}>
             <Stack direction="row" flexWrap="wrap" gap={1}>
               {reactionList.map((reaction) => (
-                <Box
+                <ButtonBase
                   key={reaction.emoji}
+                  onClick={() => handleReactionSelect(reaction.emoji)}
+                  disabled={isReacting}
                   sx={{
+                    px: 0,
+                    borderRadius: 999,
                     alignItems: 'center',
                     bgcolor: reaction.userReacted ? 'primary.light' : 'grey.100',
-                    borderRadius: 999,
                     border: '1px solid',
                     borderColor: reaction.userReacted ? 'primary.main' : 'grey.200',
                     display: 'inline-flex',
                     gap: 0.5,
                     px: 1.5,
                     py: 0.5,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: reaction.userReacted ? 'primary.light' : 'grey.200',
+                    },
                   }}
                 >
                   <Typography variant="body2">{reaction.emoji}</Typography>
@@ -267,7 +275,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                   >
                     {reaction.count}
                   </Typography>
-                </Box>
+                </ButtonBase>
               ))}
             </Stack>
             {currentReaction && (
