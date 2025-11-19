@@ -72,6 +72,9 @@ async function fetchReactionMapsForPosts(
      return computeReactionAggregates(data, currentUserId);
 }
 
+const DEFAULT_POST_PAGE_SIZE = 5;
+const MAX_POST_PAGE_SIZE = 25;
+
 /**
  * Get all posts with author information
  */
@@ -139,6 +142,94 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
           console.error('Error fetching tenant posts:', error);
           await logActionResult('Get Tenant Posts', 'fail', {
                payload: { buildingId: buildingId ?? null },
+               error: error instanceof Error ? error.message : 'Failed to fetch posts',
+          });
+          return { success: false, error: 'Failed to fetch posts' };
+     }
+}
+
+/**
+ * Get posts with pagination support
+ */
+export async function getTenantPostsPaginated(options: {
+     buildingId?: string;
+     limit?: number;
+     offset?: number;
+}): Promise<ActionResponse<{ posts: TenantPostWithAuthor[]; total: number }>> {
+     try {
+          const action = 'Get Tenant Posts Paginated';
+          const buildingId = options.buildingId;
+          const pageSize = Math.min(Math.max(options.limit ?? DEFAULT_POST_PAGE_SIZE, 1), MAX_POST_PAGE_SIZE);
+          const offset = Math.max(options.offset ?? 0, 0);
+          const supabase = await useServerSideSupabaseAnonClient();
+
+          let query = supabase
+               .from(TABLES.TENANT_POSTS)
+               .select(`
+                    *,
+                    author:tenant_id (
+                         id,
+                         first_name,
+                         last_name,
+                         avatar_url
+                    ),
+                    likes:tblTenantPostLikes(count)
+               `, { count: 'exact' })
+               .eq('is_archived', false);
+
+          if (buildingId) {
+               query = query.eq('building_id', buildingId);
+          }
+
+          const { data, error, count } = await query
+               .order('created_at', { ascending: false })
+               .range(offset, offset + pageSize - 1);
+
+          if (error) {
+               console.error('Error fetching tenant posts:', error);
+               await logActionResult(action, 'fail', {
+                    payload: { buildingId: buildingId ?? null, limit: pageSize, offset },
+                    error: error.message,
+               });
+               return { success: false, error: error.message };
+          }
+
+          const viewer = await getViewer();
+          const currentUserId = viewer.tenant?.id || null;
+          const postIds = (data || []).map((post: any) => post.id);
+          const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, currentUserId);
+
+          const postsWithLikes = (data || []).map((post: any) => {
+               const reactions = reactionMap.get(post.id) ?? [];
+               const userReaction = userReactionMap.get(post.id) ?? null;
+               const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
+               return {
+                    ...post,
+                    author: post.author,
+                    reactions,
+                    userReaction,
+                    is_liked: Boolean(userReaction),
+                    likes_count: likesCount,
+               } as TenantPostWithAuthor;
+          });
+
+          const total = typeof count === 'number' ? count : postsWithLikes.length + offset;
+
+          await logActionResult(action, 'success', {
+               userId: currentUserId,
+               payload: {
+                    buildingId: buildingId ?? null,
+                    limit: pageSize,
+                    offset,
+                    resultCount: postsWithLikes.length,
+                    total,
+               },
+          });
+          return { success: true, data: { posts: postsWithLikes, total } };
+     } catch (error) {
+          console.error('Error fetching tenant posts:', error);
+          await logActionResult('Get Tenant Posts Paginated', 'fail', {
+               payload: { buildingId: options.buildingId ?? null, limit: options.limit, offset: options.offset },
                error: error instanceof Error ? error.message : 'Failed to fetch posts',
           });
           return { success: false, error: 'Failed to fetch posts' };

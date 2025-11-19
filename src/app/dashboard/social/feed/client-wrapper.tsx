@@ -1,28 +1,47 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 
 import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
-import { SocialPostAdd } from 'src/sections/dashboard/social/social-post-add';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
 
 interface ClientFeedWrapperProps {
   posts: TenantPostWithAuthor[];
   profile: TenantProfile;
   buildingId: string;
+  totalCount: number;
+  pageSize: number;
 }
 
-export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrapperProps) => {
+type FeedResponse = {
+  posts?: TenantPostWithAuthor[];
+  total?: number;
+};
+
+export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, pageSize }: ClientFeedWrapperProps) => {
   const router = useRouter();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [feedPosts, setFeedPosts] = useState<TenantPostWithAuthor[]>(posts);
+  const [totalPosts, setTotalPosts] = useState(totalCount);
+  const [nextOffset, setNextOffset] = useState(posts.length);
+  const [hasMore, setHasMore] = useState(posts.length < totalCount);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setFeedPosts(posts);
-  }, [posts]);
+    setTotalPosts(totalCount);
+    setNextOffset(posts.length);
+    setHasMore(posts.length < totalCount);
+  }, [posts, totalCount]);
+
+  useEffect(() => {
+    setHasMore(nextOffset < totalPosts);
+  }, [nextOffset, totalPosts]);
 
   const handlePostCreated = useCallback(() => {
     router.refresh();
@@ -30,6 +49,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrap
 
   const handlePostArchived = useCallback((postId: string) => {
     setFeedPosts((prev) => prev.filter((post) => post.id !== postId));
+    setTotalPosts((prev) => Math.max(prev - 1, 0));
   }, []);
 
   const handleReactionsChange = useCallback(
@@ -50,13 +70,75 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrap
     []
   );
 
+  const fetchMorePosts = useCallback(async () => {
+    if (isLoadingMore || !hasMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    setLoadError(null);
+
+    try {
+      const params = new URLSearchParams({
+        limit: pageSize.toString(),
+        offset: nextOffset.toString(),
+      });
+
+      if (buildingId) {
+        params.set('buildingId', buildingId);
+      }
+
+      const response = await fetch(`/api/social/feed?${params.toString()}`, { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+
+      const data: FeedResponse = await response.json();
+      const newPosts = data.posts ?? [];
+      const updatedOffset = nextOffset + newPosts.length;
+      const updatedTotal = typeof data.total === 'number' ? data.total : totalPosts;
+
+      setFeedPosts((prev) => [...prev, ...newPosts]);
+      setNextOffset(updatedOffset);
+      setTotalPosts(updatedTotal);
+      setHasMore(updatedOffset < updatedTotal && newPosts.length > 0);
+    } catch (error) {
+      console.error('Error loading more posts', error);
+      setLoadError('Unable to load more posts right now.');
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [buildingId, hasMore, isLoadingMore, nextOffset, pageSize, totalPosts]);
+
+  useEffect(() => {
+    if (!hasMore) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          fetchMorePosts();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    const target = loadMoreRef.current;
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+    };
+  }, [fetchMorePosts, hasMore]);
+
   return (
     <Stack spacing={3}>
-      {/* <SocialPostAdd
-        buildingId={buildingId}
-        user={profile}
-        onPostCreated={handlePostCreated}
-      /> */}
       {feedPosts.length === 0 ? (
         <Box
           sx={{
@@ -75,25 +157,44 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrap
           </Typography>
         </Box>
       ) : (
-        feedPosts.map((post) => (
-          <SocialPostCard
-            key={post.id}
-            postId={post.id}
-            authorAvatar={post.author.avatar_url || ''}
-            authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
-            comments={[]}
-            created_at={new Date(post.created_at).getTime()}
-            isLiked={post.is_liked || false}
-            likes={post.likes_count || 0}
-            media={post.images || []}
-            message={post.content_text}
-            isOwner={post.tenant_id === profile.tenant_id}
-            onArchive={() => handlePostArchived(post.id)}
-            reactions={post.reactions || []}
-            userReaction={post.userReaction}
-            onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
-          />
-        ))
+        <>
+          {feedPosts.map((post) => (
+            <SocialPostCard
+              key={post.id}
+              postId={post.id}
+              authorAvatar={post.author.avatar_url || ''}
+              authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
+              comments={[]}
+              created_at={new Date(post.created_at).getTime()}
+              isLiked={post.is_liked || false}
+              likes={post.likes_count || 0}
+              media={post.images || []}
+              message={post.content_text}
+              isOwner={post.tenant_id === profile.tenant_id}
+              onArchive={() => handlePostArchived(post.id)}
+              reactions={post.reactions || []}
+              userReaction={post.userReaction}
+              onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
+            />
+          ))}
+
+          {loadError && (
+            <Typography color="error" variant="body2">
+              {loadError}
+            </Typography>
+          )}
+
+          {(hasMore || isLoadingMore) && (
+            <Box
+              ref={loadMoreRef}
+              sx={{ display: 'flex', justifyContent: 'center', py: 2 }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                {isLoadingMore ? 'Loading more posts...' : 'Scroll to load more posts'}
+              </Typography>
+            </Box>
+          )}
+        </>
       )}
     </Stack>
   );
