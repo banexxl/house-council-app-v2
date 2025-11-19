@@ -1,14 +1,61 @@
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Seo } from 'src/components/seo';
 
+import { Seo } from 'src/components/seo';
 import { getTenantPosts } from 'src/app/actions/social/post-actions';
+import { getCurrentUserProfile } from 'src/app/actions/social/profile-actions';
+import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
+
+import { ClientFeedWrapper } from './client-wrapper';
 
 const Page = async () => {
-  // Fetch posts server-side
-  const postsResult = await getTenantPosts();
+  const profileResult = await getCurrentUserProfile();
+  const profile = profileResult.success ? profileResult.data : null;
+
+  if (!profile) {
+    return (
+      <>
+        <Seo title="Dashboard: Social Feed" />
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            py: 8,
+          }}
+        >
+          <Container maxWidth="lg">
+            <Box
+              sx={{
+                textAlign: 'center',
+                py: 6,
+                color: 'text.secondary',
+              }}
+            >
+              <Typography variant="h4" gutterBottom>
+                Create Your Social Profile
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 4 }}>
+                Set up your profile to connect with your community.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                href="/dashboard/social/profile/edit"
+              >
+                Create Profile
+              </Button>
+            </Box>
+          </Container>
+        </Box>
+      </>
+    );
+  }
+
+  const { data: buildingId } = await getBuildingIdFromTenantId(profile.tenant_id);
+  const postsResult = await getTenantPosts(buildingId ?? undefined);
   const posts = postsResult.success ? postsResult.data || [] : [];
 
   return (
@@ -35,38 +82,11 @@ const Page = async () => {
             spacing={3}
             sx={{ mt: 3 }}
           >
-            {/* <SocialPostAdd user={} buildingId={''} />
-            {posts.map((post: TenantPostWithAuthor) => (
-              <SocialPostCard
-                key={post.id}
-                postId={post.id!}
-                authorAvatar={post.author.avatar_url || ''}
-                authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
-                comments={[]} // We'll fetch comments separately when needed
-                created_at={new Date(post.created_at).getTime()}
-                isLiked={post.is_liked || false}
-                likes={post.likes_count || 0}
-                media={post.images || []}
-                message={post.content_text}
-                isOwner={false}
-              />
-            ))} */}
-            {posts.length === 0 && (
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  py: 6,
-                  color: 'text.secondary'
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  No posts yet
-                </Typography>
-                <Typography variant="body2">
-                  Be the first to share something with your community!
-                </Typography>
-              </Box>
-            )}
+            <ClientFeedWrapper
+              posts={posts}
+              profile={profile}
+              buildingId={buildingId ?? ''}
+            />
           </Stack>
         </Container>
       </Box>

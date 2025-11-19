@@ -271,9 +271,13 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
     roles: ["tenant"],
     items: [
       {
-        title: t(tokens.nav.profile),
-        path: paths.dashboard.social.profile,
+        title: t(tokens.nav.socialMedia),
+        // path: paths.dashboard.social.profile,
         roles: ["tenant", "client", "clientMember"],
+        items: [
+          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["tenant"] },
+          { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["tenant"] },
+        ],
         icon: (
           <SvgIcon fontSize="small">
             <Users03Icon />
