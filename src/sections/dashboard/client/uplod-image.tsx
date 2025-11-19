@@ -34,19 +34,50 @@ export type ImageUploadRef = {
      clearImage: () => void
 }
 
+const buildStoredRefKey = (value?: string | null) => {
+     if (!value) return null;
+     if (value.includes("::")) return value;
+     const match = value.match(/\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/([^?]+)/);
+     if (!match) return null;
+     const [, bucket, encodedPath] = match;
+     let path = encodedPath;
+     try {
+          path = decodeURIComponent(encodedPath);
+     } catch {
+          path = encodedPath;
+     }
+     return `${bucket}::${path}`;
+};
+
 export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
      ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx }, ref) => {
-
-          const [storedRef, setStoredRef] = useState<string | null>(initialValue ?? null)
+          const initialStoredRef = buildStoredRefKey(initialValue);
+          const [storedRef, setStoredRef] = useState<string | null>(initialStoredRef)
           const { url, loading: isLoading } = useSignedUrl(
                storedRef ? storedRef.split('::')[0] : '',
                storedRef ? storedRef.split('::')[1] ?? '' : '',
                { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
           );
-          const [avatarUrl, setAvatarUrl] = useState<string>(initialValue || "")
+          const [avatarUrl, setAvatarUrl] = useState<string>(initialStoredRef ? "" : (initialValue || ""))
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()
+
+          // Sync internal refs when parent provides a new initial value
+          useEffect(() => {
+               if (!initialValue) {
+                    setStoredRef(null);
+                    setAvatarUrl("");
+                    return;
+               }
+               const refKey = buildStoredRefKey(initialValue);
+               if (refKey) {
+                    setStoredRef(refKey);
+               } else {
+                    setStoredRef(null);
+                    setAvatarUrl(initialValue);
+               }
+          }, [initialValue]);
 
           // Update avatar URL when signed URL is loaded
           useEffect(() => {
@@ -70,39 +101,55 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     return
                }
 
+               if (!userId) {
+                    toast.error('Client must be saved before uploading an image');
+                    event.target.value = '';
+                    return;
+               }
+
                setLoading(true)
+               const reader = new FileReader()
+               reader.onload = () => {
+                    if (typeof reader.result === 'string') {
+                         setAvatarUrl(reader.result)
+                    }
+               }
+               reader.readAsDataURL(selectedFile)
 
                try {
-                    const reader = new FileReader()
-                    reader.readAsDataURL(selectedFile)
+                    const uploadResult = await uploadEntityFiles({
+                         entity: 'client-image',
+                         entityId: userId,
+                         files: [selectedFile],
+                         clientId: userId,
+                    });
 
-                    reader.onloadend = async () => {
-                         if (!userId) {
-                              toast.error('Client must be saved before uploading an image');
-                              setLoading(false);
-                              return;
+                    if (uploadResult.success) {
+                         const signedUrl = uploadResult.signedUrls?.[0] || "";
+                         if (signedUrl) {
+                              setAvatarUrl(signedUrl);
+                              const refKey = buildStoredRefKey(signedUrl);
+                              if (refKey) setStoredRef(refKey);
+                         } else if (uploadResult.records?.length) {
+                              const record = uploadResult.records[0] as { storage_bucket?: string; storage_path?: string };
+                              if (record?.storage_bucket && record?.storage_path) {
+                                   setStoredRef(`${record.storage_bucket}::${record.storage_path}`);
+                              }
                          }
-
-                         const uploadResult = await uploadEntityFiles({
-                              entity: 'client-image',
-                              entityId: userId,
-                              files: [selectedFile],
-                              clientId: userId,
-                         });
-
-                         if (uploadResult.success) {
-                              onUploadSuccess(uploadResult.signedUrls?.[0] || "");
-                              toast.success("Image uploaded successfully");
-                         } else {
-                              toast.error(uploadResult.error || "Failed to upload image");
-                              onUploadSuccess("");
-                         }
+                         onUploadSuccess(signedUrl);
+                         toast.success("Image uploaded successfully");
+                    } else {
+                         toast.error(uploadResult.error || "Failed to upload image");
+                         onUploadSuccess("");
                     }
                } catch (error) {
                     toast.error("Failed to upload image")
                     onUploadSuccess("")
                } finally {
                     setLoading(false)
+                    if (fileInputRef.current) {
+                         fileInputRef.current.value = ''
+                    }
                }
           }
 
