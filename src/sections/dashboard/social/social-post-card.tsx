@@ -12,9 +12,7 @@ import Archive from '@untitled-ui/icons-react/build/esm/Archive';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
-import CardMedia from '@mui/material/CardMedia';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
@@ -30,10 +28,11 @@ import { toast } from 'react-hot-toast';
 
 import { archiveTenantPost } from 'src/app/actions/social/post-actions';
 
-import type { TenantPostCommentWithAuthor } from 'src/types/social';
+import type { TenantPostCommentWithAuthor, TenantPostImage } from 'src/types/social';
 
 import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';
+import { SocialPostMediaGrid } from './social-post-media-grid';
 
 interface SocialPostCardProps {
   postId: string;
@@ -43,7 +42,7 @@ interface SocialPostCardProps {
   created_at: number;
   isLiked: boolean;
   likes: number;
-  media?: string[];
+  media?: TenantPostImage[];
   message: string;
   isOwner?: boolean;
   onArchive?: () => void;
@@ -186,23 +185,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         <Typography variant="body1">{message}</Typography>
         {Array.isArray(media) && media.length > 0 && (
           <Box sx={{ mt: 3 }}>
-            {(() => {
-              const items: JSX.Element[] = [];
-              media.forEach((src, idx) => {
-                items.push(
-                  <CardActionArea key={idx}>
-                    <CardMedia
-                      image={src}
-                      sx={{
-                        backgroundPosition: 'top',
-                        height: 500,
-                      }}
-                    />
-                  </CardActionArea>
-                );
-              });
-              return items;
-            })()}
+            <SocialPostMediaGrid media={media} />
           </Box>
         )}
         <Stack
@@ -285,7 +268,6 @@ SocialPostCard.propTypes = {
   created_at: PropTypes.number.isRequired,
   isLiked: PropTypes.bool.isRequired,
   likes: PropTypes.number.isRequired,
-  media: PropTypes.array,
   message: PropTypes.string.isRequired,
   isOwner: PropTypes.bool,
   onArchive: PropTypes.func,
