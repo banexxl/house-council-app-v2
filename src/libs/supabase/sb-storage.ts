@@ -5,6 +5,7 @@ import { useServerSideSupabaseAnonClient } from './sb-server';
 import { logServerAction } from './server-logging';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { TABLES } from 'src/libs/supabase/tables';
+import log from 'src/utils/logger';
 
 const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -483,8 +484,6 @@ export const uploadEntityFiles = async (
                     });
                     return { success: false, error: uploadError.message };
                }
-               console.log('uploadError', uploadError);
-
                storageRefs.push({ bucket, path: storagePath, ctx });
 
                if (config.db) {

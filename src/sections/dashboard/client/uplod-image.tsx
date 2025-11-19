@@ -72,9 +72,6 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
 
                setLoading(true)
 
-               const fileExtension = selectedFile.name.split(".").pop() || ""
-               const title = selectedFile.name.split(".")[0]
-
                try {
                     const reader = new FileReader()
                     reader.readAsDataURL(selectedFile)
@@ -93,13 +90,8 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               clientId: userId,
                          });
 
-                         if (uploadResult.success && uploadResult.records && uploadResult.records[0]) {
-                              const record = uploadResult.records[0] as any;
-                              const bucket = record.storage_bucket as string;
-                              const path = record.storage_path as string;
-                              const refKey = `${bucket}::${path}`;
-                              setStoredRef(refKey);
-                              onUploadSuccess(refKey);
+                         if (uploadResult.success) {
+                              onUploadSuccess(uploadResult.signedUrls?.[0] || "");
                               toast.success("Image uploaded successfully");
                          } else {
                               toast.error(uploadResult.error || "Failed to upload image");

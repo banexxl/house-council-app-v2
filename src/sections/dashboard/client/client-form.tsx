@@ -222,7 +222,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             buttonDisabled={initialValues?.id == '' ? true : false}
             ref={ImageUploadRef}
             onUploadSuccess={(url: string) => {
-              log('usao u onuploadsuccess')
               formik.setFieldValue('avatar', url)
               formik.setFieldTouched('avatar', true, false)
             }}
