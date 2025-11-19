@@ -57,8 +57,6 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
                     return { success: false, error: deleteError.message };
                }
           } else if (existingReaction) {
-               console.log('existingReaction', existingReaction);
-
                const { error: updateError } = await supabase
                     .from(TABLES.TENANT_POST_LIKES)
                     .update({ emoji })
@@ -69,10 +67,6 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
                     return { success: false, error: updateError.message };
                }
           } else {
-               console.log('postid', postId);
-               console.log(tenantId);
-
-
                const { error: insertError } = await supabase
                     .from(TABLES.TENANT_POST_LIKES)
                     .insert({
