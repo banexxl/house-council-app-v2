@@ -6,65 +6,95 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Announcement } from 'src/types/announcement';
 import { BaseNotification, NotificationTypeMap } from 'src/types/notification';
 import { createAnnouncementNotification } from 'src/utils/notification';
+import { signMany, toStorageRef } from 'src/utils/sb-bucket';
 import { validate as isUUID } from 'uuid';
-import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { sendNotificationEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 
-// Table names (adjust if different in your DB schema)
-const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
-const ANNOUNCEMENT_IMAGES_TABLE = 'tblAnnouncementImages';
-const ANNOUNCEMENT_DOCUMENTS_TABLE = 'tblAnnouncementDocuments';
-const ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE = 'tblBuildings_Announcements';
+type SupabaseServerClient = Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>;
 
-// ===== Signing helpers (internal) =====
-const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
-const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
+type AnnouncementDocumentPayload = { url: string; name: string; mime?: string };
 
-type Ref = { bucket: string; path: string };
+type AnnouncementImageRow = {
+     announcement_id?: string | null;
+     storage_bucket?: string | null;
+     storage_path?: string | null;
+};
 
-function makeRef(
-     bucketMaybe: string | null | undefined,
-     pathMaybe: string | null | undefined,
-     legacyUrl?: string | null
-): Ref | null {
-     if (pathMaybe) return { bucket: bucketMaybe ?? DEFAULT_BUCKET, path: pathMaybe };
-     if (legacyUrl) {
-          const parsed = toStorageRef(legacyUrl);
-          if (parsed) return parsed;
+type AnnouncementDocumentRow = AnnouncementImageRow & {
+     file_name?: string | null;
+     mime_type?: string | null;
+};
+
+const buildSignedMediaMaps = async (
+     supabase: SupabaseServerClient,
+     imageRows?: AnnouncementImageRow[] | null,
+     documentRows?: AnnouncementDocumentRow[] | null,
+) => {
+     const imagesMap = new Map<string, string[]>();
+     const documentsMap = new Map<string, AnnouncementDocumentPayload[]>();
+
+     const imagePointers: Array<{ announcementId: string; key: string }> = [];
+     const uniqueImageRefs: { bucket: string; path: string }[] = [];
+     const seenImageKeys = new Set<string>();
+
+     for (const row of imageRows ?? []) {
+          const announcementId = row?.announcement_id;
+          if (!announcementId) continue;
+          const ref = toStorageRef({ storage_bucket: row?.storage_bucket ?? undefined, storage_path: row?.storage_path ?? undefined });
+          if (!ref) continue;
+          const key = `${ref.bucket}::${ref.path}`;
+          imagePointers.push({ announcementId, key });
+          if (!seenImageKeys.has(key)) {
+               seenImageKeys.add(key);
+               uniqueImageRefs.push(ref);
+          }
      }
-     return null;
-}
 
-async function signMany(
-     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
-     refs: Ref[]
-) {
-     const out = new Map<string, string>();
-     if (!refs?.length) return out;
+     const docPointers: Array<{ announcementId: string; key: string; name: string; mime?: string | null }> = [];
+     const uniqueDocRefs: { bucket: string; path: string }[] = [];
+     const seenDocKeys = new Set<string>();
 
-     // Group & dedupe by bucket
-     const byBucket = new Map<string, string[]>();
-     for (const r of refs) {
-          const arr = byBucket.get(r.bucket) ?? [];
-          if (!arr.includes(r.path)) arr.push(r.path);
-          byBucket.set(r.bucket, arr);
-     }
-
-     for (const [bucket, paths] of byBucket) {
-          if (!paths.length) continue;
-          const { data, error } = await supabase.storage
-               .from(bucket)
-               .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
-          if (error || !data) continue;
-          data.forEach((d, i) => {
-               if (d?.signedUrl) out.set(`${bucket}::${paths[i]}`, d.signedUrl);
+     for (const row of documentRows ?? []) {
+          const announcementId = row?.announcement_id;
+          if (!announcementId) continue;
+          const ref = toStorageRef({ storage_bucket: row?.storage_bucket ?? undefined, storage_path: row?.storage_path ?? undefined });
+          if (!ref) continue;
+          const key = `${ref.bucket}::${ref.path}`;
+          docPointers.push({
+               announcementId,
+               key,
+               name: row?.file_name ?? '',
+               mime: row?.mime_type ?? undefined,
           });
+          if (!seenDocKeys.has(key)) {
+               seenDocKeys.add(key);
+               uniqueDocRefs.push(ref);
+          }
      }
 
-     return out;
-}
+     const signedImageMap = imagePointers.length > 0 ? await signMany(supabase, uniqueImageRefs) : new Map<string, string>();
+     const signedDocMap = docPointers.length > 0 ? await signMany(supabase, uniqueDocRefs) : new Map<string, string>();
+
+     imagePointers.forEach(pointer => {
+          const url = signedImageMap.get(pointer.key);
+          if (!url) return;
+          const arr = imagesMap.get(pointer.announcementId) ?? [];
+          arr.push(url);
+          imagesMap.set(pointer.announcementId, arr);
+     });
+
+     docPointers.forEach(pointer => {
+          const url = signedDocMap.get(pointer.key);
+          if (!url) return;
+          const arr = documentsMap.get(pointer.announcementId) ?? [];
+          arr.push({ url, name: pointer.name, mime: pointer.mime ?? undefined });
+          documentsMap.set(pointer.announcementId, arr);
+     });
+
+     return { imagesMap, documentsMap };
+};
 
 // ============================= READ OPERATIONS =============================
 export async function getAnnouncements(): Promise<{ success: boolean; error?: string; data?: Announcement[] }> {
@@ -72,7 +102,7 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from(ANNOUNCEMENTS_TABLE)
+          .from(TABLES.ANNOUNCEMENTS)
           .select('*')
           .order('created_at', { ascending: false });
 
@@ -98,101 +128,46 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
                // Images + Docs (new columns + legacy)
                const [{ data: imgRows }, { data: docRows }] = await Promise.all([
                     supabase
-                         .from(ANNOUNCEMENT_IMAGES_TABLE)
+                         .from(TABLES.ANNOUNCEMENT_IMAGES)
                          .select('announcement_id, storage_bucket, storage_path')
                          .in('announcement_id', ids),
                     supabase
-                         .from(ANNOUNCEMENT_DOCUMENTS_TABLE)
+                         .from(TABLES.ANNOUNCEMENT_DOCUMENTS)
                          .select('announcement_id, storage_bucket, storage_path, file_name, mime_type')
                          .in('announcement_id', ids),
                ]);
 
-               // Build refs to sign
-               const imageRefs: Ref[] = (imgRows ?? [])
-                    .map(r =>
-                         makeRef((r as any).storage_bucket, (r as any).storage_path)
-                    )
-                    .filter(Boolean) as Ref[];
+               const { imagesMap, documentsMap } = await buildSignedMediaMaps(
+                    supabase,
+                    imgRows as AnnouncementImageRow[],
+                    docRows as AnnouncementDocumentRow[],
+               );
 
-               const docRefs: Ref[] = (docRows ?? [])
-                    .map(r =>
-                         makeRef((r as any).storage_bucket, (r as any).storage_path, (r as any).document_url)
-                    )
-                    .filter(Boolean) as Ref[];
 
-               const signedMap = await signMany(supabase, [...imageRefs, ...docRefs]);
-
-               // Map announcement_id → signed image urls
-               const imagesMap = new Map<string, string[]>();
-               for (const r of imgRows ?? []) {
-                    const bucket = (r as any).storage_bucket ?? DEFAULT_BUCKET;
-                    const path = (r as any).storage_path;
-                    let key: string | null = null;
-
-                    if (path) key = `${bucket}::${path}`;
-
-                    if (!key) continue;
-                    const signed = signedMap.get(key);
-                    if (!signed) continue;
-
-                    const annId = (r as any).announcement_id as string;
-                    const arr = imagesMap.get(annId) ?? [];
-                    arr.push(signed);
-                    imagesMap.set(annId, arr);
-               }
-
-               // Map announcement_id → signed doc items
-               const docsMap = new Map<string, { url: string; name: string; mime?: string }[]>();
-               for (const r of docRows ?? []) {
-                    const bucket = (r as any).storage_bucket ?? DEFAULT_BUCKET;
-                    const path = (r as any).storage_path;
-                    let key: string | null = null;
-
-                    if (path) key = `${bucket}::${path}`;
-                    else if ((r as any).document_url) {
-                         const parsed = toStorageRef((r as any).document_url);
-                         if (parsed) key = `${parsed.bucket}::${parsed.path}`;
-                    }
-
-                    if (!key) continue;
-                    const signed = signedMap.get(key);
-                    if (!signed) continue;
-
-                    const annId = (r as any).announcement_id as string;
-                    const item = {
-                         url: signed,
-                         name: (r as any).file_name as string,
-                         mime: ((r as any).mime_type as string) || undefined,
-                    };
-                    const arr = docsMap.get(annId) ?? [];
-                    arr.push(item);
-                    docsMap.set(annId, arr);
-               }
-
-               // Attach to each announcement
-               enriched = enriched.map(a => ({
-                    ...a,
-                    images: imagesMap.get(a.id!) || [],
-                    documents: docsMap.get(a.id!) || [],
-               }));
-
+               const bMap = new Map<string, string[]>();
                // Buildings enrichment (many-to-many pivot) — unchanged
                try {
                     const { data: buildingRows, error: bErr } = await supabase
-                         .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+                         .from(TABLES.BUILDINGS_ANNOUNCEMENTS)
                          .select('announcement_id,building_id')
                          .in('announcement_id', ids);
                     if (!bErr && buildingRows) {
-                         const bMap = new Map<string, string[]>();
                          for (const row of buildingRows as any[]) {
                               const annId = row.announcement_id as string;
                               const bId = row.building_id as string;
                               if (!bMap.has(annId)) bMap.set(annId, []);
                               bMap.get(annId)!.push(bId);
                          }
-                         enriched = enriched.map(a => ({ ...a, buildings: bMap.get(a.id!) || [] }));
                     }
                } catch { /* ignore buildings enrichment errors */ }
+
+               enriched = enriched.map(a => {
+                    const annId = a.id ?? '';
+                    const buildings = annId ? bMap.get(annId) || [] : [];
+                    const images = annId ? imagesMap.get(annId) || [] : [];
+                    const documents = annId ? documentsMap.get(annId) || [] : [];
+                    return { ...a, buildings, images, documents };
+               });
           }
      } catch { /* ignore enrichment errors */ }
 
@@ -214,7 +189,7 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data, error } = await supabase.from(ANNOUNCEMENTS_TABLE).select('*').eq('id', id).single();
+     const { data, error } = await supabase.from(TABLES.ANNOUNCEMENTS).select('*').eq('id', id).single();
 
      if (error) {
           await logServerAction({
@@ -238,58 +213,29 @@ export async function getAnnouncementById(id: string): Promise<{ success: boolea
      try {
           const [{ data: imgRows }, { data: docRows }] = await Promise.all([
                supabase
-                    .from(ANNOUNCEMENT_IMAGES_TABLE)
+                    .from(TABLES.ANNOUNCEMENT_IMAGES)
                     .select('storage_bucket, storage_path')
                     .eq('announcement_id', id),
                supabase
-                    .from(ANNOUNCEMENT_DOCUMENTS_TABLE)
+                    .from(TABLES.ANNOUNCEMENT_DOCUMENTS)
                     .select('storage_bucket, storage_path, file_name, mime_type')
                     .eq('announcement_id', id),
           ]);
 
-          // Build refs (dedupe) and sign
-          const imgRefs: Array<{ bucket: string; path: string }> = [];
-          const seen = new Set<string>();
-          for (const r of imgRows ?? []) {
-               const bucket = (r as any).storage_bucket
-               const path = (r as any).storage_path as string | null;
-               if (!path) continue;
-               const key = `${bucket}::${path}`;
-               if (seen.has(key)) continue;
-               seen.add(key);
-               imgRefs.push({ bucket, path });
-          }
-
-          const docEntries: Array<{ bucket: string; path: string; name: string; mime?: string | null }> = [];
-          for (const r of docRows ?? []) {
-               const bucket = (r as any).storage_bucket
-               const path = (r as any).storage_path as string | null;
-               if (!path) continue;
-               docEntries.push({
-                    bucket,
-                    path,
-                    name: (r as any).file_name as string,
-                    mime: ((r as any).mime_type as string) || null,
-               });
-          }
-
-          const signedMap = await signMany(supabase, [...imgRefs, ...docEntries.map(d => ({ bucket: d.bucket, path: d.path }))]);
-
-          images = imgRefs
-               .map(ref => signedMap.get(`${ref.bucket}::${ref.path}`))
-               .filter(Boolean) as string[];
-
-          documents = docEntries
-               .map(d => {
-                    const url = signedMap.get(`${d.bucket}::${d.path}`);
-                    return url ? { url, name: d.name, mime: d.mime || undefined } : null;
-               })
-               .filter(Boolean) as { url: string; name: string; mime?: string }[];
+          const normalizedImageRows = (imgRows ?? []).map(row => ({ ...(row as any), announcement_id: id }));
+          const normalizedDocumentRows = (docRows ?? []).map(row => ({ ...(row as any), announcement_id: id }));
+          const { imagesMap, documentsMap } = await buildSignedMediaMaps(
+               supabase,
+               normalizedImageRows as AnnouncementImageRow[],
+               normalizedDocumentRows as AnnouncementDocumentRow[],
+          );
+          images = imagesMap.get(id) ?? [];
+          documents = documentsMap.get(id) ?? [];
 
           // Buildings (unchanged)
           try {
                const { data: buildingRows } = await supabase
-                    .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+                    .from(TABLES.BUILDINGS_ANNOUNCEMENTS)
                     .select('building_id')
                     .eq('announcement_id', id);
                buildings = (buildingRows || []).map(r => (r as any).building_id);
@@ -321,7 +267,7 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
      try {
           // 1) Pivot to announcement ids
           const { data: pivotRows, error: pivotErr } = await supabase
-               .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+               .from(TABLES.BUILDINGS_ANNOUNCEMENTS)
                .select('announcement_id, building_id')
                .in('building_id', buildingIds);
           if (pivotErr) return { success: false, error: pivotErr.message };
@@ -331,7 +277,7 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
 
           // 2) Fetch announcements in bulk (filter published)
           const { data: annRows, error: annErr } = await supabase
-               .from(ANNOUNCEMENTS_TABLE)
+               .from(TABLES.ANNOUNCEMENTS)
                .select('*')
                .in('id', annIds)
                .eq('status', 'published')
@@ -353,41 +299,30 @@ export async function getPublishedAnnouncementsForBuildings(buildingIds: string[
           try {
                const [{ data: imgRows }, { data: docRows }] = await Promise.all([
                     supabase
-                         .from(ANNOUNCEMENT_IMAGES_TABLE)
+                         .from(TABLES.ANNOUNCEMENT_IMAGES)
                          .select('announcement_id, storage_bucket, storage_path')
                          .in('announcement_id', annIds),
                     supabase
-                         .from(ANNOUNCEMENT_DOCUMENTS_TABLE)
+                         .from(TABLES.ANNOUNCEMENT_DOCUMENTS)
                          .select('announcement_id, storage_bucket, storage_path, file_name, mime_type')
                          .in('announcement_id', annIds),
                ]);
 
-               const imageRefs: Ref[] = (imgRows || []).map(r => makeRef((r as any).storage_bucket, (r as any).storage_path)).filter(Boolean) as Ref[];
-               const docRefs: Ref[] = (docRows || []).map(r => makeRef((r as any).storage_bucket, (r as any).storage_path, (r as any).document_url)).filter(Boolean) as Ref[];
-               const signedMap = await signMany(supabase, [...imageRefs, ...docRefs]);
+               const { imagesMap, documentsMap } = await buildSignedMediaMaps(
+                    supabase,
+                    imgRows as AnnouncementImageRow[],
+                    docRows as AnnouncementDocumentRow[],
+               );
 
-               const imagesMap = new Map<string, string[]>();
-               for (const r of (imgRows || []) as any[]) {
-                    const bucket = r.storage_bucket ?? DEFAULT_BUCKET; const path = r.storage_path; if (!path) continue;
-                    const key = `${bucket}::${path}`; const signed = signedMap.get(key); if (!signed) continue;
-                    const aId = r.announcement_id as string; const arr = imagesMap.get(aId) ?? []; arr.push(signed); imagesMap.set(aId, arr);
-               }
-
-               const docsMap = new Map<string, { url: string; name: string; mime?: string }[]>();
-               for (const r of (docRows || []) as any[]) {
-                    const bucket = r.storage_bucket ?? DEFAULT_BUCKET; const path = r.storage_path; if (!path) continue;
-                    const key = `${bucket}::${path}`; const signed = signedMap.get(key); if (!signed) continue;
-                    const aId = r.announcement_id as string;
-                    const item = { url: signed, name: r.file_name as string, mime: (r.mime_type as string) || undefined };
-                    const arr = docsMap.get(aId) ?? []; arr.push(item); docsMap.set(aId, arr);
-               }
-
-               enriched = enriched.map(a => ({
-                    ...a,
-                    buildings: annToBuildings.get(a.id) || [],
-                    images: imagesMap.get(a.id) || [],
-                    documents: docsMap.get(a.id) || [],
-               }));
+               enriched = enriched.map(a => {
+                    const annId = a.id ?? '';
+                    return {
+                         ...a,
+                         buildings: annToBuildings.get(annId) || [],
+                         images: annId ? imagesMap.get(annId) || [] : [],
+                         documents: annId ? documentsMap.get(annId) || [] : [],
+                    };
+               });
           } catch { /* ignore enrichment errors */ }
 
           // 5) Fetch building records (for label display)
@@ -433,7 +368,7 @@ export const getAllAutoPublishReadyAnnouncements = async (): Promise<Announcemen
      const now = Date.now();
      // Fetch draft announcements that have scheduling fields set
      const { data, error } = await supabase
-          .from(ANNOUNCEMENTS_TABLE)
+          .from(TABLES.ANNOUNCEMENTS)
           .select('*')
           .eq('status', 'draft')
           .not('scheduled_at', 'is', null)
@@ -484,7 +419,7 @@ export async function upsertAnnouncement(
      }
 
      const { data, error } = await supabase
-          .from(ANNOUNCEMENTS_TABLE)
+          .from(TABLES.ANNOUNCEMENTS)
           .upsert(record, { onConflict: 'id' })
           .select()
           .maybeSingle<Announcement>();
@@ -517,7 +452,7 @@ export async function upsertAnnouncement(
           const announcementId = (data as any).id;
           try {
                const { error: clearErr } = await supabase
-                    .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+                    .from(TABLES.BUILDINGS_ANNOUNCEMENTS)
                     .delete()
                     .eq('announcement_id', announcementId);
 
@@ -535,7 +470,7 @@ export async function upsertAnnouncement(
 
                if (buildingIdsInput.length > 0) {
                     const pivotRows = buildingIdsInput.map((bid) => ({ building_id: bid, announcement_id: announcementId }));
-                    const { error: pivotErr } = await supabase.from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE).insert(pivotRows);
+                    const { error: pivotErr } = await supabase.from(TABLES.BUILDINGS_ANNOUNCEMENTS).insert(pivotRows);
 
                     if (pivotErr) {
                          await logServerAction({
@@ -581,7 +516,7 @@ export async function upsertAnnouncement(
 export async function deleteAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).delete().eq('id', id);
+     const { error } = await supabase.from(TABLES.ANNOUNCEMENTS).delete().eq('id', id);
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
 
      if (error) {
@@ -626,7 +561,7 @@ export async function archiveAnnouncement(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived: true, updated_at: new Date() }).eq('id', id);
+     const { error } = await supabase.from(TABLES.ANNOUNCEMENTS).update({ archived: true, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
                user_id: user_id ? user_id : null,
@@ -657,7 +592,7 @@ export async function togglePinAction(id: string, pinned: boolean) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ pinned, updated_at: new Date() }).eq('id', id);
+     const { error } = await supabase.from(TABLES.ANNOUNCEMENTS).update({ pinned, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
                user_id: user_id ? user_id : null,
@@ -690,7 +625,7 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
      const supabase = await useServerSideSupabaseAnonClient();
      const user = await supabase.auth.getUser()
      const now = new Date();
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'published', published_at: now, updated_at: now }).eq('id', id);
+     const { error } = await supabase.from(TABLES.ANNOUNCEMENTS).update({ status: 'published', published_at: now, updated_at: now }).eq('id', id);
      if (error) {
           await logServerAction({
                user_id: user ? user.data.user?.id! : null,
@@ -708,7 +643,7 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
      try {
           // 1) Resolve targeted buildings from pivot
           const { data: bRows, error: bErr } = await supabase
-               .from(ANNOUNCEMENT_BUILDINGS_PIVOT_TABLE)
+               .from(TABLES.BUILDINGS_ANNOUNCEMENTS)
                .select('building_id')
                .eq('announcement_id', id);
 
@@ -718,7 +653,7 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                     // 2) Get all tenant user ids for those buildings
                     const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
                     // 3) Fetch announcement for title/message
-                    const { data: annRow } = await supabase.from(ANNOUNCEMENTS_TABLE).select('title, message').eq('id', id).maybeSingle();
+                    const { data: annRow } = await supabase.from(TABLES.ANNOUNCEMENTS).select('title, message').eq('id', id).maybeSingle();
                     const createdAtISO = new Date().toISOString();
                     const rows = (tenants || []).map((tenant) => (
                          createAnnouncementNotification({
@@ -754,7 +689,7 @@ export async function revertToDraft(id: string) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ status: 'draft', published_at: null, updated_at: new Date() }).eq('id', id);
+     const { error } = await supabase.from(TABLES.ANNOUNCEMENTS).update({ status: 'draft', published_at: null, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
                user_id: user_id ? user_id : null,
@@ -785,7 +720,7 @@ export async function toggleArchiveAction(id: string, archived: boolean) {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null).catch(() => null);
-     const { error } = await supabase.from(ANNOUNCEMENTS_TABLE).update({ archived, updated_at: new Date() }).eq('id', id);
+     const { error } = await supabase.from(TABLES.ANNOUNCEMENTS).update({ archived, updated_at: new Date() }).eq('id', id);
      if (error) {
           await logServerAction({
                user_id: user_id ? user_id : null,

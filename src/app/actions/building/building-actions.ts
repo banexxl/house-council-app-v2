@@ -8,50 +8,6 @@ import { removeAllEntityFiles } from "src/libs/supabase/sb-storage";
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from "src/utils/sb-bucket";
 
-// ===== Helpers =====
-
-const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
-const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-
-export type DBStoredImage = {
-     id: string;
-     created_at: string;
-     updated_at: string;
-     storage_bucket: string;
-     storage_path: string;
-     is_cover_image: boolean;
-     building_id: string;
-};
-
-async function signOne(supabase: any, bucket: string, path: string, ttlSeconds = 60 * 30) {
-     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, ttlSeconds);
-     if (error) return null;
-     return data?.signedUrl ?? null;
-}
-
-/** Batch-sign many paths, grouped by bucket. Returns map bucket+path → signedUrl. */
-async function signMany(
-     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
-     refs: Array<{ bucket: string; path: string }>
-) {
-     const byBucket = new Map<string, string[]>();
-     refs.forEach(r => {
-          const arr = byBucket.get(r.bucket) ?? [];
-          arr.push(r.path);
-          byBucket.set(r.bucket, arr);
-     });
-
-     const out = new Map<string, string>();
-     for (const [bucket, paths] of byBucket) {
-          if (!paths.length) continue;
-          const { data, error } = await supabase.storage.from(bucket).createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
-          if (error) continue;
-          data?.forEach((d, i) => {
-               if (d?.signedUrl) out.set(`${bucket}::${paths[i]}`, d.signedUrl);
-          });
-     }
-     return out;
-}
 
 // ===== Actions =====
 
@@ -82,7 +38,7 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
                id: r.id,
                created_at: r.created_at,
                updated_at: r.updated_at,
-               storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+               storage_bucket: r.storage_bucket,
                storage_path: r.storage_path,
                is_cover_image: !!(r as any).is_cover_image,
                building_id: r.building_id,
@@ -134,7 +90,7 @@ export async function getAllBuildingsFromClient(
                     id: r.id,
                     created_at: r.created_at,
                     updated_at: r.updated_at,
-                    storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                    storage_bucket: r.storage_bucket,
                     storage_path: r.storage_path,
                     is_cover_image: !!(r as any).is_cover_image,
                     building_id: r.building_id,
@@ -186,7 +142,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
                     id: r.id,
                     created_at: r.created_at,
                     updated_at: r.updated_at,
-                    storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                    storage_bucket: r.storage_bucket,
                     storage_path: r.storage_path,
                     is_cover_image: !!(r as any).is_cover_image,
                     building_id: r.building_id,

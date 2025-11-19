@@ -9,34 +9,6 @@ import { validate as isUUID } from "uuid";
 import { toStorageRef } from "src/utils/sb-bucket";
 import { TABLES } from "src/libs/supabase/tables";
 
-// ===== Helpers =====
-const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h
-const DEFAULT_BUCKET = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-
-/** Batch-sign many paths, grouped by bucket. Returns map bucket+path → signedUrl. */
-async function signMany(
-     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
-     refs: Array<{ bucket: string; path: string }>
-) {
-     const byBucket = new Map<string, string[]>();
-     refs.forEach(r => {
-          const arr = byBucket.get(r.bucket) ?? [];
-          arr.push(r.path);
-          byBucket.set(r.bucket, arr);
-     });
-
-     const out = new Map<string, string>();
-     for (const [bucket, paths] of byBucket) {
-          if (!paths.length) continue;
-          const { data, error } = await supabase.storage.from(bucket).createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
-          if (error) continue;
-          data?.forEach((d, i) => {
-               if (d?.signedUrl) out.set(`${bucket}::${paths[i]}`, d.signedUrl);
-          });
-     }
-     return out;
-}
-
 // ===== Actions =====
 
 export async function getAllApartments(): Promise<{ success: boolean; error?: string; data?: Apartment[] }> {
@@ -73,7 +45,7 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
                id: r.id,
                created_at: r.created_at,
                updated_at: r.updated_at,
-               storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+               storage_bucket: r.storage_bucket,
                storage_path: r.storage_path,
                is_cover_image: !!(r as any).is_cover_image,
                apartment_id: r.apartment_id,
@@ -146,7 +118,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
                     id: r.id,
                     created_at: r.created_at,
                     updated_at: r.updated_at,
-                    storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                    storage_bucket: r.storage_bucket,
                     storage_path: r.storage_path,
                     is_cover_image: !!(r as any).is_cover_image,
                     apartment_id: r.apartment_id,
@@ -234,7 +206,7 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
                     id: r.id,
                     created_at: r.created_at,
                     updated_at: r.updated_at,
-                    storage_bucket: r.storage_bucket ?? DEFAULT_BUCKET,
+                    storage_bucket: r.storage_bucket,
                     storage_path: r.storage_path,
                     is_cover_image: !!(r as any).is_cover_image,
                     apartment_id: r.apartment_id,
@@ -350,7 +322,7 @@ export async function deleteApartment(id: string) {
      if (imgs?.length) {
           const byBucket = new Map<string, string[]>();
           for (const r of imgs) {
-               const bucket = r.storage_bucket ?? DEFAULT_BUCKET;
+               const bucket = r.storage_bucket;
                const path = r.storage_path; // legacy rows may be null; in that case we skip
                if (!path) continue;
                const arr = byBucket.get(bucket) ?? [];

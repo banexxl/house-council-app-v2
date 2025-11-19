@@ -4,10 +4,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Seo } from 'src/components/seo';
 
-import { SocialPostAdd } from 'src/sections/dashboard/social/social-post-add';
-import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
 import { getTenantPosts } from 'src/app/actions/social/post-actions';
-import type { TenantPostWithAuthor } from 'src/types/social';
 
 const Page = async () => {
   // Fetch posts server-side

@@ -211,6 +211,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                return ['clients', ensureValue(owner, 'clientId or userId is required'), 'images', 'logos'];
           },
           returnSignedUrls: true,
+          revalidate: (entityId) => [`/dashboard/clients/${entityId}`, `/dashboard/clients`],
      },
      'building-image': {
           bucket: DEFAULT_BUCKET,
@@ -225,7 +226,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                mode: 'insert',
                extraColumns: () => ({ is_cover_image: false }),
           },
-          revalidate: (entityId) => [`/dashboard/buildings/${entityId}`],
+          revalidate: (entityId) => [`/dashboard/buildings/${entityId}`, `/dashboard/buildings`],
           supportsCover: {
                column: 'is_cover_image',
                match: (entityId) => ({ building_id: entityId }),
@@ -243,7 +244,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                mode: 'insert',
                extraColumns: () => ({ is_cover_image: false }),
           },
-          revalidate: (entityId) => [`/dashboard/apartments/${entityId}`],
+          revalidate: (entityId) => [`/dashboard/apartments/${entityId}`, `/dashboard/apartments`],
           supportsCover: {
                column: 'is_cover_image',
                match: (entityId) => ({ apartment_id: entityId }),
@@ -262,7 +263,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                conflictTarget: ['announcement_id', 'storage_bucket', 'storage_path'],
                ignoreDuplicates: true,
           },
-          revalidate: () => ['/dashboard/announcements'],
+          revalidate: () => ['/dashboard/announcements', '/dashboard/announcements/tenant'],
           returnSignedUrls: true,
      },
      'announcement-document': {
@@ -288,7 +289,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                upsert: true,
                contentType: determineAnnouncementDocumentContentType(String(ctx.meta?.mimeType ?? 'application/octet-stream')),
           }),
-          revalidate: () => ['/dashboard/announcements'],
+          revalidate: () => ['/dashboard/announcements', '/dashboard/announcements/tenant'],
           returnSignedUrls: true,
      },
      'poll-attachment': {
@@ -317,7 +318,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                     };
                },
           },
-          revalidate: (entityId) => [`/dashboard/polls/${entityId}`],
+          revalidate: (entityId) => [`/dashboard/polls/${entityId}`, `/dashboard/polls`, '/dashboard/polls/voting'],
           supportsCover: {
                column: 'is_cover_image',
                match: (entityId) => ({ poll_id: entityId }),
@@ -339,11 +340,11 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
           db: {
                table: TABLES.TENANT_POST_IMAGES ?? 'tblTenantPostImages',
                foreignKeyColumn: 'post_id',
-               mode: 'upsert',
+               mode: 'insert',
                conflictTarget: ['post_id', 'storage_bucket', 'storage_path'],
                ignoreDuplicates: true,
           },
-          revalidate: () => ['/dashboard/social/feed'],
+          revalidate: () => ['/dashboard/social/feed', '/dashboard/social/profile'],
           returnSignedUrls: true,
      },
      'post-document': {
@@ -369,7 +370,7 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                upsert: true,
                contentType: determineAnnouncementDocumentContentType(String(ctx.meta?.mimeType ?? 'application/octet-stream')),
           }),
-          revalidate: () => ['/dashboard/social/feed'],
+          revalidate: () => ['/dashboard/social/feed', '/dashboard/social/profile'],
           returnSignedUrls: true,
      },
 };
@@ -498,7 +499,6 @@ export const uploadEntityFiles = async (
           }
 
           let records: Record<string, unknown>[] | undefined;
-
           if (config.db && dbRows.length) {
                const table = config.db.table;
                const conflict = config.db.conflictTarget?.join(',');
@@ -517,6 +517,8 @@ export const uploadEntityFiles = async (
                          });
                          return { success: false, error: error.message };
                     }
+                    console.log('error', error);
+
                     records = data ?? [];
                } else {
                     const { data, error } = await supabase
@@ -526,6 +528,7 @@ export const uploadEntityFiles = async (
                               ignoreDuplicates: config.db.ignoreDuplicates ?? false,
                          })
                          .select();
+                    console.log('error', error);
 
                     if (error) {
                          await logServerAction({
@@ -668,9 +671,12 @@ export const removeEntityFile = async (
                     }
                }
           }
+          console.log('config', config);
 
           if (config.revalidate) {
                for (const url of config.revalidate(params.entityId)) {
+                    console.log('url', url);
+
                     revalidatePath(url);
                }
           }
@@ -911,3 +917,4 @@ export const setEntityFileAsCover = async (
           return { success: false, error: error?.message ?? 'Unexpected error' };
      }
 };
+

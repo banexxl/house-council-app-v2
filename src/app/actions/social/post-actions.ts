@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { uploadEntityFiles, removeEntityFile } from 'src/libs/supabase/sb-storage';
 import { validate as isUUID } from 'uuid';
 import type {
      TenantPost,
@@ -247,7 +246,9 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
                // Get images, documents, likes count, and comments count
                const [
                     { data: likeCountData },
-                    { data: commentCountData }
+                    { data: commentCountData },
+                    { data: imagesData },
+                    { data: documentsData }
                ] = await Promise.all([
                     supabase
                          .from(TABLES.TENANT_POST_LIKES)
@@ -256,6 +257,14 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
                     supabase
                          .from(TABLES.TENANT_POST_COMMENTS)
                          .select('post_id')
+                         .in('post_id', postIds),
+                    supabase
+                         .from(TABLES.TENANT_POST_IMAGES)
+                         .select('*')
+                         .in('post_id', postIds),
+                    supabase
+                         .from(TABLES.TENANT_POST_DOCUMENTS)
+                         .select('*')
                          .in('post_id', postIds)
                ]);
 
@@ -287,8 +296,8 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
                     likes_count: likeCountMap.get(p.id!) || 0,
                     comments_count: commentCountMap.get(p.id!) || 0,
                     is_liked: likedPostIds.has(p.id!),
-                    images: [], // Images would be fetched if needed
-                    documents: [], // Documents would be fetched if needed
+                    images: (imagesData || []).filter((img: any) => img.post_id === p.id),
+                    documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
                }));
           }
 
