@@ -20,6 +20,7 @@ import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { uploadEntityFiles } from "src/libs/supabase/sb-storage"
 import { useSignedUrl } from "src/hooks/use-signed-urls"
+import { SignedAvatar } from "src/components/signed-avatar"
 
 type ImageUploadProps = {
      buttonDisabled: boolean
@@ -131,7 +132,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               height: 150,
                          }}
                     >
-                         <Avatar
+                         <SignedAvatar
                               sx={{
                                    width: "100%",
                                    height: "100%",
@@ -139,14 +140,14 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                                    border: "1px dashed",
                                    borderColor: "grey.300",
                               }}
-                              src={avatarUrl}
+                              value={avatarUrl}
                          >
                               {loading ? (
                                    <CircularProgress size={40} />
                               ) : (
                                    <CameraAltOutlinedIcon sx={{ fontSize: 40, color: "grey.500" }} />
                               )}
-                         </Avatar>
+                         </SignedAvatar>
                     </Box>
                     {/* </Tooltip> */}
                     <Box
