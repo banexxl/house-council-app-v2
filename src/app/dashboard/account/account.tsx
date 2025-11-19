@@ -109,8 +109,8 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                              }
                                         }}
                                    >
-                                        {tabs.map(tab => (
-                                             <Tab key={tab.value} value={tab.value} label={tab.label} />
+                                        {tabs.map((tab, index) => (
+                                             <Tab key={index} value={tab.value} label={tab.label} />
                                         ))}
                                    </Tabs>
                               </Box>

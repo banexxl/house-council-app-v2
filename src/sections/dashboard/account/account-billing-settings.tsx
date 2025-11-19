@@ -33,7 +33,7 @@ interface AccountBillingSettingsProps {
 export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) => {
   const { plan: currentPlan, invoices = [], billingInfo = [], subscriptionPlans = [] } = props;
   // Ensure invoices have a non-optional id (GenericTable constraint) by falling back to invoice_number
-  const normalizedInvoices = (invoices || []).map(inv => ({
+  const normalizedInvoices = (invoices || []).map((inv) => ({
     ...inv,
     id: inv.id || inv.invoice_number
   }));
@@ -71,13 +71,13 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                 overflowX: 'hidden',
               }}
             >
-              {subscriptionPlans && subscriptionPlans.map((plan: SubscriptionPlan) => {
+              {subscriptionPlans && subscriptionPlans.map((plan: SubscriptionPlan, index: number) => {
                 const isSelected = plan.id === selectedPlan;
                 const isCurrent = plan.id === currentPlan;
                 const price = numeral(plan.total_price_with_discounts).format('$0,0.00');
                 return (
                   <Box
-                    key={plan.id}
+                    key={index}
                     onClick={() => setSelectedPlan(plan.id!)}
                     sx={{
                       width: '100%',
@@ -122,8 +122,13 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                     <Box sx={{ mt: 2, flexGrow: 1 }}>
                       {plan && plan.features && plan.features.length > 0 ? (
                         <Stack spacing={0.5} sx={{ height: '100%' }}>
-                          {plan.features.map((feature) => (
-                            <Typography key={feature} variant="body2" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+                          {plan.features?.map((feature, index) => (
+                            <Typography
+                              key={index}
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ wordBreak: 'break-word' }}
+                            >
                               {feature}
                             </Typography>
                           ))}

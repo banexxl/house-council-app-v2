@@ -13,7 +13,8 @@ const config = {
       },
       {
         protocol: 'https',
-        hostname: 'https://sorklznvftjmhkaejkej.supabase.co/storage/v1/object/public/',
+        hostname: 'https://sorklznvftjmhkaejkej.supabase.co',
+        pathname: '/storage/v1/object/**',
       },
     ],
   },
