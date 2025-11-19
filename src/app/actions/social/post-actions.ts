@@ -9,9 +9,11 @@ import type {
      TenantPost,
      CreateTenantPostPayload,
      UpdateTenantPostPayload,
-     TenantPostWithAuthor
+     TenantPostWithAuthor,
+     EmojiReaction
 } from 'src/types/social';
 import { logServerAction } from 'src/libs/supabase/server-logging';
+import { computeReactionAggregates } from 'src/utils/social-reactions';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -47,6 +49,29 @@ async function logActionResult(
      }
 }
 
+async function fetchReactionMapsForPosts(
+     supabase: any,
+     postIds: Array<string | null | undefined>,
+     currentUserId: string | null
+): Promise<{ reactionMap: Map<string, EmojiReaction[]>; userReactionMap: Map<string, string> }> {
+     const ids = postIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
+     if (!ids.length) {
+          return { reactionMap: new Map(), userReactionMap: new Map() };
+     }
+
+     const { data, error } = await supabase
+          .from(TABLES.TENANT_POST_LIKES)
+          .select('post_id, emoji, tenant_id')
+          .in('post_id', ids);
+
+     if (error) {
+          console.error('Error loading reactions for posts:', error);
+          return { reactionMap: new Map(), userReactionMap: new Map() };
+     }
+
+     return computeReactionAggregates(data, currentUserId);
+}
+
 /**
  * Get all posts with author information
  */
@@ -66,7 +91,7 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                          last_name,
                          avatar_url
                     ),
-                    likes:tenant_post_likes(count)
+                    likes:tblTenantPostLikes(count)
                `)
                .eq('is_archived', false)
 
@@ -86,33 +111,24 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                return { success: false, error: error.message };
           }
 
-          // Get current user to check if they liked each post
           const viewer = await getViewer();
           const currentUserId = viewer.tenant?.id || null;
+          const postIds = (data || []).map((post: any) => post.id);
+          const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, currentUserId);
 
-          // Transform data to include like status
-          const postsWithLikes = await Promise.all(
-               (data || []).map(async (post: any) => {
-                    let is_liked = false;
-
-                    if (currentUserId) {
-                         const { data: likeData } = await supabase
-                              .from(TABLES.TENANT_POST_LIKES)
-                              .select('id')
-                              .eq('post_id', post.id)
-                              .eq('tenant_id', currentUserId)
-                              .single();
-
-                         is_liked = !!likeData;
-                    }
-
-                    return {
-                         ...post,
-                         author: post.author,
-                         is_liked,
-                    } as TenantPostWithAuthor;
-               })
-          );
+          const postsWithLikes = (data || []).map((post: any) => {
+               const reactions = reactionMap.get(post.id) ?? [];
+               const userReaction = userReactionMap.get(post.id) ?? null;
+               const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
+               return {
+                    ...post,
+                    author: post.author,
+                    reactions,
+                    userReaction,
+                    is_liked: Boolean(userReaction),
+                    likes_count: likesCount,
+               } as TenantPostWithAuthor;
+          });
 
           await logActionResult(action, 'success', {
                userId: currentUserId,
@@ -159,25 +175,20 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
                return { success: false, error: 'Post not found' };
           }
 
-          // Check if current user liked this post
           const viewer = await getViewer();
-          let is_liked = false;
-
-          if (viewer.tenant) {
-               const { data: likeData } = await supabase
-                    .from(TABLES.TENANT_POST_LIKES)
-                    .select('id')
-                    .eq('post_id', postId)
-                    .eq('tenant_id', viewer.tenant.id)
-                    .single();
-
-               is_liked = !!likeData;
-          }
+          const currentUserId = viewer.tenant?.id || null;
+          const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, [postId], currentUserId);
+          const reactions = reactionMap.get(postId) ?? [];
+          const userReaction = userReactionMap.get(postId) ?? null;
+          const likes_count = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
 
           const postWithAuthor: TenantPostWithAuthor = {
                ...data,
                author: data.author,
-               is_liked,
+               reactions,
+               userReaction,
+               likes_count,
+               is_liked: Boolean(userReaction),
           };
 
           return { success: true, data: postWithAuthor };
@@ -243,17 +254,11 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
           const postIds = enrichedPosts.map(p => p.id).filter(Boolean) as string[];
 
           if (postIds.length > 0) {
-               // Get images, documents, likes count, and comments count
                const [
-                    { data: likeCountData },
                     { data: commentCountData },
                     { data: imagesData },
                     { data: documentsData }
                ] = await Promise.all([
-                    supabase
-                         .from(TABLES.TENANT_POST_LIKES)
-                         .select('post_id')
-                         .in('post_id', postIds),
                     supabase
                          .from(TABLES.TENANT_POST_COMMENTS)
                          .select('post_id')
@@ -268,37 +273,29 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
                          .in('post_id', postIds)
                ]);
 
-               // Build count maps
-               const likeCountMap = new Map<string, number>();
-               for (const like of likeCountData || []) {
-                    const postId = (like as any).post_id;
-                    likeCountMap.set(postId, (likeCountMap.get(postId) || 0) + 1);
-               }
-
                const commentCountMap = new Map<string, number>();
                for (const comment of commentCountData || []) {
                     const postId = (comment as any).post_id;
                     commentCountMap.set(postId, (commentCountMap.get(postId) || 0) + 1);
                }
 
-               // Check if user liked each post (they're all their own posts, so likely false)
-               const { data: userLikes } = await supabase
-                    .from(TABLES.TENANT_POST_LIKES)
-                    .select('post_id')
-                    .in('post_id', postIds)
-                    .eq('tenant_id', viewer.tenant.id);
+               const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, viewer.tenant.id);
 
-               const likedPostIds = new Set((userLikes || []).map((r: any) => r.post_id));
-
-               // Attach counts and like status to posts
-               enrichedPosts = enrichedPosts.map(p => ({
-                    ...p,
-                    likes_count: likeCountMap.get(p.id!) || 0,
-                    comments_count: commentCountMap.get(p.id!) || 0,
-                    is_liked: likedPostIds.has(p.id!),
-                    images: (imagesData || []).filter((img: any) => img.post_id === p.id),
-                    documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
-               }));
+               enrichedPosts = enrichedPosts.map(p => {
+                    const reactions = reactionMap.get(p.id!) ?? [];
+                    const userReaction = userReactionMap.get(p.id!) ?? null;
+                    const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
+                    return {
+                         ...p,
+                         likes_count: likesCount,
+                         comments_count: commentCountMap.get(p.id!) || 0,
+                         reactions,
+                         userReaction,
+                         is_liked: Boolean(userReaction),
+                         images: (imagesData || []).filter((img: any) => img.post_id === p.id),
+                         documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
+                    };
+               });
           }
 
           await logActionResult(action, 'success', {

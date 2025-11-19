@@ -6,8 +6,9 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import type {
      TenantPostLike,
-     CreateTenantPostLikePayload
+     EmojiReaction
 } from 'src/types/social';
+import { computeReactionAggregates } from 'src/utils/social-reactions';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -15,10 +16,15 @@ type ActionResponse<T> = {
      error?: string;
 };
 
+type ReactionResult = {
+     reactions: EmojiReaction[];
+     userReaction: string | null;
+};
+
 /**
- * Toggle like on a post (like if not liked, unlike if already liked)
+ * React to a post with a specific emoji (selecting same emoji twice removes the reaction).
  */
-export async function togglePostLike(postId: string): Promise<ActionResponse<{ liked: boolean; likesCount: number }>> {
+export async function reactToPost(postId: string, emoji: string): Promise<ActionResponse<ReactionResult>> {
      try {
           const viewer = await getViewer();
           if (!viewer.tenant) {
@@ -26,63 +32,87 @@ export async function togglePostLike(postId: string): Promise<ActionResponse<{ l
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
+          const tenantId = viewer.tenant.id;
 
-          // Check if user already liked this post
-          const { data: existingLike } = await supabase
+          const { data: existingReaction, error: existingError } = await supabase
                .from(TABLES.TENANT_POST_LIKES)
-               .select('id')
+               .select('id, emoji')
                .eq('post_id', postId)
-               .eq('tenant_id', viewer.tenant.id)
-               .single();
+               .eq('tenant_id', tenantId)
+               .maybeSingle();
 
-          let liked = false;
-          let likesCount = 0;
+          if (existingError && existingError.code !== 'PGRST116') {
+               console.error('Error loading existing reaction:', existingError);
+               return { success: false, error: existingError.message };
+          }
 
-          if (existingLike) {
-               // Unlike: remove the like
+          if (existingReaction?.emoji === emoji) {
                const { error: deleteError } = await supabase
                     .from(TABLES.TENANT_POST_LIKES)
                     .delete()
-                    .eq('id', existingLike.id);
+                    .eq('id', existingReaction.id);
 
                if (deleteError) {
-                    console.error('Error removing like:', deleteError);
+                    console.error('Error removing reaction:', deleteError);
                     return { success: false, error: deleteError.message };
                }
+          } else if (existingReaction) {
+               console.log('existingReaction', existingReaction);
 
-               liked = false;
-               // Count will be calculated dynamically when fetching posts
-               likesCount = 0; // Placeholder, should be recalculated on frontend
+               const { error: updateError } = await supabase
+                    .from(TABLES.TENANT_POST_LIKES)
+                    .update({ emoji })
+                    .eq('id', existingReaction.id);
+
+               if (updateError) {
+                    console.error('Error updating reaction:', updateError);
+                    return { success: false, error: updateError.message };
+               }
           } else {
-               // Like: add a new like with default emoji
+               console.log('postid', postId);
+               console.log(tenantId);
+
+
                const { error: insertError } = await supabase
                     .from(TABLES.TENANT_POST_LIKES)
                     .insert({
                          post_id: postId,
-                         tenant_id: viewer.tenant.id,
-                         emoji: '👍', // Default emoji
+                         tenant_id: tenantId,
+                         emoji,
                     });
 
                if (insertError) {
-                    console.error('Error adding like:', insertError);
+                    console.error('Error adding reaction:', insertError);
                     return { success: false, error: insertError.message };
                }
+          }
 
-               liked = true;
-               // Count will be calculated dynamically when fetching posts
-               likesCount = 1; // Placeholder, should be recalculated on frontend
-          }          // Optionally revalidate the path where posts are displayed
+          const { data: rows, error: rowsError } = await supabase
+               .from(TABLES.TENANT_POST_LIKES)
+               .select('post_id, emoji, tenant_id')
+               .eq('post_id', postId);
+
+          if (rowsError) {
+               console.error('Error fetching reactions:', rowsError);
+               return { success: false, error: rowsError.message };
+          }
+
+          const { reactionMap, userReactionMap } = computeReactionAggregates(rows, tenantId);
+          const reactions = reactionMap.get(postId) ?? [];
+          const userReaction = userReactionMap.get(postId) ?? null;
+
+          revalidatePath('/dashboard/social/feed');
           revalidatePath('/dashboard/social');
 
-          return { success: true, data: { liked, likesCount } };
+          return { success: true, data: { reactions, userReaction } };
      } catch (error) {
-          console.error('Error toggling post like:', error);
-          return { success: false, error: 'Failed to toggle like' };
+          console.error('Error reacting to post:', error);
+          return { success: false, error: 'Failed to react to post' };
      }
 }
 
 /**
- * Get likes for a post
+ * Get likes for a post (legacy consumers).
  */
 export async function getPostLikes(postId: string): Promise<ActionResponse<TenantPostLike[]>> {
      try {
@@ -115,7 +145,7 @@ export async function getPostLikes(postId: string): Promise<ActionResponse<Tenan
 }
 
 /**
- * Check if current user liked a post
+ * Check if current user reacted to a post.
  */
 export async function checkUserLikedPost(postId: string): Promise<ActionResponse<boolean>> {
      try {
@@ -133,14 +163,14 @@ export async function checkUserLikedPost(postId: string): Promise<ActionResponse
                .eq('tenant_id', viewer.tenant.id)
                .single();
 
-          if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-               console.error('Error checking user like:', error);
+          if (error && error.code !== 'PGRST116') {
+               console.error('Error checking user reaction:', error);
                return { success: false, error: error.message };
           }
 
           return { success: true, data: !!data };
      } catch (error) {
-          console.error('Error checking user like:', error);
-          return { success: false, error: 'Failed to check like status' };
+          console.error('Error checking user reaction:', error);
+          return { success: false, error: 'Failed to check reaction status' };
      }
 }

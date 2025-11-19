@@ -88,6 +88,8 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                 media={post.images || []}
                 message={post.content_text}
                 isOwner={post.tenant_id === profile.tenant_id}
+                reactions={post.reactions || []}
+                userReaction={post.userReaction}
               />
             ))}
           </Stack>

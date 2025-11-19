@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 
-import type { TenantPostWithAuthor, TenantProfile } from 'src/types/social';
+import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
 import { SocialPostAdd } from 'src/sections/dashboard/social/social-post-add';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
 
@@ -18,7 +18,7 @@ interface ClientFeedWrapperProps {
 
 export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrapperProps) => {
   const router = useRouter();
-  const [feedPosts, setFeedPosts] = useState(posts);
+  const [feedPosts, setFeedPosts] = useState<TenantPostWithAuthor[]>(posts);
 
   useEffect(() => {
     setFeedPosts(posts);
@@ -32,13 +32,31 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrap
     setFeedPosts((prev) => prev.filter((post) => post.id !== postId));
   }, []);
 
+  const handleReactionsChange = useCallback(
+    (postId: string, payload: { reactions: EmojiReaction[]; userReaction: string | null }) => {
+      setFeedPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+              ...post,
+              reactions: payload.reactions,
+              userReaction: payload.userReaction ?? undefined,
+              likes_count: payload.reactions.reduce((sum, reaction) => sum + reaction.count, 0),
+            }
+            : post
+        )
+      );
+    },
+    []
+  );
+
   return (
     <Stack spacing={3}>
-      <SocialPostAdd
+      {/* <SocialPostAdd
         buildingId={buildingId}
         user={profile}
         onPostCreated={handlePostCreated}
-      />
+      /> */}
       {feedPosts.length === 0 ? (
         <Box
           sx={{
@@ -71,6 +89,9 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId }: ClientFeedWrap
             message={post.content_text}
             isOwner={post.tenant_id === profile.tenant_id}
             onArchive={() => handlePostArchived(post.id)}
+            reactions={post.reactions || []}
+            userReaction={post.userReaction}
+            onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
           />
         ))
       )}

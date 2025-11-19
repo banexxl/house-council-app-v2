@@ -1,14 +1,14 @@
 'use client'
 
 import type { FC } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { formatDistanceToNowStrict } from 'date-fns';
 import ClockIcon from '@untitled-ui/icons-react/build/esm/Clock';
-import HeartIcon from '@untitled-ui/icons-react/build/esm/Heart';
 import Share07Icon from '@untitled-ui/icons-react/build/esm/Share07';
 import DotsVerticalIcon from '@untitled-ui/icons-react/build/esm/DotsVertical';
 import Archive from '@untitled-ui/icons-react/build/esm/Archive';
+import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -20,6 +20,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
@@ -27,12 +28,20 @@ import Typography from '@mui/material/Typography';
 import { toast } from 'react-hot-toast';
 
 import { archiveTenantPost } from 'src/app/actions/social/post-actions';
+import { reactToPost } from 'src/app/actions/social/like-actions';
 
-import type { TenantPostCommentWithAuthor, TenantPostImage } from 'src/types/social';
+import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage } from 'src/types/social';
 
 import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';
 import { SocialPostMediaGrid } from './social-post-media-grid';
+
+const REACTION_EMOJIS = [
+  '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😇', '😉', '😊',
+  '😍', '😘', '😜', '🤩', '🤗', '🤔', '🤨', '😎', '🥳', '😭',
+  '😡', '👍', '👏', '🙏', '💪', '🔥', '🌟', '🚀', '❤️', '💯',
+  '🎉', '🥰', '😱', '🤯', '😴', '💡', '🤝', '🍀'
+];
 
 interface SocialPostCardProps {
   postId: string;
@@ -40,12 +49,15 @@ interface SocialPostCardProps {
   authorName: string;
   comments: TenantPostCommentWithAuthor[];
   created_at: number;
-  isLiked: boolean;
-  likes: number;
+  isLiked?: boolean;
+  likes?: number;
   media?: TenantPostImage[];
   message: string;
   isOwner?: boolean;
   onArchive?: () => void;
+  reactions?: EmojiReaction[];
+  userReaction?: string | null;
+  onReactionsChange?: (payload: { reactions: EmojiReaction[]; userReaction: string | null }) => void;
 }
 
 export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
@@ -55,28 +67,70 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     authorName,
     comments,
     created_at,
-    isLiked: isLikedProp,
-    likes: likesProp,
     media,
     message,
     isOwner = false,
     onArchive,
+    reactions: reactionsProp,
+    userReaction: userReactionProp,
+    onReactionsChange,
     ...other
   } = props;
-  const [isLiked, setIsLiked] = useState<boolean>(isLikedProp);
-  const [likes, setLikes] = useState<number>(likesProp);
+  const [reactionAnchorEl, setReactionAnchorEl] = useState<null | HTMLElement>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isReacting, setIsReacting] = useState(false);
+  const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactionsProp ?? []);
+  const [currentReaction, setCurrentReaction] = useState<string | null>(userReactionProp ?? null);
 
-  const handleLike = useCallback((): void => {
-    setIsLiked(true);
-    setLikes((prevLikes) => prevLikes + 1);
+  useEffect(() => {
+    setReactionList(reactionsProp ?? []);
+  }, [reactionsProp]);
+
+  useEffect(() => {
+    setCurrentReaction(userReactionProp ?? null);
+  }, [userReactionProp]);
+
+  const totalReactions = useMemo(
+    () => reactionList.reduce((sum, reaction) => sum + reaction.count, 0),
+    [reactionList]
+  );
+  const currentReactionCount = useMemo(() => {
+    if (!currentReaction) return 0;
+    const entry = reactionList.find((reaction) => reaction.emoji === currentReaction);
+    return entry?.count ?? 0;
+  }, [currentReaction, reactionList]);
+
+  const handleReactionButtonClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    setReactionAnchorEl(event.currentTarget);
   }, []);
 
-  const handleUnlike = useCallback((): void => {
-    setIsLiked(false);
-    setLikes((prevLikes) => prevLikes - 1);
+  const handleReactionClose = useCallback(() => {
+    setReactionAnchorEl(null);
   }, []);
+
+  const handleReactionSelect = useCallback(
+    async (emoji: string) => {
+      setReactionAnchorEl(null);
+      setIsReacting(true);
+      try {
+        const result = await reactToPost(postId, emoji);
+        if (!result.success || !result.data) {
+          toast.error(result.error || 'Failed to react to post');
+          return;
+        }
+        setReactionList(result.data.reactions);
+        setCurrentReaction(result.data.userReaction ?? null);
+        onReactionsChange?.(result.data);
+      } catch (error) {
+        console.error('Error reacting to post:', error);
+        toast.error('Failed to react to post');
+      } finally {
+        setIsReacting(false);
+      }
+    },
+    [postId, onReactionsChange]
+  );
 
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
@@ -188,6 +242,45 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             <SocialPostMediaGrid media={media} />
           </Box>
         )}
+        {reactionList.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Stack direction="row" flexWrap="wrap" gap={1}>
+              {reactionList.map((reaction) => (
+                <Box
+                  key={reaction.emoji}
+                  sx={{
+                    alignItems: 'center',
+                    bgcolor: reaction.userReacted ? 'primary.light' : 'grey.100',
+                    borderRadius: 999,
+                    border: '1px solid',
+                    borderColor: reaction.userReacted ? 'primary.main' : 'grey.200',
+                    display: 'inline-flex',
+                    gap: 0.5,
+                    px: 1.5,
+                    py: 0.5,
+                  }}
+                >
+                  <Typography variant="body2">{reaction.emoji}</Typography>
+                  <Typography
+                    color="text.secondary"
+                    variant="caption"
+                  >
+                    {reaction.count}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+            {currentReaction && (
+              <Typography
+                color="text.secondary"
+                variant="caption"
+                sx={{ mt: 1 }}
+              >
+                You reacted with {currentReaction} · {currentReactionCount}
+              </Typography>
+            )}
+          </Box>
+        )}
         <Stack
           alignItems="center"
           direction="row"
@@ -200,37 +293,23 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
               alignItems="center"
               direction="row"
             >
-              {isLiked ? (
-                <Tooltip title="Unlike">
-                  <IconButton onClick={handleUnlike}>
-                    <SvgIcon
-                      sx={{
-                        color: 'error.main',
-                        '& path': {
-                          fill: (theme) => theme.palette.error.main,
-                          fillOpacity: 1,
-                        },
-                      }}
-                    >
-                      <HeartIcon />
+              <Tooltip title={currentReaction ? 'Change your reaction' : 'React to this post'}>
+                <span>
+                  <IconButton onClick={handleReactionButtonClick} disabled={isReacting}>
+                    <SvgIcon color={currentReaction ? 'primary' : undefined}>
+                      <FaceSmileIcon />
                     </SvgIcon>
                   </IconButton>
-                </Tooltip>
-              ) : (
-                <Tooltip title="Like">
-                  <IconButton onClick={handleLike}>
-                    <SvgIcon>
-                      <HeartIcon />
-                    </SvgIcon>
-                  </IconButton>
-                </Tooltip>
+                </span>
+              </Tooltip>
+              {totalReactions > 0 && (
+                <Typography
+                  color="text.secondary"
+                  variant="subtitle2"
+                >
+                  {totalReactions}
+                </Typography>
               )}
-              <Typography
-                color="text.secondary"
-                variant="subtitle2"
-              >
-                {likes}
-              </Typography>
             </Stack>
           </div>
           <div>
@@ -256,6 +335,41 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         <Divider sx={{ my: 3 }} />
         <SocialCommentAdd />
       </Box>
+      <Popover
+        open={Boolean(reactionAnchorEl)}
+        anchorEl={reactionAnchorEl}
+        onClose={handleReactionClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <Box
+          sx={{
+            maxHeight: 220,
+            width: 280,
+            overflowY: 'auto',
+            p: 1,
+          }}
+        >
+          <Stack direction="row" flexWrap="wrap" gap={1}>
+            {REACTION_EMOJIS.map((emoji) => (
+              <IconButton
+                key={emoji}
+                onClick={() => handleReactionSelect(emoji)}
+                disabled={isReacting}
+                size="small"
+              >
+                <span style={{ fontSize: 22 }}>{emoji}</span>
+              </IconButton>
+            ))}
+          </Stack>
+        </Box>
+      </Popover>
     </Card>
   );
 };
@@ -266,9 +380,25 @@ SocialPostCard.propTypes = {
   authorName: PropTypes.string.isRequired,
   comments: PropTypes.array.isRequired,
   created_at: PropTypes.number.isRequired,
-  isLiked: PropTypes.bool.isRequired,
-  likes: PropTypes.number.isRequired,
+  isLiked: PropTypes.bool,
+  likes: PropTypes.number,
+  media: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      storage_bucket: PropTypes.string.isRequired,
+      storage_path: PropTypes.string.isRequired,
+    })
+  ),
   message: PropTypes.string.isRequired,
   isOwner: PropTypes.bool,
   onArchive: PropTypes.func,
+  reactions: PropTypes.arrayOf(
+    PropTypes.shape({
+      emoji: PropTypes.string.isRequired,
+      count: PropTypes.number.isRequired,
+      userReacted: PropTypes.bool,
+    })
+  ),
+  userReaction: PropTypes.string,
+  onReactionsChange: PropTypes.func,
 };
