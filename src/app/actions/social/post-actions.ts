@@ -167,7 +167,7 @@ export async function getTenantPostsPaginated(options: {
                .from(TABLES.TENANT_POSTS)
                .select(`
                     *,
-                    author:tenant_id (
+                    author:profile_id (
                          id,
                          first_name,
                          last_name,
@@ -429,7 +429,7 @@ export async function getCurrentUserActivePostsPaginated(options: {
                .from(TABLES.TENANT_POSTS)
                .select(`
                     *,
-                    author:tenant_id (
+                    author:profile_id (
                          id,
                          first_name,
                          last_name,
@@ -460,7 +460,6 @@ export async function getCurrentUserActivePostsPaginated(options: {
                     avatar_url: post.author?.avatar_url,
                },
           }));
-
           const postIds = enrichedPosts.map(p => p.id).filter(Boolean) as string[];
 
           if (postIds.length > 0) {
@@ -543,10 +542,36 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
 
           const supabase = await useServerSideSupabaseAnonClient();
 
+          // Fetch the tenant's profile id (required by tblTenantPosts)
+          const { data: profileRow, error: profileError } = await supabase
+               .from(TABLES.TENANT_PROFILES)
+               .select('id')
+               .eq('tenant_id', viewer.tenant.id)
+               .maybeSingle();
+
+          if (profileError) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { buildingId: payload.building_id ?? null },
+                    error: profileError.message,
+               });
+               return { success: false, error: 'Failed to load tenant profile' };
+          }
+
+          if (!profileRow?.id) {
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { buildingId: payload.building_id ?? null },
+                    error: 'Tenant profile not found',
+               });
+               return { success: false, error: 'Tenant profile not found. Please create your profile first.' };
+          }
+
           const { data, error } = await supabase
                .from(TABLES.TENANT_POSTS)
                .insert({
                     tenant_id: viewer.tenant.id,
+                    profile_id: profileRow.id,
                     content_text: payload.content_text,
                     building_id: payload.building_id,
                })
