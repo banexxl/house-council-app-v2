@@ -385,9 +385,6 @@ export async function getCurrentUserActivePostsPaginated(options: {
                          .select('*')
                          .in('post_id', postIds)
                ]);
-               console.log('images', imagesData);
-
-               console.log('documents', documentsData);
 
                const commentCountMap = new Map<string, number>();
                for (const comment of commentCountData || []) {

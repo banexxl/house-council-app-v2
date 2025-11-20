@@ -144,7 +144,6 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           if (!profileRow?.id) {
                return { success: false, error: 'Tenant profile not found. Please create your profile first.' };
           }
-          console.log('payload', payload);
 
           // Create the comment
           const { data, error } = await supabase
