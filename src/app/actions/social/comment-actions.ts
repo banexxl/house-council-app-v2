@@ -68,11 +68,29 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
 
           const supabase = await useServerSideSupabaseAnonClient();
 
+          // Fetch tenant profile id to satisfy non-null constraint on profile_id
+          const { data: profileRow, error: profileError } = await supabase
+               .from(TABLES.TENANT_PROFILES)
+               .select('id')
+               .eq('tenant_id', viewer.tenant.id)
+               .maybeSingle();
+
+          if (profileError) {
+               console.error('Error loading tenant profile for comment:', profileError);
+               return { success: false, error: 'Failed to load tenant profile' };
+          }
+
+          if (!profileRow?.id) {
+               return { success: false, error: 'Tenant profile not found. Please create your profile first.' };
+          }
+          console.log('payload', payload);
+
           // Create the comment
           const { data, error } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)
                .insert({
                     tenant_id: viewer.tenant.id,
+                    profile_id: profileRow.id,
                     ...payload,
                })
                .select()

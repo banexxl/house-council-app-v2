@@ -30,8 +30,9 @@ import { toast } from 'react-hot-toast';
 
 import { archiveTenantPost } from 'src/app/actions/social/post-actions';
 import { reactToPost } from 'src/app/actions/social/like-actions';
+import { getPostComments, createTenantPostComment } from 'src/app/actions/social/comment-actions';
 
-import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage } from 'src/types/social';
+import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage, TenantProfile } from 'src/types/social';
 
 import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';
@@ -48,8 +49,8 @@ interface SocialPostCardProps {
   postId: string;
   authorAvatar: string;
   authorName: string;
-  comments: TenantPostCommentWithAuthor[];
-  createdAt: number;
+  comments?: TenantPostCommentWithAuthor[];
+  created_at: number;
   likes?: number;
   media?: TenantPostImage[];
   message: string;
@@ -58,6 +59,7 @@ interface SocialPostCardProps {
   reactions?: EmojiReaction[];
   userReaction?: string | null;
   onReactionsChange?: (payload: { reactions: EmojiReaction[]; userReaction: string | null }) => void;
+  currentUserProfile?: TenantProfile;
 }
 
 export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
@@ -65,8 +67,8 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     postId,
     authorAvatar,
     authorName,
-    comments,
-    createdAt,
+    comments = [],
+    created_at,
     media,
     message,
     isOwner = false,
@@ -74,6 +76,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     reactions: reactionsProp,
     userReaction: userReactionProp,
     onReactionsChange,
+    currentUserProfile,
     ...other
   } = props;
   const [reactionAnchorEl, setReactionAnchorEl] = useState<null | HTMLElement>(null);
@@ -82,7 +85,10 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const [isReacting, setIsReacting] = useState(false);
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactionsProp ?? []);
   const [currentReaction, setCurrentReaction] = useState<string | null>(userReactionProp ?? null);
-  console.log('authorAvatar', authorAvatar);
+  const [commentList, setCommentList] = useState<TenantPostCommentWithAuthor[]>(comments);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsError, setCommentsError] = useState<string | null>(null);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     setReactionList(reactionsProp ?? []);
@@ -91,6 +97,49 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   useEffect(() => {
     setCurrentReaction(userReactionProp ?? null);
   }, [userReactionProp]);
+
+  useEffect(() => {
+    let active = true;
+    const loadComments = async () => {
+      setCommentsLoading(true);
+      setCommentsError(null);
+      const result = await getPostComments(postId);
+      if (!active) return;
+      if (result.success && result.data) {
+        setCommentList(result.data);
+      } else {
+        setCommentsError(result.error || 'Failed to load comments');
+      }
+      setCommentsLoading(false);
+    };
+    loadComments();
+    return () => {
+      active = false;
+    };
+  }, [postId]);
+
+  const handleCommentSubmit = useCallback(
+    async (text: string) => {
+      setIsSubmittingComment(true);
+      try {
+        const result = await createTenantPostComment({ post_id: postId, comment_text: text });
+        if (!result.success) {
+          toast.error(result.error || 'Failed to add comment');
+          return;
+        }
+        const refreshed = await getPostComments(postId);
+        if (refreshed.success && refreshed.data) {
+          setCommentList(refreshed.data);
+        }
+      } catch (error) {
+        console.error('Error submitting comment:', error);
+        toast.error('Failed to add comment');
+      } finally {
+        setIsSubmittingComment(false);
+      }
+    },
+    [postId]
+  );
 
   const totalReactions = useMemo(
     () => reactionList.reduce((sum, reaction) => sum + reaction.count, 0),
@@ -209,7 +258,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
               color="text.secondary"
               variant="caption"
             >
-              {formatDistanceToNowStrict(createdAt)} ago
+              {formatDistanceToNowStrict(created_at)} ago
             </Typography>
           </Stack>
         }
@@ -329,18 +378,34 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         </Stack>
         <Divider sx={{ my: 3 }} />
         <Stack spacing={3}>
-          {comments.map((comment: TenantPostCommentWithAuthor) => (
-            <SocialComment
-              authorAvatar={comment.author.avatar_url || ''}
-              authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
-              created_at={new Date(comment.created_at).getTime()}
-              key={comment.id}
-              message={comment.comment_text}
-            />
-          ))}
+          {commentsError && (
+            <Typography color="error" variant="body2">
+              {commentsError}
+            </Typography>
+          )}
+          {commentsLoading ? (
+            <Typography variant="body2" color="text.secondary">
+              Loading comments...
+            </Typography>
+          ) : (
+            commentList.map((comment: TenantPostCommentWithAuthor) => (
+              <SocialComment
+                authorAvatar={comment.author.avatar_url || ''}
+                authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
+                created_at={new Date(comment.created_at).getTime()}
+                key={comment.id}
+                message={comment.comment_text}
+              />
+            ))
+          )}
         </Stack>
         <Divider sx={{ my: 3 }} />
-        <SocialCommentAdd />
+        <SocialCommentAdd
+          onSubmit={handleCommentSubmit}
+          currentUserAvatar={currentUserProfile?.avatar_url}
+          currentUserName={`${currentUserProfile?.first_name ?? ''} ${currentUserProfile?.last_name ?? ''}`.trim()}
+          disabled={isSubmittingComment}
+        />
       </Box>
       <Popover
         open={Boolean(reactionAnchorEl)}
@@ -385,29 +450,15 @@ SocialPostCard.propTypes = {
   postId: PropTypes.string.isRequired,
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
-  comments: PropTypes.array.isRequired,
-  createdAt: PropTypes.number.isRequired,
+  comments: PropTypes.array,
+  created_at: PropTypes.number.isRequired,
   likes: PropTypes.number,
-  // media: PropTypes.arrayOf(
-  //   PropTypes.shape({
-  //     id: PropTypes.string.isRequired,
-  //     post_id: PropTypes.string.isRequired,
-  //     storage_bucket: PropTypes.string.isRequired,
-  //     storage_path: PropTypes.string.isRequired,
-  //     created_at: PropTypes.string,
-  //     updated_at: PropTypes.string,
-  //   })
-  // ),
+  media: PropTypes.array,
   message: PropTypes.string.isRequired,
   isOwner: PropTypes.bool,
   onArchive: PropTypes.func,
-  // reactions: PropTypes.arrayOf(
-  //   PropTypes.shape({
-  //     emoji: PropTypes.string.isRequired,
-  //     count: PropTypes.number.isRequired,
-  //     userReacted: PropTypes.bool.isRequired,
-  //   })
-  // ),
+  reactions: PropTypes.array,
   userReaction: PropTypes.string,
   onReactionsChange: PropTypes.func,
+  currentUserProfile: PropTypes.any,
 };

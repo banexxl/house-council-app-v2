@@ -128,7 +128,6 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                     author: post.author,
                     reactions,
                     userReaction: userReaction ?? undefined,
-                    is_liked: Boolean(userReaction),
                     likes_count: likesCount,
                } as TenantPostWithAuthor;
           });
@@ -208,7 +207,6 @@ export async function getTenantPostsPaginated(options: {
                     author: post.author,
                     reactions,
                     userReaction,
-                    is_liked: Boolean(userReaction),
                     likes_count: likesCount,
                } as TenantPostWithAuthor;
           });
@@ -279,7 +277,6 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
                reactions,
                userReaction: userReaction ?? undefined,
                likes_count,
-               is_liked: Boolean(userReaction),
           };
 
           return { success: true, data: postWithAuthor };
@@ -382,7 +379,6 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
                          comments_count: commentCountMap.get(p.id!) || 0,
                          reactions,
                          userReaction: userReaction ?? undefined,
-                         is_liked: Boolean(userReaction),
                          images: (imagesData || []).filter((img: any) => img.post_id === p.id),
                          documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
                     };
@@ -501,7 +497,6 @@ export async function getCurrentUserActivePostsPaginated(options: {
                          comments_count: commentCountMap.get(postId) || 0,
                          reactions,
                          userReaction: userReaction ?? undefined,
-                         is_liked: Boolean(userReaction),
                          images: (imagesData || []).filter((img: any) => img.post_id === postId),
                          documents: (documentsData || []).filter((doc: any) => doc.post_id === postId),
                     };

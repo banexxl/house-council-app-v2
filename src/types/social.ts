@@ -137,7 +137,6 @@ export interface TenantPostWithAuthor extends TenantPost {
     last_name: string;
     avatar_url?: string;
   };
-  is_liked?: boolean;
   reactions?: EmojiReaction[];
   userReaction?: string; // The emoji the current user reacted with
 }

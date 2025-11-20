@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { getInitials } from 'src/utils/get-initials';
 
 interface SocialCommentProps {
   authorAvatar: string;
@@ -32,7 +33,9 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
         component="a"
         href="#"
         src={authorAvatar}
-      />
+      >
+        {getInitials(authorName)}
+      </Avatar>
       <Stack
         spacing={1}
         sx={{

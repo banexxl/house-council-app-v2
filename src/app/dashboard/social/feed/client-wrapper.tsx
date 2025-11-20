@@ -160,7 +160,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
               authorAvatar={post.author.avatar_url || ''}
               authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
               comments={[]}
-              createdAt={new Date(post.created_at).getTime()}
+              created_at={new Date(post.created_at).getTime()}
               likes={post.likes_count || 0}
               media={post.images || []}
               message={post.content_text}
@@ -169,6 +169,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
               reactions={post.reactions || []}
               userReaction={post.userReaction}
               onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
+              currentUserProfile={profile}
             />
           ))}
 

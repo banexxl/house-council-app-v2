@@ -2,40 +2,44 @@
 
 import type { FC } from 'react';
 import { useState, useCallback } from 'react';
-import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';
-import Link01Icon from '@untitled-ui/icons-react/build/esm/Link01';
-import Attachment01Icon from '@untitled-ui/icons-react/build/esm/Attachment01';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
-import Image01Icon from '@untitled-ui/icons-react/build/esm/Image01';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
 import TextField from '@mui/material/TextField';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import type { Theme } from '@mui/material/styles/createTheme';
+import Typography from '@mui/material/Typography';
 
-import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { getInitials } from 'src/utils/get-initials';
 
-export const SocialCommentAdd: FC = (props) => {
-  const smUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
-  const user = useMockedUser();
+interface SocialCommentAddProps {
+  onSubmit: (text: string) => Promise<void> | void;
+  currentUserAvatar?: string | null;
+  currentUserName?: string | null;
+  disabled?: boolean;
+}
+
+export const SocialCommentAdd: FC<SocialCommentAddProps> = ({
+  onSubmit,
+  currentUserAvatar,
+  currentUserName,
+  disabled = false,
+  ...props
+}) => {
   const [isSending, setIsSending] = useState(false);
+  const [text, setText] = useState('');
+  const canSend = text.trim().length > 0 && !isSending && !disabled;
 
   const handleSend = useCallback(async () => {
+    if (!canSend) return;
     setIsSending(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Handle comment submission logic here
+      await onSubmit(text.trim());
+      setText('');
     } catch (error) {
       console.error('Error sending comment:', error);
     } finally {
       setIsSending(false);
     }
-  }, []);
+  }, [canSend, onSubmit, text]);
 
   return (
     <div {...props}>
@@ -45,16 +49,16 @@ export const SocialCommentAdd: FC = (props) => {
         spacing={2}
       >
         <Avatar
-          src={user.avatar}
+          src={currentUserAvatar || undefined}
           sx={{
             height: 40,
             width: 40,
           }}
         >
-          {getInitials(user.name)}
+          {getInitials(currentUserName || '')}
         </Avatar>
         <Stack
-          spacing={3}
+          spacing={1.5}
           sx={{ flexGrow: 1 }}
         >
           <TextField
@@ -63,60 +67,29 @@ export const SocialCommentAdd: FC = (props) => {
             placeholder="Type your reply"
             rows={3}
             variant="outlined"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={disabled || isSending}
           />
           <Stack
             alignItems="center"
             direction="row"
             justifyContent="space-between"
-            spacing={3}
           >
-            <Stack
-              alignItems="center"
-              direction="row"
-              spacing={1}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ visibility: isSending ? 'visible' : 'hidden' }}
             >
-              {!smUp && (
-                <IconButton>
-                  <SvgIcon>
-                    <PlusIcon />
-                  </SvgIcon>
-                </IconButton>
-              )}
-              {smUp && (
-                <>
-                  <IconButton>
-                    <SvgIcon>
-                      <Image01Icon />
-                    </SvgIcon>
-                  </IconButton>
-                  <IconButton>
-                    <SvgIcon>
-                      <Attachment01Icon />
-                    </SvgIcon>
-                  </IconButton>
-                  <IconButton>
-                    <SvgIcon>
-                      <Link01Icon />
-                    </SvgIcon>
-                  </IconButton>
-                  <IconButton>
-                    <SvgIcon>
-                      <FaceSmileIcon />
-                    </SvgIcon>
-                  </IconButton>
-                </>
-              )}
-            </Stack>
-            <div>
-              <Button
-                variant="contained"
-                onClick={handleSend}
-                disabled={isSending}
-                loading={isSending}
-              >
-                Send
-              </Button>
-            </div>
+              Sending...
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={handleSend}
+              disabled={!canSend}
+            >
+              Send
+            </Button>
           </Stack>
         </Stack>
       </Stack>
