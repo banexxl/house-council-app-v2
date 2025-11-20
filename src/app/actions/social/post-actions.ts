@@ -405,6 +405,127 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
 }
 
 /**
+ * Get current user's posts with pagination
+ */
+export async function getCurrentUserActivePostsPaginated(options: {
+     limit?: number;
+     offset?: number;
+}): Promise<ActionResponse<{ posts: TenantPostWithAuthor[]; total: number }>> {
+     const action = 'Get Current User Posts Paginated';
+     try {
+          const viewer = await getViewer();
+          if (!viewer.tenant) {
+               await logActionResult(action, 'fail', {
+                    error: 'User not authenticated or not a tenant',
+               });
+               return { success: false, error: 'User not authenticated or not a tenant' };
+          }
+
+          const pageSize = Math.min(Math.max(options.limit ?? DEFAULT_POST_PAGE_SIZE, 1), MAX_POST_PAGE_SIZE);
+          const offset = Math.max(options.offset ?? 0, 0);
+          const supabase = await useServerSideSupabaseAnonClient();
+
+          const { data, error, count } = await supabase
+               .from(TABLES.TENANT_POSTS)
+               .select(`
+                    *,
+                    author:tenant_id (
+                         id,
+                         first_name,
+                         last_name,
+                         avatar_url
+                    )
+               `, { count: 'exact' })
+               .eq('tenant_id', viewer.tenant.id)
+               .eq('is_archived', false)
+               .order('created_at', { ascending: false })
+               .range(offset, offset + pageSize - 1);
+
+          if (error) {
+               console.error('Error fetching user posts paginated:', error);
+               await logActionResult(action, 'fail', {
+                    userId: viewer.tenant.id,
+                    payload: { limit: pageSize, offset },
+                    error: error.message,
+               });
+               return { success: false, error: error.message };
+          }
+
+          let enrichedPosts: TenantPostWithAuthor[] = (data || []).map((post: any) => ({
+               ...post,
+               author: {
+                    id: post.author?.id || post.tenant_id,
+                    first_name: post.author?.first_name || 'Unknown',
+                    last_name: post.author?.last_name || 'User',
+                    avatar_url: post.author?.avatar_url,
+               },
+          }));
+
+          const postIds = enrichedPosts.map(p => p.id).filter(Boolean) as string[];
+
+          if (postIds.length > 0) {
+               const [
+                    { data: commentCountData },
+                    { data: imagesData },
+                    { data: documentsData }
+               ] = await Promise.all([
+                    supabase
+                         .from(TABLES.TENANT_POST_COMMENTS)
+                         .select('post_id')
+                         .in('post_id', postIds),
+                    supabase
+                         .from(TABLES.TENANT_POST_IMAGES)
+                         .select('*')
+                         .in('post_id', postIds),
+                    supabase
+                         .from(TABLES.TENANT_POST_DOCUMENTS)
+                         .select('*')
+                         .in('post_id', postIds)
+               ]);
+
+               const commentCountMap = new Map<string, number>();
+               for (const comment of commentCountData || []) {
+                    const postId = (comment as any).post_id;
+                    commentCountMap.set(postId, (commentCountMap.get(postId) || 0) + 1);
+               }
+
+               const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, viewer.tenant.id);
+
+               enrichedPosts = enrichedPosts.map(p => {
+                    const reactions = reactionMap.get(p.id!) ?? [];
+                    const userReaction = userReactionMap.get(p.id!) ?? null;
+                    const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
+                    return {
+                         ...p,
+                         likes_count: likesCount,
+                         comments_count: commentCountMap.get(p.id!) || 0,
+                         reactions,
+                         userReaction,
+                         is_liked: Boolean(userReaction),
+                         images: (imagesData || []).filter((img: any) => img.post_id === p.id),
+                         documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
+                    };
+               });
+          }
+
+          const total = typeof count === 'number' ? count : enrichedPosts.length + offset;
+
+          await logActionResult(action, 'success', {
+               userId: viewer.tenant.id,
+               payload: { resultCount: enrichedPosts.length, total, limit: pageSize, offset },
+          });
+
+          return { success: true, data: { posts: enrichedPosts, total } };
+     } catch (error) {
+          console.error('Error fetching user posts:', error);
+          await logActionResult(action, 'fail', {
+               error: error instanceof Error ? error.message : 'Failed to fetch posts',
+          });
+          return { success: false, error: 'Failed to fetch posts' };
+     }
+}
+
+/**
  * Create a new post
  */
 export async function createTenantPost(payload: CreateTenantPostPayload): Promise<ActionResponse<TenantPost>> {

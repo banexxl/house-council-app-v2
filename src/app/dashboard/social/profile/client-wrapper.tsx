@@ -39,9 +39,11 @@ interface socialProfileWrapperProps {
      posts: TenantPostWithAuthor[];
      profile: TenantProfile;
      buildingId: string;
+     totalCount: number;
+     pageSize: number;
 }
 
-export const ClientProfileWrapper = ({ posts, profile, buildingId }: socialProfileWrapperProps) => {
+export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, pageSize }: socialProfileWrapperProps) => {
 
      const theme = useTheme();
      const { t } = useTranslation();
@@ -371,6 +373,8 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId }: socialProfi
                          posts={posts}
                          profile={profile}
                          buildingId={buildingId}
+                         totalCount={totalCount}
+                         pageSize={pageSize}
                     />
                </Box>
                <Dialog

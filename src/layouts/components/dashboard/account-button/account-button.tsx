@@ -37,7 +37,6 @@ export const AccountButton: FC = () => {
           .select('avatar_url, id, email, first_name, last_name')
           .eq('tenant_id', tenant.id)
           .single();
-        log(`tenant profile data: ${JSON.stringify(profileData)}, error: ${JSON.stringify(error)}`);
         setUser({
           role: 'tenant',
           id: profileData?.id ?? tenant.id,
@@ -104,16 +103,16 @@ export const AccountButton: FC = () => {
         component={ButtonBase}
         onClick={popover.handleOpen}
         ref={popover.anchorRef}
-      sx={{
-        alignItems: 'center',
-        display: 'flex',
-        borderWidth: 2,
-        borderStyle: 'solid',
-        borderColor: 'divider',
-        height: 40,
-        width: 40,
-        borderRadius: '50%',
-      }}
+        sx={{
+          alignItems: 'center',
+          display: 'flex',
+          borderWidth: 2,
+          borderStyle: 'solid',
+          borderColor: 'divider',
+          height: 40,
+          width: 40,
+          borderRadius: '50%',
+        }}
       >
         {loading ? (
           <CircularProgress size={20} thickness={5} />

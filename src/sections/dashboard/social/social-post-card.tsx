@@ -82,6 +82,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const [isReacting, setIsReacting] = useState(false);
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactionsProp ?? []);
   const [currentReaction, setCurrentReaction] = useState<string | null>(userReactionProp ?? null);
+  console.log('authorAvatar', authorAvatar);
 
   useEffect(() => {
     setReactionList(reactionsProp ?? []);

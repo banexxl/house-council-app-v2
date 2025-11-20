@@ -3,18 +3,17 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { getCurrentUserProfile } from 'src/app/actions/social/profile-actions';
-import { getCurrentUserActivePosts } from 'src/app/actions/social/post-actions';
+import { getCurrentUserActivePostsPaginated } from 'src/app/actions/social/post-actions';
 import { ClientProfileWrapper } from './client-wrapper';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
+
+const PROFILE_FEED_PAGE_SIZE = 5;
 
 const Page = async () => {
      // Fetch current user's profile
      const profileResult = await getCurrentUserProfile();
      const profile = profileResult.success ? profileResult.data : null;
 
-     // Fetch user's posts
-     const postsResult = await getCurrentUserActivePosts();
-     const posts = postsResult.success ? postsResult.data || [] : [];
      // If no profile exists, show create profile message
      if (!profile) {
           return (
@@ -55,6 +54,12 @@ const Page = async () => {
      }
 
      const { data: buildingId } = await getBuildingIdFromTenantId(profile.tenant_id);
+     const postsResult = await getCurrentUserActivePostsPaginated({
+          limit: PROFILE_FEED_PAGE_SIZE,
+          offset: 0,
+     });
+     const posts = postsResult.success ? postsResult.data?.posts || [] : [];
+     const totalCount = postsResult.success ? postsResult.data?.total || posts.length : posts.length;
 
      return (
           <>
@@ -69,7 +74,9 @@ const Page = async () => {
                          <ClientProfileWrapper
                               posts={posts}
                               profile={profile}
-                              buildingId={buildingId!}
+                              buildingId={buildingId ?? ''}
+                              totalCount={totalCount}
+                              pageSize={PROFILE_FEED_PAGE_SIZE}
                          />
                     </Container>
                </Box>
