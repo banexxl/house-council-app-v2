@@ -63,7 +63,7 @@ export async function getPostComments(postId: string): Promise<ActionResponse<Te
                .from(TABLES.TENANT_POST_COMMENTS)
                .select(`
                     *,
-                    author:tenant_id (
+                    author:profile_id (
                          id,
                          first_name,
                          last_name,
@@ -100,7 +100,12 @@ export async function getPostComments(postId: string): Promise<ActionResponse<Te
 
           const commentsWithAuthor = comments.map((comment: any) => ({
                ...comment,
-               author: comment.author,
+               author: comment.author ?? {
+                    id: comment.tenant_id,
+                    first_name: comment.author?.first_name ?? 'Unknown',
+                    last_name: comment.author?.last_name ?? 'User',
+                    avatar_url: comment.author?.avatar_url ?? null,
+               },
                reactions: reactionMap.get(comment.id) ?? [],
                userReaction: userReactionMap.get(comment.id) ?? null,
           })) as TenantPostCommentWithAuthor[];
@@ -172,7 +177,8 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                .eq('id', payload.post_id);
 
           // Optionally revalidate the path where posts are displayed
-          revalidatePath('/dashboard/social');
+          revalidatePath('/dashboard/social/feed');
+          revalidatePath('/dashboard/social/profile');
 
           return { success: true, data };
      } catch (error) {

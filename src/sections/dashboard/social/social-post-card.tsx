@@ -31,6 +31,7 @@ import { toast } from 'react-hot-toast';
 import { archiveTenantPost } from 'src/app/actions/social/post-actions';
 import { reactToPost } from 'src/app/actions/social/like-actions';
 import { getPostComments, createTenantPostComment } from 'src/app/actions/social/comment-actions';
+import { useSignedUrl } from 'src/hooks/use-signed-urls';
 
 import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage, TenantProfile } from 'src/types/social';
 
@@ -53,6 +54,13 @@ interface SocialPostCardProps {
   created_at: number;
   likes?: number;
   media?: TenantPostImage[];
+  documents?: Array<{
+    id?: string;
+    storage_bucket?: string | null;
+    storage_path?: string | null;
+    file_name?: string | null;
+    mime_type?: string | null;
+  }>;
   message: string;
   isOwner?: boolean;
   onArchive?: () => void;
@@ -62,6 +70,38 @@ interface SocialPostCardProps {
   currentUserProfile?: TenantProfile;
 }
 
+const AttachmentLink = ({
+  doc,
+}: {
+  doc: {
+    id?: string;
+    storage_bucket?: string | null;
+    storage_path?: string | null;
+    file_name?: string | null;
+    mime_type?: string | null;
+  };
+}) => {
+  const { url } = useSignedUrl(
+    doc.storage_bucket as string,
+    doc.storage_path as string,
+    { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
+  );
+  const label = doc.file_name || doc.storage_path?.split('/').pop() || 'Document';
+  return (
+    <Link
+      href={url || '#'}
+      target="_blank"
+      rel="noopener noreferrer"
+      underline="hover"
+      color={url ? 'primary' : 'text.secondary'}
+      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+    >
+      {label}
+      {!url && <Typography variant="caption">(Link unavailable)</Typography>}
+    </Link>
+  );
+};
+
 export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const {
     postId,
@@ -70,6 +110,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     comments = [],
     created_at,
     media,
+    documents = [],
     message,
     isOwner = false,
     onArchive,
@@ -280,18 +321,35 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           </Stack>
         }
       />
-      <Box
-        sx={{
-          pb: 2,
-          px: 3,
-        }}
-      >
-        <Typography variant="body1">{message}</Typography>
-        {Array.isArray(media) && media.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <SocialPostMediaGrid media={media} />
-          </Box>
-        )}
+          <Box
+            sx={{
+              pb: 2,
+              px: 3,
+            }}
+          >
+            <Typography variant="body1">{message}</Typography>
+            {Array.isArray(media) && media.length > 0 && (
+              <Box sx={{ mt: 3 }}>
+                <SocialPostMediaGrid media={media} />
+              </Box>
+            )}
+            {Array.isArray(documents) && documents.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Attachments
+                </Typography>
+                <Stack spacing={1}>
+                  {documents
+                    .filter((doc) => doc.storage_bucket && doc.storage_path)
+                    .map((doc) => (
+                      <AttachmentLink
+                        key={`${doc.id || doc.storage_path}-${doc.file_name || ''}`}
+                        doc={doc}
+                      />
+                    ))}
+                </Stack>
+              </Box>
+            )}
         {reactionList.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Stack direction="row" flexWrap="wrap" gap={1}>
@@ -466,6 +524,7 @@ SocialPostCard.propTypes = {
   created_at: PropTypes.number.isRequired,
   likes: PropTypes.number,
   media: PropTypes.array,
+  documents: PropTypes.array,
   message: PropTypes.string.isRequired,
   isOwner: PropTypes.bool,
   onArchive: PropTypes.func,

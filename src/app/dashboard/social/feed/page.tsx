@@ -3,6 +3,8 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 
 import { Seo } from 'src/components/seo';
 import { getTenantPostsPaginated } from 'src/app/actions/social/post-actions';
@@ -77,12 +79,12 @@ const Page = async () => {
       >
         <Container maxWidth="lg">
           <Stack spacing={1}>
-            <Typography
-              color="text.secondary"
-              variant="overline"
-            >
-              Social Feed
-            </Typography>
+            <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 0.5 }}>
+              <Link color="inherit" href="/dashboard">
+                Dashboard
+              </Link>
+              <Typography color="text.primary">Social Feed</Typography>
+            </Breadcrumbs>
             <Typography variant="h4">Here&apos;s what your connections posted</Typography>
           </Stack>
           <Stack

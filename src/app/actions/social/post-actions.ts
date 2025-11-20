@@ -198,6 +198,19 @@ export async function getTenantPostsPaginated(options: {
           const postIds = (data || []).map((post: any) => post.id);
           const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, currentUserId);
 
+          let imagesData: any[] = [];
+          let documentsData: any[] = [];
+
+          if (postIds.length > 0) {
+               const [imagesRes, docsRes] = await Promise.all([
+                    supabase.from(TABLES.TENANT_POST_IMAGES).select('*').in('post_id', postIds),
+                    supabase.from(TABLES.TENANT_POST_DOCUMENTS).select('*').in('post_id', postIds),
+               ]);
+
+               imagesData = imagesRes.data || [];
+               documentsData = docsRes.data || [];
+          }
+
           const postsWithLikes = (data || []).map((post: any) => {
                const reactions = reactionMap.get(post.id) ?? [];
                const userReaction = userReactionMap.get(post.id) ?? null;
@@ -206,8 +219,10 @@ export async function getTenantPostsPaginated(options: {
                     ...post,
                     author: post.author,
                     reactions,
-                    userReaction,
+                    userReaction: userReaction ?? undefined,
                     likes_count: likesCount,
+                    images: imagesData.filter((img: any) => img.post_id === post.id),
+                    documents: documentsData.filter((doc: any) => doc.post_id === post.id),
                } as TenantPostWithAuthor;
           });
 
