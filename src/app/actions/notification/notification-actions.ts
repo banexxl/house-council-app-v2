@@ -3,102 +3,49 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { Notification } from 'src/types/notification';
+import { BaseNotification, Notification, NotificationType, NotificationTypeMap, TenantContact } from 'src/types/notification';
 import { hydrateNotificationsFromDb } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
-// import { readTenantContactByUserIds } from '../tenant/tenant-actions';
-// import { htmlToPlainText } from 'src/utils/html-tags-remover';
 import { TABLES } from 'src/libs/supabase/tables';
-// import log from 'src/utils/logger';
+import log from 'src/utils/logger';
 
 const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
 
-// // Batch insert notifications; reusable across server actions
-// export async function emitNotifications(
-//      rows: BaseNotification[]
-// ): Promise<{ success: boolean; error?: string; inserted?: number }> {
-//      log(`Emitting ${rows.length} notifications`, 'warn');
-//      const time = Date.now();
-//      if (!rows || rows.length === 0) return { success: true, inserted: 0 };
-//      try {
-//           // 1) Insert notifications into DB first (in batches)
-//           const supabase = await useServerSideSupabaseAnonClient();
-//           const BATCH = 500;
-//           let inserted = 0;
-//           for (let i = 0; i < rows.length; i += BATCH) {
-//                const slice = rows.slice(i, i + BATCH);
-//                const dbSlice = slice.map((r) => ({
-//                     ...r,
-//                     type: r.type.value as NotificationType,
-//                }));
-//                const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(dbSlice as any);
-//                log(`Inserted batch of ${slice.length} notifications`, 'warn')
-//                if (error) {
-//                     log(`Error inserting notifications: ${error.message}`, 'error')
-//                     await logServerAction({ user_id: null, action: 'emitNotificationsInsert', duration_ms: Date.now() - time, error: error.message, payload: { count: slice.length }, status: 'fail', type: 'db' });
-//                     return { success: false, error: error.message };
-//                }
-//                inserted += slice.length;
-//           }
-
-//           // 2) Group by user and send a single SMS per user
-//           const byUser = new Map<string, BaseNotification[]>();
-//           for (const r of rows) {
-//                if (!r.user_id) continue;
-//                const arr = byUser.get(r.user_id) ?? [];
-//                arr.push(r);
-//                byUser.set(r.user_id, arr);
-//           }
-//           const userIds = Array.from(byUser.keys());
-//           for (const uid of userIds) {
-//                log(`Prepared SMS for user ${uid}`, 'warn');
-//           }
-//           if (userIds.length === 0) {
-//                await logServerAction({ user_id: null, action: 'emitNotificationsInsert+Twilio', duration_ms: Date.now() - time, error: '', payload: { inserted, users: 0, smsSent: 0, smsErrors: 0 }, status: 'success', type: 'db' });
-//                return { success: true, inserted };
-//           }
-
-//           const { data, success, error } = await readTenantContactByUserIds(userIds);
-//           log(`Fetched ${data ? data.length : 0} contacts for ${userIds.length} users. ${error ? error : 'no error'}`, 'warn')
-//           const contacts: TenantContact[] = success && data ? data : [];
-
-//           let smsSent = 0; let smsErrors = 0;
-//           for (const uid of userIds) {
-//                const contact = Array.isArray(contacts) && contacts.length > 0 ? contacts.find(c => c.user_id === uid) : undefined;
-//                log(`contact ${contact ? contact?.phone_number : 'not found'} for user ${uid}`, 'warn')
-//                if (!contact?.phone_number) {
-//                     log('nije trebao da udje ovde')
-//                     continue;
-//                }
-//                if (contact.sms_opt_in !== true) {
-//                     log('nije trebao da udje ovde sms opt in false')
-//                     continue;
-//                }
-//                const list = byUser.get(uid)!;
-//                log(`logging notifications for user ${uid}: ${list} items`, 'warn')
-
-//                let title: string;
-//                let body: string;
-//                let notificationType: NotificationTypeMap;
-//                if (list.length === 1) {
-//                     title = list[0].title;
-//                     body = htmlToPlainText(list[0].description);
-//                     notificationType = list[0].type;
-//                } else {
-//                     title = `${list.length} new notifications`;
-//                     body = list.map(n => htmlToPlainText(n.description)).join('\n');
-//                     // const uniqueTypes = Array.from(new Set(list.map(n => n.type.value)));
-//                     notificationType = (list[0].type)
-//                }
-//           }
-
-//           await logServerAction({ user_id: null, action: 'emitNotificationsInsert+Twilio', duration_ms: Date.now() - time, error: '', payload: { inserted, users: userIds.length, smsSent, smsErrors }, status: 'success', type: 'db' });
-//           return { success: true, inserted };
-//      } catch (e: any) {
-//           await logServerAction({ user_id: null, action: 'emitNotificationsTwilioUnexpected', duration_ms: Date.now() - time, error: e?.message || 'unexpected', payload: { count: rows.length }, status: 'fail', type: 'db' });
-//           return { success: false, error: e?.message || 'Unexpected error' };
-//      }
-// }
+// Batch insert notifications; reusable across server actions
+export async function emitNotifications(
+     rows: BaseNotification[]
+): Promise<{ success: boolean; error?: string; inserted?: number }> {
+     log(`Emitting ${rows.length} notifications`, 'warn');
+     const time = Date.now();
+     if (!rows || rows.length === 0) return { success: true, inserted: 0 };
+     try {
+          // 1) Insert notifications into DB first (in batches)
+          const supabase = await useServerSideSupabaseAnonClient();
+          const BATCH = 500;
+          let inserted = 0;
+          for (let i = 0; i < rows.length; i += BATCH) {
+               const slice = rows.slice(i, i + BATCH);
+               const dbSlice = slice.map((r) => ({
+                    ...r,
+                    type: r.type.value as NotificationType,
+               }));
+               const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(dbSlice as any);
+               log(`Inserted batch of ${slice.length} notifications`, 'warn')
+               if (error) {
+                    log(`Error inserting notifications: ${error.message}`, 'error')
+                    await logServerAction({ user_id: null, action: 'emitNotificationsInsert', duration_ms: Date.now() - time, error: error.message, payload: { count: slice.length }, status: 'fail', type: 'db' });
+                    return { success: false, error: error.message };
+               }
+               inserted += slice.length;
+          }
+          revalidatePath('/dashboard/notifications');
+          await logServerAction({ user_id: null, action: 'emitNotifications', duration_ms: Date.now() - time, error: '', payload: { count: rows.length }, status: 'success', type: 'db' });
+          return { success: true, inserted };
+     } catch (e: any) {
+          await logServerAction({ user_id: null, action: 'emitNotificationsTwilioUnexpected', duration_ms: Date.now() - time, error: e?.message || 'unexpected', payload: { count: rows.length }, status: 'fail', type: 'db' });
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+}
 
 export async function getAllNotifications(): Promise<{ success: boolean; data?: Notification[]; error?: string; }> {
      const time = Date.now();

@@ -46,11 +46,17 @@ export interface MessageNotification extends BaseNotification {
      sender_id: string;
      receiver_id: string;
 }
+
 export interface AlertNotification extends BaseNotification {
      severity?: 'low' | 'medium' | 'high';
 }
 
-export type Notification = BaseNotification | MessageNotification | AlertNotification;
+export interface SocialNotification extends BaseNotification {
+     related_post_id?: string;
+     related_comment_id?: string;
+}
+
+export type Notification = BaseNotification | MessageNotification | AlertNotification | SocialNotification;
 
 // Contact shape you already retrieve:
 export type TenantContact = {
