@@ -82,8 +82,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                 authorAvatar={post.author.avatar_url || ''}
                 authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
                 comments={[]} // Comments would need to be fetched separately
-                created_at={new Date(post.created_at).getTime()}
-                isLiked={post.is_liked || false}
+                createdAt={new Date(post.created_at).getTime()}
                 likes={post.likes_count! || 0}
                 media={post.images || []}
                 message={post.content_text}

@@ -49,8 +49,7 @@ interface SocialPostCardProps {
   authorAvatar: string;
   authorName: string;
   comments: TenantPostCommentWithAuthor[];
-  created_at: number;
-  isLiked?: boolean;
+  createdAt: number;
   likes?: number;
   media?: TenantPostImage[];
   message: string;
@@ -67,7 +66,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     authorAvatar,
     authorName,
     comments,
-    created_at,
+    createdAt,
     media,
     message,
     isOwner = false,
@@ -209,7 +208,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
               color="text.secondary"
               variant="caption"
             >
-              {formatDistanceToNowStrict(created_at)} ago
+              {formatDistanceToNowStrict(createdAt)} ago
             </Typography>
           </Stack>
         }
@@ -386,8 +385,7 @@ SocialPostCard.propTypes = {
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
   comments: PropTypes.array.isRequired,
-  created_at: PropTypes.number.isRequired,
-  isLiked: PropTypes.bool,
+  createdAt: PropTypes.number.isRequired,
   likes: PropTypes.number,
   // media: PropTypes.arrayOf(
   //   PropTypes.shape({
