@@ -2,7 +2,7 @@
 import { tokens } from 'src/locales/tokens';
 
 export type NotificationType =
-     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'other';
+     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'social' | 'other';
 
 export type NotificationChannel = 'whatsapp' | 'email' | 'push' | 'sms';
 
@@ -18,6 +18,7 @@ export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
      { value: 'alert', labelToken: tokens.notifications.tabs.alert },
      { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
+     { value: 'social', labelToken: tokens.notifications.tabs.social },
      { value: 'other', labelToken: tokens.notifications.tabs.other },
 ] as const;
 
@@ -56,7 +57,7 @@ export interface SocialNotification extends BaseNotification {
      related_comment_id?: string;
 }
 
-export type Notification = BaseNotification | MessageNotification | AlertNotification | SocialNotification;
+export type Notification = BaseNotification & (MessageNotification | AlertNotification | SocialNotification);
 
 // Contact shape you already retrieve:
 export type TenantContact = {

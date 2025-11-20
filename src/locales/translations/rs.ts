@@ -186,6 +186,7 @@ export const rs = {
      [tokens.notifications.tabs.reminder]: 'Podsetnici',
      [tokens.notifications.tabs.alert]: 'Upozorenja',
      [tokens.notifications.tabs.announcement]: 'Obaveštenja',
+     [tokens.notifications.tabs.social]: 'Društvena mrežas',
      [tokens.notifications.tabs.other]: 'Ostalo',
      [tokens.notifications.col.title]: 'Naslov',
      [tokens.notifications.col.message]: 'Poruka',

@@ -132,6 +132,7 @@ export const de = {
   [tokens.notifications.tabs.reminder]: 'Erinnerungen',
   [tokens.notifications.tabs.alert]: 'Alarme',
   [tokens.notifications.tabs.announcement]: 'Ankündigungen',
+  [tokens.notifications.tabs.social]: 'Sozial',
   [tokens.notifications.tabs.other]: 'Andere',
   [tokens.notifications.col.title]: 'Titel',
   [tokens.notifications.col.message]: 'Nachricht',

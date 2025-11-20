@@ -1092,6 +1092,7 @@ export const tokens = {
       reminder: 'notifications.tabs.reminder',
       alert: 'notifications.tabs.alert',
       announcement: 'notifications.tabs.announcement',
+      social: 'notifications.tabs.social',
       other: 'notifications.tabs.other',
     },
     col: {

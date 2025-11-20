@@ -840,6 +840,7 @@ export const en = {
   [tokens.notifications.tabs.reminder]: 'Reminders',
   [tokens.notifications.tabs.alert]: 'Alerts',
   [tokens.notifications.tabs.announcement]: 'Announcement',
+  [tokens.notifications.tabs.social]: 'Social',
   [tokens.notifications.tabs.other]: 'Other',
   [tokens.notifications.col.title]: 'Title',
   [tokens.notifications.col.message]: 'Message',

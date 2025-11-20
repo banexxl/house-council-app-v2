@@ -3,49 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { BaseNotification, Notification, NotificationType, NotificationTypeMap, TenantContact } from 'src/types/notification';
+import { Notification } from 'src/types/notification';
 import { hydrateNotificationsFromDb } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { TABLES } from 'src/libs/supabase/tables';
-import log from 'src/utils/logger';
 
 const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
-
-// Batch insert notifications; reusable across server actions
-export async function emitNotifications(
-     rows: BaseNotification[]
-): Promise<{ success: boolean; error?: string; inserted?: number }> {
-     log(`Emitting ${rows.length} notifications`, 'warn');
-     const time = Date.now();
-     if (!rows || rows.length === 0) return { success: true, inserted: 0 };
-     try {
-          // 1) Insert notifications into DB first (in batches)
-          const supabase = await useServerSideSupabaseAnonClient();
-          const BATCH = 500;
-          let inserted = 0;
-          for (let i = 0; i < rows.length; i += BATCH) {
-               const slice = rows.slice(i, i + BATCH);
-               const dbSlice = slice.map((r) => ({
-                    ...r,
-                    type: r.type.value as NotificationType,
-               }));
-               const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert(dbSlice as any);
-               log(`Inserted batch of ${slice.length} notifications`, 'warn')
-               if (error) {
-                    log(`Error inserting notifications: ${error.message}`, 'error')
-                    await logServerAction({ user_id: null, action: 'emitNotificationsInsert', duration_ms: Date.now() - time, error: error.message, payload: { count: slice.length }, status: 'fail', type: 'db' });
-                    return { success: false, error: error.message };
-               }
-               inserted += slice.length;
-          }
-          revalidatePath('/dashboard/notifications');
-          await logServerAction({ user_id: null, action: 'emitNotifications', duration_ms: Date.now() - time, error: '', payload: { count: rows.length }, status: 'success', type: 'db' });
-          return { success: true, inserted };
-     } catch (e: any) {
-          await logServerAction({ user_id: null, action: 'emitNotificationsTwilioUnexpected', duration_ms: Date.now() - time, error: e?.message || 'unexpected', payload: { count: rows.length }, status: 'fail', type: 'db' });
-          return { success: false, error: e?.message || 'Unexpected error' };
-     }
-}
 
 export async function getAllNotifications(): Promise<{ success: boolean; data?: Notification[]; error?: string; }> {
      const time = Date.now();

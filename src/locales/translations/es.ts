@@ -132,6 +132,7 @@ export const es = {
   [tokens.notifications.tabs.reminder]: 'Recordatorios',
   [tokens.notifications.tabs.alert]: 'Alertas',
   [tokens.notifications.tabs.announcement]: 'Anuncios',
+  [tokens.notifications.tabs.social]: 'Social',
   [tokens.notifications.tabs.other]: 'Otros',
   [tokens.notifications.col.title]: 'Título',
   [tokens.notifications.col.message]: 'Mensaje',
