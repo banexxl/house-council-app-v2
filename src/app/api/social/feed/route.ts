@@ -6,7 +6,6 @@ const MAX_LIMIT = 25;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-
   const requestedLimit = Number(searchParams.get('limit'));
   const requestedOffset = Number(searchParams.get('offset'));
   const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? requestedLimit : DEFAULT_LIMIT, 1), MAX_LIMIT);

@@ -374,7 +374,7 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
 
                enrichedPosts = enrichedPosts.map(p => {
                     const reactions = reactionMap.get(p.id!) ?? [];
-                    const userReaction = userReactionMap.get(p.id!) ?? null;
+                    const userReaction = userReactionMap.get(p.id!) ?? undefined;
                     const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
                     return {
                          ...p,

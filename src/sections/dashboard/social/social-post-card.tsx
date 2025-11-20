@@ -252,7 +252,6 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                   onClick={() => handleReactionSelect(reaction.emoji)}
                   disabled={isReacting}
                   sx={{
-                    px: 0,
                     borderRadius: 999,
                     alignItems: 'center',
                     bgcolor: reaction.userReacted ? 'primary.light' : 'grey.100',
@@ -390,23 +389,26 @@ SocialPostCard.propTypes = {
   created_at: PropTypes.number.isRequired,
   isLiked: PropTypes.bool,
   likes: PropTypes.number,
-  media: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string,
-      storage_bucket: PropTypes.string.isRequired,
-      storage_path: PropTypes.string.isRequired,
-    })
-  ),
+  // media: PropTypes.arrayOf(
+  //   PropTypes.shape({
+  //     id: PropTypes.string.isRequired,
+  //     post_id: PropTypes.string.isRequired,
+  //     storage_bucket: PropTypes.string.isRequired,
+  //     storage_path: PropTypes.string.isRequired,
+  //     created_at: PropTypes.string,
+  //     updated_at: PropTypes.string,
+  //   })
+  // ),
   message: PropTypes.string.isRequired,
   isOwner: PropTypes.bool,
   onArchive: PropTypes.func,
-  reactions: PropTypes.arrayOf(
-    PropTypes.shape({
-      emoji: PropTypes.string.isRequired,
-      count: PropTypes.number.isRequired,
-      userReacted: PropTypes.bool,
-    })
-  ),
+  // reactions: PropTypes.arrayOf(
+  //   PropTypes.shape({
+  //     emoji: PropTypes.string.isRequired,
+  //     count: PropTypes.number.isRequired,
+  //     userReacted: PropTypes.bool.isRequired,
+  //   })
+  // ),
   userReaction: PropTypes.string,
   onReactionsChange: PropTypes.func,
 };

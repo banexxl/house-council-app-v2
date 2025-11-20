@@ -23,7 +23,6 @@ import type { NavSection } from '../config';
 import { LanguageSwitch } from '../language-switch';
 import { NotificationsButton } from '../notifications-button';
 import { TopNavSection } from './top-nav-section';
-import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 
 const useCssVars = (color: NavColor): Record<string, string> => {
 
