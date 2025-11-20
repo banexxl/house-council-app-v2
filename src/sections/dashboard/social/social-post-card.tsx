@@ -390,11 +390,23 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           ) : (
             commentList.map((comment: TenantPostCommentWithAuthor) => (
               <SocialComment
+                commentId={comment.id}
                 authorAvatar={comment.author.avatar_url || ''}
                 authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
                 created_at={new Date(comment.created_at).getTime()}
                 key={comment.id}
                 message={comment.comment_text}
+                reactions={comment.reactions}
+                userReaction={comment.userReaction}
+                onReactionsChange={(payload) => {
+                  setCommentList((prev) =>
+                    prev.map((c) =>
+                      c.id === comment.id
+                        ? { ...c, reactions: payload.reactions, userReaction: payload.userReaction }
+                        : c
+                    )
+                  );
+                }}
               />
             ))
           )}

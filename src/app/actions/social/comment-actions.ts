@@ -10,6 +10,7 @@ import type {
      UpdateTenantPostCommentPayload,
      TenantPostCommentWithAuthor
 } from 'src/types/social';
+import type { EmojiReaction } from 'src/types/social';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -17,12 +18,46 @@ type ActionResponse<T> = {
      error?: string;
 };
 
+type ReactionResult = {
+     reactions: EmojiReaction[];
+     userReaction: string | null;
+};
+
+function aggregateCommentReactions(rows: Array<{ comment_id: string; emoji: string; tenant_id: string }>, currentUserId: string | null) {
+     const reactionMap = new Map<string, EmojiReaction[]>();
+     const userReactionMap = new Map<string, string>();
+
+     for (const row of rows) {
+          const list = reactionMap.get(row.comment_id) ?? [];
+          const existing = list.find((r) => r.emoji === row.emoji);
+          if (existing) {
+               existing.count += 1;
+               existing.userReacted = existing.userReacted || row.tenant_id === currentUserId;
+          } else {
+               list.push({
+                    emoji: row.emoji,
+                    count: 1,
+                    userReacted: row.tenant_id === currentUserId,
+               });
+          }
+          reactionMap.set(row.comment_id, list);
+
+          if (row.tenant_id === currentUserId) {
+               userReactionMap.set(row.comment_id, row.emoji);
+          }
+     }
+
+     return { reactionMap, userReactionMap };
+}
+
 /**
  * Get comments for a post
  */
 export async function getPostComments(postId: string): Promise<ActionResponse<TenantPostCommentWithAuthor[]>> {
      try {
           const supabase = await useServerSideSupabaseAnonClient();
+          const viewer = await getViewer();
+          const currentUserId = viewer.tenant?.id || null;
 
           const { data, error } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)
@@ -43,10 +78,31 @@ export async function getPostComments(postId: string): Promise<ActionResponse<Te
                return { success: false, error: error.message };
           }
 
-          // Transform data to include author information
-          const commentsWithAuthor = (data || []).map((comment: any) => ({
+          const comments = data || [];
+          const commentIds = comments.map((c: any) => c.id).filter(Boolean);
+          let reactionMap = new Map<string, EmojiReaction[]>();
+          let userReactionMap = new Map<string, string>();
+
+          if (commentIds.length) {
+               const { data: reactionRows, error: reactionError } = await supabase
+                    .from(TABLES.TENANT_COMMENT_LIKES)
+                    .select('comment_id, emoji, tenant_id')
+                    .in('comment_id', commentIds);
+
+               if (reactionError) {
+                    console.error('Error loading comment reactions:', reactionError);
+               } else {
+                    const aggregates = aggregateCommentReactions(reactionRows || [], currentUserId);
+                    reactionMap = aggregates.reactionMap;
+                    userReactionMap = aggregates.userReactionMap;
+               }
+          }
+
+          const commentsWithAuthor = comments.map((comment: any) => ({
                ...comment,
                author: comment.author,
+               reactions: reactionMap.get(comment.id) ?? [],
+               userReaction: userReactionMap.get(comment.id) ?? null,
           })) as TenantPostCommentWithAuthor[];
 
           return { success: true, data: commentsWithAuthor };
@@ -122,6 +178,90 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
      } catch (error) {
           console.error('Error creating comment:', error);
           return { success: false, error: 'Failed to create comment' };
+     }
+}
+
+/**
+ * React to a comment with a specific emoji
+ */
+export async function reactToComment(commentId: string, emoji: string): Promise<ActionResponse<ReactionResult>> {
+     try {
+          const viewer = await getViewer();
+          if (!viewer.tenant) {
+               return { success: false, error: 'User not authenticated or not a tenant' };
+          }
+
+          const supabase = await useServerSideSupabaseAnonClient();
+          const tenantId = viewer.tenant.id;
+
+          const { data: existingReaction, error: existingError } = await supabase
+               .from(TABLES.TENANT_COMMENT_LIKES)
+               .select('id, emoji')
+               .eq('comment_id', commentId)
+               .eq('tenant_id', tenantId)
+               .maybeSingle();
+
+          if (existingError && existingError.code !== 'PGRST116') {
+               console.error('Error loading existing comment reaction:', existingError);
+               return { success: false, error: existingError.message };
+          }
+
+          if (existingReaction?.emoji === emoji) {
+               const { error: deleteError } = await supabase
+                    .from(TABLES.TENANT_COMMENT_LIKES)
+                    .delete()
+                    .eq('id', existingReaction.id);
+
+               if (deleteError) {
+                    console.error('Error removing comment reaction:', deleteError);
+                    return { success: false, error: deleteError.message };
+               }
+          } else if (existingReaction) {
+               const { error: updateError } = await supabase
+                    .from(TABLES.TENANT_COMMENT_LIKES)
+                    .update({ emoji })
+                    .eq('id', existingReaction.id);
+
+               if (updateError) {
+                    console.error('Error updating comment reaction:', updateError);
+                    return { success: false, error: updateError.message };
+               }
+          } else {
+               const { error: insertError } = await supabase
+                    .from(TABLES.TENANT_COMMENT_LIKES)
+                    .insert({
+                         comment_id: commentId,
+                         tenant_id: tenantId,
+                         emoji,
+                    });
+
+               if (insertError) {
+                    console.error('Error adding comment reaction:', insertError);
+                    return { success: false, error: insertError.message };
+               }
+          }
+
+          const { data: rows, error: rowsError } = await supabase
+               .from(TABLES.TENANT_COMMENT_LIKES)
+               .select('comment_id, emoji, tenant_id')
+               .eq('comment_id', commentId);
+
+          if (rowsError) {
+               console.error('Error fetching comment reactions:', rowsError);
+               return { success: false, error: rowsError.message };
+          }
+
+          const { reactionMap, userReactionMap } = aggregateCommentReactions(rows || [], tenantId);
+          const reactions = reactionMap.get(commentId) ?? [];
+          const userReaction = userReactionMap.get(commentId) ?? null;
+
+          revalidatePath('/dashboard/social/feed');
+          revalidatePath('/dashboard/social');
+
+          return { success: true, data: { reactions, userReaction } };
+     } catch (error) {
+          console.error('Error reacting to comment:', error);
+          return { success: false, error: 'Failed to react to comment' };
      }
 }
 

@@ -115,9 +115,12 @@ export interface TenantPostComment {
   id: string;
   post_id: string;
   tenant_id: string;
+  profile_id?: string;
   comment_text: string;
   created_at: string;
   updated_at: string;
+  reactions?: EmojiReaction[];
+  userReaction?: string | null;
 }
 
 export interface CreateTenantPostCommentPayload {
