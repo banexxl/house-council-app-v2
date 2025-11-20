@@ -127,7 +127,7 @@ export async function getTenantPosts(buildingId?: string): Promise<ActionRespons
                     ...post,
                     author: post.author,
                     reactions,
-                    userReaction,
+                    userReaction: userReaction ?? undefined,
                     is_liked: Boolean(userReaction),
                     likes_count: likesCount,
                } as TenantPostWithAuthor;
@@ -277,7 +277,7 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
                ...data,
                author: data.author,
                reactions,
-               userReaction,
+               userReaction: userReaction ?? undefined,
                likes_count,
                is_liked: Boolean(userReaction),
           };
@@ -374,14 +374,14 @@ export async function getCurrentUserActivePosts(): Promise<ActionResponse<Tenant
 
                enrichedPosts = enrichedPosts.map(p => {
                     const reactions = reactionMap.get(p.id!) ?? [];
-                    const userReaction = userReactionMap.get(p.id!) ?? undefined;
+                    const userReaction = userReactionMap.get(p.id!);
                     const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
                     return {
                          ...p,
                          likes_count: likesCount,
                          comments_count: commentCountMap.get(p.id!) || 0,
                          reactions,
-                         userReaction,
+                         userReaction: userReaction ?? undefined,
                          is_liked: Boolean(userReaction),
                          images: (imagesData || []).filter((img: any) => img.post_id === p.id),
                          documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
@@ -492,18 +492,19 @@ export async function getCurrentUserActivePostsPaginated(options: {
                const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, viewer.tenant.id);
 
                enrichedPosts = enrichedPosts.map(p => {
-                    const reactions = reactionMap.get(p.id!) ?? [];
-                    const userReaction = userReactionMap.get(p.id!) ?? null;
+                    const postId = p.id as string;
+                    const reactions = reactionMap.get(postId) ?? [];
+                    const userReaction = userReactionMap.get(postId) ?? null;
                     const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
                     return {
                          ...p,
                          likes_count: likesCount,
-                         comments_count: commentCountMap.get(p.id!) || 0,
+                         comments_count: commentCountMap.get(postId) || 0,
                          reactions,
-                         userReaction,
+                         userReaction: userReaction ?? undefined,
                          is_liked: Boolean(userReaction),
-                         images: (imagesData || []).filter((img: any) => img.post_id === p.id),
-                         documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
+                         images: (imagesData || []).filter((img: any) => img.post_id === postId),
+                         documents: (documentsData || []).filter((doc: any) => doc.post_id === postId),
                     };
                });
           }

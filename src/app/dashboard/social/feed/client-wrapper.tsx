@@ -30,6 +30,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
   const [hasMore, setHasMore] = useState(posts.length < totalCount);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  console.log('posts', posts);
 
   useEffect(() => {
     setFeedPosts(posts);
