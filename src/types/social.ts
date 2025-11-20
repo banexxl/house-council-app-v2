@@ -63,6 +63,16 @@ export interface TenantPostImage {
   updated_at?: string;
 }
 
+export interface TenantPostDocument {
+  id: string;
+  post_id: string;
+  storage_bucket: string;
+  storage_path: string;
+  file_name: string;
+  mime_type?: string;
+  created_at?: string;
+}
+
 // Tenant Post Types
 export interface TenantPost {
   id: string;
@@ -74,7 +84,7 @@ export interface TenantPost {
   is_archived: boolean;
   // Enriched fields for UI (calculated dynamically)
   images?: TenantPostImage[];
-  documents?: { url: string; name: string; mime?: string }[];
+  documents?: TenantPostDocument[];
   likes_count?: number;
   comments_count?: number;
 }

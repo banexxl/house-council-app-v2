@@ -215,14 +215,21 @@ export async function getTenantPostsPaginated(options: {
                const reactions = reactionMap.get(post.id) ?? [];
                const userReaction = userReactionMap.get(post.id) ?? null;
                const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
+               const postId = post.id as string;
                return {
                     ...post,
                     author: post.author,
                     reactions,
                     userReaction: userReaction ?? undefined,
                     likes_count: likesCount,
-                    images: imagesData.filter((img: any) => img.post_id === post.id),
-                    documents: documentsData.filter((doc: any) => doc.post_id === post.id),
+                    images: imagesData.filter((img: any) => {
+                         const imgPostId = (img as any).post_id ?? (img as any).postId;
+                         return imgPostId === postId;
+                    }),
+                    documents: documentsData.filter((doc: any) => {
+                         const docPostId = (doc as any).post_id ?? (doc as any).postId;
+                         return docPostId === postId;
+                    }),
                } as TenantPostWithAuthor;
           });
 
@@ -298,120 +305,6 @@ export async function getTenantPost(postId: string): Promise<ActionResponse<Tena
      } catch (error) {
           console.error('Error fetching tenant post:', error);
           return { success: false, error: 'Failed to fetch post' };
-     }
-}
-
-/**
- * Get posts by current user
- */
-export async function getCurrentUserActivePosts(): Promise<ActionResponse<TenantPostWithAuthor[]>> {
-     const action = 'Get Current User Posts';
-     try {
-          const viewer = await getViewer();
-          if (!viewer.tenant) {
-               await logActionResult(action, 'fail', {
-                    error: 'User not authenticated or not a tenant',
-               });
-               return { success: false, error: 'User not authenticated or not a tenant' };
-          }
-
-          const supabase = await useServerSideSupabaseAnonClient();
-
-          const { data, error } = await supabase
-               .from(TABLES.TENANT_POSTS)
-               .select(`
-                    *,
-                    author:tenant_id (
-                         id,
-                         first_name,
-                         last_name,
-                         avatar_url
-                    )
-               `)
-               .eq('tenant_id', viewer.tenant.id)
-               .eq('is_archived', false)
-               .order('created_at', { ascending: false });
-
-          if (error) {
-               console.error('Error fetching user posts:', error);
-               await logActionResult(action, 'fail', {
-                    userId: viewer.tenant.id,
-                    error: error.message,
-               });
-               return { success: false, error: error.message };
-          }
-
-          // Transform and enrich posts
-          let enrichedPosts: TenantPostWithAuthor[] = (data || []).map((post: any) => ({
-               ...post,
-               author: {
-                    id: post.author?.id || post.tenant_id,
-                    first_name: post.author?.first_name || 'Unknown',
-                    last_name: post.author?.last_name || 'User',
-                    avatar_url: post.author?.avatar_url,
-               },
-               tenant_profiles: undefined,
-          }));
-
-          // Get post IDs for batch queries
-          const postIds = enrichedPosts.map(p => p.id).filter(Boolean) as string[];
-
-          if (postIds.length > 0) {
-               const [
-                    { data: commentCountData },
-                    { data: imagesData },
-                    { data: documentsData }
-               ] = await Promise.all([
-                    supabase
-                         .from(TABLES.TENANT_POST_COMMENTS)
-                         .select('post_id')
-                         .in('post_id', postIds),
-                    supabase
-                         .from(TABLES.TENANT_POST_IMAGES)
-                         .select('*')
-                         .in('post_id', postIds),
-                    supabase
-                         .from(TABLES.TENANT_POST_DOCUMENTS)
-                         .select('*')
-                         .in('post_id', postIds)
-               ]);
-
-               const commentCountMap = new Map<string, number>();
-               for (const comment of commentCountData || []) {
-                    const postId = (comment as any).post_id;
-                    commentCountMap.set(postId, (commentCountMap.get(postId) || 0) + 1);
-               }
-
-               const { reactionMap, userReactionMap } = await fetchReactionMapsForPosts(supabase, postIds, viewer.tenant.id);
-
-               enrichedPosts = enrichedPosts.map(p => {
-                    const reactions = reactionMap.get(p.id!) ?? [];
-                    const userReaction = userReactionMap.get(p.id!);
-                    const likesCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
-                    return {
-                         ...p,
-                         likes_count: likesCount,
-                         comments_count: commentCountMap.get(p.id!) || 0,
-                         reactions,
-                         userReaction: userReaction ?? undefined,
-                         images: (imagesData || []).filter((img: any) => img.post_id === p.id),
-                         documents: (documentsData || []).filter((doc: any) => doc.post_id === p.id),
-                    };
-               });
-          }
-
-          await logActionResult(action, 'success', {
-               userId: viewer.tenant.id,
-               payload: { resultCount: enrichedPosts.length },
-          });
-
-          return { success: true, data: enrichedPosts };
-     } catch (error) {
-          console.error('Error fetching user posts:', error);
-          await logActionResult(action, 'fail', {
-               error: error instanceof Error ? error.message : 'Failed to fetch posts',
-          });
-          return { success: false, error: 'Failed to fetch posts' };
      }
 }
 
@@ -492,6 +385,9 @@ export async function getCurrentUserActivePostsPaginated(options: {
                          .select('*')
                          .in('post_id', postIds)
                ]);
+               console.log('images', imagesData);
+
+               console.log('documents', documentsData);
 
                const commentCountMap = new Map<string, number>();
                for (const comment of commentCountData || []) {
@@ -512,8 +408,14 @@ export async function getCurrentUserActivePostsPaginated(options: {
                          comments_count: commentCountMap.get(postId) || 0,
                          reactions,
                          userReaction: userReaction ?? undefined,
-                         images: (imagesData || []).filter((img: any) => img.post_id === postId),
-                         documents: (documentsData || []).filter((doc: any) => doc.post_id === postId),
+                         images: (imagesData || []).filter((img: any) => {
+                              const imgPostId = (img as any).post_id ?? (img as any).postId;
+                              return imgPostId === postId;
+                         }),
+                         documents: (documentsData || []).filter((doc: any) => {
+                              const docPostId = (doc as any).post_id ?? (doc as any).postId;
+                              return docPostId === postId;
+                         }),
                     };
                });
           }
@@ -524,6 +426,7 @@ export async function getCurrentUserActivePostsPaginated(options: {
                userId: viewer.tenant.id,
                payload: { resultCount: enrichedPosts.length, total, limit: pageSize, offset },
           });
+          console.log('enrichedPosts', enrichedPosts);
 
           return { success: true, data: { posts: enrichedPosts, total } };
      } catch (error) {

@@ -32,6 +32,7 @@ import { archiveTenantPost } from 'src/app/actions/social/post-actions';
 import { reactToPost } from 'src/app/actions/social/like-actions';
 import { getPostComments, createTenantPostComment } from 'src/app/actions/social/comment-actions';
 import { useSignedUrl } from 'src/hooks/use-signed-urls';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
 import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage, TenantProfile } from 'src/types/social';
 
@@ -88,17 +89,26 @@ const AttachmentLink = ({
   );
   const label = doc.file_name || doc.storage_path?.split('/').pop() || 'Document';
   return (
-    <Link
-      href={url || '#'}
-      target="_blank"
-      rel="noopener noreferrer"
-      underline="hover"
-      color={url ? 'primary' : 'text.secondary'}
-      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-    >
-      {label}
-      {!url && <Typography variant="caption">(Link unavailable)</Typography>}
-    </Link>
+    <Stack direction="row" spacing={1} alignItems="center">
+      <SvgIcon fontSize="small" color={url ? 'primary' : 'disabled'}>
+        <InsertDriveFileIcon />
+      </SvgIcon>
+      {url ? (
+        <Link
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="hover"
+          color="primary"
+        >
+          {label}
+        </Link>
+      ) : (
+        <Typography variant="body2" color="text.secondary">
+          {label} (link unavailable)
+        </Typography>
+      )}
+    </Stack>
   );
 };
 
@@ -107,7 +117,6 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     postId,
     authorAvatar,
     authorName,
-    comments = [],
     created_at,
     media,
     documents = [],
@@ -126,7 +135,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const [isReacting, setIsReacting] = useState(false);
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactionsProp ?? []);
   const [currentReaction, setCurrentReaction] = useState<string | null>(userReactionProp ?? null);
-  const [commentList, setCommentList] = useState<TenantPostCommentWithAuthor[]>(comments);
+  const [commentList, setCommentList] = useState<TenantPostCommentWithAuthor[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsError, setCommentsError] = useState<string | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -321,35 +330,35 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           </Stack>
         }
       />
-          <Box
-            sx={{
-              pb: 2,
-              px: 3,
-            }}
-          >
-            <Typography variant="body1">{message}</Typography>
-            {Array.isArray(media) && media.length > 0 && (
-              <Box sx={{ mt: 3 }}>
-                <SocialPostMediaGrid media={media} />
-              </Box>
-            )}
-            {Array.isArray(documents) && documents.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Attachments
-                </Typography>
-                <Stack spacing={1}>
-                  {documents
-                    .filter((doc) => doc.storage_bucket && doc.storage_path)
-                    .map((doc) => (
-                      <AttachmentLink
-                        key={`${doc.id || doc.storage_path}-${doc.file_name || ''}`}
-                        doc={doc}
-                      />
-                    ))}
-                </Stack>
-              </Box>
-            )}
+      <Box
+        sx={{
+          pb: 2,
+          px: 3,
+        }}
+      >
+        <Typography variant="body1">{message}</Typography>
+        {Array.isArray(media) && media.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <SocialPostMediaGrid media={media} />
+          </Box>
+        )}
+        {Array.isArray(documents) && documents.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Attachments
+            </Typography>
+            <Stack spacing={1}>
+              {documents
+                .filter((doc) => doc.storage_bucket && doc.storage_path)
+                .map((doc) => (
+                  <AttachmentLink
+                    key={`${doc.id || doc.storage_path}-${doc.file_name || ''}`}
+                    doc={doc}
+                  />
+                ))}
+            </Stack>
+          </Box>
+        )}
         {reactionList.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Stack direction="row" flexWrap="wrap" gap={1}>

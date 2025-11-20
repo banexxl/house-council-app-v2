@@ -41,13 +41,15 @@ const ThumbnailImage = ({
       sx={{
         borderRadius: 2,
         overflow: 'hidden',
+        width: 140,
+        height: 140,
       }}
     >
       <Box
         sx={{
           position: 'relative',
           width: '100%',
-          pb: '100%',
+          height: '100%',
           bgcolor: 'grey.100',
         }}
       >
@@ -192,10 +194,7 @@ export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
         sx={{
           display: 'grid',
           gap: 1,
-          gridTemplateColumns: {
-            xs: 'repeat(auto-fit, minmax(96px, 1fr))',
-            sm: 'repeat(auto-fit, minmax(140px, 1fr))',
-          },
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         }}
       >
         {validMedia.map((item, index) => (

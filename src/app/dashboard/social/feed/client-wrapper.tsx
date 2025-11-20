@@ -187,10 +187,10 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
                 postId={post.id}
                 authorAvatar={post.author.avatar_url || ''}
                 authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
-                comments={[]}
                 created_at={new Date(post.created_at).getTime()}
                 likes={post.likes_count || 0}
                 media={post.images || []}
+                documents={post.documents || []}
                 message={post.content_text}
                 isOwner={post.tenant_id === profile.tenant_id}
                 onArchive={() => handlePostArchived(post.id)}

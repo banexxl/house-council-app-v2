@@ -358,9 +358,9 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
           db: {
                table: TABLES.TENANT_POST_DOCUMENTS ?? 'tblTenantPostDocuments',
                foreignKeyColumn: 'post_id',
-               mode: 'upsert',
-               conflictTarget: ['post_id', 'storage_bucket', 'storage_path'],
-               ignoreDuplicates: false,
+               mode: 'insert',
+               conflictTarget: undefined,
+               ignoreDuplicates: true,
                extraColumns: (ctx) => ({
                     file_name: ctx.meta?.fileName,
                     mime_type: ctx.meta?.mimeType,
@@ -908,4 +908,3 @@ export const setEntityFileAsCover = async (
           return { success: false, error: error?.message ?? 'Unexpected error' };
      }
 };
-
