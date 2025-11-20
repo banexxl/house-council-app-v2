@@ -159,18 +159,15 @@ export interface TenantPostCommentWithAuthor extends TenantPostComment {
 }
 
 export const COVER_IMAGES = [
-  '/assets/covers/abstract-1-4x3-large.png',
-  '/assets/covers/abstract-2-4x3-large.png',
-  '/assets/covers/business-1-4x3-large.png',
-  '/assets/covers/business-2-4x3-large.png',
-  '/assets/covers/minimal-1-4x3-large.png',
-  '/assets/covers/minimal-2-4x3-large.png',
-  '/assets/covers/abstract-1-4x4-large.png',
-  '/assets/covers/abstract-2-4x4-large.png',
-  '/assets/covers/business-1-4x4-large.png',
-  '/assets/covers/business-2-4x4-large.png',
-  '/assets/covers/minimal-1-4x4-large.png',
-  '/assets/covers/minimal-2-4x4-large.png',
+  '/assets/covers/cover-1.png',
+  '/assets/covers/cover-2.png',
+  '/assets/covers/cover-3.png',
+  '/assets/covers/cover-4.png',
+  '/assets/covers/cover-5.png',
+  '/assets/covers/cover-6.png',
+  '/assets/covers/cover-7.png',
+  '/assets/covers/cover-8.png',
+  '/assets/covers/cover-9.jpg',
 ];
 
 export const AVATAR_IMAGES = [

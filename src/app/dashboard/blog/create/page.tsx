@@ -26,7 +26,7 @@ import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
 import { fileToBase64 } from 'src/utils/file-to-base64';
 
-const initialCover = '/assets/covers/abstract-1-4x3-large.png';
+const initialCover = '/assets/covers/cover-1.png';
 
 const Page = () => {
   const [cover, setCover] = useState<string | null>(initialCover);
