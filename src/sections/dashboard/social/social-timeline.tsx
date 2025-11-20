@@ -20,8 +20,6 @@ interface SocialProfileTimelineProps {
 export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
 
   const { posts = [], profile, buildingId, ...other } = props;
-  console.log('posts', posts);
-
   const profileProgress = useMemo(() => {
     const trackedFields: Array<keyof TenantProfile> = [
       'first_name',

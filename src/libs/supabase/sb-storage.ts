@@ -516,8 +516,6 @@ export const uploadEntityFiles = async (
                          });
                          return { success: false, error: error.message };
                     }
-                    console.log('error', error);
-
                     records = data ?? [];
                } else {
                     const { data, error } = await supabase
@@ -527,8 +525,6 @@ export const uploadEntityFiles = async (
                               ignoreDuplicates: config.db.ignoreDuplicates ?? false,
                          })
                          .select();
-                    console.log('error', error);
-
                     if (error) {
                          await logServerAction({
                               action: `storage.upload.${params.entity}`,
@@ -670,12 +666,8 @@ export const removeEntityFile = async (
                     }
                }
           }
-          console.log('config', config);
-
           if (config.revalidate) {
                for (const url of config.revalidate(params.entityId)) {
-                    console.log('url', url);
-
                     revalidatePath(url);
                }
           }
