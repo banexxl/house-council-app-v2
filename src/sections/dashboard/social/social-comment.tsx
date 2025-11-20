@@ -1,23 +1,25 @@
-'use client'
+'use client';
 
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { formatDistanceToNowStrict } from 'date-fns';
 import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import SvgIcon from '@mui/material/SvgIcon';
 import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';
+import ButtonBase from '@mui/material/ButtonBase';
+import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+import Popover from '@mui/material/Popover';
 import { toast } from 'react-hot-toast';
 
 import { reactToComment } from 'src/app/actions/social/comment-actions';
 import type { EmojiReaction } from 'src/types/social';
 import { getInitials } from 'src/utils/get-initials';
-import Popover from '@mui/material/Popover';
 
 interface SocialCommentProps {
   commentId: string;
@@ -29,6 +31,8 @@ interface SocialCommentProps {
   userReaction?: string | null;
   onReactionsChange?: (payload: { reactions: EmojiReaction[]; userReaction: string | null }) => void;
 }
+
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '🎉', '😮', '😢', '👀'];
 
 export const SocialComment: FC<SocialCommentProps> = (props) => {
   const {
@@ -43,7 +47,6 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     ...other
   } = props;
 
-  const REACTION_EMOJIS = ['👍', '❤️', '😂', '🎉', '😮', '😢', '👀'];
   const [pickerAnchor, setPickerAnchor] = useState<HTMLElement | null>(null);
   const ago = formatDistanceToNowStrict(created_at);
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactions);
@@ -52,6 +55,11 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     () => reactionList.reduce((sum, reaction) => sum + reaction.count, 0),
     [reactionList]
   );
+  const currentReactionCount = useMemo(() => {
+    if (!currentReaction) return 0;
+    const entry = reactionList.find((reaction) => reaction.emoji === currentReaction);
+    return entry?.count ?? 0;
+  }, [currentReaction, reactionList]);
 
   useEffect(() => {
     setReactionList(reactions ?? []);
@@ -126,16 +134,55 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
         </Stack>
         <Typography variant="body2">{message}</Typography>
         <Stack direction="row" spacing={1} alignItems="center">
-          <IconButton
-            size="small"
-            onClick={(e) => setPickerAnchor(e.currentTarget)}
-            color={currentReaction ? 'primary' : 'default'}
-          >
-            <SvgIcon fontSize="small">
-              <FaceSmileIcon />
-            </SvgIcon>
-          </IconButton>
-          {totalReactions > 0 && (
+          {reactionList.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {reactionList.map((reaction) => (
+                <ButtonBase
+                  key={reaction.emoji}
+                  onClick={() => handleReactionSelect(reaction.emoji)}
+                  sx={{
+                    borderRadius: 999,
+                    alignItems: 'center',
+                    bgcolor: reaction.userReacted ? 'primary.light' : 'grey.100',
+                    border: '1px solid',
+                    borderColor: reaction.userReacted ? 'primary.main' : 'grey.200',
+                    display: 'inline-flex',
+                    gap: 0.5,
+                    px: 1.25,
+                    py: 0.25,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: reaction.userReacted ? 'primary.light' : 'grey.200',
+                    },
+                  }}
+                >
+                  <Typography variant="body2">{reaction.emoji}</Typography>
+                  <Typography color="text.secondary" variant="caption">
+                    {reaction.count}
+                  </Typography>
+                </ButtonBase>
+              ))}
+            </Box>
+          )}
+          {currentReaction && (
+            <Typography variant="caption" color="text.secondary">
+              You reacted with {currentReaction} · {currentReactionCount}
+            </Typography>
+          )}
+          <Tooltip title={currentReaction ? 'Change your reaction' : 'React to this comment'}>
+            <span>
+              <IconButton
+                size="small"
+                onClick={(e) => setPickerAnchor(e.currentTarget)}
+                color={currentReaction ? 'primary' : 'default'}
+              >
+                <SvgIcon fontSize="small">
+                  <FaceSmileIcon />
+                </SvgIcon>
+              </IconButton>
+            </span>
+          </Tooltip>
+          {totalReactions > 0 && !currentReaction && (
             <Typography variant="caption" color="text.secondary">
               {totalReactions}
             </Typography>
