@@ -191,6 +191,20 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         ],
       },
       {
+        title: t(tokens.nav.socialMedia),
+        // path: paths.dashboard.social.profile,
+        roles: ["client", "clientMember", "admin"],
+        items: [
+          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["client", "clientMember", "admin"] },
+          { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["client", "clientMember", "admin"] },
+        ],
+        icon: (
+          <SvgIcon fontSize="small">
+            <Users03Icon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: t(tokens.nav.announcements),
         roles: ["admin", "client", "clientMember"],
         path: paths.dashboard.announcements.index,
@@ -273,7 +287,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.socialMedia),
         // path: paths.dashboard.social.profile,
-        roles: ["tenant", "client", "clientMember"],
+        roles: ["tenant"],
         items: [
           { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["tenant"] },
           { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["tenant"] },
