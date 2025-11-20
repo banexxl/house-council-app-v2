@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import TextField from '@mui/material/TextField';
 
 import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
@@ -30,7 +31,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
   const [hasMore, setHasMore] = useState(posts.length < totalCount);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  console.log('posts', posts);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setFeedPosts(posts);
@@ -42,6 +43,15 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
   useEffect(() => {
     setHasMore(nextOffset < totalPosts);
   }, [nextOffset, totalPosts]);
+
+  const filteredPosts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return feedPosts;
+    return feedPosts.filter((post) => {
+      const name = `${post.author.first_name || ''} ${post.author.last_name || ''}`.toLowerCase();
+      return name.includes(query);
+    });
+  }, [feedPosts, searchQuery]);
 
   const handlePostArchived = useCallback((postId: string) => {
     setFeedPosts((prev) => prev.filter((post) => post.id !== postId));
@@ -134,6 +144,19 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
 
   return (
     <Stack spacing={3}>
+      <TextField
+        label="Search by author"
+        variant="outlined"
+        size="small"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        sx={{
+          width: {
+            xs: '100%', // full width on mobile
+            sm: 400,    // fixed width on small screens and up
+          },
+        }}
+      />
       {feedPosts.length === 0 ? (
         <Box
           sx={{
@@ -153,25 +176,31 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
         </Box>
       ) : (
         <>
-          {feedPosts.map((post) => (
-            <SocialPostCard
-              key={post.id}
-              postId={post.id}
-              authorAvatar={post.author.avatar_url || ''}
-              authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
-              comments={[]}
-              created_at={new Date(post.created_at).getTime()}
-              likes={post.likes_count || 0}
-              media={post.images || []}
-              message={post.content_text}
-              isOwner={post.tenant_id === profile.tenant_id}
-              onArchive={() => handlePostArchived(post.id)}
-              reactions={post.reactions || []}
-              userReaction={post.userReaction}
-              onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
-              currentUserProfile={profile}
-            />
-          ))}
+          {filteredPosts.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No posts match your search.
+            </Typography>
+          ) : (
+            filteredPosts.map((post) => (
+              <SocialPostCard
+                key={post.id}
+                postId={post.id}
+                authorAvatar={post.author.avatar_url || ''}
+                authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
+                comments={[]}
+                created_at={new Date(post.created_at).getTime()}
+                likes={post.likes_count || 0}
+                media={post.images || []}
+                message={post.content_text}
+                isOwner={post.tenant_id === profile.tenant_id}
+                onArchive={() => handlePostArchived(post.id)}
+                reactions={post.reactions || []}
+                userReaction={post.userReaction}
+                onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
+                currentUserProfile={profile}
+              />
+            ))
+          )}
 
           {loadError && (
             <Typography color="error" variant="body2">
@@ -179,7 +208,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
             </Typography>
           )}
 
-          {(hasMore || isLoadingMore) && (
+          {(hasMore || isLoadingMore) && filteredPosts.length > 0 && (
             <Box
               ref={loadMoreRef}
               sx={{ display: 'flex', justifyContent: 'center', py: 2 }}
