@@ -423,7 +423,6 @@ export async function getCurrentUserActivePostsPaginated(options: {
                userId: viewer.tenant.id,
                payload: { resultCount: enrichedPosts.length, total, limit: pageSize, offset },
           });
-          console.log('enrichedPosts', enrichedPosts);
 
           return { success: true, data: { posts: enrichedPosts, total } };
      } catch (error) {

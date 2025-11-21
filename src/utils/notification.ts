@@ -6,6 +6,7 @@ import {
   type AlertNotification,
   type NotificationType,
   type NotificationTypeMap,
+  type SocialNotification,
   AnnouncementNotification,
 } from 'src/types/notification';
 

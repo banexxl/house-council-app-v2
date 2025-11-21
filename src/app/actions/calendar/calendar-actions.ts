@@ -8,6 +8,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { createAnnouncementNotification } from "src/utils/notification";
 import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
 import { sendNotificationEmail } from "src/libs/email/node-mailer";
+import { emitNotifications } from "../notification/emit-notification";
 
 // Map DB row -> CalendarEvent converting timestamptz strings into epoch ms numbers
 const mapRow = (r: any): CalendarEvent => ({
@@ -102,16 +103,13 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                               is_for_tenant: true,
                               announcement_id: '',
                          }) as any);
-                         // Email blast (best-effort) to tenant emails
-                         const emails = tenants.map(t => t.email).filter((e: any) => typeof e === 'string' && e.includes('@')) as string[];
-                         if (emails.length) {
-                              const subject = `New calendar event: ${mapped.title}`;
-                              const html = `<p>A new calendar event has been scheduled.</p><p><strong>Title:</strong> ${mapped.title}</p>${mapped.description ? `<p><strong>Description:</strong> ${mapped.description}</p>` : ''}`;
-                              const { ok, error: mailErr } = await sendNotificationEmail(emails, subject, html, `${mapped.title}\n${mapped.description || ''}`);
-                              if (!ok) {
-                                   await logServerAction({ user_id: null, action: 'createCalendarEventEmail', duration_ms: 0, error: mailErr || 'emailFailed', payload: { eventId: mapped.id, recipients: emails.length }, status: 'fail', type: 'external' });
+                         // Send notifications
+                         if (rows.length) {
+                              const emitted = await emitNotifications(rows);
+                              if (!emitted.success) {
+                                   await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
                               } else {
-                                   await logServerAction({ user_id: null, action: 'createCalendarEventEmail', duration_ms: 0, error: '', payload: { eventId: mapped.id, recipients: emails.length }, status: 'success', type: 'external' });
+                                   await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
                               }
                          }
                     }
@@ -185,16 +183,12 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                               is_for_tenant: true,
                               announcement_id: '',
                          }) as any);
-                         // Optional email on update (could be noisy; keep for now) best-effort
-                         const emails = tenants.map(t => t.email).filter((e: any) => typeof e === 'string' && e.includes('@')) as string[];
-                         if (emails.length) {
-                              const subject = `Updated calendar event: ${mapped.title}`;
-                              const html = `<p>A calendar event has been updated.</p><p><strong>Title:</strong> ${mapped.title}</p>${mapped.description ? `<p><strong>Description:</strong> ${mapped.description}</p>` : ''}`;
-                              const { ok, error: mailErr } = await sendNotificationEmail(emails, subject, html, `${mapped.title}\n${mapped.description || ''}`);
-                              if (!ok) {
-                                   await logServerAction({ user_id: null, action: 'updateCalendarEventEmail', duration_ms: 0, error: mailErr || 'emailFailed', payload: { eventId: mapped.id, recipients: emails.length }, status: 'fail', type: 'external' });
+                         if (rows.length) {
+                              const emitted = await emitNotifications(rows);
+                              if (!emitted.success) {
+                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
                               } else {
-                                   await logServerAction({ user_id: null, action: 'updateCalendarEventEmail', duration_ms: 0, error: '', payload: { eventId: mapped.id, recipients: emails.length }, status: 'success', type: 'external' });
+                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
                               }
                          }
                     }

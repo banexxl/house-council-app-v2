@@ -81,6 +81,7 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
                //   "old": {},
                //   "errors": null
                // }
+               log(`[Realtime] Event on ${table} (${ev}): ${JSON.stringify(payload)}`);
                onEvent(payload as RealtimePostgresChangesPayload<T>);
           });
      }
