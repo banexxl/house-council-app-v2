@@ -14,6 +14,8 @@ import type {
 } from 'src/types/social';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { computeReactionAggregates } from 'src/utils/social-reactions';
+import { emitNotifications } from 'src/app/actions/notification/emit-notification';
+import { NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -74,6 +76,7 @@ async function fetchReactionMapsForPosts(
 
 const DEFAULT_POST_PAGE_SIZE = 5;
 const MAX_POST_PAGE_SIZE = 25;
+const socialType = NOTIFICATION_TYPES_MAP.find((t) => t.value === 'social')!;
 
 /**
  * Get all posts with author information
@@ -496,6 +499,38 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                     error: error.message,
                });
                return { success: false, error: error.message };
+          }
+
+          // Notify tenants in the same building (excluding author) about the new post
+          try {
+               if (payload.building_id) {
+                    const { data: tenantUsers } = await supabase
+                         .from(TABLES.TENANTS)
+                         .select('user_id')
+                         .eq('building_id', payload.building_id);
+
+                    const notifications: Notification[] = [];
+                    const seen = new Set<string>();
+                    for (const row of tenantUsers || []) {
+                         const uid = (row as any).user_id as string | null;
+                         if (!uid || uid === viewer.userData?.id || seen.has(uid)) continue;
+                         seen.add(uid);
+                         notifications.push({
+                              type: socialType,
+                              title: 'New post in your building',
+                              description: payload.content_text,
+                              created_at: new Date().toISOString(),
+                              user_id: uid,
+                              is_read: false,
+                              related_post_id: data.id,
+                         } as any);
+                    }
+                    if (notifications.length) {
+                         await emitNotifications(notifications);
+                    }
+               }
+          } catch (notifyError) {
+               console.error('Failed to emit post notifications:', notifyError);
           }
 
           // Revalidate social feed

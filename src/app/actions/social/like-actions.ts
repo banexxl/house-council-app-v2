@@ -9,6 +9,8 @@ import type {
      EmojiReaction
 } from 'src/types/social';
 import { computeReactionAggregates } from 'src/utils/social-reactions';
+import { emitNotifications } from 'src/app/actions/notification/emit-notification';
+import { NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -20,6 +22,8 @@ type ReactionResult = {
      reactions: EmojiReaction[];
      userReaction: string | null;
 };
+
+const socialType = NOTIFICATION_TYPES_MAP.find((t) => t.value === 'social')!;
 
 /**
  * React to a post with a specific emoji (selecting same emoji twice removes the reaction).
@@ -94,6 +98,67 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
           const { reactionMap, userReactionMap } = computeReactionAggregates(rows, tenantId);
           const reactions = reactionMap.get(postId) ?? [];
           const userReaction = userReactionMap.get(postId) ?? null;
+
+          // Notify post participants (post owner + prior commenters/likers) excluding current user
+          try {
+               const participantTenantIds = new Set<string>();
+
+               const { data: postRow } = await supabase
+                    .from(TABLES.TENANT_POSTS)
+                    .select('tenant_id')
+                    .eq('id', postId)
+                    .maybeSingle();
+               if (postRow?.tenant_id) {
+                    participantTenantIds.add(postRow.tenant_id);
+               }
+
+               const { data: commentRows } = await supabase
+                    .from(TABLES.TENANT_POST_COMMENTS)
+                    .select('tenant_id')
+                    .eq('post_id', postId);
+               for (const row of commentRows || []) {
+                    const tid = (row as any).tenant_id;
+                    if (tid) participantTenantIds.add(tid);
+               }
+
+               const { data: likerRows } = await supabase
+                    .from(TABLES.TENANT_POST_LIKES)
+                    .select('tenant_id')
+                    .eq('post_id', postId);
+               for (const row of likerRows || []) {
+                    const tid = (row as any).tenant_id;
+                    if (tid) participantTenantIds.add(tid);
+               }
+
+               participantTenantIds.delete(tenantId);
+
+               let targetUserIds: string[] = [];
+               if (participantTenantIds.size > 0) {
+                    const { data: tenantsWithUsers } = await supabase
+                         .from(TABLES.TENANTS)
+                         .select('id, user_id')
+                         .in('id', Array.from(participantTenantIds));
+                    targetUserIds = (tenantsWithUsers || [])
+                         .map((row: any) => row.user_id as string | null)
+                         .filter((uid): uid is string => Boolean(uid));
+               }
+
+               const notifications: Notification[] = targetUserIds.map((uid) => ({
+                    type: socialType,
+                    title: 'New reaction on a post you follow',
+                    description: `${viewer.tenant ? viewer.tenant.first_name || 'Someone' : 'Someone'} reacted ${emoji}`,
+                    created_at: new Date().toISOString(),
+                    user_id: uid,
+                    is_read: false,
+                    related_post_id: postId,
+               }) as any);
+
+               if (notifications.length) {
+                    await emitNotifications(notifications);
+               }
+          } catch (notifyError) {
+               console.error('Failed to emit post reaction notifications:', notifyError);
+          }
 
           revalidatePath('/dashboard/social/feed');
           revalidatePath('/dashboard/social');

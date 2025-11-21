@@ -11,6 +11,8 @@ import type {
      TenantPostCommentWithAuthor
 } from 'src/types/social';
 import type { EmojiReaction } from 'src/types/social';
+import { emitNotifications } from 'src/app/actions/notification/emit-notification';
+import { NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -22,6 +24,8 @@ type ReactionResult = {
      reactions: EmojiReaction[];
      userReaction: string | null;
 };
+
+const socialType = NOTIFICATION_TYPES_MAP.find((t) => t.value === 'social')!;
 
 function aggregateCommentReactions(rows: Array<{ comment_id: string; emoji: string; tenant_id: string }>, currentUserId: string | null) {
      const reactionMap = new Map<string, EmojiReaction[]>();
@@ -174,6 +178,61 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                .from(TABLES.TENANT_POSTS)
                .update({ comments_count: newCommentsCount })
                .eq('id', payload.post_id);
+
+          // Notify participants on the post (post owner + prior commenters), excluding the commenter
+          try {
+               const participantTenantIds = new Set<string>();
+
+               const { data: postRow } = await supabase
+                    .from(TABLES.TENANT_POSTS)
+                    .select('tenant_id')
+                    .eq('id', payload.post_id)
+                    .maybeSingle();
+
+               if (postRow?.tenant_id) {
+                    participantTenantIds.add(postRow.tenant_id);
+               }
+
+               const { data: priorComments } = await supabase
+                    .from(TABLES.TENANT_POST_COMMENTS)
+                    .select('tenant_id')
+                    .eq('post_id', payload.post_id);
+
+               for (const row of priorComments || []) {
+                    const tid = (row as any).tenant_id;
+                    if (tid) participantTenantIds.add(tid);
+               }
+
+               participantTenantIds.delete(viewer.tenant.id);
+
+               let targetUserIds: string[] = [];
+               if (participantTenantIds.size > 0) {
+                    const { data: tenantsWithUsers } = await supabase
+                         .from(TABLES.TENANTS)
+                         .select('id, user_id')
+                         .in('id', Array.from(participantTenantIds));
+                    targetUserIds = (tenantsWithUsers || [])
+                         .map((row: any) => row.user_id as string | null)
+                         .filter((uid): uid is string => Boolean(uid));
+               }
+
+               const notifications: Notification[] = targetUserIds.map((uid) => ({
+                    type: socialType,
+                    title: 'New comment on a post you follow',
+                    description: payload.comment_text,
+                    created_at: new Date().toISOString(),
+                    user_id: uid,
+                    is_read: false,
+                    related_post_id: payload.post_id,
+                    related_comment_id: data.id,
+               } as any));
+
+               if (notifications.length) {
+                    await emitNotifications(notifications);
+               }
+          } catch (notifyError) {
+               console.error('Failed to emit comment notification:', notifyError);
+          }
 
           // Optionally revalidate the path where posts are displayed
           revalidatePath('/dashboard/social/feed');

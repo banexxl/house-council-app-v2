@@ -3,7 +3,6 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
 import { readTenantContactByUserIds } from '../tenant/tenant-actions';
-import { sendViaEmail } from './senders';
 import { Notification } from 'src/types/notification';
 
 
