@@ -42,6 +42,7 @@ export interface BaseNotification {
      id?: string;
      type: NotificationTypeMap;        // stored as map on the server; db gets .value
      action_token: string;
+     url?: string;
      title: string;
      description: string;
      created_at: string | Date;
