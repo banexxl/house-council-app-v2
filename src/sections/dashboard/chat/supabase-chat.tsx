@@ -90,7 +90,7 @@ const adaptMembersToParticipants = (members: any[]): Tenant[] => {
           is_online: false,
           // Required tenant fields with defaults
           apartment_id: '',
-          apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+          apartment: { apartment_number: '', building: { id: '', street_address: '', city: '' } },
           is_primary: false,
           move_in_date: '',
           tenant_type: 'owner' as const,
@@ -332,6 +332,7 @@ export const SupabaseChat: React.FC<SupabaseChatProps> = ({ buildingId }) => {
                     apartment: {
                          apartment_number: contact.apartment.apartment_number || '',
                          building: {
+                              id: contact.apartment.building.id || '',
                               street_address: contact.apartment.building.street_address || '',
                               city: contact.apartment.building.city || ''
                          }

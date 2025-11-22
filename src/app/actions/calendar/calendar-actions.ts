@@ -5,7 +5,7 @@ import { TABLES } from "src/libs/supabase/tables";
 import { getViewer } from "src/libs/supabase/server-auth";
 import type { CalendarEvent, UpdateCalendarEventInput } from "src/types/calendar";
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { createAnnouncementNotification } from "src/utils/notification";
+import { createAnnouncementNotification, createCalendarNotification } from "src/utils/notification";
 import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
 import { sendNotificationEmail } from "src/libs/email/node-mailer";
 import { emitNotifications } from "../notification/emit-notification";
@@ -21,6 +21,7 @@ const mapRow = (r: any): CalendarEvent => ({
      client_id: r.client_id,
      calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
      building_id: r.building_id ?? null,
+     created_at: r.created_at
 });
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
@@ -94,14 +95,17 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                     const tenants: any[] = (tenantsRes as any)?.data || [];
                     if (tenants.length > 0) {
                          const createdAtISO = new Date().toISOString();
-                         const rows = tenants.map(t => createAnnouncementNotification({
+                         const rows = tenants.map(t => createCalendarNotification({
+                              action_token: mapped.title,
                               title: mapped.title,
                               description: mapped.description || '',
                               created_at: createdAtISO,
-                              user_id: t.user_id || null,
-                              is_read: false,
-                              is_for_tenant: true,
-                              announcement_id: '',
+                              all_day: mapped.all_day,
+                              calendar_event_type: mapped.calendar_event_type!,
+                              start_date_time: mapped.start_date_time!,
+                              end_date_time: mapped.end_date_time!,
+                              building_id: mapped.building_id!,
+                              is_read: false
                          }) as any);
                          // Send notifications
                          if (rows.length) {
@@ -174,14 +178,15 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                     const tenants: any[] = (tenantsRes as any)?.data || [];
                     if (tenants.length > 0) {
                          const createdAtISO = new Date().toISOString();
-                         const rows = tenants.map(t => createAnnouncementNotification({
+                         const rows = tenants.map(t => createCalendarEvent({
                               title: mapped.title,
                               description: mapped.description || '',
                               created_at: createdAtISO,
-                              user_id: t.user_id || null,
-                              is_read: false,
-                              is_for_tenant: true,
-                              announcement_id: '',
+                              id: mapped.id,
+                              all_day: false,
+                              end_date_time: mapped.end_date_time,
+                              start_date_time: mapped.start_date_time,
+                              client_id: mapped.client_id,
                          }) as any);
                          if (rows.length) {
                               const emitted = await emitNotifications(rows);

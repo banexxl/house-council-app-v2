@@ -1105,6 +1105,11 @@ export const tokens = {
       sender: 'notifications.col.sender',
       receiver: 'notifications.col.receiver',
       severity: 'notifications.col.severity',
+      actions: {
+        postCreated: 'notifications.social.postCreated',
+        commentCreated: 'notifications.social.commentCreated',
+        reactionAdded: 'notifications.social.reactionAdded',
+      },
     }
   },
   announcements: {

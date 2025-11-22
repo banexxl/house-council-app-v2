@@ -819,6 +819,7 @@ export const getContacts = async (query?: string): Promise<ActionResult<Tenant[]
                apartment: {
                     apartment_number: tenant.apartments?.[0]?.apartment_number || '',
                     building: {
+                         id: tenant.apartments?.[0]?.buildings?.[0]?.id || '',
                          street_address: tenant.apartments?.[0]?.buildings?.[0]?.street_address || '',
                          city: tenant.apartments?.[0]?.buildings?.[0]?.city || ''
                     }
@@ -1141,7 +1142,7 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<T
                               last_activity: new Date(member.joined_at).toISOString(),
                               // Required tenant fields with defaults
                               apartment_id: '',
-                              apartment: { apartment_number: tenantData.apartment_number || '', building: { street_address: '', city: '' } },
+                              apartment: { apartment_number: tenantData.apartment_number || '', building: { id: '', street_address: '', city: '' } },
                               is_primary: false,
                               move_in_date: '',
                               tenant_type: 'owner' as const,
@@ -1169,7 +1170,7 @@ export const getParticipants = async (threadKey: string): Promise<ActionResult<T
                                    last_activity: new Date(member.joined_at).toISOString(),
                                    // Required tenant fields with defaults
                                    apartment_id: '',
-                                   apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+                                   apartment: { apartment_number: '', building: { id: '', street_address: '', city: '' } },
                                    is_primary: false,
                                    move_in_date: '',
                                    tenant_type: 'owner' as const,

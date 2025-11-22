@@ -12,7 +12,7 @@ import type {
 } from 'src/types/social';
 import type { EmojiReaction } from 'src/types/social';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
-import { NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
+import { NOTIFICATION_TYPES_MAP, type Notification, NOTIFICATION_ACTION_TOKENS } from 'src/types/notification';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -216,15 +216,16 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                          .filter((uid): uid is string => Boolean(uid));
                }
 
+               const commentToken = NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'commentCreated')?.translationToken;
                const notifications: Notification[] = targetUserIds.map((uid) => ({
                     type: socialType,
-                    title: 'New comment on a post you follow',
                     description: payload.comment_text,
                     created_at: new Date().toISOString(),
                     user_id: uid,
                     is_read: false,
                     related_post_id: payload.post_id,
                     related_comment_id: data.id,
+                    action_token: commentToken,
                } as any));
 
                if (notifications.length) {

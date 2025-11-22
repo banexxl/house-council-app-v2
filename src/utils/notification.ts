@@ -7,6 +7,7 @@ import {
   type NotificationType,
   type NotificationTypeMap,
   type SocialNotification,
+  type CalendarNotification,
   AnnouncementNotification,
 } from 'src/types/notification';
 
@@ -44,6 +45,12 @@ export function createAnnouncementNotification(
   input: Omit<AnnouncementNotification, 'type'>
 ): AnnouncementNotification {
   return createNotification<AnnouncementNotification>({ ...(input as any), type: 'announcement' });
+}
+
+export function createCalendarNotification(
+  input: Omit<CalendarNotification, 'type'>
+): CalendarNotification {
+  return createNotification<CalendarNotification>({ ...(input as any), type: 'calendar' });
 }
 
 export function createMessageNotification(

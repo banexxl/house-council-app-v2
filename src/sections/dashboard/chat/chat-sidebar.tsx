@@ -160,7 +160,7 @@ export const ChatSidebar: FC<ChatSidebarProps> = (props) => {
             name: `${user.first_name} ${user.last_name}`.trim(),
             // Required tenant fields with defaults
             apartment_id: '',
-            apartment: { apartment_number: user.apartment.apartment_number || '', building: { street_address: '', city: '' } },
+            apartment: { apartment_number: user.apartment.apartment_number || '', building: { id: '', street_address: '', city: '' } },
             is_primary: false,
             move_in_date: '',
             tenant_type: 'owner' as const,

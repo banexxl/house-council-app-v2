@@ -15,7 +15,7 @@ import type {
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { computeReactionAggregates } from 'src/utils/social-reactions';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
-import { NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
+import { NOTIFICATION_TYPES_MAP, type Notification, NOTIFICATION_ACTION_TOKENS } from 'src/types/notification';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -523,6 +523,7 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                               user_id: uid,
                               is_read: false,
                               related_post_id: data.id,
+                              action_token: NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'postCreated')?.translationToken,
                          } as any);
                     }
                     if (notifications.length) {

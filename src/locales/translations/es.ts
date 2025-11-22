@@ -143,6 +143,9 @@ export const es = {
   [tokens.notifications.col.sender]: 'Remitente',
   [tokens.notifications.col.receiver]: 'Destinatario',
   [tokens.notifications.col.severity]: 'Gravedad',
+  [tokens.notifications.col.actions.postCreated]: 'Nueva publicación creada',
+  [tokens.notifications.col.actions.commentCreated]: 'Nuevo comentario agregado',
+  [tokens.notifications.col.actions.reactionAdded]: 'Nueva reacción agregada',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Porcentaje de votos requerido para aprobar la propuesta (supermayoría).',
   [tokens.polls.help.threshold_percent]: 'Porcentaje mínimo que una opción debe alcanzar para ser considerada (umbral).',

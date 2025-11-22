@@ -46,85 +46,12 @@ export async function emitNotifications(
                inserted += slice.length;
           }
 
-          // 2) Digest per user
-          const byUser = new Map<string, Notification[]>();
-          for (const r of rows) {
-               if (!r.user_id) continue;
-               const arr = byUser.get(r.user_id) ?? [];
-               arr.push(r);
-               byUser.set(r.user_id, arr);
-          }
-          const userIds = Array.from(byUser.keys());
-          log(`Prepared digests for ${userIds.length} users`, 'warn');
-          userIds.forEach(uid => {
-               log(`Prepared digest for user: ${uid}`, 'warn');
-          });
-
-          if (userIds.length === 0) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'emitNotificationsInsert+Transports',
-                    duration_ms: Date.now() - time,
-                    error: '',
-                    payload: { inserted, users: 0, waSent: 0, waErrors: 0, emailSent: 0, emailErrors: 0 },
-                    status: 'success',
-                    type: 'db',
-               });
-               return { success: true, inserted };
-          }
-
-          const contactsRes = await readTenantContactByUserIds(userIds);
-          log(`Contacts fetch result: ${contactsRes.success ? 'success' : 'fail'}`, contactsRes.error ? 'error' : 'warn');
-          const contacts = contactsRes.success ? (contactsRes as any).data as Record<string, any> : {};
-          log(`Fetched ${contactsRes.success ? Object.keys(contacts).length : 0} contacts for ${userIds.length} users`, 'warn');
-
-          let waSent = 0, waErrors = 0, emailSent = 0, emailErrors = 0;
-
-          // 3) Per-user: pick channels, format, send
-          // for (const uid of userIds) {
-          //      const items = (byUser.get(uid) ?? []).sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-          //      const c = contacts[uid];
-
-          //      const canWhatsApp = !!c?.phone_number && (c?.whatsapp_opt_in === true || c?.sms_opt_in === true);
-          //      const canEmail = !!c?.email && (c?.email_opt_in !== false); // default opt-in unless disabled
-
-          // // If neither channel is allowed, skip quietly.
-          // if (!canWhatsApp && !canEmail) continue;
-
-          // // Email
-          // if (canEmail) {
-          //      try {
-          //           const em = formatEmail(items);
-          //           const res = await sendViaEmail(c.email, em.subject, em.html);
-          //           if (res.ok) {
-          //                emailSent++;
-          //                log(`[emitNotifications] Email sent to ${c.email} (uid: ${uid}) id=${res.id || 'n/a'}`, 'warn');
-          //           } else {
-          //                emailErrors++;
-          //                log(`[emitNotifications] Email error to ${c.email} (uid: ${uid}): ${res.error || 'unknown'}`, 'error');
-          //                await logServerAction({
-          //                     user_id: uid,
-          //                     action: 'emitNotificationsEmail',
-          //                     duration_ms: 0,
-          //                     error: res.error || 'unknown',
-          //                     payload: { email: c.email, user_id: uid },
-          //                     status: 'fail',
-          //                     type: 'external',
-          //                });
-          //           }
-          //      } catch (e: any) {
-          //           emailErrors++;
-          //           log(`[emitNotifications] Email throw to ${c.email} (uid: ${uid}): ${e?.message || 'unknown'}`, 'error');
-          //      }
-          // }
-          // }
-
           await logServerAction({
                user_id: null,
                action: 'emitNotificationsInsert+Transports',
                duration_ms: Date.now() - time,
                error: '',
-               payload: { inserted, users: userIds.length, waSent, waErrors, emailSent, emailErrors },
+               payload: { inserted },
                status: 'success',
                type: 'db',
           });

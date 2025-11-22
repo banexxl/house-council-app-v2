@@ -2,7 +2,7 @@
 import { tokens } from 'src/locales/tokens';
 
 export type NotificationType =
-     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'announcement' | 'social' | 'other';
+     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'calendar' | 'announcement' | 'social' | 'other';
 
 export type NotificationChannel = 'whatsapp' | 'email' | 'push' | 'sms';
 
@@ -10,6 +10,16 @@ export type NotificationTypeMap = {
      value: NotificationType;
      labelToken: string;
 };
+
+export type NotificationActionTokenMap = {
+     key: NotificationAction;
+     translationToken: string;
+};
+
+export type NotificationAction =
+     | 'postCreated'
+     | 'commentCreated'
+     | 'reactionAdded';
 
 export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'all', labelToken: tokens.notifications.tabs.all },
@@ -22,24 +32,28 @@ export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'other', labelToken: tokens.notifications.tabs.other },
 ] as const;
 
+export const NOTIFICATION_ACTION_TOKENS: NotificationActionTokenMap[] = [
+     { key: 'postCreated', translationToken: 'notifications.social.postCreated' },
+     { key: 'commentCreated', translationToken: 'notifications.social.commentCreated' },
+     { key: 'reactionAdded', translationToken: 'notifications.social.reactionAdded' },
+] as const;
+
 export interface BaseNotification {
      id?: string;
      type: NotificationTypeMap;        // stored as map on the server; db gets .value
+     action_token: string;
      title: string;
-     description: string;              // HTML or plain text (we’ll plainify for WA)
+     description: string;
      created_at: string | Date;
-     user_id: string | null;
+     updated_at?: string | Date;
      is_read: boolean;
+     building_id: string;
      // optional FKs...
 }
 
 export interface AnnouncementNotification extends BaseNotification {
      announcement_id: string;
      title: string;
-     description: string;
-     created_at: string | Date;
-     user_id: string | null;  // null = for all users
-     is_read: boolean;
      is_for_tenant: boolean; // true = all users in tenant, false = all users in system
 }
 
@@ -55,6 +69,13 @@ export interface AlertNotification extends BaseNotification {
 export interface SocialNotification extends BaseNotification {
      related_post_id?: string;
      related_comment_id?: string;
+}
+
+export interface CalendarNotification extends BaseNotification {
+     all_day: boolean;
+     calendar_event_type: string;
+     start_date_time: string;
+     end_date_time: string;
 }
 
 export type Notification = BaseNotification & (MessageNotification | AlertNotification | SocialNotification);

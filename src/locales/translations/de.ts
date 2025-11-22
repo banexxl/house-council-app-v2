@@ -143,6 +143,9 @@ export const de = {
   [tokens.notifications.col.sender]: 'Absender',
   [tokens.notifications.col.receiver]: 'Empfänger',
   [tokens.notifications.col.severity]: 'Schweregrad',
+  [tokens.notifications.col.actions.postCreated]: 'Neuer Beitrag erstellt',
+  [tokens.notifications.col.actions.commentCreated]: 'Neuer Kommentar hinzugefügt',
+  [tokens.notifications.col.actions.reactionAdded]: 'Neue Reaktion hinzugefügt',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Prozentsatz der Stimmen, der zur Annahme des Vorschlags erforderlich ist (Supermajorität).',
   [tokens.polls.help.threshold_percent]: 'Mindestprozentsatz, den eine Option erreichen muss, um berücksichtigt zu werden (Schwellenwert).',

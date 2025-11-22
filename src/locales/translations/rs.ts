@@ -197,6 +197,9 @@ export const rs = {
      [tokens.notifications.col.sender]: 'Pošiljalac',
      [tokens.notifications.col.receiver]: 'Primalac',
      [tokens.notifications.col.severity]: 'Nivo',
+     [tokens.notifications.col.actions.postCreated]: 'Kreirana je nova objava',
+     [tokens.notifications.col.actions.commentCreated]: 'Dodat je novi komentar',
+     [tokens.notifications.col.actions.reactionAdded]: 'Dodata je nova reakcija',
      // Polls help (additional)
      [tokens.polls.help.supermajority_percent]: 'Procenat glasova potreban za odobravanje predloga...',
      [tokens.polls.help.threshold_percent]: 'Minimalan procenat glasova potreban da bi opcija bila uzeta u obzir...',

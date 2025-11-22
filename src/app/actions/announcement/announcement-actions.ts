@@ -606,19 +606,6 @@ export async function deleteAnnouncement(id: string) {
           status: 'success',
           type: 'db',
      });
-     // Fire-and-forget notification about deletion
-     try {
-          const notification = createAnnouncementNotification({
-               announcement_id: id,
-               title: 'Announcement deleted',
-               description: `Announcement ${id} was deleted`,
-               created_at: new Date().toISOString(),
-               user_id: user_id ? user_id : null,
-               is_read: false,
-               is_for_tenant: false,
-          });
-          emitNotifications([notification]);
-     } catch { /* best effort */ }
      revalidatePath('/dashboard/announcements');
      return { success: true, data: null };
 }
@@ -723,17 +710,25 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                     const createdAtISO = new Date().toISOString();
                     const rows = (tenants || []).map((tenant) => {
                          const notification = createAnnouncementNotification({
+                              action_token: 'newAnnouncement',
                               title: annRow?.title || '',
                               description: annRow?.message || '',
                               created_at: createdAtISO,
-                              user_id: tenant.user_id!,
                               is_read: false,
                               announcement_id: id,
                               is_for_tenant: true,
+                              building_id: tenant.apartment.building.id,
                          });
-                         emitNotifications([notification]);
                          return notification as unknown as BaseNotification[];
-                    });
+                    }) as any[];
+                    if (rows.length) {
+                         const emitted = await emitNotifications(rows);
+                         if (!emitted.success) {
+                              await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
+                         } else {
+                              await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+                         }
+                    }
                }
           }
      } catch (e: any) {

@@ -653,6 +653,8 @@ export const readAllTenantsFromBuildingIds = async (
      if (tenantsError) {
           return { success: false, error: tenantsError.message };
      }
+     console.log('tenants', tenants);
+
      return { success: true, data: tenants ? tenants : [] };
 };
 

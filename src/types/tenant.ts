@@ -20,6 +20,7 @@ export interface Tenant {
      apartment: {
           apartment_number: string;
           building: {
+               id: string;
                street_address: string;
                city: string;
           };
@@ -84,7 +85,7 @@ export const tenantInitialValues: Tenant = {
      phone_number: '', // plus sign now visual only; store raw digits
      date_of_birth: '',
      apartment_id: '',
-     apartment: { apartment_number: '', building: { street_address: '', city: '' } },
+     apartment: { apartment_number: '', building: { id: '', street_address: '', city: '' } },
      avatar_url: '',
      is_primary: false,
      move_in_date: '',

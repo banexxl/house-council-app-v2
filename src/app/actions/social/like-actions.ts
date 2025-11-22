@@ -10,7 +10,7 @@ import type {
 } from 'src/types/social';
 import { computeReactionAggregates } from 'src/utils/social-reactions';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
-import { NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
+import { NOTIFICATION_ACTION_TOKENS, NOTIFICATION_TYPES_MAP, type Notification } from 'src/types/notification';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -151,6 +151,7 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
                     user_id: uid,
                     is_read: false,
                     related_post_id: postId,
+                    action_token: NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'reactionAdded')?.translationToken,
                }) as any);
 
                if (notifications.length) {

@@ -100,8 +100,8 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      const dayEvents = useMemo(() => {
           const startOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()).getTime();
           const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
-          return mergedEvents.filter(ev => ev.start_date_time >= startOfDay && ev.start_date_time < endOfDay)
-               .sort((a, b) => a.start_date_time - b.start_date_time);
+          return mergedEvents.filter(ev => Number(ev.start_date_time) >= startOfDay && Number(ev.start_date_time) < endOfDay)
+               .sort((a, b) => Number(a.start_date_time) - Number(b.start_date_time));
      }, [mergedEvents, selectedDate]);
 
      const handlePrevMonth = () => {
@@ -160,12 +160,14 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
           // Build start/end timestamps from selectedDate + times
           const [sh, sm] = formStartTime.split(':').map(Number);
           const [eh, em] = formEndTime.split(':').map(Number);
-          const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), sh, sm).getTime();
-          const end = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), eh, em).getTime();
+          const startDateObj = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), sh, sm);
+          const endDateObj = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), eh, em);
+          const start = startDateObj.toISOString();
+          const end = endDateObj.toISOString();
           setTimeError(null);
           if (end <= start) { setTimeError(t(tokens.calendar.validation.endAfterStart)); return; }
           // Disallow creating events in the past (only for new events)
-          if (!editingEventId && start < Date.now()) { setTimeError(t(tokens.calendar.validation.startInPast)); return; }
+          if (!editingEventId && new Date(start).getTime() < Date.now()) { setTimeError(t(tokens.calendar.validation.startInPast)); return; }
           if (readOnly) return;
           if (!editingEventId) {
                setCreating(true);
@@ -181,6 +183,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     client_id: effectiveClientId,
                     calendar_event_type: formType,
                     building_id: formBuildingId || null,
+                    created_at: new Date().toISOString(),
                };
                setOptimisticEvents(prev => [...prev, optimistic]);
                await (dispatch as any)(thunks.createEvent({
@@ -191,6 +194,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     title: formTitle,
                     calendar_event_type: formType,
                     building_id: formBuildingId || null,
+                    created_at: new Date().toISOString(),
                }));
                setOptimisticEvents(prev => prev.filter(e => e.id !== tempId));
                setCreating(false);

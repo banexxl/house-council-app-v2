@@ -1,10 +1,11 @@
 export interface CalendarEvent {
   id: string;
+  created_at: string;
   all_day: boolean;
   color?: string;
   description: string;
-  end_date_time: number;
-  start_date_time: number;
+  end_date_time: string;
+  start_date_time: string;
   title: string;
   client_id: string;
   calendar_event_type?: EventType;
