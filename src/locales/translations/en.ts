@@ -856,6 +856,7 @@ export const en = {
   [tokens.notifications.col.actions.reactionAdded]: 'New reaction added',
   // Notification Actions
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Announcement published',
+  [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Calendar event published',
   // Announcements
   [tokens.announcements.managementTitle]: 'Announcements Management',
   [tokens.announcements.createNew]: 'Create New Announcement',

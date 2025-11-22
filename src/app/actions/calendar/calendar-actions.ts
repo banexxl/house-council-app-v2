@@ -10,18 +10,28 @@ import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
 import { sendNotificationEmail } from "src/libs/email/node-mailer";
 import { emitNotifications } from "../notification/emit-notification";
 
-// Map DB row -> CalendarEvent converting timestamptz strings into epoch ms numbers
+// Map DB row -> CalendarEvent preserving timestamptz as ISO strings
 const mapRow = (r: any): CalendarEvent => ({
      id: r.id,
      all_day: r.all_day,
      description: r.description,
-     end_date_time: typeof r.end_date_time === 'string' ? Date.parse(r.end_date_time) : r.end_date_time,
-     start_date_time: typeof r.start_date_time === 'string' ? Date.parse(r.start_date_time) : r.start_date_time,
+     end_date_time:
+          typeof r.end_date_time === 'number'
+               ? new Date(r.end_date_time).toISOString()
+               : r.end_date_time instanceof Date
+                    ? r.end_date_time.toISOString()
+                    : r.end_date_time,
+     start_date_time:
+          typeof r.start_date_time === 'number'
+               ? new Date(r.start_date_time).toISOString()
+               : r.start_date_time instanceof Date
+                    ? r.start_date_time.toISOString()
+                    : r.start_date_time,
      title: r.title,
      client_id: r.client_id,
      calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
      building_id: r.building_id ?? null,
-     created_at: r.created_at
+     created_at: r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at
 });
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
@@ -96,7 +106,7 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                     if (tenants.length > 0) {
                          const createdAtISO = new Date().toISOString();
                          const rows = tenants.map(t => createCalendarNotification({
-                              action_token: mapped.title,
+                              action_token: 'notifications.actions.notificationActionCalendarEventPublished',
                               user_id: t.user_id!,
                               description: mapped.description || '',
                               created_at: createdAtISO,
@@ -154,12 +164,14 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
 
           const normalizedUpdate: any = { ...update };
           if (normalizedUpdate.building_id === '') normalizedUpdate.building_id = null;
-          if (typeof normalizedUpdate.start_date_time === 'number') {
-               normalizedUpdate.start_date_time = new Date(normalizedUpdate.start_date_time).toISOString();
-          }
-          if (typeof normalizedUpdate.end_date_time === 'number') {
-               normalizedUpdate.end_date_time = new Date(normalizedUpdate.end_date_time).toISOString();
-          }
+          const toISO = (value: any) => {
+               if (typeof value === 'number') return new Date(value).toISOString();
+               if (typeof value === 'string' && /^\d+$/.test(value)) return new Date(Number(value)).toISOString();
+               if (value instanceof Date) return value.toISOString();
+               return value;
+          };
+          normalizedUpdate.start_date_time = toISO(normalizedUpdate.start_date_time);
+          normalizedUpdate.end_date_time = toISO(normalizedUpdate.end_date_time);
           const { data, error } = await supabase
                .from(TABLES.CALENDAR_EVENTS)
                .update(normalizedUpdate)

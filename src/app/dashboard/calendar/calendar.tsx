@@ -98,10 +98,18 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      // Events for selected date
      const mergedEvents = useMemo(() => [...events, ...optimisticEvents], [events, optimisticEvents]);
      const dayEvents = useMemo(() => {
+          const toMillis = (value: any) => {
+               const ms = new Date(value).getTime();
+               return Number.isNaN(ms) ? 0 : ms;
+          };
           const startOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()).getTime();
           const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
-          return mergedEvents.filter(ev => Number(ev.start_date_time) >= startOfDay && Number(ev.start_date_time) < endOfDay)
-               .sort((a, b) => Number(a.start_date_time) - Number(b.start_date_time));
+          return mergedEvents
+               .filter(ev => {
+                    const ms = toMillis(ev.start_date_time);
+                    return ms >= startOfDay && ms < endOfDay;
+               })
+               .sort((a, b) => toMillis(a.start_date_time) - toMillis(b.start_date_time));
      }, [mergedEvents, selectedDate]);
 
      const handlePrevMonth = () => {
