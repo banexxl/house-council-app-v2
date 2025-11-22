@@ -1,17 +1,13 @@
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
-import User01Icon from '@untitled-ui/icons-react/build/esm/User01';
 import Mail04Icon from '@untitled-ui/icons-react/build/esm/Mail04';
-import MessageChatSquareIcon from '@untitled-ui/icons-react/build/esm/MessageChatSquare';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Popover from '@mui/material/Popover';
 import Stack from '@mui/material/Stack';
