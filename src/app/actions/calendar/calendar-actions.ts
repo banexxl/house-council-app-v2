@@ -97,7 +97,7 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                          const createdAtISO = new Date().toISOString();
                          const rows = tenants.map(t => createCalendarNotification({
                               action_token: mapped.title,
-                              title: mapped.title,
+                              user_id: t.user_id!,
                               description: mapped.description || '',
                               created_at: createdAtISO,
                               all_day: mapped.all_day,

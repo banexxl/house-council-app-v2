@@ -25,12 +25,15 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 
 const renderContent = (notification: Notification, t: (key: string) => string): JSX.Element | null => {
-  const createdAt = notification.created_at instanceof Date ? notification.created_at : new Date(notification.created_at as any);
+  const createdAt =
+    typeof notification.created_at === 'string'
+      ? new Date(notification.created_at)
+      : notification.created_at;
   return (
     <ListItemText
       primary={
         <Typography variant="subtitle2" sx={{ mb: 0.25 }}>
-          {notification.title}
+          {t(notification.action_token)}
         </Typography>
       }
       secondary={

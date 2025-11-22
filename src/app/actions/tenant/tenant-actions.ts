@@ -647,15 +647,43 @@ export const readAllTenantsFromBuildingIds = async (
      // 3. Get tenants in those apartments
      const { data: tenants, error: tenantsError } = await supabase
           .from(TABLES.TENANTS)
-          .select('*')
+          .select(`
+               *,
+               apartment:tblApartments (
+                    id,
+                    apartment_number,
+                    building_id,
+                    building:tblBuildings (
+                         id,
+                         building_location,
+                         building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                              street_address,
+                              city
+                         )
+                    )
+               )
+          `)
           .in('apartment_id', apartmentIds);
+     console.log('error', tenantsError);
 
      if (tenantsError) {
           return { success: false, error: tenantsError.message };
      }
-     console.log('tenants', tenants);
 
-     return { success: true, data: tenants ? tenants : [] };
+     // Normalize nested Supabase response to match Tenant type shape
+     const tenantsTyped: Tenant[] = (tenants ?? []).map((tenant: any) => ({
+          ...tenant,
+          apartment: {
+               apartment_number: tenant?.apartment?.apartment_number ?? '',
+               building: {
+                    id: tenant?.apartment?.building?.id ?? tenant?.apartment?.building_id ?? '',
+                    street_address: tenant?.apartment?.building?.building_location?.street_address ?? '',
+                    city: tenant?.apartment?.building?.building_location?.city ?? '',
+               },
+          },
+     }));
+
+     return { success: true, data: tenantsTyped };
 };
 
 // Lightweight contact lookup for notifications fanout

@@ -43,18 +43,17 @@ export interface BaseNotification {
      type: NotificationTypeMap;        // stored as map on the server; db gets .value
      action_token: string;
      url?: string;
-     title: string;
      description: string;
-     created_at: string | Date;
-     updated_at?: string | Date;
+     created_at: string;
+     updated_at?: string;
      is_read: boolean;
      building_id: string;
+     user_id: string;
      // optional FKs...
 }
 
 export interface AnnouncementNotification extends BaseNotification {
      announcement_id: string;
-     title: string;
      is_for_tenant: boolean; // true = all users in tenant, false = all users in system
 }
 
@@ -87,6 +86,6 @@ export type TenantContact = {
      email?: string | null;
      phone_number?: string | null;
      email_opt_in?: boolean | null;
-     sms_opt_in?: boolean | null;         // you already have this
-     whatsapp_opt_in?: boolean | null;    // reuse sms_opt_in or split if you prefer
+     sms_opt_in?: boolean | null;
+     whatsapp_opt_in?: boolean | null;
 };

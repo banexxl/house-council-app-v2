@@ -9,7 +9,6 @@ import { createAnnouncementNotification } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
-import { sendNotificationEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 import { emitNotifications } from '../notification/emit-notification';
 
@@ -710,10 +709,10 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                     const createdAtISO = new Date().toISOString();
                     const rows = (tenants || []).map((tenant) => {
                          const notification = createAnnouncementNotification({
-                              action_token: 'newAnnouncement',
-                              title: annRow?.title || '',
+                              action_token: 'notifications.actions.notificationActionAnnouncementPublished',
                               description: annRow?.message || '',
                               created_at: createdAtISO,
+                              user_id: tenant.user_id!,
                               is_read: false,
                               announcement_id: id,
                               is_for_tenant: true,
@@ -721,6 +720,8 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                          });
                          return notification as unknown as BaseNotification[];
                     }) as any[];
+                    console.log('rows', rows);
+
                     if (rows.length) {
                          const emitted = await emitNotifications(rows);
                          if (!emitted.success) {

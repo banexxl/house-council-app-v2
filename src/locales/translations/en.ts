@@ -854,6 +854,8 @@ export const en = {
   [tokens.notifications.col.actions.postCreated]: 'New post created',
   [tokens.notifications.col.actions.commentCreated]: 'New comment added',
   [tokens.notifications.col.actions.reactionAdded]: 'New reaction added',
+  // Notification Actions
+  [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Announcement published',
   // Announcements
   [tokens.announcements.managementTitle]: 'Announcements Management',
   [tokens.announcements.createNew]: 'Create New Announcement',

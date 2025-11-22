@@ -1085,6 +1085,9 @@ export const tokens = {
     markedUnread: 'notifications.markedUnread',
     tableTitle: 'notifications.tableTitle',
     tableSubtitle: 'notifications.tableSubtitle',
+    actions: {
+      notificationActionAnnouncementPublished: 'notifications.actions.notificationActionAnnouncementPublished',
+    },
     tabs: {
       all: 'notifications.tabs.all',
       system: 'notifications.tabs.system',
