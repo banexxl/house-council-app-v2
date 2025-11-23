@@ -42,7 +42,6 @@ export default function NotificationsClient({ initialNotifications }: Notificati
 
      const columns: TableColumn<Row>[] = useMemo(() => {
           const base: TableColumn<Row>[] = [
-               { key: 'title', label: t(tokens.notifications.col.title) },
                { key: 'description', label: t(tokens.notifications.col.message), render: v => (v as string).slice(0, 80) + ((v as string).length > 80 ? '…' : '') },
                { key: 'created_at', label: t(tokens.notifications.col.created), render: v => new Date(v as string).toLocaleString() },
                { key: 'is_read', label: t(tokens.notifications.col.read) }
