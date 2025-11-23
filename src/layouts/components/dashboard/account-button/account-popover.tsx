@@ -24,6 +24,7 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { Tooltip } from '@mui/material';
 import { getViewer, UserDataCombined } from 'src/libs/supabase/server-auth';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from 'src/hooks/use-settings';
 
 interface AccountPopoverProps {
   anchorEl: null | Element;
@@ -37,6 +38,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   const [user, setUser] = useState<UserDataCombined>();
   const [isPending, startTransition] = useTransition()
   const { t } = useTranslation();
+  const { handleDrawerOpen } = useSettings();
 
   useEffect(() => {
     const getUser = async () => {
@@ -128,9 +130,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
           <ListItemText primary={<Typography variant="body1">{t('nav.profile')}</Typography>} />
         </ListItemButton>
         <ListItemButton
-          component={RouterLink}
-          href={paths.dashboard.account}
-          onClick={onClose}
+          onClick={() => { handleDrawerOpen(); onClose?.(); }}
           sx={{
             borderRadius: 1,
             px: 1,
