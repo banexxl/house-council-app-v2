@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
+import { useSearchParams } from 'next/navigation';
 
 import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
@@ -32,6 +33,10 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const targetPostId = searchParams.get('postId');
+  const targetCommentId = searchParams.get('commentId');
 
   useEffect(() => {
     setFeedPosts(posts);
@@ -43,6 +48,22 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
   useEffect(() => {
     setHasMore(nextOffset < totalPosts);
   }, [nextOffset, totalPosts]);
+
+  // Scroll to post if postId is provided in query params (e.g., from notifications)
+  useEffect(() => {
+    if (!targetPostId) return;
+    const postExists = feedPosts.some((p) => p.id === targetPostId);
+    if (!postExists) return;
+    const el = document.getElementById(`post-${targetPostId}`);
+    if (el) {
+      setHighlightedPostId(targetPostId);
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      const timer = setTimeout(() => setHighlightedPostId(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [feedPosts, targetPostId]);
 
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -144,19 +165,43 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
 
   return (
     <Stack spacing={3}>
-      <TextField
-        label="Search by author"
-        variant="outlined"
-        size="small"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        sx={{
-          width: {
-            xs: '100%', // full width on mobile
-            sm: 400,    // fixed width on small screens and up
-          },
-        }}
-      />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <TextField
+          label="Search by author"
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            width: {
+              xs: '100%', // full width on mobile
+              sm: 400,    // fixed width on small screens and up
+            },
+          }}
+        />
+        <Box sx={{}}>
+          <a href="/dashboard/social/profile" style={{ textDecoration: 'none' }}>
+            <Box
+              component="button"
+              sx={{
+                px: 2,
+                py: 1,
+                borderRadius: 1,
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 500,
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                },
+              }}
+            >
+              Add post
+            </Box>
+          </a>
+        </Box>
+      </Box>
       {feedPosts.length === 0 ? (
         <Box
           sx={{
@@ -185,6 +230,9 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
               <SocialPostCard
                 key={post.id}
                 postId={post.id}
+                buildingId={post.building_id || null}
+                highlighted={highlightedPostId === post.id}
+                focusCommentId={targetCommentId && targetPostId === post.id ? targetCommentId : null}
                 authorAvatar={post.author.avatar_url || ''}
                 authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
                 created_at={new Date(post.created_at).getTime()}

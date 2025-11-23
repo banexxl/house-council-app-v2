@@ -30,6 +30,7 @@ interface SocialCommentProps {
   reactions?: EmojiReaction[];
   userReaction?: string | null;
   onReactionsChange?: (payload: { reactions: EmojiReaction[]; userReaction: string | null }) => void;
+  highlighted?: boolean;
 }
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '🎉', '😮', '😢', '👀'];
@@ -44,6 +45,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     reactions = [],
     userReaction,
     onReactionsChange,
+    highlighted = false,
     ...other
   } = props;
 
@@ -90,9 +92,17 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
 
   return (
     <Stack
+      id={`comment-${commentId}`}
       alignItems="flex-start"
       direction="row"
       spacing={2}
+      sx={{
+        border: highlighted ? '1px solid' : undefined,
+        borderColor: highlighted ? 'primary.main' : undefined,
+        borderRadius: highlighted ? 1 : undefined,
+        boxShadow: highlighted ? 3 : undefined,
+        transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+      }}
       {...other}
     >
       <Avatar
@@ -224,4 +234,5 @@ SocialComment.propTypes = {
   reactions: PropTypes.array,
   userReaction: PropTypes.string,
   onReactionsChange: PropTypes.func,
+  highlighted: PropTypes.bool,
 };

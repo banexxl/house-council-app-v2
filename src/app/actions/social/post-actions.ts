@@ -506,29 +506,49 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                if (payload.building_id) {
                     const { data: tenantUsers } = await supabase
                          .from(TABLES.TENANTS)
-                         .select('user_id')
-                         .eq('building_id', payload.building_id);
+                         .select(`
+                              user_id,
+                              apartment:tblApartments!inner (
+                                   building_id
+                              )
+                         `)
+                         .eq('apartment.building_id', payload.building_id);
 
-                    const notifications: Notification[] = [];
+                    const createdAtISO = new Date().toISOString();
                     const seen = new Set<string>();
-                    for (const row of tenantUsers || []) {
-                         const uid = (row as any).user_id as string | null;
-                         if (!uid || uid === viewer.userData?.id || seen.has(uid)) continue;
+                    const notifications: Notification[] = (tenantUsers || []).reduce((acc: Notification[], row: any) => {
+                         const uid = row?.user_id as string | null;
+                         if (!uid || uid === viewer.userData?.id || seen.has(uid)) return acc;
                          seen.add(uid);
-                         notifications.push({
+                         acc.push({
+                              building_id: payload.building_id!,
                               type: socialType,
-                              title: 'New post in your building',
                               description: payload.content_text,
-                              created_at: new Date().toISOString(),
+                              created_at: createdAtISO,
                               user_id: uid,
                               is_read: false,
                               related_post_id: data.id,
                               action_token: NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'postCreated')?.translationToken,
-                              url: `/dashboard/social/feed/${data.id}`,
+                              url: `/dashboard/social/feed?postId=${data.id}`,
                          } as any);
-                    }
+                         return acc;
+                    }, []);
+
                     if (notifications.length) {
-                         await emitNotifications(notifications);
+                         const emitted = await emitNotifications(notifications);
+
+                         if (!emitted.success) {
+                              await logActionResult('Create Tenant Post Notifications', 'fail', {
+                                   userId: viewer.userData?.id,
+                                   payload: { postId: data.id, count: notifications.length },
+                                   error: emitted.error,
+                              });
+                         } else {
+                              await logActionResult('Create Tenant Post Notifications', 'success', {
+                                   userId: viewer.userData?.id,
+                                   payload: { postId: data.id, inserted: emitted.inserted ?? notifications.length },
+                              });
+                         }
                     }
                }
           } catch (notifyError) {

@@ -48,6 +48,7 @@ interface NotificationsPopoverProps {
   onClose?: () => void;
   onMarkAllAsRead?: () => void;
   onRemoveOne?: (id: string) => void;
+  onOpenOne?: (id: string) => void;
   open?: boolean;
 }
 
@@ -58,6 +59,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
     onClose,
     onMarkAllAsRead,
     onRemoveOne,
+    onOpenOne,
     open = false,
     ...other
   } = props;
@@ -124,6 +126,7 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
                 key={notification.id}
                 component="a"
                 href={notification.url}
+                onClick={(e) => { onOpenOne?.(notification.id!); }}
                 sx={{
                   alignItems: 'flex-start',
                   '&:hover': {

@@ -194,6 +194,7 @@ export const NotificationsButton: FC = () => {
         onClose={popover.handleClose}
         onMarkAllAsRead={handleMarkAllAsRead}
         onRemoveOne={handleRemoveOne}
+        onOpenOne={handleRemoveOne}
         open={popover.open}
       />
     </>

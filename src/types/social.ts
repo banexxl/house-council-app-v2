@@ -78,7 +78,7 @@ export interface TenantPost {
   id: string;
   tenant_id: string;
   content_text: string;
-  building_id?: string;
+  building_id: string;
   created_at: string;
   updated_at: string;
   is_archived: boolean;
@@ -98,6 +98,7 @@ export interface CreateTenantPostPayload {
 export interface UpdateTenantPostPayload {
   content_text?: string;
   is_archived?: boolean;
+  building_id?: string;
 }
 
 // Tenant Post Like Types
@@ -105,6 +106,7 @@ export interface TenantPostLike {
   id: string;
   post_id: string;
   tenant_id: string;
+  building_id: string;
   emoji: string;
   created_at: string;
 }
@@ -117,6 +119,7 @@ export interface EmojiReaction {
 
 export interface CreateTenantPostLikePayload {
   post_id: string;
+  building_id: string;
   emoji: string;
 }
 
@@ -125,6 +128,7 @@ export interface TenantPostComment {
   id: string;
   post_id: string;
   tenant_id: string;
+  building_id: string;
   profile_id?: string;
   comment_text: string;
   created_at: string;
@@ -135,11 +139,29 @@ export interface TenantPostComment {
 
 export interface CreateTenantPostCommentPayload {
   post_id: string;
+  building_id: string;
   comment_text: string;
 }
 
 export interface UpdateTenantPostCommentPayload {
   comment_text: string;
+  building_id?: string;
+}
+
+// Tenant Comment Like Types
+export interface TenantCommentLike {
+  id: string;
+  comment_id: string;
+  tenant_id: string;
+  building_id: string;
+  emoji: string;
+  created_at: string;
+}
+
+export interface CreateTenantCommentLikePayload {
+  comment_id: string;
+  building_id: string;
+  emoji: string;
 }
 
 // Extended types with related data for UI consumption

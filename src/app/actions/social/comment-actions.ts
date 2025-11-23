@@ -150,6 +150,24 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                return { success: false, error: 'Tenant profile not found. Please create your profile first.' };
           }
 
+          // Resolve building id from payload or parent post (safety in case payload missing)
+          let buildingId = payload.building_id;
+
+          // Fetch current post for building and comments count
+          const { data: currentPost } = await supabase
+               .from(TABLES.TENANT_POSTS)
+               .select('comments_count, building_id')
+               .eq('id', payload.post_id)
+               .single();
+
+          if (!buildingId) {
+               buildingId = (currentPost as any)?.building_id || null;
+          }
+
+          if (!buildingId) {
+               return { success: false, error: 'Building not found for this post' };
+          }
+
           // Create the comment
           const { data, error } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)
@@ -167,11 +185,6 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           }
 
           // Increment comments count on the post
-          const { data: currentPost } = await supabase
-               .from(TABLES.TENANT_POSTS)
-               .select('comments_count')
-               .eq('id', payload.post_id)
-               .single();
 
           const newCommentsCount = (currentPost?.comments_count || 0) + 1;
 
@@ -217,21 +230,26 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                          .filter((uid): uid is string => Boolean(uid));
                }
 
+               const createdAtISO = new Date().toISOString();
                const commentToken = NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'commentCreated')?.translationToken;
                const notifications: Notification[] = targetUserIds.map((uid) => ({
                     type: socialType,
                     description: payload.comment_text,
-                    created_at: new Date().toISOString(),
+                    created_at: createdAtISO,
                     user_id: uid,
                     is_read: false,
                     related_post_id: payload.post_id,
                     related_comment_id: data.id,
+                    building_id: buildingId!,
                     action_token: commentToken,
-                    url: `/dashboard/social/feed/${payload.post_id}#comment-${data.id}`,
+                    url: `/dashboard/social/feed?postId=${payload.post_id}&commentId=${data.id}`,
                } as any));
 
                if (notifications.length) {
-                    await emitNotifications(notifications);
+                    const emitted = await emitNotifications(notifications);
+                    if (!emitted.success) {
+                         console.error('Failed to emit comment notifications', emitted.error);
+                    }
                }
           } catch (notifyError) {
                console.error('Failed to emit comment notification:', notifyError);
@@ -260,6 +278,22 @@ export async function reactToComment(commentId: string, emoji: string): Promise<
 
           const supabase = await useServerSideSupabaseAnonClient();
           const tenantId = viewer.tenant.id;
+
+          // Fetch comment to get building_id (ensure not-null inserts)
+          const { data: commentRow, error: commentError } = await supabase
+               .from(TABLES.TENANT_POST_COMMENTS)
+               .select('id, building_id')
+               .eq('id', commentId)
+               .maybeSingle();
+
+          if (commentError) {
+               console.error('Error loading comment before reaction:', commentError);
+               return { success: false, error: commentError.message };
+          }
+          const buildingId = (commentRow as any)?.building_id;
+          if (!buildingId) {
+               return { success: false, error: 'Building not found for this comment' };
+          }
 
           const { data: existingReaction, error: existingError } = await supabase
                .from(TABLES.TENANT_COMMENT_LIKES)
@@ -299,6 +333,7 @@ export async function reactToComment(commentId: string, emoji: string): Promise<
                     .insert({
                          comment_id: commentId,
                          tenant_id: tenantId,
+                         building_id: buildingId,
                          emoji,
                     });
 

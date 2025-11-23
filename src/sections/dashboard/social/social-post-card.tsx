@@ -49,6 +49,7 @@ const REACTION_EMOJIS = [
 
 interface SocialPostCardProps {
   postId: string;
+  buildingId?: string | null;
   authorAvatar: string;
   authorName: string;
   comments?: TenantPostCommentWithAuthor[];
@@ -69,6 +70,8 @@ interface SocialPostCardProps {
   userReaction?: string | null;
   onReactionsChange?: (payload: { reactions: EmojiReaction[]; userReaction: string | null }) => void;
   currentUserProfile?: TenantProfile;
+  highlighted?: boolean;
+  focusCommentId?: string | null;
 }
 
 const AttachmentLink = ({
@@ -127,6 +130,9 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     userReaction: userReactionProp,
     onReactionsChange,
     currentUserProfile,
+    highlighted = false,
+    buildingId = null,
+    focusCommentId = null,
     ...other
   } = props;
   const [reactionAnchorEl, setReactionAnchorEl] = useState<null | HTMLElement>(null);
@@ -172,7 +178,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     async (text: string) => {
       setIsSubmittingComment(true);
       try {
-        const result = await createTenantPostComment({ post_id: postId, comment_text: text });
+        const result = await createTenantPostComment({ building_id: buildingId!, post_id: postId, comment_text: text });
         if (!result.success) {
           toast.error(result.error || 'Failed to add comment');
           return;
@@ -188,13 +194,14 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         setIsSubmittingComment(false);
       }
     },
-    [postId]
+    [postId, buildingId]
   );
 
   const totalReactions = useMemo(
     () => reactionList.reduce((sum, reaction) => sum + reaction.count, 0),
     [reactionList]
   );
+
   const currentReactionCount = useMemo(() => {
     if (!currentReaction) return 0;
     const entry = reactionList.find((reaction) => reaction.emoji === currentReaction);
@@ -240,6 +247,15 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     setMenuAnchorEl(null);
   }, []);
 
+  // Scroll to a specific comment if requested
+  useEffect(() => {
+    if (!focusCommentId || !commentList.length) return;
+    const el = document.getElementById(`comment-${focusCommentId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [focusCommentId, commentList]);
+
   const handleArchive = useCallback(async () => {
     setMenuAnchorEl(null);
     setIsArchiving(true);
@@ -260,7 +276,16 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   }, [postId, onArchive]);
 
   return (
-    <Card {...other}>
+    <Card
+      id={`post-${postId}`}
+      sx={{
+        border: highlighted ? '2px solid' : undefined,
+        borderColor: highlighted ? 'primary.main' : undefined,
+        boxShadow: highlighted ? 6 : undefined,
+        transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+      }}
+      {...other}
+    >
       <CardHeader
         avatar={
           <Avatar
@@ -454,29 +479,36 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             <Typography variant="body2" color="text.secondary">
               Loading comments...
             </Typography>
-          ) : (
-            commentList.map((comment: TenantPostCommentWithAuthor) => (
-              <SocialComment
-                commentId={comment.id}
-                authorAvatar={comment.author.avatar_url || ''}
-                authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
-                created_at={new Date(comment.created_at).getTime()}
-                key={comment.id}
-                message={comment.comment_text}
-                reactions={comment.reactions}
-                userReaction={comment.userReaction}
-                onReactionsChange={(payload) => {
-                  setCommentList((prev) =>
-                    prev.map((c) =>
-                      c.id === comment.id
-                        ? { ...c, reactions: payload.reactions, userReaction: payload.userReaction }
-                        : c
-                    )
-                  );
-                }}
-              />
-            ))
-          )}
+          ) :
+            commentList.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No comments yet. Be the first to comment!
+              </Typography>
+            ) :
+              (
+                commentList.map((comment: TenantPostCommentWithAuthor) => (
+                  <SocialComment
+                    commentId={comment.id}
+                    authorAvatar={comment.author.avatar_url || ''}
+                    authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
+                    created_at={new Date(comment.created_at).getTime()}
+                    key={comment.id}
+                    message={comment.comment_text}
+                    highlighted={focusCommentId === comment.id}
+                    reactions={comment.reactions}
+                    userReaction={comment.userReaction}
+                    onReactionsChange={(payload) => {
+                      setCommentList((prev) =>
+                        prev.map((c) =>
+                          c.id === comment.id
+                            ? { ...c, reactions: payload.reactions, userReaction: payload.userReaction }
+                            : c
+                        )
+                      );
+                    }}
+                  />
+                ))
+              )}
         </Stack>
         <Divider sx={{ my: 3 }} />
         <SocialCommentAdd
@@ -527,6 +559,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
 
 SocialPostCard.propTypes = {
   postId: PropTypes.string.isRequired,
+  buildingId: PropTypes.string,
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
   comments: PropTypes.array,
@@ -541,4 +574,5 @@ SocialPostCard.propTypes = {
   userReaction: PropTypes.string,
   onReactionsChange: PropTypes.func,
   currentUserProfile: PropTypes.any,
+  highlighted: PropTypes.bool,
 };
