@@ -152,6 +152,7 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
                     is_read: false,
                     related_post_id: postId,
                     action_token: NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'reactionAdded')?.translationToken,
+                    url: `/dashboard/social/feed/${postId}#reactions`,
                }) as any);
 
                if (notifications.length) {

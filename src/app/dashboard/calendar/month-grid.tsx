@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '@mui/material/styles';
 import type { CalendarEvent, EventType } from 'src/types/calendar';
 
@@ -40,6 +41,10 @@ export const MonthGrid: React.FC<MonthGridProps> = ({ year, month, selectedDate,
      // dynamic max dots: fewer on very small screens
      const maxDots = smDown ? 4 : mdDown ? 5 : 6;
      const today = new Date(); today.setHours(0, 0, 0, 0);
+     const formatTime = (value: any) => {
+          const d = new Date(value);
+          return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+     };
      return (
           <Box
                sx={{
@@ -90,17 +95,28 @@ export const MonthGrid: React.FC<MonthGridProps> = ({ year, month, selectedDate,
                               </Box>
                               <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} mt={0.5}>
                                    {cellEvents.slice(0, maxDots).map(ev => (
-                                        <Box
+                                        <Tooltip
                                              key={ev.id}
-                                             title={ev.title}
-                                             sx={{
-                                                  width: 8,
-                                                  height: 8,
-                                                  borderRadius: '50%',
-                                                  bgcolor: eventTypeMeta[ev.calendar_event_type || 'other'].color,
-                                                  boxShadow: 1,
-                                             }}
-                                        />
+                                             title={
+                                                  <Stack spacing={0.25}>
+                                                       <Typography variant="caption" fontWeight={700}>{ev.title}</Typography>
+                                                       <Typography variant="caption" color="text.secondary">
+                                                            {`${formatTime(ev.start_date_time)} - ${formatTime(ev.end_date_time)}`}
+                                                       </Typography>
+                                                  </Stack>
+                                             }
+                                             arrow
+                                        >
+                                             <Box
+                                                  sx={{
+                                                       width: 8,
+                                                       height: 8,
+                                                       borderRadius: '50%',
+                                                       bgcolor: eventTypeMeta[ev.calendar_event_type || 'other'].color,
+                                                       boxShadow: 1,
+                                                  }}
+                                             />
+                                        </Tooltip>
                                    ))}
                                    {cellEvents.length > maxDots && (
                                         <Typography variant="caption" sx={{ lineHeight: 1 }}>

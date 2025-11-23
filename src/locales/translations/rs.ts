@@ -197,7 +197,7 @@ export const rs = {
      [tokens.notifications.col.sender]: 'Pošiljalac',
      [tokens.notifications.col.receiver]: 'Primalac',
      [tokens.notifications.col.severity]: 'Nivo',
-     [tokens.notifications.col.actions.postCreated]: 'Kreirana je nova objava',
+     [tokens.notifications.col.actions.postCreated]: 'Dodata je nova objava',
      [tokens.notifications.col.actions.commentCreated]: 'Dodat je novi komentar',
      [tokens.notifications.col.actions.reactionAdded]: 'Dodata je nova reakcija',
      // Notification Actions

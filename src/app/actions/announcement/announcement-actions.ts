@@ -717,10 +717,10 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                               announcement_id: id,
                               is_for_tenant: true,
                               building_id: tenant.apartment.building.id,
+                              url: `/dashboard/announcements/tenant`,
                          });
                          return notification as unknown as BaseNotification[];
                     }) as any[];
-                    console.log('rows', rows);
 
                     if (rows.length) {
                          const emitted = await emitNotifications(rows);

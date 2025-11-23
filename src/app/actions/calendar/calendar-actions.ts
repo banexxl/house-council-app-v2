@@ -5,10 +5,10 @@ import { TABLES } from "src/libs/supabase/tables";
 import { getViewer } from "src/libs/supabase/server-auth";
 import type { CalendarEvent, UpdateCalendarEventInput } from "src/types/calendar";
 import { logServerAction } from "src/libs/supabase/server-logging";
-import { createAnnouncementNotification, createCalendarNotification } from "src/utils/notification";
+import { createCalendarNotification } from "src/utils/notification";
 import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
-import { sendNotificationEmail } from "src/libs/email/node-mailer";
 import { emitNotifications } from "../notification/emit-notification";
+import log from "src/utils/logger";
 
 // Map DB row -> CalendarEvent preserving timestamptz as ISO strings
 const mapRow = (r: any): CalendarEvent => ({
@@ -115,7 +115,8 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                               start_date_time: mapped.start_date_time!,
                               end_date_time: mapped.end_date_time!,
                               building_id: mapped.building_id!,
-                              is_read: false
+                              is_read: false,
+                              url: `/dashboard/calendar/`,
                          }) as any);
                          // Send notifications
                          if (rows.length) {
@@ -183,36 +184,6 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                return { success: false, error: error?.message || 'Update failed' };
           }
           const mapped = mapRow(data as CalendarEvent);
-          // Optional: emit notifications if building_id present and start_date_time changed (reminder logic)
-          try {
-               if (mapped.building_id && (update.start_date_time || update.title || update.description)) {
-                    const tenantsRes = await readAllTenantsFromBuildingIds([mapped.building_id]);
-                    const tenants: any[] = (tenantsRes as any)?.data || [];
-                    if (tenants.length > 0) {
-                         const createdAtISO = new Date().toISOString();
-                         const rows = tenants.map(t => createCalendarEvent({
-                              title: mapped.title,
-                              description: mapped.description || '',
-                              created_at: createdAtISO,
-                              id: mapped.id,
-                              all_day: false,
-                              end_date_time: mapped.end_date_time,
-                              start_date_time: mapped.start_date_time,
-                              client_id: mapped.client_id,
-                         }) as any);
-                         if (rows.length) {
-                              const emitted = await emitNotifications(rows);
-                              if (!emitted.success) {
-                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
-                              } else {
-                                   await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: '', payload: { eventId: mapped.id, count: rows.length }, status: 'success', type: 'db' });
-                              }
-                         }
-                    }
-               }
-          } catch (e: any) {
-               await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: e?.message || 'unexpected', payload: { eventId: mapped.id }, status: 'fail', type: 'db' });
-          }
           await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { eventId, id: mapped.id }, status: 'success', type: 'db' });
           return { success: true, data: mapped };
      } catch (err: any) {
@@ -255,6 +226,24 @@ export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult
      } catch (err: any) {
           await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: { eventId }, status: 'fail', type: 'db' });
           return { success: false, error: err.message || 'Unexpected error' };
+     }
+}
+
+export const getCalendarEventsByBuildingId = async (buildingId: string): Promise<ActionResult<CalendarEvent[]>> => {
+     const time = Date.now();
+     try {
+          const supabase = await useServerSideSupabaseAnonClient();
+          const { data, error } = await supabase.from(TABLES.CALENDAR_EVENTS).select("*").eq("building_id", buildingId).order("start_date_time", { ascending: true });
+          if (error) {
+               await logServerAction({ user_id: null, action: 'getCalendarEventsByBuildingId', duration_ms: Date.now() - time, error: error.message, payload: { buildingId }, status: 'fail', type: 'db' });
+               return { success: false, error: error.message };
+          }
+          const rows = (data || []).map(mapRow);
+          await logServerAction({ user_id: null, action: 'getCalendarEventsByBuildingId', duration_ms: Date.now() - time, error: '', payload: { buildingId, count: rows.length }, status: 'success', type: 'db' });
+          return { success: true, data: rows };
+     } catch (err: any) {
+          await logServerAction({ user_id: null, action: 'getCalendarEventsByBuildingId', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: { buildingId }, status: 'fail', type: 'db' });
+          return { success: false, error: err.message || "Unexpected error" };
      }
 }
 

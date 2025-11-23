@@ -13,6 +13,7 @@ import type {
 import type { EmojiReaction } from 'src/types/social';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
 import { NOTIFICATION_TYPES_MAP, type Notification, NOTIFICATION_ACTION_TOKENS } from 'src/types/notification';
+import { url } from 'inspector';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -226,6 +227,7 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                     related_post_id: payload.post_id,
                     related_comment_id: data.id,
                     action_token: commentToken,
+                    url: `/dashboard/social/feed/${payload.post_id}#comment-${data.id}`,
                } as any));
 
                if (notifications.length) {

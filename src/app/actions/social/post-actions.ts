@@ -524,6 +524,7 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                               is_read: false,
                               related_post_id: data.id,
                               action_token: NOTIFICATION_ACTION_TOKENS.find((t) => t.key === 'postCreated')?.translationToken,
+                              url: `/dashboard/social/feed/${data.id}`,
                          } as any);
                     }
                     if (notifications.length) {

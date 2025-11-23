@@ -122,6 +122,8 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
               <ListItem
                 divider
                 key={notification.id}
+                component="a"
+                href={notification.url}
                 sx={{
                   alignItems: 'flex-start',
                   '&:hover': {
@@ -129,6 +131,12 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
                   },
                   '& .MuiListItemSecondaryAction-root': {
                     top: '24%',
+                  },
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  color: 'inherit',
+                  '&:visited': {
+                    color: 'inherit',
                   },
                 }}
                 secondaryAction={

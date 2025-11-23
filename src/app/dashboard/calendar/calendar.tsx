@@ -58,7 +58,8 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
           other: { label: t(tokens.calendar.types.other), color: BASE_EVENT_TYPE_META.other.color },
      }), [t]);
      const dispatch = useDispatch();
-     const events = useSelector((state: any) => state.calendar.events) as CalendarEvent[];
+     const storeEvents = useSelector((state: any) => state.calendar.events) as CalendarEvent[];
+     const events = storeEvents && storeEvents.length > 0 ? storeEvents : initialEvents;
      const [selectedDate, setSelectedDate] = useState<Date>(new Date());
      const [viewMonth, setViewMonth] = useState<number>(selectedDate.getMonth());
      const [viewYear, setViewYear] = useState<number>(selectedDate.getFullYear());
