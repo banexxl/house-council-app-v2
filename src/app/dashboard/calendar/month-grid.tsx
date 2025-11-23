@@ -69,62 +69,86 @@ export const MonthGrid: React.FC<MonthGridProps> = ({ year, month, selectedDate,
                          const ds = new Date(ev.start_date_time);
                          return ds.getFullYear() === day.getFullYear() && ds.getMonth() === day.getMonth() && ds.getDate() === day.getDate();
                     });
-                    return (
-                         <Box
-                              key={idx}
-                              role="gridcell"
-                              aria-selected={isSelected ? 'true' : 'false'}
-                              aria-disabled={isPast ? 'true' : 'false'}
-                              onClick={() => { if (!isPast) onSelectDate(day); }}
-                              sx={{
-                                   cursor: isPast ? 'not-allowed' : 'pointer',
-                                   minHeight: { xs: 70, sm: 85, md: 100 },
-                                   borderRight: (idx % 7 !== 6) ? '1px solid' : undefined,
-                                   borderBottom: (idx < 35) ? '1px solid' : undefined,
-                                   borderColor: 'divider',
-                                   bgcolor: isSelected ? 'primary.light' : inMonth ? 'background.paper' : 'action.hover',
-                                   p: 0.5,
-                                   position: 'relative',
-                                   opacity: isPast ? 0.5 : 1,
-                                   transition: 'background-color 0.15s ease',
-                                   '&:hover': { bgcolor: isPast ? undefined : (isSelected ? 'primary.light' : 'action.hover') },
-                              }}
-                         >
-                              <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', fontWeight: isSelected ? 700 : 500, bgcolor: isSelected ? 'primary.main' : 'transparent', color: isSelected ? 'primary.contrastText' : 'text.primary', fontSize: '0.7rem' }}>
-                                   {day.getDate()}
-                              </Box>
-                              <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} mt={0.5}>
-                                   {cellEvents.slice(0, maxDots).map(ev => (
-                                        <Tooltip
-                                             key={ev.id}
-                                             title={
-                                                  <Stack spacing={0.25}>
-                                                       <Typography variant="caption" fontWeight={700}>{ev.title}</Typography>
-                                                       <Typography variant="caption" color="text.secondary">
-                                                            {`${formatTime(ev.start_date_time)} - ${formatTime(ev.end_date_time)}`}
-                                                       </Typography>
-                                                  </Stack>
-                                             }
-                                             arrow
-                                        >
-                                             <Box
-                                                  sx={{
-                                                       width: 8,
-                                                       height: 8,
-                                                       borderRadius: '50%',
-                                                       bgcolor: eventTypeMeta[ev.calendar_event_type || 'other'].color,
-                                                       boxShadow: 1,
-                                                  }}
-                                             />
-                                        </Tooltip>
-                                   ))}
-                                   {cellEvents.length > maxDots && (
-                                        <Typography variant="caption" sx={{ lineHeight: 1 }}>
-                                             +{cellEvents.length - maxDots}
+                    const cellTooltip = cellEvents.length ? (
+                         <Stack spacing={0.25}>
+                              {cellEvents.slice(0, 3).map(ev => (
+                                   <Typography key={ev.id} variant="caption" sx={{ display: 'block' }}>
+                                        <strong>{ev.title}</strong>{' '}
+                                        <Typography component="span" variant="caption" color="text.secondary">
+                                             {`${formatTime(ev.start_date_time)} - ${formatTime(ev.end_date_time)}`}
                                         </Typography>
-                                   )}
-                              </Stack>
-                         </Box>
+                                   </Typography>
+                              ))}
+                              {cellEvents.length > 3 && (
+                                   <Typography variant="caption" color="text.secondary">
+                                        +{cellEvents.length - 3} more
+                                   </Typography>
+                              )}
+                         </Stack>
+                    ) : '';
+                    return (
+                         <Tooltip
+                              key={idx}
+                              title={cellTooltip}
+                              arrow
+                              disableHoverListener={!cellEvents.length}
+                              disableFocusListener={!cellEvents.length}
+                         >
+                              <Box
+                                   role="gridcell"
+                                   aria-selected={isSelected ? 'true' : 'false'}
+                                   aria-disabled={isPast ? 'true' : 'false'}
+                                   onClick={() => { if (!isPast) onSelectDate(day); }}
+                                   sx={{
+                                        cursor: isPast ? 'not-allowed' : 'pointer',
+                                        minHeight: { xs: 70, sm: 85, md: 100 },
+                                        borderRight: (idx % 7 !== 6) ? '1px solid' : undefined,
+                                        borderBottom: (idx < 35) ? '1px solid' : undefined,
+                                        borderColor: 'divider',
+                                        bgcolor: isSelected ? 'primary.light' : inMonth ? 'background.paper' : 'action.hover',
+                                        p: 0.5,
+                                        position: 'relative',
+                                        opacity: isPast ? 0.5 : 1,
+                                        transition: 'background-color 0.15s ease',
+                                        '&:hover': { bgcolor: isSelected ? 'primary.light' : 'action.hover' },
+                                   }}
+                              >
+                                   <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', fontWeight: isSelected ? 700 : 500, bgcolor: isSelected ? 'primary.main' : 'transparent', color: isSelected ? 'primary.contrastText' : 'text.primary', fontSize: '0.7rem' }}>
+                                        {day.getDate()}
+                                   </Box>
+                                   <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} mt={0.5}>
+                                        {cellEvents.slice(0, maxDots).map(ev => (
+                                             <Tooltip
+                                                  key={ev.id}
+                                                  title={
+                                                       <Stack spacing={0.25}>
+                                                            <Typography variant="caption" fontWeight={700}>{ev.title}</Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                 {`${formatTime(ev.start_date_time)} - ${formatTime(ev.end_date_time)}`}
+                                                            </Typography>
+                                                       </Stack>
+                                                  }
+                                                  arrow
+                                             >
+                                                  <Box
+                                                       sx={{
+                                                            width: 8,
+                                                            height: 8,
+                                                            borderRadius: '50%',
+                                                            bgcolor: eventTypeMeta[ev.calendar_event_type || 'other'].color,
+                                                            boxShadow: 1,
+                                                       }}
+                                                  />
+                                             </Tooltip>
+                                        ))}
+                                        {cellEvents.length > maxDots && (
+                                             <Typography variant="caption" sx={{ lineHeight: 1 }}>
+                                                  +{cellEvents.length - maxDots}
+                                             </Typography>
+                                        )}
+                                   </Stack>
+                              </Box>
+                         </Tooltip>
                     );
                })}
           </Box>
