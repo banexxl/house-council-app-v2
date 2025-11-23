@@ -174,8 +174,8 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
             width: {
-              xs: '60%', // full width on mobile
-              sm: 400,    // fixed width on small screens and up
+              xs: '60%',
+              sm: 400,
             },
           }}
         />
