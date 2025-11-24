@@ -8,7 +8,6 @@ import { Tenant } from 'src/types/tenant';
 import { validate as isUUID } from 'uuid';
 import log from 'src/utils/logger';
 import { TenantContact } from 'src/types/notification';
-import { date } from 'yup';
 import { TenantProfile } from 'src/types/social';
 
 

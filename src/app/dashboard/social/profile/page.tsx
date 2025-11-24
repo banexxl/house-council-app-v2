@@ -59,22 +59,11 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
                               }}
                          >
                               <Typography variant="h4" gutterBottom>
-                                   {profileId ? 'Profile not found' : 'Create Your Social Profile'}
+                                   Profile not found
                               </Typography>
                               <Typography variant="body1" sx={{ mb: 4 }}>
-                                   {profileId
-                                        ? 'The requested profile could not be found.'
-                                        : 'Set up your profile to connect with your community'}
+                                   The requested profile could not be found.
                               </Typography>
-                              {!profileId && (
-                                   <Button
-                                        variant="contained"
-                                        size="large"
-                                        href="/dashboard/social/profile/edit"
-                                   >
-                                        Create Profile
-                                   </Button>
-                              )}
                          </Box>
                     </Container>
                </Box>
