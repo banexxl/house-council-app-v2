@@ -48,7 +48,7 @@ interface NotificationsPopoverProps {
   onClose?: () => void;
   onMarkAllAsRead?: () => void;
   onRemoveOne?: (id: string) => void;
-  onOpenOne?: (id: string) => void;
+  onOpenOne?: (id: string, url?: string) => void;
   open?: boolean;
 }
 
@@ -124,9 +124,9 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
               <ListItem
                 divider
                 key={notification.id}
-                component="a"
-                href={notification.url}
-                onClick={(e) => { onOpenOne?.(notification.id!); }}
+                onClick={() => {
+                  onOpenOne?.(notification.id!, notification.url);
+                }}
                 sx={{
                   alignItems: 'flex-start',
                   '&:hover': {
@@ -146,7 +146,11 @@ export const NotificationsPopover: FC<NotificationsPopoverProps> = (props) => {
                   <Tooltip title={t(tokens.notifications.remove)}>
                     <IconButton
                       edge="end"
-                      onClick={() => onRemoveOne?.(notification.id!)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onRemoveOne?.(notification.id!);
+                      }}
                       size="small"
                     >
                       <SvgIcon>

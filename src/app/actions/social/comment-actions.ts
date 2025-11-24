@@ -56,15 +56,20 @@ function aggregateCommentReactions(rows: Array<{ comment_id: string; emoji: stri
 }
 
 /**
- * Get comments for a post
+ * Get comments for a post (paginated)
  */
-export async function getPostComments(postId: string): Promise<ActionResponse<TenantPostCommentWithAuthor[]>> {
+export async function getPostComments(
+     postId: string,
+     options?: { limit?: number; offset?: number }
+): Promise<ActionResponse<{ comments: TenantPostCommentWithAuthor[]; total: number }>> {
      try {
           const supabase = await useServerSideSupabaseAnonClient();
           const viewer = await getViewer();
           const currentUserId = viewer.tenant?.id || null;
+          const limit = Math.max(options?.limit ?? 20, 1);
+          const offset = Math.max(options?.offset ?? 0, 0);
 
-          const { data, error } = await supabase
+          const { data, error, count } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)
                .select(`
                     *,
@@ -72,11 +77,12 @@ export async function getPostComments(postId: string): Promise<ActionResponse<Te
                          id,
                          first_name,
                          last_name,
-                         avatar_url
+                        avatar_url
                     )
-               `)
+               `, { count: 'exact' })
                .eq('post_id', postId)
-               .order('created_at', { ascending: true }); // Show oldest comments first
+               .order('created_at', { ascending: true }) // Show oldest comments first
+               .range(offset, offset + limit - 1);
 
           if (error) {
                console.error('Error fetching post comments:', error);
@@ -115,7 +121,9 @@ export async function getPostComments(postId: string): Promise<ActionResponse<Te
                userReaction: userReactionMap.get(comment.id) ?? null,
           })) as TenantPostCommentWithAuthor[];
 
-          return { success: true, data: commentsWithAuthor };
+          const totalCount = typeof count === 'number' ? count : commentsWithAuthor.length + offset;
+
+          return { success: true, data: { comments: commentsWithAuthor, total: totalCount } };
      } catch (error) {
           console.error('Error fetching post comments:', error);
           return { success: false, error: 'Failed to fetch comments' };

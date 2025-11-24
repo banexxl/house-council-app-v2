@@ -5,6 +5,7 @@ import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
+import { useRouter } from 'next/navigation';
 
 import { usePopover } from 'src/hooks/use-popover';
 
@@ -37,6 +38,7 @@ export function useNotifications() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userId, setUserId] = useState<UUID | null>(null);
+  const router = useRouter();
 
 
   // 1) Resolve the current user id once
@@ -139,7 +141,7 @@ export function useNotifications() {
   const handleRemoveOne = useCallback(async (notificationId: string): Promise<void> => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId)); // optimistic
     if (!userId) return;
-    const { success } = await markNotificationRead(notificationId, true)
+    const { success, error } = await markNotificationRead(notificationId, true)
     if (!success) {
       toast.error('Failed to mark notification as read');
     }
@@ -160,9 +162,17 @@ export function useNotifications() {
       });
   }, [userId, notifications]);
 
+  const handleOpenOne = useCallback(async (notificationId: string, url?: string) => {
+    await handleRemoveOne(notificationId);
+    if (url) {
+      router.push(url);
+    }
+  }, [handleRemoveOne, router]);
+
   return {
     handleMarkAllAsRead,
     handleRemoveOne,
+    handleOpenOne,
     notifications: displayNotifications,
     badgeContent,
     totalUnread,
@@ -171,7 +181,7 @@ export function useNotifications() {
 export const NotificationsButton: FC = () => {
 
   const popover = usePopover<HTMLButtonElement>();
-  const { handleRemoveOne, handleMarkAllAsRead, notifications, badgeContent } = useNotifications();
+  const { handleRemoveOne, handleOpenOne, handleMarkAllAsRead, notifications, badgeContent } = useNotifications();
   const { t } = useTranslation();
 
   return (
@@ -194,7 +204,7 @@ export const NotificationsButton: FC = () => {
         onClose={popover.handleClose}
         onMarkAllAsRead={handleMarkAllAsRead}
         onRemoveOne={handleRemoveOne}
-        onOpenOne={handleRemoveOne}
+        onOpenOne={handleOpenOne}
         open={popover.open}
       />
     </>

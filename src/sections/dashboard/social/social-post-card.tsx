@@ -144,9 +144,14 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const [isReacting, setIsReacting] = useState(false);
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactionsProp ?? []);
   const [currentReaction, setCurrentReaction] = useState<string | null>(userReactionProp ?? null);
+  const COMMENTS_PAGE_SIZE = 5;
   const [commentList, setCommentList] = useState<TenantPostCommentWithAuthor[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsLoadingMore, setCommentsLoadingMore] = useState(false);
   const [commentsError, setCommentsError] = useState<string | null>(null);
+  const [totalComments, setTotalComments] = useState(0);
+  const [nextCommentsOffset, setNextCommentsOffset] = useState(0);
+  const [hasMoreComments, setHasMoreComments] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
@@ -157,25 +162,38 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     setCurrentReaction(userReactionProp ?? null);
   }, [userReactionProp]);
 
+  const fetchComments = useCallback(
+    async (offset: number, append: boolean, customLimit?: number) => {
+      const limit = customLimit ?? COMMENTS_PAGE_SIZE;
+      const result = await getPostComments(postId, { limit, offset });
+      if (!result.success || !result.data) {
+        setCommentsError(result.error || 'Failed to load comments');
+        return;
+      }
+      const { comments, total } = result.data;
+      setCommentList((prev) => (append ? [...prev, ...comments] : comments));
+      const newOffset = append ? offset + comments.length : comments.length;
+      setNextCommentsOffset(newOffset);
+      setTotalComments(total);
+      setHasMoreComments(newOffset < total && comments.length > 0);
+    },
+    [postId, COMMENTS_PAGE_SIZE]
+  );
+
   useEffect(() => {
     let active = true;
     const loadComments = async () => {
       setCommentsLoading(true);
       setCommentsError(null);
-      const result = await getPostComments(postId);
+      await fetchComments(0, false);
       if (!active) return;
-      if (result.success && result.data) {
-        setCommentList(result.data);
-      } else {
-        setCommentsError(result.error || 'Failed to load comments');
-      }
       setCommentsLoading(false);
     };
     loadComments();
     return () => {
       active = false;
     };
-  }, [postId]);
+  }, [postId, fetchComments]);
 
   const handleCommentSubmit = useCallback(
     async (text: string) => {
@@ -190,10 +208,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           toast.error(result.error || 'Failed to add comment');
           return;
         }
-        const refreshed = await getPostComments(postId);
-        if (refreshed.success && refreshed.data) {
-          setCommentList(refreshed.data);
-        }
+        await fetchComments(0, false, Math.max(commentList.length + 1, COMMENTS_PAGE_SIZE));
       } catch (error) {
         console.error('Error submitting comment:', error);
         toast.error('Failed to add comment');
@@ -253,6 +268,20 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const handleMenuClose = useCallback(() => {
     setMenuAnchorEl(null);
   }, []);
+
+  const handleLoadMoreComments = useCallback(async () => {
+    if (commentsLoadingMore || !hasMoreComments) return;
+    setCommentsLoadingMore(true);
+    setCommentsError(null);
+    try {
+      await fetchComments(nextCommentsOffset, true);
+    } catch (err) {
+      console.error('Error loading more comments:', err);
+      setCommentsError('Unable to load more comments right now.');
+    } finally {
+      setCommentsLoadingMore(false);
+    }
+  }, [commentsLoadingMore, hasMoreComments, fetchComments, nextCommentsOffset]);
 
   // Scroll to a specific comment if requested
   useEffect(() => {
@@ -493,29 +522,54 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
               </Typography>
             ) :
               (
-                commentList.map((comment: TenantPostCommentWithAuthor) => (
-                  <SocialComment
-                    commentId={comment.id}
-                    authorId={comment.author.id}
-                    authorAvatar={comment.author.avatar_url || ''}
-                    authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
-                    created_at={new Date(comment.created_at).getTime()}
-                    key={comment.id}
-                    message={comment.comment_text}
-                    highlighted={focusCommentId === comment.id}
-                    reactions={comment.reactions}
-                    userReaction={comment.userReaction}
-                    onReactionsChange={(payload) => {
-                      setCommentList((prev) =>
-                        prev.map((c) =>
-                          c.id === comment.id
-                            ? { ...c, reactions: payload.reactions, userReaction: payload.userReaction }
-                            : c
-                        )
-                      );
-                    }}
-                  />
-                ))
+                <>
+                  {commentList.map((comment: TenantPostCommentWithAuthor) => (
+                    <SocialComment
+                      commentId={comment.id}
+                      authorId={comment.author.id}
+                      authorAvatar={comment.author.avatar_url || ''}
+                      authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
+                      created_at={new Date(comment.created_at).getTime()}
+                      key={comment.id}
+                      message={comment.comment_text}
+                      highlighted={focusCommentId === comment.id}
+                      reactions={comment.reactions}
+                      userReaction={comment.userReaction}
+                      onReactionsChange={(payload) => {
+                        setCommentList((prev) =>
+                          prev.map((c) =>
+                            c.id === comment.id
+                              ? { ...c, reactions: payload.reactions, userReaction: payload.userReaction }
+                              : c
+                          )
+                        );
+                      }}
+                    />
+                  ))}
+                  {hasMoreComments && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <ButtonBase
+                        onClick={handleLoadMoreComments}
+                        disabled={commentsLoadingMore}
+                        sx={{
+                          mt: 1,
+                          px: 2,
+                          py: 1,
+                          borderRadius: 1,
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                          bgcolor: 'background.paper',
+                          '&:hover': {
+                            bgcolor: 'action.hover',
+                          },
+                        }}
+                      >
+                        <Typography variant="body2" color="text.primary">
+                          {commentsLoadingMore ? 'Loading...' : 'Load more comments'}
+                        </Typography>
+                      </ButtonBase>
+                    </Box>
+                  )}
+                </>
               )}
         </Stack>
         <Divider sx={{ my: 3 }} />
