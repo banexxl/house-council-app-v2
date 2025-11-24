@@ -153,12 +153,15 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           // Resolve building id from payload or parent post (safety in case payload missing)
           let buildingId = payload.building_id;
 
-          // Fetch current post for building and comments count
-          const { data: currentPost } = await supabase
+          // Fetch current post for building
+          const { data: currentPost, error: currentPostError } = await supabase
                .from(TABLES.TENANT_POSTS)
-               .select('comments_count, building_id')
+               .select('building_id')
                .eq('id', payload.post_id)
                .single();
+          if (currentPostError) {
+               console.error('Error fetching post for comment:', currentPostError);
+          }
 
           if (!buildingId) {
                buildingId = (currentPost as any)?.building_id || null;
@@ -167,6 +170,7 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           if (!buildingId) {
                return { success: false, error: 'Building not found for this post' };
           }
+          console.log('payload', payload);
 
           // Create the comment
           const { data, error } = await supabase
@@ -183,15 +187,6 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                console.error('Error creating comment:', error);
                return { success: false, error: error.message };
           }
-
-          // Increment comments count on the post
-
-          const newCommentsCount = (currentPost?.comments_count || 0) + 1;
-
-          await supabase
-               .from(TABLES.TENANT_POSTS)
-               .update({ comments_count: newCommentsCount })
-               .eq('id', payload.post_id);
 
           // Notify participants on the post (post owner + prior commenters), excluding the commenter
           try {
@@ -459,20 +454,6 @@ export async function deleteTenantPostComment(commentId: string): Promise<Action
                console.error('Error deleting comment:', error);
                return { success: false, error: error.message };
           }
-
-          // Decrement comments count on the post
-          const { data: currentPost } = await supabase
-               .from(TABLES.TENANT_POSTS)
-               .select('comments_count')
-               .eq('id', comment.post_id)
-               .single();
-
-          const newCommentsCount = Math.max(0, (currentPost?.comments_count || 0) - 1);
-
-          await supabase
-               .from(TABLES.TENANT_POSTS)
-               .update({ comments_count: newCommentsCount })
-               .eq('id', comment.post_id);
 
           // Optionally revalidate the path where posts are displayed
           revalidatePath('/dashboard/social');

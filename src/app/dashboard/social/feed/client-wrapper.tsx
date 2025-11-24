@@ -230,9 +230,10 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
               <SocialPostCard
                 key={post.id}
                 postId={post.id}
-                buildingId={post.building_id || null}
+                buildingId={post.building_id || buildingId || ''}
                 highlighted={highlightedPostId === post.id}
                 focusCommentId={targetCommentId && targetPostId === post.id ? targetCommentId : null}
+                authorId={post.author.id}
                 authorAvatar={post.author.avatar_url || ''}
                 authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
                 created_at={new Date(post.created_at).getTime()}
@@ -246,7 +247,6 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
                 userReaction={post.userReaction}
                 onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
                 currentUserProfile={profile}
-                authorId={post.author.id}
               />
             ))
           )}

@@ -14,7 +14,7 @@ const PROFILE_FEED_PAGE_SIZE = 5;
 export async function ProfilePageContent({ profileId }: { profileId?: string }) {
      // Fetch viewer (needed for ownership checks)
      const { client, clientMember, tenant, admin } = await getViewer();
-     const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+     // const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
      const viewerTenantId = tenant?.id ?? null;
 
      if (!client && !clientMember && !tenant && !admin) {
@@ -36,6 +36,9 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
           const profileResult = await getCurrentUserProfile();
           profile = profileResult.success ? profileResult.data : null;
      }
+
+     const viewerProfileResult = await getCurrentUserProfile();
+     const viewerProfile = viewerProfileResult.success ? viewerProfileResult.data : null;
 
      // If no profile exists, show message
      if (!profile) {
@@ -104,6 +107,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
                          totalCount={totalCount}
                          pageSize={PROFILE_FEED_PAGE_SIZE}
                          isOwner={isOwner}
+                         currentUserProfile={viewerProfile ?? profile}
                     />
                </Container>
           </Box>

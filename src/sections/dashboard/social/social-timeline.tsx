@@ -18,11 +18,12 @@ interface SocialProfileTimelineProps {
   totalCount: number;
   pageSize: number;
   isOwner: boolean;
+  currentUserProfile: TenantProfile;
 }
 
 export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
 
-  const { posts = [], profile, buildingId, totalCount, pageSize, isOwner, ...other } = props;
+  const { posts = [], profile, buildingId, totalCount, pageSize, isOwner, currentUserProfile, ...other } = props;
   const profileProgress = useMemo(() => {
     const trackedFields: Array<keyof TenantProfile> = [
       'first_name',
@@ -219,6 +220,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                     key={post.id}
                     postId={post.id!}
                     authorId={post.author.id}
+                    buildingId={post.building_id || buildingId || ''}
                     authorAvatar={post.author.avatar_url || ''}
                     authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
                     created_at={new Date(post.created_at).getTime()}
@@ -231,7 +233,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                     userReaction={post.userReaction}
                     onArchive={() => handlePostArchived(post.id!)}
                     onReactionsChange={(payload) => handleReactionsChange(post.id!, payload)}
-                    currentUserProfile={profile}
+                    currentUserProfile={currentUserProfile}
                   />
                 ))}
 

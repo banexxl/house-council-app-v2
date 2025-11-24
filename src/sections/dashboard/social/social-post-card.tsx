@@ -50,7 +50,7 @@ const REACTION_EMOJIS = [
 interface SocialPostCardProps {
   postId: string;
   authorId: string;
-  buildingId?: string | null;
+  buildingId: string;
   authorAvatar: string;
   authorName: string;
   comments?: TenantPostCommentWithAuthor[];
@@ -120,6 +120,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const {
     postId,
     authorId,
+    buildingId,
     authorAvatar,
     authorName,
     created_at,
@@ -133,12 +134,9 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     onReactionsChange,
     currentUserProfile,
     highlighted = false,
-    buildingId = null,
     focusCommentId = null,
     ...other
   } = props;
-  console.log('authorId', authorId);
-
   const authorProfileLink = `/dashboard/social/profile/${authorId}`;
   const [reactionAnchorEl, setReactionAnchorEl] = useState<null | HTMLElement>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -181,9 +179,13 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
 
   const handleCommentSubmit = useCallback(
     async (text: string) => {
+      if (!buildingId) {
+        toast.error('Building not found for this post');
+        return;
+      }
       setIsSubmittingComment(true);
       try {
-        const result = await createTenantPostComment({ building_id: buildingId!, post_id: postId, comment_text: text });
+        const result = await createTenantPostComment({ building_id: buildingId, post_id: postId, comment_text: text });
         if (!result.success) {
           toast.error(result.error || 'Failed to add comment');
           return;
@@ -566,7 +568,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
 SocialPostCard.propTypes = {
   postId: PropTypes.string.isRequired,
   authorId: PropTypes.string.isRequired,
-  buildingId: PropTypes.string,
+  buildingId: PropTypes.string.isRequired,
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
   comments: PropTypes.array,

@@ -42,9 +42,10 @@ interface socialProfileWrapperProps {
      totalCount: number;
      pageSize: number;
      isOwner: boolean;
+     currentUserProfile: TenantProfile | null;
 }
 
-export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, pageSize, isOwner }: socialProfileWrapperProps) => {
+export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, pageSize, isOwner, currentUserProfile }: socialProfileWrapperProps) => {
 
      const theme = useTheme();
      const { t } = useTranslation();
@@ -390,6 +391,7 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                          totalCount={totalCount}
                          pageSize={pageSize}
                          isOwner={isOwner}
+                         currentUserProfile={currentUserProfile ?? profile}
                     />
                </Box>
                {isOwner && (
