@@ -10,10 +10,12 @@ import { useSearchParams } from 'next/navigation';
 
 import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
+import { Client, ClientMember } from 'src/types/client';
 
 interface ClientFeedWrapperProps {
   posts: TenantPostWithAuthor[];
-  profile: TenantProfile;
+  profile: TenantProfile | null;
+  client?: Client | ClientMember | null;
   buildingId: string;
   totalCount: number;
   pageSize: number;
@@ -241,12 +243,12 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
                 media={post.images || []}
                 documents={post.documents || []}
                 message={post.content_text}
-                isOwner={post.tenant_id === profile.tenant_id}
+                isOwner={post ? post.tenant_id === profile?.tenant_id : false}
                 onArchive={() => handlePostArchived(post.id)}
                 reactions={post.reactions || []}
                 userReaction={post.userReaction}
                 onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
-                currentUserProfile={profile}
+                currentUserProfile={profile ? profile : undefined}
               />
             ))
           )}
