@@ -12,7 +12,7 @@ const Page = async () => {
   const { client, tenant, admin, clientMember } = await getViewer();
 
   if (!client && !tenant && !admin && !clientMember) {
-    logout();
+    await logout();
     redirect('/auth/login');
   }
 

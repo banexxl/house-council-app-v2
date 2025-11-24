@@ -41,9 +41,10 @@ interface socialProfileWrapperProps {
      buildingId: string;
      totalCount: number;
      pageSize: number;
+     isOwner: boolean;
 }
 
-export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, pageSize }: socialProfileWrapperProps) => {
+export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, pageSize, isOwner }: socialProfileWrapperProps) => {
 
      const theme = useTheme();
      const { t } = useTranslation();
@@ -232,36 +233,38 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                                    },
                               }}
                          >
-                              <Button
-                                   startIcon={
-                                        <SvgIcon>
-                                             <AddPhotoAlternateIcon />
-                                        </SvgIcon>
-                                   }
-                                   disabled={isUpdatingCover}
-                                   onClick={() => setIsCoverDialogOpen(true)}
-                                   sx={{
-                                        backgroundColor: theme.palette.primary.main,
-                                        bottom: {
-                                             lg: 24,
-                                             xs: 'auto',
-                                        },
-                                        color: 'common.white',
-                                        position: 'absolute',
-                                        right: 24,
-                                        top: {
-                                             lg: 'auto',
-                                             xs: 24,
-                                        },
-                                        visibility: 'hidden',
-                                        '&:hover': {
-                                             backgroundColor: theme.palette.primary.dark,
-                                        },
-                                   }}
-                                   variant="contained"
-                              >
-                                   {t('tenants.socialProfileChangeCover')}
-                              </Button>
+                              {isOwner && (
+                                   <Button
+                                        startIcon={
+                                             <SvgIcon>
+                                                  <AddPhotoAlternateIcon />
+                                             </SvgIcon>
+                                        }
+                                        disabled={isUpdatingCover}
+                                        onClick={() => setIsCoverDialogOpen(true)}
+                                        sx={{
+                                             backgroundColor: theme.palette.primary.main,
+                                             bottom: {
+                                                  lg: 24,
+                                                  xs: 'auto',
+                                             },
+                                             color: 'common.white',
+                                             position: 'absolute',
+                                             right: 24,
+                                             top: {
+                                                  lg: 'auto',
+                                                  xs: 24,
+                                             },
+                                             visibility: 'hidden',
+                                             '&:hover': {
+                                                  backgroundColor: theme.palette.primary.dark,
+                                             },
+                                        }}
+                                        variant="contained"
+                                   >
+                                        {t('tenants.socialProfileChangeCover')}
+                                   </Button>
+                              )}
                          </Box>
                          <Stack
                               alignItems="center"
@@ -274,29 +277,41 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                                    direction="row"
                                    spacing={2}
                               >
-                                   <Tooltip title={t('tenants.socialProfileChangeAvatar', 'Change avatar')}>
-                                        <IconButton
-                                             onClick={() => setIsAvatarDialogOpen(true)}
-                                             disabled={isUpdatingAvatar}
-                                             sx={{
-                                                  p: 0,
-                                                  '&:hover': {
-                                                       opacity: 0.8,
-                                                  },
-                                             }}
-                                        >
-                                             <Avatar
-                                                  src={profile.avatar_url || ''}
+                                   {isOwner ? (
+                                        <Tooltip title={t('tenants.socialProfileChangeAvatar', 'Change avatar')}>
+                                             <IconButton
+                                                  onClick={() => setIsAvatarDialogOpen(true)}
+                                                  disabled={isUpdatingAvatar}
                                                   sx={{
-                                                       height: 64,
-                                                       width: 64,
-                                                       cursor: 'pointer',
+                                                       p: 0,
+                                                       '&:hover': {
+                                                            opacity: 0.8,
+                                                       },
                                                   }}
                                              >
-                                                  {profile.first_name?.charAt(0)?.toUpperCase()}
-                                             </Avatar>
-                                        </IconButton>
-                                   </Tooltip>
+                                                  <Avatar
+                                                       src={profile.avatar_url || ''}
+                                                       sx={{
+                                                            height: 64,
+                                                            width: 64,
+                                                            cursor: 'pointer',
+                                                       }}
+                                                  >
+                                                       {profile.first_name?.charAt(0)?.toUpperCase()}
+                                                  </Avatar>
+                                             </IconButton>
+                                        </Tooltip>
+                                   ) : (
+                                        <Avatar
+                                             src={profile.avatar_url || ''}
+                                             sx={{
+                                                  height: 64,
+                                                  width: 64,
+                                             }}
+                                        >
+                                             {profile.first_name?.charAt(0)?.toUpperCase()}
+                                        </Avatar>
+                                   )}
                                    <div>
                                         <Typography
                                              color="text.secondary"
@@ -332,18 +347,20 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                                         gap: 1,
                                    }}
                               >
-                                   <Button
-                                        disabled={isUpdatingProfileData}
-                                        onClick={() => setIsProfileDialogOpen(true)}
-                                        size="small"
-                                        variant="outlined"
-                                        sx={{
-                                             minWidth: { xs: 'auto', sm: 120 },
-                                             px: { xs: 1.5, sm: 2 },
-                                        }}
-                                   >
-                                        {t('tenants.socialProfileModifyData', 'Modify profile data')}
-                                   </Button>
+                                   {isOwner && (
+                                        <Button
+                                             disabled={isUpdatingProfileData}
+                                             onClick={() => setIsProfileDialogOpen(true)}
+                                             size="small"
+                                             variant="outlined"
+                                             sx={{
+                                                  minWidth: { xs: 'auto', sm: 120 },
+                                                  px: { xs: 1.5, sm: 2 },
+                                             }}
+                                        >
+                                             {t('tenants.socialProfileModifyData', 'Modify profile data')}
+                                        </Button>
+                                   )}
                                    <Button
                                         href={paths.dashboard.chat}
                                         size="small"
@@ -363,9 +380,6 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                               </Stack>
                          </Stack>
                     </div>
-                    {/* <Typography variant="h6" color="text.primary">
-                         {t('tenants.socialProfileTimeline')}
-                    </Typography> */}
                </Box>
                <Divider />
                <Box sx={{ mt: 3 }}>
@@ -375,229 +389,234 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                          buildingId={buildingId}
                          totalCount={totalCount}
                          pageSize={pageSize}
+                         isOwner={isOwner}
                     />
                </Box>
-               <Dialog
-                    fullWidth
-                    maxWidth="md"
-                    onClose={handleCloseCoverDialog}
-                    open={isCoverDialogOpen}
-               >
-                    <DialogTitle>{t('tenants.socialProfileSelectCover', 'Select cover image')}</DialogTitle>
-                    <DialogContent dividers>
-                         <Grid container spacing={2}>
-                              {COVER_IMAGES.map(imageUrl => (
-                                   <Grid
-                                        size={{ md: 4, sm: 6, xs: 12 }}
-                                        key={imageUrl}
-                                   >
-                                        <Card
-                                             sx={{
-                                                  borderColor: selectedCover === imageUrl ? 'primary.main' : 'divider',
-                                                  borderWidth: 2,
-                                                  borderStyle: 'solid',
-                                             }}
-                                        >
-                                             <CardActionArea
-                                                  disabled={isUpdatingCover}
-                                                  onClick={() => handleCoverSelect(imageUrl)}
+               {isOwner && (
+                    <>
+                         <Dialog
+                              fullWidth
+                              maxWidth="md"
+                              onClose={handleCloseCoverDialog}
+                              open={isCoverDialogOpen}
+                         >
+                              <DialogTitle>{t('tenants.socialProfileSelectCover', 'Select cover image')}</DialogTitle>
+                              <DialogContent dividers>
+                                   <Grid container spacing={2}>
+                                        {COVER_IMAGES.map(imageUrl => (
+                                             <Grid
+                                                  size={{ md: 4, sm: 6, xs: 12 }}
+                                                  key={imageUrl}
                                              >
-                                                  <Box
+                                                  <Card
                                                        sx={{
-                                                            backgroundImage: `url(${imageUrl})`,
-                                                            backgroundPosition: 'center',
-                                                            backgroundSize: 'cover',
-                                                            height: 160,
+                                                            borderColor: selectedCover === imageUrl ? 'primary.main' : 'divider',
+                                                            borderWidth: 2,
+                                                            borderStyle: 'solid',
                                                        }}
-                                                  />
-                                             </CardActionArea>
-                                        </Card>
-                                   </Grid>
-                              ))}
-                         </Grid>
-                    </DialogContent>
-                    <DialogActions>
-                         <Button
-                              disabled={isUpdatingCover}
-                              onClick={handleCloseCoverDialog}
-                         >
-                              {t('common.cancel', 'Cancel')}
-                         </Button>
-                    </DialogActions>
-               </Dialog>
-               <Dialog
-                    fullWidth
-                    maxWidth="sm"
-                    onClose={handleCloseAvatarDialog}
-                    open={isAvatarDialogOpen}
-               >
-                    <DialogTitle>{t('tenants.socialProfileSelectAvatar', 'Select avatar')}</DialogTitle>
-                    <DialogContent dividers>
-                         <Grid
-                              container
-                              spacing={2}
-                         >
-                              {AVATAR_IMAGES.map(imageUrl => (
-                                   <Grid
-                                        size={{
-                                             md: 3,
-                                             sm: 4,
-                                             xs: 6
-                                        }}
-                                        key={imageUrl}
-                                   >
-                                        <Card
-                                             sx={{
-                                                  borderColor: selectedAvatar === imageUrl ? 'primary.main' : 'divider',
-                                                  borderWidth: 2,
-                                                  borderStyle: 'solid',
-                                             }}
-                                        >
-                                             <CardActionArea
-                                                  disabled={isUpdatingAvatar}
-                                                  onClick={() => handleAvatarSelect(imageUrl)}
-                                             >
-                                                  <Stack
-                                                       alignItems="center"
-                                                       justifyContent="center"
-                                                       sx={{ py: 3 }}
                                                   >
-                                                       <Avatar
-                                                            src={imageUrl}
-                                                            sx={{ height: 72, width: 72 }}
-                                                       />
-                                                  </Stack>
-                                             </CardActionArea>
-                                        </Card>
+                                                       <CardActionArea
+                                                            disabled={isUpdatingCover}
+                                                            onClick={() => handleCoverSelect(imageUrl)}
+                                                       >
+                                                            <Box
+                                                                 sx={{
+                                                                      backgroundImage: `url(${imageUrl})`,
+                                                                      backgroundPosition: 'center',
+                                                                      backgroundSize: 'cover',
+                                                                      height: 160,
+                                                                 }}
+                                                            />
+                                                       </CardActionArea>
+                                                  </Card>
+                                             </Grid>
+                                        ))}
                                    </Grid>
-                              ))}
-                         </Grid>
-                    </DialogContent>
-                    <DialogActions>
-                         <Button
-                              disabled={isUpdatingAvatar}
-                              onClick={handleCloseAvatarDialog}
+                              </DialogContent>
+                              <DialogActions>
+                                   <Button
+                                        disabled={isUpdatingCover}
+                                        onClick={handleCloseCoverDialog}
+                                   >
+                                        {t('common.cancel', 'Cancel')}
+                                   </Button>
+                              </DialogActions>
+                         </Dialog>
+                         <Dialog
+                              fullWidth
+                              maxWidth="sm"
+                              onClose={handleCloseAvatarDialog}
+                              open={isAvatarDialogOpen}
                          >
-                              {t('common.cancel', 'Cancel')}
-                         </Button>
-                    </DialogActions>
-               </Dialog>
-               <Dialog
-                    fullWidth
-                    maxWidth="sm"
-                    onClose={handleCloseProfileDialog}
-                    open={isProfileDialogOpen}
-               >
-                    <DialogTitle>{t('tenants.socialProfileModifyDataTitle', 'Modify profile data')}</DialogTitle>
-                    <DialogContent dividers>
-                         <Stack spacing={2}>
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfileQuote', 'Quote')}
-                                   multiline
-                                   minRows={2}
-                                   value={profileFormValues.quote || ''}
-                                   onChange={handleProfileFieldChange('quote')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfileBio', 'Bio')}
-                                   multiline
-                                   minRows={2}
-                                   value={profileFormValues.bio || ''}
-                                   onChange={handleProfileFieldChange('bio')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              {/* <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfilePhoneNumber', 'Phone number')}
-                                   value={profileFormValues.phone_number || ''}
-                                   onChange={handleProfileFieldChange('phone_number')}
-                              /> */}
+                              <DialogTitle>{t('tenants.socialProfileSelectAvatar', 'Select avatar')}</DialogTitle>
+                              <DialogContent dividers>
+                                   <Grid
+                                        container
+                                        spacing={2}
+                                   >
+                                        {AVATAR_IMAGES.map(imageUrl => (
+                                             <Grid
+                                                  size={{
+                                                       md: 3,
+                                                       sm: 4,
+                                                       xs: 6
+                                                  }}
+                                                  key={imageUrl}
+                                             >
+                                                  <Card
+                                                       sx={{
+                                                            borderColor: selectedAvatar === imageUrl ? 'primary.main' : 'divider',
+                                                            borderWidth: 2,
+                                                            borderStyle: 'solid',
+                                                       }}
+                                                  >
+                                                       <CardActionArea
+                                                            disabled={isUpdatingAvatar}
+                                                            onClick={() => handleAvatarSelect(imageUrl)}
+                                                       >
+                                                            <Stack
+                                                                 alignItems="center"
+                                                                 justifyContent="center"
+                                                                 sx={{ py: 3 }}
+                                                            >
+                                                                 <Avatar
+                                                                      src={imageUrl}
+                                                                      sx={{ height: 72, width: 72 }}
+                                                                 />
+                                                            </Stack>
+                                                       </CardActionArea>
+                                                  </Card>
+                                             </Grid>
+                                        ))}
+                                   </Grid>
+                              </DialogContent>
+                              <DialogActions>
+                                   <Button
+                                        disabled={isUpdatingAvatar}
+                                        onClick={handleCloseAvatarDialog}
+                                   >
+                                        {t('common.cancel', 'Cancel')}
+                                   </Button>
+                              </DialogActions>
+                         </Dialog>
+                         <Dialog
+                              fullWidth
+                              maxWidth="sm"
+                              onClose={handleCloseProfileDialog}
+                              open={isProfileDialogOpen}
+                         >
+                              <DialogTitle>{t('tenants.socialProfileModifyDataTitle', 'Modify profile data')}</DialogTitle>
+                              <DialogContent dividers>
+                                   <Stack spacing={2}>
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfileQuote', 'Quote')}
+                                             multiline
+                                             minRows={2}
+                                             value={profileFormValues.quote || ''}
+                                             onChange={handleProfileFieldChange('quote')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfileBio', 'Bio')}
+                                             multiline
+                                             minRows={2}
+                                             value={profileFormValues.bio || ''}
+                                             onChange={handleProfileFieldChange('bio')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        {/* <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfilePhoneNumber', 'Phone number')}
+                                             value={profileFormValues.phone_number || ''}
+                                             onChange={handleProfileFieldChange('phone_number')}
+                                        /> */}
 
-                              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                   <DatePicker
-                                        label={t('tenants.birthDate')}
-                                        value={profileFormValues.date_of_birth ? dayjs(profileFormValues.date_of_birth) : null}
-                                        onChange={(date) => {
-                                             setProfileFormValues(prev => ({
-                                                  ...prev,
-                                                  date_of_birth: date ? date.format('YYYY-MM-DD') : undefined,
-                                             }));
-                                        }}
-                                        slotProps={{
-                                             textField: {
-                                                  fullWidth: true,
-                                                  name: 'date_of_birth',
-                                             },
-                                        }}
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                             <DatePicker
+                                                  label={t('tenants.birthDate')}
+                                                  value={profileFormValues.date_of_birth ? dayjs(profileFormValues.date_of_birth) : null}
+                                                  onChange={(date) => {
+                                                       setProfileFormValues(prev => ({
+                                                            ...prev,
+                                                            date_of_birth: date ? date.format('YYYY-MM-DD') : undefined,
+                                                       }));
+                                                  }}
+                                                  slotProps={{
+                                                       textField: {
+                                                            fullWidth: true,
+                                                            name: 'date_of_birth',
+                                                       },
+                                                  }}
+                                                  disabled={isUpdatingProfileData}
+                                                  disableFuture={true}
+                                             />
+                                        </LocalizationProvider>
+
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfileCurrentCity', 'Current city')}
+                                             value={profileFormValues.current_city || ''}
+                                             onChange={handleProfileFieldChange('current_city')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfileOriginCity', 'Origin city')}
+                                             value={profileFormValues.origin_city || ''}
+                                             onChange={handleProfileFieldChange('origin_city')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfileCurrentJobTitle', 'Current job title')}
+                                             value={profileFormValues.current_job_title || ''}
+                                             onChange={handleProfileFieldChange('current_job_title')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfileCurrentJobCompany', 'Current job company')}
+                                             value={profileFormValues.current_job_company || ''}
+                                             onChange={handleProfileFieldChange('current_job_company')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfilePreviousJobTitle', 'Previous job title')}
+                                             value={profileFormValues.previous_job_title || ''}
+                                             onChange={handleProfileFieldChange('previous_job_title')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+                                        <TextField
+                                             fullWidth
+                                             label={t('tenants.socialProfilePreviousJobCompany', 'Previous job company')}
+                                             value={profileFormValues.previous_job_company || ''}
+                                             onChange={handleProfileFieldChange('previous_job_company')}
+                                             disabled={isUpdatingProfileData}
+                                        />
+
+                                   </Stack>
+                              </DialogContent>
+                              <DialogActions>
+                                   <Button
                                         disabled={isUpdatingProfileData}
-                                        disableFuture={true}
-                                   />
-                              </LocalizationProvider>
-
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfileCurrentCity', 'Current city')}
-                                   value={profileFormValues.current_city || ''}
-                                   onChange={handleProfileFieldChange('current_city')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfileOriginCity', 'Origin city')}
-                                   value={profileFormValues.origin_city || ''}
-                                   onChange={handleProfileFieldChange('origin_city')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfileCurrentJobTitle', 'Current job title')}
-                                   value={profileFormValues.current_job_title || ''}
-                                   onChange={handleProfileFieldChange('current_job_title')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfileCurrentJobCompany', 'Current job company')}
-                                   value={profileFormValues.current_job_company || ''}
-                                   onChange={handleProfileFieldChange('current_job_company')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfilePreviousJobTitle', 'Previous job title')}
-                                   value={profileFormValues.previous_job_title || ''}
-                                   onChange={handleProfileFieldChange('previous_job_title')}
-                                   disabled={isUpdatingProfileData}
-                              />
-                              <TextField
-                                   fullWidth
-                                   label={t('tenants.socialProfilePreviousJobCompany', 'Previous job company')}
-                                   value={profileFormValues.previous_job_company || ''}
-                                   onChange={handleProfileFieldChange('previous_job_company')}
-                                   disabled={isUpdatingProfileData}
-                              />
-
-                         </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                         <Button
-                              disabled={isUpdatingProfileData}
-                              onClick={handleCloseProfileDialog}
-                         >
-                              {t('common.cancel', 'Cancel')}
-                         </Button>
-                         <Button
-                              disabled={isUpdatingProfileData}
-                              onClick={handleProfileDataSave}
-                              variant="contained"
-                         >
-                              {t('common.save', 'Save')}
-                         </Button>
-                    </DialogActions>
-               </Dialog>
+                                        onClick={handleCloseProfileDialog}
+                                   >
+                                        {t('common.cancel', 'Cancel')}
+                                   </Button>
+                                   <Button
+                                        disabled={isUpdatingProfileData}
+                                        onClick={handleProfileDataSave}
+                                        variant="contained"
+                                   >
+                                        {t('common.save', 'Save')}
+                                   </Button>
+                              </DialogActions>
+                         </Dialog>
+                    </>
+               )}
           </>
      );
 };

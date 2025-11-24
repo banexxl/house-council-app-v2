@@ -23,6 +23,7 @@ import { getInitials } from 'src/utils/get-initials';
 
 interface SocialCommentProps {
   commentId: string;
+  authorId: string;
   authorAvatar: string;
   authorName: string;
   created_at: number;
@@ -38,6 +39,7 @@ const REACTION_EMOJIS = ['👍', '❤️', '😂', '🎉', '😮', '😢', '👀
 export const SocialComment: FC<SocialCommentProps> = (props) => {
   const {
     commentId,
+    authorId,
     authorAvatar,
     authorName,
     created_at,
@@ -50,6 +52,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
   } = props;
 
   const [pickerAnchor, setPickerAnchor] = useState<HTMLElement | null>(null);
+  const profileLink = `/dashboard/social/profile/${authorId}`;
   const ago = formatDistanceToNowStrict(created_at);
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactions);
   const [currentReaction, setCurrentReaction] = useState<string | null>(userReaction ?? null);
@@ -107,7 +110,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     >
       <Avatar
         component="a"
-        href="#"
+        href={profileLink}
         src={authorAvatar}
       >
         {getInitials(authorName)}
@@ -129,7 +132,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
         >
           <Link
             color="text.primary"
-            href="#"
+            href={profileLink}
             variant="subtitle2"
           >
             {authorName}
@@ -227,6 +230,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
 
 SocialComment.propTypes = {
   commentId: PropTypes.string.isRequired,
+  authorId: PropTypes.string.isRequired,
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
   created_at: PropTypes.number.isRequired,

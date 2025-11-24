@@ -17,11 +17,12 @@ interface SocialProfileTimelineProps {
   buildingId: string;
   totalCount: number;
   pageSize: number;
+  isOwner: boolean;
 }
 
 export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
 
-  const { posts = [], profile, buildingId, totalCount, pageSize, ...other } = props;
+  const { posts = [], profile, buildingId, totalCount, pageSize, isOwner, ...other } = props;
   const profileProgress = useMemo(() => {
     const trackedFields: Array<keyof TenantProfile> = [
       'first_name',
@@ -195,7 +196,9 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
           size={{ xs: 12, lg: 8 }}
         >
           <Stack spacing={3}>
-            <SocialPostAdd user={profile} buildingId={buildingId} onPostCreated={refreshPosts} />
+            {isOwner && (
+              <SocialPostAdd user={profile} buildingId={buildingId} onPostCreated={refreshPosts} />
+            )}
             {feedPosts.length === 0 ? (
               <Box
                 sx={{
@@ -215,6 +218,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                   <SocialPostCard
                     key={post.id}
                     postId={post.id!}
+                    authorId={post.author.id}
                     authorAvatar={post.author.avatar_url || ''}
                     authorName={`${post.author.first_name || ''} ${post.author.last_name || ''}`.trim()}
                     created_at={new Date(post.created_at).getTime()}
@@ -222,7 +226,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                     media={post.images || []}
                     documents={post.documents || []}
                     message={post.content_text}
-                    isOwner={post.tenant_id === profile.tenant_id}
+                    isOwner={isOwner}
                     reactions={post.reactions || []}
                     userReaction={post.userReaction}
                     onArchive={() => handlePostArchived(post.id!)}

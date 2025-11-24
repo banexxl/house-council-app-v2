@@ -102,6 +102,58 @@ export async function getCurrentUserProfile(): Promise<ActionResponse<TenantProf
 }
 
 /**
+ * Get tenant profile by tenant ID
+ */
+export async function getTenantProfileByTenantId(tenantId: string): Promise<ActionResponse<TenantProfile>> {
+     try {
+          const supabase = await useServerSideSupabaseAnonClient();
+
+          // First fetch the tenant to get the profile_id reference
+          const { data: tenantRow, error: tenantError } = await supabase
+               .from(TABLES.TENANTS)
+               .select('profile_id')
+               .eq('id', tenantId)
+               .maybeSingle();
+
+          if (tenantError) {
+               console.error('Error fetching tenant for profile lookup:', tenantError);
+               return { success: false, error: tenantError.message };
+          }
+
+          // If tenant row not found
+          if (!tenantRow) {
+               return { success: false, error: 'Tenant not found' };
+          }
+
+          // Prefer explicit profile_id; fall back to tenant_id if missing for backward compatibility
+          const profileId = (tenantRow as any).profile_id as string | null | undefined;
+
+          const profileQuery = supabase
+               .from(TABLES.TENANT_PROFILES)
+               .select('*')
+               .limit(1);
+
+          const { data, error } = profileId
+               ? await profileQuery.eq('id', profileId).maybeSingle()
+               : await profileQuery.eq('tenant_id', tenantId).maybeSingle();
+
+          if (error) {
+               console.error('Error fetching tenant profile by tenant_id:', error);
+               return { success: false, error: error.message };
+          }
+
+          if (!data) {
+               return { success: false, error: 'Profile not found' };
+          }
+
+          return { success: true, data };
+     } catch (error) {
+          console.error('Error fetching tenant profile by tenant_id:', error);
+          return { success: false, error: 'Failed to fetch profile' };
+     }
+}
+
+/**
  * Get all tenant profiles (for building connections)
  */
 export async function getTenantProfiles(buildingId?: string): Promise<ActionResponse<TenantProfile[]>> {

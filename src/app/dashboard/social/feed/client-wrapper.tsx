@@ -246,6 +246,7 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
                 userReaction={post.userReaction}
                 onReactionsChange={(payload) => handleReactionsChange(post.id, payload)}
                 currentUserProfile={profile}
+                authorId={post.author.id}
               />
             ))
           )}

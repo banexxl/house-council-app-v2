@@ -49,6 +49,7 @@ const REACTION_EMOJIS = [
 
 interface SocialPostCardProps {
   postId: string;
+  authorId: string;
   buildingId?: string | null;
   authorAvatar: string;
   authorName: string;
@@ -118,6 +119,7 @@ const AttachmentLink = ({
 export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const {
     postId,
+    authorId,
     authorAvatar,
     authorName,
     created_at,
@@ -135,6 +137,9 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     focusCommentId = null,
     ...other
   } = props;
+  console.log('authorId', authorId);
+
+  const authorProfileLink = `/dashboard/social/profile/${authorId}`;
   const [reactionAnchorEl, setReactionAnchorEl] = useState<null | HTMLElement>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [isArchiving, setIsArchiving] = useState(false);
@@ -290,7 +295,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         avatar={
           <Avatar
             component="a"
-            href="#"
+            href={authorProfileLink}
             src={authorAvatar}
           />
         }
@@ -346,7 +351,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           >
             <Link
               color="text.primary"
-              href="#"
+              href={authorProfileLink}
               variant="subtitle2"
             >
               {authorName}
@@ -489,6 +494,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                 commentList.map((comment: TenantPostCommentWithAuthor) => (
                   <SocialComment
                     commentId={comment.id}
+                    authorId={comment.author.id}
                     authorAvatar={comment.author.avatar_url || ''}
                     authorName={`${comment.author.first_name || ''} ${comment.author.last_name || ''}`.trim()}
                     created_at={new Date(comment.created_at).getTime()}
@@ -559,6 +565,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
 
 SocialPostCard.propTypes = {
   postId: PropTypes.string.isRequired,
+  authorId: PropTypes.string.isRequired,
   buildingId: PropTypes.string,
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,

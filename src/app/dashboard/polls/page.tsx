@@ -11,7 +11,7 @@ export default async function PollsPage() {
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
 
   if (!client && !clientMember && !tenant && !admin) {
-    logout();
+    await logout();
   }
 
   // Load polls based on role
