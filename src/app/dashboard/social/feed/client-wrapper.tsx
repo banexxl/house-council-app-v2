@@ -26,7 +26,7 @@ type FeedResponse = {
   total?: number;
 };
 
-export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, pageSize }: ClientFeedWrapperProps) => {
+export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCount, pageSize }: ClientFeedWrapperProps) => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [feedPosts, setFeedPosts] = useState<TenantPostWithAuthor[]>(posts);
   const [totalPosts, setTotalPosts] = useState(totalCount);
@@ -181,28 +181,33 @@ export const ClientFeedWrapper = ({ posts, profile, buildingId, totalCount, page
             },
           }}
         />
-        <Box sx={{}}>
-          <a href="/dashboard/social/profile" style={{ textDecoration: 'none' }}>
-            <Box
-              component="button"
-              sx={{
-                px: 2,
-                py: 1,
-                borderRadius: 1,
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 500,
-                '&:hover': {
-                  bgcolor: 'primary.dark',
-                },
-              }}
-            >
-              Add post
+        {
+          !client && (
+            <Box sx={{}}>
+              <a href="/dashboard/social/profile" style={{ textDecoration: 'none' }}>
+                <Box
+                  component="button"
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    borderRadius: 1,
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    },
+                  }}
+                >
+                  Add post
+                </Box>
+              </a>
             </Box>
-          </a>
-        </Box>
+          )
+        }
+
       </Box>
       {feedPosts.length === 0 ? (
         <Box
