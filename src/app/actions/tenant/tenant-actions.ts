@@ -664,8 +664,6 @@ export const readAllTenantsFromBuildingIds = async (
                )
           `)
           .in('apartment_id', apartmentIds);
-     console.log('error', tenantsError);
-
      if (tenantsError) {
           return { success: false, error: tenantsError.message };
      }

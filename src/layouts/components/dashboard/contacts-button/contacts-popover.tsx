@@ -49,7 +49,6 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
   } = props;
   const router = useRouter();
   const { t } = useTranslation();
-
   const handleNavigate = useCallback((contactId: string) => {
     if (!contactId) return;
     onClose?.();

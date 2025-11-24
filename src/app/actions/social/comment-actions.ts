@@ -178,8 +178,6 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           if (!buildingId) {
                return { success: false, error: 'Building not found for this post' };
           }
-          console.log('payload', payload);
-
           // Create the comment
           const { data, error } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)

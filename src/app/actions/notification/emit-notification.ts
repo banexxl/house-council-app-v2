@@ -29,7 +29,6 @@ export async function emitNotifications(
                }));
                const { error } = await supabase.from(TABLES.NOTIFICATIONS).insert(dbSlice as any);
                log(`Inserted batch of ${slice.length} notifications`, 'warn');
-               console.log('error', error);
                if (error) {
                     log(`Error inserting notifications: ${error.message}`, 'error');
                     await logServerAction({

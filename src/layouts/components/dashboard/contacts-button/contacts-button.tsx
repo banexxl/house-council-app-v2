@@ -97,7 +97,7 @@ const useContacts = () => {
           const transformedContacts: Contact[] = tenantsResult.data.map((tenant: Tenant & { last_sign_in_at?: string }) => ({
             id: tenant.id,
             userId: tenant.user_id, // Add user ID for presence tracking
-            avatar: `/assets/avatars/avatar-${tenant.first_name.toLowerCase()}-${tenant.last_name.toLowerCase()}.png`,
+            avatar: tenant.avatar_url!,
             isActive: false, // Will be updated by presence system
             lastActivity: calculateLastActivity(tenant.last_sign_in_at),
             name: `${tenant.first_name} ${tenant.last_name}`,
