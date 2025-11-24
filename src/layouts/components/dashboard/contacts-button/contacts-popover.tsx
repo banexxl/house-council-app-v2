@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useCallback, type FC } from 'react';
 import { formatDistanceStrict } from 'date-fns';
 import PropTypes from 'prop-types';
 import Avatar from '@mui/material/Avatar';
@@ -12,6 +12,7 @@ import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { alpha } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 
 import { Presence } from 'src/components/presence';
 import { customLocale } from 'src/utils/date-locale';
@@ -46,7 +47,14 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
     isPresenceConnected = false,
     ...other
   } = props;
+  const router = useRouter();
   const { t } = useTranslation();
+
+  const handleNavigate = useCallback((contactId: string) => {
+    if (!contactId) return;
+    onClose?.();
+    router.push(`/dashboard/social/profile/${contactId}`);
+  }, [onClose, router]);
 
   // Separate online and offline contacts
   const onlineContacts = contacts.filter(contact => contact.isActive);
@@ -102,6 +110,15 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                   <ListItem
                     disableGutters
                     key={contact.id}
+                    onClick={() => handleNavigate(contact.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleNavigate(contact.id);
+                      }
+                    }}
                     sx={{
                       '&:hover': {
                         backgroundColor: 'action.hover',
@@ -113,6 +130,11 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                       <Avatar
                         src={contact.avatar}
                         sx={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleNavigate(contact.id);
+                        }}
                       />
                     </ListItemAvatar>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -123,6 +145,11 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                         underline="none"
                         variant="subtitle2"
                         display="block"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleNavigate(contact.id);
+                        }}
                       >
                         {contact.name}
                       </Link>
@@ -165,6 +192,15 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                 <ListItem
                   disableGutters
                   key={contact.id}
+                  onClick={() => handleNavigate(contact.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleNavigate(contact.id);
+                    }
+                  }}
                   sx={{
                     opacity: 0.7,
                     '&:hover': {
@@ -178,6 +214,11 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                     <Avatar
                       src={contact.avatar}
                       sx={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleNavigate(contact.id);
+                      }}
                     />
                   </ListItemAvatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -188,6 +229,11 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
                       underline="none"
                       variant="subtitle2"
                       display="block"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleNavigate(contact.id);
+                      }}
                     >
                       {contact.name}
                     </Link>

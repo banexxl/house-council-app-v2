@@ -408,3 +408,31 @@ export async function deleteTenantProfile(profileId: string): Promise<ActionResp
           return { success: false, error: 'Failed to delete profile' };
      }
 }
+
+
+/**
+ * Get tenant profile by profile id or fallback to tenant_id foreign key.
+ */
+export async function getProfileIdOrTenantId(id: string): Promise<ActionResponse<TenantProfile>> {
+     try {
+          const supabase = await useServerSideSupabaseAnonClient();
+
+          const { data, error } = await supabase
+               .from(TABLES.TENANT_PROFILES)
+               .select('*')
+               .or(`id.eq.${id},tenant_id.eq.${id}`)
+               .limit(1)
+               .maybeSingle();
+          if (error) {
+               console.error('Error fetching tenant profile by id or tenant_id:', error);
+               return { success: false, error: error.message };
+          }
+          if (!data) {
+               return { success: false, error: 'Profile not found' };
+          }
+          return { success: true, data };
+     } catch (error) {
+          console.error('Error fetching tenant profile by id or tenant_id:', error);
+          return { success: false, error: 'Failed to fetch profile' };
+     }
+}
