@@ -336,7 +336,7 @@ export async function updateTenantProfile(
                }
 
                // Update tenant table with shared fields if they were modified
-               const sharedFields = ['first_name', 'last_name', 'phone_number'];
+               const sharedFields = ['first_name', 'last_name', 'phone_number', 'avatar_url'];
                const tenantUpdates: any = {};
 
                for (const field of sharedFields) {
