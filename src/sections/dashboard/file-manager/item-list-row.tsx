@@ -28,16 +28,22 @@ interface ItemListRowProps {
   onDelete?: (itemId: string) => void;
   onFavorite?: (itemId: string, value: boolean) => void;
   onOpen?: (itemId: string) => void;
+  onOpenDetails?: (itemId: string) => void;
 }
 
 export const ItemListRow: FC<ItemListRowProps> = (props) => {
-  const { item, onDelete, onFavorite, onOpen } = props;
+  const { item, onDelete, onFavorite, onOpen, onOpenDetails } = props;
   const popover = usePopover<HTMLButtonElement>();
 
   const handleDelete = useCallback((): void => {
     popover.handleClose();
     onDelete?.(item.id);
   }, [item, popover, onDelete]);
+
+  const handleDetails = useCallback((): void => {
+    popover.handleClose();
+    onOpenDetails?.(item.id);
+  }, [item.id, onOpenDetails, popover]);
 
   let size = bytesToSize(item.size);
 
@@ -195,6 +201,7 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
         anchorEl={popover.anchorRef.current}
         onClose={popover.handleClose}
         onDelete={handleDelete}
+        onOpenDetails={handleDetails}
         open={popover.open}
       />
     </>
@@ -207,4 +214,5 @@ ItemListRow.propTypes = {
   onDelete: PropTypes.func,
   onFavorite: PropTypes.func,
   onOpen: PropTypes.func,
+  onOpenDetails: PropTypes.func,
 };

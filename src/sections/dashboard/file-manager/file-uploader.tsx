@@ -81,7 +81,7 @@ export const FileUploader: FC<FileUploaderProps> = (props) => {
           caption="Max file size is 3 MB"
           files={files}
           onDrop={handleDrop}
-          onRemoveImage={handleRemove}
+          onRemoveImage={() => undefined}
           onRemoveAll={handleRemoveAll}
           onUpload={handleUpload}
         />

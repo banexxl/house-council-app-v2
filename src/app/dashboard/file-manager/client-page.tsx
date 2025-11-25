@@ -7,7 +7,7 @@ import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import { Grid, IconButton, useTheme } from '@mui/material';
+import { Grid, IconButton, useTheme, CircularProgress } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -23,6 +23,7 @@ import { ItemList } from 'src/sections/dashboard/file-manager/item-list';
 import { ItemSearch } from 'src/sections/dashboard/file-manager/item-search';
 import { StorageStats } from 'src/sections/dashboard/file-manager/storage-stats';
 import type { Item } from 'src/types/file-manager';
+import { ItemMenu } from 'src/sections/dashboard/file-manager/item-menu';
 
 type View = 'grid' | 'list';
 
@@ -101,9 +102,11 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string) => {
     items: [],
     itemsCount: 0,
   });
+  const [loading, setLoading] = useState(false);
 
   const handleItemsGet = useCallback(async () => {
     try {
+      setLoading(true);
       const params = new URLSearchParams({
         limit: searchState.rowsPerPage.toString(),
         offset: (searchState.page * searchState.rowsPerPage).toString(),
@@ -134,6 +137,8 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string) => {
       });
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }, [prefix, searchState]);
 
@@ -171,6 +176,7 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string) => {
   return {
     handleDelete,
     handleFavorite,
+    loading,
     refresh: handleItemsGet,
     ...state,
   };
@@ -382,12 +388,20 @@ export const ClientFileManagerPage = () => {
                     }
                     detailsDialog.handleOpen(id);
                   }}
+                  onOpenDetails={(id) => {
+                    detailsDialog.handleOpen(id);
+                  }}
                   onPageChange={itemsSearch.handlePageChange}
                   onRowsPerPageChange={itemsSearch.handleRowsPerPageChange}
                   page={itemsSearch.state.page}
                   rowsPerPage={itemsSearch.state.rowsPerPage}
                   view={view}
                 />
+                {itemsStore.loading && (
+                  <Stack alignItems="center" sx={{ py: 4 }}>
+                    <CircularProgress size={32} />
+                  </Stack>
+                )}
               </Stack>
             </Grid>
             <Grid size={{ xs: 12, lg: 4 }}>

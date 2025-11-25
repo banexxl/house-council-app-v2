@@ -20,6 +20,7 @@ interface ItemListProps {
   onDelete?: (itemId: string) => void;
   onFavorite?: (itemId: string, value: boolean) => void;
   onOpen?: (itemId: string) => void;
+  onOpenDetails?: (itemId: string) => void;
   onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   page?: number;
@@ -34,6 +35,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
     onDelete,
     onFavorite,
     onOpen,
+    onOpenDetails,
     onPageChange = () => {},
     onRowsPerPageChange,
     page = 0,
@@ -59,6 +61,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
             onDelete={onDelete}
             onFavorite={onFavorite}
             onOpen={onOpen}
+            onOpenDetails={onOpenDetails}
           />
         ))}
       </Box>
@@ -84,6 +87,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
                     onDelete={onDelete}
                     onFavorite={onFavorite}
                     onOpen={onOpen}
+                    onOpenDetails={onOpenDetails}
                   />
                 ))}
               </TableBody>
@@ -116,6 +120,7 @@ ItemList.propTypes = {
   onDelete: PropTypes.func,
   onFavorite: PropTypes.func,
   onOpen: PropTypes.func,
+  onOpenDetails: PropTypes.func,
   onPageChange: PropTypes.func,
   onRowsPerPageChange: PropTypes.func,
   page: PropTypes.number,
