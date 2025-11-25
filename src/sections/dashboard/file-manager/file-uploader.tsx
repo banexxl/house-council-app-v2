@@ -13,11 +13,12 @@ import { File, FileDropzone } from 'src/components/file-dropzone';
 
 interface FileUploaderProps {
   onClose?: () => void;
+  onUpload?: (files: File[]) => Promise<void> | void;
   open?: boolean;
 }
 
 export const FileUploader: FC<FileUploaderProps> = (props) => {
-  const { onClose, open = false } = props;
+  const { onClose, onUpload, open = false } = props;
   const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
@@ -39,6 +40,13 @@ export const FileUploader: FC<FileUploaderProps> = (props) => {
   const handleRemoveAll = useCallback((): void => {
     setFiles([]);
   }, []);
+
+  const handleUpload = useCallback(async (): Promise<void> => {
+    if (onUpload) {
+      await onUpload(files);
+    }
+    onClose?.();
+  }, [files, onClose, onUpload]);
 
   return (
     <Dialog
@@ -73,9 +81,9 @@ export const FileUploader: FC<FileUploaderProps> = (props) => {
           caption="Max file size is 3 MB"
           files={files}
           onDrop={handleDrop}
-          onRemoveImage={() => handleRemove}
+          onRemoveImage={handleRemove}
           onRemoveAll={handleRemoveAll}
-          onUpload={onClose}
+          onUpload={handleUpload}
         />
       </DialogContent>
     </Dialog>
@@ -84,5 +92,6 @@ export const FileUploader: FC<FileUploaderProps> = (props) => {
 
 FileUploader.propTypes = {
   onClose: PropTypes.func,
+  onUpload: PropTypes.func,
   open: PropTypes.bool,
 };

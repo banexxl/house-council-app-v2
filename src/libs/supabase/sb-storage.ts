@@ -822,6 +822,259 @@ export const removeAllEntityFiles = async (
      }
 };
 
+// -------------------------------------------------------
+// Generic file manager helpers (Supabase Storage wrappers)
+// These do not modify the existing entity-specific helpers.
+// -------------------------------------------------------
+
+export type StorageObjectType = 'file' | 'folder';
+
+export interface StorageObjectItem {
+     bucket: string;
+     name: string;
+     path: string;
+     type: StorageObjectType;
+     size?: number;
+     created_at?: string | null;
+     updated_at?: string | null;
+     last_accessed_at?: string | null;
+}
+
+export interface ListStorageObjectsParams {
+     bucket?: string;
+     prefix?: string;
+     limit?: number;
+     offset?: number;
+     search?: string;
+     requiresAuth?: boolean;
+}
+
+const normalizePrefix = (prefix?: string): string => {
+     if (!prefix) return '';
+     const trimmed = prefix.replace(/^\//, '').replace(/\/$/, '');
+     return trimmed;
+};
+
+const sanitizePath = (path: string): string => {
+     const parts = path.split('/').filter(Boolean).map(sanitizeSegmentForS3);
+     return parts.join('/');
+};
+
+export const listStorageObjects = async (
+     params: ListStorageObjectsParams = {},
+): Promise<{ success: boolean; items?: StorageObjectItem[]; error?: string }> => {
+     const bucket = params.bucket ?? DEFAULT_BUCKET;
+     const prefix = normalizePrefix(params.prefix);
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     if (params.requiresAuth !== false) {
+          const auth = await requireAuthUserId(supabase, 'storage.list.objects', { prefix, bucket });
+          if (!auth.ok) {
+               return { success: false, error: auth.error };
+          }
+     }
+
+     const { data, error } = await supabase.storage.from(bucket).list(prefix || undefined, {
+          limit: params.limit,
+          offset: params.offset,
+          search: params.search,
+          sortBy: { column: 'name', order: 'asc' },
+     });
+
+     if (error) {
+          return { success: false, error: error.message };
+     }
+
+     const items: StorageObjectItem[] = (data ?? []).map((entry) => {
+          const isFolder = entry.metadata === null;
+          const path = [prefix, entry.name].filter(Boolean).join('/');
+          return {
+               bucket,
+               name: entry.name,
+               path,
+               type: isFolder ? 'folder' : 'file',
+               size: entry.metadata?.size ?? undefined,
+               created_at: entry.created_at ?? null,
+               updated_at: entry.updated_at ?? null,
+               last_accessed_at: entry.last_accessed_at ?? null,
+          };
+     });
+
+     return { success: true, items };
+};
+
+export interface UploadStorageObjectParams {
+     bucket?: string;
+     path: string;
+     file: File;
+     cacheControl?: string;
+     upsert?: boolean;
+     requiresAuth?: boolean;
+}
+
+export const uploadStorageObject = async (
+     params: UploadStorageObjectParams,
+): Promise<{ success: boolean; error?: string; path?: string }> => {
+     const bucket = params.bucket ?? DEFAULT_BUCKET;
+     const supabase = await useServerSideSupabaseAnonClient();
+     const sanitizedPath = sanitizePath(params.path);
+
+     if (params.requiresAuth !== false) {
+          const auth = await requireAuthUserId(supabase, 'storage.upload.object', { path: sanitizedPath, bucket });
+          if (!auth.ok) {
+               return { success: false, error: auth.error };
+          }
+     }
+
+     const { error } = await supabase.storage.from(bucket).upload(sanitizedPath, params.file, {
+          cacheControl: params.cacheControl ?? DEFAULT_CACHE_CONTROL,
+          upsert: params.upsert ?? false,
+          contentType: ((params.file as any)?.type as string | undefined) || undefined,
+     });
+
+     if (error) {
+          return { success: false, error: error.message };
+     }
+
+     return { success: true, path: sanitizedPath };
+};
+
+export interface RemoveStorageObjectParams {
+     bucket?: string;
+     path: string;
+     requiresAuth?: boolean;
+}
+
+export const removeStorageObject = async (
+     params: RemoveStorageObjectParams,
+): Promise<BasicResult> => {
+     const bucket = params.bucket ?? DEFAULT_BUCKET;
+     const supabase = await useServerSideSupabaseAnonClient();
+     const normalized = sanitizePath(params.path);
+
+     if (params.requiresAuth !== false) {
+          const auth = await requireAuthUserId(supabase, 'storage.remove.object', { path: normalized, bucket });
+          if (!auth.ok) {
+               return { success: false, error: auth.error };
+          }
+     }
+
+     const { error } = await supabase.storage.from(bucket).remove([normalized]);
+     if (error) {
+          return { success: false, error: error.message };
+     }
+
+     return { success: true };
+};
+
+export interface CreateStorageFolderParams {
+     bucket?: string;
+     prefix?: string;
+     folderName: string;
+     requiresAuth?: boolean;
+}
+
+export const createStorageFolder = async (
+     params: CreateStorageFolderParams,
+): Promise<{ success: boolean; error?: string; path?: string }> => {
+     const bucket = params.bucket ?? DEFAULT_BUCKET;
+     const supabase = await useServerSideSupabaseAnonClient();
+     const base = normalizePrefix(params.prefix);
+     const folderSegment = sanitizeSegmentForS3(params.folderName);
+     const folderPath = [base, folderSegment].filter(Boolean).join('/');
+     const placeholderPath = `${folderPath}/.keep`;
+     const blob = new Blob([''], { type: 'application/octet-stream' });
+
+     if (params.requiresAuth !== false) {
+          const auth = await requireAuthUserId(supabase, 'storage.create.folder', { folderPath, bucket });
+          if (!auth.ok) {
+               return { success: false, error: auth.error };
+          }
+     }
+
+     const { error } = await supabase.storage.from(bucket).upload(placeholderPath, blob, {
+          upsert: false,
+          cacheControl: '60',
+     });
+
+     if (error && error.message && !error.message.toLowerCase().includes('duplicate')) {
+          return { success: false, error: error.message };
+     }
+
+     return { success: true, path: folderPath };
+};
+
+export interface RemoveStorageFolderParams {
+     bucket?: string;
+     prefix: string;
+     requiresAuth?: boolean;
+}
+
+const listAllPathsRecursive = async (
+     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
+     bucket: string,
+     prefix: string,
+): Promise<string[]> => {
+     const paths: string[] = [];
+     let offset = 0;
+     const limit = 100;
+     while (true) {
+          const { data, error } = await supabase.storage.from(bucket).list(prefix || undefined, {
+               limit,
+               offset,
+               sortBy: { column: 'name', order: 'asc' },
+          });
+          if (error) {
+               throw new Error(error.message);
+          }
+          const entries = data ?? [];
+          for (const entry of entries) {
+               const currentPath = [prefix, entry.name].filter(Boolean).join('/');
+               if (entry.metadata === null) {
+                    const nested = await listAllPathsRecursive(supabase, bucket, currentPath);
+                    paths.push(...nested);
+               } else {
+                    paths.push(currentPath);
+               }
+          }
+          if (entries.length < limit) break;
+          offset += limit;
+     }
+     // Remove placeholder files used for folder creation, if any.
+     const keepPath = [prefix, '.keep'].filter(Boolean).join('/');
+     paths.push(keepPath);
+     return paths;
+};
+
+export const removeStorageFolder = async (
+     params: RemoveStorageFolderParams,
+): Promise<BasicResult> => {
+     const bucket = params.bucket ?? DEFAULT_BUCKET;
+     const supabase = await useServerSideSupabaseAnonClient();
+     const normalizedPrefix = normalizePrefix(params.prefix);
+
+     if (params.requiresAuth !== false) {
+          const auth = await requireAuthUserId(supabase, 'storage.remove.folder', { prefix: normalizedPrefix, bucket });
+          if (!auth.ok) {
+               return { success: false, error: auth.error };
+          }
+     }
+
+     try {
+          const paths = await listAllPathsRecursive(supabase, bucket, normalizedPrefix);
+          if (!paths.length) {
+               return { success: true };
+          }
+          const { error } = await supabase.storage.from(bucket).remove(paths);
+          if (error) {
+               return { success: false, error: error.message };
+          }
+          return { success: true };
+     } catch (err: any) {
+          return { success: false, error: err?.message ?? 'Failed to remove folder' };
+     }
+};
+
 export const setEntityFileAsCover = async (
      params: SetEntityFileAsCoverParams,
 ): Promise<BasicResult> => {
