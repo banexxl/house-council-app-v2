@@ -101,5 +101,5 @@ export const paths = {
       new: '/dashboard/tenants/new',
     }
   },
-  docs: 'https://v0-house-council-site.vercel.app/docs',
+  docs: 'https://nest-link.app/docs',
 };
