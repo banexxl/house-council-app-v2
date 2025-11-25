@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TablePagination from '@mui/material/TablePagination';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Item } from 'src/types/file-manager';
@@ -13,6 +14,8 @@ import { ItemListCard } from './item-list-card';
 import { ItemListRow } from './item-list-row';
 
 type View = 'grid' | 'list';
+
+const ROW_OPTIONS = [10, 20, 50];
 
 interface ItemListProps {
   count?: number;
@@ -27,6 +30,7 @@ interface ItemListProps {
   page?: number;
   rowsPerPage?: number;
   view?: View;
+  loading?: boolean;
 }
 
 export const ItemList: FC<ItemListProps> = (props) => {
@@ -41,14 +45,19 @@ export const ItemList: FC<ItemListProps> = (props) => {
     onPageChange = () => {},
     onRowsPerPageChange,
     page = 0,
-    rowsPerPage = 0,
+    rowsPerPage = 10,
     view = 'grid',
+    loading = false,
   } = props;
 
   let content: JSX.Element;
 
   if (view === 'grid') {
-    content = (
+    content = loading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+        <CircularProgress size={32} />
+      </Box>
+    ) : (
       <Box
         sx={{
           display: 'grid',
@@ -71,7 +80,11 @@ export const ItemList: FC<ItemListProps> = (props) => {
     );
   } else {
     // Negative margin is a fix for the box shadow. The virtual scrollbar cuts it.
-    content = (
+    content = loading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+        <CircularProgress size={32} />
+      </Box>
+    ) : (
       <Box sx={{ m: -3 }}>
         <Scrollbar>
           <Box sx={{ p: 3 }}>
@@ -102,8 +115,10 @@ export const ItemList: FC<ItemListProps> = (props) => {
     );
   }
 
+  const rowsValue = ROW_OPTIONS.includes(rowsPerPage) ? rowsPerPage : ROW_OPTIONS[0];
+
   return (
-    <Stack spacing={4}>
+    <Stack spacing={view === 'list' ? 2 : 4}>
       {content}
       <TablePagination
         component="div"
@@ -111,8 +126,8 @@ export const ItemList: FC<ItemListProps> = (props) => {
         onPageChange={onPageChange}
         onRowsPerPageChange={onRowsPerPageChange}
         page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[9, 18]}
+        rowsPerPage={rowsValue}
+        rowsPerPageOptions={ROW_OPTIONS}
       />
     </Stack>
   );
@@ -131,4 +146,5 @@ ItemList.propTypes = {
   page: PropTypes.number,
   rowsPerPage: PropTypes.number,
   view: PropTypes.oneOf<View>(['grid', 'list']),
+  loading: PropTypes.bool,
 };

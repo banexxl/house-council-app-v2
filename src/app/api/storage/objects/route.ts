@@ -39,11 +39,10 @@ export async function GET(request: Request) {
   const offset = url.searchParams.get('offset');
   const search = url.searchParams.get('search') || undefined;
 
+  const storagePrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
+
   const result = await listStorageObjects({
-    prefix: ['clients', clientId, prefix].filter(Boolean).join('/'),
-    limit: limit ? Number(limit) : undefined,
-    offset: offset ? Number(offset) : undefined,
-    search,
+    prefix: storagePrefix,
   });
 
   if (!result.success || !result.items) {
@@ -51,14 +50,24 @@ export async function GET(request: Request) {
   }
 
   const basePrefix = ['clients', clientId].join('/');
-  const items = result.items.map((item) => {
+  let items = result.items.map((item) => {
     const path = item.path.startsWith(`${basePrefix}/`) ? item.path.slice(basePrefix.length + 1) : item.path;
     return { ...item, path };
   });
 
+  if (search) {
+    const term = search.toLowerCase();
+    items = items.filter((item) => item.name.toLowerCase().includes(term) || item.path.toLowerCase().includes(term));
+  }
+
+  const total = items.length;
+  const start = offset ? Number(offset) : 0;
+  const end = limit ? start + Number(limit) : total;
+  const pageItems = items.slice(start, end);
+
   return NextResponse.json({
-    items,
-    count: items.length,
+    items: pageItems,
+    count: total,
   });
 }
 

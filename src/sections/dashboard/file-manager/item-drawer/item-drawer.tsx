@@ -72,174 +72,93 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
             py: 2,
           }}
         >
-          <Box
-            sx={{
-              backgroundColor: (theme) =>
-                theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
-              borderColor: (theme) =>
-                theme.palette.mode === 'dark' ? 'neutral.500' : 'neutral.300',
-              borderRadius: 1,
-              borderStyle: 'dashed',
-              borderWidth: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              mb: 2,
-              p: 3,
-            }}
-          >
-            <ItemIcon
-              type={item.type}
-              extension={item.extension}
-            />
-          </Box>
-          <Stack
-            alignItems="center"
-            direction="row"
-            justifyContent="space-between"
-            spacing={2}
-            sx={{ mb: 2 }}
-          >
-            <Typography variant="h6">{item.name}</Typography>
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
+                borderColor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'neutral.500' : 'neutral.300',
+                borderRadius: 1,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                display: 'inline-flex',
+                justifyContent: 'center',
+                p: 2.5,
+              }}
+            >
+              <ItemIcon type={item.type} extension={item.extension} />
+            </Box>
+            <Stack spacing={0.5}>
+              <Typography
+                variant="h6"
+                noWrap
+                title={item.name}
+                sx={{ maxWidth: 240 }}
+              >
+                {item.name}
+              </Typography>
+              {item.path && (
+                <Typography
+                  color="text.secondary"
+                  variant="caption"
+                  noWrap
+                  title={item.path}
+                  sx={{ maxWidth: 240 }}
+                >
+                  {item.path}
+                </Typography>
+              )}
+            </Stack>
+            <Box sx={{ flexGrow: 1 }} />
             <IconButton>
               <SvgIcon fontSize="small">
                 <Edit02Icon />
               </SvgIcon>
             </IconButton>
           </Stack>
-          {item.path && (
-            <Grid container spacing={3} sx={{ mb: 1 }}>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Typography color="text.secondary" variant="caption">
-                  Path
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 8, sm: 8 }}>
-                <Typography variant="body2" noWrap>
-                  {item.path}
-                </Typography>
-              </Grid>
-            </Grid>
-          )}
-          <Grid
-            container
-            spacing={3}
-          >
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
-                Created by
-              </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
-              {item.author && <Avatar src={item.author.avatar || undefined} />}
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
                 Size
               </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
               <Typography variant="body2">{size}</Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
                 Created At
               </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
-              <Typography variant="body2">{created_at}</Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
+              <Typography variant="body2">{created_at || '-'}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
                 Modified At
               </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
-              <Typography variant="body2">{updated_at}</Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
+              <Typography variant="body2">{updated_at || '-'}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
                 Tags
               </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
-              <ItemTags
-                tags={item.tags}
-                onChange={(tags: string[]) => onTagsChange?.(item.id, tags)}
-              />
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
+              <ItemTags tags={item.tags} onChange={(tags: string[]) => onTagsChange?.(item.id, tags)} />
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
                 Shared with
               </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
-              <ItemShared
-                isPublic={item.isPublic}
-                shared={item.shared}
-              />
-            </Grid>
-            <Grid
-              size={{ xs: 12, sm: 4 }}
-            >
-              <Typography
-                color="text.secondary"
-                variant="caption"
-              >
+              <ItemShared isPublic={item.isPublic} shared={item.shared} />
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
                 Actions
               </Typography>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 3, sm: 8 }}
-            >
               <IconButton onClick={() => onDelete?.(item.id)}>
                 <SvgIcon fontSize="small">
                   <Trash02Icon />
                 </SvgIcon>
               </IconButton>
-            </Grid>
-          </Grid>
+            </Stack>
+          </Stack>
         </Box>
       </div>
     );

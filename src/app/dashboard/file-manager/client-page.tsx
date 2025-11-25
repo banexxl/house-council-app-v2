@@ -54,7 +54,7 @@ const useItemsSearch = () => {
       query: undefined,
     },
     page: 0,
-    rowsPerPage: 9,
+    rowsPerPage: 10,
     sortBy: 'created_at',
     sortDir: 'desc',
   });
@@ -236,6 +236,7 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteDialogMessage, setDeleteDialogMessage] = useState('');
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteTargetType, setDeleteTargetType] = useState<'file' | 'folder' | null>(null);
   const [deleteDialogLoading, setDeleteDialogLoading] = useState(false);
   const handleNavigateUp = useCallback(() => {
     if (!prefix) return;
@@ -251,8 +252,9 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
   const handleDelete = useCallback(
     async (itemId: string): Promise<void> => {
       const target = itemsStore.items.find((item) => item.id === itemId);
-      if (target?.type === 'folder') {
-        // Pre-fetch child count for messaging
+      if (!target) return;
+      let message = `Delete ${target.type} "${target.name}"? This cannot be undone.`;
+      if (target.type === 'folder') {
         let count = 0;
         try {
           const params = new URLSearchParams({ prefix: target.id, limit: '1000' });
@@ -264,24 +266,16 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
         } catch (e) {
           console.error('Failed to inspect folder contents', e);
         }
-        setDeleteTargetId(itemId);
-        setDeleteDialogMessage(`Delete folder "${target.name}"${count ? ` with ${count} item(s)` : ''}? This cannot be undone.`);
-        setDeleteDialogOpen(true);
-        return;
+        if (count) {
+          message = `Delete folder "${target.name}" with ${count} item(s)? This cannot be undone.`;
+        } else {
+          message = `Delete folder "${target.name}"? This cannot be undone.`;
+        }
       }
-      // This can be triggered from multiple places, ensure drawer is closed.
-      detailsDialog.handleClose();
-      try {
-        await fetch('/api/storage/objects', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: itemId }),
-        });
-      } catch (error) {
-        console.error('Failed to delete file', error);
-      } finally {
-        itemsStore.handleDelete(itemId);
-      }
+      setDeleteTargetId(itemId);
+      setDeleteTargetType(target.type);
+      setDeleteDialogMessage(message);
+      setDeleteDialogOpen(true);
     },
     [detailsDialog, itemsStore]
   );
@@ -364,27 +358,36 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
     [itemsStore.items]
   );
 
-  const handleConfirmDeleteFolder = useCallback(async () => {
-    if (!deleteTargetId) return;
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTargetId || !deleteTargetType) return;
     detailsDialog.handleClose();
     setDeleteDialogLoading(true);
     try {
-      await fetch('/api/storage/folders', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefix: deleteTargetId }),
-      });
+      if (deleteTargetType === 'folder') {
+        await fetch('/api/storage/folders', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prefix: deleteTargetId }),
+        });
+      } else {
+        await fetch('/api/storage/objects', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: deleteTargetId }),
+        });
+      }
       itemsStore.handleDelete(deleteTargetId);
       await itemsStore.refresh();
     } catch (error) {
-      console.error('Failed to delete folder', error);
+      console.error('Failed to delete item', error);
     } finally {
       setDeleteDialogLoading(false);
       setDeleteDialogOpen(false);
       setDeleteTargetId(null);
+      setDeleteTargetType(null);
       setDeleteDialogMessage('');
     }
-  }, [deleteTargetId, detailsDialog, itemsStore]);
+  }, [deleteTargetId, deleteTargetType, detailsDialog, itemsStore]);
 
   return (
     <>
@@ -467,34 +470,62 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
                   sx={{ px: 0.5 }}
                 >
                   <Breadcrumbs aria-label="breadcrumb">
-                    <Link
-                      color="text.primary"
-                      sx={{ cursor: 'pointer', color: theme.palette.primary.main }}
-                      onClick={() => {
-                        setPrefix('');
-                        itemsSearch.handlePageChange(null, 0);
-                        detailsDialog.handleClose();
-                      }}
-                    >
-                      Root
-                    </Link>
-                    {pathParts.map((segment, idx) => {
-                      const fullPath = pathParts.slice(0, idx + 1).join('/');
-                      const isLast = idx === pathParts.length - 1;
-                      return isLast ? (
-                        <Typography key={fullPath} color={theme.palette.primary.main} variant="subtitle2">
-                          {segment}
-                        </Typography>
-                      ) : (
-                        <Link
-                          key={fullPath}
-                          color={theme.palette.primary.main}
-                          sx={{ cursor: 'pointer' }}
-                          onClick={() => {
-                            setPrefix(fullPath);
-                            itemsSearch.handlePageChange(null, 0);
-                            detailsDialog.handleClose();
-                          }}
+                      <Link
+                        color="text.primary"
+                        sx={{
+                          cursor: 'pointer',
+                          color: theme.palette.primary.main,
+                          maxWidth: 180,
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title="Root"
+                        onClick={() => {
+                          setPrefix('');
+                          itemsSearch.handlePageChange(null, 0);
+                          detailsDialog.handleClose();
+                        }}
+                      >
+                        Root
+                      </Link>
+                      {pathParts.map((segment, idx) => {
+                        const fullPath = pathParts.slice(0, idx + 1).join('/');
+                        const isLast = idx === pathParts.length - 1;
+                        return isLast ? (
+                          <Typography
+                            key={fullPath}
+                            color={theme.palette.primary.main}
+                            variant="subtitle2"
+                            sx={{
+                              maxWidth: 180,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                            title={segment}
+                          >
+                            {segment}
+                          </Typography>
+                        ) : (
+                          <Link
+                            key={fullPath}
+                            color={theme.palette.primary.main}
+                            sx={{
+                              cursor: 'pointer',
+                              maxWidth: 180,
+                              display: 'inline-block',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                            title={segment}
+                            onClick={() => {
+                              setPrefix(fullPath);
+                              itemsSearch.handlePageChange(null, 0);
+                              detailsDialog.handleClose();
+                            }}
                         >
                           {segment}
                         </Link>
@@ -507,7 +538,7 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
                       onClick={handleNavigateUp}
                       sx={{ ml: 1 }}
                     >
-                      <SvgIcon fontSize="small">
+                      <SvgIcon fontSize="small" sx={{ color: theme.palette.primary.main }}>
                         <ArrowLeftIcon />
                       </SvgIcon>
                     </IconButton>
@@ -537,12 +568,8 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
                   page={itemsSearch.state.page}
                   rowsPerPage={itemsSearch.state.rowsPerPage}
                   view={view}
+                  loading={itemsStore.loading}
                 />
-                {itemsStore.loading && (
-                  <Stack alignItems="center" sx={{ py: 4 }}>
-                    <CircularProgress size={32} />
-                  </Stack>
-                )}
               </Stack>
             </Grid>
             <Grid size={{ xs: 12, lg: 4 }}>
@@ -590,9 +617,10 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
           setDeleteDialogLoading(false);
           setDeleteDialogOpen(false);
           setDeleteTargetId(null);
+          setDeleteTargetType(null);
           setDeleteDialogMessage('');
         }}
-        onConfirm={handleConfirmDeleteFolder}
+        onConfirm={handleConfirmDelete}
         title="Delete folder"
         type="confirmation"
         confirmText="Delete"
