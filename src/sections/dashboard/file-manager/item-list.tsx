@@ -6,7 +6,6 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
-
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Item } from 'src/types/file-manager';
 

@@ -216,14 +216,14 @@ const useCurrentItem = (items: Item[], itemId?: string): Item | undefined => {
 };
 
 interface ClientFileManagerPageProps {
-  clientId: string;
+  userId: string;
 }
 
-export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) => {
+export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) => {
   const settings = useSettings();
   const theme = useTheme();
   const itemsSearch = useItemsSearch();
-  const basePrefix = clientId ? `clients/${clientId}` : '';
+  const basePrefix = userId ? `users/${userId}` : '';
   const [prefix, setPrefix] = useState('');
   const itemsStore = useItemsStore(itemsSearch.state, prefix, basePrefix);
   const [view, setView] = useState<View>('grid');
@@ -516,14 +516,14 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                       }}
-                      title="root"
+                      title={userId || 'Root'}
                       onClick={() => {
                         setPrefix('');
                         itemsSearch.handlePageChange(null, 0);
                         detailsDialog.handleClose();
                       }}
                     >
-                      root
+                      Root
                     </Link>
                     {pathParts.map((segment, idx) => {
                       const fullPath = pathParts.slice(0, idx + 1).join('/');

@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 const Page = async () => {
 
-  const { client, tenant, admin, clientMember } = await getViewer();
+  const { client, tenant, admin, clientMember, userData } = await getViewer();
 
   if (!client && !tenant && !admin && !clientMember) {
     logout();
@@ -15,9 +15,9 @@ const Page = async () => {
     redirect('/dashboard');
   }
 
-  const clientId = client?.id ?? clientMember?.client_id ?? '';
+  const userId = userData?.id ?? '';
 
-  return <ClientFileManagerPage clientId={clientId} />;
+  return <ClientFileManagerPage userId={userId} />;
 };
 
 export default Page;
