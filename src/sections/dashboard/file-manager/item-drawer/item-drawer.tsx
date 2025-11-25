@@ -1,16 +1,18 @@
-import type { FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import Edit02Icon from '@untitled-ui/icons-react/build/esm/Edit02';
+import CheckIcon from '@untitled-ui/icons-react/build/esm/CheckVerified01';
+import CloseIcon from '@mui/icons-material/Close';
+import toast from 'react-hot-toast';
 import Star01Icon from '@untitled-ui/icons-react/build/esm/Star01';
 import Trash02Icon from '@untitled-ui/icons-react/build/esm/Trash02';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
-import Avatar from '@mui/material/Avatar';
 import { backdropClasses } from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
-import { Grid } from '@mui/material';;
+import { TextField } from '@mui/material';;
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -29,11 +31,29 @@ interface ItemDrawerProps {
   onDelete?: (itemId: string) => void;
   onFavorite?: (itemId: string, value: boolean) => void;
   onTagsChange?: (itemId: string, value: string[]) => void;
+  onRename?: (itemId: string, newName: string, type: 'file' | 'folder') => Promise<void> | void;
+  renameLoading?: boolean;
   open?: boolean;
 }
 
 export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
-  const { item, onClose, onDelete, onFavorite, onTagsChange, open = false } = props;
+  const {
+    item,
+    onClose,
+    onDelete,
+    onFavorite,
+    onTagsChange,
+    onRename,
+    renameLoading = false,
+    open = false,
+  } = props;
+  const [name, setName] = useState(item?.name || '');
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    setName(item?.name || '');
+    setIsEditing(false);
+  }, [item?.name]);
 
   let content: JSX.Element | null = null;
 
@@ -89,15 +109,27 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
             >
               <ItemIcon type={item.type} extension={item.extension} />
             </Box>
-            <Stack spacing={0.5}>
-              <Typography
-                variant="h6"
-                noWrap
-                title={item.name}
-                sx={{ maxWidth: 240 }}
-              >
-                {item.name}
-              </Typography>
+            <Stack spacing={0.5} sx={{ minWidth: 0 }}>
+              {isEditing ? (
+                <TextField
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  size="small"
+                  variant="outlined"
+                  fullWidth
+                  inputProps={{ maxLength: 120 }}
+                  disabled={renameLoading}
+                />
+              ) : (
+                <Typography
+                  variant="h6"
+                  noWrap
+                  title={item.name}
+                  sx={{ maxWidth: 240 }}
+                >
+                  {item.name}
+                </Typography>
+              )}
               {item.path && (
                 <Typography
                   color="text.secondary"
@@ -111,11 +143,39 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               )}
             </Stack>
             <Box sx={{ flexGrow: 1 }} />
-            <IconButton>
-              <SvgIcon fontSize="small">
-                <Edit02Icon />
-              </SvgIcon>
-            </IconButton>
+            {isEditing ? (
+              <Stack direction="row" spacing={1}>
+                <IconButton
+                  disabled={renameLoading || name.trim() === '' || name.trim() === item.name}
+                  onClick={() => {
+                    onRename?.(item.id, name.trim(), item.type);
+                    toast.success('Updated successfully');
+                    setIsEditing(false);
+                  }}
+                >
+                  <SvgIcon fontSize="small">
+                    <CheckIcon />
+                  </SvgIcon>
+                </IconButton>
+                <IconButton
+                  disabled={renameLoading}
+                  onClick={() => {
+                    setName(item.name);
+                    setIsEditing(false);
+                  }}
+                >
+                  <SvgIcon fontSize="small">
+                    <CloseIcon />
+                  </SvgIcon>
+                </IconButton>
+              </Stack>
+            ) : (
+              <IconButton onClick={() => setIsEditing(true)}>
+                <SvgIcon fontSize="small">
+                  <Edit02Icon />
+                </SvgIcon>
+              </IconButton>
+            )}
           </Stack>
           <Stack spacing={2}>
             <Stack direction="row" spacing={1} alignItems="center">
@@ -195,5 +255,7 @@ ItemDrawer.propTypes = {
   onDelete: PropTypes.func,
   onFavorite: PropTypes.func,
   onTagsChange: PropTypes.func,
+  onRename: PropTypes.func,
+  renameLoading: PropTypes.bool,
   open: PropTypes.bool,
 };

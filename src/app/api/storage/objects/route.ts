@@ -108,6 +108,44 @@ export async function POST(request: Request) {
   });
 }
 
+export async function PUT(request: Request) {
+  const auth = await ensureUserId();
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+  const { client, clientMember } = await getViewer();
+  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  if (!clientId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const path = normalizeSegment(body?.path);
+  const newName = normalizeSegment(body?.newName);
+  const bucket = body?.bucket || undefined;
+
+  if (!path || !newName) {
+    return NextResponse.json({ error: 'path and newName are required' }, { status: 400 });
+  }
+
+  const fullPath = ['clients', clientId, path].filter(Boolean).join('/');
+  const parentParts = fullPath.split('/').filter(Boolean);
+  parentParts.pop();
+  const newFullPath = [...parentParts, newName].join('/');
+
+  const supabase = await useServerSideSupabaseAnonClient();
+  const { error } = await supabase.storage.from(bucket || process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!).move(fullPath, newFullPath);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const relativeParent = path.split('/').filter(Boolean);
+  relativeParent.pop();
+  const newRelative = [...relativeParent, newName].join('/');
+
+  return NextResponse.json({ path: newRelative });
+}
+
 export async function DELETE(request: Request) {
   const auth = await ensureUserId();
   if ('error' in auth) {

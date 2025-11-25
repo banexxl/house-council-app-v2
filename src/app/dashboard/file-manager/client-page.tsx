@@ -238,6 +238,7 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteTargetType, setDeleteTargetType] = useState<'file' | 'folder' | null>(null);
   const [deleteDialogLoading, setDeleteDialogLoading] = useState(false);
+  const [renameLoading, setRenameLoading] = useState(false);
   const handleNavigateUp = useCallback(() => {
     if (!prefix) return;
     const parts = prefix.split('/').filter(Boolean);
@@ -358,6 +359,40 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
     [itemsStore.items]
   );
 
+  const handleRename = useCallback(
+    async (itemId: string, newName: string, type: 'file' | 'folder') => {
+      if (!newName.trim()) return;
+      setRenameLoading(true);
+      try {
+        if (type === 'folder') {
+          await fetch('/api/storage/folders', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: itemId, newName }),
+          });
+        } else {
+          await fetch('/api/storage/objects', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: itemId, newName }),
+          });
+        }
+        // Derive new id to keep drawer open on renamed item
+        const parts = itemId.split('/').filter(Boolean);
+        parts.pop();
+        const newId = [...parts, newName].filter(Boolean).join('/');
+        detailsDialog.handleOpen(newId);
+        await itemsStore.refresh();
+      } catch (error) {
+        console.error('Rename failed', error);
+        toast.error('Rename failed');
+      } finally {
+        setRenameLoading(false);
+      }
+    },
+    [detailsDialog, itemsStore]
+  );
+
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteTargetId || !deleteTargetType) return;
     detailsDialog.handleClose();
@@ -470,62 +505,62 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
                   sx={{ px: 0.5 }}
                 >
                   <Breadcrumbs aria-label="breadcrumb">
-                      <Link
-                        color="text.primary"
-                        sx={{
-                          cursor: 'pointer',
-                          color: theme.palette.primary.main,
-                          maxWidth: 180,
-                          display: 'inline-block',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                        title="Root"
-                        onClick={() => {
-                          setPrefix('');
-                          itemsSearch.handlePageChange(null, 0);
-                          detailsDialog.handleClose();
-                        }}
-                      >
-                        Root
-                      </Link>
-                      {pathParts.map((segment, idx) => {
-                        const fullPath = pathParts.slice(0, idx + 1).join('/');
-                        const isLast = idx === pathParts.length - 1;
-                        return isLast ? (
-                          <Typography
-                            key={fullPath}
-                            color={theme.palette.primary.main}
-                            variant="subtitle2"
-                            sx={{
-                              maxWidth: 180,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                            title={segment}
-                          >
-                            {segment}
-                          </Typography>
-                        ) : (
-                          <Link
-                            key={fullPath}
-                            color={theme.palette.primary.main}
-                            sx={{
-                              cursor: 'pointer',
-                              maxWidth: 180,
-                              display: 'inline-block',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                            title={segment}
-                            onClick={() => {
-                              setPrefix(fullPath);
-                              itemsSearch.handlePageChange(null, 0);
-                              detailsDialog.handleClose();
-                            }}
+                    <Link
+                      color="text.primary"
+                      sx={{
+                        cursor: 'pointer',
+                        color: theme.palette.primary.main,
+                        maxWidth: 180,
+                        display: 'inline-block',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title="root"
+                      onClick={() => {
+                        setPrefix('');
+                        itemsSearch.handlePageChange(null, 0);
+                        detailsDialog.handleClose();
+                      }}
+                    >
+                      root
+                    </Link>
+                    {pathParts.map((segment, idx) => {
+                      const fullPath = pathParts.slice(0, idx + 1).join('/');
+                      const isLast = idx === pathParts.length - 1;
+                      return isLast ? (
+                        <Typography
+                          key={fullPath}
+                          color={theme.palette.primary.main}
+                          variant="subtitle2"
+                          sx={{
+                            maxWidth: 180,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                          title={segment}
+                        >
+                          {segment}
+                        </Typography>
+                      ) : (
+                        <Link
+                          key={fullPath}
+                          color={theme.palette.primary.main}
+                          sx={{
+                            cursor: 'pointer',
+                            maxWidth: 180,
+                            display: 'inline-block',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                          title={segment}
+                          onClick={() => {
+                            setPrefix(fullPath);
+                            itemsSearch.handlePageChange(null, 0);
+                            detailsDialog.handleClose();
+                          }}
                         >
                           {segment}
                         </Link>
@@ -583,6 +618,8 @@ export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) 
         onClose={detailsDialog.handleClose}
         onDelete={handleDelete}
         onFavorite={itemsStore.handleFavorite}
+        onRename={handleRename}
+        renameLoading={renameLoading}
         open={detailsDialog.open}
       />
       <FileUploader onClose={uploadDialog.handleClose} onUpload={handleUpload} open={uploadDialog.open} />

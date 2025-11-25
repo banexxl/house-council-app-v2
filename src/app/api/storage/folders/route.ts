@@ -81,3 +81,95 @@ export async function DELETE(request: Request) {
 
   return NextResponse.json({ success: true });
 }
+
+export async function PUT(request: Request) {
+  const auth = await ensureUserId();
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+  const { client, clientMember } = await getViewer();
+  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  if (!clientId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const prefix = normalizeSegment(body?.prefix);
+  const newName = normalizeSegment(body?.newName);
+
+  if (!prefix || !newName) {
+    return NextResponse.json({ error: 'prefix and newName are required' }, { status: 400 });
+  }
+
+  const supabase = await useServerSideSupabaseAnonClient();
+  const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
+  const oldFullPrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
+  const parts = prefix.split('/').filter(Boolean);
+  parts.pop();
+  const newFullPrefix = ['clients', clientId, ...parts, newName].filter(Boolean).join('/');
+
+  try {
+    const pathsToMove: { from: string; to: string }[] = [];
+    let offset = 0;
+    const limit = 100;
+    while (true) {
+      const { data, error } = await supabase.storage.from(bucket).list(oldFullPrefix || undefined, {
+        limit,
+        offset,
+        sortBy: { column: 'name', order: 'asc' },
+      });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      const entries = data ?? [];
+      for (const entry of entries) {
+        const currentPath = [oldFullPrefix, entry.name].filter(Boolean).join('/');
+        const targetPath = [newFullPrefix, entry.name].filter(Boolean).join('/');
+        pathsToMove.push({ from: currentPath, to: targetPath });
+        if (entry.metadata === null) {
+          // nested folder: recurse by listing under it
+          const stack = [{ prefix: currentPath, toPrefix: targetPath }];
+          while (stack.length) {
+            const { prefix: pf, toPrefix } = stack.pop()!;
+            let innerOffset = 0;
+            while (true) {
+              const { data: innerData, error: innerError } = await supabase.storage.from(bucket).list(pf, {
+                limit,
+                offset: innerOffset,
+                sortBy: { column: 'name', order: 'asc' },
+              });
+              if (innerError) {
+                return NextResponse.json({ error: innerError.message }, { status: 500 });
+              }
+              const innerEntries = innerData ?? [];
+              for (const entryInner of innerEntries) {
+                const innerFrom = [pf, entryInner.name].join('/');
+                const innerTo = [toPrefix, entryInner.name].join('/');
+                pathsToMove.push({ from: innerFrom, to: innerTo });
+                if (entryInner.metadata === null) {
+                  stack.push({ prefix: innerFrom, toPrefix: innerTo });
+                }
+              }
+              if (innerEntries.length < limit) break;
+              innerOffset += limit;
+            }
+          }
+        }
+      }
+      if (entries.length < limit) break;
+      offset += limit;
+    }
+
+    // Move collected paths
+    for (const pair of pathsToMove) {
+      const { error } = await supabase.storage.from(bucket).move(pair.from, pair.to);
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ path: [parts.join('/'), newName].filter(Boolean).join('/') });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message ?? 'Failed to rename folder' }, { status: 500 });
+  }
+}
