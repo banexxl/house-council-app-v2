@@ -28,8 +28,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
   const { client, clientMember } = await getViewer();
-  console.log('clientId', client);
-
   const clientId = client?.id ?? clientMember?.client_id ?? null;
   if (!clientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -52,9 +50,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: result.error ?? 'Unable to list files' }, { status: 500 });
   }
 
+  const basePrefix = ['clients', clientId].join('/');
+  const items = result.items.map((item) => {
+    const path = item.path.startsWith(`${basePrefix}/`) ? item.path.slice(basePrefix.length + 1) : item.path;
+    return { ...item, path };
+  });
+
   return NextResponse.json({
-    items: result.items,
-    count: result.items.length,
+    items,
+    count: items.length,
   });
 }
 
@@ -89,7 +93,9 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    path: result.path ?? targetPath,
+    path: result.path
+      ? result.path.replace(/^clients\/[^/]+\//, '')
+      : targetPath.replace(/^clients\/[^/]+\//, ''),
   });
 }
 

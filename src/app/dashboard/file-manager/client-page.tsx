@@ -3,13 +3,16 @@
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Upload01Icon from '@untitled-ui/icons-react/build/esm/Upload01';
+import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import { Grid } from '@mui/material';
+import { Grid, IconButton } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
@@ -93,7 +96,7 @@ interface ItemsStoreState {
   itemsCount: number;
 }
 
-const useItemsStore = (searchState: ItemsSearchState, prefix = '') => {
+const useItemsStore = (searchState: ItemsSearchState, prefix: string) => {
   const [state, setState] = useState<ItemsStoreState>({
     items: [],
     itemsCount: 0,
@@ -186,11 +189,22 @@ const useCurrentItem = (items: Item[], itemId?: string): Item | undefined => {
 export const ClientFileManagerPage = () => {
   const settings = useSettings();
   const itemsSearch = useItemsSearch();
-  const itemsStore = useItemsStore(itemsSearch.state);
+  const [prefix, setPrefix] = useState('');
+  const itemsStore = useItemsStore(itemsSearch.state, prefix);
   const [view, setView] = useState<View>('grid');
   const uploadDialog = useDialog();
   const detailsDialog = useDialog<string>();
   const currentItem = useCurrentItem(itemsStore.items, detailsDialog.data);
+  const handleNavigateUp = useCallback(() => {
+    if (!prefix) return;
+    const parts = prefix.split('/').filter(Boolean);
+    parts.pop();
+    setPrefix(parts.join('/'));
+    itemsSearch.handlePageChange(null, 0);
+    detailsDialog.handleClose();
+  }, [detailsDialog, itemsSearch, prefix]);
+
+  const pathParts = prefix ? prefix.split('/').filter(Boolean) : [];
 
   const handleDelete = useCallback(
     async (itemId: string): Promise<void> => {
@@ -216,7 +230,7 @@ export const ClientFileManagerPage = () => {
       for (const file of files) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('path', file.name);
+        formData.append('path', prefix ? `${prefix}/${file.name}` : file.name);
         const res = await fetch('/api/storage/objects', {
           method: 'POST',
           body: formData,
@@ -227,7 +241,7 @@ export const ClientFileManagerPage = () => {
       }
       await itemsStore.refresh();
     },
-    [itemsStore]
+    [itemsStore, prefix]
   );
 
   return (
@@ -255,7 +269,14 @@ export const ClientFileManagerPage = () => {
                 spacing={4}
               >
                 <div>
-                  <Typography variant="h4">File Manager</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    {prefix && (
+                      <Button size="small" variant="outlined" onClick={handleNavigateUp}>
+                        Back
+                      </Button>
+                    )}
+                    <Typography variant="h4">File Manager</Typography>
+                  </Stack>
                 </div>
                 <Stack
                   alignItems="center"
@@ -291,12 +312,75 @@ export const ClientFileManagerPage = () => {
                   sortDir={itemsSearch.state.sortDir}
                   view={view}
                 />
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  spacing={1}
+                  sx={{ px: 0.5 }}
+                >
+                  <Breadcrumbs aria-label="breadcrumb">
+                    <Link
+                      color="text.primary"
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setPrefix('');
+                        itemsSearch.handlePageChange(null, 0);
+                        detailsDialog.handleClose();
+                      }}
+                    >
+                      Root
+                    </Link>
+                    {pathParts.map((segment, idx) => {
+                      const fullPath = pathParts.slice(0, idx + 1).join('/');
+                      const isLast = idx === pathParts.length - 1;
+                      return isLast ? (
+                        <Typography key={fullPath} color="text.primary" variant="subtitle2">
+                          {segment}
+                        </Typography>
+                      ) : (
+                        <Link
+                          key={fullPath}
+                          color="text.primary"
+                          sx={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            setPrefix(fullPath);
+                            itemsSearch.handlePageChange(null, 0);
+                            detailsDialog.handleClose();
+                          }}
+                        >
+                          {segment}
+                        </Link>
+                      );
+                    })}
+                  </Breadcrumbs>
+                  {prefix && (
+                    <IconButton
+                      size="small"
+                      onClick={handleNavigateUp}
+                      sx={{ ml: 1 }}
+                    >
+                      <SvgIcon fontSize="small">
+                        <ArrowLeftIcon />
+                      </SvgIcon>
+                    </IconButton>
+                  )}
+                </Stack>
                 <ItemList
                   count={itemsStore.itemsCount}
                   items={itemsStore.items}
                   onDelete={handleDelete}
                   onFavorite={itemsStore.handleFavorite}
-                  onOpen={detailsDialog.handleOpen}
+                  onOpen={(id) => {
+                    const target = itemsStore.items.find((item) => item.id === id);
+                    if (target?.type === 'folder') {
+                      setPrefix(target.id);
+                      itemsSearch.handlePageChange(null, 0);
+                      detailsDialog.handleClose();
+                      return;
+                    }
+                    detailsDialog.handleOpen(id);
+                  }}
                   onPageChange={itemsSearch.handlePageChange}
                   onRowsPerPageChange={itemsSearch.handleRowsPerPageChange}
                   page={itemsSearch.state.page}
