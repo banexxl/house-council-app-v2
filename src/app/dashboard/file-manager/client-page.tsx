@@ -249,6 +249,20 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
   }, [detailsDialog, itemsSearch, prefix]);
 
   const pathParts = prefix ? prefix.split('/').filter(Boolean) : [];
+  const rootLabel = 'Root';
+  const normalizePrefixId = useCallback(
+    (id: string) => {
+      if (basePrefix && id.startsWith(`${basePrefix}/`)) {
+        return id.slice(basePrefix.length + 1);
+      }
+      const clientPattern = /^clients\/[^/]+\/?/;
+      if (clientPattern.test(id)) {
+        return id.replace(clientPattern, '');
+      }
+      return id;
+    },
+    [basePrefix]
+  );
 
   const handleDelete = useCallback(
     async (itemId: string): Promise<void> => {
@@ -510,20 +524,20 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                       sx={{
                         cursor: 'pointer',
                         color: theme.palette.primary.main,
-                        maxWidth: 180,
+                        maxWidth: 220,
                         display: 'inline-block',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                       }}
-                      title={userId || 'Root'}
+                      title={rootLabel}
                       onClick={() => {
                         setPrefix('');
                         itemsSearch.handlePageChange(null, 0);
                         detailsDialog.handleClose();
                       }}
                     >
-                      Root
+                      {rootLabel}
                     </Link>
                     {pathParts.map((segment, idx) => {
                       const fullPath = pathParts.slice(0, idx + 1).join('/');
@@ -555,9 +569,9 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                           }}
-                          title={segment}
+                          title={fullPath}
                           onClick={() => {
-                            setPrefix(fullPath);
+                            setPrefix(normalizePrefixId(fullPath));
                             itemsSearch.handlePageChange(null, 0);
                             detailsDialog.handleClose();
                           }}
@@ -587,7 +601,8 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                   onOpen={(id) => {
                     const target = itemsStore.items.find((item) => item.id === id);
                     if (target?.type === 'folder') {
-                      setPrefix(target.id);
+                      const nextPrefix = normalizePrefixId(target.id);
+                      setPrefix(nextPrefix);
                       itemsSearch.handlePageChange(null, 0);
                       detailsDialog.handleClose();
                       return;
