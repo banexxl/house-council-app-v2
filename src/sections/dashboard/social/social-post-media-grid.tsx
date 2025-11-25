@@ -14,9 +14,11 @@ import Skeleton from '@mui/material/Skeleton';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@untitled-ui/icons-react/build/esm/ChevronLeft';
 import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
+import { useTranslation } from 'react-i18next';
 
 import { useSignedUrl } from 'src/hooks/use-signed-urls';
 import type { TenantPostImage } from 'src/types/social';
+import { tokens } from 'src/locales/tokens';
 
 interface SocialPostMediaGridProps {
   media: TenantPostImage[];
@@ -26,12 +28,12 @@ const SIGN_OPTIONS = { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 };
 
 const ThumbnailImage = ({
   item,
-  index,
   onClick,
+  alt,
 }: {
   item: TenantPostImage;
-  index: number;
   onClick: () => void;
+  alt: string;
 }) => {
   const { url, loading } = useSignedUrl(item.storage_bucket, item.storage_path, SIGN_OPTIONS);
 
@@ -57,7 +59,7 @@ const ThumbnailImage = ({
           <Box
             component="img"
             src={url}
-            alt={`Post media ${index + 1}`}
+            alt={alt}
             sx={{
               position: 'absolute',
               inset: 0,
@@ -84,7 +86,7 @@ const ThumbnailImage = ({
   );
 };
 
-const ViewerImage = ({ item }: { item: TenantPostImage }) => {
+const ViewerImage = ({ item, alt, loadErrorText }: { item: TenantPostImage; alt: string; loadErrorText: string }) => {
   const { url, loading, error } = useSignedUrl(item.storage_bucket, item.storage_path, SIGN_OPTIONS);
 
   if (!url) {
@@ -103,7 +105,7 @@ const ViewerImage = ({ item }: { item: TenantPostImage }) => {
           <CircularProgress color="inherit" size={32} />
         ) : (
           <Typography color="inherit" variant="body2">
-            {error || 'Unable to load image'}
+            {error || loadErrorText}
           </Typography>
         )}
       </Box>
@@ -114,7 +116,7 @@ const ViewerImage = ({ item }: { item: TenantPostImage }) => {
     <Box
       component="img"
       src={url}
-      alt="Selected post media"
+      alt={alt}
       sx={{
         display: 'block',
         maxHeight: '70vh',
@@ -126,12 +128,15 @@ const ViewerImage = ({ item }: { item: TenantPostImage }) => {
 };
 
 export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
+  const { t } = useTranslation();
   const validMedia = useMemo(
     () => media.filter((item) => item?.storage_bucket && item?.storage_path),
     [media]
   );
   const [viewerOpen, setViewerOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const loadErrorText = t(tokens.tenants.socialMediaLoadError);
+  const selectedAlt = t(tokens.tenants.socialMediaSelectedAlt);
 
   useEffect(() => {
     if (!validMedia.length) {
@@ -201,7 +206,7 @@ export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
           <ThumbnailImage
             key={item.id ?? `${item.storage_bucket}-${item.storage_path}-${index}`}
             item={item}
-            index={index}
+            alt={t(tokens.tenants.socialMediaThumbnailAlt, { index: index + 1 })}
             onClick={() => handleOpen(index)}
           />
         ))}
@@ -220,7 +225,7 @@ export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
           }}
         >
           <IconButton
-            aria-label="Close media preview"
+            aria-label={t(tokens.tenants.socialMediaPreviewClose)}
             onClick={handleClose}
             sx={{
               color: 'common.white',
@@ -235,7 +240,7 @@ export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
           {validMedia.length > 1 && (
             <>
               <IconButton
-                aria-label="Previous image"
+                aria-label={t(tokens.tenants.socialMediaPreviewPrevious)}
                 onClick={handlePrev}
                 sx={{
                   color: 'common.white',
@@ -252,7 +257,7 @@ export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
                 </SvgIcon>
               </IconButton>
               <IconButton
-                aria-label="Next image"
+                aria-label={t(tokens.tenants.socialMediaPreviewNext)}
                 onClick={handleNext}
                 sx={{
                   color: 'common.white',
@@ -284,7 +289,7 @@ export const SocialPostMediaGrid = ({ media }: SocialPostMediaGridProps) => {
                 justifyContent: 'center',
               }}
             >
-              {activeItem ? <ViewerImage item={activeItem} /> : null}
+              {activeItem ? <ViewerImage item={activeItem} alt={selectedAlt} loadErrorText={loadErrorText} /> : null}
             </Box>
             <Typography
               color="common.white"

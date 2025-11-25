@@ -16,10 +16,12 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Popover from '@mui/material/Popover';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import { reactToComment } from 'src/app/actions/social/comment-actions';
 import type { EmojiReaction } from 'src/types/social';
 import { getInitials } from 'src/utils/get-initials';
+import { tokens } from 'src/locales/tokens';
 
 interface SocialCommentProps {
   commentId: string;
@@ -51,9 +53,10 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     ...other
   } = props;
 
+  const { t } = useTranslation();
   const [pickerAnchor, setPickerAnchor] = useState<HTMLElement | null>(null);
   const profileLink = `/dashboard/social/profile/${authorId}`;
-  const ago = formatDistanceToNowStrict(created_at);
+  const timeAgo = t(tokens.tenants.socialTimeAgo, { distance: formatDistanceToNowStrict(created_at) });
   const [reactionList, setReactionList] = useState<EmojiReaction[]>(reactions);
   const [currentReaction, setCurrentReaction] = useState<string | null>(userReaction ?? null);
   const totalReactions = useMemo(
@@ -79,7 +82,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
       try {
         const result = await reactToComment(commentId, emoji);
         if (!result.success || !result.data) {
-          toast.error(result.error || 'Failed to react');
+          toast.error(result.error || t(tokens.tenants.socialReactionError));
           return;
         }
         setReactionList(result.data.reactions);
@@ -87,10 +90,10 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
         onReactionsChange?.(result.data);
       } catch (error) {
         console.error('Error reacting to comment:', error);
-        toast.error('Failed to react');
+        toast.error(t(tokens.tenants.socialReactionError));
       }
     },
-    [commentId, onReactionsChange]
+    [commentId, onReactionsChange, t]
   );
 
   return (
@@ -142,7 +145,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
             color="text.secondary"
             variant="caption"
           >
-            {ago} ago
+            {timeAgo}
           </Typography>
         </Stack>
         <Typography variant="body2">{message}</Typography>
@@ -179,10 +182,10 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
           )}
           {currentReaction && (
             <Typography variant="caption" color="text.secondary">
-              You reacted with {currentReaction} · {currentReactionCount}
+              {t(tokens.tenants.socialReactionSummary, { emoji: currentReaction, count: currentReactionCount })}
             </Typography>
           )}
-          <Tooltip title={currentReaction ? 'Change your reaction' : 'React to this comment'}>
+          <Tooltip title={currentReaction ? t(tokens.tenants.socialReactionChange) : t(tokens.tenants.socialReactionAddComment)}>
             <span>
               <IconButton
                 size="small"

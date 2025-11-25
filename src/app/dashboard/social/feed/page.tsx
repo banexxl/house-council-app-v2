@@ -1,10 +1,7 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 
 import { Seo } from 'src/components/seo';
 import { getTenantPostsPaginated } from 'src/app/actions/social/post-actions';
@@ -13,6 +10,8 @@ import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions
 
 import { ClientFeedWrapper } from './client-wrapper';
 import { getViewer } from 'src/libs/supabase/server-auth';
+import { FeedPageHeader } from './client-header';
+import { FeedProfileMissing } from './client-profile-missing';
 
 const FEED_PAGE_SIZE = 5;
 
@@ -25,7 +24,6 @@ const Page = async () => {
   if (!profile && !viewer.admin && !viewer.client && !viewer.clientMember) {
     return (
       <>
-        <Seo title="Dashboard: Social Feed" />
         <Box
           component="main"
           sx={{
@@ -41,9 +39,7 @@ const Page = async () => {
                 color: 'text.secondary',
               }}
             >
-              <Typography variant="body1" sx={{ mb: 4 }}>
-                Profile does not exist.
-              </Typography>
+              <FeedProfileMissing />
             </Box>
           </Container>
         </Box>
@@ -62,7 +58,6 @@ const Page = async () => {
 
   return (
     <>
-      <Seo title="Dashboard: Social Feed" />
       <Box
         component="main"
         sx={{
@@ -71,15 +66,7 @@ const Page = async () => {
         }}
       >
         <Container maxWidth="lg">
-          <Stack spacing={1}>
-            <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 0.5 }}>
-              <Link color="inherit" href="/dashboard">
-                Dashboard
-              </Link>
-              <Typography color="text.primary">Social Feed</Typography>
-            </Breadcrumbs>
-            <Typography variant="h4">Here&apos;s what your connections posted</Typography>
-          </Stack>
+          <FeedPageHeader />
           <Stack
             spacing={3}
             sx={{ mt: 3 }}

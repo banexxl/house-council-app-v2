@@ -7,8 +7,10 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import { getInitials } from 'src/utils/get-initials';
+import { tokens } from 'src/locales/tokens';
 
 interface SocialCommentAddProps {
   onSubmit: (text: string) => Promise<void> | void;
@@ -24,6 +26,7 @@ export const SocialCommentAdd: FC<SocialCommentAddProps> = ({
   disabled = false,
   ...props
 }) => {
+  const { t } = useTranslation();
   const [isSending, setIsSending] = useState(false);
   const [text, setText] = useState('');
   const canSend = text.trim().length > 0 && !isSending && !disabled;
@@ -64,7 +67,7 @@ export const SocialCommentAdd: FC<SocialCommentAddProps> = ({
           <TextField
             fullWidth
             multiline
-            placeholder="Type your reply"
+            placeholder={t(tokens.tenants.socialCommentPlaceholder)}
             rows={3}
             variant="outlined"
             value={text}
@@ -81,14 +84,14 @@ export const SocialCommentAdd: FC<SocialCommentAddProps> = ({
               color="text.secondary"
               sx={{ visibility: isSending ? 'visible' : 'hidden' }}
             >
-              Sending...
+              {t(tokens.tenants.socialCommentSending)}
             </Typography>
             <Button
               variant="contained"
               onClick={handleSend}
               disabled={!canSend}
             >
-              Send
+              {t(tokens.tenants.socialCommentSend)}
             </Button>
           </Stack>
         </Stack>

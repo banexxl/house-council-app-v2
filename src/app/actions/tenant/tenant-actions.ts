@@ -327,6 +327,7 @@ export const readTenantByIdAction = async (
           getTenantByIdActionData: data as Tenant,
      };
 };
+
 // DELETE tenant by ID (and let FK cascade delete linked auth.users)
 export const deleteTenantByIDAction = async (
      id: string

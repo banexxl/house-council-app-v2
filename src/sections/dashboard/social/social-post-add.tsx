@@ -19,11 +19,13 @@ import Box from '@mui/material/Box';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { Theme } from '@mui/material/styles/createTheme';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import { getInitials } from 'src/utils/get-initials';
 import { TenantProfile } from 'src/types/social';
 import { createTenantPost } from 'src/app/actions/social/post-actions';
 import { uploadEntityFiles } from 'src/libs/supabase/sb-storage';
+import { tokens } from 'src/locales/tokens';
 
 interface SocialPostAddProps {
   user: TenantProfile;
@@ -36,6 +38,7 @@ const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉',
 
 export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
   const { user, buildingId, onPostCreated } = props;
+  const { t } = useTranslation();
   const smUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
 
   const [isPosting, setIsPosting] = useState(false);
@@ -65,7 +68,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
 
     if (imageFiles.length !== files.length) {
-      toast.error('Only image files are allowed');
+      toast.error(t(tokens.tenants.socialPostOnlyImagesAllowed));
     }
 
     setSelectedImages(prev => [...prev, ...imageFiles]);
@@ -74,7 +77,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
     if (imageInputRef.current) {
       imageInputRef.current.value = '';
     }
-  }, []);
+  }, [t]);
 
   const handleDocumentSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -96,7 +99,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
 
   const handlePost = useCallback(async () => {
     if (!content.trim()) {
-      toast.error('Please add some content, images, or documents');
+      toast.error(t(tokens.tenants.socialPostContentRequired));
       return;
     }
 
@@ -110,7 +113,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
       });
 
       if (!result.success || !result.data) {
-        toast.error(result.error || 'Failed to create post');
+        toast.error(result.error || t(tokens.tenants.socialPostCreateError));
         return;
       }
 
@@ -124,7 +127,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
           files: selectedImages,
         });
         if (!imageResult.success) {
-          toast.error('Post created but failed to upload images');
+          toast.error(t(tokens.tenants.socialPostUploadImagesError));
         }
       }
 
@@ -136,11 +139,11 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
           files: selectedDocuments,
         })
         if (!docResult.success) {
-          toast.error('Post created but failed to upload documents');
+          toast.error(t(tokens.tenants.socialPostUploadDocumentsError));
         }
       }
 
-      toast.success('Post created successfully');
+      toast.success(t(tokens.tenants.socialPostCreateSuccess));
 
       // Reset form
       setContent('');
@@ -151,11 +154,11 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
       onPostCreated?.();
     } catch (error) {
       console.error('Error posting:', error);
-      toast.error('Failed to create post');
+      toast.error(t(tokens.tenants.socialPostCreateError));
     } finally {
       setIsPosting(false);
     }
-  }, [content, selectedImages, selectedDocuments, buildingId, onPostCreated]);
+  }, [buildingId, content, onPostCreated, selectedDocuments, selectedImages, t]);
 
   return (
     <Card>
@@ -181,7 +184,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
             <OutlinedInput
               fullWidth
               multiline
-              placeholder="What's on your mind?"
+              placeholder={t(tokens.tenants.socialPostPlaceholder)}
               rows={3}
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -307,7 +310,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
                 onClick={handlePost}
                 disabled={isPosting || (!content.trim())}
               >
-                {isPosting ? 'Posting...' : 'Post'}
+                {isPosting ? t(tokens.tenants.socialPostPosting) : t(tokens.tenants.socialPostActionPost)}
               </Button>
             </Stack>
           </Stack>

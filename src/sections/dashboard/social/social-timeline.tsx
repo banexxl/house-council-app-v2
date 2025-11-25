@@ -4,12 +4,14 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Grid, Box, CircularProgress, Typography } from '@mui/material';
 import Stack from '@mui/material/Stack';
+import { useTranslation } from 'react-i18next';
 
 import type { EmojiReaction, TenantPostWithAuthor, TenantProfile } from 'src/types/social';
 
 import { SocialPostAdd } from './social-post-add';
 import { SocialPostCard } from './social-post-card';
 import { SocialAbout } from './social-about';
+import { tokens } from 'src/locales/tokens';
 
 interface SocialProfileTimelineProps {
   posts?: TenantPostWithAuthor[];
@@ -23,6 +25,7 @@ interface SocialProfileTimelineProps {
 
 export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
 
+  const { t } = useTranslation();
   const { posts = [], profile, buildingId, totalCount, pageSize, isOwner, currentUserProfile, ...other } = props;
   const profileProgress = useMemo(() => {
     const trackedFields: Array<keyof TenantProfile> = [
@@ -127,11 +130,11 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
       await fetchPage(nextOffset, true);
     } catch (error) {
       console.error('Error loading more posts', error);
-      setLoadError('Unable to load more posts right now.');
+      setLoadError(t(tokens.tenants.socialFeedLoadError));
     } finally {
       setIsLoadingMore(false);
     }
-  }, [fetchPage, hasMore, isLoadingMore, nextOffset]);
+  }, [fetchPage, hasMore, isLoadingMore, nextOffset, t]);
 
   const refreshPosts = useCallback(async () => {
     setIsRefreshing(true);
@@ -140,11 +143,11 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
       await fetchPage(0, false);
     } catch (error) {
       console.error('Error refreshing posts', error);
-      setLoadError('Unable to refresh posts right now.');
+      setLoadError(t(tokens.tenants.socialTimelineRefreshError));
     } finally {
       setIsRefreshing(false);
     }
-  }, [fetchPage]);
+  }, [fetchPage, t]);
 
   useEffect(() => {
     if (!hasMore) {
@@ -210,8 +213,8 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                   borderRadius: 2,
                 }}
               >
-                <Typography variant="subtitle1">No posts yet</Typography>
-                <Typography variant="body2">Share something to get started.</Typography>
+                <Typography variant="subtitle1">{t(tokens.tenants.socialFeedEmptyTitle)}</Typography>
+                <Typography variant="body2">{t(tokens.tenants.socialTimelineEmptyDescription)}</Typography>
               </Box>
             ) : (
               <>
@@ -252,7 +255,7 @@ export const SocialTimeline: FC<SocialProfileTimelineProps> = (props) => {
                       <CircularProgress size={20} />
                     ) : (
                       <Typography variant="body2" color="text.secondary">
-                        Scroll to load more posts
+                        {t(tokens.tenants.socialFeedLoadMorePrompt)}
                       </Typography>
                     )}
                   </Box>

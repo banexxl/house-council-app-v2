@@ -7,10 +7,12 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import { useSearchParams } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 
 import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
 import { Client, ClientMember } from 'src/types/client';
+import { tokens } from 'src/locales/tokens';
 
 interface ClientFeedWrapperProps {
   posts: TenantPostWithAuthor[];
@@ -27,6 +29,7 @@ type FeedResponse = {
 };
 
 export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCount, pageSize }: ClientFeedWrapperProps) => {
+  const { t } = useTranslation();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [feedPosts, setFeedPosts] = useState<TenantPostWithAuthor[]>(posts);
   const [totalPosts, setTotalPosts] = useState(totalCount);
@@ -118,7 +121,7 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
 
       const response = await fetch(`/api/social/feed?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) {
-        throw new Error('Failed to fetch posts');
+        throw new Error(t(tokens.tenants.socialFeedLoadError));
       }
 
       const data: FeedResponse = await response.json();
@@ -132,11 +135,11 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
       setHasMore(updatedOffset < updatedTotal && newPosts.length > 0);
     } catch (error) {
       console.error('Error loading more posts', error);
-      setLoadError('Unable to load more posts right now.');
+      setLoadError(t(tokens.tenants.socialFeedLoadError));
     } finally {
       setIsLoadingMore(false);
     }
-  }, [buildingId, hasMore, isLoadingMore, nextOffset, pageSize, totalPosts]);
+  }, [buildingId, hasMore, isLoadingMore, nextOffset, pageSize, t, totalPosts]);
 
   useEffect(() => {
     if (!hasMore) {
@@ -169,7 +172,7 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
     <Stack spacing={3}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <TextField
-          label="Search by author"
+          label={t(tokens.tenants.socialFeedSearchByAuthor)}
           variant="outlined"
           size="small"
           value={searchQuery}
@@ -201,7 +204,7 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
                     },
                   }}
                 >
-                  Add post
+                  {t(tokens.tenants.socialFeedAddPost)}
                 </Box>
               </a>
             </Box>
@@ -220,17 +223,17 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
           }}
         >
           <Typography variant="h6" gutterBottom>
-            No posts yet
+            {t(tokens.tenants.socialFeedEmptyTitle)}
           </Typography>
           <Typography variant="body2">
-            Be the first to share something with your community!
+            {t(tokens.tenants.socialFeedEmptyDescription)}
           </Typography>
         </Box>
       ) : (
         <>
           {filteredPosts.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
-              No posts match your search.
+              {t(tokens.tenants.socialFeedNoResults)}
             </Typography>
           ) : (
             filteredPosts.map((post) => (
@@ -273,7 +276,7 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
                 <CircularProgress size={20} />
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  Scroll to load more posts
+                  {t(tokens.tenants.socialFeedLoadMorePrompt)}
                 </Typography>
               )}
             </Box>

@@ -1,13 +1,12 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { getCurrentUserProfile, getTenantProfile, getTenantProfileByTenantId } from 'src/app/actions/social/profile-actions';
 import { getActivePostsPaginatedByProfileId } from 'src/app/actions/social/post-actions';
 import { ClientProfileWrapper } from './client-wrapper';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
 import { logout } from 'src/app/auth/actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
+import { ProfileNotFoundNotice } from './profile-not-found';
 
 const PROFILE_FEED_PAGE_SIZE = 5;
 
@@ -50,24 +49,19 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
                          py: 8,
                     }}
                >
-                    <Container maxWidth="lg">
-                         <Box
-                              sx={{
-                                   textAlign: 'center',
-                                   py: 6,
-                                   color: 'text.secondary'
-                              }}
-                         >
-                              <Typography variant="h4" gutterBottom>
-                                   Profile not found
-                              </Typography>
-                              <Typography variant="body1" sx={{ mb: 4 }}>
-                                   The requested profile could not be found.
-                              </Typography>
-                         </Box>
-                    </Container>
-               </Box>
-          );
+                   <Container maxWidth="lg">
+                        <Box
+                             sx={{
+                                  textAlign: 'center',
+                                  py: 6,
+                                  color: 'text.secondary'
+                             }}
+                        >
+                              <ProfileNotFoundNotice />
+                        </Box>
+                   </Container>
+              </Box>
+         );
      }
 
      const { data: buildingId } = await getBuildingIdFromTenantId(profile.tenant_id);

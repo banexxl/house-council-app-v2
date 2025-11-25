@@ -27,6 +27,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import { archiveTenantPost } from 'src/app/actions/social/post-actions';
 import { reactToPost } from 'src/app/actions/social/like-actions';
@@ -38,6 +39,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 
 import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage, TenantProfile } from 'src/types/social';
+import { tokens } from 'src/locales/tokens';
 
 import { SocialComment } from './social-comment';
 import { SocialCommentAdd } from './social-comment-add';
@@ -89,12 +91,14 @@ const AttachmentLink = ({
     mime_type?: string | null;
   };
 }) => {
+  const { t } = useTranslation();
   const { url } = useSignedUrl(
     doc.storage_bucket as string,
     doc.storage_path as string,
     { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
   );
-  const label = doc.file_name || doc.storage_path?.split('/').pop() || 'Document';
+  const fallbackLabel = t(tokens.tenants.socialPostAttachmentLabel);
+  const label = doc.file_name || doc.storage_path?.split('/').pop() || fallbackLabel;
   return (
     <Stack direction="row" spacing={1} alignItems="center">
       <SvgIcon fontSize="small" color={url ? 'primary' : 'disabled'}>
@@ -112,7 +116,7 @@ const AttachmentLink = ({
         </Link>
       ) : (
         <Typography variant="body2" color="text.secondary">
-          {label} (link unavailable)
+          {t(tokens.tenants.socialPostAttachmentUnavailable, { label })}
         </Typography>
       )}
     </Stack>
@@ -140,6 +144,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     focusCommentId = null,
     ...other
   } = props;
+  const { t } = useTranslation();
   const authorProfileLink = `/dashboard/social/profile/${authorId}`;
   const [reactionAnchorEl, setReactionAnchorEl] = useState<null | HTMLElement>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -178,7 +183,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
       const limit = customLimit ?? COMMENTS_PAGE_SIZE;
       const result = await getPostComments(postId, { limit, offset });
       if (!result.success || !result.data) {
-        setCommentsError(result.error || 'Failed to load comments');
+        setCommentsError(result.error || t(tokens.tenants.socialCommentsLoadError));
         return;
       }
       const { comments, total } = result.data;
@@ -188,7 +193,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
       setTotalComments(total);
       setHasMoreComments(newOffset < total && comments.length > 0);
     },
-    [postId, COMMENTS_PAGE_SIZE]
+    [COMMENTS_PAGE_SIZE, postId, t]
   );
 
   useEffect(() => {
@@ -209,25 +214,25 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const handleCommentSubmit = useCallback(
     async (text: string) => {
       if (!buildingId) {
-        toast.error('Building not found for this post');
+        toast.error(t(tokens.tenants.socialCommentsMissingBuilding));
         return;
       }
       setIsSubmittingComment(true);
       try {
         const result = await createTenantPostComment({ building_id: buildingId, post_id: postId, comment_text: text });
         if (!result.success) {
-          toast.error(result.error || 'Failed to add comment');
+          toast.error(result.error || t(tokens.tenants.socialCommentsAddError));
           return;
         }
         await fetchComments(0, false, Math.max(commentList.length + 1, COMMENTS_PAGE_SIZE));
       } catch (error) {
         console.error('Error submitting comment:', error);
-        toast.error('Failed to add comment');
+        toast.error(t(tokens.tenants.socialCommentsAddError));
       } finally {
         setIsSubmittingComment(false);
       }
     },
-    [postId, buildingId]
+    [COMMENTS_PAGE_SIZE, buildingId, fetchComments, postId, t, commentList.length]
   );
 
   const totalReactions = useMemo(
@@ -256,7 +261,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
       try {
         const result = await reactToPost(postId, emoji);
         if (!result.success || !result.data) {
-          toast.error(result.error || 'Failed to react to post');
+          toast.error(result.error || t(tokens.tenants.socialReactionError));
           return;
         }
         setReactionList(result.data.reactions);
@@ -264,12 +269,12 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         onReactionsChange?.(result.data);
       } catch (error) {
         console.error('Error reacting to post:', error);
-        toast.error('Failed to react to post');
+        toast.error(t(tokens.tenants.socialReactionError));
       } finally {
         setIsReacting(false);
       }
     },
-    [postId, onReactionsChange]
+    [onReactionsChange, postId, t]
   );
 
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
@@ -292,14 +297,14 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link copied');
+      toast.success(t(tokens.tenants.socialShareCopySuccess));
     } catch (err) {
       console.error('Failed to copy link', err);
-      toast.error('Unable to copy link');
+      toast.error(t(tokens.tenants.socialShareCopyError));
     } finally {
       handleShareClose();
     }
-  }, [shareUrl, handleShareClose]);
+  }, [handleShareClose, shareUrl, t]);
 
   const handleShareWhatsApp = useCallback(() => {
     if (!shareUrl) return;
@@ -323,11 +328,11 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
       await fetchComments(nextCommentsOffset, true);
     } catch (err) {
       console.error('Error loading more comments:', err);
-      setCommentsError('Unable to load more comments right now.');
+      setCommentsError(t(tokens.tenants.socialCommentsLoadMoreError));
     } finally {
       setCommentsLoadingMore(false);
     }
-  }, [commentsLoadingMore, hasMoreComments, fetchComments, nextCommentsOffset]);
+  }, [commentsLoadingMore, fetchComments, hasMoreComments, nextCommentsOffset, t]);
 
   // Scroll to a specific comment if requested
   useEffect(() => {
@@ -344,18 +349,18 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
     try {
       const result = await archiveTenantPost(postId);
       if (result.success) {
-        toast.success('Post archived successfully');
+        toast.success(t(tokens.tenants.socialPostArchiveSuccess));
         onArchive?.();
       } else {
-        toast.error(result.error || 'Failed to archive post');
+        toast.error(result.error || t(tokens.tenants.socialPostArchiveError));
       }
     } catch (error) {
       console.error('Error archiving post:', error);
-      toast.error('Failed to archive post');
+      toast.error(t(tokens.tenants.socialPostArchiveError));
     } finally {
       setIsArchiving(false);
     }
-  }, [postId, onArchive]);
+  }, [onArchive, postId, t]);
 
   return (
     <Card
@@ -395,7 +400,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                       <Archive />
                     </SvgIcon>
                   </ListItemIcon>
-                  <ListItemText>Archive Post</ListItemText>
+                  <ListItemText>{t(tokens.tenants.socialPostArchive)}</ListItemText>
                 </MenuItem>
               </Menu>
             </>
@@ -415,7 +420,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
               color="text.secondary"
               variant="caption"
             >
-              {formatDistanceToNowStrict(created_at)} ago
+              {t(tokens.tenants.socialTimeAgo, { distance: formatDistanceToNowStrict(created_at) })}
             </Typography>
           </Stack>
         }
@@ -433,7 +438,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             >
               {authorName}
             </Link>
-            <Typography variant="body2">updated her status</Typography>
+            <Typography variant="body2">{t(tokens.tenants.socialPostUpdatedStatus)}</Typography>
           </Stack>
         }
       />
@@ -452,7 +457,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
         {Array.isArray(documents) && documents.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Attachments
+              {t(tokens.tenants.socialPostAttachments)}
             </Typography>
             <Stack spacing={1}>
               {documents
@@ -506,7 +511,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                 variant="caption"
                 sx={{ mt: 1 }}
               >
-                You reacted with {currentReaction} · {currentReactionCount}
+                {t(tokens.tenants.socialReactionSummary, { emoji: currentReaction, count: currentReactionCount })}
               </Typography>
             )}
           </Box>
@@ -523,7 +528,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
               alignItems="center"
               direction="row"
             >
-              <Tooltip title={currentReaction ? 'Change your reaction' : 'React to this post'}>
+              <Tooltip title={currentReaction ? t(tokens.tenants.socialReactionChange) : t(tokens.tenants.socialReactionAddPost)}>
                 <span>
                   <IconButton onClick={handleReactionButtonClick} disabled={isReacting}>
                     <SvgIcon color={currentReaction ? 'primary' : undefined}>
@@ -559,12 +564,12 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
           )}
           {commentsLoading ? (
             <Typography variant="body2" color="text.secondary">
-              Loading comments...
+              {t(tokens.tenants.socialCommentsLoading)}
             </Typography>
           ) :
             commentList.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
-                No comments yet. Be the first to comment!
+                {t(tokens.tenants.socialCommentsEmpty)}
               </Typography>
             ) :
               (
@@ -610,7 +615,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                         }}
                       >
                         <Typography variant="body2" color="text.primary">
-                          {commentsLoadingMore ? 'Loading...' : 'Load more comments'}
+                          {commentsLoadingMore ? t(tokens.tenants.socialCommentsLoadingMore) : t(tokens.tenants.socialCommentsLoadMore)}
                         </Typography>
                       </ButtonBase>
                     </Box>
@@ -679,19 +684,19 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             <ListItemIcon>
               <ContentCopyIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText primary="Copy link" />
+            <ListItemText primary={t(tokens.tenants.socialShareCopyLink)} />
           </MenuItem>
           <MenuItem onClick={handleShareWhatsApp}>
             <ListItemIcon>
               <WhatsAppIcon fontSize="small" color="success" />
             </ListItemIcon>
-            <ListItemText primary="Share via WhatsApp" />
+            <ListItemText primary={t(tokens.tenants.socialShareWhatsApp)} />
           </MenuItem>
           <MenuItem onClick={handleShareViber}>
             <ListItemIcon>
               <PhoneIphoneIcon fontSize="small" color="primary" />
             </ListItemIcon>
-            <ListItemText primary="Share via Viber" />
+            <ListItemText primary={t(tokens.tenants.socialShareViber)} />
           </MenuItem>
         </Stack>
       </Popover>
