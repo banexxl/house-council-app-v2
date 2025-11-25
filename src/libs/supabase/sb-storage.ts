@@ -207,9 +207,8 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
      'client-image': {
           bucket: DEFAULT_BUCKET,
           requiresAuth: true,
-          getPathSegments: ({ clientId, userId }) => {
-               const owner = clientId ?? userId;
-               return ['clients', ensureValue(owner, 'clientId or userId is required'), 'images', 'logos'];
+          getPathSegments: ({ userId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'images', 'logos'];
           },
           returnSignedUrls: true,
           revalidate: (entityId) => [`/dashboard/clients/${entityId}`, `/dashboard/clients`],
@@ -217,9 +216,8 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
      'building-image': {
           bucket: DEFAULT_BUCKET,
           requiresAuth: true,
-          getPathSegments: ({ clientId, userId, entityId }) => {
-               const owner = clientId ?? userId;
-               return ['clients', ensureValue(owner, 'clientId or userId is required'), 'buildings', ensureValue(entityId, 'entityId is required'), 'images'];
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'buildings', ensureValue(entityId, 'entityId is required'), 'images'];
           },
           db: {
                table: TABLES.BUILDING_IMAGES ?? 'tblBuildingImages',
@@ -296,8 +294,8 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
      'poll-attachment': {
           bucket: DEFAULT_BUCKET,
           requiresAuth: true,
-          getPathSegments: ({ clientId, entityId }) => {
-               return ['clients', ensureValue(clientId, 'clientId is required'), 'polls', ensureValue(entityId, 'entityId is required'), 'images'];
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'polls', ensureValue(entityId, 'entityId is required'), 'images'];
           },
           validateFile: ({ file }) => {
                const type = ((file as any)?.type || '').toString();
@@ -1045,8 +1043,8 @@ const listAllPathsRecursive = async (
           offset += limit;
      }
      // Remove placeholder files used for folder creation, if any.
-     const placeholderPath = [prefix, FOLDER_PLACEHOLDER].filter(Boolean).join('/');
-     paths.push(placeholderPath);
+     const keepPath = [prefix, '.keep'].filter(Boolean).join('/');
+     paths.push(keepPath);
      return paths;
 };
 
