@@ -7,7 +7,7 @@ import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import { Grid, IconButton } from '@mui/material';
+import { Grid, IconButton, useTheme } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -188,6 +188,7 @@ const useCurrentItem = (items: Item[], itemId?: string): Item | undefined => {
 
 export const ClientFileManagerPage = () => {
   const settings = useSettings();
+  const theme = useTheme();
   const itemsSearch = useItemsSearch();
   const [prefix, setPrefix] = useState('');
   const itemsStore = useItemsStore(itemsSearch.state, prefix);
@@ -322,7 +323,7 @@ export const ClientFileManagerPage = () => {
                   <Breadcrumbs aria-label="breadcrumb">
                     <Link
                       color="text.primary"
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ cursor: 'pointer', color: theme.palette.primary.main }}
                       onClick={() => {
                         setPrefix('');
                         itemsSearch.handlePageChange(null, 0);
@@ -335,13 +336,13 @@ export const ClientFileManagerPage = () => {
                       const fullPath = pathParts.slice(0, idx + 1).join('/');
                       const isLast = idx === pathParts.length - 1;
                       return isLast ? (
-                        <Typography key={fullPath} color="text.primary" variant="subtitle2">
+                        <Typography key={fullPath} color={theme.palette.primary.main} variant="subtitle2">
                           {segment}
                         </Typography>
                       ) : (
                         <Link
                           key={fullPath}
-                          color="text.primary"
+                          color={theme.palette.primary.main}
                           sx={{ cursor: 'pointer' }}
                           onClick={() => {
                             setPrefix(fullPath);
