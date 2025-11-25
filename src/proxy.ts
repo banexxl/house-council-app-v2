@@ -44,7 +44,7 @@ async function isTokenValid(jwt: string | null): Promise<boolean> {
      }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
      const { pathname, search } = req.nextUrl;
 
      const raw = getCookieRaw(req);             // cookie string (may be base64 blob)
