@@ -1038,7 +1038,7 @@ export const rs = {
      [tokens.tenants.socialProfileUpdateFailed]: 'Ažuriranje profila nije uspelo',
      [tokens.tenants.socialProfileUpdated]: 'Profil je uspešno ažuriran',
      [tokens.tenants.socialFeedSeoTitle]: 'Kontrolna tabla: Društveni feed',
-     [tokens.tenants.socialFeedTitle]: 'Društveni feed',
+     [tokens.tenants.socialFeedTitle]: 'Objave',
      [tokens.tenants.socialFeedHeading]: 'Evo šta su objavile vaše veze',
      [tokens.tenants.socialFeedSearchByAuthor]: 'Pretraga po autoru',
      [tokens.tenants.socialFeedAddPost]: 'Dodaj objavu',
