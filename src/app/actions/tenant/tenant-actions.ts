@@ -139,6 +139,7 @@ export const createOrUpdateTenantAction = async (
 
           if (sharedFieldsModified) {
                const profileUpdates: Partial<TenantProfile> = {};
+               if (tenantData.date_of_birth !== undefined) profileUpdates.date_of_birth = tenantData.date_of_birth;
                if (tenantData.first_name !== undefined) profileUpdates.first_name = tenantData.first_name;
                if (tenantData.last_name !== undefined) profileUpdates.last_name = tenantData.last_name;
                if (tenantData.phone_number !== undefined) profileUpdates.phone_number = tenantData.phone_number;
@@ -154,6 +155,7 @@ export const createOrUpdateTenantAction = async (
           }
 
           revalidatePath(`/dashboard/tenants/${id}`);
+          revalidatePath(`/dashboard/social/profile`);
           return {
                saveTenantActionSuccess: true,
                saveTenantActionData: updatedTenant as Tenant,

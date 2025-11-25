@@ -336,7 +336,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                   label={t('tenants.birthDate')}
                                                   value={formik.values.date_of_birth ? dayjs(formik.values.date_of_birth) : null}
                                                   onChange={(date) => {
-                                                       formik.setFieldValue('date_of_birth', date ? date.toISOString() : null);
+                                                       formik.setFieldValue('date_of_birth', date ? date.format('YYYY-MM-DD') : null);
                                                   }}
                                                   slotProps={{
                                                        textField: {
