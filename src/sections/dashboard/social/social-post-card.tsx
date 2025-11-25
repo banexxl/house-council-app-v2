@@ -33,6 +33,9 @@ import { reactToPost } from 'src/app/actions/social/like-actions';
 import { getPostComments, createTenantPostComment } from 'src/app/actions/social/comment-actions';
 import { useSignedUrl } from 'src/hooks/use-signed-urls';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 
 import type { EmojiReaction, TenantPostCommentWithAuthor, TenantPostImage, TenantProfile } from 'src/types/social';
 
@@ -153,6 +156,8 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const [nextCommentsOffset, setNextCommentsOffset] = useState(0);
   const [hasMoreComments, setHasMoreComments] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [shareAnchorEl, setShareAnchorEl] = useState<null | HTMLElement>(null);
+  const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
     setReactionList(reactionsProp ?? []);
@@ -161,6 +166,12 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   useEffect(() => {
     setCurrentReaction(userReactionProp ?? null);
   }, [userReactionProp]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const origin = window.location.origin;
+    setShareUrl(`${origin}/dashboard/social/feed?postId=${postId}`);
+  }, [postId]);
 
   const fetchComments = useCallback(
     async (offset: number, append: boolean, customLimit?: number) => {
@@ -268,6 +279,41 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
   const handleMenuClose = useCallback(() => {
     setMenuAnchorEl(null);
   }, []);
+
+  const handleShareClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    setShareAnchorEl(event.currentTarget);
+  }, []);
+
+  const handleShareClose = useCallback(() => {
+    setShareAnchorEl(null);
+  }, []);
+
+  const handleCopyLink = useCallback(async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied');
+    } catch (err) {
+      console.error('Failed to copy link', err);
+      toast.error('Unable to copy link');
+    } finally {
+      handleShareClose();
+    }
+  }, [shareUrl, handleShareClose]);
+
+  const handleShareWhatsApp = useCallback(() => {
+    if (!shareUrl) return;
+    const url = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    handleShareClose();
+  }, [shareUrl, handleShareClose]);
+
+  const handleShareViber = useCallback(() => {
+    if (!shareUrl) return;
+    const url = `viber://forward?text=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank');
+    handleShareClose();
+  }, [shareUrl, handleShareClose]);
 
   const handleLoadMoreComments = useCallback(async () => {
     if (commentsLoadingMore || !hasMoreComments) return;
@@ -497,7 +543,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             </Stack>
           </div>
           <div>
-            <IconButton>
+            <IconButton onClick={handleShareClick}>
               <SvgIcon>
                 <Share07Icon />
               </SvgIcon>
@@ -614,6 +660,40 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
             ))}
           </Stack>
         </Box>
+      </Popover>
+      <Popover
+        open={Boolean(shareAnchorEl)}
+        anchorEl={shareAnchorEl}
+        onClose={handleShareClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <Stack sx={{ minWidth: 200, p: 1 }}>
+          <MenuItem onClick={handleCopyLink}>
+            <ListItemIcon>
+              <ContentCopyIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Copy link" />
+          </MenuItem>
+          <MenuItem onClick={handleShareWhatsApp}>
+            <ListItemIcon>
+              <WhatsAppIcon fontSize="small" color="success" />
+            </ListItemIcon>
+            <ListItemText primary="Share via WhatsApp" />
+          </MenuItem>
+          <MenuItem onClick={handleShareViber}>
+            <ListItemIcon>
+              <PhoneIphoneIcon fontSize="small" color="primary" />
+            </ListItemIcon>
+            <ListItemText primary="Share via Viber" />
+          </MenuItem>
+        </Stack>
       </Popover>
     </Card>
   );

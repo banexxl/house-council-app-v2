@@ -41,7 +41,7 @@ export interface UpdateTenantProfilePayload {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
-  date_of_birth?: string;
+  date_of_birth?: string | null;
   bio?: string;
   avatar_url?: string;
   cover_image_url?: string;

@@ -307,6 +307,28 @@ export async function updateTenantProfile(
                return { success: false, error: 'You can only update your own profile' };
           }
 
+          // First sync shared fields to tenant
+          const sharedFields = ['first_name', 'last_name', 'phone_number', 'avatar_url', 'date_of_birth'];
+          const tenantUpdates: any = {};
+          for (const field of sharedFields) {
+               if (payload[field as keyof UpdateTenantProfilePayload] !== undefined) {
+                    tenantUpdates[field] = payload[field as keyof UpdateTenantProfilePayload];
+               }
+          }
+          console.log('tenantUpdates', tenantUpdates);
+
+          if (Object.keys(tenantUpdates).length > 0) {
+               tenantUpdates.updated_at = new Date().toISOString();
+               const { error: tenantError } = await supabase
+                    .from(TABLES.TENANTS)
+                    .update(tenantUpdates)
+                    .eq('id', viewer.tenant.id);
+               if (tenantError) {
+                    console.error('Error updating tenant shared fields:', tenantError);
+                    return { success: false, error: tenantError.message };
+               }
+          }
+
           // Calculate profile progress based on updated data
           const { data: currentData } = await supabase
                .from(TABLES.TENANT_PROFILES)
@@ -314,56 +336,39 @@ export async function updateTenantProfile(
                .eq('id', profileId)
                .single();
 
-          if (currentData) {
-               const updatedData = { ...currentData, ...payload };
-               const profile_progress = calculateProfileProgress(updatedData);
-
-               // Update profile
-               const { data, error } = await supabase
-                    .from(TABLES.TENANT_PROFILES)
-                    .update({
-                         ...payload,
-                         profile_progress,
-                         updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', profileId)
-                    .select()
-                    .single();
-
-               if (error) {
-                    console.error('Error updating tenant profile:', error);
-                    return { success: false, error: error.message };
-               }
-
-               // Update tenant table with shared fields if they were modified
-               const sharedFields = ['first_name', 'last_name', 'phone_number', 'avatar_url'];
-               const tenantUpdates: any = {};
-
-               for (const field of sharedFields) {
-                    if (payload[field as keyof UpdateTenantProfilePayload] !== undefined) {
-                         tenantUpdates[field] = payload[field as keyof UpdateTenantProfilePayload];
-                    }
-               }
-
-               if (Object.keys(tenantUpdates).length > 0) {
-                    tenantUpdates.updated_at = new Date().toISOString();
-                    await supabase
-                         .from(TABLES.TENANTS)
-                         .update(tenantUpdates)
-                         .eq('id', viewer.tenant.id);
-               }
-
-               revalidatePath('/dashboard/social');
-
-               return { success: true, data };
+          if (!currentData) {
+               return { success: false, error: 'Profile data not found' };
           }
 
-          return { success: false, error: 'Profile data not found' };
+          const updatedData = { ...currentData, ...payload };
+          const profile_progress = calculateProfileProgress(updatedData);
+
+          // Update profile
+          const { data, error } = await supabase
+               .from(TABLES.TENANT_PROFILES)
+               .update({
+                    ...payload,
+                    profile_progress,
+                    updated_at: new Date().toISOString(),
+               })
+               .eq('id', profileId)
+               .select()
+               .single();
+
+          if (error) {
+               console.error('Error updating tenant profile:', error);
+               return { success: false, error: error.message };
+          }
+
+          revalidatePath('/dashboard/social');
+
+          return { success: true, data };
      } catch (error) {
           console.error('Error updating tenant profile:', error);
           return { success: false, error: 'Failed to update profile' };
      }
-}/**
+}
+/**
  * Delete a tenant profile
  */
 export async function deleteTenantProfile(profileId: string): Promise<ActionResponse<void>> {

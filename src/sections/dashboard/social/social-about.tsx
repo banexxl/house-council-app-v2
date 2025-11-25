@@ -2,7 +2,6 @@
 
 import type { FC } from 'react';
 import PropTypes from 'prop-types';
-import BookOpen01Icon from '@mui/icons-material/MenuBook';
 import Briefcase01Icon from '@mui/icons-material/Work';
 import Home02Icon from '@mui/icons-material/Home';
 import Mail01Icon from '@mui/icons-material/Email';

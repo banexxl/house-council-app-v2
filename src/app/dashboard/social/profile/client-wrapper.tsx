@@ -60,7 +60,7 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
      const [profileFormValues, setProfileFormValues] = useState<UpdateTenantProfilePayload>(() => ({
           bio: profile.bio ?? '',
           phone_number: profile.phone_number ?? '',
-          date_of_birth: profile.date_of_birth ?? '',
+          date_of_birth: profile.date_of_birth == '' ? null : profile.date_of_birth,
           current_city: profile.current_city ?? '',
           current_job_title: profile.current_job_title ?? '',
           current_job_company: profile.current_job_company ?? '',
@@ -82,7 +82,7 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
           setProfileFormValues({
                bio: profile.bio ?? '',
                phone_number: profile.phone_number ?? '',
-               date_of_birth: profile.date_of_birth ?? '',
+               date_of_birth: profile.date_of_birth == '' ? null : profile.date_of_birth,
                current_city: profile.current_city ?? '',
                current_job_title: profile.current_job_title ?? '',
                current_job_company: profile.current_job_company ?? '',
@@ -104,15 +104,6 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
           profile.quote,
      ]);
 
-     const updateTenantSocialProfile = async (payload: UpdateTenantProfilePayload) => {
-          const result = await updateTenantProfile(profile.id, payload);
-          if (!result.success) {
-               toast.error(t('tenants.socialProfileUpdateFailed'));
-          }
-          toast.success(t('tenants.socialProfileUpdated'));
-          return result;
-     };
-
      const buildProfilePayload = (overrides: Partial<UpdateTenantProfilePayload> = {}): UpdateTenantProfilePayload => ({
           first_name: profile.first_name,
           last_name: profile.last_name,
@@ -127,6 +118,7 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
           previous_job_company: profile.previous_job_company,
           origin_city: profile.origin_city,
           quote: profile.quote,
+          date_of_birth: profile.date_of_birth,
           ...overrides,
      });
 
@@ -149,6 +141,9 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
 
           if (result?.success) {
                setIsCoverDialogOpen(false);
+               toast.success(t('tenants.socialProfileUpdated'));
+          } else {
+               toast.error(t('tenants.socialProfileUpdateFailed'));
           }
 
           setIsUpdatingCover(false);
@@ -173,6 +168,9 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
 
           if (result?.success) {
                setIsAvatarDialogOpen(false);
+               toast.success(t('tenants.socialProfileUpdated'));
+          } else {
+               toast.error(t('tenants.socialProfileUpdateFailed'));
           }
 
           setIsUpdatingAvatar(false);
@@ -194,6 +192,11 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
           }
      };
 
+     const updateTenantSocialProfile = async (payload: UpdateTenantProfilePayload) => {
+          const result = await updateTenantProfile(profile.id, payload);
+          return result;
+     };
+
      const handleProfileDataSave = async () => {
           if (isUpdatingProfileData) {
                return;
@@ -205,6 +208,9 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
 
           if (result?.success) {
                setIsProfileDialogOpen(false);
+               toast.success(t('tenants.socialProfileUpdated'));
+          } else {
+               toast.error(t('tenants.socialProfileUpdateFailed'));
           }
 
           setIsUpdatingProfileData(false);
@@ -542,7 +548,7 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                                                   onChange={(date) => {
                                                        setProfileFormValues(prev => ({
                                                             ...prev,
-                                                            date_of_birth: date ? date.format('YYYY-MM-DD') : undefined,
+                                                            date_of_birth: date ? date.format('YYYY-MM-DD') : null,
                                                        }));
                                                   }}
                                                   slotProps={{
