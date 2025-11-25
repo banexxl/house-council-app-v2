@@ -4,6 +4,7 @@ import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Upload01Icon from '@untitled-ui/icons-react/build/esm/Upload01';
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
+import FolderPlusIcon from '@untitled-ui/icons-react/build/esm/FolderPlus';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -13,6 +14,11 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 
 import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
@@ -23,7 +29,8 @@ import { ItemList } from 'src/sections/dashboard/file-manager/item-list';
 import { ItemSearch } from 'src/sections/dashboard/file-manager/item-search';
 import { StorageStats } from 'src/sections/dashboard/file-manager/storage-stats';
 import type { Item } from 'src/types/file-manager';
-import { ItemMenu } from 'src/sections/dashboard/file-manager/item-menu';
+import { PopupModal } from 'src/components/modal-dialog';
+import toast from 'react-hot-toast';
 
 type View = 'grid' | 'list';
 
@@ -97,7 +104,7 @@ interface ItemsStoreState {
   itemsCount: number;
 }
 
-const useItemsStore = (searchState: ItemsSearchState, prefix: string) => {
+const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix: string) => {
   const [state, setState] = useState<ItemsStoreState>({
     items: [],
     itemsCount: 0,
@@ -126,9 +133,25 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string) => {
         id: item.path,
         name: item.name,
         type: item.type === 'folder' ? 'folder' as const : 'file' as const,
+        bucket: item.bucket,
         size: item.size ?? 0,
-        created_at: item.created_at ? new Date(item.created_at).getTime() : null,
-        updated_at: item.updated_at ? new Date(item.updated_at).getTime() : null,
+        created_at: item.created_at
+          ? new Date(item.created_at).getTime()
+          : item.last_accessed_at
+            ? new Date(item.last_accessed_at).getTime()
+            : item.updated_at
+              ? new Date(item.updated_at).getTime()
+              : null,
+        updated_at: item.updated_at
+          ? new Date(item.updated_at).getTime()
+          : item.last_accessed_at
+            ? new Date(item.last_accessed_at).getTime()
+            : item.created_at
+              ? new Date(item.created_at).getTime()
+              : null,
+        last_accessed_at: item.last_accessed_at ? new Date(item.last_accessed_at).getTime() : null,
+        path: item.path,
+        fullPath: basePrefix ? `${basePrefix}/${item.path}` : item.path,
         isFavorite: false,
       })) as Item[];
       setState({
@@ -192,16 +215,28 @@ const useCurrentItem = (items: Item[], itemId?: string): Item | undefined => {
   }, [items, itemId]);
 };
 
-export const ClientFileManagerPage = () => {
+interface ClientFileManagerPageProps {
+  clientId: string;
+}
+
+export const ClientFileManagerPage = ({ clientId }: ClientFileManagerPageProps) => {
   const settings = useSettings();
   const theme = useTheme();
   const itemsSearch = useItemsSearch();
+  const basePrefix = clientId ? `clients/${clientId}` : '';
   const [prefix, setPrefix] = useState('');
-  const itemsStore = useItemsStore(itemsSearch.state, prefix);
+  const itemsStore = useItemsStore(itemsSearch.state, prefix, basePrefix);
   const [view, setView] = useState<View>('grid');
   const uploadDialog = useDialog();
   const detailsDialog = useDialog<string>();
   const currentItem = useCurrentItem(itemsStore.items, detailsDialog.data);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderDialogLoading, setFolderDialogLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteDialogMessage, setDeleteDialogMessage] = useState('');
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteDialogLoading, setDeleteDialogLoading] = useState(false);
   const handleNavigateUp = useCallback(() => {
     if (!prefix) return;
     const parts = prefix.split('/').filter(Boolean);
@@ -215,6 +250,25 @@ export const ClientFileManagerPage = () => {
 
   const handleDelete = useCallback(
     async (itemId: string): Promise<void> => {
+      const target = itemsStore.items.find((item) => item.id === itemId);
+      if (target?.type === 'folder') {
+        // Pre-fetch child count for messaging
+        let count = 0;
+        try {
+          const params = new URLSearchParams({ prefix: target.id, limit: '1000' });
+          const res = await fetch(`/api/storage/objects?${params.toString()}`, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            count = Array.isArray(data.items) ? data.items.length : 0;
+          }
+        } catch (e) {
+          console.error('Failed to inspect folder contents', e);
+        }
+        setDeleteTargetId(itemId);
+        setDeleteDialogMessage(`Delete folder "${target.name}"${count ? ` with ${count} item(s)` : ''}? This cannot be undone.`);
+        setDeleteDialogOpen(true);
+        return;
+      }
       // This can be triggered from multiple places, ensure drawer is closed.
       detailsDialog.handleClose();
       try {
@@ -251,9 +305,89 @@ export const ClientFileManagerPage = () => {
     [itemsStore, prefix]
   );
 
+  const handleCreateFolder = useCallback(async () => {
+    if (!newFolderName.trim()) {
+      return;
+    }
+    setFolderDialogLoading(true);
+    const res = await fetch('/api/storage/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix, name: newFolderName.trim() }),
+    });
+    if (!res.ok) {
+      console.error('Failed to create folder');
+      setFolderDialogLoading(false);
+      return;
+    }
+    setNewFolderName('');
+    setFolderDialogOpen(false);
+    setFolderDialogLoading(false);
+    await itemsStore.refresh();
+  }, [itemsStore, newFolderName, prefix]);
+
+  const handleCopyLink = useCallback(
+    async (itemId: string) => {
+      const target = itemsStore.items.find((i) => i.id === itemId);
+      if (!target) return;
+      try {
+        if (target.type === 'folder') {
+          await navigator.clipboard.writeText(target.fullPath ?? target.path ?? target.id);
+          toast.success('Folder path copied');
+          return;
+        }
+        const res = await fetch('/api/storage/sign-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bucket: target.bucket,
+            path: target.fullPath ?? target.path ?? target.id,
+            ttlSeconds: 60 * 30,
+          }),
+        });
+        if (!res.ok) {
+          throw new Error('Failed to sign file');
+        }
+        const data = await res.json();
+        const url = data?.signedUrl;
+        if (url) {
+          await navigator.clipboard.writeText(url);
+          toast.success('Link copied');
+        } else {
+          throw new Error('Missing signed URL');
+        }
+      } catch (error) {
+        console.error('Copy link failed', error);
+        toast.error('Unable to copy link');
+      }
+    },
+    [itemsStore.items]
+  );
+
+  const handleConfirmDeleteFolder = useCallback(async () => {
+    if (!deleteTargetId) return;
+    detailsDialog.handleClose();
+    setDeleteDialogLoading(true);
+    try {
+      await fetch('/api/storage/folders', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefix: deleteTargetId }),
+      });
+      itemsStore.handleDelete(deleteTargetId);
+      await itemsStore.refresh();
+    } catch (error) {
+      console.error('Failed to delete folder', error);
+    } finally {
+      setDeleteDialogLoading(false);
+      setDeleteDialogOpen(false);
+      setDeleteTargetId(null);
+      setDeleteDialogMessage('');
+    }
+  }, [deleteTargetId, detailsDialog, itemsStore]);
+
   return (
     <>
-      <Seo title="Dashboard: File Manager" />
       <Box
         component="main"
         sx={{
@@ -277,11 +411,6 @@ export const ClientFileManagerPage = () => {
               >
                 <div>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    {prefix && (
-                      <Button size="small" variant="outlined" onClick={handleNavigateUp}>
-                        Back
-                      </Button>
-                    )}
                     <Typography variant="h4">File Manager</Typography>
                   </Stack>
                 </div>
@@ -290,6 +419,17 @@ export const ClientFileManagerPage = () => {
                   direction="row"
                   spacing={2}
                 >
+                  <Button
+                    onClick={() => setFolderDialogOpen(true)}
+                    startIcon={
+                      <SvgIcon>
+                        <FolderPlusIcon />
+                      </SvgIcon>
+                    }
+                    variant="outlined"
+                  >
+                    Add Folder
+                  </Button>
                   <Button
                     onClick={uploadDialog.handleOpen}
                     startIcon={
@@ -391,6 +531,7 @@ export const ClientFileManagerPage = () => {
                   onOpenDetails={(id) => {
                     detailsDialog.handleOpen(id);
                   }}
+                  onCopyLink={handleCopyLink}
                   onPageChange={itemsSearch.handlePageChange}
                   onRowsPerPageChange={itemsSearch.handleRowsPerPageChange}
                   page={itemsSearch.state.page}
@@ -418,6 +559,48 @@ export const ClientFileManagerPage = () => {
         open={detailsDialog.open}
       />
       <FileUploader onClose={uploadDialog.handleClose} onUpload={handleUpload} open={uploadDialog.open} />
+      <Dialog open={folderDialogOpen} onClose={() => !folderDialogLoading && setFolderDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Create folder</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Folder name"
+            margin="dense"
+            required
+            disabled={folderDialogLoading}
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFolderDialogOpen(false)} disabled={folderDialogLoading}>Cancel</Button>
+          <Button
+            onClick={handleCreateFolder}
+            variant="contained"
+            disabled={!newFolderName.trim() || folderDialogLoading}
+          >
+            {folderDialogLoading ? 'Creating...' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <PopupModal
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogLoading(false);
+          setDeleteDialogOpen(false);
+          setDeleteTargetId(null);
+          setDeleteDialogMessage('');
+        }}
+        onConfirm={handleConfirmDeleteFolder}
+        title="Delete folder"
+        type="confirmation"
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={deleteDialogLoading}
+      >
+        {deleteDialogMessage}
+      </PopupModal>
     </>
   );
 };

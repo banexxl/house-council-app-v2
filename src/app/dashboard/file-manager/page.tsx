@@ -15,7 +15,9 @@ const Page = async () => {
     redirect('/dashboard');
   }
 
-  return <ClientFileManagerPage />;
+  const clientId = client?.id ?? clientMember?.client_id ?? '';
+
+  return <ClientFileManagerPage clientId={clientId} />;
 };
 
 export default Page;

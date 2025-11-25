@@ -29,10 +29,11 @@ interface ItemListCardProps {
   onFavorite?: (itemId: string, value: boolean) => void;
   onOpen?: (itemId: string) => void;
   onOpenDetails?: (itemId: string) => void;
+  onCopyLink?: (itemId: string) => void;
 }
 
 export const ItemListCard: FC<ItemListCardProps> = (props) => {
-  const { item, onDelete, onFavorite, onOpen, onOpenDetails } = props;
+  const { item, onDelete, onFavorite, onOpen, onOpenDetails, onCopyLink } = props;
   const popover = usePopover<HTMLButtonElement>();
 
   const handleDelete = useCallback((): void => {
@@ -44,6 +45,11 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
     popover.handleClose();
     onOpenDetails?.(item.id);
   }, [item.id, onOpenDetails, popover]);
+
+  const handleCopyLink = useCallback(() => {
+    onCopyLink?.(item.id);
+    popover.handleClose();
+  }, [item.id, onCopyLink, popover]);
 
   let size = bytesToSize(item.size);
 
@@ -186,6 +192,7 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
         onClose={popover.handleClose}
         onDelete={handleDelete}
         onOpenDetails={handleDetails}
+        onCopyLink={handleCopyLink}
         open={popover.open}
       />
     </>
@@ -199,4 +206,5 @@ ItemListCard.propTypes = {
   onFavorite: PropTypes.func,
   onOpen: PropTypes.func,
   onOpenDetails: PropTypes.func,
+  onCopyLink: PropTypes.func,
 };

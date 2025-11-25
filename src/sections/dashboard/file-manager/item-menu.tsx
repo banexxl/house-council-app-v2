@@ -12,11 +12,12 @@ interface ItemMenuProps {
   onClose?: () => void;
   onDelete?: () => void;
   onOpenDetails?: () => void;
+  onCopyLink?: () => void;
   open?: boolean;
 }
 
 export const ItemMenu: FC<ItemMenuProps> = (props) => {
-  const { anchorEl, onClose, onDelete, onOpenDetails, open = false } = props;
+  const { anchorEl, onClose, onDelete, onOpenDetails, onCopyLink, open = false } = props;
 
   return (
     <Menu
@@ -40,7 +41,12 @@ export const ItemMenu: FC<ItemMenuProps> = (props) => {
         vertical: 'top',
       }}
     >
-      <MenuItem onClick={onClose}>
+      <MenuItem
+        onClick={() => {
+          onCopyLink?.();
+          onClose?.();
+        }}
+      >
         <SvgIcon fontSize="small">
           <Link01Icon />
         </SvgIcon>
@@ -70,5 +76,6 @@ ItemMenu.propTypes = {
   onClose: PropTypes.func,
   onDelete: PropTypes.func,
   onOpenDetails: PropTypes.func,
+  onCopyLink: PropTypes.func,
   open: PropTypes.bool,
 };

@@ -106,6 +106,20 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
               </SvgIcon>
             </IconButton>
           </Stack>
+          {item.path && (
+            <Grid container spacing={3} sx={{ mb: 1 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Typography color="text.secondary" variant="caption">
+                  Path
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 12, md: 8, sm: 8 }}>
+                <Typography variant="body2" noWrap>
+                  {item.path}
+                </Typography>
+              </Grid>
+            </Grid>
+          )}
           <Grid
             container
             spacing={3}

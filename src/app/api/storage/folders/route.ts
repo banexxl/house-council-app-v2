@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 });
   }
 
-  const fullPrefix = ['clients', clientId, prefix, folderName].filter(Boolean).join('/');
+  const fullPrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
 
   const result = await createStorageFolder({
     prefix: fullPrefix,

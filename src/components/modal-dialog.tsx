@@ -51,9 +51,11 @@ export function PopupModal({
      confirmText = 'OK',
      cancelText = 'Cancel',
      type,
+     loading: loadingProp,
 }: PopupModalProps) {
 
-     const [loading, setLoading] = useState(false);
+     const [internalLoading, setInternalLoading] = useState(false);
+     const isLoading = loadingProp ?? internalLoading;
 
      return (
           <Dialog
@@ -76,25 +78,25 @@ export function PopupModal({
                     </DialogContent>
                     <DialogActions>
                          {type === 'confirmation' && (
-                              <Button onClick={onClose} color="primary">
+                              <Button onClick={onClose} color="primary" disabled={isLoading}>
                                    {cancelText}
                               </Button>
                          )}
-                         <Button
+                    <Button
                               onClick={async () => {
-                                   if (type === 'confirmation' && onConfirm) {
-                                        setLoading(true);
+                                       if (type === 'confirmation' && onConfirm) {
+                                        setInternalLoading(true);
                                         await onConfirm();
-                                        setLoading(false);
-                                   } else {
+                                        setInternalLoading(false);
+                                       } else {
                                         onClose();
-                                   }
+                                       }
                               }}
                               color="primary"
                               variant="contained"
-                              loading={loading}
+                              disabled={isLoading}
                          >
-                              {type === 'confirmation' ? confirmText : 'Close'}
+                              {isLoading ? 'Working...' : type === 'confirmation' ? confirmText : 'Close'}
                          </Button>
                     </DialogActions>
                </Box>

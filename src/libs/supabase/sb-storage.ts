@@ -860,6 +860,8 @@ const sanitizePath = (path: string): string => {
      return parts.join('/');
 };
 
+const FOLDER_PLACEHOLDER = '.placeholder';
+
 export const listStorageObjects = async (
      params: ListStorageObjectsParams = {},
 ): Promise<{ success: boolean; items?: StorageObjectItem[]; error?: string }> => {
@@ -885,20 +887,22 @@ export const listStorageObjects = async (
           return { success: false, error: error.message };
      }
 
-     const items: StorageObjectItem[] = (data ?? []).map((entry) => {
-          const isFolder = entry.metadata === null;
-          const path = [prefix, entry.name].filter(Boolean).join('/');
-          return {
-               bucket,
-               name: entry.name,
-               path,
-               type: isFolder ? 'folder' : 'file',
-               size: entry.metadata?.size ?? undefined,
-               created_at: entry.created_at ?? null,
-               updated_at: entry.updated_at ?? null,
-               last_accessed_at: entry.last_accessed_at ?? null,
-          };
-     });
+     const items: StorageObjectItem[] = (data ?? [])
+          .filter((entry) => entry.name !== FOLDER_PLACEHOLDER && !entry.name.startsWith('.'))
+          .map((entry) => {
+               const isFolder = entry.metadata === null;
+               const path = [prefix, entry.name].filter(Boolean).join('/');
+               return {
+                    bucket,
+                    name: entry.name,
+                    path,
+                    type: isFolder ? 'folder' : 'file',
+                    size: entry.metadata?.size ?? undefined,
+                    created_at: entry.created_at ?? null,
+                    updated_at: entry.updated_at ?? null,
+                    last_accessed_at: entry.last_accessed_at ?? null,
+               };
+          });
 
      return { success: true, items };
 };
@@ -982,7 +986,7 @@ export const createStorageFolder = async (
      const base = normalizePrefix(params.prefix);
      const folderSegment = sanitizeSegmentForS3(params.folderName);
      const folderPath = [base, folderSegment].filter(Boolean).join('/');
-     const placeholderPath = `${folderPath}/.keep`;
+     const placeholderPath = `${folderPath}/${FOLDER_PLACEHOLDER}`;
      const blob = new Blob([''], { type: 'application/octet-stream' });
 
      if (params.requiresAuth !== false) {
@@ -1041,8 +1045,8 @@ const listAllPathsRecursive = async (
           offset += limit;
      }
      // Remove placeholder files used for folder creation, if any.
-     const keepPath = [prefix, '.keep'].filter(Boolean).join('/');
-     paths.push(keepPath);
+     const placeholderPath = [prefix, FOLDER_PLACEHOLDER].filter(Boolean).join('/');
+     paths.push(placeholderPath);
      return paths;
 };
 

@@ -29,10 +29,11 @@ interface ItemListRowProps {
   onFavorite?: (itemId: string, value: boolean) => void;
   onOpen?: (itemId: string) => void;
   onOpenDetails?: (itemId: string) => void;
+  onCopyLink?: (itemId: string) => void;
 }
 
 export const ItemListRow: FC<ItemListRowProps> = (props) => {
-  const { item, onDelete, onFavorite, onOpen, onOpenDetails } = props;
+  const { item, onDelete, onFavorite, onOpen, onOpenDetails, onCopyLink } = props;
   const popover = usePopover<HTMLButtonElement>();
 
   const handleDelete = useCallback((): void => {
@@ -44,6 +45,11 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
     popover.handleClose();
     onOpenDetails?.(item.id);
   }, [item.id, onOpenDetails, popover]);
+
+  const handleCopyLink = useCallback(() => {
+    onCopyLink?.(item.id);
+    popover.handleClose();
+  }, [item.id, onCopyLink, popover]);
 
   let size = bytesToSize(item.size);
 
@@ -202,6 +208,7 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
         onClose={popover.handleClose}
         onDelete={handleDelete}
         onOpenDetails={handleDetails}
+        onCopyLink={handleCopyLink}
         open={popover.open}
       />
     </>
@@ -215,4 +222,5 @@ ItemListRow.propTypes = {
   onFavorite: PropTypes.func,
   onOpen: PropTypes.func,
   onOpenDetails: PropTypes.func,
+  onCopyLink: PropTypes.func,
 };
