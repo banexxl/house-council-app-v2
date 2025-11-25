@@ -12,6 +12,7 @@ import type { Item } from 'src/types/file-manager';
 
 import { ItemListCard } from './item-list-card';
 import { ItemListRow } from './item-list-row';
+import { Typography } from '@mui/material';
 
 type View = 'grid' | 'list';
 
@@ -42,7 +43,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
     onOpen,
     onOpenDetails,
     onCopyLink,
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 10,
@@ -56,6 +57,16 @@ export const ItemList: FC<ItemListProps> = (props) => {
     content = loading ? (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
         <CircularProgress size={32} />
+      </Box>
+    ) : items.length === 0 ? (
+      <Box
+        sx={{
+          py: 6,
+          textAlign: 'center',
+          color: 'text.secondary',
+        }}
+      >
+        <Typography variant="subtitle1">No files or folders found</Typography>
       </Box>
     ) : (
       <Box
@@ -83,6 +94,16 @@ export const ItemList: FC<ItemListProps> = (props) => {
     content = loading ? (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
         <CircularProgress size={32} />
+      </Box>
+    ) : items.length === 0 ? (
+      <Box
+        sx={{
+          py: 6,
+          textAlign: 'center',
+          color: 'text.secondary',
+        }}
+      >
+        <Typography variant="subtitle1">No files or folders found</Typography>
       </Box>
     ) : (
       <Box sx={{ m: -3 }}>
