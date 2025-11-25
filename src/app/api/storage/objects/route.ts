@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   const offset = url.searchParams.get('offset');
   const search = url.searchParams.get('search') || undefined;
 
-  const storagePrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
+  const storagePrefix = ['clients', auth.userId, prefix].filter(Boolean).join('/');
 
   const result = await listStorageObjects({
     prefix: storagePrefix,
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'file is required' }, { status: 400 });
   }
 
-  const targetPath = ['clients', clientId, path || file.name].filter(Boolean).join('/');
+  const targetPath = ['clients', userId, path || file.name].filter(Boolean).join('/');
   const result = await uploadStorageObject({
     path: targetPath,
     file,
@@ -128,7 +128,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'path and newName are required' }, { status: 400 });
   }
 
-  const fullPath = ['clients', clientId, path].filter(Boolean).join('/');
+  const fullPath = ['clients', auth.userId, path].filter(Boolean).join('/');
   const parentParts = fullPath.split('/').filter(Boolean);
   parentParts.pop();
   const newFullPath = [...parentParts, newName].join('/');
@@ -166,7 +166,7 @@ export async function DELETE(request: Request) {
   }
 
   const result = await removeStorageObject({
-    path: ['clients', clientId, path].filter(Boolean).join('/'),
+    path: ['clients', userId, path].filter(Boolean).join('/'),
   });
 
   if (!result.success) {
