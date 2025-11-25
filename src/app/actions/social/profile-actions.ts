@@ -315,7 +315,6 @@ export async function updateTenantProfile(
                     tenantUpdates[field] = payload[field as keyof UpdateTenantProfilePayload];
                }
           }
-          console.log('tenantUpdates', tenantUpdates);
 
           if (Object.keys(tenantUpdates).length > 0) {
                tenantUpdates.updated_at = new Date().toISOString();
