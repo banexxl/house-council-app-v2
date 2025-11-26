@@ -2,14 +2,13 @@ import type { ChangeEvent, FC, MouseEvent } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Item } from 'src/types/file-manager';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
+import List from '@mui/material/List';
 
 import { ItemListCard } from './item-list-card';
 import { ItemListRow } from './item-list-row';
@@ -108,40 +107,29 @@ export const ItemList: FC<ItemListProps> = (props) => {
         <Typography variant="subtitle1">{t(tokens.fileManager.emptyState)}</Typography>
       </Box>
     ) : (
-      <Box sx={{ m: -3 }}>
-        <Scrollbar>
-          <Box sx={{ p: 3 }}>
-            <Table
-              sx={{
-                minWidth: 600,
-                borderCollapse: 'separate',
-                borderSpacing: '0 8px',
-              }}
-            >
-              <TableBody>
-                {items.map((item) => (
-                  <ItemListRow
-                    key={item.id}
-                    item={item}
-                    onDelete={onDelete}
-                    onFavorite={onFavorite}
-                    onOpen={onOpen}
-                    onOpenDetails={onOpenDetails}
-                    onCopyLink={onCopyLink}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
-        </Scrollbar>
+      <Box sx={{ overflowX: 'auto' }}>
+        <List disablePadding sx={{ pb: 0, mb: 0 }}>
+          {items.map((item) => (
+            <ItemListRow
+              key={item.id}
+              item={item}
+              onDelete={onDelete}
+              onFavorite={onFavorite}
+              onOpen={onOpen}
+              onOpenDetails={onOpenDetails}
+              onCopyLink={onCopyLink}
+            />
+          ))}
+        </List>
       </Box>
     );
   }
 
   const rowsValue = ROW_OPTIONS.includes(rowsPerPage) ? rowsPerPage : ROW_OPTIONS[0];
+  const stackSpacing = view === 'list' ? 0.5 : 4;
 
   return (
-    <Stack spacing={view === 'list' ? 2 : 4}>
+    <Stack spacing={stackSpacing}>
       {content}
       <TablePagination
         component="div"

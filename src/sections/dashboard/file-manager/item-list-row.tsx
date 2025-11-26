@@ -11,10 +11,9 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import ListItem from '@mui/material/ListItem';
 
 import { usePopover } from 'src/hooks/use-popover';
 import type { Item } from 'src/types/file-manager';
@@ -65,50 +64,47 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
 
   return (
     <>
-      <TableRow
-        key={item.id}
+      <ListItem
+        disableGutters
         sx={{
-          backgroundColor: 'transparent',
+          mb: 1.5,
+          px: 2,
+          py: 1.5,
           borderRadius: 1.5,
+          border: '1px solid',
+          borderColor: 'divider',
+          backgroundColor: 'transparent',
           boxShadow: 0,
           transition: (theme) =>
             theme.transitions.create(['background-color', 'box-shadow'], {
               easing: theme.transitions.easing.easeInOut,
               duration: 200,
             }),
+          '&:last-of-type': {
+            mb: 0,
+          },
           '&:hover': {
             backgroundColor: 'background.paper',
-            boxShadow: 16,
-          },
-          [`& .${tableCellClasses.root}`]: {
-            borderBottomWidth: 1,
-            borderBottomColor: 'divider',
-            borderBottomStyle: 'solid',
-            borderTopWidth: 1,
-            borderTopColor: 'divider',
-            borderTopStyle: 'solid',
-            '&:first-of-type': {
-              borderTopLeftRadius: (theme: any) => theme.shape.borderRadius * 1.5,
-              borderBottomLeftRadius: (theme: any) => theme.shape.borderRadius * 1.5,
-              borderLeftWidth: 1,
-              borderLeftColor: 'divider',
-              borderLeftStyle: 'solid',
-            },
-            '&:last-of-type': {
-              borderTopRightRadius: (theme: any) => theme.shape.borderRadius * 1.5,
-              borderBottomRightRadius: (theme: any) => theme.shape.borderRadius * 1.5,
-              borderRightWidth: 1,
-              borderRightColor: 'divider',
-              borderRightStyle: 'solid',
-            },
+            boxShadow: 8,
           },
         }}
       >
-        <TableCell>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={2}
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            rowGap: 1,
+          }}
+        >
           <Stack
             alignItems="center"
             direction="row"
             spacing={2}
+            sx={{ minWidth: 0, flexGrow: 1 }}
           >
             <Box
               onClick={() => onOpen?.(item.id)}
@@ -119,7 +115,7 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
                 extension={item.extension}
               />
             </Box>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <Typography
                 noWrap
                 onClick={() => onOpen?.(item.id)}
@@ -137,24 +133,25 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
               </Typography>
             </div>
           </Stack>
-        </TableCell>
-        <TableCell>
-          <Typography
-            noWrap
-            variant="subtitle2"
+          <Stack
+            spacing={0.25}
+            sx={{ minWidth: 160 }}
           >
-            {t(tokens.fileManager.createdAtLabel)}
-          </Typography>
-          <Typography
-            color="text.secondary"
-            noWrap
-            variant="body2"
-          >
-            {created_at ?? '-'}
-          </Typography>
-        </TableCell>
-        <TableCell>
-          <Box sx={{ display: 'flex' }}>
+            <Typography
+              noWrap
+              variant="subtitle2"
+            >
+              {t(tokens.fileManager.createdAtLabel)}
+            </Typography>
+            <Typography
+              color="text.secondary"
+              noWrap
+              variant="body2"
+            >
+              {created_at ?? '-'}
+            </Typography>
+          </Stack>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 120 }}>
             {item.isPublic && (
               <Tooltip title={t(tokens.fileManager.public)}>
                 <Avatar
@@ -184,8 +181,13 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
               </AvatarGroup>
             )}
           </Box>
-        </TableCell>
-        <TableCell align="right">
+        </Stack>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1}
+          sx={{ ml: 2 }}
+        >
           <IconButton onClick={() => onFavorite?.(item.id, !item.isFavorite)}>
             <SvgIcon
               fontSize="small"
@@ -194,8 +196,6 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
               <Star01Icon />
             </SvgIcon>
           </IconButton>
-        </TableCell>
-        <TableCell align="right">
           <IconButton
             onClick={popover.handleOpen}
             ref={popover.anchorRef}
@@ -204,8 +204,8 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
               <DotsVerticalIcon />
             </SvgIcon>
           </IconButton>
-        </TableCell>
-      </TableRow>
+        </Stack>
+      </ListItem>
       <ItemMenu
         anchorEl={popover.anchorRef.current}
         onClose={popover.handleClose}
