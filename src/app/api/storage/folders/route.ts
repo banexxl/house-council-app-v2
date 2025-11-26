@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   }
   const { client, clientMember } = await getViewer();
   const clientId = client?.id ?? clientMember?.client_id ?? null;
-  if (!clientId) {
+  if (!clientId || !auth.userId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 });
   }
 
-  const fullPrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
+  const fullPrefix = ['clients', auth.userId, prefix].filter(Boolean).join('/');
 
   const result = await createStorageFolder({
     prefix: fullPrefix,
@@ -59,7 +59,7 @@ export async function DELETE(request: Request) {
   }
   const { client, clientMember } = await getViewer();
   const clientId = client?.id ?? clientMember?.client_id ?? null;
-  if (!clientId) {
+  if (!clientId || !auth.userId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -70,7 +70,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'prefix is required' }, { status: 400 });
   }
 
-  const fullPrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
+  const fullPrefix = ['clients', auth.userId, prefix].filter(Boolean).join('/');
   const result = await removeStorageFolder({
     prefix: fullPrefix,
   });
@@ -89,7 +89,7 @@ export async function PUT(request: Request) {
   }
   const { client, clientMember } = await getViewer();
   const clientId = client?.id ?? clientMember?.client_id ?? null;
-  if (!clientId) {
+  if (!clientId || !auth.userId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -103,10 +103,10 @@ export async function PUT(request: Request) {
 
   const supabase = await useServerSideSupabaseAnonClient();
   const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
-  const oldFullPrefix = ['clients', clientId, prefix].filter(Boolean).join('/');
+  const oldFullPrefix = ['clients', auth.userId, prefix].filter(Boolean).join('/');
   const parts = prefix.split('/').filter(Boolean);
   parts.pop();
-  const newFullPrefix = ['clients', clientId, ...parts, newName].filter(Boolean).join('/');
+  const newFullPrefix = ['clients', auth.userId, ...parts, newName].filter(Boolean).join('/');
 
   try {
     const pathsToMove: { from: string; to: string }[] = [];
