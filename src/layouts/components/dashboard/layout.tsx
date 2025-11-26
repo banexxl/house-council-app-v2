@@ -12,7 +12,6 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
 
 type Role = 'admin' | 'client' | 'clientMember' | 'tenant';
-export const dynamic = 'force-static';
 interface LayoutProps { children?: ReactNode; }
 
 export const Layout: FC<LayoutProps> = (props) => {
