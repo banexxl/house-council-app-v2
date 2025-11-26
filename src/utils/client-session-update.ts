@@ -1,10 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 export const useSessionUpdater = () => {
      const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token-code-verifier";
-
+     const router = useRouter();
      // Helper function to get the value of a specific cookie
      const getCookieValue = (name: string) => {
           const match = document.cookie
@@ -22,7 +23,7 @@ export const useSessionUpdater = () => {
                // Ensure the cookie was previously set and has now changed
                if (prevCookieValue.current !== null && currentCookieValue !== prevCookieValue.current) {
                     prevCookieValue.current = currentCookieValue;
-                    window.location.reload();
+                    router.refresh();
                }
 
                // Update the ref to track changes (but not trigger reload on first set)

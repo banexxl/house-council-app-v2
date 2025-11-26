@@ -3,7 +3,7 @@ import Account from './account';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
-import { Client, ClientMember } from 'src/types/client';
+import { ClientMember } from 'src/types/client';
 import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 import { readBillingInfoFromClientId } from 'src/app/actions/client/client-billing-actions';
 import { readAllClientPayments } from 'src/app/actions/client/client-payment-actions';

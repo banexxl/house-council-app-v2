@@ -12,18 +12,21 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
 
 type Role = 'admin' | 'client' | 'clientMember' | 'tenant';
-
 interface LayoutProps { children?: ReactNode; }
 
 export const Layout: FC<LayoutProps> = (props) => {
   const settings = useSettings();
-  const [role, setRole] = useState<Role | null>(null); // start loading
+  const [role, setRole] = useState<Role | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const cached = window.localStorage.getItem('dashboardRole') as Role | null;
+    return cached ?? null;
+  });
 
   useEffect(() => {
     const getRole = async () => {
       const { data } = await supabaseBrowserClient.auth.getSession();
       const email = data.session?.user?.email;
-      if (!email) { setRole('tenant'); return; }
+      if (!email) { setRole('tenant'); window.localStorage.setItem('dashboardRole', 'tenant'); return; }
 
       const [adminRes, tenantRes, clientMemberRes, clientRes] = await Promise.all([
         supabaseBrowserClient.from(TABLES.SUPER_ADMINS).select('id').eq('email', email).maybeSingle(),
@@ -32,11 +35,14 @@ export const Layout: FC<LayoutProps> = (props) => {
         supabaseBrowserClient.from(TABLES.CLIENTS).select('id').eq('email', email).maybeSingle(),
       ]);
 
-      if (adminRes.data) return setRole('admin');
-      if (tenantRes.data) return setRole('tenant');
-      if (clientMemberRes.data) return setRole('clientMember');
-      if (clientRes.data) return setRole('client');
-      setRole('tenant');
+      let resolved: Role = 'tenant';
+      if (adminRes.data) resolved = 'admin';
+      else if (tenantRes.data) resolved = 'tenant';
+      else if (clientMemberRes.data) resolved = 'clientMember';
+      else if (clientRes.data) resolved = 'client';
+
+      setRole(resolved);
+      window.localStorage.setItem('dashboardRole', resolved);
     };
     getRole();
   }, []);
