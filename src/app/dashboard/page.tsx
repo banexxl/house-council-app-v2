@@ -4,6 +4,8 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
 import { logout } from "../auth/actions";
+import { Suspense } from "react";
+import { DefaultPageSkeleton } from "src/sections/dashboard/skeletons/default-page-skeleton";
 
 const Page = async () => {
 
@@ -19,7 +21,9 @@ const Page = async () => {
   }
 
   return (
-    <Dashboard />
+    <Suspense fallback={<DefaultPageSkeleton />}>
+      <Dashboard />
+    </Suspense>
   );
 };
 
