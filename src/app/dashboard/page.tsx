@@ -10,6 +10,7 @@ import { DefaultPageSkeleton } from "src/sections/dashboard/skeletons/default-pa
 const Page = async () => {
 
   const { client, tenant, admin, clientMember } = await getViewer();
+  console.log(client);
 
   if (!client && !tenant && !admin && !clientMember) {
     await logout();
