@@ -23,7 +23,6 @@ const config = {
       bodySizeLimit: "50MB",
     },
   },
-  cacheComponents: true,
 };
 
 module.exports = config;

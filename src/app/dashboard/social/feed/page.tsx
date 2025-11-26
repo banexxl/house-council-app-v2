@@ -1,9 +1,6 @@
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-
-import { Seo } from 'src/components/seo';
 import { getTenantPostsPaginated } from 'src/app/actions/social/post-actions';
 import { getCurrentUserProfile } from 'src/app/actions/social/profile-actions';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
@@ -12,6 +9,8 @@ import { ClientFeedWrapper } from './client-wrapper';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { FeedPageHeader } from './client-header';
 import { FeedProfileMissing } from './client-profile-missing';
+import { Suspense } from 'react';
+import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
 
 const FEED_PAGE_SIZE = 5;
 
@@ -71,14 +70,16 @@ const Page = async () => {
             spacing={3}
             sx={{ mt: 3 }}
           >
-            <ClientFeedWrapper
-              posts={posts}
-              profile={profile ? profile : null}
-              client={viewer.client ? viewer.client : viewer.clientMember ? viewer.clientMember : null}
-              buildingId={buildingId ?? ''}
-              totalCount={totalCount}
-              pageSize={FEED_PAGE_SIZE}
-            />
+            <Suspense fallback={<DefaultPageSkeleton />}>
+              <ClientFeedWrapper
+                posts={posts}
+                profile={profile ? profile : null}
+                client={viewer.client ? viewer.client : viewer.clientMember ? viewer.clientMember : null}
+                buildingId={buildingId ?? ''}
+                totalCount={totalCount}
+                pageSize={FEED_PAGE_SIZE}
+              />
+            </Suspense>
           </Stack>
         </Container>
       </Box>

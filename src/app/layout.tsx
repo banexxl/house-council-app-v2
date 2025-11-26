@@ -1,27 +1,22 @@
-import { NProgress } from 'src/components/nprogress';
-import { Layout as RootLayout } from 'src/layouts/root';
-import AuthProvider from 'src/contexts/auth/auth-provider';
-import { getViewer } from 'src/libs/supabase/server-auth';
-import ClientSubscriptionWatcher from 'src/realtime/client-subscription-watcher';
+"use client";
 
+import { CssBaseline, ThemeProvider, useTheme } from '@mui/material';
+import type { ReactNode } from 'react';
 
-export default async function Layout({ children }: { children: React.ReactNode }) {
+export const dynamic = 'force-static'; // optional: make it explicitly static
 
-  // const viewer = await getViewer();
-  // Realtime subscriptions moved to dashboard layout so auth pages don't subscribe.
+export default function RootAppLayout({ children }: { children: ReactNode }) {
+
+  const theme = useTheme();
 
   return (
-    <html>
+    <html lang="en">
       <body>
-        {/* <AuthProvider initialViewer={viewer}> */}
-        <RootLayout >
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
           {children}
-          {/* Client-side realtime watcher: logout on non-active subscription */}
-          <ClientSubscriptionWatcher />
-          <NProgress />
-        </RootLayout>
-        {/* </AuthProvider> */}
+        </ThemeProvider>
       </body>
-    </html >
+    </html>
   );
-};
+}
