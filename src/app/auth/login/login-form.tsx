@@ -67,7 +67,7 @@ const LoginForm = () => {
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
 
-     useSessionUpdater()
+     // useSessionUpdater()
 
      const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google" | "magic_link") => {
           setAuthMethod(newValue)
