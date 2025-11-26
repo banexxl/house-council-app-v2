@@ -14,6 +14,7 @@ interface LayoutProps {
 export const Layout: FC<LayoutProps> = (props) => {
 
   const { children } = props;
+  const backgroundImage = '/assets/background-images/background-image-3.png';
 
   return (
     <Box
@@ -25,15 +26,45 @@ export const Layout: FC<LayoutProps> = (props) => {
           xs: 'column-reverse',
           md: 'row',
         },
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          display: { xs: 'block', md: 'none' },
+        }}
+      >
+        <Image
+          src={backgroundImage}
+          alt="Background"
+          fill
+          priority
+          sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 100%)',
+          }}
+        />
+      </Box>
+
       <Box
         sx={{
           position: 'relative',
           alignItems: 'center',
           backgroundColor: 'neutral.800',
           color: 'common.white',
-          display: 'flex',
+          display: {
+            xs: 'none',
+            md: 'flex',
+          },
           flex: {
             xs: '0 0 auto',
             md: '1 1 auto',
@@ -44,6 +75,7 @@ export const Layout: FC<LayoutProps> = (props) => {
             md: 8,
           },
           overflow: 'hidden',
+          zIndex: 1,
         }}
       >
         <Box
@@ -54,7 +86,7 @@ export const Layout: FC<LayoutProps> = (props) => {
           }}
         >
           <Image
-            src="/assets/background-images/background-image-3.png"
+            src={backgroundImage}
             alt="Background"
             fill
             priority
@@ -94,7 +126,6 @@ export const Layout: FC<LayoutProps> = (props) => {
 
       <Box
         sx={{
-          backgroundColor: 'background.paper',
           display: 'flex',
           flex: {
             xs: '1 1 auto',
@@ -103,10 +134,20 @@ export const Layout: FC<LayoutProps> = (props) => {
           flexDirection: 'column',
           justifyContent: 'flex-start',
           maxWidth: '100%',
+          position: 'relative',
           p: {
             xs: 4,
             md: 8,
           },
+          backgroundColor: {
+            xs: 'rgba(255,255,255,0.6)',
+            md: 'background.paper',
+          },
+          backdropFilter: {
+            xs: 'blur(4px)',
+            md: 'none',
+          },
+          zIndex: 1,
           width: {
             md: 600,
           },
