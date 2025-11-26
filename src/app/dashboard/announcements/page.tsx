@@ -5,7 +5,7 @@ import { logout } from 'src/app/auth/actions';
 import { getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import { redirect } from 'next/navigation';
 import { readClientFromClientMemberID } from 'src/app/actions/client/client-members';
-``
+
 export default async function AnnouncementsPage() {
 
      const { client, tenant, admin, clientMember } = await getViewer();

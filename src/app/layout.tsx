@@ -5,13 +5,6 @@ import AuthProvider from 'src/contexts/auth/auth-provider';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import ClientSubscriptionWatcher from 'src/realtime/client-subscription-watcher';
 
-
-interface LayoutProps {
-  children: ReactNode;
-}
-
-export const dynamic = 'force-dynamic';
-
 export default async function Layout({ children }: { children: React.ReactNode }) {
 
   const viewer = await getViewer();
@@ -32,4 +25,3 @@ export default async function Layout({ children }: { children: React.ReactNode }
     </html >
   );
 };
-
