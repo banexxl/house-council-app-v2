@@ -1,3 +1,22 @@
-'use client';
+// src/app/dashboard/layout.tsx (Server or Client wrapper + Client inner layout)
 
-export { Layout as default } from 'src/layouts/components/dashboard';
+import { Suspense, type ReactNode } from 'react';
+import { NProgress } from 'src/components/nprogress';
+import { Layout as RootLayout } from 'src/layouts/root'; // likely a client component
+import ClientSubscriptionWatcher from 'src/realtime/client-subscription-watcher';
+import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
+
+// This layout should NOT call getViewer / cookies directly
+export const dynamic = 'force-static'; // static shell, dynamic children
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
+     return (
+          <RootLayout>
+               <Suspense fallback={<DefaultPageSkeleton />}>
+                    {children}
+               </Suspense>
+               <ClientSubscriptionWatcher />
+               <NProgress />
+          </RootLayout>
+     );
+}

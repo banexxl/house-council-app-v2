@@ -6,6 +6,8 @@ import { getAllBuildingsFromClient } from 'src/app/actions/building/building-act
 import { redirect } from 'next/navigation';
 import { readClientFromClientMemberID } from 'src/app/actions/client/client-members';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AnnouncementsPage() {
 
      const { client, tenant, admin, clientMember } = await getViewer();
