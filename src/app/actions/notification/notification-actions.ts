@@ -11,9 +11,9 @@ import { TABLES } from 'src/libs/supabase/tables';
 const NOTIFICATIONS_TABLE = TABLES.NOTIFICATIONS;
 
 export async function getAllNotifications(): Promise<{ success: boolean; data?: Notification[]; error?: string; }> {
-     const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
+     const time = Date.now();
      const { data, error } = await supabase.from(NOTIFICATIONS_TABLE).select('*').order('created_at', { ascending: false });
      if (error) {
           await logServerAction({ user_id, action: 'getAllNotifications', duration_ms: Date.now() - time, error: error.message, payload: {}, status: 'fail', type: 'db' });
@@ -25,9 +25,9 @@ export async function getAllNotifications(): Promise<{ success: boolean; data?: 
 }
 
 export async function getNotificationsForClient(): Promise<{ success: boolean; data?: Notification[]; error?: string; }> {
-     const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
+     const time = Date.now();
      if (!isUUID(user_id)) return { success: false, error: 'Invalid client ID' };
      const { data, error } = await supabase.from(NOTIFICATIONS_TABLE).select('*').eq('user_id', user_id).order('created_at', { ascending: false });
      if (error) {
@@ -40,9 +40,9 @@ export async function getNotificationsForClient(): Promise<{ success: boolean; d
 }
 
 export async function deleteNotification(id: string) {
-     const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
+     const time = Date.now();
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
      const { error } = await supabase.from(NOTIFICATIONS_TABLE).delete().eq('id', id);
      if (error) {
@@ -55,9 +55,9 @@ export async function deleteNotification(id: string) {
 }
 
 export async function markNotificationRead(id: string, read: boolean): Promise<{ success: boolean; error?: string; }> {
-     const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
+     const time = Date.now();
      if (!isUUID(id)) return { success: false, error: 'Invalid UUID' };
      const { error } = await supabase.from(NOTIFICATIONS_TABLE).update({ 'is_read': read }).eq('id', id);
 
@@ -71,9 +71,9 @@ export async function markNotificationRead(id: string, read: boolean): Promise<{
 }
 
 export async function markAllNotificationsRead() {
-     const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
      const user_id = await supabase.auth.getUser().then(res => res.data.user?.id || null);
+     const time = Date.now();
      const { error } = await supabase.from(NOTIFICATIONS_TABLE).update({ is_read: true }).eq('is_read', false);
      if (error) {
           await logServerAction({ user_id, action: 'markAllNotificationsRead', duration_ms: Date.now() - time, error: error.message, payload: {}, status: 'fail', type: 'db' });
