@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -110,12 +112,14 @@ export const Layout: FC<LayoutProps> = (props) => {
             textAlign: 'center',
           }}
         >
-          <Typography sx={{ mb: 1 }} variant="h4" color={'#78350F'}>
+          <Typography
+            sx={{ mb: 1, color: 'primary.darkest' }}
+            variant="h4"
+          >
             Welcome to Nest Link App
           </Typography>
           <Typography
-            color={'#78350F'}
-            sx={{ mt: 4, width: '80%' }}
+            sx={{ mt: 4, width: '80%', color: 'primary.darkest' }}
           >
             A modern platform that connects tenants and supervisors,
             bringing transparency and simplicity to building management and maintenance.
