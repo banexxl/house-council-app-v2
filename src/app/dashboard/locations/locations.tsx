@@ -2,10 +2,7 @@
 
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
-import { Box, Breadcrumbs, Button, Card, Container, Link, Stack, SvgIcon, Typography } from '@mui/material';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import { RouterLink } from 'src/components/router-link';
+import { Box, Button, Card, Container, Stack } from '@mui/material';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { BuildingLocation } from 'src/types/location';
@@ -14,6 +11,7 @@ import toast from 'react-hot-toast';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { validate as isUUID } from 'uuid';
 import { GenericTable } from 'src/components/generic-table';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 export type LocationFilters = {
      location_occupied?: boolean;
@@ -68,7 +66,6 @@ interface LocationsProps { locations: BuildingLocation[]; }
 const Locations = ({ locations }: LocationsProps) => {
      const { t } = useTranslation();
      const locationsSearch = useLocationsSearch();
-     const [addLocationLoading, setAddLocationLoading] = useState(false);
 
      const filteredLocations = useMemo(() => {
           const { location_occupied, search } = locationsSearch.state.filters;
@@ -100,30 +97,17 @@ const Locations = ({ locations }: LocationsProps) => {
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <Stack direction="row" justifyContent="space-between" spacing={4}>
-                              <Stack spacing={1}>
-                                   <Typography variant="h4">{t('locations.locationList')}</Typography>
-                                   <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-                                        <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
-                                             {t('nav.adminDashboard')}
-                                        </Link>
-                                        <Typography color="text.secondary" variant="subtitle2">
-                                             {t('locations.locationList')}
-                                        </Typography>
-                                   </Breadcrumbs>
-                              </Stack>
-                              <Button
-                                   sx={{ height: 40 }}
-                                   component={RouterLink}
-                                   href={paths.dashboard.locations.new}
-                                   onClick={() => setAddLocationLoading(true)}
-                                   startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
-                                   variant="contained"
-                                   loading={addLocationLoading}
-                              >
-                                   {t('common.btnCreate')}
-                              </Button>
-                         </Stack>
+                         <EntityFormHeader
+                              backHref={paths.dashboard.index}
+                              backLabel={t('nav.adminDashboard')}
+                              title={t('locations.locationList')}
+                              breadcrumbs={[
+                                   { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                                   { title: t('locations.locationList') },
+                              ]}
+                              actionLabel={t('common.btnCreate')}
+                              actionHref={paths.dashboard.locations.new}
+                         />
 
                          <Card sx={{ mb: 2 }}>
                               <SearchAndBooleanFilters

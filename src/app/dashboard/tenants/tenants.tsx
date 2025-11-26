@@ -1,21 +1,14 @@
 'use client';
 
 import { useCallback, useState, useMemo } from 'react';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
      Box,
-     Breadcrumbs,
      Button,
      Card,
      Container,
-     Link,
      Stack,
-     SvgIcon,
-     Typography,
 } from '@mui/material';
 
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { type Tenant } from 'src/types/tenant';
@@ -23,6 +16,7 @@ import { GenericTable } from 'src/components/generic-table';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteTenantByIDAction } from 'src/app/actions/tenant/tenant-actions';
 import toast from 'react-hot-toast';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 
 interface TenantsProps {
@@ -31,7 +25,6 @@ interface TenantsProps {
 
 const Tenants = ({ tenants }: TenantsProps) => {
      const { t } = useTranslation();
-     const [addTenantLoading, setAddTenantLoading] = useState(false);
      const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
      const [filters, setFilters] = useState<{ search?: string; main?: boolean }>({});
 
@@ -66,30 +59,17 @@ const Tenants = ({ tenants }: TenantsProps) => {
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         <Stack direction="row" justifyContent="space-between" spacing={4}>
-                              <Stack spacing={1}>
-                                   <Typography variant="h4">{t('tenants.tenantsList')}</Typography>
-                                   <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-                                        <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
-                                             {t('nav.adminDashboard')}
-                                        </Link>
-                                        <Typography color="text.secondary" variant="subtitle2">
-                                             {t('tenants.tenantsList')}
-                                        </Typography>
-                                   </Breadcrumbs>
-                              </Stack>
-                              <Button
-                                   sx={{ height: 40 }}
-                                   component={RouterLink}
-                                   href={paths.dashboard.tenants.new}
-                                   onClick={() => setAddTenantLoading(true)}
-                                   startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
-                                   variant="contained"
-                                   loading={addTenantLoading}
-                              >
-                                   {t('common.btnCreate')}
-                              </Button>
-                         </Stack>
+                         <EntityFormHeader
+                              backHref={paths.dashboard.index}
+                              backLabel={t('nav.adminDashboard')}
+                              title={t('tenants.tenantsList')}
+                              breadcrumbs={[
+                                   { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                                   { title: t('tenants.tenantsList') },
+                              ]}
+                              actionLabel={t('common.btnCreate')}
+                              actionHref={paths.dashboard.tenants.new}
+                         />
 
                          <Card sx={{ mb: 2 }}>
                               <SearchAndBooleanFilters

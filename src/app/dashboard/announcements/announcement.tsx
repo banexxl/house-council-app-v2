@@ -498,29 +498,22 @@ export default function Announcements({ client, announcements, buildings }: Anno
      return (
           <Container maxWidth="xl">
                <Stack spacing={4}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <EntityFormHeader
-                              backHref={paths.dashboard.index}
-                              backLabel={t('nav.adminDashboard')}
-                              title={t(tokens.announcements.managementTitle)}
-                              breadcrumbs={[
-                                   { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                                   { title: t(tokens.announcements.managementTitle) },
-                              ]}
-                         />
-                         <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={() => {
-                                   setEditingEntity(null);
-                                   formik.resetForm({
-                                        values: { ...announcementInitialValues, created_at: new Date() }
-                                   });
-                              }}
-                         >
-                              {t(tokens.announcements.createNew)}
-                         </Button>
-                    </Box>
+                    <EntityFormHeader
+                         backHref={paths.dashboard.index}
+                         backLabel={t('nav.adminDashboard')}
+                         title={t(tokens.announcements.managementTitle)}
+                         breadcrumbs={[
+                              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                              { title: t(tokens.announcements.managementTitle) },
+                         ]}
+                         actionLabel={t(tokens.announcements.createNew)}
+                         onActionClick={() => {
+                              setEditingEntity(null);
+                              formik.resetForm({
+                                   values: { ...announcementInitialValues, created_at: new Date() }
+                              });
+                         }}
+                    />
                     <Card>
                          <Grid container>
                               {/* Table Column */}

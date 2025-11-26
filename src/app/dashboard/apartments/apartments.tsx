@@ -1,21 +1,14 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
   Box,
-  Breadcrumbs,
   Button,
   Card,
   Container,
-  Link,
   Stack,
-  SvgIcon,
-  Typography,
 } from '@mui/material';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import {
@@ -28,6 +21,7 @@ import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteApartment } from 'src/app/actions/apartment/apartment-actions';
 import { CoverImageCell } from 'src/components/cover-image-cell';
 import { toast } from 'react-hot-toast';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 
 interface ApartmentsProps {
@@ -36,7 +30,6 @@ interface ApartmentsProps {
 
 const Apartments = ({ apartments }: ApartmentsProps) => {
   const { t } = useTranslation();
-  const [addApartmentLoading, setAddApartmentLoading] = useState(false);
   const [deletingApartmentId, setDeletingApartmentId] = useState<string | null>(null);
   const [filters, setFilters] = useState<{ search?: string; apartment_type?: string; apartment_status?: string }>({});
 
@@ -85,39 +78,17 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <Stack direction="row" justifyContent="space-between" spacing={4}>
-            <Stack spacing={1}>
-              <Typography variant="h4">{t('apartments.apartmentList')}</Typography>
-              <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-                <Link
-                  color="text.primary"
-                  component={RouterLink}
-                  href={paths.dashboard.index}
-                  variant="subtitle2"
-                >
-                  {t('nav.adminDashboard')}
-                </Link>
-                <Typography color="text.secondary" variant="subtitle2">
-                  {t('apartments.apartmentList')}
-                </Typography>
-              </Breadcrumbs>
-            </Stack>
-            <Button
-              sx={{ height: 40 }}
-              component={RouterLink}
-              href={paths.dashboard.apartments.new}
-              onClick={() => setAddApartmentLoading(true)}
-              startIcon={
-                <SvgIcon>
-                  <PlusIcon />
-                </SvgIcon>
-              }
-              variant="contained"
-              loading={addApartmentLoading}
-            >
-              {t('common.btnCreate')}
-            </Button>
-          </Stack>
+          <EntityFormHeader
+            backHref={paths.dashboard.index}
+            backLabel={t('nav.adminDashboard')}
+            title={t('apartments.apartmentList')}
+            breadcrumbs={[
+              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+              { title: t('apartments.apartmentList') },
+            ]}
+            actionLabel={t('common.btnCreate')}
+            actionHref={paths.dashboard.apartments.new}
+          />
 
           <Card sx={{ mb: 2 }}>
             <SearchAndBooleanFilters

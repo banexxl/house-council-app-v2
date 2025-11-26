@@ -2,17 +2,14 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import {
   Box,
   Button,
   Card,
   Container,
   Stack,
-  SvgIcon,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { GenericTable } from 'src/components/generic-table';
 import toast from 'react-hot-toast';
@@ -89,26 +86,17 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <Stack direction="row" justifyContent="space-between" spacing={4}>
-            <EntityFormHeader
-              backHref={paths.dashboard.index}
-              backLabel={t('nav.adminDashboard')}
-              title={t('polls.listTitle') || 'Polls'}
-              breadcrumbs={[
-                { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                { title: t('polls.listTitle') || 'Polls' },
-              ]}
-            />
-            <Button
-              sx={{ height: 40 }}
-              component={RouterLink}
-              href={paths.dashboard.polls.create}
-              startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
-              variant="contained"
-            >
-              {t('common.btnCreate')}
-            </Button>
-          </Stack>
+          <EntityFormHeader
+            backHref={paths.dashboard.index}
+            backLabel={t('nav.adminDashboard')}
+            title={t('polls.listTitle') || 'Polls'}
+            breadcrumbs={[
+              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+              { title: t('polls.listTitle') || 'Polls' },
+            ]}
+            actionLabel={t('common.btnCreate')}
+            actionHref={paths.dashboard.polls.create}
+          />
 
           <Card>
             <GenericTable<Poll>

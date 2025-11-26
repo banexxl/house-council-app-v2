@@ -1,19 +1,12 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
-import Typography from '@mui/material/Typography';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { Building, buildingStatusMap } from 'src/types/building';
@@ -22,6 +15,7 @@ import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteBuilding } from 'src/app/actions/building/building-actions';
 import toast from 'react-hot-toast';
 import { CoverImageCell } from 'src/components/cover-image-cell';
+import { EntityFormHeader } from 'src/components/entity-form-header';
 
 
 interface BuildingTableProps {
@@ -30,7 +24,6 @@ interface BuildingTableProps {
 
 const Buildings = ({ clientBuildings }: BuildingTableProps) => {
   const { t } = useTranslation();
-  const [addBuildingLoading, setAddBuildingLoading] = useState(false);
   const [deletingBuildingId, setDeletingBuildingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<{
     search?: string;
@@ -92,30 +85,17 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
     <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
       <Container maxWidth="xl">
         <Stack spacing={4}>
-          <Stack direction="row" justifyContent="space-between" spacing={4}>
-            <Stack spacing={1}>
-              <Typography variant="h4">{t('buildings.buildingList')}</Typography>
-              <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-                <Link color="text.primary" component={RouterLink} href={paths.dashboard.index} variant="subtitle2">
-                  {t('nav.adminDashboard')}
-                </Link>
-                <Typography color="text.secondary" variant="subtitle2">
-                  {t('buildings.buildingList')}
-                </Typography>
-              </Breadcrumbs>
-            </Stack>
-            <Button
-              sx={{ height: 40 }}
-              component={RouterLink}
-              href={paths.dashboard.buildings.new}
-              onClick={() => setAddBuildingLoading(true)}
-              startIcon={<SvgIcon><PlusIcon /></SvgIcon>}
-              variant="contained"
-              loading={addBuildingLoading}
-            >
-              {t('common.btnCreate')}
-            </Button>
-          </Stack>
+          <EntityFormHeader
+            backHref={paths.dashboard.index}
+            backLabel={t('nav.adminDashboard')}
+            title={t('buildings.buildingList')}
+            breadcrumbs={[
+              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+              { title: t('buildings.buildingList') },
+            ]}
+            actionLabel={t('common.btnCreate')}
+            actionHref={paths.dashboard.buildings.new}
+          />
 
           <Card sx={{ mb: 2 }}>
             <SearchAndBooleanFilters
