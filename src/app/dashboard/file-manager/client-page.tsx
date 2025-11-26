@@ -20,7 +20,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 
-import { Seo } from 'src/components/seo';
 import { useDialog } from 'src/hooks/use-dialog';
 import { useSettings } from 'src/hooks/use-settings';
 import { FileUploader } from 'src/sections/dashboard/file-manager/file-uploader';
