@@ -8,6 +8,8 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 interface ItemSharedProps {
   isPublic?: boolean;
@@ -19,6 +21,7 @@ interface ItemSharedProps {
 
 export const ItemShared: FC<ItemSharedProps> = (props) => {
   const { isPublic, shared } = props;
+  const { t } = useTranslation();
 
   const showShared = !isPublic && (shared || []).length > 0;
 
@@ -29,7 +32,7 @@ export const ItemShared: FC<ItemSharedProps> = (props) => {
       spacing={1}
     >
       {isPublic && (
-        <Tooltip title="Public">
+        <Tooltip title={t(tokens.fileManager.public)}>
           <Avatar
             sx={{
               height: 32,

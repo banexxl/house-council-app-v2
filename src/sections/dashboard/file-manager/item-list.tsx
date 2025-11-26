@@ -8,6 +8,8 @@ import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { Item } from 'src/types/file-manager';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 import { ItemListCard } from './item-list-card';
 import { ItemListRow } from './item-list-row';
@@ -49,6 +51,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
     view = 'grid',
     loading = false,
   } = props;
+  const { t } = useTranslation();
 
   let content: JSX.Element;
 
@@ -65,7 +68,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
           color: 'text.secondary',
         }}
       >
-        <Typography variant="subtitle1">No files or folders found</Typography>
+        <Typography variant="subtitle1">{t(tokens.fileManager.emptyState)}</Typography>
       </Box>
     ) : (
       <Box
@@ -102,7 +105,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
           color: 'text.secondary',
         }}
       >
-        <Typography variant="subtitle1">No files or folders found</Typography>
+        <Typography variant="subtitle1">{t(tokens.fileManager.emptyState)}</Typography>
       </Box>
     ) : (
       <Box sx={{ m: -3 }}>
@@ -148,6 +151,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
         page={page}
         rowsPerPage={rowsValue}
         rowsPerPageOptions={ROW_OPTIONS}
+        labelRowsPerPage={t(tokens.common.rowsPerPage)}
       />
     </Stack>
   );

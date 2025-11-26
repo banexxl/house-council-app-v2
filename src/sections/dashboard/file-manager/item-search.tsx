@@ -1,5 +1,5 @@
 import type { ChangeEvent, FC, FormEvent, MouseEvent } from 'react';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Grid01Icon from '@untitled-ui/icons-react/build/esm/Grid01';
 import ListIcon from '@untitled-ui/icons-react/build/esm/List';
@@ -13,6 +13,8 @@ import SvgIcon from '@mui/material/SvgIcon';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup, { toggleButtonGroupClasses } from '@mui/material/ToggleButtonGroup';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 interface Filters {
   query?: string;
@@ -26,17 +28,6 @@ interface SortOption {
   label: string;
   value: SortDir;
 }
-
-const sortOptions: SortOption[] = [
-  {
-    label: 'Latest',
-    value: 'desc',
-  },
-  {
-    label: 'Oldest',
-    value: 'asc',
-  },
-];
 
 interface ItemSearchProps {
   onFiltersChange?: (filters: Filters) => void;
@@ -56,7 +47,21 @@ export const ItemSearch: FC<ItemSearchProps> = (props) => {
     // sortBy = 'created_at',
     sortDir = 'asc',
   } = props;
+  const { t } = useTranslation();
   const queryRef = useRef<HTMLInputElement | null>(null);
+  const sortOptions = useMemo<SortOption[]>(
+    () => [
+      {
+        label: t(tokens.fileManager.sort.latest),
+        value: 'desc',
+      },
+      {
+        label: t(tokens.fileManager.sort.oldest),
+        value: 'asc',
+      },
+    ],
+    [t]
+  );
 
   const handleQueryChange = useCallback(
     (event: FormEvent<HTMLFormElement>): void => {
@@ -103,7 +108,7 @@ export const ItemSearch: FC<ItemSearchProps> = (props) => {
             fullWidth
             inputProps={{ ref: queryRef }}
             name="itemName"
-            placeholder="Search"
+            placeholder={t(tokens.fileManager.searchPlaceholder)}
             startAdornment={
               <InputAdornment position="start">
                 <SvgIcon>
@@ -145,7 +150,7 @@ export const ItemSearch: FC<ItemSearchProps> = (props) => {
           </ToggleButton>
         </ToggleButtonGroup>
         <TextField
-          label="Sort By"
+          label={t(tokens.common.sortBy)}
           name="sort"
           onChange={handleSortChange}
           select

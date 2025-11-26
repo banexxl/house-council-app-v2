@@ -19,6 +19,8 @@ import Typography from '@mui/material/Typography';
 import { usePopover } from 'src/hooks/use-popover';
 import type { Item } from 'src/types/file-manager';
 import { bytesToSize } from 'src/utils/bytes-to-size';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 import { ItemIcon } from './item-icon';
 import { ItemMenu } from './item-menu';
@@ -35,6 +37,7 @@ interface ItemListCardProps {
 export const ItemListCard: FC<ItemListCardProps> = (props) => {
   const { item, onDelete, onFavorite, onOpen, onOpenDetails, onCopyLink } = props;
   const popover = usePopover<HTMLButtonElement>();
+  const { t } = useTranslation();
 
   const handleDelete = useCallback((): void => {
     popover.handleClose();
@@ -54,10 +57,10 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
   let size = bytesToSize(item.size);
 
   if (item.type === 'folder') {
-    size += `• ${item.itemsCount} items`;
+    size = t(tokens.fileManager.folderSummary, { size, count: item.itemsCount });
   }
 
-  const created_at = item.created_at && format(item.created_at, 'MMM dd, yyyy');
+  const created_at = item.created_at ? format(item.created_at, 'MMM dd, yyyy') : null;
   const showShared = !item.isPublic && (item.shared || []).length > 0;
 
   return (
@@ -150,7 +153,7 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
             </div>
             <div>
               {item.isPublic && (
-                <Tooltip title="Public">
+                <Tooltip title={t(tokens.fileManager.public)}>
                   <Avatar
                     sx={{
                       height: 32,
@@ -183,7 +186,7 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
             color="text.secondary"
             variant="caption"
           >
-            Created at {created_at}
+            {t(tokens.fileManager.createdAtOn, { date: created_at ?? '-' })}
           </Typography>
         </Box>
       </Card>

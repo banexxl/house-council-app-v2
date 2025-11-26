@@ -8,6 +8,8 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 import { File, FileDropzone } from 'src/components/file-dropzone';
 
@@ -20,6 +22,7 @@ interface FileUploaderProps {
 export const FileUploader: FC<FileUploaderProps> = (props) => {
   const { onClose, onUpload, open = false } = props;
   const [files, setFiles] = useState<File[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setFiles([]);
@@ -65,7 +68,7 @@ export const FileUploader: FC<FileUploaderProps> = (props) => {
           py: 2,
         }}
       >
-        <Typography variant="h6">Upload Files</Typography>
+        <Typography variant="h6">{t(tokens.fileManager.uploadDialogTitle)}</Typography>
         <IconButton
           color="inherit"
           onClick={onClose}
@@ -78,7 +81,7 @@ export const FileUploader: FC<FileUploaderProps> = (props) => {
       <DialogContent>
         <FileDropzone
           accept={{ '*/*': [] }}
-          caption="Max file size is 3 MB"
+          caption={t(tokens.fileManager.maxFileSize)}
           files={files}
           onDrop={handleDrop}
           onRemoveImage={() => undefined}

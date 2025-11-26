@@ -20,6 +20,8 @@ import { useTheme } from '@mui/material/styles';
 import { Chart } from 'src/components/chart';
 import { FileIcon } from 'src/components/file-icon';
 import { bytesToSize } from 'src/utils/bytes-to-size';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 const useChartOptions = (usage: string): ApexOptions => {
   const theme = useTheme();
@@ -130,6 +132,7 @@ const totals: Total[] = [
 ];
 
 export const StorageStats: FC = () => {
+  const { t } = useTranslation();
   const currentUsage = '75 GB';
   const currentUsagePercentage = 75;
   const chartOptions = useChartOptions(currentUsage);
@@ -138,8 +141,8 @@ export const StorageStats: FC = () => {
   return (
     <Card>
       <CardHeader
-        title="Storage"
-        subheader="Upgrade before reaching it"
+        title={t(tokens.fileManager.storage.title)}
+        subheader={t(tokens.fileManager.storage.subheader)}
       />
       <CardContent>
         <Stack alignItems="center">
@@ -162,13 +165,13 @@ export const StorageStats: FC = () => {
             variant="h6"
             sx={{ mb: 1 }}
           >
-            You’ve almost reached your limit
+            {t(tokens.fileManager.storage.nearLimit)}
           </Typography>
           <Typography
             color="text.secondary"
             variant="body2"
           >
-            You have used {currentUsagePercentage}% of your available storage.
+            {t(tokens.fileManager.storage.usage, { percentage: currentUsagePercentage })}
           </Typography>
         </Stack>
         <List
@@ -195,7 +198,10 @@ export const StorageStats: FC = () => {
                       color="text.secondary"
                       variant="body2"
                     >
-                      {size} • {total.itemsCount} items
+                      {t(tokens.fileManager.folderSummary, {
+                        size,
+                        count: total.itemsCount,
+                      })}
                     </Typography>
                   }
                 />
@@ -215,7 +221,7 @@ export const StorageStats: FC = () => {
           size="small"
           variant="contained"
         >
-          Upgrade Plan
+          {t(tokens.fileManager.storage.upgrade)}
         </Button>
       </CardActions>
     </Card>

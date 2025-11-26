@@ -10,8 +10,8 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 
 import { usePopover } from 'src/hooks/use-popover';
-
-const options: string[] = ['Invoices', 'Work', 'Business', 'Planning', 'Frontend', 'Design'];
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 interface ItemTagsProps {
   onChange?: (tags: string[]) => void;
@@ -21,10 +21,22 @@ interface ItemTagsProps {
 export const ItemTags: FC<ItemTagsProps> = (props) => {
   const { onChange, tags = [] } = props;
   const popover = usePopover<HTMLButtonElement>();
+  const { t } = useTranslation();
+  const options = useMemo(
+    () => [
+      t(tokens.fileManager.tagsOptions.invoices),
+      t(tokens.fileManager.tagsOptions.work),
+      t(tokens.fileManager.tagsOptions.business),
+      t(tokens.fileManager.tagsOptions.planning),
+      t(tokens.fileManager.tagsOptions.frontend),
+      t(tokens.fileManager.tagsOptions.design),
+    ],
+    [t]
+  );
 
   const availableOptions = useMemo(() => {
     return options.filter((option) => !tags.includes(option));
-  }, [tags]);
+  }, [options, tags]);
 
   const handleDelete = useCallback(
     (label: string) => {

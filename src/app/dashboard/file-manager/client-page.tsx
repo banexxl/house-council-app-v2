@@ -8,7 +8,7 @@ import FolderPlusIcon from '@untitled-ui/icons-react/build/esm/FolderPlus';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import { Grid, IconButton, useTheme, CircularProgress } from '@mui/material';
+import { Grid, IconButton, useTheme } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
@@ -30,6 +30,8 @@ import { StorageStats } from 'src/sections/dashboard/file-manager/storage-stats'
 import type { Item } from 'src/types/file-manager';
 import { PopupModal } from 'src/components/modal-dialog';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 type View = 'grid' | 'list';
 
@@ -221,6 +223,7 @@ interface ClientFileManagerPageProps {
 export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) => {
   const settings = useSettings();
   const theme = useTheme();
+  const { t } = useTranslation();
   const itemsSearch = useItemsSearch();
   const basePrefix = userId ? `users/${userId}` : '';
   const [prefix, setPrefix] = useState('');
@@ -238,6 +241,8 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
   const [deleteTargetType, setDeleteTargetType] = useState<'file' | 'folder' | null>(null);
   const [deleteDialogLoading, setDeleteDialogLoading] = useState(false);
   const [renameLoading, setRenameLoading] = useState(false);
+  const deleteDialogTitle =
+    deleteTargetType === 'folder' ? t(tokens.fileManager.deleteFolderTitle) : t(tokens.fileManager.deleteFileTitle);
   const handleNavigateUp = useCallback(() => {
     if (!prefix) return;
     const parts = prefix.split('/').filter(Boolean);
@@ -248,7 +253,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
   }, [detailsDialog, itemsSearch, prefix]);
 
   const pathParts = prefix ? prefix.split('/').filter(Boolean) : [];
-  const rootLabel = 'Root';
+  const rootLabel = t(tokens.fileManager.root);
   const normalizePrefixId = useCallback(
     (id: string) => {
       if (basePrefix && id.startsWith(`${basePrefix}/`)) {
@@ -267,7 +272,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
     async (itemId: string): Promise<void> => {
       const target = itemsStore.items.find((item) => item.id === itemId);
       if (!target) return;
-      let message = `Delete ${target.type} "${target.name}"? This cannot be undone.`;
+      let message = t(tokens.fileManager.deleteFileMessage, { name: target.name });
       if (target.type === 'folder') {
         let count = 0;
         try {
@@ -281,9 +286,12 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
           console.error('Failed to inspect folder contents', e);
         }
         if (count) {
-          message = `Delete folder "${target.name}" with ${count} item(s)? This cannot be undone.`;
+          message = t(tokens.fileManager.deleteFolderWithCountMessage, {
+            name: target.name,
+            count,
+          });
         } else {
-          message = `Delete folder "${target.name}"? This cannot be undone.`;
+          message = t(tokens.fileManager.deleteFolderMessage, { name: target.name });
         }
       }
       setDeleteTargetId(itemId);
@@ -291,7 +299,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
       setDeleteDialogMessage(message);
       setDeleteDialogOpen(true);
     },
-    [detailsDialog, itemsStore]
+    [itemsStore, t]
   );
 
   const handleUpload = useCallback(
@@ -341,7 +349,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
       try {
         if (target.type === 'folder') {
           await navigator.clipboard.writeText(target.fullPath ?? target.path ?? target.id);
-          toast.success('Folder path copied');
+          toast.success(t(tokens.fileManager.folderPathCopied));
           return;
         }
         const res = await fetch('/api/storage/sign-file', {
@@ -360,16 +368,16 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
         const url = data?.signedUrl;
         if (url) {
           await navigator.clipboard.writeText(url);
-          toast.success('Link copied');
+          toast.success(t(tokens.fileManager.linkCopied));
         } else {
           throw new Error('Missing signed URL');
         }
       } catch (error) {
         console.error('Copy link failed', error);
-        toast.error('Unable to copy link');
+        toast.error(t(tokens.fileManager.copyLinkFailed));
       }
     },
-    [itemsStore.items]
+    [itemsStore.items, t]
   );
 
   const handleRename = useCallback(
@@ -398,12 +406,12 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
         await itemsStore.refresh();
       } catch (error) {
         console.error('Rename failed', error);
-        toast.error('Rename failed');
+        toast.error(t(tokens.fileManager.renameFailed));
       } finally {
         setRenameLoading(false);
       }
     },
-    [detailsDialog, itemsStore]
+    [detailsDialog, itemsStore, t]
   );
 
   const handleConfirmDelete = useCallback(async () => {
@@ -462,7 +470,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
               >
                 <div>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="h4">File Manager</Typography>
+                    <Typography variant="h4">{t(tokens.nav.fileManager)}</Typography>
                   </Stack>
                 </div>
                 <Stack
@@ -479,7 +487,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                     }
                     variant="outlined"
                   >
-                    Add Folder
+                    {t(tokens.fileManager.addFolder)}
                   </Button>
                   <Button
                     onClick={uploadDialog.handleOpen}
@@ -490,7 +498,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                     }
                     variant="contained"
                   >
-                    Upload
+                    {t(tokens.common.btnUpload)}
                   </Button>
                 </Stack>
               </Stack>
@@ -638,12 +646,12 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
       />
       <FileUploader onClose={uploadDialog.handleClose} onUpload={handleUpload} open={uploadDialog.open} />
       <Dialog open={folderDialogOpen} onClose={() => !folderDialogLoading && setFolderDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Create folder</DialogTitle>
+        <DialogTitle>{t(tokens.fileManager.createFolderTitle)}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             fullWidth
-            label="Folder name"
+            label={t(tokens.fileManager.folderNameLabel)}
             margin="dense"
             required
             disabled={folderDialogLoading}
@@ -652,13 +660,13 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setFolderDialogOpen(false)} disabled={folderDialogLoading}>Cancel</Button>
+          <Button onClick={() => setFolderDialogOpen(false)} disabled={folderDialogLoading}>{t(tokens.common.btnCancel)}</Button>
           <Button
             onClick={handleCreateFolder}
             variant="contained"
             disabled={!newFolderName.trim() || folderDialogLoading}
           >
-            {folderDialogLoading ? 'Creating...' : 'Create'}
+            {folderDialogLoading ? t(tokens.fileManager.creatingFolder) : t(tokens.common.btnCreate)}
           </Button>
         </DialogActions>
       </Dialog>
@@ -672,10 +680,10 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
           setDeleteDialogMessage('');
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete folder"
+        title={deleteDialogTitle}
         type="confirmation"
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t(tokens.common.btnDelete)}
+        cancelText={t(tokens.common.btnCancel)}
         loading={deleteDialogLoading}
       >
         {deleteDialogMessage}

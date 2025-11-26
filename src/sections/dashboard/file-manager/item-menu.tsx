@@ -6,6 +6,8 @@ import Trash02Icon from '@untitled-ui/icons-react/build/esm/Trash02';
 import Menu from '@mui/material/Menu';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import SvgIcon from '@mui/material/SvgIcon';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 interface ItemMenuProps {
   anchorEl?: HTMLElement | null;
@@ -18,6 +20,7 @@ interface ItemMenuProps {
 
 export const ItemMenu: FC<ItemMenuProps> = (props) => {
   const { anchorEl, onClose, onDelete, onOpenDetails, onCopyLink, open = false } = props;
+  const { t } = useTranslation();
 
   return (
     <Menu
@@ -50,13 +53,13 @@ export const ItemMenu: FC<ItemMenuProps> = (props) => {
         <SvgIcon fontSize="small">
           <Link01Icon />
         </SvgIcon>
-        Copy Link
+        {t(tokens.fileManager.copyLink)}
       </MenuItem>
       <MenuItem onClick={onOpenDetails}>
         <SvgIcon fontSize="small">
           <InfoCircleIcon />
         </SvgIcon>
-        Details
+        {t(tokens.fileManager.details)}
       </MenuItem>
       <MenuItem
         onClick={onDelete}
@@ -65,7 +68,7 @@ export const ItemMenu: FC<ItemMenuProps> = (props) => {
         <SvgIcon fontSize="small">
           <Trash02Icon />
         </SvgIcon>
-        Delete
+        {t(tokens.common.btnDelete)}
       </MenuItem>
     </Menu>
   );

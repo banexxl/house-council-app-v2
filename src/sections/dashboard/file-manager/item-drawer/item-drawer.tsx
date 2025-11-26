@@ -17,6 +17,8 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 import type { Item } from 'src/types/file-manager';
 import { bytesToSize } from 'src/utils/bytes-to-size';
@@ -47,6 +49,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
     renameLoading = false,
     open = false,
   } = props;
+  const { t } = useTranslation();
   const [name, setName] = useState(item?.name || '');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -149,7 +152,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
                   disabled={renameLoading || name.trim() === '' || name.trim() === item.name}
                   onClick={() => {
                     onRename?.(item.id, name.trim(), item.type);
-                    toast.success('Updated successfully');
+                    toast.success(t(tokens.fileManager.renameSuccess));
                     setIsEditing(false);
                   }}
                 >
@@ -180,37 +183,37 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
           <Stack spacing={2}>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
-                Size
+                {t(tokens.fileManager.sizeLabel)}
               </Typography>
               <Typography variant="body2">{size}</Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
-                Created At
+                {t(tokens.fileManager.createdAtLabel)}
               </Typography>
               <Typography variant="body2">{created_at || '-'}</Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
-                Modified At
+                {t(tokens.fileManager.modifiedAtLabel)}
               </Typography>
               <Typography variant="body2">{updated_at || '-'}</Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
-                Tags
+                {t(tokens.fileManager.tagsLabel)}
               </Typography>
               <ItemTags tags={item.tags} onChange={(tags: string[]) => onTagsChange?.(item.id, tags)} />
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
-                Shared with
+                {t(tokens.fileManager.sharedWithLabel)}
               </Typography>
               <ItemShared isPublic={item.isPublic} shared={item.shared} />
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography color="text.secondary" variant="caption" sx={{ minWidth: 120 }}>
-                Actions
+                {t(tokens.common.lblActions)}
               </Typography>
               <IconButton onClick={() => onDelete?.(item.id)}>
                 <SvgIcon fontSize="small">
