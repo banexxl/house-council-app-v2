@@ -82,6 +82,19 @@ export async function DELETE(request: Request) {
   return NextResponse.json({ success: true });
 }
 
+const stripClientPrefix = (value: string, userId: string): string => {
+  const normalized = normalizeSegment(value);
+  if (!normalized.startsWith('clients/')) {
+    return normalized;
+  }
+  const parts = normalized.split('/').filter(Boolean);
+  // value can be "clients/<userId>/..." or "clients/<clientId>/..."
+  if (parts.length >= 2 && parts[0] === 'clients') {
+    return parts.slice(2).join('/');
+  }
+  return normalized;
+};
+
 export async function PUT(request: Request) {
   const auth = await ensureUserId();
   if ('error' in auth) {
@@ -94,7 +107,7 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json();
-  const prefix = normalizeSegment(body?.prefix);
+  const prefix = stripClientPrefix(body?.prefix, auth.userId);
   const newName = normalizeSegment(body?.newName);
 
   if (!prefix || !newName) {

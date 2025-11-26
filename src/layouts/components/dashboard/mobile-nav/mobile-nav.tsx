@@ -22,94 +22,6 @@ import { MobileNavSection } from './mobile-nav-section';
 
 const MOBILE_NAV_WIDTH = 280;
 
-const useCssVars = (color: NavColor): Record<string, string> => {
-  const theme = useTheme();
-
-  return useMemo((): Record<string, string> => {
-    switch (color) {
-      // Blend-in and discrete have no difference on mobile because
-      // there's a backdrop and differences are not visible
-      case 'blend-in':
-      case 'discrete':
-        if (theme.palette.mode === 'dark') {
-          return {
-            '--nav-bg': theme.palette.background.default,
-            '--nav-color': theme.palette.neutral[100],
-            '--nav-logo-border': theme.palette.neutral[700],
-            '--nav-section-title-color': theme.palette.neutral[400],
-            '--nav-item-color': theme.palette.neutral[400],
-            '--nav-item-hover-bg': 'rgba(255, 255, 255, 0.04)',
-            '--nav-item-active-bg': 'rgba(255, 255, 255, 0.04)',
-            '--nav-item-active-color': theme.palette.text.primary,
-            '--nav-item-disabled-color': theme.palette.neutral[600],
-            '--nav-item-icon-color': theme.palette.neutral[500],
-            '--nav-item-icon-active-color': theme.palette.primary.main,
-            '--nav-item-icon-disabled-color': theme.palette.neutral[700],
-            '--nav-item-chevron-color': theme.palette.neutral[700],
-            '--nav-scrollbar-color': theme.palette.neutral[400],
-          };
-        } else {
-          return {
-            '--nav-bg': theme.palette.background.default,
-            '--nav-color': theme.palette.text.primary,
-            '--nav-logo-border': theme.palette.neutral[100],
-            '--nav-section-title-color': theme.palette.neutral[400],
-            '--nav-item-color': theme.palette.text.secondary,
-            '--nav-item-hover-bg': theme.palette.action.hover,
-            '--nav-item-active-bg': theme.palette.action.selected,
-            '--nav-item-active-color': theme.palette.text.primary,
-            '--nav-item-disabled-color': theme.palette.neutral[400],
-            '--nav-item-icon-color': theme.palette.neutral[400],
-            '--nav-item-icon-active-color': theme.palette.primary.main,
-            '--nav-item-icon-disabled-color': theme.palette.neutral[400],
-            '--nav-item-chevron-color': theme.palette.neutral[400],
-            '--nav-scrollbar-color': theme.palette.neutral[900],
-          };
-        }
-
-      case 'evident':
-        if (theme.palette.mode === 'dark') {
-          return {
-            '--nav-bg': theme.palette.neutral[800],
-            '--nav-color': theme.palette.common.white,
-            '--nav-logo-border': theme.palette.neutral[700],
-            '--nav-section-title-color': theme.palette.neutral[400],
-            '--nav-item-color': theme.palette.neutral[400],
-            '--nav-item-hover-bg': 'rgba(255, 255, 255, 0.04)',
-            '--nav-item-active-bg': 'rgba(255, 255, 255, 0.04)',
-            '--nav-item-active-color': theme.palette.common.white,
-            '--nav-item-disabled-color': theme.palette.neutral[500],
-            '--nav-item-icon-color': theme.palette.neutral[400],
-            '--nav-item-icon-active-color': theme.palette.primary.main,
-            '--nav-item-icon-disabled-color': theme.palette.neutral[500],
-            '--nav-item-chevron-color': theme.palette.neutral[600],
-            '--nav-scrollbar-color': theme.palette.neutral[400],
-          };
-        } else {
-          return {
-            '--nav-bg': theme.palette.neutral[800],
-            '--nav-color': theme.palette.common.white,
-            '--nav-logo-border': theme.palette.neutral[700],
-            '--nav-section-title-color': theme.palette.neutral[400],
-            '--nav-item-color': theme.palette.neutral[400],
-            '--nav-item-hover-bg': 'rgba(255, 255, 255, 0.04)',
-            '--nav-item-active-bg': 'rgba(255, 255, 255, 0.04)',
-            '--nav-item-active-color': theme.palette.common.white,
-            '--nav-item-disabled-color': theme.palette.neutral[500],
-            '--nav-item-icon-color': theme.palette.neutral[400],
-            '--nav-item-icon-active-color': theme.palette.primary.main,
-            '--nav-item-icon-disabled-color': theme.palette.neutral[500],
-            '--nav-item-chevron-color': theme.palette.neutral[600],
-            '--nav-scrollbar-color': theme.palette.neutral[400],
-          };
-        }
-
-      default:
-        return {};
-    }
-  }, [theme, color]);
-};
-
 interface MobileNavProps {
   color?: NavColor;
   onClose?: () => void;
@@ -120,8 +32,7 @@ interface MobileNavProps {
 export const MobileNav: FC<MobileNavProps> = (props) => {
   const { color = 'evident', open, onClose, sections = [] } = props;
   const pathname = usePathname();
-  const cssVars = useCssVars(color);
-
+  const theme = useTheme();
   return (
     <Drawer
       anchor="left"
@@ -130,9 +41,10 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
       slotProps={{
         paper: {
           sx: {
-            ...cssVars,
-            backgroundColor: 'var(--nav-bg)',
-            color: 'var(--nav-color)',
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            display: 'flex',
+            flexDirection: 'column',
             width: MOBILE_NAV_WIDTH,
           },
         },
@@ -141,12 +53,9 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
     >
       <Scrollbar
         sx={{
-          height: '100%',
-          '& .simplebar-content': {
-            height: '100%',
-          },
+          flex: 1,
           '& .simplebar-scrollbar:before': {
-            background: 'var(--nav-scrollbar-color)',
+            background: theme.palette.neutral[400],
           },
 
         }}
@@ -171,12 +80,12 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
             />
             <Box
               sx={{
-                color: 'text.secondary',
+                color: theme.palette.text.primary,
                 fontSize: 20,
                 fontWeight: 800,
                 letterSpacing: '0.3px',
                 lineHeight: 2.5,
-                '& span': { color: 'primary.main' },
+                '& span': { color: theme.palette.primary.main },
                 transition: 'transform 0.2s',
                 '&:hover': { transform: 'scale(1.05)' },
                 mb: 2,
@@ -205,13 +114,13 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
           </Stack>
           <Box sx={{ p: 3 }}>
             <Typography
-              color="neutral.400"
+              color={theme.palette.primary.main}
               variant="subtitle1"
             >
               Need help?
             </Typography>
             <Typography
-              color="neutral.400"
+              color={theme.palette.neutral[400]}
               sx={{ mb: 2 }}
               variant="body2"
             >

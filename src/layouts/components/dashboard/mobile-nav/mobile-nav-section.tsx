@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 
 import { MobileNavItem } from './mobile-nav-item';
+import { useTheme } from '@mui/material';
 
 interface Item {
   disabled?: boolean;
@@ -49,7 +50,7 @@ const reduceChildRoutes = ({
   const checkPath = !!(item.path && pathname);
   const partialMatch = checkPath ? pathname.includes(item.path!) : false;
   const exactMatch = checkPath ? pathname === item.path : false;
-
+  const theme = useTheme();
   if (item.items) {
     acc.push(
       <MobileNavItem

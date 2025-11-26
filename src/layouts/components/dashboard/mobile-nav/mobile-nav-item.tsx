@@ -9,6 +9,7 @@ import Collapse from '@mui/material/Collapse';
 import SvgIcon from '@mui/material/SvgIcon';
 
 import { RouterLink } from 'src/components/router-link';
+import { useTheme } from '@mui/material';
 
 interface MobileNavItemProps {
   active?: boolean;
@@ -38,6 +39,7 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
   } = props;
   const [open, setOpen] = useState<boolean>(!!openProp);
 
+  const theme = useTheme();
   const handleToggle = useCallback((): void => {
     setOpen((prevOpen) => !prevOpen);
   }, []);
@@ -62,12 +64,12 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
         <Box
           sx={{
             borderRadius: '50%',
-            backgroundColor: 'var(--nav-item-icon-color)',
+            backgroundColor: theme.palette.primary.main,
             height: 4,
             opacity: 0, // remove this if you want it to be visible
             width: 4,
             ...(active && {
-              backgroundColor: 'var(--nav-item-icon-active-color)',
+              backgroundColor: theme.palette.primary.main,
               height: 6,
               opacity: 1,
               width: 6,
@@ -100,11 +102,11 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
             width: '100%',
             ...(active && {
               ...(depth === 0 && {
-                backgroundColor: 'var(--nav-item-active-bg)',
+                backgroundColor: theme.palette.action.selected,
               }),
             }),
             '&:hover': {
-              backgroundColor: 'var(--nav-item-hover-bg)',
+              backgroundColor: theme.palette.action.hover,
             },
           }}
         >
@@ -113,12 +115,12 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
               component="span"
               sx={{
                 alignItems: 'center',
-                color: 'var(--nav-item-icon-color)',
+                color: theme.palette.text.primary,
                 display: 'inline-flex',
                 justifyContent: 'center',
                 mr: 2,
                 ...(active && {
-                  color: 'var(--nav-item-icon-active-color)',
+                  color: theme.palette.primary.main,
                 }),
               }}
             >
@@ -128,7 +130,7 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
           <Box
             component="span"
             sx={{
-              color: 'var(--nav-item-color)',
+              color: theme.palette.text.primary,
               flexGrow: 1,
               fontFamily: (theme) => theme.typography.fontFamily,
               fontSize: depth > 0 ? 13 : 14,
@@ -136,10 +138,10 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
               lineHeight: '24px',
               whiteSpace: 'nowrap',
               ...(active && {
-                color: 'var(--nav-item-active-color)',
+                color: theme.palette.primary.main
               }),
               ...(disabled && {
-                color: 'var(--nav-item-disabled-color)',
+                color: theme.palette.text.disabled,
               }),
             }}
           >
@@ -147,7 +149,7 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
           </Box>
           <SvgIcon
             sx={{
-              color: 'var(--nav-item-chevron-color)',
+              color: theme.palette.text.primary,
               fontSize: 16,
               ml: 2,
             }}
@@ -196,11 +198,11 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
           width: '100%',
           ...(active && {
             ...(depth === 0 && {
-              backgroundColor: 'var(--nav-item-active-bg)',
+              backgroundColor: theme.palette.action.selected,
             }),
           }),
           '&:hover': {
-            backgroundColor: 'var(--nav-item-hover-bg)',
+            backgroundColor: theme.palette.action.hover,
           },
         }}
         {...linkProps}
@@ -210,12 +212,12 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
             component="span"
             sx={{
               alignItems: 'center',
-              color: 'var(--nav-item-icon-color)',
+              color: theme.palette.text.primary,
               display: 'inline-flex',
               justifyContent: 'center',
               mr: 2,
               ...(active && {
-                color: 'var(--nav-item-icon-active-color)',
+                color: theme.palette.primary.main,
               }),
             }}
           >
@@ -225,7 +227,7 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
         <Box
           component="span"
           sx={{
-            color: 'var(--nav-item-color)',
+            color: theme.palette.text.primary,
             flexGrow: 1,
             fontFamily: (theme) => theme.typography.fontFamily,
             fontSize: depth > 0 ? 13 : 14,
@@ -233,10 +235,10 @@ export const MobileNavItem: FC<MobileNavItemProps> = (props) => {
             lineHeight: '24px',
             whiteSpace: 'nowrap',
             ...(active && {
-              color: 'var(--nav-item-active-color)',
+              color: theme.palette.text.primary
             }),
             ...(disabled && {
-              color: 'var(--nav-item-disabled-color)',
+              color: theme.palette.text.disabled,
             }),
           }}
         >

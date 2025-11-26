@@ -11,7 +11,6 @@ import { SignedAvatar } from 'src/components/signed-avatar';
 import { TABLES } from 'src/libs/supabase/tables';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { getInitials } from 'src/utils/get-initials';
-import log from 'src/utils/logger';
 
 export const AccountButton: FC = () => {
 

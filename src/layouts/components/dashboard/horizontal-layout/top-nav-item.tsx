@@ -38,11 +38,13 @@ const renderChildItems = ({ items, depth = 0 }: { items: Item[]; depth?: number 
             >
               <ListItemText
                 primary={item.title}
-                primaryTypographyProps={{
-                  sx: {
-                    color: 'text.secondary',
-                    fontSize: 14,
-                    fontWeight: 500,
+                slotProps={{
+                  primary: {
+                    sx: {
+                      color: 'text.secondary',
+                      fontSize: 14,
+                      fontWeight: 500,
+                    },
                   },
                 }}
               />
