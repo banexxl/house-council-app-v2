@@ -31,9 +31,17 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
 
   useEffect(() => {
     setMounted(true);
-    const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (storedSettings) {
-      setInitialSettings(JSON.parse(storedSettings));
+    try {
+      const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (storedSettings) {
+        setInitialSettings(JSON.parse(storedSettings));
+        return;
+      }
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(initialAppSettings));
+      setInitialSettings(initialAppSettings);
+    } catch (error) {
+      console.error('Failed to initialize settings storage', error);
+      setInitialSettings(initialAppSettings);
     }
   }, []);
 
