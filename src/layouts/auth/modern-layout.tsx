@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { Logo } from 'src/components/logo';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
-import { useTheme } from '@mui/material';
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,13 +15,12 @@ export const Layout: FC<LayoutProps> = (props) => {
 
   const { children } = props;
 
-  const theme = useTheme();
-
   return (
     <Box
       sx={{
         display: 'flex',
         flex: '1 1 auto',
+        minHeight: '100vh',
         flexDirection: {
           xs: 'column-reverse',
           md: 'row',
@@ -103,9 +101,7 @@ export const Layout: FC<LayoutProps> = (props) => {
             md: '0 0 auto',
           },
           flexDirection: 'column',
-          justifyContent: {
-            md: 'center',
-          },
+          justifyContent: 'flex-start',
           maxWidth: '100%',
           p: {
             xs: 4,

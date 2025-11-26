@@ -43,8 +43,8 @@ export const MagicLinkForm = ({ ipAddress }: MagicLinkFormProps) => {
      })
 
      return (
-          <Box sx={{ textAlign: "center", height: "300px" }}>
-               <Typography color="text.secondary" variant="body2" sx={{ mb: 3 }}>
+          <Box sx={{ textAlign: "center" }}>
+               <Typography color="text.secondary" variant="body2" sx={{ mb: 2 }}>
                     We'll send you an email with a link to log in.
                </Typography>
                <form noValidate onSubmit={formik.handleSubmit}>
@@ -84,15 +84,15 @@ export const MagicLinkForm = ({ ipAddress }: MagicLinkFormProps) => {
                               type="email"
                               value={formik.values.email}
                          />
-                    </Stack>
-                    <Button
-                         fullWidth
-                         sx={{ mt: 3 }}
-                         size="large"
-                         type="submit"
-                         variant="contained"
-                         loading={formik.isSubmitting}
-                         disabled={!(formik.isValid && formik.dirty) || formik.errors.email == ""}
+                   </Stack>
+                   <Button
+                        fullWidth
+                        sx={{ mt: 2 }}
+                        size="large"
+                        type="submit"
+                        variant="contained"
+                        loading={formik.isSubmitting}
+                        disabled={!(formik.isValid && formik.dirty) || formik.errors.email == ""}
                     >
                          Send Magic Link
                     </Button>

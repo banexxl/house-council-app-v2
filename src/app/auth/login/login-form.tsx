@@ -78,7 +78,7 @@ const LoginForm = () => {
      const ipAddress = resolvedIp || undefined;
 
      return (
-          <div style={{ height: "400px" }}>
+          <div>
                <Stack sx={{ mb: 4 }} spacing={1}>
                     <Typography variant="h5">Log in</Typography>
                     <Typography color="text.secondary" variant="body2">
