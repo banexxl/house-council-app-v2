@@ -12,12 +12,20 @@ export async function POST(req: Request) {
           if (!bucket || !path) {
                return NextResponse.json({ error: 'bucket and path are required' }, { status: 400 });
           }
+          const normalizedPath = String(path).replace(/^\/+/, '');
+          console.log('normalizedPath', normalizedPath);
+
           const ttl = Math.max(60, Math.min(ttlSeconds, 60 * 60 * 24 * 7)); // clamp to [1m,7d]
-          const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(path, ttl);
+          const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(normalizedPath, ttl);
+
           if (error || !data?.signedUrl) {
-               return NextResponse.json({ error: error?.message ?? 'sign failed' }, { status: 500 });
+               const status = (error as any)?.status ?? (error as any)?.statusCode;
+               const message = error?.message ?? 'sign failed';
+               const httpStatus =
+                    status && Number(status) >= 400 && Number(status) < 600 ? Number(status) : 500;
+               return NextResponse.json({ error: message }, { status: httpStatus });
           }
-          return NextResponse.json({ signedUrl: data.signedUrl, ttlSeconds: ttl });
+          return NextResponse.json({ signedUrl: data.signedUrl, ttlSeconds: ttl, path: normalizedPath });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? 'unexpected' }, { status: 500 });
      }

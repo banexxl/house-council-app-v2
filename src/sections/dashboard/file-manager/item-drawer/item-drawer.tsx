@@ -19,6 +19,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import type { Item } from 'src/types/file-manager';
 import { bytesToSize } from 'src/utils/bytes-to-size';
@@ -52,11 +53,58 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
   const { t } = useTranslation();
   const [name, setName] = useState(item?.name || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const isImage = (ext?: string) => {
+    if (!ext) return false;
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(ext.toLowerCase());
+  };
+  const getExt = (it?: Item) => {
+    if (!it) return undefined;
+    if (it.extension) return it.extension;
+    const parts = it.name.split('.');
+    return parts.length > 1 ? parts.pop() : undefined;
+  };
 
   useEffect(() => {
     setName(item?.name || '');
     setIsEditing(false);
   }, [item?.name]);
+
+  useEffect(() => {
+    const loadPreview = async () => {
+      const ext = getExt(item);
+      const targetPath = item?.fullPath ?? item?.path ?? item?.id;
+      if (!item || item.type !== 'file' || !isImage(ext) || !item.bucket || !targetPath) {
+        setPreviewUrl(null);
+        return;
+      }
+      try {
+        setPreviewLoading(true);
+        setPreviewUrl(null);
+        const res = await fetch('/api/storage/sign-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bucket: item.bucket,
+            path: targetPath,
+            ttlSeconds: 60 * 30,
+          }),
+        });
+        if (!res.ok) {
+          throw new Error('Failed to sign preview');
+        }
+        const data = await res.json();
+        setPreviewUrl(data?.signedUrl ?? null);
+      } catch (err) {
+        console.error('Preview load failed', err);
+        setPreviewUrl(null);
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+    loadPreview();
+  }, [item]);
 
   let content: JSX.Element | null = null;
 
@@ -107,10 +155,29 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
                 borderWidth: 1,
                 display: 'inline-flex',
                 justifyContent: 'center',
+                alignItems: 'center',
                 p: 2.5,
+                minHeight: 96,
+                minWidth: 96,
               }}
             >
-              <ItemIcon type={item.type} extension={item.extension} />
+              {previewLoading ? (
+                <CircularProgress size={24} />
+              ) : previewUrl ? (
+                <Box
+                  component="img"
+                  src={previewUrl}
+                  alt={item.name}
+                  sx={{
+                    maxHeight: 80,
+                    maxWidth: 80,
+                    objectFit: 'contain',
+                    borderRadius: 1,
+                  }}
+                />
+              ) : (
+                <ItemIcon type={item.type} extension={item.extension} />
+              )}
             </Box>
             <Stack spacing={0.5} sx={{ minWidth: 0 }}>
               {isEditing ? (

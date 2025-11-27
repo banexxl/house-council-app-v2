@@ -152,7 +152,14 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix
               : null,
         last_accessed_at: item.last_accessed_at ? new Date(item.last_accessed_at).getTime() : null,
         path: item.path,
-        fullPath: basePrefix ? `${basePrefix}/${item.path}` : item.path,
+        fullPath: (() => {
+          const path = item.path ?? '';
+          if (!path) return item.id;
+          if (basePrefix && (path.startsWith(basePrefix) || path.startsWith('clients/'))) {
+            return path;
+          }
+          return basePrefix ? `${basePrefix}/${path}` : path;
+        })(),
         isFavorite: false,
       })) as Item[];
       setState({
@@ -243,6 +250,41 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
   const [renameLoading, setRenameLoading] = useState(false);
   const deleteDialogTitle =
     deleteTargetType === 'folder' ? t(tokens.fileManager.deleteFolderTitle) : t(tokens.fileManager.deleteFileTitle);
+
+  const signFileUrl = useCallback(
+    async (item: Item, { silent = false }: { silent?: boolean } = {}): Promise<string | null> => {
+      const targetPath = (item.fullPath ?? item.path ?? item.id)?.replace(/^\/+/, '');
+      if (!item.bucket || !targetPath) {
+        if (!silent) {
+          toast.error(t(tokens.fileManager.copyLinkFailed));
+        }
+        return null;
+      }
+      try {
+        const res = await fetch('/api/storage/sign-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bucket: item.bucket,
+            path: targetPath,
+            ttlSeconds: 60 * 30,
+          }),
+        });
+        if (!res.ok) {
+          throw new Error('Failed to sign file');
+        }
+        const data = await res.json();
+        return data?.signedUrl ?? null;
+      } catch (err) {
+        console.error('signFileUrl failed', err);
+        if (!silent) {
+          toast.error(t(tokens.fileManager.copyLinkFailed));
+        }
+        return null;
+      }
+    },
+    [t]
+  );
   const handleNavigateUp = useCallback(() => {
     if (!prefix) return;
     const parts = prefix.split('/').filter(Boolean);
@@ -605,7 +647,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                   items={itemsStore.items}
                   onDelete={handleDelete}
                   onFavorite={itemsStore.handleFavorite}
-                  onOpen={(id) => {
+                  onOpen={async (id) => {
                     const target = itemsStore.items.find((item) => item.id === id);
                     if (target?.type === 'folder') {
                       const nextPrefix = normalizePrefixId(target.id);
@@ -615,6 +657,25 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                       return;
                     }
                     detailsDialog.handleOpen(id);
+                    if (target && target.type === 'file') {
+                      if (typeof window !== 'undefined') {
+                        const pendingTab = window.open('about:blank', '_blank', 'noopener,noreferrer');
+                        const url = await signFileUrl(target);
+                        if (url) {
+                          if (pendingTab) {
+                            pendingTab.location.replace(url);
+                          } else {
+                            const opened = window.open(url, '_blank', 'noopener,noreferrer');
+                            if (!opened) {
+                              toast.error(t(tokens.fileManager.copyLinkFailed));
+                            }
+                          }
+                        } else {
+                          pendingTab?.close();
+                          toast.error(t(tokens.fileManager.copyLinkFailed));
+                        }
+                      }
+                    }
                   }}
                   onOpenDetails={(id) => {
                     detailsDialog.handleOpen(id);
