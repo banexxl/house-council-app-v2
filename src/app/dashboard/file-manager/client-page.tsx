@@ -217,7 +217,6 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix
         name: item.name,
         type: item.type === 'folder' ? 'folder' as const : 'file' as const,
         bucket: item.bucket,
-        size: item.size ?? 0,
         created_at: item.type === 'folder'
           ? toTimestamp(item.created_at)
             ?? toTimestamp(item.updated_at)
