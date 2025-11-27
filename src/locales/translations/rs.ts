@@ -574,7 +574,8 @@ export const rs = {
      [tokens.nav.subscriptions]: 'Pretplate',
      [tokens.nav.socialMedia]: 'Društvene mreže',
      [tokens.nav.verifyCode]: 'Verifikacioni kod',
-
+     [tokens.nav.serviceRequests]: 'Servisne usluge',
+     // Polls
      [tokens.polls.details]: 'Detalji ankete',
      [tokens.polls.listTitle]: 'Ankete',
      [tokens.polls.createTitle]: 'Kreiraj anketu',

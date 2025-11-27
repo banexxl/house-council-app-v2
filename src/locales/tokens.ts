@@ -392,6 +392,7 @@ export const tokens = {
     subscriptions: 'nav.subscriptions',
     socialMedia: 'nav.socialMedia',
     verifyCode: 'nav.verifyCode',
+    serviceRequests: 'nav.serviceRequests',
   },
   fileManager: {
     title: 'fileManager.title',

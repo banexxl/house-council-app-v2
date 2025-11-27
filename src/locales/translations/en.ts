@@ -368,6 +368,7 @@ export const en = {
   [tokens.nav.socialMedia]: 'Social Media',
   [tokens.nav.subscriptions]: 'Subscriptions',
   [tokens.nav.verifyCode]: 'Verify Code',
+  [tokens.nav.serviceRequests]: 'Service Requests',
   //#endregion
   // Polls help dialog
   [tokens.polls.help.title]: 'How the poll system works',

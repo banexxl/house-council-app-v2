@@ -1,3 +1,5 @@
+'use client';
+
 import type { FC } from 'react';
 import FaceSmileIcon from '@untitled-ui/icons-react/build/esm/FaceSmile';
 import Attachment01Icon from '@untitled-ui/icons-react/build/esm/Attachment01';
@@ -16,17 +18,13 @@ import type { Theme } from '@mui/material/styles/createTheme';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { getInitials } from 'src/utils/get-initials';
 
-export const PostCommentAdd: FC = (props) => {
+export const IncidentCommentAdd: FC = (props) => {
   const smUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
   const user = useMockedUser();
 
   return (
     <div {...props}>
-      <Stack
-        alignItems="flex-start"
-        direction="row"
-        spacing={2}
-      >
+      <Stack alignItems="flex-start" direction="row" spacing={2}>
         <Avatar
           src={user.avatar}
           sx={{
@@ -37,12 +35,7 @@ export const PostCommentAdd: FC = (props) => {
           {getInitials(user.name)}
         </Avatar>
         <Box sx={{ flexGrow: 1 }}>
-          <OutlinedInput
-            fullWidth
-            multiline
-            placeholder="Add a comment"
-            rows={3}
-          />
+          <OutlinedInput fullWidth multiline placeholder="Add an incident update" rows={3} />
           <Stack
             alignItems="center"
             direction="row"
@@ -50,11 +43,7 @@ export const PostCommentAdd: FC = (props) => {
             justifyContent="space-between"
             sx={{ mt: 3 }}
           >
-            <Stack
-              alignItems="center"
-              direction="row"
-              spacing={1}
-            >
+            <Stack alignItems="center" direction="row" spacing={1}>
               {!smUp && (
                 <IconButton>
                   <SvgIcon>
@@ -83,7 +72,7 @@ export const PostCommentAdd: FC = (props) => {
               )}
             </Stack>
             <div>
-              <Button variant="contained">Send</Button>
+              <Button variant="contained">Log update</Button>
             </div>
           </Stack>
         </Box>
@@ -91,3 +80,6 @@ export const PostCommentAdd: FC = (props) => {
     </div>
   );
 };
+
+// Backwards compatibility for old imports
+export const PostCommentAdd = IncidentCommentAdd;

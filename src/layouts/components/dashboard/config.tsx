@@ -16,6 +16,7 @@ import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
 import ChatIcon from "@mui/icons-material/Chat";
 import StorageIcon from '@mui/icons-material/Storage';
+import ConstructionIcon from '@mui/icons-material/Construction';
 
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
@@ -252,6 +253,19 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
             <StorageIcon />
           </SvgIcon>
         )
+      },
+      {
+        title: t(tokens.nav.serviceRequests),
+        roles: ["client", "clientMember", "admin"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <ConstructionIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["client", "clientMember", "admin"] },
+          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "clientMember", "admin"] },
+        ]
       },
       {
         title: t(tokens.nav.chat),

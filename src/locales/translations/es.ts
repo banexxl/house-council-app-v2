@@ -488,6 +488,7 @@ export const es = {
   [tokens.nav.socialMedia]: 'Redes sociales',
   [tokens.nav.subscriptions]: 'Suscripciones',
   [tokens.nav.verifyCode]: 'Verificar código',
+  [tokens.nav.serviceRequests]: 'Solicitudes de servicio',
   //#endregion
   //#region Locations
   [tokens.locations.geoLocationAvailable]: 'Geolocalización disponible',

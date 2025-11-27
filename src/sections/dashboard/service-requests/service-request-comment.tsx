@@ -6,27 +6,18 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-interface PostCommentProps {
+interface IncidentCommentProps {
   authorAvatar: string;
   authorName: string;
   authorRole: string;
   content: string;
-  created_at: number;
-  isLiked: boolean;
-  likes: number;
+  created_at: number | string;
+  isLiked?: boolean;
+  likes?: number;
 }
 
-export const PostComment: FC<PostCommentProps> = (props) => {
-  const {
-    authorAvatar,
-    authorName,
-    authorRole,
-    content,
-    created_at,
-    isLiked: isLikedProp,
-    likes: likesProp,
-    ...other
-  } = props;
+export const IncidentComment: FC<IncidentCommentProps> = (props) => {
+  const { authorAvatar, authorName, authorRole, content, created_at, ...other } = props;
 
   return (
     <Stack
@@ -52,18 +43,17 @@ export const PostComment: FC<PostCommentProps> = (props) => {
             justifyContent: 'space-between',
           }}
         >
-          <Typography variant="subtitle2">{authorName}</Typography>
-          <Typography
-            color="text.secondary"
-            variant="caption"
-          >
-            {formatDistanceToNow(created_at, { addSuffix: true })}
+          <Box>
+            <Typography variant="subtitle2">{authorName}</Typography>
+            <Typography color="text.secondary" variant="caption">
+              {authorRole}
+            </Typography>
+          </Box>
+          <Typography color="text.secondary" variant="caption">
+            {formatDistanceToNow(new Date(created_at), { addSuffix: true })}
           </Typography>
         </Box>
-        <Typography
-          variant="body2"
-          sx={{ mt: 1 }}
-        >
+        <Typography variant="body2" sx={{ mt: 1 }}>
           {content}
         </Typography>
       </Box>
@@ -71,12 +61,15 @@ export const PostComment: FC<PostCommentProps> = (props) => {
   );
 };
 
-PostComment.propTypes = {
+IncidentComment.propTypes = {
   authorAvatar: PropTypes.string.isRequired,
   authorName: PropTypes.string.isRequired,
   authorRole: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
-  created_at: PropTypes.number.isRequired,
-  isLiked: PropTypes.bool.isRequired,
-  likes: PropTypes.number.isRequired,
+  created_at: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  isLiked: PropTypes.bool,
+  likes: PropTypes.number,
 };
+
+// Backwards compatibility for old imports
+export const PostComment = IncidentComment;

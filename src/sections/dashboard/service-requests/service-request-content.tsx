@@ -9,7 +9,7 @@ const components = {
   code: Code,
 };
 
-const PostContentRoot = styled('div')(({ theme }) => ({
+const IncidentContentRoot = styled('div')(({ theme }) => ({
   color: theme.palette.text.primary,
   fontFamily: theme.typography.fontFamily,
   '& code': {
@@ -43,20 +43,23 @@ const PostContentRoot = styled('div')(({ theme }) => ({
   },
 }));
 
-interface PostContentProps {
+interface IncidentContentProps {
   content: string;
 }
 
-export const PostContent: FC<PostContentProps> = (props) => {
+export const IncidentContent: FC<IncidentContentProps> = (props) => {
   const { content } = props;
 
   return (
-    <PostContentRoot>
+    <IncidentContentRoot>
       <Markdown components={components}>{content}</Markdown>
-    </PostContentRoot>
+    </IncidentContentRoot>
   );
 };
 
-PostContent.propTypes = {
+IncidentContent.propTypes = {
   content: PropTypes.string.isRequired,
 };
+
+// Backwards compatibility for old imports
+export const PostContent = IncidentContent;

@@ -67,6 +67,11 @@ export const TABLES = {
      TENANT_POST_LIKES: process.env.NEXT_PUBLIC_SUPABASE_TBL_TENANT_POST_LIKES!,
      TENANT_COMMENT_LIKES: process.env.NEXT_PUBLIC_SUPABASE_TBL_TENANT_COMMENT_LIKES!,
      TENANT_POST_COMMENTS: process.env.NEXT_PUBLIC_SUPABASE_TBL_TENANT_POST_COMMENTS!,
+
+     // Incident reports
+     INCIDENT_REPORTS: process.env.NEXT_PUBLIC_SUPABASE_TBL_INCIDENT_REPORTS,
+     INCIDENT_REPORT_IMAGES: process.env.NEXT_PUBLIC_SUPABASE_TBL_INCIDENT_REPORT_IMAGES,
+     INCIDENT_REPORT_COMMENTS: process.env.NEXT_PUBLIC_SUPABASE_TBL_INCIDENT_REPORT_COMMENTS,
 } as const;
 
 // Type for all table names
@@ -94,6 +99,6 @@ export function getTableMappingForDev(): Record<string, string> {
      }
 
      return Object.fromEntries(
-          Object.entries(TABLES).map(([key, value]) => [key, value])
+          Object.entries(TABLES).map(([key, value]) => [key, value ?? ''])
      );
 }

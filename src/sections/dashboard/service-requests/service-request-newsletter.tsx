@@ -2,11 +2,14 @@ import type { FC } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import { Grid } from '@mui/material';;
+import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-export const PostNewsletter: FC = () => {
+import { RouterLink } from 'src/components/router-link';
+import { paths } from 'src/paths';
+
+export const IncidentCallout: FC = () => {
   return (
     <Card
       elevation={16}
@@ -15,10 +18,7 @@ export const PostNewsletter: FC = () => {
         px: 8,
       }}
     >
-      <Grid
-        container
-        spacing={3}
-      >
+      <Grid container spacing={3}>
         <Grid
           size={{ xs: 12, md: 6 }}
           sx={{
@@ -28,7 +28,7 @@ export const PostNewsletter: FC = () => {
             },
           }}
         >
-          <Typography variant="h4">Join the developer list</Typography>
+          <Typography variant="h4">Need to notify residents?</Typography>
           <Typography
             color="text.secondary"
             variant="body2"
@@ -37,22 +37,18 @@ export const PostNewsletter: FC = () => {
               mt: 1,
             }}
           >
-            Subscribe to our newsletter to make sure you don&apos;t miss anything.
+            Capture emails to send maintenance updates or schedule follow-ups for this incident.
           </Typography>
-          <TextField
-            fullWidth
-            label="Email address"
-            name="email"
-            sx={{ flexGrow: 1 }}
-            type="email"
-          />
+          <TextField fullWidth label="Contact email" name="email" sx={{ flexGrow: 1 }} type="email" />
           <Button
+            component={RouterLink}
+            href={paths.dashboard.serviceRequests.index}
             fullWidth
             size="large"
             sx={{ mt: 2 }}
             variant="contained"
           >
-            Subscribe
+            View incident queue
           </Button>
         </Grid>
         <Grid
@@ -75,3 +71,6 @@ export const PostNewsletter: FC = () => {
     </Card>
   );
 };
+
+// Backwards compatibility for old imports
+export const PostNewsletter = IncidentCallout;

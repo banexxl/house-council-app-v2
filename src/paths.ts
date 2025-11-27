@@ -32,10 +32,10 @@ export const paths = {
       index: '/dashboard/locations',
       new: '/dashboard/locations/new',
     },
-    blog: {
-      index: '/dashboard/blog',
-      postDetails: '/dashboard/blog/:postId',
-      postCreate: '/dashboard/blog/create',
+    serviceRequests: {
+      index: '/dashboard/service-requests',
+      details: '/dashboard/service-requests/:requestId',
+      create: '/dashboard/service-requests/create',
     },
     calendar: '/dashboard/calendar',
     chat: '/dashboard/chat',
