@@ -1,5 +1,21 @@
 import { redirect } from "next/navigation";
+import { getViewer } from "src/libs/supabase/server-auth";
+import { logout } from "./auth/actions";
 
-export default function Page() {
-     redirect("/dashboard/social/profile");
+export default async function Page() {
+
+     const { client, tenant, admin, clientMember } = await getViewer();
+     if (!client && !tenant && !admin && !clientMember) {
+          await logout();
+          redirect('/auth/login');
+     }
+
+     if (tenant) {
+          redirect('/dashboard/social/profile');
+     }
+
+     if (client || clientMember) {
+          redirect('/dashboard');
+     }
+
 }
