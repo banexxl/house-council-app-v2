@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Upload01Icon from '@untitled-ui/icons-react/build/esm/Upload01';
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import FolderPlusIcon from '@untitled-ui/icons-react/build/esm/FolderPlus';
+import RefreshCcw01Icon from '@untitled-ui/icons-react/build/esm/RefreshCcw01';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -630,17 +631,32 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                       );
                     })}
                   </Breadcrumbs>
-                  {prefix && (
+                  <Stack direction="row" alignItems="center" spacing={1}>
                     <IconButton
                       size="small"
                       onClick={handleNavigateUp}
-                      sx={{ ml: 1 }}
+                      disabled={!prefix}
+                      aria-label="Go back"
+                      title="Go back"
                     >
                       <SvgIcon fontSize="small" sx={{ color: theme.palette.primary.main }}>
                         <ArrowLeftIcon />
                       </SvgIcon>
                     </IconButton>
-                  )}
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        void itemsStore.refresh();
+                      }}
+                      disabled={itemsStore.loading}
+                      aria-label="Refresh files"
+                      title="Refresh files"
+                    >
+                      <SvgIcon fontSize="small" sx={{ color: theme.palette.primary.main }}>
+                        <RefreshCcw01Icon />
+                      </SvgIcon>
+                    </IconButton>
+                  </Stack>
                 </Stack>
                 <ItemList
                   count={itemsStore.itemsCount}
