@@ -53,13 +53,14 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
     popover.handleClose();
   }, [item.id, onCopyLink, popover]);
 
-  let size = bytesToSize(item.size);
-
-  if (item.type === 'folder') {
-    size = t(tokens.fileManager.folderSummary, { size, count: item.itemsCount });
-  }
+  const folderCount = item.itemsCount ?? 0;
+  const sizeForDisplay = bytesToSize(item.size);
+  const size = item.type === 'folder'
+    ? t(tokens.fileManager.folderSummary, { size: sizeForDisplay, count: folderCount })
+    : sizeForDisplay;
 
   const created_at = item.created_at ? format(item.created_at, 'MMM dd, yyyy') : null;
+  const showCreatedAt = item.type !== 'folder';
   const showShared = !item.isPublic && (item.shared || []).length > 0;
 
   return (
@@ -133,24 +134,26 @@ export const ItemListRow: FC<ItemListRowProps> = (props) => {
               </Typography>
             </div>
           </Stack>
-          <Stack
-            spacing={0.25}
-            sx={{ minWidth: 160 }}
-          >
-            <Typography
-              noWrap
-              variant="subtitle2"
+          {showCreatedAt && (
+            <Stack
+              spacing={0.25}
+              sx={{ minWidth: 160 }}
             >
-              {t(tokens.fileManager.createdAtLabel)}
-            </Typography>
-            <Typography
-              color="text.secondary"
-              noWrap
-              variant="body2"
-            >
-              {created_at ?? '-'}
-            </Typography>
-          </Stack>
+              <Typography
+                noWrap
+                variant="subtitle2"
+              >
+                {t(tokens.fileManager.createdAtLabel)}
+              </Typography>
+              <Typography
+                color="text.secondary"
+                noWrap
+                variant="body2"
+              >
+                {created_at ?? '-'}
+              </Typography>
+            </Stack>
+          )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 120 }}>
             {item.isPublic && (
               <Tooltip title={t(tokens.fileManager.public)}>

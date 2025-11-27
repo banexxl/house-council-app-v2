@@ -54,13 +54,14 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
     popover.handleClose();
   }, [item.id, onCopyLink, popover]);
 
-  let size = bytesToSize(item.size);
-
-  if (item.type === 'folder') {
-    size = t(tokens.fileManager.folderSummary, { size, count: item.itemsCount });
-  }
+  const folderCount = item.itemsCount ?? 0;
+  const sizeForDisplay = bytesToSize(item.size);
+  const size = item.type === 'folder'
+    ? t(tokens.fileManager.folderSummary, { size: sizeForDisplay, count: folderCount })
+    : sizeForDisplay;
 
   const created_at = item.created_at ? format(item.created_at, 'MMM dd, yyyy') : null;
+  const showCreatedAt = item.type !== 'folder';
   const showShared = !item.isPublic && (item.shared || []).length > 0;
 
   return (
@@ -182,12 +183,14 @@ export const ItemListCard: FC<ItemListCardProps> = (props) => {
               )}
             </div>
           </Stack>
-          <Typography
-            color="text.secondary"
-            variant="caption"
-          >
-            {t(tokens.fileManager.createdAtOn, { date: created_at ?? '-' })}
-          </Typography>
+          {showCreatedAt && (
+            <Typography
+              color="text.secondary"
+              variant="caption"
+            >
+              {t(tokens.fileManager.createdAtOn, { date: created_at ?? '-' })}
+            </Typography>
+          )}
         </Box>
       </Card>
       <ItemMenu

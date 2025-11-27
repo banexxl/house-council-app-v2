@@ -36,12 +36,39 @@ export async function GET(request: Request) {
   const bucket = process.env.SUPABASE_S3_CLIENTS_DATA_BUCKET!;
   const supabase = await useServerSideSupabaseAnonClient();
   const rootPrefix = ['clients', auth.userId, prefix].filter(Boolean).join('/');
+  const basePrefix = ['clients', clientId].join('/');
 
   const totalsByExt: Record<string, { size: number; count: number }> = {};
   let totalSize = 0;
+  const folderCounts: Record<string, number> = {};
+  const folderSizes: Record<string, number> = {};
+  const folderDates: Record<string, number | null> = {};
 
   const stack: string[] = [rootPrefix];
   const visited = new Set<string>();
+
+  const toRelative = (fullPath: string) => {
+    if (fullPath === basePrefix || fullPath === rootPrefix) return '';
+    if (fullPath.startsWith(`${basePrefix}/`)) {
+      return fullPath.slice(basePrefix.length + 1);
+    }
+    if (fullPath.startsWith(`${rootPrefix}/`)) {
+      return fullPath.slice(rootPrefix.length + 1);
+    }
+    return fullPath;
+  };
+
+  const ensureFolderEntry = (relPath: string, createdAt?: string | null) => {
+    if (folderCounts[relPath] === undefined) {
+      folderCounts[relPath] = 0;
+    }
+    if (folderSizes[relPath] === undefined) {
+      folderSizes[relPath] = 0;
+    }
+    if (folderDates[relPath] === undefined) {
+      folderDates[relPath] = createdAt ? new Date(createdAt).getTime() : null;
+    }
+  };
 
   const listFolder = async (folder: string) => {
     let offset = 0;
@@ -60,6 +87,17 @@ export async function GET(request: Request) {
         const isFolder = item.metadata === null;
         if (isFolder) {
           const nextPrefix = [folder, item.name].filter(Boolean).join('/');
+          ensureFolderEntry(toRelative(nextPrefix), item.created_at ?? item.updated_at ?? item.last_accessed_at ?? null);
+          const folderRelativePath = toRelative(nextPrefix);
+          const parentParts = folderRelativePath.split('/').filter(Boolean);
+          let cursor = '';
+          ensureFolderEntry(cursor);
+          folderCounts[cursor] += 1;
+          for (const part of parentParts.slice(0, -1)) {
+            cursor = cursor ? `${cursor}/${part}` : part;
+            ensureFolderEntry(cursor);
+            folderCounts[cursor] += 1;
+          }
           if (!visited.has(nextPrefix)) {
             stack.push(nextPrefix);
           }
@@ -75,6 +113,19 @@ export async function GET(request: Request) {
           size: prev.size + size,
           count: prev.count + 1,
         };
+
+        const fileRelativePath = toRelative([folder, item.name].filter(Boolean).join('/'));
+        const parts = fileRelativePath.split('/').filter(Boolean);
+        let cursor = '';
+        ensureFolderEntry(cursor);
+        folderCounts[cursor] += 1;
+        folderSizes[cursor] += size;
+        for (const part of parts.slice(0, -1)) {
+          cursor = cursor ? `${cursor}/${part}` : part;
+          ensureFolderEntry(cursor);
+          folderCounts[cursor] += 1;
+          folderSizes[cursor] += size;
+        }
       }
 
       if (data.length < PAGE_LIMIT) break;
@@ -90,7 +141,7 @@ export async function GET(request: Request) {
       await listFolder(current);
     }
 
-    return NextResponse.json({ size: totalSize, totalsByExt });
+    return NextResponse.json({ size: totalSize, totalsByExt, folderCounts, folderSizes, folderDates });
   } catch (error: any) {
     console.error('Failed to calculate storage size', error);
     return NextResponse.json({ error: 'Failed to calculate storage size' }, { status: 500 });

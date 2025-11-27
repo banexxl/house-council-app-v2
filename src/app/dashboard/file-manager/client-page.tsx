@@ -104,18 +104,93 @@ const useItemsSearch = () => {
 interface ItemsStoreState {
   items: Item[];
   itemsCount: number;
+  folderCounts: Record<string, number>;
+  folderSizes: Record<string, number>;
+  folderDates: Record<string, number | null>;
 }
 
 const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix: string) => {
   const [state, setState] = useState<ItemsStoreState>({
     items: [],
     itemsCount: 0,
+    folderCounts: {},
+    folderSizes: {},
+    folderDates: {},
   });
   const [loading, setLoading] = useState(false);
 
   const handleItemsGet = useCallback(async () => {
     try {
       setLoading(true);
+      const normalizeFolderKey = (path: string) => {
+        const clean = (path || '').replace(/^\/+|\/+$/g, '');
+        const currentPrefix = (prefix || '').replace(/^\/+|\/+$/g, '');
+        if (currentPrefix && clean.startsWith(`${currentPrefix}/`)) {
+          return clean.slice(currentPrefix.length + 1);
+        }
+        if (basePrefix && clean.startsWith(`${basePrefix}/`)) {
+          return clean.slice(basePrefix.length + 1);
+        }
+        if (basePrefix && clean === basePrefix) return '';
+        return clean.replace(/^clients\/[^/]+\/?/, '');
+      };
+      const resolveFolderMeta = (
+        map: Record<string, number>,
+        path: string,
+      ): number => {
+        const clean = (path || '').replace(/^\/+|\/+$/g, '');
+        const noClient = clean.replace(/^clients\/[^/]+\/?/, '');
+        const currentPrefix = (prefix || '').replace(/^\/+|\/+$/g, '');
+        const variants = Array.from(
+          new Set([
+            normalizeFolderKey(clean),
+            clean,
+            noClient,
+            currentPrefix && noClient.startsWith(`${currentPrefix}/`)
+              ? noClient.slice(currentPrefix.length + 1)
+              : noClient,
+          ].filter((v) => v !== undefined && v !== null)),
+        );
+        for (const key of variants) {
+          if (key !== undefined && key !== null && key in map) return map[key] ?? 0;
+        }
+        return 0;
+      };
+      const resolveFolderDate = (path: string): number | null => {
+        const clean = (path || '').replace(/^\/+|\/+$/g, '');
+        const noClient = clean.replace(/^clients\/[^/]+\/?/, '');
+        const currentPrefix = (prefix || '').replace(/^\/+|\/+$/g, '');
+        const variants = Array.from(
+          new Set([
+            normalizeFolderKey(clean),
+            clean,
+            noClient,
+            currentPrefix && noClient.startsWith(`${currentPrefix}/`)
+              ? noClient.slice(currentPrefix.length + 1)
+              : noClient,
+          ].filter((v) => v !== undefined && v !== null)),
+        );
+        for (const key of variants) {
+          if (key !== undefined && key !== null && key in folderDates) {
+            const val = folderDates[key];
+            if (val) return val;
+          }
+        }
+        return null;
+      };
+      const sizePromise = (async () => {
+        const params = new URLSearchParams();
+        if (prefix) params.set('prefix', prefix);
+        const query = params.toString();
+        const res = await fetch(query ? `/api/storage/size?${query}` : '/api/storage/size', { cache: 'no-store' });
+        if (!res.ok) return { counts: {}, sizes: {}, dates: {} };
+        const data = await res.json();
+        return {
+          counts: (data?.folderCounts as Record<string, number>) ?? {},
+          sizes: (data?.folderSizes as Record<string, number>) ?? {},
+          dates: (data?.folderDates as Record<string, number | null>) ?? {},
+        };
+      })();
       const params = new URLSearchParams({
         limit: searchState.rowsPerPage.toString(),
         offset: (searchState.page * searchState.rowsPerPage).toString(),
@@ -131,27 +206,30 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix
         throw new Error('Failed to load files');
       }
       const payload = await response.json() as { items: any[]; count?: number };
+      const { counts: folderCounts, sizes: folderSizes, dates: folderDates } = await sizePromise;
+      const toTimestamp = (value?: string | number | null): number | null => {
+        if (!value) return null;
+        const num = typeof value === 'number' ? value : new Date(value).getTime();
+        return Number.isFinite(num) ? num : null;
+      };
       const items = (payload.items ?? []).map((item) => ({
         id: item.path,
         name: item.name,
         type: item.type === 'folder' ? 'folder' as const : 'file' as const,
         bucket: item.bucket,
         size: item.size ?? 0,
-        created_at: item.created_at
-          ? new Date(item.created_at).getTime()
-          : item.last_accessed_at
-            ? new Date(item.last_accessed_at).getTime()
-            : item.updated_at
-              ? new Date(item.updated_at).getTime()
-              : null,
-        updated_at: item.updated_at
-          ? new Date(item.updated_at).getTime()
-          : item.last_accessed_at
-            ? new Date(item.last_accessed_at).getTime()
-            : item.created_at
-              ? new Date(item.created_at).getTime()
-              : null,
-        last_accessed_at: item.last_accessed_at ? new Date(item.last_accessed_at).getTime() : null,
+        created_at: item.type === 'folder'
+          ? toTimestamp(item.created_at)
+            ?? toTimestamp(item.updated_at)
+            ?? toTimestamp(item.last_accessed_at)
+            ?? resolveFolderDate(item.path ?? '')
+          : toTimestamp(item.created_at)
+            ?? toTimestamp(item.last_accessed_at)
+            ?? toTimestamp(item.updated_at),
+        updated_at: toTimestamp(item.updated_at)
+          ?? toTimestamp(item.last_accessed_at)
+          ?? toTimestamp(item.created_at),
+        last_accessed_at: toTimestamp(item.last_accessed_at),
         path: item.path,
         fullPath: (() => {
           const path = item.path ?? '';
@@ -162,10 +240,21 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix
           return basePrefix ? `${basePrefix}/${path}` : path;
         })(),
         isFavorite: false,
+        itemsCount:
+          item.type === 'folder'
+            ? resolveFolderMeta(folderCounts, item.path ?? '')
+            : item.itemsCount,
+        size:
+          item.type === 'folder'
+            ? resolveFolderMeta(folderSizes, item.path ?? '')
+            : item.size ?? 0,
       })) as Item[];
       setState({
         items,
         itemsCount: payload.count ?? items.length,
+        folderCounts,
+        folderSizes,
+        folderDates,
       });
     } catch (err) {
       console.error(err);
