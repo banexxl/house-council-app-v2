@@ -26,8 +26,6 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 
 const UPGRADE_THRESHOLD_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
-const PAGE_SIZE = 100;
-const NORMALIZE_PREFIX_PATTERN = /^(clients|users)\/[^/]+\/?/;
 
 const useChartOptions = (usage: string): ApexOptions => {
   const theme = useTheme();
@@ -107,13 +105,6 @@ interface StorageStatsProps {
   userId: string;
 }
 
-interface StorageObject {
-  name: string;
-  path: string;
-  type: 'file' | 'folder';
-  size?: number;
-}
-
 interface ExtensionTotals {
   extension: string | null;
   label: string;
@@ -131,34 +122,6 @@ export const StorageStats: FC<StorageStatsProps> = ({ userId }) => {
   useEffect(() => {
     let active = true;
 
-    const normalizePrefix = (value: string): string => {
-      return value.replace(NORMALIZE_PREFIX_PATTERN, '').replace(/^\/+|\/+$/g, '');
-    };
-
-    const listFolder = async (prefix: string): Promise<StorageObject[]> => {
-      const items: StorageObject[] = [];
-      let offset = 0;
-      const normalizedPrefix = normalizePrefix(prefix);
-
-      while (true) {
-        const params = new URLSearchParams();
-        if (normalizedPrefix) params.set('prefix', normalizedPrefix);
-        params.set('limit', PAGE_SIZE.toString());
-        params.set('offset', offset.toString());
-        const res = await fetch(`/api/storage/objects?${params.toString()}`, { cache: 'no-store' });
-        if (!res.ok) {
-          throw new Error('Failed to load storage objects');
-        }
-        const data = await res.json();
-        const pageItems = Array.isArray(data?.items) ? (data.items as StorageObject[]) : [];
-        items.push(...pageItems);
-        if (pageItems.length < PAGE_SIZE) break;
-        offset += PAGE_SIZE;
-      }
-
-      return items;
-    };
-
     const loadUsage = async () => {
       setLoading(true);
       setError(null);
@@ -170,41 +133,16 @@ export const StorageStats: FC<StorageStatsProps> = ({ userId }) => {
           return;
         }
 
-        const queue: string[] = [''];
-        const visited = new Set<string>();
-        let aggregateSize = 0;
-        const extTotals: Record<string, { size: number; count: number }> = {};
-
-        while (queue.length) {
-          const prefix = queue.pop() ?? '';
-          if (visited.has(prefix)) continue;
-          visited.add(prefix);
-
-          const items = await listFolder(prefix);
-          for (const item of items) {
-            if (item.type === 'folder') {
-              const nextPrefix = normalizePrefix(item.path);
-              if (!visited.has(nextPrefix)) {
-                queue.push(nextPrefix);
-              }
-              continue;
-            }
-            const size = Number(item.size) || 0;
-            aggregateSize += size;
-            const extMatch = item.name?.split('.').pop();
-            const ext = extMatch && extMatch !== item.name ? extMatch.toLowerCase() : null;
-            const key = ext ?? 'other';
-            const prev = extTotals[key] ?? { size: 0, count: 0 };
-            extTotals[key] = {
-              size: prev.size + size,
-              count: prev.count + 1,
-            };
-          }
+        const res = await fetch('/api/storage/size', { cache: 'no-store' });
+        if (!res.ok) {
+          throw new Error('Failed to load storage size');
         }
-
+        const data = await res.json();
         if (!active) return;
-        setTotalSize(aggregateSize);
-        setTotalsByExt(extTotals);
+        setTotalSize(Number(data?.size) || 0);
+        setTotalsByExt(
+          data?.totalsByExt && typeof data.totalsByExt === 'object' ? data.totalsByExt : {}
+        );
       } catch (err) {
         console.error(err);
         if (!active) return;
@@ -375,6 +313,10 @@ export const StorageStats: FC<StorageStatsProps> = ({ userId }) => {
               }
               size="small"
               variant="contained"
+              component="a"
+              href="https://nest-link.app"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               {t(tokens.fileManager.storage.upgrade)}
             </Button>
