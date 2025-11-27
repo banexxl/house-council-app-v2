@@ -1,4 +1,6 @@
-import type { FC } from 'react';
+'use client';
+
+import { useEffect, useMemo, useState, type FC } from 'react';
 import type { ApexOptions } from 'apexcharts';
 import Lightning01Icon from '@untitled-ui/icons-react/build/esm/Lightning01';
 import Box from '@mui/material/Box';
@@ -22,6 +24,10 @@ import { FileIcon } from 'src/components/file-icon';
 import { bytesToSize } from 'src/utils/bytes-to-size';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
+
+const UPGRADE_THRESHOLD_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
+const PAGE_SIZE = 100;
+const NORMALIZE_PREFIX_PATTERN = /^(clients|users)\/[^/]+\/?/;
 
 const useChartOptions = (usage: string): ApexOptions => {
   const theme = useTheme();
@@ -97,46 +103,145 @@ const useChartOptions = (usage: string): ApexOptions => {
 
 type ChartSeries = number[];
 
-interface Total {
-  extension: 'jpeg' | 'jpg' | 'mp4' | 'pdf' | 'png' | null;
-  itemsCount: number;
+interface StorageStatsProps {
+  userId: string;
+}
+
+interface StorageObject {
+  name: string;
+  path: string;
+  type: 'file' | 'folder';
+  size?: number;
+}
+
+interface ExtensionTotals {
+  extension: string | null;
   label: string;
+  itemsCount: number;
   size: number;
 }
 
-const totals: Total[] = [
-  {
-    extension: 'mp4',
-    itemsCount: 25,
-    label: 'MP4',
-    size: 24431234531,
-  },
-  {
-    extension: 'png',
-    itemsCount: 591,
-    label: 'PNG',
-    size: 58723843923,
-  },
-  {
-    extension: 'pdf',
-    itemsCount: 95,
-    label: 'PDF',
-    size: 432424040,
-  },
-  {
-    extension: null,
-    itemsCount: 210,
-    label: 'Other',
-    size: 274128437,
-  },
-];
-
-export const StorageStats: FC = () => {
+export const StorageStats: FC<StorageStatsProps> = ({ userId }) => {
   const { t } = useTranslation();
-  const currentUsage = '75 GB';
-  const currentUsagePercentage = 75;
-  const chartOptions = useChartOptions(currentUsage);
-  const chartSeries: ChartSeries = [currentUsagePercentage];
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalsByExt, setTotalsByExt] = useState<Record<string, { size: number; count: number }>>({});
+  const [totalSize, setTotalSize] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    const normalizePrefix = (value: string): string => {
+      return value.replace(NORMALIZE_PREFIX_PATTERN, '').replace(/^\/+|\/+$/g, '');
+    };
+
+    const listFolder = async (prefix: string): Promise<StorageObject[]> => {
+      const items: StorageObject[] = [];
+      let offset = 0;
+      const normalizedPrefix = normalizePrefix(prefix);
+
+      while (true) {
+        const params = new URLSearchParams();
+        if (normalizedPrefix) params.set('prefix', normalizedPrefix);
+        params.set('limit', PAGE_SIZE.toString());
+        params.set('offset', offset.toString());
+        const res = await fetch(`/api/storage/objects?${params.toString()}`, { cache: 'no-store' });
+        if (!res.ok) {
+          throw new Error('Failed to load storage objects');
+        }
+        const data = await res.json();
+        const pageItems = Array.isArray(data?.items) ? (data.items as StorageObject[]) : [];
+        items.push(...pageItems);
+        if (pageItems.length < PAGE_SIZE) break;
+        offset += PAGE_SIZE;
+      }
+
+      return items;
+    };
+
+    const loadUsage = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (!userId) {
+          setTotalSize(0);
+          setTotalsByExt({});
+          setLoading(false);
+          return;
+        }
+
+        const queue: string[] = [''];
+        const visited = new Set<string>();
+        let aggregateSize = 0;
+        const extTotals: Record<string, { size: number; count: number }> = {};
+
+        while (queue.length) {
+          const prefix = queue.pop() ?? '';
+          if (visited.has(prefix)) continue;
+          visited.add(prefix);
+
+          const items = await listFolder(prefix);
+          for (const item of items) {
+            if (item.type === 'folder') {
+              const nextPrefix = normalizePrefix(item.path);
+              if (!visited.has(nextPrefix)) {
+                queue.push(nextPrefix);
+              }
+              continue;
+            }
+            const size = Number(item.size) || 0;
+            aggregateSize += size;
+            const extMatch = item.name?.split('.').pop();
+            const ext = extMatch && extMatch !== item.name ? extMatch.toLowerCase() : null;
+            const key = ext ?? 'other';
+            const prev = extTotals[key] ?? { size: 0, count: 0 };
+            extTotals[key] = {
+              size: prev.size + size,
+              count: prev.count + 1,
+            };
+          }
+        }
+
+        if (!active) return;
+        setTotalSize(aggregateSize);
+        setTotalsByExt(extTotals);
+      } catch (err) {
+        console.error(err);
+        if (!active) return;
+        setError('Unable to load storage stats');
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadUsage();
+
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  const rawUsagePercentage = totalSize ? (totalSize / UPGRADE_THRESHOLD_BYTES) * 100 : 0;
+  const displayUsagePercentage = Math.round(rawUsagePercentage);
+  const currentUsageLabel = bytesToSize(totalSize);
+  const chartOptions = useChartOptions(currentUsageLabel);
+  const chartSeries: ChartSeries = [Math.min(displayUsagePercentage, 100)];
+  const thresholdLabel = bytesToSize(UPGRADE_THRESHOLD_BYTES);
+  const statusText =
+    displayUsagePercentage >= 90 ? t(tokens.fileManager.storage.nearLimit) : t(tokens.fileManager.storage.subheader);
+
+  const totals: ExtensionTotals[] = useMemo(() => {
+    return Object.entries(totalsByExt)
+      .map(([key, value]) => ({
+        extension: key === 'other' ? null : key,
+        label: key === 'other' ? 'Other' : key.toUpperCase(),
+        itemsCount: value.count,
+        size: value.size,
+      }))
+      .sort((a, b) => b.size - a.size);
+  }, [totalsByExt]);
 
   return (
     <Card>
@@ -144,86 +249,138 @@ export const StorageStats: FC = () => {
         title={t(tokens.fileManager.storage.title)}
         subheader={t(tokens.fileManager.storage.subheader)}
       />
-      <CardContent>
-        <Stack alignItems="center">
+      <Box sx={{ position: 'relative' }}>
+        {loading && (
           <Box
             sx={{
-              height: 260,
-              mt: '-48px',
-              mb: '-100px',
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+              pointerEvents: 'none',
             }}
           >
-            <Chart
-              width={260}
-              height={260}
-              options={chartOptions}
-              series={chartSeries}
-              type="radialBar"
-            />
+            <Typography color="text.secondary" variant="body2">
+              Calculating usage...
+            </Typography>
           </Box>
-          <Typography
-            variant="h6"
-            sx={{ mb: 1 }}
-          >
-            {t(tokens.fileManager.storage.nearLimit)}
-          </Typography>
-          <Typography
-            color="text.secondary"
-            variant="body2"
-          >
-            {t(tokens.fileManager.storage.usage, { percentage: currentUsagePercentage })}
-          </Typography>
-        </Stack>
-        <List
-          disablePadding
-          sx={{ mt: 2 }}
-        >
-          {totals.map((total) => {
-            const size = bytesToSize(total.size);
-
-            return (
-              <ListItem
-                disableGutters
-                key={total.extension}
+        )}
+        <Box sx={{ filter: loading ? 'blur(3px)' : 'none', transition: 'filter 120ms ease' }}>
+          <CardContent>
+            <Stack alignItems="center">
+              <Box
+                sx={{
+                  height: 260,
+                  mt: '-48px',
+                  mb: '-100px',
+                }}
               >
-                <ListItemIcon>
-                  <Box sx={{ color: 'primary.main' }}>
-                    <FileIcon extension={total.extension} />
-                  </Box>
-                </ListItemIcon>
-                <ListItemText
-                  primary={<Typography variant="caption">{total.label}</Typography>}
-                  secondary={
-                    <Typography
-                      color="text.secondary"
-                      variant="body2"
-                    >
-                      {t(tokens.fileManager.folderSummary, {
-                        size,
-                        count: total.itemsCount,
-                      })}
-                    </Typography>
-                  }
+                <Chart
+                  width={260}
+                  height={260}
+                  options={chartOptions}
+                  series={chartSeries}
+                  type="radialBar"
                 />
-              </ListItem>
-            );
-          })}
-        </List>
-      </CardContent>
-      <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button
-          endIcon={
-            <SvgIcon fontSize="small">
-              <Lightning01Icon />
-            </SvgIcon>
-          }
-          size="small"
-          variant="contained"
-        >
-          {t(tokens.fileManager.storage.upgrade)}
-        </Button>
-      </CardActions>
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{ mb: 1 }}
+              >
+                {statusText}
+              </Typography>
+              <Typography
+                color="text.secondary"
+                variant="body2"
+              >
+                {t(tokens.fileManager.storage.usage, { percentage: displayUsagePercentage })}
+              </Typography>
+              <Typography
+                color="text.secondary"
+                variant="body2"
+                sx={{ mt: 0.5 }}
+              >
+                {currentUsageLabel} / {thresholdLabel}
+              </Typography>
+              {error && !loading && (
+                <Typography
+                  color="error.main"
+                  variant="caption"
+                  sx={{ mt: 1 }}
+                >
+                  {error}
+                </Typography>
+              )}
+            </Stack>
+            <List
+              disablePadding
+              sx={{ mt: 2 }}
+            >
+              {!totals.length && !loading ? (
+                <ListItem disableGutters>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        color="text.secondary"
+                        variant="body2"
+                      >
+                        {t(tokens.fileManager.emptyState)}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ) : (
+                totals.map((total) => {
+                  const size = bytesToSize(total.size);
+
+                  return (
+                    <ListItem
+                      disableGutters
+                      key={total.extension ?? 'other'}
+                    >
+                      <ListItemIcon>
+                        <Box sx={{ color: 'primary.main' }}>
+                          <FileIcon extension={total.extension} />
+                        </Box>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={<Typography variant="caption">{total.label}</Typography>}
+                        secondary={
+                          <Typography
+                            color="text.secondary"
+                            variant="body2"
+                          >
+                            {t(tokens.fileManager.folderSummary, {
+                              size,
+                              count: total.itemsCount,
+                            })}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  );
+                })
+              )}
+            </List>
+          </CardContent>
+          <Divider />
+          <CardActions sx={{ justifyContent: 'flex-end' }}>
+            <Button
+              endIcon={
+                <SvgIcon fontSize="small">
+                  <Lightning01Icon />
+                </SvgIcon>
+              }
+              size="small"
+              variant="contained"
+            >
+              {t(tokens.fileManager.storage.upgrade)}
+            </Button>
+          </CardActions>
+        </Box>
+      </Box>
     </Card>
   );
 };

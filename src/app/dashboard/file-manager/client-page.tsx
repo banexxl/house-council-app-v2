@@ -707,7 +707,7 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
               </Stack>
             </Grid>
             <Grid size={{ xs: 12, lg: 4 }}>
-              <StorageStats />
+              <StorageStats userId={userId} />
             </Grid>
           </Grid>
         </Container>
