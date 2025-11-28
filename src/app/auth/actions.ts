@@ -213,7 +213,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
      const { data, error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-               emailRedirectTo: `${process.env.BASE_URL}/auth/callback`, // Ensure trailing slash
+               emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`, // Ensure trailing slash
                shouldCreateUser: false,
           },
      });
@@ -266,7 +266,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           provider: 'google',
           // Optionally, set a redirect URL after sign in:
           options: {
-               redirectTo: `${process.env.BASE_URL}/auth/callback`
+               redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
           }
      });
 
