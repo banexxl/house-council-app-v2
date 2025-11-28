@@ -808,6 +808,8 @@ export const checkClientSubscriptionStatus = async (
           .select('status')
           .eq('client_id', clientId)
           .single();
+     console.log(data?.status, error);
+
      if (error) {
           await logServerAction({
                user_id: clientId ?? '',

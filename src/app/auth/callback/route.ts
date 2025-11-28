@@ -62,26 +62,26 @@ export async function GET(request: Request) {
   }
 
   // Client
-  const { data: clientId, error: clientError } = await fetchByEmail(TABLES.CLIENTS, "id, user_id");
+  const { data: clientData, error: clientError } = await fetchByEmail(TABLES.CLIENTS, "id, user_id");
   if (clientError && clientError.code !== "PGRST116") {
     log(`Error fetching client by email: ${clientError.message}`, 'error');
     return cleanAndRedirect(clientError.message);
   }
-  if (clientId && typeof clientId === "object" && "user_id" in clientId) {
+  if (clientData && typeof clientData === "object" && "user_id" in clientData) {
     role = "client";
-    userId = (clientId as { user_id: string }).user_id;
+    userId = (clientData as { user_id: string }).user_id;
   }
 
   // Tenant
   if (!role) {
-    const { data: tenantId, error: tenantError } = await fetchByEmail(TABLES.TENANTS, "id, user_id");
+    const { data: tenantData, error: tenantError } = await fetchByEmail(TABLES.TENANTS, "id, user_id");
     if (tenantError && tenantError.code !== "PGRST116") {
       log(`Error fetching tenant by email: ${tenantError.message}`, 'error');
       return cleanAndRedirect(tenantError.message);
     }
-    if (tenantId && typeof tenantId === "object" && "user_id" in tenantId) {
+    if (tenantData && typeof tenantData === "object" && "user_id" in tenantData) {
       role = "tenant";
-      userId = (tenantId as { user_id: string }).user_id;
+      userId = (tenantData as { user_id: string }).user_id;
     }
   }
 
@@ -109,15 +109,22 @@ export async function GET(request: Request) {
   }
 
   if (role === "client") {
+    const clientId = (clientData && typeof clientData === "object" && "id" in clientData) ? (clientData as { id: string }).id : undefined;
+    if (!clientId) {
+      log(`Client data missing 'id' property`, 'error');
+      await supabase.auth.signOut();
+      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=client_id_missing`);
+    }
     const { data: subscription, error: subscriptionError } = await supabase
       .from(TABLES.CLIENT_SUBSCRIPTION)
       .select("*")
-      .eq("client_id", userId!)
+      .eq("client_id", clientId)
       .in("status", ["active", "trialing"])
       .single();
 
     if (subscriptionError || !subscription) {
-      log(`No active subscription found for client ID ${userId}`, 'info');
+      log(`No active subscription found for client ID ${clientId}`, 'info');
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
@@ -128,12 +135,12 @@ export async function GET(request: Request) {
     const { data: subscription, error: subscriptionError } = await supabase
       .from(TABLES.CLIENT_SUBSCRIPTION)
       .select("*")
-      .eq("client_id", clientId)
+      .eq("client_id", clientData && typeof clientData === "object" && "id" in clientData ? (clientData as { id: string }).id : '')
       .in("status", ["active", "trialing"])
       .single();
 
     if (subscriptionError || !subscription) {
-      log(`No active subscription found for client member ID ${clientId}`, 'info');
+      log(`No active subscription found for client member ID ${clientData && typeof clientData === "object" && "id" in clientData ? (clientData as { id: string }).id : ''}`, 'info');
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);

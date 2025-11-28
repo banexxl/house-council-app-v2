@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
+import { useTheme } from '@mui/material';
 
 const errorMessages: Record<string, string> = {
   otp_expired: 'The email link is invalid or has expired. Please try signing in again.',
@@ -27,7 +28,7 @@ export const ErrorClient = () => {
   const searchParams = useSearchParams();
   const errorCode = searchParams.get('error_code') || 'access_denied'; // Default to access_denied
   const errorMessage = errorMessages[errorCode] || 'An unexpected error occurred.';
-
+  const theme = useTheme();
   return (
     <>
       <Seo title="Error: Authorization Required" />
@@ -90,8 +91,8 @@ export const ErrorClient = () => {
             {errorCode === 'no_subscription' && (
               <Link
                 style={{
-                  textDecoration: 'underline',
-                  color: 'primary.main',
+                  textDecoration: 'none',
+                  color: theme.palette.primary.main,
                   fontSize: '0.875rem',
                 }}
                 href="https://nest-link.app/pricing"
