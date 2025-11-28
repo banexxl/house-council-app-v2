@@ -9,7 +9,6 @@ import Typography from "@mui/material/Typography"
 import Tabs from "@mui/material/Tabs"
 import Tab from "@mui/material/Tab"
 import Divider from "@mui/material/Divider"
-import { useSessionUpdater } from "src/utils/client-session-update"
 import { PasswordForm } from "./password-form"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
@@ -66,6 +65,7 @@ const LoginForm = () => {
      const [authMethod, setAuthMethod] = useState<"password" | "google" | "magic_link">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
+     console.log(process.env.NEXT_PUBLIC_BASE_URL);
 
      // useSessionUpdater()
 
