@@ -69,3 +69,39 @@ export interface IncidentReportComment {
      message: string;
      created_at: string;
 }
+
+export const INCIDENT_STATUS_TOKENS: Record<IncidentStatus, string> = {
+     open: 'incident.status.open',
+     in_progress: 'incident.status.in_progress',
+     on_hold: 'incident.status.on_hold',
+     resolved: 'incident.status.resolved',
+     closed: 'incident.status.closed',
+     cancelled: 'incident.status.cancelled',
+};
+
+export const INCIDENT_PRIORITY_TOKENS: Record<IncidentPriority, string> = {
+     low: 'incident.priority.low',
+     medium: 'incident.priority.medium',
+     high: 'incident.priority.high',
+     urgent: 'incident.priority.urgent',
+};
+
+export const INCIDENT_CATEGORY_TOKENS: Record<IncidentCategory, string> = {
+     plumbing: 'incident.category.plumbing',
+     electrical: 'incident.category.electrical',
+     noise: 'incident.category.noise',
+     cleaning: 'incident.category.cleaning',
+     common_area: 'incident.category.common_area',
+     heating: 'incident.category.heating',
+     cooling: 'incident.category.cooling',
+     structural: 'incident.category.structural',
+     interior: 'incident.category.interior',
+     outdoorsafety: 'incident.category.outdoorsafety',
+     security: 'incident.category.security',
+     pests: 'incident.category.pests',
+     administrative: 'incident.category.administrative',
+     parking: 'incident.category.parking',
+     it: 'incident.category.it',
+     waste: 'incident.category.waste',
+};
+

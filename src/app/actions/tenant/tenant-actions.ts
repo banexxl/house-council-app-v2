@@ -1249,7 +1249,9 @@ export const getBuildingIdFromTenantId = async (tenantId: string): Promise<{
      error?: string;
 }> => {
 
+
      if (!isUUID(tenantId)) {
+          log(`Invalid tenant ID provided: ${tenantId}`);
           return { success: false, error: 'Invalid tenant ID' };
      }
      const supabase = await useServerSideSupabaseServiceRoleClient();
@@ -1284,6 +1286,7 @@ export const getBuildingIdFromTenantId = async (tenantId: string): Promise<{
           }
 
           if (!apartment?.building_id) {
+               log(`Apartment has no building assigned`);
                return { success: false, error: 'Apartment has no building assigned' };
           }
 
