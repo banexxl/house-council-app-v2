@@ -9,6 +9,7 @@ import type {
      CreateTenantProfilePayload,
      UpdateTenantProfilePayload
 } from 'src/types/social';
+import log from 'src/utils/logger';
 
 type ActionResponse<T> = {
      success: boolean;
@@ -52,7 +53,7 @@ export async function getTenantProfile(profileId: string): Promise<ActionRespons
                .single();
 
           if (error) {
-               console.error('Error fetching tenant profile:', error);
+               log(`Error fetching tenant profile: ${error.message}`, 'error');
                return { success: false, error: error.message };
           }
 
@@ -62,7 +63,7 @@ export async function getTenantProfile(profileId: string): Promise<ActionRespons
 
           return { success: true, data };
      } catch (error) {
-          console.error('Error fetching tenant profile:', error);
+          log(`Error fetching tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to fetch profile' };
      }
 }
@@ -73,20 +74,34 @@ export async function getTenantProfile(profileId: string): Promise<ActionRespons
 export async function getCurrentUserProfile(): Promise<ActionResponse<TenantProfile>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const lookupIds: string[] = [];
+
+          if (viewer.tenant?.id) lookupIds.push(viewer.tenant.id);
+          if (viewer.client?.id) lookupIds.push(viewer.client.id);
+          if (viewer.clientMember?.id) lookupIds.push(viewer.clientMember.id);
+          if (viewer.admin?.id) lookupIds.push(viewer.admin.id);
+          if (viewer.userData?.id) lookupIds.push(viewer.userData.id);
+
+          if (!lookupIds.length) {
+               log('User not authenticated', 'error');
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
+          const filters = lookupIds
+               .map((id) => [`id.eq.${id}`, `tenant_id.eq.${id}`])
+               .flat()
+               .join(',');
 
           const { data, error } = await supabase
                .from(TABLES.TENANT_PROFILES)
                .select('*')
-               .eq('tenant_id', viewer.tenant.id)
-               .single();
+               .or(filters)
+               .limit(1)
+               .maybeSingle();
 
-          if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-               console.error('Error fetching current user profile:', error);
+          if (error && error.code !== 'PGRST116') {
+               log(`Error fetching current user profile: ${error.message}`, 'error');
                return { success: false, error: error.message };
           }
 
@@ -96,7 +111,7 @@ export async function getCurrentUserProfile(): Promise<ActionResponse<TenantProf
 
           return { success: true, data };
      } catch (error) {
-          console.error('Error fetching current user profile:', error);
+          log(`Error fetching current user profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to fetch profile' };
      }
 }
@@ -116,7 +131,7 @@ export async function getTenantProfileByTenantId(tenantId: string): Promise<Acti
                .maybeSingle();
 
           if (tenantError) {
-               console.error('Error fetching tenant for profile lookup:', tenantError);
+               log(`Error fetching tenant for profile lookup: ${tenantError.message}`, 'error');
                return { success: false, error: tenantError.message };
           }
 
@@ -138,7 +153,7 @@ export async function getTenantProfileByTenantId(tenantId: string): Promise<Acti
                : await profileQuery.eq('tenant_id', tenantId).maybeSingle();
 
           if (error) {
-               console.error('Error fetching tenant profile by tenant_id:', error);
+               log(`Error fetching tenant profile by tenant_id: ${error.message}`, 'error');
                return { success: false, error: error.message };
           }
 
@@ -148,7 +163,7 @@ export async function getTenantProfileByTenantId(tenantId: string): Promise<Acti
 
           return { success: true, data };
      } catch (error) {
-          console.error('Error fetching tenant profile by tenant_id:', error);
+          log(`Error fetching tenant profile by tenant_id: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to fetch profile' };
      }
 }
@@ -183,13 +198,13 @@ export async function getTenantProfiles(buildingId?: string): Promise<ActionResp
           const { data, error } = await query.order('created_at', { ascending: false });
 
           if (error) {
-               console.error('Error fetching tenant profiles:', error);
+               log(`Error fetching tenant profiles: ${error instanceof Error ? error.message : String(error)}`, 'error');
                return { success: false, error: error.message };
           }
 
           return { success: true, data: data || [] };
      } catch (error) {
-          console.error('Error fetching tenant profiles:', error);
+          log(`Error fetching tenant profiles: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to fetch profiles' };
      }
 }
@@ -248,7 +263,7 @@ export async function createTenantProfile(payload: CreateTenantProfilePayload): 
                .single();
 
           if (error) {
-               console.error('Error creating tenant profile:', error);
+               log(`Error creating tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
                return { success: false, error: error.message };
           }
 
@@ -272,7 +287,7 @@ export async function createTenantProfile(payload: CreateTenantProfilePayload): 
 
           return { success: true, data };
      } catch (error) {
-          console.error('Error creating tenant profile:', error);
+          log(`Error creating tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to create profile' };
      }
 }
@@ -323,7 +338,7 @@ export async function updateTenantProfile(
                     .update(tenantUpdates)
                     .eq('id', viewer.tenant.id);
                if (tenantError) {
-                    console.error('Error updating tenant shared fields:', tenantError);
+                    log(`Error updating tenant shared fields: ${tenantError instanceof Error ? tenantError.message : String(tenantError)}`, 'error');
                     return { success: false, error: tenantError.message };
                }
           }
@@ -355,7 +370,7 @@ export async function updateTenantProfile(
                .single();
 
           if (error) {
-               console.error('Error updating tenant profile:', error);
+               log(`Error updating tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
                return { success: false, error: error.message };
           }
 
@@ -363,7 +378,7 @@ export async function updateTenantProfile(
 
           return { success: true, data };
      } catch (error) {
-          console.error('Error updating tenant profile:', error);
+          log(`Error updating tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to update profile' };
      }
 }
@@ -400,7 +415,7 @@ export async function deleteTenantProfile(profileId: string): Promise<ActionResp
                .eq('id', profileId);
 
           if (error) {
-               console.error('Error deleting tenant profile:', error);
+               log(`Error deleting tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
                return { success: false, error: error.message };
           }
 
@@ -408,7 +423,7 @@ export async function deleteTenantProfile(profileId: string): Promise<ActionResp
 
           return { success: true };
      } catch (error) {
-          console.error('Error deleting tenant profile:', error);
+          log(`Error deleting tenant profile: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to delete profile' };
      }
 }
@@ -428,7 +443,7 @@ export async function getProfileIdOrTenantId(id: string): Promise<ActionResponse
                .limit(1)
                .maybeSingle();
           if (error) {
-               console.error('Error fetching tenant profile by id or tenant_id:', error);
+               log(`Error fetching tenant profile by id or tenant_id: ${error instanceof Error ? error.message : String(error)}`, 'error');
                return { success: false, error: error.message };
           }
           if (!data) {
@@ -436,7 +451,7 @@ export async function getProfileIdOrTenantId(id: string): Promise<ActionResponse
           }
           return { success: true, data };
      } catch (error) {
-          console.error('Error fetching tenant profile by id or tenant_id:', error);
+          log(`Error fetching tenant profile by id or tenant_id: ${error instanceof Error ? error.message : String(error)}`, 'error');
           return { success: false, error: 'Failed to fetch profile' };
      }
 }

@@ -5,6 +5,7 @@ import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import type { IncidentReport, IncidentStatus } from 'src/types/incident-report';
+import log from 'src/utils/logger';
 
 const REVALIDATE_PATHS = ['/dashboard/service-requests', '/dashboard/service-requests/create'];
 
@@ -25,6 +26,7 @@ export const createIncidentReport = async (
     .single();
 
   if (error) {
+    log(`Error creating incident report with payload: ${JSON.stringify(payload)}: ${error.message}`);
     await logServerAction({
       user_id: null,
       action: 'incident.create',
@@ -57,6 +59,16 @@ export const getIncidentReportById = async (
   const supabase = await useServerSideSupabaseAnonClient();
   const { data, error } = await supabase.from(TABLES.INCIDENT_REPORTS!).select('*').eq('id', id).single();
   if (error) {
+    log(`Error getting incident report by id with payload: ${JSON.stringify({ id })}: ${error.message}`);
+    await logServerAction({
+      user_id: null,
+      action: 'incident.getById',
+      duration_ms: 0,
+      error: error.message,
+      payload: { id },
+      status: 'fail',
+      type: 'db',
+    });
     return { success: false, error: error.message };
   }
   return { success: true, data };
@@ -68,6 +80,17 @@ export const listIncidentReports = async (filters?: {
   status?: IncidentStatus;
 }): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
   if (!TABLES.INCIDENT_REPORTS) {
+    const payload = { filters };
+    log(`Error listing incident reports with payload: ${JSON.stringify(payload)}: Incident reports table name is not configured`);
+    await logServerAction({
+      user_id: null,
+      action: 'incident.list',
+      duration_ms: 0,
+      error: 'Incident reports table name is not configured',
+      payload,
+      status: 'fail',
+      type: 'db',
+    });
     return { success: false, error: 'Incident reports table name is not configured' };
   }
 
@@ -86,6 +109,16 @@ export const listIncidentReports = async (filters?: {
 
   const { data, error } = await query;
   if (error) {
+    log(`Error listing incident reports with payload: ${JSON.stringify(filters)}: ${error.message}`);
+    await logServerAction({
+      user_id: null,
+      action: 'incident.list',
+      duration_ms: 0,
+      error: error.message,
+      payload: filters,
+      status: 'fail',
+      type: 'db',
+    });
     return { success: false, error: error.message };
   }
   return { success: true, data: data ?? [] };
@@ -109,6 +142,7 @@ export const updateIncidentReport = async (
     .single();
 
   if (error) {
+    log(`Error updating incident report with payload: ${JSON.stringify({ id, updates })}: ${error.message}`);
     await logServerAction({
       user_id: null,
       action: 'incident.update',
@@ -144,6 +178,7 @@ export const deleteIncidentReport = async (
   const { error } = await supabase.from(TABLES.INCIDENT_REPORTS!).delete().eq('id', id);
 
   if (error) {
+    log(`Error deleting incident report with payload: ${JSON.stringify({ id })}: ${error.message}`);
     await logServerAction({
       user_id: null,
       action: 'incident.delete',
@@ -181,6 +216,16 @@ export const getIncidentReportsFromBuilding = async (
     .order('created_at', { ascending: false });
 
   if (error) {
+    log(`Error getting incident reports from building with payload: ${JSON.stringify({ buildingId })}: ${error.message}`);
+    await logServerAction({
+      user_id: null,
+      action: 'incident.getFromBuilding',
+      duration_ms: 0,
+      error: error.message,
+      payload: { buildingId },
+      status: 'fail',
+      type: 'db',
+    });
     return { success: false, error: error.message };
   }
   return { success: true, data: data ?? [] };

@@ -7,6 +7,7 @@ import { Client } from 'src/types/client';
 import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
 import { TABLES } from 'src/libs/supabase/tables';
+import log from 'src/utils/logger';
 
 // --- Supabase Auth Actions for Client Management ---
 export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
@@ -122,6 +123,22 @@ export const createOrUpdateClientAction = async (
                user_id: id,
           });
 
+          // Sync tenant profile for client (name/email/phone)
+          const profilePayload = {
+               first_name: clientData.contact_person || clientData.name || '',
+               last_name: '',
+               email: clientData.email || '',
+               phone_number: clientData.phone || clientData.mobile_phone || '',
+          };
+          await adminSupabase
+               .from(TABLES.TENANT_PROFILES)
+               .upsert({
+                    id: id, // use client id as profile id for consistency
+                    tenant_id: id,
+                    ...profilePayload,
+                    updated_at: new Date().toISOString(),
+               }, { onConflict: 'id' });
+
           if (unassigned_location_id) {
                // First, fetch the building location by unassigned_location_id
                const { data: buildingLocation, error: fetchError } = await adminSupabase
@@ -221,6 +238,19 @@ export const createOrUpdateClientAction = async (
                user_id: invitedUser.user.id,
           });
 
+          // Create tenant profile for client
+          const profilePayload = {
+               id: data.id,
+               tenant_id: data.id,
+               first_name: clientData.contact_person || clientData.name || '',
+               last_name: '',
+               email: clientData.email || '',
+               phone_number: clientData.phone || clientData.mobile_phone || '',
+               created_at: new Date().toISOString(),
+               updated_at: new Date().toISOString(),
+          };
+          await adminSupabase.from(TABLES.TENANT_PROFILES).upsert(profilePayload);
+
           revalidatePath(`/dashboard/clients/${data.id}`);
 
           return {
@@ -300,15 +330,28 @@ export const deleteClientByIDsAction = async (
 
           const userIdsToDelete = clientsToDelete.map((c) => c.user_id).filter(Boolean);
 
+          // Delete from tblBuildings
+          const { error: deleteBuildings } = await anonSupabase.from(TABLES.BUILDINGS).delete().in('client_id', ids);
+          if (deleteBuildings) {
+               log(`Error deleting clients with IDs: ${ids.join(', ')}: ${deleteBuildings.message}`, 'error');
+               throw deleteBuildings
+          };
+
           // Delete from tblClients
           const { error: deleteClientError } = await anonSupabase.from(TABLES.CLIENTS).delete().in('id', ids);
-          if (deleteClientError) throw deleteClientError;
+          if (deleteClientError) {
+               log(`Error deleting clients with IDs: ${ids.join(', ')}: ${deleteClientError.message}`, 'error');
+               throw deleteClientError
+          };
 
           // Delete from auth.users
           const failedDeletes: string[] = [];
           for (const userId of userIdsToDelete) {
                const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(userId);
-               if (deleteUserError) failedDeletes.push(userId);
+               if (deleteUserError) {
+                    log(`Error deleting auth.user with ID: ${userId}: ${deleteUserError.message}`, 'error');
+                    failedDeletes.push(userId);
+               }
           }
 
           revalidatePath('/dashboard/clients');

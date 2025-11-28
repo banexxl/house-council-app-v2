@@ -34,66 +34,73 @@ export async function GET(request: Request) {
   }
 
   const userEmail = sessionData.session.user.email;
+  type Role = "client" | "clientMember" | "tenant" | "admin";
+  let role: Role | null = null;
+  let userId: string | undefined;
 
-  const { data: client, error: clientError } = await supabase
-    .from(TABLES.CLIENTS)
-    .select("id")
-    .eq("email", userEmail)
-    .single();
-
-  if (clientError && clientError.code !== "PGRST116") {
+  const cleanAndRedirect = async (errorParam: string) => {
     await supabase.auth.signOut();
     await supabase.auth.admin.deleteUser(sessionData.session.user.id);
     cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
-    return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${clientError.message}`);
+    return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${errorParam}`);
+  };
+
+  const fetchByEmail = async (table: string, select = "id") => {
+    return supabase.from(table).select(select).eq("email", userEmail).maybeSingle();
+  };
+
+  //Admin
+  const { data: superAdmin, error: superAdminError } = await fetchByEmail(TABLES.SUPER_ADMINS, "id, user_id");
+  if (superAdminError && superAdminError.code !== "PGRST116") {
+    return cleanAndRedirect(superAdminError.message);
+  }
+  if (superAdmin && typeof superAdmin === "object" && "id" in superAdmin) {
+    role = "admin";
+    userId = (superAdmin as { id: string }).id;
   }
 
-  let role: "client" | "tenant" | "admin" | null = null;
-  let userId: string | undefined;
-
-  if (client) {
+  // Client
+  const { data: clientId, error: clientError } = await fetchByEmail(TABLES.CLIENTS, "id, user_id");
+  if (clientError && clientError.code !== "PGRST116") {
+    return cleanAndRedirect(clientError.message);
+  }
+  if (clientId && typeof clientId === "object" && "user_id" in clientId) {
     role = "client";
-    userId = client.id;
-  } else {
-    const { data: tenant, error: tenantError } = await supabase
-      .from(TABLES.TENANTS)
-      .select("id")
-      .eq("email", userEmail)
-      .maybeSingle();
+    userId = (clientId as { user_id: string }).user_id;
+  }
 
+  // Tenant
+  if (!role) {
+    const { data: tenantId, error: tenantError } = await fetchByEmail(TABLES.TENANTS, "id, user_id");
     if (tenantError && tenantError.code !== "PGRST116") {
-      await supabase.auth.signOut();
-      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
-      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${tenantError.message}`);
+      return cleanAndRedirect(tenantError.message);
     }
-
-    if (tenant) {
+    if (tenantId && typeof tenantId === "object" && "user_id" in tenantId) {
       role = "tenant";
-      userId = tenant.id;
-    } else {
-      const { data: admin, error: adminError } = await supabase
-        .from(TABLES.SUPER_ADMINS)
-        .select("id")
-        .eq("email", userEmail)
-        .single();
-
-      if (adminError && adminError.code !== "PGRST116") {
-        await supabase.auth.signOut();
-        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
-        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${adminError.message}`);
-      }
-
-      if (admin) {
-        role = "admin";
-        userId = admin.id;
-      } else {
-        await supabase.auth.signOut();
-        cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
-        return NextResponse.redirect(
-          `${requestUrl.origin}/auth/error?error_code=email_not_registered`,
-        );
-      }
+      userId = (tenantId as { user_id: string }).user_id;
     }
+  }
+
+  // Client member
+  if (!role) {
+    const { data: clientMemberRow, error: clientMemberError } = await fetchByEmail(TABLES.CLIENT_MEMBERS, "id, user_id");
+    if (clientMemberError && clientMemberError.code !== "PGRST116") {
+      return cleanAndRedirect(clientMemberError.message);
+    }
+    if (clientMemberRow && typeof clientMemberRow === "object" && "user_id" in clientMemberRow) {
+      role = "clientMember";
+      userId = (clientMemberRow as { user_id: string }).user_id;
+    }
+  }
+
+  // No matching role -> delete auth user
+  if (!role) {
+    await supabase.auth.signOut();
+    await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+    cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+    return NextResponse.redirect(
+      `${requestUrl.origin}/auth/error?error_code=email_not_registered`,
+    );
   }
 
   if (role === "client") {
@@ -104,6 +111,20 @@ export async function GET(request: Request) {
       .in("status", ["active", "trialing"])
       .single();
 
+    if (subscriptionError || !subscription) {
+      await supabase.auth.signOut();
+      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
+      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
+    }
+  }
+
+  if (role === "clientMember") {
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from(TABLES.CLIENT_SUBSCRIPTION)
+      .select("*")
+      .eq("client_id", clientId)
+      .in("status", ["active", "trialing"])
+      .single();
 
     if (subscriptionError || !subscription) {
       await supabase.auth.signOut();

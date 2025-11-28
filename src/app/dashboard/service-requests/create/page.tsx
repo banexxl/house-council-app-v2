@@ -10,6 +10,8 @@ import {
 import {
   getBuildingIDsFromUserId,
 } from 'src/app/actions/building/building-actions';
+import { getCurrentUserProfile, getTenantProfileByTenantId } from 'src/app/actions/social/profile-actions';
+import log from 'src/utils/logger';
 
 const Page = async () => {
   const { tenant, client, clientMember, userData } = await getViewer();
@@ -22,8 +24,12 @@ const Page = async () => {
     [];
   let defaultAssigneeProfile = '';
   let defaultReporterProfile = '';
+  let defaultReporterName = '';
   let assigneeOptions: Array<{ id: string; label: string; buildingId?: string | null }> = [];
 
+  const profileRes = tenant?.id ? await getTenantProfileByTenantId(tenant.id) : await getCurrentUserProfile();
+  const currentProfile = profileRes.success ? profileRes.data : null;
+  log(`Current profile: ${currentProfile ? JSON.stringify(currentProfile) : profileRes.error}`);
   if (tenant?.id) {
     const [buildingRes, clientRes] = await Promise.all([
       getBuildingIdFromTenantId(tenant.id),
@@ -78,18 +84,34 @@ const Page = async () => {
     }
   }
 
-  if (client?.contact_person) {
-    defaultAssigneeProfile = client.contact_person;
-    defaultReporterProfile = client.contact_person;
-    assigneeOptions.push({ id: client.contact_person, label: client.contact_person });
-  } else if (clientMember?.name) {
-    defaultAssigneeProfile = clientMember.name;
-    defaultReporterProfile = clientMember.name;
-    assigneeOptions.push({ id: clientMember.name, label: clientMember.name });
-  } else if (tenant?.first_name || tenant?.last_name) {
-    defaultAssigneeProfile = `${tenant?.first_name ?? ''} ${tenant?.last_name ?? ''}`.trim();
-    defaultReporterProfile = defaultAssigneeProfile;
-    assigneeOptions.push({ id: defaultReporterProfile, label: defaultReporterProfile, buildingId: defaultBuildingId });
+  if (currentProfile?.id) {
+    const displayName = `${currentProfile.first_name ?? ''} ${currentProfile.last_name ?? ''}`.trim() ||
+      currentProfile.id;
+    defaultAssigneeProfile = currentProfile.id;
+    defaultReporterProfile = currentProfile.id;
+    defaultReporterName = displayName;
+    assigneeOptions.push({ id: currentProfile.id, label: displayName, buildingId: defaultBuildingId });
+  } else if (client) {
+    const idValue = client.user_id || client.id;
+    defaultAssigneeProfile = idValue;
+    defaultReporterProfile = idValue;
+    defaultReporterName = client.contact_person || client.id;
+    assigneeOptions.push({ id: idValue, label: client.contact_person || client.id });
+  } else if (clientMember) {
+    defaultAssigneeProfile = clientMember.id;
+    defaultReporterProfile = clientMember.id;
+    defaultReporterName = clientMember.name || clientMember.email || clientMember.id;
+    assigneeOptions.push({ id: clientMember.id, label: clientMember.name || clientMember.email || clientMember.id });
+  } else if (tenant) {
+    const label = `${tenant.first_name ?? ''} ${tenant.last_name ?? ''}`.trim() || tenant.id;
+    defaultAssigneeProfile = tenant.id;
+    defaultReporterProfile = tenant.id;
+    defaultReporterName = label;
+    assigneeOptions.push({ id: tenant.id, label, buildingId: defaultBuildingId });
+  } else if (userData?.id) {
+    defaultReporterProfile = userData.id;
+    defaultAssigneeProfile = userData.id;
+    defaultReporterName = userData.email ?? userData.id;
   }
 
   return (
@@ -101,6 +123,7 @@ const Page = async () => {
         defaultClientId={defaultClientId}
         defaultTenantId={defaultTenantId}
         defaultReporterProfileId={defaultReporterProfile}
+        defaultReporterName={defaultReporterName}
         defaultAssigneeProfileId={defaultAssigneeProfile}
         buildingOptions={buildingOptions}
         assigneeOptions={assigneeOptions}

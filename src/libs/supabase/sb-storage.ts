@@ -28,7 +28,8 @@ type StorageEntity =
      | 'announcement-document'
      | 'poll-attachment'
      | 'post-image'
-     | 'post-document';
+     | 'post-document'
+     | 'incident-image';
 
 interface PathContext {
      entityId: string;
@@ -78,6 +79,9 @@ export interface UploadEntityFilesParams {
      entityId: string;
      files: File[];
      clientId?: string;
+     buildingId?: string;
+     apartmentId?: string | null;
+     profileId?: string | null;
 }
 
 export interface UploadEntityFilesResult {
@@ -372,6 +376,36 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
           revalidate: () => ['/dashboard/social/feed', '/dashboard/social/profile'],
           returnSignedUrls: true,
      },
+     'incident-image': {
+          bucket: DEFAULT_BUCKET,
+          requiresAuth: true,
+          getPathSegments: ({ userId, entityId }) => {
+               return ['clients', ensureValue(userId, 'userId is required'), 'incidents', ensureValue(entityId, 'entityId is required'), 'images'];
+          },
+          validateFile: ({ file }) => {
+               const type = ((file as any)?.type || '').toString();
+               if (!type.startsWith('image/')) {
+                    return { ok: false, error: 'Only image files are allowed' };
+               }
+               return { ok: true };
+          },
+          db: {
+               table: TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages',
+               foreignKeyColumn: 'incident_id',
+               mode: 'insert',
+               extraColumns: (ctx) => {
+                    const now = new Date().toISOString();
+                    return {
+                         building_id: ctx.meta?.buildingId ?? ctx.meta?.building_id,
+                         apartment_id: ctx.meta?.apartmentId ?? ctx.meta?.apartment_id ?? null,
+                         uploaded_by_profile_id: ctx.meta?.uploaded_by_profile_id ?? null,
+                         created_at: now,
+                         updated_at: now,
+                    };
+               },
+          },
+          revalidate: (entityId) => [`/dashboard/service-requests/${entityId}`, '/dashboard/service-requests'],
+     },
 };
 
 export const uploadEntityFiles = async (
@@ -423,6 +457,11 @@ export const uploadEntityFiles = async (
                     userId,
                     file,
                     index,
+                    meta: {
+                         buildingId: params.buildingId,
+                         apartmentId: params.apartmentId ?? null,
+                         uploaded_by_profile_id: params.profileId ?? null,
+                    },
                };
 
                if (config.validateFile) {
@@ -439,7 +478,7 @@ export const uploadEntityFiles = async (
                          });
                          return { success: false, error: validation.error ?? 'Invalid file' };
                     }
-                    ctx.meta = validation.meta;
+                    ctx.meta = { ...(ctx.meta ?? {}), ...(validation.meta ?? {}) };
                }
 
                const segments = config.getPathSegments(ctx);

@@ -17,11 +17,11 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
 import toast from 'react-hot-toast';
 
 import { createIncidentReport } from 'src/app/actions/incident/incident-report-actions';
 import { RouterLink } from 'src/components/router-link';
+import { FileDropzone, type DBStoredImage, type File as DropFile } from 'src/components/file-dropzone';
 import { paths } from 'src/paths';
 import type {
   IncidentCategory,
@@ -34,7 +34,7 @@ import {
   INCIDENT_PRIORITY_TOKENS,
   INCIDENT_STATUS_TOKENS,
 } from 'src/types/incident-report';
-import { tokens } from 'src/locales/tokens';
+import { uploadEntityFiles, removeEntityFile } from 'src/libs/supabase/sb-storage';
 
 const categories: IncidentCategory[] = [
   'plumbing',
@@ -64,6 +64,7 @@ interface IncidentCreateClientProps {
   defaultApartmentId?: string | null;
   defaultTenantId?: string | null;
   defaultReporterProfileId?: string;
+  defaultReporterName?: string;
   defaultAssigneeProfileId?: string;
   buildingOptions?: Array<{ id: string; label: string; apartments: { id: string; apartment_number: string }[] }>;
   assigneeOptions?: Array<{ id: string; label: string; buildingId?: string | null }>;
@@ -75,6 +76,7 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
   defaultApartmentId,
   defaultTenantId,
   defaultReporterProfileId,
+  defaultReporterName,
   defaultAssigneeProfileId,
   buildingOptions,
   assigneeOptions,
@@ -97,6 +99,10 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
     closed_at: null,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [incidentId, setIncidentId] = useState<string | null>(null);
+  const [incidentImages, setIncidentImages] = useState<DBStoredImage[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const reporterLabel = defaultReporterName || form.created_by_profile_id;
   const hasBuildingChoice = Boolean(buildingOptions?.length);
   const shouldDisableFields = hasBuildingChoice && !form.building_id;
   const availableApartments = useMemo(() => {
@@ -149,6 +155,9 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
         toast.error(res.error || 'Failed to create incident');
       } else {
         toast.success('Incident created');
+        if (res.data?.id) {
+          setIncidentId(res.data.id);
+        }
         setForm((prev) => ({
           ...prev,
           title: '',
@@ -163,6 +172,72 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
       setSubmitting(false);
     }
   }, [form, isValid]);
+
+  const handleFilesDrop = useCallback(
+    async (files: DropFile[]) => {
+      if (!incidentId) {
+        toast.error(t('common.actionUploadError'));
+        return;
+      }
+      if (!form.building_id) {
+        toast.error(t('common.formFieldBuilding'));
+        return;
+      }
+      if (!files.length) return;
+
+      let fakeProgress = 0;
+      setUploadProgress(0);
+      const interval = setInterval(() => {
+        fakeProgress += 8;
+        if (fakeProgress <= 95) setUploadProgress(fakeProgress);
+      }, 250);
+
+      try {
+        const uploadRes = await uploadEntityFiles({
+          entity: 'incident-image',
+          entityId: incidentId,
+          files: files as unknown as globalThis.File[],
+          clientId: defaultClientId,
+          buildingId: form.building_id,
+          apartmentId: form.apartment_id || null,
+          profileId: form.created_by_profile_id || null,
+        });
+        clearInterval(interval);
+        setUploadProgress(100);
+        setTimeout(() => setUploadProgress(undefined), 600);
+
+        if (!uploadRes.success || !uploadRes.records?.length) {
+          toast.error(uploadRes.error || t('common.actionUploadError'));
+          return;
+        }
+        setIncidentImages((prev) => [...prev, ...(uploadRes.records as unknown as DBStoredImage[])]);
+        toast.success(t('common.actionUploadSuccess'));
+      } catch (err) {
+        clearInterval(interval);
+        setUploadProgress(undefined);
+        toast.error(t('common.actionUploadError'));
+      }
+    },
+    [incidentId, form.building_id, form.apartment_id, form.created_by_profile_id, defaultClientId, t]
+  );
+
+  const handleRemoveImage = useCallback(
+    async (image: DBStoredImage) => {
+      if (!incidentId) return;
+      const result = await removeEntityFile({
+        entity: 'incident-image',
+        entityId: incidentId,
+        storagePathOrUrl: image.storage_path,
+      });
+      if (!result.success) {
+        toast.error(result.error || t('common.actionDeleteError'));
+        return;
+      }
+      setIncidentImages((prev) => prev.filter((img) => img.id !== image.id));
+      toast.success(t('common.actionDeleteSuccess'));
+    },
+    [incidentId, t]
+  );
 
   const handleReset = useCallback(() => {
     setForm({
@@ -181,6 +256,8 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
       resolved_at: null,
       closed_at: null,
     });
+    setIncidentId(null);
+    setIncidentImages([]);
   }, [
     defaultApartmentId,
     defaultAssigneeProfileId,
@@ -200,45 +277,40 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
     >
       <Container maxWidth="xl">
         <Stack spacing={1}>
-            <Typography variant="h3">Report incident</Typography>
-            <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-              <Link
-                color="text.primary"
-                component={RouterLink}
-                href={paths.dashboard.index}
-                variant="subtitle2"
-              >
-                Dashboard
-              </Link>
-              <Link
-                color="text.primary"
-                component={RouterLink}
-                href={paths.dashboard.serviceRequests.index}
-                variant="subtitle2"
-              >
-                {t(tokens.incident.formSubmit)}
-              </Link>
-              <Typography
-                color="text.secondary"
-                variant="subtitle2"
-              >
-                {t(tokens.incident.formSubmit)}
-              </Typography>
-            </Breadcrumbs>
-          </Stack>
+          <Typography variant="h3">{t('incident.form.title')}</Typography>
+          <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
+            <Link
+              color="text.primary"
+              component={RouterLink}
+              href={paths.dashboard.index}
+              variant="subtitle2"
+            >
+              {t('nav.dashboard')}
+            </Link>
+            <Link
+              color="text.primary"
+              component={RouterLink}
+              href={paths.dashboard.serviceRequests.index}
+              variant="subtitle2"
+            >
+              {t('incident.incidentReports')}
+            </Link>
+            <Typography
+              color="text.secondary"
+              variant="subtitle2"
+            >
+              {t('incident.incidentReportCreate')}
+            </Typography>
+          </Breadcrumbs>
+        </Stack>
         <Card sx={{ mt: 6 }}>
           <CardContent>
-            {missingContext && (
-              <Alert severity="warning" sx={{ mb: 3 }}>
-                We could not resolve your building and client automatically. Please reach out to support.
-              </Alert>
-            )}
             <Grid container spacing={4}>
               <Grid size={{ xs: 12, md: 8 }}>
                 <Stack spacing={3}>
                   <TextField
                     fullWidth
-                    label={t(tokens.incident.formTitle)}
+                    label={t('incident.form.title')}
                     value={form.title}
                     onChange={(e) => handleChange('title', e.target.value)}
                     disabled={shouldDisableFields}
@@ -247,88 +319,84 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
                     fullWidth
                     multiline
                     minRows={4}
-                    label={t(tokens.incident.formDescription)}
+                    label={t('incident.form.description')}
                     value={form.description}
                     onChange={(e) => handleChange('description', e.target.value)}
                     disabled={shouldDisableFields}
                   />
+                  <Stack spacing={1}>
+                    <Typography variant="subtitle2">{t('common.lblUploadedImages')}</Typography>
+                    {!incidentId && (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('common.actionSaveFirst')}
+                      </Typography>
+                    )}
+                    <FileDropzone
+                      accept={{ 'image/*': [] }}
+                      images={incidentImages}
+                      uploadProgress={uploadProgress}
+                      onRemoveImage={handleRemoveImage}
+                      onDropAccepted={handleFilesDrop}
+                      disabled={!incidentId || shouldDisableFields || !form.building_id}
+                    />
+                  </Stack>
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Switch
                       checked={form.is_emergency}
                       onChange={(e) => handleChange('is_emergency', e.target.checked)}
                       disabled={shouldDisableFields}
                     />
-                    <Typography>{t(tokens.incident.formEmergency)}</Typography>
+                    <Typography>{t('incident.form.emergency')}</Typography>
                   </Stack>
                 </Stack>
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Stack spacing={3}>
-                  {/* <input type="hidden" value={form.client_id} readOnly />
-                  <input type="hidden" value={form.created_by_tenant_id ?? ''} readOnly /> */}
-                  {hasBuildingChoice ? (
-                    <TextField
-                      select
-                      fullWidth
-                      label={t(tokens.incident.formBuilding)}
-                      value={form.building_id}
-                      onChange={(e) => handleBuildingChange(e.target.value)}
-                      required
-                    >
-                      {buildingOptions!.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  ) : (
-                    <input type="hidden" value={form.building_id} readOnly />
-                  )}
-                  {hasBuildingChoice ? (
-                    <TextField
-                      select
-                      fullWidth
-                      label={t(tokens.incident.formApartment)}
-                      value={form.apartment_id ?? ''}
-                      onChange={(e) => handleChange('apartment_id', e.target.value)}
-                      disabled={shouldDisableFields || !availableApartments.length}
-                      helperText={
-                        availableApartments.length
-                          ? undefined
-                          : t(tokens.incident.formApartment)
-                      }
-                    >
-                      {availableApartments.map((apt) => (
-                        <MenuItem key={apt.id} value={apt.id}>
-                          {apt.apartment_number || apt.id}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  ) : (
-                    <TextField
-                      fullWidth
-                      label={t(tokens.incident.formApartment)}
-                      value={form.apartment_id ?? ''}
-                      onChange={(e) => handleChange('apartment_id', e.target.value)}
-                      disabled={shouldDisableFields}
-                    />
-                  )}
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('incident.form.building')}
+                    value={form.building_id}
+                    onChange={(e) => handleBuildingChange(e.target.value)}
+                    required
+                  >
+                    {(buildingOptions ?? []).map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('incident.form.apartment')}
+                    value={form.apartment_id ?? ''}
+                    onChange={(e) => handleChange('apartment_id', e.target.value)}
+                    disabled={shouldDisableFields || !availableApartments.length}
+                  >
+                    <MenuItem value="">{t('common.btnClear')}</MenuItem>
+                    {availableApartments.map((apt) => (
+                      <MenuItem key={apt.id} value={apt.id}>
+                        {apt.apartment_number || apt.id}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                   <TextField
                     fullWidth
-                    label={t(tokens.incident.formReporter)}
-                    value={form.created_by_profile_id}
-                    onChange={(e) => handleChange('created_by_profile_id', e.target.value)}
+                    label={t('incident.form.reporter')}
+                    value={reporterLabel}
                     required
                     disabled
                   />
                   <TextField
                     select={Boolean(availableAssignees.length)}
                     fullWidth
-                    label={t(tokens.incident.formAssignee)}
+                    label={t('incident.form.assignee')}
                     value={form.assigned_to_profile_id ?? ''}
                     onChange={(e) => handleChange('assigned_to_profile_id', e.target.value)}
                     disabled={shouldDisableFields}
                   >
+                    <MenuItem value="">{t('common.btnClear')}</MenuItem>
                     {availableAssignees.map((option) => (
                       <MenuItem key={option.id} value={option.id}>
                         {option.label}
@@ -338,10 +406,11 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
                   <TextField
                     select
                     fullWidth
-                    label={t(tokens.incident.formCategory)}
+                    label={t('incident.form.category')}
                     value={form.category}
                     onChange={(e) => handleChange('category', e.target.value as IncidentCategory)}
                     disabled={shouldDisableFields}
+                    required
                   >
                     {categories.map((category) => (
                       <MenuItem key={category} value={category}>
@@ -352,10 +421,11 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
                   <TextField
                     select
                     fullWidth
-                    label={t(tokens.incident.formPriority)}
+                    label={t('incident.form.priority')}
                     value={form.priority}
                     onChange={(e) => handleChange('priority', e.target.value as IncidentPriority)}
                     disabled={shouldDisableFields}
+                    required
                   >
                     {priorities.map((priority) => (
                       <MenuItem key={priority} value={priority}>
@@ -366,10 +436,11 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
                   <TextField
                     select
                     fullWidth
-                    label={t(tokens.incident.formStatus)}
+                    label={t('incident.form.status')}
                     value={form.status}
                     onChange={(e) => handleChange('status', e.target.value as IncidentStatus)}
                     disabled={shouldDisableFields}
+                    required
                   >
                     {statuses.map((status) => (
                       <MenuItem key={status} value={status}>
@@ -384,7 +455,7 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
                       disabled={submitting || shouldDisableFields}
                       onClick={handleReset}
                     >
-                      Reset
+                      {t('incident.form.reset')}
                     </Button>
                     <Button
                       fullWidth
@@ -392,7 +463,7 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
                       onClick={handleSubmit}
                       disabled={!isValid || submitting || missingContext || shouldDisableFields}
                     >
-                      {submitting ? 'Saving...' : 'Submit incident'}
+                      {submitting ? t('incident.form.saving') : t('incident.form.submit')}
                     </Button>
                   </Stack>
                 </Stack>
