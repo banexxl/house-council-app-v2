@@ -7,7 +7,7 @@ import { Building } from "src/types/building";
 import { removeAllEntityFiles } from "src/libs/supabase/sb-storage";
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from "src/utils/sb-bucket";
-
+import { TABLES } from "src/libs/supabase/tables";
 
 // ===== Actions =====
 
@@ -17,7 +17,7 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: buildings, error } = await supabase
-          .from("tblBuildings")
+          .from(TABLES.BUILDINGS!)
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`);
 
      if (error) {
@@ -27,7 +27,7 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
 
      // Fetch image rows (raw refs) for each building
      const { data: imageRows } = await supabase
-          .from("tblBuildingImages")
+          .from(TABLES.BUILDINGS!)
           .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id");
 
      // Group by building
@@ -79,7 +79,7 @@ export async function getAllBuildingsFromClient(
 
      if (ids.length) {
           const { data: imageRows } = await supabase
-               .from("tblBuildingImages")
+               .from(TABLES.BUILDINGS!)
                .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id")
                .in("building_id", ids);
 
@@ -116,7 +116,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: building, error } = await supabase
-          .from('tblBuildings')
+          .from(TABLES.BUILDINGS!)
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
           .eq('id', id)
           .single();
@@ -161,7 +161,7 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
      const payloadData = { ...buildingPayload, building_location: building_location_id };
 
      const { data: buildingData, error: insertError } = await supabase
-          .from('tblBuildings')
+          .from(TABLES.BUILDINGS!)
           .insert(payloadData)
           .select()
           .single();
@@ -195,13 +195,13 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
           .single();
 
      if (fetchError) {
-          await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
+          await supabase.from(TABLES.BUILDINGS!).delete().eq('id', buildingData.id);
           await logServerAction({ user_id: null, action: 'createBuilding', duration_ms: Date.now() - t0, error: fetchError.message, payload: payloadData, status: 'fail', type: 'db' });
           return { success: false, error: 'Failed to verify building location' };
      }
 
      if (existingLocation?.building_id) {
-          await supabase.from('tblBuildings').delete().eq('id', buildingData.id);
+          await supabase.from(TABLES.BUILDINGS!).delete().eq('id', buildingData.id);
           await logServerAction({ user_id: null, action: 'createBuilding', duration_ms: Date.now() - t0, error: 'Location is already assigned to another building', payload: payloadData, status: 'fail', type: 'db' });
           return { success: false, error: 'Location is already assigned to another building' };
      }
@@ -228,7 +228,7 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
      };
 
      const { data, error } = await supabase
-          .from('tblBuildings')
+          .from(TABLES.BUILDINGS!)
           .update(updatePayload)
           .eq('id', id)
           .select()
@@ -293,7 +293,7 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
           await supabase.from('tblBuildingLocations').delete().eq('id', location.id);
      }
 
-     const { error: deleteError } = await supabase.from('tblBuildings').delete().eq('id', id);
+     const { error: deleteError } = await supabase.from(TABLES.BUILDINGS!).delete().eq('id', id);
      if (deleteError) {
           await logServerAction({ user_id: null, action: 'Delete Building - failed to delete building from tblBuildings', duration_ms: Date.now() - t0, error: deleteError.message, payload: { id }, status: 'fail', type: 'db' });
           return { success: false, error: deleteError.message };
