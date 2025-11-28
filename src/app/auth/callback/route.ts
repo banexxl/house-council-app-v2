@@ -4,6 +4,7 @@ import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { getClientIdFromTenantBuilding } from "src/app/actions/tenant/tenant-actions";
 import { checkClientSubscriptionStatus } from "src/app/actions/subscription-plan/subscription-plan-actions";
+import log from "src/utils/logger";
 
 export async function GET(request: Request) {
 
@@ -52,6 +53,7 @@ export async function GET(request: Request) {
   //Admin
   const { data: superAdmin, error: superAdminError } = await fetchByEmail(TABLES.SUPER_ADMINS, "id, user_id");
   if (superAdminError && superAdminError.code !== "PGRST116") {
+    log(`Error fetching super admin by email: ${superAdminError.message}`, 'error');
     return cleanAndRedirect(superAdminError.message);
   }
   if (superAdmin && typeof superAdmin === "object" && "id" in superAdmin) {
@@ -62,6 +64,7 @@ export async function GET(request: Request) {
   // Client
   const { data: clientId, error: clientError } = await fetchByEmail(TABLES.CLIENTS, "id, user_id");
   if (clientError && clientError.code !== "PGRST116") {
+    log(`Error fetching client by email: ${clientError.message}`, 'error');
     return cleanAndRedirect(clientError.message);
   }
   if (clientId && typeof clientId === "object" && "user_id" in clientId) {
@@ -73,6 +76,7 @@ export async function GET(request: Request) {
   if (!role) {
     const { data: tenantId, error: tenantError } = await fetchByEmail(TABLES.TENANTS, "id, user_id");
     if (tenantError && tenantError.code !== "PGRST116") {
+      log(`Error fetching tenant by email: ${tenantError.message}`, 'error');
       return cleanAndRedirect(tenantError.message);
     }
     if (tenantId && typeof tenantId === "object" && "user_id" in tenantId) {
@@ -85,6 +89,7 @@ export async function GET(request: Request) {
   if (!role) {
     const { data: clientMemberRow, error: clientMemberError } = await fetchByEmail(TABLES.CLIENT_MEMBERS, "id, user_id");
     if (clientMemberError && clientMemberError.code !== "PGRST116") {
+      log(`Error fetching client member by email: ${clientMemberError.message}`, 'error');
       return cleanAndRedirect(clientMemberError.message);
     }
     if (clientMemberRow && typeof clientMemberRow === "object" && "user_id" in clientMemberRow) {
@@ -112,6 +117,7 @@ export async function GET(request: Request) {
       .single();
 
     if (subscriptionError || !subscription) {
+      log(`No active subscription found for client ID ${userId}`, 'info');
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
@@ -127,6 +133,7 @@ export async function GET(request: Request) {
       .single();
 
     if (subscriptionError || !subscription) {
+      log(`No active subscription found for client member ID ${clientId}`, 'info');
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
@@ -139,6 +146,7 @@ export async function GET(request: Request) {
       const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId!);
 
       if (!clientIdSuccess || !client_id) {
+        log(`Failed to get client ID from tenant's building: ${clientIdError}`, 'error');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
         return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=building_association_failed&error=${encodeURIComponent(clientIdError || 'Failed to get client ID')}`);
@@ -148,19 +156,25 @@ export async function GET(request: Request) {
       const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
 
       if (!subscriptionSuccess) {
+        log(`Subscription check failed for client ID ${client_id}: ${subscriptionError}`, 'error');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
         return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=subscription_check_failed&error=${encodeURIComponent(subscriptionError || 'Subscription check failed')}`);
       }
 
       if (!isActive) {
+        log(`No active subscription for client ID ${client_id}`, 'info');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
         return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_building_subscription`);
       }
 
     } catch (error: any) {
-      await supabase.auth.signOut();
+      log(`Validation error: ${error.message || 'Unexpected error'}`, 'error');
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        log(`Error signing out user: ${signOutError.message}`, 'error');
+      }
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=validation_error&error=${encodeURIComponent(error.message || 'Unexpected error')}`);
     }
