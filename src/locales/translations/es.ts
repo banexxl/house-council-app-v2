@@ -418,6 +418,7 @@ export const es = {
   [tokens.common.filterSearchByName]: 'Buscar por nombre',
   [tokens.common.filterSearchByAddress]: 'Buscar por dirección',
   [tokens.common.formNotChanged]: 'Formulario no cambiado',
+  [tokens.common.userNotFound]: 'Usuario no encontrado',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No hay datos de cliente disponibles',

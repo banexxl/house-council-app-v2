@@ -298,6 +298,7 @@ export const en = {
   [tokens.common.filterSearchByName]: 'Search by name',
   [tokens.common.filterSearchByAddress]: 'Search by address',
   [tokens.common.formNotChanged]: 'Form not changed',
+  [tokens.common.userNotFound]: 'User not found',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No client data available',

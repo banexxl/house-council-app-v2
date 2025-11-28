@@ -26,9 +26,10 @@ type UUID = string;
 
 async function getSignedInUserId(): Promise<UUID | null> {
   const { data, error } = await supabaseBrowserClient.auth.getUser();
+  const { t } = useTranslation()
   if (error) {
     supabaseBrowserClient.auth.signOut().catch(() => { });
-    toast.error('Failed to get user info');
+    toast.error(t('common.userNotFound'));
     return null;
   }
   return data.user?.id ?? null;

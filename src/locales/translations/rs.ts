@@ -474,7 +474,8 @@ export const rs = {
      [tokens.common.filterSearchByName]: 'Pretraga po nazivu',
      [tokens.common.filterSearchByAddress]: 'Pretraga po adresi',
      [tokens.common.formNotChanged]: 'Forma nije izmenjena',
-
+     [tokens.common.userNotFound]: 'Korisnik nije pronađen',
+     // Account Page
      [tokens.account.security.lblSecurity]: 'Bezbednost',
      [tokens.account.deleteAccount]: 'Obriši nalog',
      [tokens.account.deleteAccountConfirmLabel]: 'Potvrdi brisanje',

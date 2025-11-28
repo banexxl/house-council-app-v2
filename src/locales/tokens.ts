@@ -151,6 +151,7 @@ export const tokens = {
     imageUploadRequirements: 'common.imageUploadRequirements',
     formNotChanged: 'common.formNotChanged',
     formSubmitting: 'common.formSubmitting',
+    userNotFound: 'common.userNotFound',
   },
   // (whatsapp section removed; keys moved under clients)
   account: {
