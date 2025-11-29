@@ -156,6 +156,7 @@ export interface Announcement {
      images?: string[]; // existing image URLs when editing
      documents?: { url: string; name: string; mime?: string }[]; // existing document URLs when editing
      user_id: string; // FK to auth.users
+     client_id: string; // FK to tblClients
 }
 
 export const announcementInitialValues: Announcement = {
@@ -174,7 +175,8 @@ export const announcementInitialValues: Announcement = {
      status: 'draft',
      images: [],
      documents: [],
-     user_id: ''
+     user_id: '',
+     client_id: ''
 };
 
 const isHtmlEmpty = (html?: string) => {
@@ -211,6 +213,7 @@ export const buildAnnouncementValidationSchema = (t: (key: string) => string) =>
                then: s => s.required(t('announcements.validation.subcategoryRequired')),
                otherwise: s => s
           }),
+          client_id: Yup.string().required(t('announcements.validation.clientRequired')),
           buildings: Yup.array().of(Yup.string())
                .min(1, t('announcements.validation.buildingsMin'))
                .required(t('announcements.validation.buildingsRequired')),

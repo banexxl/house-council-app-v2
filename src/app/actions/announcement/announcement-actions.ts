@@ -11,6 +11,7 @@ import { toStorageRef } from 'src/utils/sb-bucket';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 import { emitNotifications } from '../notification/emit-notification';
+import { getViewer } from 'src/libs/supabase/server-auth';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
@@ -71,10 +72,21 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data, error } = await supabase
+     const { client, clientMember, admin } = await getViewer();
+     const clientId = client?.id ?? clientMember?.client_id ?? null;
+
+     let query = supabase
           .from(ANNOUNCEMENTS_TABLE)
           .select('*')
           .order('created_at', { ascending: false });
+
+     if (!admin && clientId) {
+          query = query.eq('client_id', clientId);
+     } else if (!admin && !clientId) {
+          return { success: true, data: [] };
+     }
+
+     const { data, error } = await query;
 
      if (error) {
           await logServerAction({
@@ -462,10 +474,15 @@ export async function upsertAnnouncement(
 ): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const { client, clientMember, admin } = await getViewer();
+     const clientId = input.client_id || client?.id || clientMember?.client_id || null;
+     if (!clientId && !admin) {
+          return { success: false, error: 'Client required' };
+     }
 
      const now = new Date();
      const isUpdate = !!input.id;
-     const record: any = { ...input };
+     const record: any = { ...input, client_id: clientId ?? input.client_id };
 
      const buildingIdsInput: string[] = Array.isArray(record.buildings)
           ? [...new Set(record.buildings.filter((id: any) => typeof id === 'string'))] as string[]

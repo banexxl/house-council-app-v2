@@ -788,6 +788,7 @@ export const tokens = {
       scheduleInvalid: 'announcements.validation.scheduleInvalid',
       scheduleFuture: 'announcements.validation.scheduleFuture',
       statusRequired: 'announcements.validation.statusRequired',
+      clientRequired: 'announcements.validation.clientRequired',
     },
     lblBuildingStatusUnderInspection: 'buildings.lblBuildingStatusUnderInspection',
     lblBuildingStatusHistorical: 'buildings.lblBuildingStatusHistorical',

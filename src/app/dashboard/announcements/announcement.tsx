@@ -84,7 +84,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const [scheduledTime, setScheduledTime] = useState<Dayjs | null>(null);
 
      const formik = useFormik({
-          initialValues: announcementInitialValues,
+          initialValues: { ...announcementInitialValues, client_id: client.id },
           validationSchema: buildAnnouncementValidationSchema(t),
           // Do not validate on mount; defer validation feedback until user interaction or submit
           validateOnMount: false,
@@ -98,6 +98,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     subcategory: values.subcategory || null,
                     buildings: values.buildings || [],
                     pinned: values.pinned,
+                    client_id: client.id,
                     schedule_enabled: values.schedule_enabled,
                     scheduled_at: values.schedule_enabled ? values.scheduled_at : null,
                     scheduled_timezone: values.schedule_enabled ? values.scheduled_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone : null,
@@ -145,6 +146,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               user_id: updated.user_id,
                               images: (updated.images && updated.images.length ? updated.images : []),
                               documents: (updated.documents && updated.documents.length ? updated.documents : []),
+                              client_id: client.id,
                          }
                     });
                     // Make sure the list/table reflects latest changes
@@ -155,6 +157,12 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      // Helper to decide when to show an error for a field (user has interacted or submitted)
      const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
+     // Ensure client_id is always set and never surfaces as an error
+     useEffect(() => {
+          if (formik.values.client_id !== client.id) {
+               formik.setFieldValue('client_id', client.id, false);
+          }
+     }, [client.id]);
 
      const isDraft = formik.values.status === 'draft';
      const hasErrors = Object.keys(formik.errors).length > 0;
@@ -288,6 +296,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     user_id: a.user_id,
                     images: (a.images && a.images.length ? a.images : []),
                     documents: (a.documents && a.documents.length ? a.documents : []),
+                    client_id: a.client_id || '',
                }
           });
           hydrateScheduledAt(
@@ -950,15 +959,39 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                         </Box>
                                         <Divider sx={{ my: 1 }} />
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end" alignItems={{ xs: 'stretch', sm: 'center' }}>
-                                             <Button
-                                                  variant="outlined"
-                                                  onClick={handleSave}
-                                                  disabled={!canSaveDraft}
-                                                  loading={formik.isSubmitting}
-                                                  sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                             <Tooltip
+                                                  title={
+                                                       !formik.isValid
+                                                            ? (
+                                                                 <Stack component="ol" spacing={0.5} sx={{ m: 0, pl: 2 }}>
+                                                                      {Object.entries(formik.errors)
+                                                                           .filter(([key]) => key !== 'client_id')
+                                                                           .map(([, err], idx) => {
+                                                                                const items = typeof err === 'string' ? [err] : Object.values(err as any);
+                                                                                return items.filter(Boolean).map((msg, innerIdx) => (
+                                                                                     <Typography component="li" key={`${idx}-${innerIdx}`} variant="caption">
+                                                                                          {msg as string}
+                                                                                     </Typography>
+                                                                                ));
+                                                                           })
+                                                                           .flat()}
+                                                                 </Stack>
+                                                            )
+                                                            : ''
+                                                  }
                                              >
-                                                  {formik.values.status === 'published' ? t(tokens.common.btnSave) : t(tokens.announcements.actions.saveDraft)}
-                                             </Button>
+                                                  <span>
+                                                       <Button
+                                                            variant="outlined"
+                                                            onClick={handleSave}
+                                                            disabled={!canSaveDraft}
+                                                            loading={formik.isSubmitting}
+                                                            sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                                       >
+                                                            {formik.values.status === 'published' ? t(tokens.common.btnSave) : t(tokens.announcements.actions.saveDraft)}
+                                                       </Button>
+                                                  </span>
+                                             </Tooltip>
                                              {formik.values.status === 'published' ? (
                                                   <Button
                                                        variant="contained"

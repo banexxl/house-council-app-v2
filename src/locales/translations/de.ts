@@ -234,6 +234,7 @@ export const de = {
   [tokens.announcements.validation.scheduleInvalid]: 'Ungültiges Datum',
   [tokens.announcements.validation.scheduleFuture]: 'Planungszeit muss in der Zukunft liegen',
   [tokens.announcements.validation.statusRequired]: 'Status ist erforderlich',
+  [tokens.announcements.validation.clientRequired]: 'Client ist erforderlich',
   [tokens.account.security.loginHistoryIp]: 'IP-Adresse',
   [tokens.account.security.loginHistoryLocation]: 'Standort',
   [tokens.account.security.deleteAccountSection]: 'Konto löschen',
