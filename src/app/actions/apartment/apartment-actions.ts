@@ -8,6 +8,7 @@ import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
 import { toStorageRef } from "src/utils/sb-bucket";
 import { TABLES } from "src/libs/supabase/tables";
+import { ApartmentImage } from "src/types/apartment";
 
 // ===== Actions =====
 
@@ -215,6 +216,23 @@ export async function getApartmentById(id: string): Promise<{ success: boolean; 
      };
 }
 
+const mapApartmentImagesForInsert = (apartment_id: string, images?: (string | ApartmentImage)[]) => {
+     if (!images?.length) return [];
+     return images
+          .map(img => {
+               const ref = toStorageRef(img as any);
+               if (!ref) return null;
+               const typed = img as any;
+               return {
+                    apartment_id,
+                    storage_bucket: ref.bucket,
+                    storage_path: ref.path,
+                    is_cover_image: !!typed?.is_cover_image,
+               };
+          })
+          .filter(Boolean) as Array<{ apartment_id: string; storage_bucket: string; storage_path: string; is_cover_image: boolean }>;
+};
+
 export async function createOrUpdateApartment(payload: Apartment) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
@@ -239,12 +257,10 @@ export async function createOrUpdateApartment(payload: Apartment) {
           }
 
           if (apartment_images) {
-               const refs = apartment_images.map(toStorageRef).filter(Boolean) as Array<{ bucket: string; path: string }>;
                await supabase.from(TABLES.APARTMENT_IMAGES).delete().eq("apartment_id", id);
-               if (refs.length) {
-                    await supabase.from(TABLES.APARTMENT_IMAGES).insert(
-                         refs.map(r => ({ apartment_id: id, storage_bucket: r.bucket, storage_path: r.path }))
-                    );
+               const rows = mapApartmentImagesForInsert(id, apartment_images);
+               if (rows.length) {
+                    await supabase.from(TABLES.APARTMENT_IMAGES).insert(rows);
                }
           }
 
@@ -295,11 +311,9 @@ export async function createOrUpdateApartment(payload: Apartment) {
           }
 
           if (apartment_images?.length) {
-               const refs = apartment_images.map(toStorageRef).filter(Boolean) as Array<{ bucket: string; path: string }>;
-               if (refs.length) {
-                    await supabase.from(TABLES.APARTMENT_IMAGES).insert(
-                         refs.map(r => ({ apartment_id: data.id, storage_bucket: r.bucket, storage_path: r.path }))
-                    );
+               const rows = mapApartmentImagesForInsert(data.id, apartment_images);
+               if (rows.length) {
+                    await supabase.from(TABLES.APARTMENT_IMAGES).insert(rows);
                }
           }
 

@@ -3,7 +3,7 @@
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { resolveClientFromClientOrMember } from "../client/client-members";
-import { Building } from "src/types/building";
+import { Building, BuildingImage } from "src/types/building";
 import { removeAllEntityFiles } from "src/libs/supabase/sb-storage";
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from "src/utils/sb-bucket";
@@ -173,16 +173,8 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
 
      // Insert building images (normalize to storage refs first)
      if (building_images?.length) {
-          const refs = building_images
-               .map(toStorageRef)
-               .filter(Boolean) as Array<{ bucket: string; path: string }>;
-
-          if (refs.length) {
-               const rows = refs.map(r => ({
-                    building_id: buildingData.id,
-                    storage_bucket: r.bucket,
-                    storage_path: r.path,
-               }));
+          const rows = mapBuildingImagesForInsert(buildingData.id, building_images);
+          if (rows.length) {
                await supabase.from('tblBuildingImages').insert(rows);
           }
      }
@@ -216,6 +208,23 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
      return { success: true, data: buildingData };
 }
 
+const mapBuildingImagesForInsert = (building_id: string, images?: (string | BuildingImage)[]) => {
+     if (!images?.length) return [];
+     return images
+          .map(img => {
+               const ref = toStorageRef(img as any);
+               if (!ref) return null;
+               const typed = img as any;
+               return {
+                    building_id,
+                    storage_bucket: ref.bucket,
+                    storage_path: ref.path,
+                    is_cover_image: !!typed?.is_cover_image,
+               };
+          })
+          .filter(Boolean) as Array<{ building_id: string; storage_bucket: string; storage_path: string; is_cover_image: boolean }>;
+};
+
 /** UPDATE a building */
 export async function updateBuilding(id: string, updates: Partial<Building>): Promise<{ success: boolean, error?: string, data?: Building }> {
      const t0 = Date.now();
@@ -241,20 +250,11 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
 
      // Replace images if provided
      if (building_images) {
-          // normalize
-          const refs = building_images
-               .map(toStorageRef)
-               .filter(Boolean) as Array<{ bucket: string; path: string }>;
-
           // remove existing rows
           await supabase.from('tblBuildingImages').delete().eq('building_id', id);
 
-          if (refs.length) {
-               const rows = refs.map(r => ({
-                    building_id: id,
-                    storage_bucket: r.bucket,
-                    storage_path: r.path,
-               }));
+          const rows = mapBuildingImagesForInsert(id, building_images);
+          if (rows.length) {
                await supabase.from('tblBuildingImages').insert(rows);
           }
      }
