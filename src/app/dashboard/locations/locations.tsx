@@ -2,7 +2,7 @@
 
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import { Box, Button, Card, CircularProgress, Container, Stack } from '@mui/material';
+import { Alert, Box, Button, Card, CircularProgress, Container, Stack } from '@mui/material';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { BuildingLocation } from 'src/types/location';
@@ -118,6 +118,9 @@ const Locations = ({ locations }: LocationsProps) => {
                                    </Button>
                               }
                          />
+                         <Alert severity="warning">
+                              {t('locations.unassignedCleanupWarning')}
+                         </Alert>
 
                          <Card sx={{ mb: 2 }}>
                               <SearchAndBooleanFilters

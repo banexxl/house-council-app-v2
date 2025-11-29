@@ -46,6 +46,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
 
   const locationDataWithNoBuildingId = locationData.filter((location) => !location.building_id);
   const router = useRouter();
+  const [initialFormValues, setInitialFormValues] = useState<Building>(buildingData ? { ...buildingData } : buildingInitialValues);
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const [deletingBuilding, setDeletingBuilding] = useState(false);
@@ -53,8 +54,15 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
   const { t } = useTranslation();
 
+  useEffect(() => {
+    if (buildingData) {
+      setInitialFormValues({ ...buildingData });
+    }
+  }, [buildingData]);
+
   const formik = useFormik({
-    initialValues: buildingData ? buildingData : buildingInitialValues,
+    initialValues: initialFormValues,
+    enableReinitialize: true,
     validationSchema: buildingValidationSchema(t),
     validateOnMount: false,
     onSubmit: async (values, helpers) => {

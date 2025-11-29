@@ -540,6 +540,7 @@ export const es = {
   [tokens.locations.addLocationsFirstLabel]: 'Agregar ubicaciones primero',
   [tokens.locations.locationTaken]: 'Ubicación ya ocupada',
   [tokens.locations.tableFilterNoFilterSelected]: 'Ningún filtro seleccionado',
+  [tokens.locations.unassignedCleanupWarning]: 'Las ubicaciones sin edificio asignado se eliminarán automáticamente cada hora.',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Número de apartamento',

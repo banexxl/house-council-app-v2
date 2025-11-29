@@ -419,6 +419,7 @@ export const en = {
   [tokens.locations.addLocationsFirstLabel]: 'Please add locations first',
   [tokens.locations.locationTaken]: 'Location has been taken',
   [tokens.locations.tableFilterNoFilterSelected]: 'No Filter Selected',
+  [tokens.locations.unassignedCleanupWarning]: 'Locations without an assigned building will be removed automatically every hour.',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Apartment Number',

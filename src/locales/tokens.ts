@@ -839,6 +839,7 @@ export const tokens = {
     addLocationsFirstLabel: 'locations.addLocationsFirstLabel',
     tableFilterNoFilterSelected: 'locations.tableFilterNoFilterSelected',
     loadingLocation: 'locations.loadingLocation',
+    unassignedCleanupWarning: 'locations.unassignedCleanupWarning',
   },
   clients: {
     client: 'clients.client',

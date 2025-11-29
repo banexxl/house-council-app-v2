@@ -1,13 +1,13 @@
 'use client';
 
-import { Button } from '@mui/material';
+import { Alert, Button } from '@mui/material';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -77,6 +77,9 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                          <Stack spacing={1}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                    <Typography variant="h4">{t('locations.locationCreate')}</Typography>
+                                   <Alert severity="warning">
+                                        {t('locations.unassignedCleanupWarning')}
+                                   </Alert>
                                    <Button
                                         LinkComponent={RouterLink}
                                         href='/dashboard/locations'
@@ -120,6 +123,9 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                          ) : (
                               <Typography variant="body1">{t('locations.loadingLocation')}</Typography>
                          )}
+                         <Alert severity="warning" sx={{ mt: 2 }}>
+                              {t('locations.unassignedCleanupWarning')}
+                         </Alert>
                     </Stack>
                </Container>
           </Box>

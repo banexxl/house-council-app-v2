@@ -538,6 +538,7 @@ export const de = {
   [tokens.locations.addLocationsFirstLabel]: 'Zuerst Orte hinzufügen',
   [tokens.locations.locationTaken]: 'Ort bereits vergeben',
   [tokens.locations.tableFilterNoFilterSelected]: 'Kein Filter ausgewählt',
+  [tokens.locations.unassignedCleanupWarning]: 'Standorte ohne zugewiesenes Gebäude werden stündlich automatisch entfernt.',
   //#endregion
   //#region Apartments
   [tokens.apartments.lblApartmentNumber]: 'Wohnungsnummer',
