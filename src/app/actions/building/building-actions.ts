@@ -27,7 +27,7 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
 
      // Fetch image rows (raw refs) for each building
      const { data: imageRows } = await supabase
-          .from(TABLES.BUILDINGS!)
+          .from(TABLES.BUILDING_IMAGES!)
           .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id");
 
      // Group by building
@@ -79,7 +79,7 @@ export async function getAllBuildingsFromClient(
 
      if (ids.length) {
           const { data: imageRows } = await supabase
-               .from(TABLES.BUILDINGS!)
+               .from(TABLES.BUILDING_IMAGES!)
                .select("id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id")
                .in("building_id", ids);
 
