@@ -9,7 +9,11 @@ import { BuildingLocation } from 'src/types/location';
 interface MapComponentProps {
      mapBoxAccessToken?: string;
      center: { latitude: number; longitude: number };
-     markers?: BuildingLocation[];
+     markers?: Array<BuildingLocation & {
+          building_cover_bucket?: string;
+          building_cover_path?: string;
+          client_name?: string;
+     }>;
      zoom?: number;
      refreshKey?: number;
      onMapClick?: (coords: { latitude: number; longitude: number }, address: string) => void;
@@ -26,7 +30,6 @@ export const MapComponent = ({
      const mapContainerRef = useRef<HTMLDivElement | null>(null);
      const mapRef = useRef<mapboxgl.Map | null>(null);
      const [mapReady, setMapReady] = useState(false);
-
      mapboxgl.accessToken = mapBoxAccessToken || '';
 
      // (Re)initialize map when component mounts or refreshKey changes
@@ -99,6 +102,10 @@ export const MapComponent = ({
                               full_address={`${marker.city}, ${marker.street_address} ${marker.street_number}`}
                               location_id={marker.id!}
                               map={mapRef.current!}
+                              client_id={marker.client_id}
+                              client_name={(marker as any).client_name}
+                              cover_bucket={(marker as any).building_cover_bucket}
+                              cover_path={(marker as any).building_cover_path}
                          />
                     ))}
           </div>

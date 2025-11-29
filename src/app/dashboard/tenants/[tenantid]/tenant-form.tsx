@@ -606,14 +606,27 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               }
                          </Grid>
                          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ p: 3 }}>
-                              <Button
-                                   type="submit"
-                                   variant="contained"
-                                   disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
-                                   loading={formik.isSubmitting}
+                              <Tooltip
+                                   title={
+                                        !formik.isValid && formik.submitCount >= 0
+                                             ? Object.values(formik.errors)
+                                                  .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
+                                                  .filter(Boolean)
+                                                  .map((err, idx) => <Typography key={idx} variant="caption">{err as string}</Typography>)
+                                             : ''
+                                   }
                               >
-                                   {t('common.btnSave')}
-                              </Button>
+                                   <span>
+                                        <Button
+                                             type="submit"
+                                             variant="contained"
+                                             disabled={formik.isSubmitting || !formik.dirty || !formik.isValid}
+                                             loading={formik.isSubmitting}
+                                        >
+                                             {t('common.btnSave')}
+                                        </Button>
+                                   </span>
+                              </Tooltip>
                               <Button
                                    color="inherit"
                                    component={RouterLink}

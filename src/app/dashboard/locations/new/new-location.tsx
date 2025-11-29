@@ -27,13 +27,10 @@ type NewLocationProps = {
 }
 
 const NewLocation = ({ mapBoxAccessToken, clientLocations, occupiedLocations = [], userData }: NewLocationProps) => {
-
      const { t } = useTranslation();
      const [locationsData, setLocationsData] = useState<BuildingLocation[]>([...clientLocations, ...occupiedLocations]);
      const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null);
      const [isNavigatingToList, setIsNavigatingToList] = useState(false);
-
-
      const { coords, isGeolocationEnabled } = useGeolocated({
           positionOptions: {
                enableHighAccuracy: true,

@@ -6,6 +6,7 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { BuildingLocation } from "src/types/location";
 import { resolveClientFromClientOrMember } from "../client/client-members";
 import { TABLES } from "src/libs/supabase/tables";
+import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 
 type ErrorResponse = {
      code: string;
@@ -14,12 +15,64 @@ type ErrorResponse = {
      message: string;
 };
 
+const enrichLocationsWithExtras = async (
+     supabase: any,
+     locations: BuildingLocation[]
+): Promise<Array<BuildingLocation & { building_cover_bucket?: string; building_cover_path?: string; client_name?: string }>> => {
+     if (!locations?.length) return [];
+
+     const buildingIds = Array.from(new Set(locations.map((l) => l.building_id).filter(Boolean))) as string[];
+     const clientIds = Array.from(new Set(locations.map((l) => l.client_id).filter(Boolean))) as string[];
+
+     const coverByBuilding = new Map<string, { storage_bucket: string; storage_path: string }>();
+     if (buildingIds.length) {
+          const { data: covers } = await supabase
+               .from(TABLES.BUILDING_IMAGES)
+               .select("building_id, storage_bucket, storage_path, is_cover_image")
+               .in("building_id", buildingIds)
+               .eq("is_cover_image", true);
+          (covers || []).forEach((c: any) => {
+               if (c.building_id && c.storage_bucket && c.storage_path) {
+                    coverByBuilding.set(c.building_id, {
+                         storage_bucket: c.storage_bucket,
+                         storage_path: c.storage_path,
+                    });
+               }
+          });
+     }
+
+     const clientNameById = new Map<string, string>();
+     if (clientIds.length) {
+          const { data: clients } = await supabase
+               .from(TABLES.CLIENTS)
+               .select("id, name, contact_person")
+               .in("id", clientIds);
+          (clients || []).forEach((c: any) => {
+               clientNameById.set(c.id, c.name || c.contact_person || c.id);
+          });
+     }
+
+     return locations.map((loc) => {
+          const cover = loc.building_id ? coverByBuilding.get(loc.building_id) : undefined;
+          const clientName = clientNameById.get(loc.client_id);
+          return {
+               ...loc,
+               location_occupied: !!(loc.building_id && loc.building_id !== ""),
+               building_cover_bucket: cover?.storage_bucket,
+               building_cover_path: cover?.storage_path,
+               client_name: clientName,
+          };
+     });
+};
+
 // Get all locations (admin use)
 export const getAllLocations = async () => {
      const supabase = await useServerSideSupabaseAnonClient();
+     const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).select("*");
      if (error) return { success: false, error: error.message };
-     return { success: true, data };
+     const enriched = await enrichLocationsWithExtras(serviceSupabase, data || []);
+     return { success: true, data: enriched };
 };
 
 export const insertLocationAction = async (
@@ -213,6 +266,7 @@ export const getAllAddedLocationsByClientId = async (
      client_id: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
+     const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
      const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
      const resolvedClientId = resolvedClientData?.id!;
      if (!resolvedClientId.trim()) {
@@ -244,10 +298,7 @@ export const getAllAddedLocationsByClientId = async (
                });
                return { success: false, error };
           }
-          const enriched = (data || []).map(l => ({
-               ...l,
-               location_occupied: !!(l.building_id && l.building_id !== ""),
-          }));
+          const enriched = await enrichLocationsWithExtras(serviceSupabase, data || []);
           await logServerAction({
                action: "getAllAddedLocationsByClientId",
                duration_ms: 0,
@@ -276,6 +327,7 @@ export const getAllOtherClientsLocations = async (
      client_id: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
+     const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
      const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
      const resolvedClientId = resolvedClientData?.id!;
      if (!resolvedClientId.trim()) {
@@ -311,10 +363,7 @@ export const getAllOtherClientsLocations = async (
                return { success: false, error };
           }
 
-          const enriched = (data || []).map((loc) => ({
-               ...loc,
-               location_occupied: !!loc.building_id,
-          }));
+          const enriched = await enrichLocationsWithExtras(serviceSupabase, data || []);
 
           await logServerAction({
                action: "getAllOtherClientsLocations",

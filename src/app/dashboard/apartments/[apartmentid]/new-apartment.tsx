@@ -10,7 +10,8 @@ import {
   MenuItem,
   Stack,
   TextField,
-  Typography
+  Typography,
+  Tooltip
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import toast from 'react-hot-toast';
@@ -456,14 +457,27 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
           >
             {t('common.btnCancel')}
           </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            loading={formik.isSubmitting}
-            disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
+          <Tooltip
+            title={
+              !formik.isValid && formik.submitCount >= 0
+                ? Object.values(formik.errors)
+                  .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
+                  .filter(Boolean)
+                  .map((err, idx) => <Typography key={idx} variant="caption">{err as string}</Typography>)
+                : ''
+            }
           >
-            {apartmentData ? t('common.btnUpdate') : t('common.btnCreate')}
-          </Button>
+            <span>
+              <Button
+                type="submit"
+                variant="contained"
+                loading={formik.isSubmitting}
+                disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
+              >
+                {apartmentData ? t('common.btnUpdate') : t('common.btnCreate')}
+              </Button>
+            </span>
+          </Tooltip>
         </Stack>
       </Stack>
     </form>

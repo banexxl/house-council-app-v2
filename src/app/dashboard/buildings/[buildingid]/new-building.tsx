@@ -581,14 +581,27 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
             >
               {t('common.btnCancel')}
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={!formik.isValid || !formik.dirty}
-              loading={formik.isSubmitting}
+            <Tooltip
+              title={
+                !formik.isValid && formik.submitCount >= 0
+                  ? Object.values(formik.errors)
+                    .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
+                    .filter(Boolean)
+                    .map((err, idx) => <Typography key={idx} variant="caption">{err as string}</Typography>)
+                  : ''
+              }
             >
-              {buildingData ? t('common.btnUpdate') : t('common.btnCreate')}
-            </Button>
+              <span>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={!formik.isValid || !formik.dirty}
+                  loading={formik.isSubmitting}
+                >
+                  {buildingData ? t('common.btnUpdate') : t('common.btnCreate')}
+                </Button>
+              </span>
+            </Tooltip>
           </Stack>
         </Stack>
 
