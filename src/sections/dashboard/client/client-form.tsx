@@ -12,6 +12,8 @@ import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import Tooltip from '@mui/material/Tooltip'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import MenuItem from '@mui/material/MenuItem'
 import { RouterLink } from 'src/components/router-link'
 import { paths } from 'src/paths'
@@ -35,6 +37,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { updateClientSubscriptionForClient } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 import log from 'src/utils/logger'
+import type { Theme } from '@mui/material/styles'
 
 interface ClientNewFormProps {
   clientData?: Client
@@ -56,6 +59,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
   const ImageUploadRef = useRef<ImageUploadRef>(null)
   const router = useRouter()
   const currentRoute = usePathname()
+  const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'))
 
   useEffect(() => {
     const fetchBuildingLocations = async () => {
@@ -89,6 +93,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     initialValues: initialFormikValues,
     enableReinitialize: true,
     validationSchema: clientValidationSchema(t),
+    validateOnMount: true,
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       // Separate client vs subscription values before calling server actions
@@ -212,6 +217,26 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     }
     setModalLoading(false);
   };
+
+  const validationMessages = useMemo(() => {
+    const flat: string[] = []
+    const walk = (val: any) => {
+      if (!val) return
+      if (typeof val === 'string') {
+        flat.push(val)
+        return
+      }
+      if (Array.isArray(val)) {
+        val.forEach(walk)
+        return
+      }
+      if (typeof val === 'object') {
+        Object.values(val).forEach(walk)
+      }
+    }
+    walk(formik.errors)
+    return flat
+  }, [formik.errors])
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -668,19 +693,38 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
         </CardContent>
         <Divider sx={{ my: 3 }} />
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          flexWrap="wrap"
-          spacing={3}
-          sx={{ p: 3 }}
-        >
-          <Button
-            disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
-            type="submit"
-            variant="contained"
-            loading={formik.isSubmitting}
+        direction={{ xs: 'column', sm: 'row' }}
+        flexWrap="wrap"
+        spacing={3}
+        sx={{ p: 3 }}
+      >
+          <Tooltip
+            title={
+              validationMessages.length > 0 && (formik.isSubmitting || !formik.isValid || !formik.dirty)
+                ? (
+                  <Stack component="span" spacing={0.5}>
+                    {validationMessages.map((msg, idx) => (
+                      <Typography key={idx} variant="caption">{msg}</Typography>
+                    ))}
+                  </Stack>
+                )
+                : ''
+            }
+            disableFocusListener={validationMessages.length === 0}
+            disableHoverListener={validationMessages.length === 0}
+            disableTouchListener={validationMessages.length === 0}
           >
-            {t('clients.clientSave')}
-          </Button>
+            <span>
+              <Button
+                disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
+                type="submit"
+                variant="contained"
+                loading={formik.isSubmitting}
+              >
+                {t('clients.clientSave')}
+              </Button>
+            </span>
+          </Tooltip>
           <Button
             color="inherit"
             component={RouterLink}
@@ -694,6 +738,17 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             {t('common.btnCancel')}
           </Button>
         </Stack>
+        {isMobile && validationMessages.length > 0 && (formik.isSubmitting || !formik.isValid || !formik.dirty) && (
+          <Box sx={{ px: 3, pb: 3 }}>
+            <Stack spacing={0.5}>
+              {validationMessages.map((msg, idx) => (
+                <Typography key={idx} variant="caption" color="error">
+                  • {msg}
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        )}
       </Card>
     </form >
   )

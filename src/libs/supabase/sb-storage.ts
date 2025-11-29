@@ -510,6 +510,7 @@ export const uploadEntityFiles = async (
 
                const { error: uploadError } = await supabase.storage.from(bucket).upload(storagePath, file, uploadOptions);
                if (uploadError) {
+                    log(`Error uploading file to storage: ${uploadError.message}`, 'error');
                     await logServerAction({
                          action: `storage.upload.${params.entity}`,
                          duration_ms: Date.now() - startedAt,
@@ -594,6 +595,7 @@ export const uploadEntityFiles = async (
                     .createSignedUrls(storageRefs.map((ref) => ref.path), SIGNED_URL_TTL_SECONDS);
 
                if (error || !data) {
+                    log(`Error creating signed URLs: ${error?.message}`, 'error');
                     await logServerAction({
                          action: `storage.upload.${params.entity}`,
                          duration_ms: Date.now() - startedAt,
@@ -627,6 +629,7 @@ export const uploadEntityFiles = async (
 
           return { success: true, records, signedUrls };
      } catch (error: any) {
+          log(`Unexpected error during storage upload: ${error?.message ?? 'Unknown error'}`, 'error');
           await logServerAction({
                action: `storage.upload.${params.entity}`,
                duration_ms: Date.now() - startedAt,

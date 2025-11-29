@@ -8,6 +8,14 @@ import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
+import { getViewer } from 'src/libs/supabase/server-auth';
+
+export type ClientBuildingOption = {
+     id: string;
+     label: string;
+     street_address?: string;
+     city?: string;
+};
 
 // --- Supabase Auth Actions for Client Management ---
 export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
@@ -547,6 +555,151 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
           }
      }
 }
+
+// --- Social profile helpers for clients ---
+const calculateClientProfileProgress = (profile: Partial<{ first_name?: string; last_name?: string; phone_number?: string; bio?: string; avatar_url?: string; cover_image_url?: string; current_city?: string; current_job_title?: string; current_job_company?: string; previous_job_title?: string; previous_job_company?: string; origin_city?: string; quote?: string; }>): number => {
+     const fields = [
+          'first_name',
+          'last_name',
+          'phone_number',
+          'bio',
+          'avatar_url',
+          'cover_image_url',
+          'current_city',
+          'current_job_title',
+          'current_job_company',
+          'previous_job_title',
+          'previous_job_company',
+          'origin_city',
+          'quote',
+     ];
+     const completed = fields.filter((field) => {
+          const value = (profile as any)[field];
+          return value && value.toString().trim().length > 0;
+     });
+     return Math.round((completed.length / fields.length) * 100);
+};
+
+export const getClientBuildingsForSocialProfile = async (
+     clientId?: string
+): Promise<{ success: boolean; data?: ClientBuildingOption[]; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const viewer = await getViewer();
+     const effectiveClientId = clientId ?? viewer.client?.id ?? viewer.clientMember?.client_id ?? null;
+
+     if (!effectiveClientId) {
+          return { success: false, error: 'Client not found' };
+     }
+
+     const { data, error } = await supabase
+          .from(TABLES.BUILDINGS)
+          .select(`
+               id,
+               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                    street_address,
+                    city,
+                    country
+               )
+          `)
+          .eq('client_id', effectiveClientId)
+          .order('created_at', { ascending: false });
+
+     if (error) {
+          return { success: false, error: error.message };
+     }
+
+     const options: ClientBuildingOption[] = (data ?? []).map((row: any) => {
+          const location = row.building_location as any;
+          const labelPieces = [location?.street_address, location?.city].filter(Boolean);
+          const label = labelPieces.length ? labelPieces.join(', ') : 'Building';
+          return {
+               id: row.id,
+               label,
+               street_address: location?.street_address,
+               city: location?.city,
+          };
+     });
+
+     return { success: true, data: options };
+};
+
+export const createClientSocialProfile = async (buildingId: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const viewer = await getViewer();
+     const client = viewer.client ?? null;
+     const clientId = client?.id ?? viewer.clientMember?.client_id ?? null;
+
+     if (!clientId) {
+          return { success: false, error: 'Client not found' };
+     }
+
+     if (!buildingId || !isUUID(buildingId)) {
+          return { success: false, error: 'Invalid building selected' };
+     }
+
+     // Ensure the selected building belongs to this client
+     const { data: buildingRow, error: buildingError } = await supabase
+          .from(TABLES.BUILDINGS)
+          .select(`
+               id,
+               client_id,
+               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (city)
+          `)
+          .eq('id', buildingId)
+          .single();
+
+     if (buildingError || !buildingRow) {
+          return { success: false, error: buildingError?.message ?? 'Building not found' };
+     }
+
+     if (buildingRow.client_id !== clientId) {
+          return { success: false, error: 'Building does not belong to this client' };
+     }
+
+     const { data: clientRow, error: clientError } = await supabase
+          .from(TABLES.CLIENTS)
+          .select('id, contact_person, name, email, phone, mobile_phone')
+          .eq('id', clientId)
+          .single();
+
+     if (clientError || !clientRow) {
+          return { success: false, error: clientError?.message ?? 'Client not found' };
+     }
+
+     const profilePayload = {
+          id: clientId,
+          tenant_id: clientId,
+          client_id: clientId,
+          first_name: clientRow.contact_person || clientRow.name || viewer.clientMember?.name || '',
+          last_name: '',
+          email: clientRow.email || viewer.clientMember?.email || '',
+          phone_number: clientRow.phone || clientRow.mobile_phone || '',
+          current_city: (buildingRow as any)?.building_location?.city ?? null,
+     };
+
+     const profile_progress = calculateClientProfileProgress(profilePayload);
+     const nowIso = new Date().toISOString();
+
+     const { error: upsertError } = await supabase
+          .from(TABLES.TENANT_PROFILES)
+          .upsert(
+               {
+                    ...profilePayload,
+                    profile_progress,
+                    updated_at: nowIso,
+                    created_at: nowIso,
+               },
+               { onConflict: 'id' }
+          );
+
+     if (upsertError) {
+          return { success: false, error: upsertError.message };
+     }
+
+     revalidatePath('/dashboard/social/profile');
+     revalidatePath('/dashboard/social');
+     return { success: true };
+};
 
 // Returns true if the provided userId corresponds to a Client record; false if tenant or not found.
 export const isClientUserId = async (userId: string): Promise<boolean> => {
