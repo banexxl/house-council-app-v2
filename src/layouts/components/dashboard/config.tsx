@@ -17,7 +17,7 @@ import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
 import ChatIcon from "@mui/icons-material/Chat";
 import StorageIcon from '@mui/icons-material/Storage';
 import ConstructionIcon from '@mui/icons-material/Construction';
-
+import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
 
@@ -199,7 +199,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         path: paths.dashboard.social.feed,
         icon: (
           <SvgIcon fontSize="small">
-            <Users03Icon />
+            <ConnectWithoutContactIcon />
           </SvgIcon>
         ),
       },
@@ -316,7 +316,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         ],
         icon: (
           <SvgIcon fontSize="small">
-            <Users03Icon />
+            <ConnectWithoutContactIcon />
           </SvgIcon>
         ),
       },
