@@ -39,9 +39,17 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+  const [initialFormValues, setInitialFormValues] = useState<Apartment>(apartmentData ? { ...apartmentData } : apartmentInitialValues);
+
+  useEffect(() => {
+    if (apartmentData) {
+      setInitialFormValues({ ...apartmentData });
+    }
+  }, [apartmentData]);
 
   const formik = useFormik<Apartment>({
-    initialValues: apartmentData ? apartmentData : apartmentInitialValues,
+    initialValues: initialFormValues,
+    enableReinitialize: true,
     validationSchema: apartmentValidationSchema(t, apartmentData?.id),
     validateOnMount: false,
     onSubmit: async (values, helpers) => {
@@ -422,7 +430,12 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
                     if (typeof img === 'string') return img;
                     return { ...img, is_cover_image: img.id === image.id };
                   });
-                  formik.setFieldValue('apartment_images', updated);
+                  formik.resetForm({
+                    values: {
+                      ...formik.values,
+                      apartment_images: updated,
+                    },
+                  });
                 }}
                 disabled={formik.isSubmitting || !formik.values.building_id}
               />
