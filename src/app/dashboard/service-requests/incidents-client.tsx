@@ -1,6 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
+import { useState } from 'react';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import Box from '@mui/material/Box';
@@ -13,6 +14,7 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
@@ -24,6 +26,7 @@ interface IncidentsClientProps {
 }
 
 export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
+  const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
   return (
     <Box
       component="main"
@@ -79,6 +82,9 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
             component={RouterLink}
             href={paths.dashboard.serviceRequests.create}
             variant="contained"
+            onClick={() => setIsNavigatingToCreate(true)}
+            disabled={isNavigatingToCreate}
+            startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
           >
             New Incident
           </Button>

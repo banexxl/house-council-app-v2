@@ -2,7 +2,7 @@
 
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import { Box, Button, Card, Container, Stack } from '@mui/material';
+import { Box, Button, Card, CircularProgress, Container, Stack } from '@mui/material';
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
 import { BuildingLocation } from 'src/types/location';
@@ -106,8 +106,17 @@ const Locations = ({ locations }: LocationsProps) => {
                                    { title: t('nav.adminDashboard'), href: paths.dashboard.index },
                                    { title: t('locations.locationList') },
                               ]}
-                              actionLabel={t('common.btnCreate')}
-                              actionHref={paths.dashboard.locations.new}
+                              actionComponent={
+                                   <Button
+                                        variant="contained"
+                                        href={paths.dashboard.locations.new}
+                                        onClick={() => setIsNavigatingToCreate(true)}
+                                        disabled={isNavigatingToCreate}
+                                        startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
+                                        {t('common.btnCreate')}
+                                   </Button>
+                              }
                          />
 
                          <Card sx={{ mb: 2 }}>

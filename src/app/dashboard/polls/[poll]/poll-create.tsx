@@ -106,6 +106,7 @@ export default function PollCreate({
      const [activateConfirmOpen, setActivateConfirmOpen] = useState(false);
      const [scheduleConfirmOpen, setScheduleConfirmOpen] = useState(false);
      const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+     const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
      const [attachments, setAttachments] = useState<DBStoredImage[]>(() => {
           return ((poll?.attachments ?? []) as unknown as DBStoredImage[]) || [];
      });
@@ -964,6 +965,17 @@ export default function PollCreate({
                                    { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
                                    { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
                               ]}
+                              actionComponent={
+                                   <Button
+                                        variant="contained"
+                                        href={paths.dashboard.polls.index}
+                                        onClick={() => setIsHeaderNavigating(true)}
+                                        disabled={isHeaderNavigating}
+                                        startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
+                                        {t('polls.listTitle') || 'Polls'}
+                                   </Button>
+                              }
                          />
 
                          {/* Two-column layout */}

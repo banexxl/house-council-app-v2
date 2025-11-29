@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Button from '@mui/material/Button';
@@ -29,6 +29,7 @@ interface EntityFormHeaderProps {
   actionHref?: string;
   onActionClick?: () => void;
   actionDisabled?: boolean;
+  actionComponent?: ReactNode;
 }
 
 export const EntityFormHeader = (props: EntityFormHeaderProps) => {
@@ -41,14 +42,23 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
     actionHref,
     onActionClick,
     actionDisabled,
+    actionComponent,
   } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const shouldRenderAction = Boolean(actionLabel && (actionHref || onActionClick));
+  const shouldRenderAction = Boolean(actionComponent || (actionLabel && (actionHref || onActionClick)));
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   const renderedAction = useMemo(() => {
-    if (!shouldRenderAction || !actionLabel) {
+    if (!shouldRenderAction) {
+      return null;
+    }
+
+    if (actionComponent) {
+      return actionComponent;
+    }
+
+    if (!actionLabel) {
       return null;
     }
 
@@ -89,7 +99,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
         {isMobile ? null : actionLabel}
       </Button>
     );
-  }, [actionHref, actionDisabled, actionLabel, isActionLoading, isMobile, onActionClick, shouldRenderAction]);
+  }, [actionComponent, actionHref, actionDisabled, actionLabel, isActionLoading, isMobile, onActionClick, shouldRenderAction]);
 
   return (
     <Box>

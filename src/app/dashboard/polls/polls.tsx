@@ -8,6 +8,7 @@ import {
   Card,
   Container,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { paths } from 'src/paths';
@@ -29,6 +30,7 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<{ search?: string; status?: string }>({});
+  const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
 
   const buildingById = useMemo(() => {
     const m = new Map<string, Building>();
@@ -94,8 +96,17 @@ const Polls = ({ polls, buildings = [] }: PollsProps) => {
               { title: t('nav.adminDashboard'), href: paths.dashboard.index },
               { title: t('polls.listTitle') || 'Polls' },
             ]}
-            actionLabel={t('common.btnCreate')}
-            actionHref={paths.dashboard.polls.create}
+            actionComponent={
+              <Button
+                variant="contained"
+                href={paths.dashboard.polls.create}
+                onClick={() => setIsNavigatingToCreate(true)}
+                disabled={isNavigatingToCreate}
+                startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+              >
+                {t('common.btnCreate')}
+              </Button>
+            }
           />
 
           <Card>

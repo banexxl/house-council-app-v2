@@ -16,7 +16,8 @@ import {
      Checkbox,
      Tooltip,
      Divider,
-     InputAdornment
+     InputAdornment,
+     CircularProgress
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -59,6 +60,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
 
      const [selectedBuildingId, setSelectedBuildingId] = useState<string>('');
      const [availableApartments, setAvailableApartments] = useState<{ id: string; apartment_number: string }[]>([]);
+     const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+     const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
 
      // Set selects from tenantData on load or when tenantData/buildings change
      useEffect(() => {
@@ -206,6 +209,17 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         : t('tenants.tenantCreate')
                               }
                          ]}
+                         actionComponent={
+                              <Button
+                                   variant="contained"
+                                   href={paths.dashboard.tenants.index}
+                                   onClick={() => setIsHeaderNavigating(true)}
+                                   disabled={isHeaderNavigating}
+                                   startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                              >
+                                   {t('tenants.tenantsList')}
+                              </Button>
+                         }
                     />
                     <Card>
                          <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
@@ -604,11 +618,16 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                    color="inherit"
                                    component={RouterLink}
                                    href={paths.dashboard.tenants.index}
-                                   disabled={formik.isSubmitting}
+                                   disabled={formik.isSubmitting || isNavigatingBack}
+                                   startIcon={isNavigatingBack ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   onClick={() => {
+                                        if (isNavigatingBack) return;
+                                        setIsNavigatingBack(true);
+                                   }}
                               >
                                    {t('common.btnCancel')}
                               </Button>
-                         </Stack>
+                        </Stack>
 
                     </Card>
                </Stack>

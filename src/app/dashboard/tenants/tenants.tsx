@@ -8,6 +8,7 @@ import {
      Container,
      Stack,
 } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ interface TenantsProps {
 const Tenants = ({ tenants }: TenantsProps) => {
      const { t } = useTranslation();
      const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
+     const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
      const [filters, setFilters] = useState<{ search?: string; main?: boolean }>({});
 
      const handleFiltersChange = useCallback((newFilters: typeof filters) => {
@@ -68,7 +70,17 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                    { title: t('tenants.tenantsList') },
                               ]}
                               actionLabel={t('common.btnCreate')}
-                              actionHref={paths.dashboard.tenants.new}
+                              actionComponent={
+                                   <Button
+                                        variant="contained"
+                                        href={paths.dashboard.tenants.new}
+                                        onClick={() => setIsNavigatingToCreate(true)}
+                                        disabled={isNavigatingToCreate}
+                                        startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
+                                        {t('common.btnCreate')}
+                                   </Button>
+                              }
                          />
 
                          <Card sx={{ mb: 2 }}>

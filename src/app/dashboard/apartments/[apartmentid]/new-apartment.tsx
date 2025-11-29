@@ -12,6 +12,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'src/hooks/use-router';
@@ -36,6 +37,8 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
   const router = useRouter();
   const { t } = useTranslation();
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+  const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
 
   const formik = useFormik<Apartment>({
     initialValues: apartmentData ? apartmentData : apartmentInitialValues,
@@ -160,6 +163,17 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
                 : t('apartments.apartmentCreate')
             }
           ]}
+          actionComponent={
+            <Button
+              variant="contained"
+              href={paths.dashboard.apartments.index}
+              onClick={() => setIsHeaderNavigating(true)}
+              disabled={isHeaderNavigating}
+              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+            >
+              {t('apartments.apartmentList')}
+            </Button>
+          }
         />
         <Card>
           <CardContent>
@@ -419,8 +433,13 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
           <Button
             color="inherit"
-            onClick={() => router.push(paths.dashboard.apartments.index)}
-            disabled={formik.isSubmitting || !formik.values.building_id}
+            onClick={() => {
+              if (isNavigatingBack) return;
+              setIsNavigatingBack(true);
+              router.push(paths.dashboard.apartments.index);
+            }}
+            disabled={formik.isSubmitting || !formik.values.building_id || isNavigatingBack}
+            startIcon={isNavigatingBack ? <CircularProgress size={16} color="inherit" /> : undefined}
           >
             {t('common.btnCancel')}
           </Button>

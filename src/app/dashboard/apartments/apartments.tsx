@@ -8,6 +8,7 @@ import {
   Container,
   Stack,
 } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/paths';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +32,7 @@ interface ApartmentsProps {
 const Apartments = ({ apartments }: ApartmentsProps) => {
   const { t } = useTranslation();
   const [deletingApartmentId, setDeletingApartmentId] = useState<string | null>(null);
+  const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
   const [filters, setFilters] = useState<{ search?: string; apartment_type?: string; apartment_status?: string }>({});
 
   const handleFiltersChange = useCallback((newFilters: typeof filters) => {
@@ -87,7 +89,17 @@ const Apartments = ({ apartments }: ApartmentsProps) => {
               { title: t('apartments.apartmentList') },
             ]}
             actionLabel={t('common.btnCreate')}
-            actionHref={paths.dashboard.apartments.new}
+            actionComponent={
+              <Button
+                variant="contained"
+                href={paths.dashboard.apartments.new}
+                onClick={() => setIsNavigatingToCreate(true)}
+                disabled={isNavigatingToCreate}
+                startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+              >
+                {t('common.btnCreate')}
+              </Button>
+            }
           />
 
           <Card sx={{ mb: 2 }}>

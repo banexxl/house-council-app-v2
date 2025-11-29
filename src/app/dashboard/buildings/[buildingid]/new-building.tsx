@@ -6,7 +6,8 @@ import {
   Button, Card, CardContent, Grid, Stack, Switch,
   TextField, Typography, FormControlLabel, FormHelperText, MenuItem,
   Box,
-  Tooltip
+  Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import toast from 'react-hot-toast';
 import { FileDropzone } from 'src/components/file-dropzone';
@@ -48,6 +49,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const [deletingBuilding, setDeletingBuilding] = useState(false);
+  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+  const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
   const { t } = useTranslation();
 
   const formik = useFormik({
@@ -305,6 +308,17 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 : t('buildings.buildingCreate')
             }
           ]}
+          actionComponent={
+            <Button
+              variant="contained"
+              href={paths.dashboard.buildings.index}
+              onClick={() => setIsHeaderNavigating(true)}
+              disabled={isHeaderNavigating}
+              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+            >
+              {t('buildings.buildingList')}
+            </Button>
+          }
         />
 
         <Card>
@@ -547,7 +561,16 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           )}
           {/* Right: Cancel + Create/Update */}
           <Stack direction="row" spacing={2}>
-            <Button color="inherit" onClick={() => router.push(paths.dashboard.buildings.index)}>
+            <Button
+              color="inherit"
+              onClick={() => {
+                if (isNavigatingBack) return;
+                setIsNavigatingBack(true);
+                router.push(paths.dashboard.buildings.index);
+              }}
+              disabled={formik.isSubmitting || isNavigatingBack}
+              startIcon={isNavigatingBack ? <CircularProgress size={16} color="inherit" /> : undefined}
+            >
               {t('common.btnCancel')}
             </Button>
             <Button

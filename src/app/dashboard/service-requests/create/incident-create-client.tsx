@@ -17,6 +17,7 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import toast from 'react-hot-toast';
 
 import { createIncidentReport } from 'src/app/actions/incident/incident-report-actions';
@@ -102,6 +103,7 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
   const [incidentId, setIncidentId] = useState<string | null>(null);
   const [incidentImages, setIncidentImages] = useState<DBStoredImage[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const [isNavigatingToList, setIsNavigatingToList] = useState(false);
   const reporterLabel = defaultReporterName || form.created_by_profile_id;
   const hasBuildingChoice = Boolean(buildingOptions?.length);
   const shouldDisableFields = hasBuildingChoice && !form.building_id;
@@ -277,7 +279,18 @@ export const IncidentCreateClient: FC<IncidentCreateClientProps> = ({
     >
       <Container maxWidth="xl">
         <Stack spacing={1}>
-          <Typography variant="h3">{t('incident.form.title')}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+            <Typography variant="h3">{t('incident.form.title')}</Typography>
+            <Button
+              variant="contained"
+              href={paths.dashboard.serviceRequests.index}
+              onClick={() => setIsNavigatingToList(true)}
+              disabled={isNavigatingToList}
+              startIcon={isNavigatingToList ? <CircularProgress size={16} color="inherit" /> : undefined}
+            >
+              {t('serviceRequests.listTitle', 'Back to list')}
+            </Button>
+          </Box>
           <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
             <Link
               color="text.primary"

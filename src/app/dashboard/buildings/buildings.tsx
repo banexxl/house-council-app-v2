@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
@@ -25,6 +26,7 @@ interface BuildingTableProps {
 const Buildings = ({ clientBuildings }: BuildingTableProps) => {
   const { t } = useTranslation();
   const [deletingBuildingId, setDeletingBuildingId] = useState<string | null>(null);
+  const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
   const [filters, setFilters] = useState<{
     search?: string;
     building_status?: string;
@@ -94,7 +96,17 @@ const Buildings = ({ clientBuildings }: BuildingTableProps) => {
               { title: t('buildings.buildingList') },
             ]}
             actionLabel={t('common.btnCreate')}
-            actionHref={paths.dashboard.buildings.new}
+            actionComponent={
+              <Button
+                variant="contained"
+                href={paths.dashboard.buildings.new}
+                onClick={() => setIsNavigatingToCreate(true)}
+                disabled={isNavigatingToCreate}
+                startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+              >
+                {t('common.btnCreate')}
+              </Button>
+            }
           />
 
           <Card sx={{ mb: 2 }}>
