@@ -486,6 +486,7 @@ export const en = {
   [tokens.buildings.yupBuildingLocationRequired]: 'Building location is required',
   [tokens.buildings.yupBuildingDescriptionRequired]: 'Building description is required',
   [tokens.buildings.yupBuildingStoriesHighRequired]: 'Number of stories is required',
+  [tokens.buildings.yupBuildingStoriesHighMin]: 'Number of stories must be at least 1',
   [tokens.buildings.yupBuildingNumberOfApartmentsRequired]: 'Number of apartments is required',
   [tokens.buildings.yupBuildingMaxApartmentsPerFloorRequired]: 'Max apartments per floor is required',
   [tokens.buildings.yupBuildingStatusRequired]: 'Building status is required',

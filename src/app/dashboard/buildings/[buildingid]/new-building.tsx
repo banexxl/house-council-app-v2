@@ -417,8 +417,8 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.stories_high}
-                error={Boolean(formik.errors.stories_high) && showFieldError('stories_high')}
-                helperText={showFieldError('stories_high') ? formik.errors.stories_high : ''}
+                error={Boolean(formik.errors.stories_high) && showFieldError('stories_high') && formik.errors.stories_high !== t('buildings.yupBuildingNumberOfApartmentsMaxCheck')}
+                helperText={showFieldError('stories_high') && formik.errors.stories_high !== t('buildings.yupBuildingNumberOfApartmentsMaxCheck') ? formik.errors.stories_high : ''}
               />
 
               <TextField
@@ -584,10 +584,18 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
             <Tooltip
               title={
                 !formik.isValid && formik.submitCount >= 0
-                  ? Object.values(formik.errors)
-                    .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
-                    .filter(Boolean)
-                    .map((err, idx) => <Typography key={idx} variant="caption">{err as string}</Typography>)
+                  ? (
+                    <Stack component="ol" spacing={0.5} sx={{ m: 0, pl: 2 }}>
+                      {Object.values(formik.errors)
+                        .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
+                        .filter(Boolean)
+                        .map((err, idx) => (
+                          <Typography component="li" key={idx} variant="caption">
+                            {err as string}
+                          </Typography>
+                        ))}
+                    </Stack>
+                  )
                   : ''
               }
             >

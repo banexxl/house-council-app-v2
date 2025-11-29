@@ -794,6 +794,7 @@ export const tokens = {
     yupBuildingLocationRequired: 'buildings.yupBuildingLocationRequired',
     yupBuildingDescriptionRequired: 'buildings.yupBuildingDescriptionRequired',
     yupBuildingStoriesHighRequired: 'buildings.yupBuildingStoriesHighRequired',
+    yupBuildingStoriesHighMin: 'buildings.yupBuildingStoriesHighMin',
     yupBuildingNumberOfApartmentsRequired: 'buildings.yupBuildingNumberOfApartmentsRequired',
     yupBuildingMaxApartmentsPerFloorRequired: 'buildings.yupBuildingMaxApartmentsPerFloorRequired',
     yupBuildingStatusRequired: 'buildings.yupBuildingStatusRequired',

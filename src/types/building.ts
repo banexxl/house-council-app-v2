@@ -97,7 +97,7 @@ export const buildingValidationSchema = (t: (key: string) => string) => Yup.obje
           longitude: Yup.number().required(t('buildings.yupBuildingLocationRequired'))
      }),
      description: Yup.string().max(5000).required(t('buildings.yupBuildingDescriptionRequired')),
-     stories_high: Yup.number().min(1).required(t('buildings.yupBuildingStoriesHighRequired')),
+     stories_high: Yup.number().min(1, t('buildings.yupBuildingStoriesHighMin')).required(t('buildings.yupBuildingStoriesHighRequired')),
      building_status: Yup.string().required(t('buildings.yupBuildingStatusRequired')),
      building_images: Yup.array(),
      number_of_apartments: Yup.number()

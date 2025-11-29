@@ -5,6 +5,7 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import Locations from './locations';
+import { BuildingLocation } from 'src/types/location';
 
 const Page = async () => {
 
@@ -14,7 +15,7 @@ const Page = async () => {
     redirect('/auth/login');
   }
 
-  let locations = [];
+  let locations: BuildingLocation[] = [];
   if (admin) {
     const { success, data } = await getAllLocations();
     locations = success && data ? data : [];

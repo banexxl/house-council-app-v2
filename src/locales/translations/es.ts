@@ -602,6 +602,7 @@ export const es = {
   [tokens.buildings.yupBuildingLocationRequired]: 'La ubicación es obligatoria',
   [tokens.buildings.yupBuildingDescriptionRequired]: 'La descripción es obligatoria',
   [tokens.buildings.yupBuildingStoriesHighRequired]: 'El número de pisos es obligatorio',
+  [tokens.buildings.yupBuildingStoriesHighMin]: 'El número de pisos debe ser al menos 1',
   [tokens.buildings.yupBuildingNumberOfApartmentsRequired]: 'El número de apartamentos es obligatorio',
   [tokens.buildings.yupBuildingMaxApartmentsPerFloorRequired]: 'El número máximo de apartamentos por piso es obligatorio',
   [tokens.buildings.yupBuildingStatusRequired]: 'El estado es obligatorio',

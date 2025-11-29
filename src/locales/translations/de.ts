@@ -600,6 +600,7 @@ export const de = {
   [tokens.buildings.yupBuildingLocationRequired]: 'Standort ist erforderlich',
   [tokens.buildings.yupBuildingDescriptionRequired]: 'Beschreibung ist erforderlich',
   [tokens.buildings.yupBuildingStoriesHighRequired]: 'Anzahl der Stockwerke ist erforderlich',
+  [tokens.buildings.yupBuildingStoriesHighMin]: 'Anzahl der Stockwerke muss mindestens 1 sein',
   [tokens.buildings.yupBuildingNumberOfApartmentsRequired]: 'Anzahl der Wohnungen ist erforderlich',
   [tokens.buildings.yupBuildingMaxApartmentsPerFloorRequired]: 'Maximale Anzahl der Wohnungen pro Etage ist erforderlich',
   [tokens.buildings.yupBuildingStatusRequired]: 'Status ist erforderlich',

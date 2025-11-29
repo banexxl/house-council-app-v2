@@ -609,10 +609,18 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               <Tooltip
                                    title={
                                         !formik.isValid && formik.submitCount >= 0
-                                             ? Object.values(formik.errors)
-                                                  .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
-                                                  .filter(Boolean)
-                                                  .map((err, idx) => <Typography key={idx} variant="caption">{err as string}</Typography>)
+                                             ? (
+                                                  <Stack component="ol" spacing={0.5} sx={{ m: 0, pl: 2 }}>
+                                                       {Object.values(formik.errors)
+                                                            .flatMap((err) => (typeof err === 'string' ? [err] : Object.values(err as any)))
+                                                            .filter(Boolean)
+                                                            .map((err, idx) => (
+                                                                 <Typography component="li" key={idx} variant="caption">
+                                                                      {err as string}
+                                                                 </Typography>
+                                                            ))}
+                                                  </Stack>
+                                             )
                                              : ''
                                    }
                               >
