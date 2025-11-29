@@ -1106,7 +1106,7 @@ export default function PollCreate({
                                                             >
                                                                  {buildingOptions.map((b) => (
                                                                       <MenuItem key={b.id} value={b.id}>
-                                                                           {b.name || `${b.loc?.city || ''} ${b.loc?.street_address || ''} ${b.loc?.street_number}`}
+                                                                           {b.name || `${b.loc?.city || ''}, ${b.loc?.street_address || ''} ${b.loc?.street_number}`}
                                                                       </MenuItem>
                                                                  ))}
                                                             </Select>
