@@ -171,6 +171,8 @@ export const getAllAddedLocations = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
      try {
           const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).select("*");
+          console.log('data', data);
+
           if (error) {
                await logServerAction({
                     action: "getAllAddedLocations",
@@ -269,6 +271,74 @@ export const getAllAddedLocationsByClientId = async (
           return { success: false, error: { code: "500", details: null, hint: null, message: e.message } };
      }
 };
+
+export const getAllOtherClientsLocations = async (
+     client_id: string
+): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
+     const resolvedClientId = resolvedClientData?.id!;
+     if (!resolvedClientId.trim()) {
+          await logServerAction({
+               action: "getAllOtherClientsLocations",
+               duration_ms: 0,
+               error: "Invalid client_id",
+               payload: { client_id },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
+          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid client_id" } };
+     }
+
+     try {
+          const { data, error } = await supabase
+               .from(TABLES.BUILDING_LOCATIONS)
+               .select("*")
+               .neq("client_id", resolvedClientId)
+               .not("building_id", "is", null);
+
+          if (error) {
+               await logServerAction({
+                    action: "getAllOtherClientsLocations",
+                    duration_ms: 0,
+                    error: error.message,
+                    payload: { client_id: resolvedClientId },
+                    status: "fail",
+                    type: "db",
+                    user_id: null,
+               });
+               return { success: false, error };
+          }
+
+          const enriched = (data || []).map((loc) => ({
+               ...loc,
+               location_occupied: !!loc.building_id,
+          }));
+
+          await logServerAction({
+               action: "getAllOtherClientsLocations",
+               duration_ms: 0,
+               error: "",
+               payload: { client_id: resolvedClientId },
+               status: "success",
+               type: "db",
+               user_id: null,
+          });
+          return { success: true, data: enriched };
+     } catch (e: any) {
+          await logServerAction({
+               action: "getAllOtherClientsLocations",
+               duration_ms: 0,
+               error: e.message,
+               payload: { client_id: resolvedClientId },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
+          return { success: false, error: { code: "500", details: null, hint: null, message: e.message } };
+     }
+}
 
 export const getAllNotOcupiedLocationsAddedByClient = async (
      client_id: string

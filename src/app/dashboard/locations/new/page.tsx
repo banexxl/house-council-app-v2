@@ -4,8 +4,9 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import NewLocation from "./new-location";
 import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
-import { getAllAddedLocationsByClientId, getAllLocations } from "src/app/actions/location/location-services";
+import { getAllAddedLocationsByClientId, getAllLocations, getAllOtherClientsLocations } from "src/app/actions/location/location-services";
 import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
+import { BuildingLocation } from "src/types/location";
 
 const Page = async () => {
 
@@ -15,17 +16,22 @@ const Page = async () => {
           redirect('/auth/login');
      }
 
-     let locations = [];
+     let locations: BuildingLocation[] = [];
+     let occupiedLocations: BuildingLocation[] = [];
      if (admin) {
           const { success, data } = await getAllLocations();
           locations = success && data ? data : [];
      } else if (client) {
           const { data } = await getAllAddedLocationsByClientId(client.id);
           locations = data ?? [];
+          const { data: others } = await getAllOtherClientsLocations(client.id);
+          occupiedLocations = others ?? [];
      } else if (clientMember) {
           const { success, data } = await resolveClientFromClientOrMember(clientMember.id);
           const { success: success2, data: data2 } = await getAllAddedLocationsByClientId(data?.id!);
           locations = success2 ? data2! : [];
+          const { data: others } = await getAllOtherClientsLocations(clientMember.id);
+          occupiedLocations = others ?? [];
      } else if (tenant) {
           locations = [];
           redirect('/dashboard/social/profile');
@@ -38,6 +44,7 @@ const Page = async () => {
           <NewLocation
                mapBoxAccessToken={mapBoxAccessToken}
                clientLocations={locations}
+               occupiedLocations={occupiedLocations}
                userData={{
                     client: client ?? null,
                     clientMember: clientMember ?? null,

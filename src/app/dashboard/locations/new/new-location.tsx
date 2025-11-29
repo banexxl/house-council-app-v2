@@ -22,13 +22,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 type NewLocationProps = {
      mapBoxAccessToken?: string;
      clientLocations: BuildingLocation[];
+     occupiedLocations?: BuildingLocation[];
      userData?: UserDataCombined;
 }
 
-const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocationProps) => {
+const NewLocation = ({ mapBoxAccessToken, clientLocations, occupiedLocations = [], userData }: NewLocationProps) => {
 
      const { t } = useTranslation();
-     const [locationsData, setLocationsData] = useState<BuildingLocation[]>(clientLocations);
+     const [locationsData, setLocationsData] = useState<BuildingLocation[]>([...clientLocations, ...occupiedLocations]);
      const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null);
      const [isNavigatingToList, setIsNavigatingToList] = useState(false);
 
@@ -50,10 +51,10 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                toast.success(t('locations.geoLocationAvailable'));
                didSet = true;
           }
-          if (clientLocations && clientLocations.length > 0) {
-               setLocationsData(clientLocations);
+          if ((clientLocations && clientLocations.length > 0) || occupiedLocations.length > 0) {
+               setLocationsData([...clientLocations, ...occupiedLocations]);
                if (!didSet) {
-                    const firstLoc = clientLocations[0];
+                    const firstLoc = clientLocations[0] || occupiedLocations[0];
                     if (firstLoc.latitude && firstLoc.longitude) {
                          setClientCoords({ latitude: firstLoc.latitude, longitude: firstLoc.longitude });
                     }
