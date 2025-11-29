@@ -66,6 +66,7 @@ interface LocationsProps { locations: BuildingLocation[]; }
 const Locations = ({ locations }: LocationsProps) => {
      const { t } = useTranslation();
      const locationsSearch = useLocationsSearch();
+     const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
 
      const filteredLocations = useMemo(() => {
           const { location_occupied, search } = locationsSearch.state.filters;

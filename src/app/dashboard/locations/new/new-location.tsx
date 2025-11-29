@@ -17,6 +17,7 @@ import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 import { BuildingLocation } from 'src/types/location';
+import CircularProgress from '@mui/material/CircularProgress';
 
 type NewLocationProps = {
      mapBoxAccessToken?: string;
@@ -29,6 +30,7 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
      const { t } = useTranslation();
      const [locationsData, setLocationsData] = useState<BuildingLocation[]>(clientLocations);
      const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+     const [isNavigatingToList, setIsNavigatingToList] = useState(false);
 
 
      const { coords, isGeolocationEnabled } = useGeolocated({
@@ -75,7 +77,14 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, userData }: NewLocati
                          <Stack spacing={1}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                    <Typography variant="h4">{t('locations.locationCreate')}</Typography>
-                                   <Button LinkComponent={RouterLink} href='/dashboard/locations' sx={{ backgroundColor: 'primary.main', color: 'common.white' }}>
+                                   <Button
+                                        LinkComponent={RouterLink}
+                                        href='/dashboard/locations'
+                                        sx={{ backgroundColor: 'primary.main', color: 'common.white' }}
+                                        onClick={() => setIsNavigatingToList(true)}
+                                        disabled={isNavigatingToList}
+                                        startIcon={isNavigatingToList ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
                                         {t('locations.locationsTitle')}
                                    </Button>
                               </Box>

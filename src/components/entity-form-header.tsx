@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
+import CircularProgress from '@mui/material/CircularProgress';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -44,6 +45,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const shouldRenderAction = Boolean(actionLabel && (actionHref || onActionClick));
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const renderedAction = useMemo(() => {
     if (!shouldRenderAction || !actionLabel) {
@@ -57,15 +59,25 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
     return (
       <Button
         {...linkProps}
-        onClick={onActionClick}
+        onClick={(event) => {
+          if (actionDisabled || isActionLoading) return;
+          if (onActionClick) {
+            setIsActionLoading(true);
+            Promise.resolve(onActionClick()).finally(() => setIsActionLoading(false));
+          }
+        }}
         variant="contained"
         size={isMobile ? 'small' : 'medium'}
         startIcon={
-          <SvgIcon>
-            <PlusIcon />
-          </SvgIcon>
+          isActionLoading ? (
+            <CircularProgress size={16} color="inherit" />
+          ) : (
+            <SvgIcon>
+              <PlusIcon />
+            </SvgIcon>
+          )
         }
-        disabled={actionDisabled}
+        disabled={actionDisabled || isActionLoading}
         aria-label={isMobile ? actionLabel : undefined}
         sx={{
           minWidth: isMobile ? 0 : undefined,
@@ -77,7 +89,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
         {isMobile ? null : actionLabel}
       </Button>
     );
-  }, [actionHref, actionDisabled, actionLabel, isMobile, onActionClick, shouldRenderAction]);
+  }, [actionHref, actionDisabled, actionLabel, isActionLoading, isMobile, onActionClick, shouldRenderAction]);
 
   return (
     <Box>
