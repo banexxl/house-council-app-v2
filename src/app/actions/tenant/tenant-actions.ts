@@ -270,7 +270,8 @@ export const createOrUpdateTenantAction = async (
                     .from(TABLES.TENANT_PROFILES)
                     .insert(profileData);
                if (profileError) {
-                    adminSupabase.auth.admin.deleteUser(createdUser.user.id);
+                    await anonSupabase.from(TABLES.TENANTS).delete().eq('id', insertedTenant.id);
+                    await adminSupabase.auth.admin.deleteUser(createdUser.user.id);
                     return { saveTenantActionSuccess: false, saveTenantActionError: profileError };
                }
 
