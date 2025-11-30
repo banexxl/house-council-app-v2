@@ -8,6 +8,7 @@ import { buildTrialEndingEmailHtml } from './messages/trial-ending';
 import { buildSubscriptionEndingSupportHtml } from './messages/subscription-ending-support';
 import { buildSuccessfulRegistrationHtml, buildClientContactMessageHtml } from './messages/support-registration';
 import { buildNotificationGenericHtml } from './messages/notification-generic';
+import { buildAccessRequestClientHtml } from './messages/access-request-client';
 import { readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
@@ -148,3 +149,31 @@ export const sendNotificationEmail = async (
     return { ok: false, error: e?.message || 'sendMail failed' };
   }
 }
+
+export const sendAccessRequestClientEmail = async (
+  to: string[],
+  data: {
+    name: string;
+    email: string;
+    message?: string;
+    building?: string | null;
+    approveLink: string;
+    rejectLink: string;
+  }
+): Promise<{ ok: boolean; error?: string }> => {
+  const htmlContent = buildAccessRequestClientHtml(data);
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_SMTP_USER!,
+      to,
+      subject: 'New access request',
+      html: htmlContent,
+      text: `${data.name} (${data.email}) requested access${data.building ? ` for ${data.building}` : ''}. Approve: ${data.approveLink} / Reject: ${data.rejectLink}`,
+    });
+    if ((info as any)?.response) return { ok: true };
+    if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || 'sendMail failed' };
+  }
+};

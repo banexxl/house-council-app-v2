@@ -146,6 +146,11 @@ const AccessRequestForm = ({
         setLastName('');
         setEmail('');
         setMessage('');
+        setSelectedCountry(null);
+        setSelectedBuilding(null);
+        setInputValue('');
+        setVisibleCount(INITIAL_BUILDING_BATCH);
+        setOpen(false);
       } else {
         setStatus({ error: result.error || 'Failed to submit' });
       }
@@ -187,6 +192,8 @@ const AccessRequestForm = ({
             />
           )}
           <div id="recaptcha-badge" style={{ minHeight: 1 }} />
+          {status.error && <Alert severity="error">{status.error}</Alert>}
+          {status.success && <Alert severity="success">{'Request sent. We will contact you soon.'}</Alert>}
           <Autocomplete
             options={countries}
             value={selectedCountry}
@@ -203,6 +210,7 @@ const AccessRequestForm = ({
           />
           <Autocomplete
             open={open}
+            disabled={isPending || !selectedCountry}
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
             options={optionsWithLoadMore}
@@ -297,18 +305,14 @@ const AccessRequestForm = ({
                 multiline
                 fullWidth
               />
-
-              {status.error && <Alert severity="error">{status.error}</Alert>}
-              {status.success && <Alert severity="success">{'Request sent. We will contact you soon.'}</Alert>}
-
               <Button variant="contained" onClick={handleSubmit} disabled={disabled}>
                 {isPending ? 'Sending...' : 'Submit'}
               </Button>
-              <Button variant="text" href="/auth/login">
-                {'Back to login'}
-              </Button>
             </>
           )}
+          <Button variant="text" href="/auth/login">
+            {'Back to login'}
+          </Button>
         </Stack>
       </CardContent>
     </Card>

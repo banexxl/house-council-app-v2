@@ -1,19 +1,20 @@
 'use server';
 
 import crypto from 'crypto';
-import { sendNotificationEmail } from 'src/libs/email/node-mailer';
+import { sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import log from 'src/utils/logger';
 
-const SIGNING_SECRET = process.env.ACCESS_REQUEST_SIGNING_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_SIGNING_SECRET || '';
-const ADMIN_EMAIL = process.env.ACCESS_REQUEST_ADMIN_EMAIL || process.env.EMAIL_SMTP_USER || '';
+const SIGNING_SECRET = (process.env.ACCESS_REQUEST_SIGNING_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_SIGNING_SECRET || '').trim();
+const FORM_SECRET = (process.env.ACCESS_REQUEST_FORM_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_FORM_SECRET || '').trim();
+const RECAPTCHA_PROJECT_ID = (process.env.RECAPTCHA_PROJECT_ID || process.env.GCLOUD_PROJECT || '').trim();
 const APPROVAL_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '';
-const DEFAULT_TENANT_PASSWORD = process.env.ACCESS_REQUEST_DEFAULT_PASSWORD || 'TempPass123!';
-const RECAPTCHA_PROJECT_ID = process.env.RECAPTCHA_PROJECT_ID || process.env.GCLOUD_PROJECT || '';
-const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+const RECAPTCHA_SITE_KEY = (process.env.RECAPTCHA_SITE_KEY || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '').trim();
+const ADMIN_EMAIL = (process.env.ACCESS_REQUEST_ADMIN_EMAIL || process.env.EMAIL_SMTP_USER || '').trim();
 const RECAPTCHA_MIN_SCORE = Number(process.env.RECAPTCHA_MIN_SCORE || '0.3');
 const RECAPTCHA_ACTION = process.env.RECAPTCHA_ACTION || 'access_request';
+const DEFAULT_TENANT_PASSWORD = process.env.ACCESS_REQUEST_DEFAULT_PASSWORD || 'TempPass123!';
 
 type AccessRequestPayload = {
      name: string;
@@ -33,7 +34,7 @@ const signPayload = (payload: AccessRequestPayload & { ts: number }) => {
 };
 
 const verifyRecaptchaEnterprise = async (token: string) => {
-     if (!RECAPTCHA_PROJECT_ID || !RECAPTCHA_SITE_KEY) {
+     if (!RECAPTCHA_SITE_KEY || !RECAPTCHA_PROJECT_ID) {
           log('Access Request - recaptcha misconfigured: missing project or site key');
           return { ok: false, error: 'Captcha not configured' };
      }
@@ -55,10 +56,7 @@ const verifyRecaptchaEnterprise = async (token: string) => {
           });
 
           if (!assessment?.tokenProperties?.valid) {
-               log(
-                    `Access Request - recaptcha invalid: ${assessment?.tokenProperties?.invalidReason || 'unknown reason'
-                    }`
-               );
+               log(`Access Request - recaptcha invalid: ${assessment?.tokenProperties?.invalidReason || 'unknown reason'}`);
                return {
                     ok: false,
                     error: `Captcha invalid: ${assessment?.tokenProperties?.invalidReason || 'unknown reason'}`,
@@ -102,7 +100,7 @@ export const submitAccessRequest = async ({
      recaptchaToken: string;
      formSecret: string;
 }) => {
-     if (!formSecret || formSecret !== (process.env.ACCESS_REQUEST_FORM_SECRET || '')) {
+     if (!formSecret || formSecret.trim() !== FORM_SECRET) {
           return { success: false, error: 'Invalid form secret' };
      }
 
@@ -155,22 +153,30 @@ export const submitAccessRequest = async ({
           }
      } catch {
           // If we fail to fetch building client email, we still proceed with admin email.
+          log(`Access Request - failed to fetch building client email for building ID: ${buildingId}`);
      }
 
-     const emailHtml = `
-          <p>A new access request was submitted.</p>
-          <ul>
-               <li><strong>Name:</strong> ${payload.name}</li>
-               <li><strong>Email:</strong> ${payload.email}</li>
-               ${payload.message ? `<li><strong>Message:</strong> ${payload.message}</li>` : ''}
-               ${payload.building_label ? `<li><strong>Building:</strong> ${payload.building_label}</li>` : ''}
-          </ul>
-          <p>Click to approve and provision a tenant account: <a href="${approveLink}">${approveLink}</a></p>
-          <p>To reject this request, click here: <a href="${rejectLink}">${rejectLink}</a></p>
-     `;
+     // const emailHtml = `
+     //      <p>A new access request was submitted.</p>
+     //      <ul>
+     //           <li><strong>Name:</strong> ${payload.name}</li>
+     //           <li><strong>Email:</strong> ${payload.email}</li>
+     //           ${payload.message ? `<li><strong>Message:</strong> ${payload.message}</li>` : ''}
+     //           ${payload.building_label ? `<li><strong>Building:</strong> ${payload.building_label}</li>` : ''}
+     //      </ul>
+     //      <p>Click to approve and provision a tenant account: <a href="${approveLink}">${approveLink}</a></p>
+     //      <p>To reject this request, click here: <a href="${rejectLink}">${rejectLink}</a></p>
+     // `;
 
      const recipients = Array.from(new Set([ADMIN_EMAIL, buildingClientEmail].filter(Boolean))) as string[];
-     const emailResult = await sendNotificationEmail(recipients, 'New access request', emailHtml);
+     const emailResult = await sendAccessRequestClientEmail(recipients, {
+          name: payload.name,
+          email: payload.email,
+          message: payload.message,
+          building: payload.building_label,
+          approveLink,
+          rejectLink,
+     });
      if (!emailResult.ok) {
           return { success: false, error: emailResult.error || 'Failed to send email' };
      }
