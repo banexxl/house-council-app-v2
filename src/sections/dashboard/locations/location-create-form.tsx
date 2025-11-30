@@ -72,8 +72,6 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                building_id: null,
                location_occupied: false
           };
-          console.log('payload', payload);
-
           try {
                const { error } = await insertLocationAction(payload);
 
