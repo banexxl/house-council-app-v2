@@ -24,11 +24,8 @@ interface MarkerProps {
      cover_path?: string;
 }
 
-const hashStringToColor = () => {
-     // Generate a random UUID if value is not provided
-     const uuid = uuidv4();
-     // Take the first part of the UUID (before the first '-')
-     const firstPart = uuid.split('-')[0];
+const hashStringToColor = (client_id: string) => {
+     const firstPart = client_id.split('-')[0];
      // Remove the last 2 characters
      const trimmed = firstPart.slice(0, -2);
      // Use the trimmed string to generate a hash
@@ -54,7 +51,7 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, loca
      const { colorPreset } = useContext(SettingsContext);
      const [open, setOpen] = useState(false);
      const primary = getPrimary(colorPreset);
-     const customColor = hashStringToColor() || primary.main;
+     const customColor = hashStringToColor(client_id) || primary.main;
      const { url: signedCoverUrl } = useSignedUrl(
           cover_bucket && cover_path ? cover_bucket : '',
           cover_bucket && cover_path ? cover_path : '',
