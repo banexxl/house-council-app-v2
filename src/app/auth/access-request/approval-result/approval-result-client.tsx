@@ -30,7 +30,7 @@ export const ApprovalResultClient = () => {
      > = {
           success: {
                title: 'Request approved',
-               description: `A tenant account${email ? ` for ${email}` : ''} has been created. If needed, share the default access-request password or send them a reset link.`,
+               description: `A tenant account${email ? ` for ${email}` : ''} has been created. Default access-request password has been sent to the user's email.`,
                Icon: CheckCircleOutlineIcon,
                color: 'success.main',
           },
