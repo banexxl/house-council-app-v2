@@ -41,6 +41,35 @@ const loadServiceAccountCredentials = () => {
      return serviceAccountCredentials;
 };
 
+const generateTempPassword = () => {
+     const lower = 'abcdefghijklmnopqrstuvwxyz';
+     const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+     const digits = '0123456789';
+     const specials = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+     const pick = (pool: string) => pool[crypto.randomInt(0, pool.length)];
+
+     try {
+          const chars = [
+               pick(lower),
+               pick(upper),
+               pick(digits),
+               pick(specials),
+          ];
+          const all = lower + upper + digits + specials;
+          while (chars.length < 8) {
+               chars.push(pick(all));
+          }
+          for (let i = chars.length - 1; i > 0; i -= 1) {
+               const j = crypto.randomInt(0, i + 1);
+               [chars[i], chars[j]] = [chars[j], chars[i]];
+          }
+          return chars.join('');
+     } catch (error) {
+          log(`Access Request - failed to generate secure password, falling back to default: ${error?.message || error}`);
+          return DEFAULT_TENANT_PASSWORD;
+     }
+};
+
 
 const getRecaptchaClient = async () => {
      if (recaptchaClient) return recaptchaClient;
@@ -287,12 +316,13 @@ export const approveAccessRequest = async (
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { firstName, lastName } = splitName(parsed.name);
+     const tempPassword = generateTempPassword();
 
      // Create auth user with default password
      const { data: createdUser, error: userError } = await supabase.auth.admin.createUser({
           email: parsed.email,
           email_confirm: true,
-          password: DEFAULT_TENANT_PASSWORD,
+          password: tempPassword,
           user_metadata: { name: parsed.name, requested_via: 'access-request' },
      });
      if (userError || !createdUser?.user) {
@@ -365,7 +395,7 @@ export const approveAccessRequest = async (
      const welcomeEmail = await sendAccessRequestApprovedEmail(parsed.email, {
           name: parsed.name,
           email: parsed.email,
-          password: DEFAULT_TENANT_PASSWORD,
+          password: tempPassword,
           loginUrl,
      });
      if (!welcomeEmail.ok) {
