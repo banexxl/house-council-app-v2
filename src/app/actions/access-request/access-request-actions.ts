@@ -63,6 +63,20 @@ type AccessRequestPayload = {
      building_label?: string | null;
 };
 
+type ApprovalResult =
+     | { success: true; rejected?: boolean; email?: string; name?: string }
+     | { success: false; error: string; code?: 'user_exists' | 'invalid_signature' | 'expired' | 'invalid_payload'; email?: string; name?: string };
+
+const getUserExistsCode = (error: any): 'user_exists' | undefined => {
+     if (typeof error?.status === 'number' && error.status === 422) return 'user_exists';
+     if (typeof error?.code === 'string' && error.code.toLowerCase().includes('exist')) return 'user_exists';
+     const message = (error?.message || '').toLowerCase();
+     if (message.includes('already registered') || message.includes('already exists') || message.includes('duplicate key')) {
+          return 'user_exists';
+     }
+     return undefined;
+};
+
 const signPayload = (payload: AccessRequestPayload & { ts: number }) => {
      if (!SIGNING_SECRET) {
           throw new Error('ACCESS_REQUEST_SIGNING_SECRET not configured');
@@ -195,18 +209,6 @@ export const submitAccessRequest = async ({
           log(`Access Request - failed to fetch building client email for building ID: ${buildingId}`);
      }
 
-     // const emailHtml = `
-     //      <p>A new access request was submitted.</p>
-     //      <ul>
-     //           <li><strong>Name:</strong> ${payload.name}</li>
-     //           <li><strong>Email:</strong> ${payload.email}</li>
-     //           ${payload.message ? `<li><strong>Message:</strong> ${payload.message}</li>` : ''}
-     //           ${payload.building_label ? `<li><strong>Building:</strong> ${payload.building_label}</li>` : ''}
-     //      </ul>
-     //      <p>Click to approve and provision a tenant account: <a href="${approveLink}">${approveLink}</a></p>
-     //      <p>To reject this request, click here: <a href="${rejectLink}">${rejectLink}</a></p>
-     // `;
-
      const recipients = Array.from(new Set([ADMIN_EMAIL, buildingClientEmail].filter(Boolean))) as string[];
      const emailResult = await sendAccessRequestClientEmail(recipients, {
           name: payload.name,
@@ -223,34 +225,40 @@ export const submitAccessRequest = async ({
      return { success: true };
 };
 
-export const approveAccessRequest = async (serialized: string, signature: string, action: 'approve' | 'reject' = 'approve') => {
+export const approveAccessRequest = async (
+     serialized: string,
+     signature: string,
+     action: 'approve' | 'reject' = 'approve'
+): Promise<ApprovalResult> => {
      if (!SIGNING_SECRET) {
-          return { success: false, error: 'Signing secret not configured' };
+          return { success: false, error: 'Signing secret not configured', code: 'invalid_signature' };
      }
      if (!serialized || !signature) {
-          return { success: false, error: 'Missing payload' };
+          return { success: false, error: 'Missing payload', code: 'invalid_payload' };
      }
 
      const expectedSig = crypto.createHmac('sha256', SIGNING_SECRET).update(serialized).digest('hex');
-     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
-          return { success: false, error: 'Invalid signature' };
+     const providedSigBuf = Buffer.from(signature);
+     const expectedSigBuf = Buffer.from(expectedSig);
+     if (providedSigBuf.length !== expectedSigBuf.length || !crypto.timingSafeEqual(providedSigBuf, expectedSigBuf)) {
+          return { success: false, error: 'Invalid signature', code: 'invalid_signature' };
      }
 
      let parsed: AccessRequestPayload & { ts: number };
      try {
           parsed = JSON.parse(serialized);
      } catch {
-          return { success: false, error: 'Invalid payload' };
+          return { success: false, error: 'Invalid payload', code: 'invalid_payload' };
      }
 
      // Optional: expire after 48h
      const twoDays = 1000 * 60 * 60 * 48;
      if (Date.now() - parsed.ts > twoDays) {
-          return { success: false, error: 'Request expired' };
+          return { success: false, error: 'Request expired', code: 'expired', email: parsed.email, name: parsed.name };
      }
 
      if (action === 'reject') {
-          return { success: true, rejected: true };
+          return { success: true, rejected: true, email: parsed.email, name: parsed.name };
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
@@ -263,7 +271,13 @@ export const approveAccessRequest = async (serialized: string, signature: string
           user_metadata: { name: parsed.name, requested_via: 'access-request' },
      });
      if (userError || !createdUser?.user) {
-          return { success: false, error: userError?.message || 'Failed to create user' };
+          return {
+               success: false,
+               error: userError?.message || 'Failed to create user',
+               code: getUserExistsCode(userError),
+               email: parsed.email,
+               name: parsed.name,
+          };
      }
 
      // Insert tenant row with minimal info; apartment/building assignment can be done later
@@ -280,10 +294,15 @@ export const approveAccessRequest = async (serialized: string, signature: string
           });
 
      if (tenantError) {
-          return { success: false, error: tenantError.message || 'Failed to create tenant' };
+          return {
+               success: false,
+               error: tenantError.message || 'Failed to create tenant',
+               email: parsed.email,
+               name: parsed.name,
+          };
      }
 
-     return { success: true };
+     return { success: true, email: parsed.email, name: parsed.name };
 };
 
 export const getAccessRequestBuildingOptions = async (): Promise<{
