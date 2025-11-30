@@ -10,6 +10,7 @@ import { deleteLocationByID } from 'src/app/actions/location/location-services';
 import { PopupModal } from 'src/components/modal-dialog';
 import toast from 'react-hot-toast';
 import { useSignedUrl } from 'src/hooks/use-signed-urls';
+import { v4 as uuidv4 } from 'uuid';
 
 interface MarkerProps {
      lat: number;
@@ -23,16 +24,25 @@ interface MarkerProps {
      cover_path?: string;
 }
 
-const colorPalette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
-
-const hashStringToColor = (value: string | null | undefined) => {
-     if (!value) return null;
+const hashStringToColor = () => {
+     // Generate a random UUID if value is not provided
+     const uuid = uuidv4();
+     // Take the first part of the UUID (before the first '-')
+     const firstPart = uuid.split('-')[0];
+     // Remove the last 2 characters
+     const trimmed = firstPart.slice(0, -2);
+     // Use the trimmed string to generate a hash
      let hash = 0;
-     for (let i = 0; i < value.length; i++) {
-          hash = value.charCodeAt(i) + ((hash << 5) - hash);
+     for (let i = 0; i < trimmed.length; i++) {
+          hash = trimmed.charCodeAt(i) + ((hash << 5) - hash);
      }
-     const idx = Math.abs(hash) % colorPalette.length;
-     return colorPalette[idx];
+     // Convert the hash to a color
+     let color = '#';
+     for (let i = 0; i < 3; i++) {
+          const value = (hash >> (i * 8)) & 0xff;
+          color += value.toString(16).padStart(2, '0');
+     }
+     return color;
 };
 
 const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, location_id, map, client_id, client_name, cover_bucket, cover_path }) => {
@@ -44,7 +54,7 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, loca
      const { colorPreset } = useContext(SettingsContext);
      const [open, setOpen] = useState(false);
      const primary = getPrimary(colorPreset);
-     const customColor = hashStringToColor(client_id) || primary.main;
+     const customColor = hashStringToColor() || primary.main;
      const { url: signedCoverUrl } = useSignedUrl(
           cover_bucket && cover_path ? cover_bucket : '',
           cover_bucket && cover_path ? cover_path : '',
