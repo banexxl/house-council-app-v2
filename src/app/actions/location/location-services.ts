@@ -224,8 +224,6 @@ export const getAllAddedLocations = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
      try {
           const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).select("*");
-          console.log('data', data);
-
           if (error) {
                await logServerAction({
                     action: "getAllAddedLocations",

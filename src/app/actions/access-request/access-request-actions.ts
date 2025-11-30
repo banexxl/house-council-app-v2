@@ -1,6 +1,7 @@
 'use server';
 
 import crypto from 'crypto';
+import fs from 'fs';
 import { sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
@@ -15,6 +16,76 @@ const ADMIN_EMAIL = (process.env.ACCESS_REQUEST_ADMIN_EMAIL || process.env.EMAIL
 const RECAPTCHA_MIN_SCORE = Number(process.env.RECAPTCHA_MIN_SCORE || '0.3');
 const RECAPTCHA_ACTION = process.env.RECAPTCHA_ACTION || 'access_request';
 const DEFAULT_TENANT_PASSWORD = process.env.ACCESS_REQUEST_DEFAULT_PASSWORD || 'TempPass123!';
+
+let recaptchaClient: any | null = null;
+let serviceAccountCredentials: Record<string, any> | null = null;
+
+const loadServiceAccountCredentials = () => {
+     if (serviceAccountCredentials) return serviceAccountCredentials;
+
+     // 1. Load from Base64 (recommended)
+     if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+          try {
+               const jsonString = Buffer.from(
+                    process.env.GOOGLE_SERVICE_ACCOUNT_BASE64,
+                    'base64'
+               ).toString('utf8');
+
+               serviceAccountCredentials = JSON.parse(jsonString);
+               return serviceAccountCredentials;
+          } catch (e: any) {
+               log(
+                    `Access Request - failed to decode GOOGLE_SERVICE_ACCOUNT_BASE64: ${e?.message || e}`
+               );
+          }
+     }
+
+     // 2. Fallback: raw JSON in env (optional)
+     if (!serviceAccountCredentials && process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+          try {
+               serviceAccountCredentials = JSON.parse(
+                    process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+               );
+               return serviceAccountCredentials;
+          } catch (e: any) {
+               log(
+                    `Access Request - failed to parse GOOGLE_SERVICE_ACCOUNT_JSON: ${e?.message || e}`
+               );
+          }
+     }
+
+     // 3. Fallback: load from local file (local dev only)
+     if (!serviceAccountCredentials && process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
+          try {
+               const fileContents = fs.readFileSync(
+                    process.env.GOOGLE_SERVICE_ACCOUNT_PATH,
+                    'utf8'
+               );
+               serviceAccountCredentials = JSON.parse(fileContents);
+               return serviceAccountCredentials;
+          } catch (e: any) {
+               log(
+                    `Access Request - failed to read credentials file (${process.env.GOOGLE_SERVICE_ACCOUNT_PATH}): ${e?.message || e}`
+               );
+          }
+     }
+
+     return serviceAccountCredentials;
+};
+
+
+const getRecaptchaClient = async () => {
+     if (recaptchaClient) return recaptchaClient;
+
+     const credentials = loadServiceAccountCredentials();
+     const { RecaptchaEnterpriseServiceClient } = await import('@google-cloud/recaptcha-enterprise');
+
+     recaptchaClient = credentials
+          ? new RecaptchaEnterpriseServiceClient({ credentials })
+          : new RecaptchaEnterpriseServiceClient();
+
+     return recaptchaClient;
+};
 
 type AccessRequestPayload = {
      name: string;
@@ -34,6 +105,7 @@ const signPayload = (payload: AccessRequestPayload & { ts: number }) => {
 };
 
 const verifyRecaptchaEnterprise = async (token: string) => {
+
      if (!RECAPTCHA_SITE_KEY || !RECAPTCHA_PROJECT_ID) {
           log('Access Request - recaptcha misconfigured: missing project or site key');
           return { ok: false, error: 'Captcha not configured' };
@@ -43,8 +115,7 @@ const verifyRecaptchaEnterprise = async (token: string) => {
           return { ok: false, error: 'Captcha token missing' };
      }
      try {
-          const { RecaptchaEnterpriseServiceClient } = await import('@google-cloud/recaptcha-enterprise');
-          const client = new RecaptchaEnterpriseServiceClient();
+          const client = await getRecaptchaClient();
           const [assessment] = await client.createAssessment({
                assessment: {
                     event: {

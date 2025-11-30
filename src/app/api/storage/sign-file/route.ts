@@ -13,8 +13,6 @@ export async function POST(req: Request) {
                return NextResponse.json({ error: 'bucket and path are required' }, { status: 400 });
           }
           const normalizedPath = String(path).replace(/^\/+/, '');
-          console.log('normalizedPath', normalizedPath);
-
           const ttl = Math.max(60, Math.min(ttlSeconds, 60 * 60 * 24 * 7)); // clamp to [1m,7d]
           const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(normalizedPath, ttl);
 
