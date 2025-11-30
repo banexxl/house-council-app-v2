@@ -9,6 +9,7 @@ import { buildSubscriptionEndingSupportHtml } from './messages/subscription-endi
 import { buildSuccessfulRegistrationHtml, buildClientContactMessageHtml } from './messages/support-registration';
 import { buildNotificationGenericHtml } from './messages/notification-generic';
 import { buildAccessRequestClientHtml } from './messages/access-request-client';
+import { buildAccessRequestApprovedHtml } from './messages/access-request-approved';
 import { readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
@@ -157,6 +158,7 @@ export const sendAccessRequestClientEmail = async (
     email: string;
     message?: string;
     building?: string | null;
+    apartment?: string | null;
     approveLink: string;
     rejectLink: string;
   }
@@ -168,7 +170,28 @@ export const sendAccessRequestClientEmail = async (
       to,
       subject: 'New access request',
       html: htmlContent,
-      text: `${data.name} (${data.email}) requested access${data.building ? ` for ${data.building}` : ''}. Approve: ${data.approveLink} / Reject: ${data.rejectLink}`,
+      text: `${data.name} (${data.email}) requested access${data.building ? ` for ${data.building}` : ''}${data.apartment ? `, apartment ${data.apartment}` : ''}. Approve: ${data.approveLink} / Reject: ${data.rejectLink}`,
+    });
+    if ((info as any)?.response) return { ok: true };
+    if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || 'sendMail failed' };
+  }
+};
+
+export const sendAccessRequestApprovedEmail = async (
+  to: string,
+  data: { name: string; email: string; password: string; loginUrl: string }
+): Promise<{ ok: boolean; error?: string }> => {
+  const htmlContent = buildAccessRequestApprovedHtml(data);
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_SMTP_USER!,
+      to,
+      subject: 'Your account has been created',
+      html: htmlContent,
+      text: `Hi ${data.name || 'there'}, your tenant account is ready. Login: ${data.loginUrl} with email ${data.email} and password ${data.password}. Please change your password after logging in.`,
     });
     if ((info as any)?.response) return { ok: true };
     if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };

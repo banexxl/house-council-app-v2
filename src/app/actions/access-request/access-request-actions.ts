@@ -1,7 +1,7 @@
 'use server';
 
 import crypto from 'crypto';
-import { sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
+import { sendAccessRequestApprovedEmail, sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import log from 'src/utils/logger';
@@ -61,11 +61,20 @@ type AccessRequestPayload = {
      message?: string;
      building_id?: string | null;
      building_label?: string | null;
+     apartment_id?: string | null;
+     apartment_label?: string | null;
 };
 
 type ApprovalResult =
      | { success: true; rejected?: boolean; email?: string; name?: string }
      | { success: false; error: string; code?: 'user_exists' | 'invalid_signature' | 'expired' | 'invalid_payload'; email?: string; name?: string };
+
+const splitName = (fullName: string) => {
+     const parts = (fullName || '').trim().split(/\s+/).filter(Boolean);
+     if (!parts.length) return { firstName: '', lastName: '' };
+     const [firstName, ...rest] = parts;
+     return { firstName, lastName: rest.join(' ') };
+};
 
 const getUserExistsCode = (error: any): 'user_exists' | undefined => {
      if (typeof error?.status === 'number' && error.status === 422) return 'user_exists';
@@ -142,6 +151,8 @@ export const submitAccessRequest = async ({
      message,
      buildingId,
      buildingLabel,
+     apartmentId,
+     apartmentLabel,
      recaptchaToken,
      formSecret,
 }: {
@@ -150,6 +161,8 @@ export const submitAccessRequest = async ({
      message?: string;
      buildingId?: string;
      buildingLabel?: string;
+     apartmentId?: string;
+     apartmentLabel?: string;
      recaptchaToken: string;
      formSecret: string;
 }) => {
@@ -168,12 +181,22 @@ export const submitAccessRequest = async ({
           return { success: false, error: 'Admin email not configured' };
      }
 
+     if (!buildingId) {
+          return { success: false, error: 'Building is required' };
+     }
+
+     if (!apartmentId) {
+          return { success: false, error: 'Apartment is required' };
+     }
+
      const payload: AccessRequestPayload & { ts: number } = {
           name: name.trim(),
           email: email.trim().toLowerCase(),
           message: message?.trim() || '',
           building_id: buildingId || null,
           building_label: buildingLabel || null,
+          apartment_id: apartmentId || null,
+          apartment_label: apartmentLabel || null,
           ts: Date.now(),
      };
 
@@ -215,6 +238,7 @@ export const submitAccessRequest = async ({
           email: payload.email,
           message: payload.message,
           building: payload.building_label,
+          apartment: payload.apartment_label,
           approveLink,
           rejectLink,
      });
@@ -262,6 +286,7 @@ export const approveAccessRequest = async (
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { firstName, lastName } = splitName(parsed.name);
 
      // Create auth user with default password
      const { data: createdUser, error: userError } = await supabase.auth.admin.createUser({
@@ -281,22 +306,72 @@ export const approveAccessRequest = async (
      }
 
      // Insert tenant row with minimal info; apartment/building assignment can be done later
-     const { error: tenantError } = await supabase
+     const { data: tenantRows, error: tenantError } = await supabase
           .from(TABLES.TENANTS)
           .insert({
-               first_name: parsed.name,
-               last_name: '',
+               first_name: firstName || parsed.name,
+               last_name: lastName || '',
                email: parsed.email,
                user_id: createdUser.user.id,
                is_primary: false,
                tenant_type: 'other',
-               building_id: parsed.building_id ?? null,
-          });
+               notes: 'Created via access request approval',
+               apartment_id: parsed.apartment_id ?? null,
+          })
+          .select('id')
+          .single();
 
      if (tenantError) {
+          await supabase.auth.admin.deleteUser(createdUser.user.id);
           return {
                success: false,
                error: tenantError.message || 'Failed to create tenant',
+               email: parsed.email,
+               name: parsed.name,
+          };
+     }
+
+     const tenantId = (tenantRows as any)?.id as string | undefined;
+     if (!tenantId) {
+          await supabase.auth.admin.deleteUser(createdUser.user.id);
+          return {
+               success: false,
+               error: 'Tenant record created but ID was not returned',
+               email: parsed.email,
+               name: parsed.name,
+          };
+     }
+
+     const { error: profileError } = await supabase.from(TABLES.TENANT_PROFILES).insert({
+          tenant_id: tenantId,
+          first_name: firstName || parsed.name || parsed.email || 'Tenant',
+          last_name: lastName || '',
+          email: parsed.email,
+     });
+
+     if (profileError) {
+          await supabase.from(TABLES.TENANTS).delete().eq('id', tenantId);
+          await supabase.auth.admin.deleteUser(createdUser.user.id);
+          return {
+               success: false,
+               error: profileError.message || 'Failed to create tenant profile',
+               email: parsed.email,
+               name: parsed.name,
+          };
+     }
+
+     const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '').replace(/\/$/, '');
+     const loginUrl = `${baseUrl || ''}/auth/login`;
+     const welcomeEmail = await sendAccessRequestApprovedEmail(parsed.email, {
+          name: parsed.name,
+          email: parsed.email,
+          password: DEFAULT_TENANT_PASSWORD,
+          loginUrl,
+     });
+     if (!welcomeEmail.ok) {
+          return {
+               success: false,
+               error: welcomeEmail.error || 'Failed to send welcome email',
                email: parsed.email,
                name: parsed.name,
           };
@@ -343,6 +418,35 @@ export const getAccessRequestBuildingOptions = async (): Promise<{
 
           return { success: true, data: options, countries: Array.from(countriesSet).sort((a, b) => a.localeCompare(b)) };
      } catch {
+          return { success: false };
+     }
+};
+
+export const getAccessRequestApartments = async (
+     buildingId: string
+): Promise<{ success: boolean; data?: Array<{ id: string; label: string }> }> => {
+     if (!buildingId) return { success: false };
+     try {
+          const supabase = await useServerSideSupabaseServiceRoleClient();
+          const { data, error } = await supabase
+               .from(TABLES.APARTMENTS)
+               .select('id, apartment_number')
+               .eq('building_id', buildingId)
+               .order('apartment_number', { ascending: true });
+
+          if (error) {
+               log(`Access Request - failed to fetch apartments for building ${buildingId}: ${error.message}`);
+               return { success: false };
+          }
+
+          const options = (data || []).map((apt: any) => ({
+               id: apt.id,
+               label: (apt.apartment_number || '').toString() || apt.id,
+          }));
+
+          return { success: true, data: options };
+     } catch (e: any) {
+          log(`Access Request - unexpected error fetching apartments: ${e?.message || e}`);
           return { success: false };
      }
 };

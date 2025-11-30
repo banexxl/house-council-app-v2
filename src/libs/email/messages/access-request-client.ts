@@ -3,6 +3,7 @@ type AccessRequestEmailData = {
   email: string;
   message?: string;
   building?: string | null;
+  apartment?: string | null;
   approveLink: string;
   rejectLink: string;
 };
@@ -12,8 +13,9 @@ export const buildAccessRequestClientHtml = (data: AccessRequestEmailData): stri
   const rows = [
     { label: 'Name: ', value: safe(data.name) },
     { label: 'Email: ', value: safe(data.email) },
-    { label: 'Building: ', value: data.building ? safe(data.building) : '—' },
-    { label: 'Message: ', value: data.message ? safe(data.message) : '—' },
+    { label: 'Building: ', value: data.building ? safe(data.building) : '-' },
+    { label: 'Apartment: ', value: data.apartment ? safe(data.apartment) : '-' },
+    { label: 'Message: ', value: data.message ? safe(data.message) : '-' },
   ];
 
   return `
@@ -96,7 +98,7 @@ export const buildAccessRequestClientHtml = (data: AccessRequestEmailData): stri
             </a>
         </div>
       </div>
-      <div class="footer">Nest Link &mdash; Bringing Your Tenants Together</div>
+      <div class="footer">Nest Link - Bringing Your Tenants Together</div>
     </div>
   </div>
 </body>

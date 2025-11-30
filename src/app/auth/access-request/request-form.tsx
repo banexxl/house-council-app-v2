@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import Script from 'next/script';
 import { Autocomplete, Button, Card, CardContent, Stack, TextField, Typography, Alert } from '@mui/material';
-import { submitAccessRequest } from 'src/app/actions/access-request/access-request-actions';
+import { getAccessRequestApartments, submitAccessRequest } from 'src/app/actions/access-request/access-request-actions';
 
 type BuildingOption = { id: string; label: string; country?: string };
+type ApartmentOption = { id: string; label: string };
 const LOAD_MORE_OPTION_ID = '__load_more_buildings__';
 const INITIAL_BUILDING_BATCH = 10;
 
@@ -28,6 +29,10 @@ const AccessRequestForm = ({
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingOption | null>(null);
+  const [apartments, setApartments] = useState<ApartmentOption[]>([]);
+  const [apartmentsLoading, setApartmentsLoading] = useState(false);
+  const [apartmentsError, setApartmentsError] = useState<string | null>(null);
+  const [selectedApartment, setSelectedApartment] = useState<ApartmentOption | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BUILDING_BATCH);
@@ -73,7 +78,49 @@ const AccessRequestForm = ({
     setSelectedBuilding(null);
     setInputValue('');
     setVisibleCount(INITIAL_BUILDING_BATCH);
+    setSelectedApartment(null);
+    setApartments([]);
   }, [selectedCountry]);
+
+  useEffect(() => {
+    if (!selectedBuilding) {
+      setApartments([]);
+      setSelectedApartment(null);
+      setApartmentsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setApartments([]);
+    setSelectedApartment(null);
+    setApartmentsLoading(true);
+    setApartmentsError(null);
+
+    getAccessRequestApartments(selectedBuilding.id)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          setApartments(res.data || []);
+          if (!(res.data || []).length) {
+            setApartmentsError('No apartments found for this building');
+          }
+        } else {
+          setApartmentsError('Failed to load apartments');
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setApartmentsError(err?.message || 'Failed to load apartments');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setApartmentsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBuilding]);
 
   const executeRecaptcha = useCallback(async () => {
     const gre = (window as any)?.grecaptcha?.enterprise;
@@ -137,6 +184,8 @@ const AccessRequestForm = ({
         message,
         buildingId: selectedBuilding?.id,
         buildingLabel: selectedBuilding?.label,
+        apartmentId: selectedApartment?.id,
+        apartmentLabel: selectedApartment?.label,
         recaptchaToken: token,
         formSecret,
       });
@@ -148,6 +197,7 @@ const AccessRequestForm = ({
         setMessage('');
         setSelectedCountry(null);
         setSelectedBuilding(null);
+        setSelectedApartment(null);
         setInputValue('');
         setVisibleCount(INITIAL_BUILDING_BATCH);
         setOpen(false);
@@ -162,6 +212,8 @@ const AccessRequestForm = ({
     !lastName.trim() ||
     !email.trim() ||
     !selectedCountry ||
+    !selectedBuilding ||
+    !selectedApartment ||
     isPending ||
     !recaptchaSiteKey ||
     !recaptchaReady;
@@ -274,6 +326,25 @@ const AccessRequestForm = ({
           />
           {selectedBuilding && (
             <>
+              <Autocomplete
+                options={apartments}
+                value={selectedApartment}
+                loading={apartmentsLoading}
+                onChange={(_, val) => setSelectedApartment(val)}
+                getOptionLabel={(opt) => opt?.label || ''}
+                isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Apartment"
+                    required
+                    disabled={apartmentsLoading || isPending || !apartments.length}
+                    helperText={apartmentsError || (apartmentsLoading ? 'Loading apartments...' : undefined)}
+                    error={!!apartmentsError}
+                    fullWidth
+                  />
+                )}
+              />
               <TextField
                 label="First name"
                 value={firstName}
