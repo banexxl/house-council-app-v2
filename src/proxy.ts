@@ -26,6 +26,10 @@ const PUBLIC_ROUTES = [
      '/auth/error',
      '/auth/callback',
      '/auth/reset-password',
+     '/auth/access-request',
+     '/dashboard/access-request',
+     '/api/access-request/captcha',
+     '/api/access-request/approve',
      '/api/check-subscription',
      '/api/location-check',
      '/api/publish-scheduled-announcements',
@@ -46,6 +50,7 @@ async function isTokenValid(jwt: string | null): Promise<boolean> {
 
 export async function proxy(req: NextRequest) {
      const { pathname, search } = req.nextUrl;
+     const isApiRoute = pathname.startsWith('/api/');
 
      const raw = getCookieRaw(req);             // cookie string (may be base64 blob)
      const jwt = extractAccessToken(raw);       // actual JWT
@@ -54,6 +59,7 @@ export async function proxy(req: NextRequest) {
      const isAuthPage = PUBLIC_ROUTES.some(r => pathname.startsWith(r));
 
      if (isAuthPage) {
+          if (isApiRoute) return NextResponse.next();
           if (authed) return NextResponse.redirect(new URL('/dashboard', req.url));
           return NextResponse.next();
      }

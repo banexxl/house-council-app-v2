@@ -65,8 +65,6 @@ const LoginForm = () => {
      const [authMethod, setAuthMethod] = useState<"password" | "google" | "magic_link">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
-     console.log(process.env.NEXT_PUBLIC_BASE_URL);
-
      // useSessionUpdater()
 
      const handleAuthMethodChange = (_event: React.SyntheticEvent, newValue: "password" | "google" | "magic_link") => {
@@ -155,6 +153,12 @@ const LoginForm = () => {
                          Go to Nest-Link <Box component="span" sx={{ verticalAlign: 'middle', ml: 0.5 }}>
                               <LinkIcon fontSize="small" />
                          </Box>
+                    </Link>
+               </Typography>
+               <Typography color="text.secondary" variant="body2" align="center" sx={{ mt: 1 }}>
+                    Need access?{" "}
+                    <Link href="/auth/access-request">
+                         Request access
                     </Link>
                </Typography>
                <Typography color="text.secondary" variant="body2" align="center" sx={{ mt: 1 }}>

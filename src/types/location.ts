@@ -10,7 +10,7 @@ export interface BuildingLocation {
      region?: string; // Optional region or state
      country: string; // Optional country name
      street_number: string; // Street number, defaults to 1
-     post_code: number; // Optional zip code
+     post_code?: number | null; // Optional zip code
      latitude: number; // Optional latitude
      longitude: number; // Optional longitude
      location_occupied: boolean; // Indicates if the location is occupied

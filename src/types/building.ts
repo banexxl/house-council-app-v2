@@ -92,7 +92,6 @@ export const buildingValidationSchema = (t: (key: string) => string) => Yup.obje
           city: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
           country: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
           street_number: Yup.string().required(t('buildings.yupBuildingLocationRequired')),
-          post_code: Yup.number().required(t('buildings.yupBuildingLocationRequired')),
           latitude: Yup.number().required(t('buildings.yupBuildingLocationRequired')),
           longitude: Yup.number().required(t('buildings.yupBuildingLocationRequired'))
      }).nullable().required(t('buildings.yupBuildingLocationRequired')).typeError(t('buildings.yupBuildingLocationRequired')),

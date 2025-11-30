@@ -173,7 +173,7 @@ export const insertLocationAction = async (
                created_at: new Date().toISOString(),
                latitude: values.latitude,
                longitude: values.longitude,
-               post_code: values.post_code,
+               post_code: values.post_code ? values.post_code : null,
           };
           const { data, error } = await supabase.from(TABLES.BUILDING_LOCATIONS).insert(insertPayload).select("*");
           if (error) {

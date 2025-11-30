@@ -67,11 +67,12 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                street_number: data.street_number,
                latitude: data.latitude,
                longitude: data.longitude,
-               post_code: parseInt(data.postcode),
+               post_code: data.postcode ? parseInt(data.postcode) : null,
                client_id: userData?.client?.id! ? userData.client.id : userData?.clientMember?.id!,
                building_id: null,
                location_occupied: false
           };
+          console.log('payload', payload);
 
           try {
                const { error } = await insertLocationAction(payload);
@@ -257,6 +258,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
+                                                  value={field.value || 'N/A'}
                                              />
                                         )}
                                    />
@@ -270,6 +272,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
+                                                  value={field.value || 'N/A'}
                                              />
                                         )}
                                    />
@@ -283,6 +286,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
+                                                  value={field.value || 'N/A'}
                                              />
                                         )}
                                    />
@@ -296,6 +300,11 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
+                                                  value={
+                                                       field.value && !isNaN(Number(field.value))
+                                                            ? field.value
+                                                            : 'N/A'
+                                                  }
                                              />
                                         )}
                                    />
@@ -309,6 +318,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
+                                                  value={field.value || 'N/A'}
                                              />
                                         )}
                                    />
@@ -322,6 +332,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                                                   variant="outlined"
                                                   fullWidth
                                                   disabled
+                                                  value={field.value || 'N/A'}
                                              />
                                         )}
                                    />
