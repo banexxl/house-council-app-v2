@@ -1,7 +1,6 @@
 'use server';
 
 import crypto from 'crypto';
-import fs from 'fs';
 import { sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
@@ -9,8 +8,7 @@ import log from 'src/utils/logger';
 
 const SIGNING_SECRET = (process.env.ACCESS_REQUEST_SIGNING_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_SIGNING_SECRET || '').trim();
 const FORM_SECRET = (process.env.ACCESS_REQUEST_FORM_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_FORM_SECRET || '').trim();
-const RECAPTCHA_PROJECT_ID = (process.env.RECAPTCHA_PROJECT_ID || process.env.GCLOUD_PROJECT || '').trim();
-const APPROVAL_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '';
+const RECAPTCHA_PROJECT_ID = process.env.RECAPTCHA_PROJECT_ID!.trim()
 const RECAPTCHA_SITE_KEY = (process.env.RECAPTCHA_SITE_KEY || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '').trim();
 const ADMIN_EMAIL = (process.env.ACCESS_REQUEST_ADMIN_EMAIL || process.env.EMAIL_SMTP_USER || '').trim();
 const RECAPTCHA_MIN_SCORE = Number(process.env.RECAPTCHA_MIN_SCORE || '0.3');
@@ -36,36 +34,6 @@ const loadServiceAccountCredentials = () => {
           } catch (e: any) {
                log(
                     `Access Request - failed to decode GOOGLE_SERVICE_ACCOUNT_BASE64: ${e?.message || e}`
-               );
-          }
-     }
-
-     // 2. Fallback: raw JSON in env (optional)
-     if (!serviceAccountCredentials && process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-          try {
-               serviceAccountCredentials = JSON.parse(
-                    process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-               );
-               return serviceAccountCredentials;
-          } catch (e: any) {
-               log(
-                    `Access Request - failed to parse GOOGLE_SERVICE_ACCOUNT_JSON: ${e?.message || e}`
-               );
-          }
-     }
-
-     // 3. Fallback: load from local file (local dev only)
-     if (!serviceAccountCredentials && process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
-          try {
-               const fileContents = fs.readFileSync(
-                    process.env.GOOGLE_SERVICE_ACCOUNT_PATH,
-                    'utf8'
-               );
-               serviceAccountCredentials = JSON.parse(fileContents);
-               return serviceAccountCredentials;
-          } catch (e: any) {
-               log(
-                    `Access Request - failed to read credentials file (${process.env.GOOGLE_SERVICE_ACCOUNT_PATH}): ${e?.message || e}`
                );
           }
      }
@@ -203,7 +171,7 @@ export const submitAccessRequest = async ({
           return { success: false, error: e?.message || 'Failed to sign request' };
      }
 
-     const baseLink = `${APPROVAL_BASE_URL || ''}/api/access-request/approve?payload=${encodeURIComponent(serialized)}&sig=${signature}`;
+     const baseLink = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/access-request/approve?payload=${encodeURIComponent(serialized)}&sig=${signature}`;
      const approveLink = `${baseLink}&action=approve`;
      const rejectLink = `${baseLink}&action=reject`;
 
