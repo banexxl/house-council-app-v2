@@ -15,8 +15,6 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { useTranslation } from 'react-i18next';
 import { deleteIncidentReport } from 'src/app/actions/incident/incident-report-actions';
 import { PopupModal } from 'src/components/modal-dialog';
@@ -35,33 +33,23 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
   const { t } = useTranslation();
   const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
   const [items, setItems] = useState<IncidentReport[]>(incidents);
-  const [showArchived, setShowArchived] = useState(false);
-  const [visibleActiveCount, setVisibleActiveCount] = useState(8);
-  const [visibleArchivedCount, setVisibleArchivedCount] = useState(8);
+  const [statusFilter, setStatusFilter] = useState<'all' | IncidentReport['status']>('all');
+  const [visibleCount, setVisibleCount] = useState(8);
   const [isPending, startTransition] = useTransition();
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const activeStatuses: IncidentReport['status'][] = ['open', 'in_progress', 'on_hold', 'resolved'];
   const archivedStatuses: IncidentReport['status'][] = ['closed', 'cancelled'];
 
-  const activeIncidents = useMemo(
-    () => items.filter((i) => activeStatuses.includes(i.status)),
-    [items]
-  );
-  const archivedIncidents = useMemo(
-    () => items.filter((i) => archivedStatuses.includes(i.status)),
-    [items]
-  );
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return items;
+    return items.filter((i) => i.status === statusFilter);
+  }, [items, statusFilter]);
 
-  const visibleActive = activeIncidents.slice(0, visibleActiveCount);
-  const visibleArchived = archivedIncidents.slice(0, visibleArchivedCount);
+  const visible = filtered.slice(0, visibleCount);
 
   const handleShowMore = () => {
-    if (showArchived) {
-      setVisibleArchivedCount((c) => c + 8);
-    } else {
-      setVisibleActiveCount((c) => c + 8);
-    }
+    setVisibleCount((c) => c + 8);
   };
 
   const handleDelete = (id: string) => {
@@ -148,27 +136,31 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
           </Button>
         </Card>
         <Stack spacing={1} sx={{ mb: 2 }}>
-          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-            <Typography variant="h4">
-              {showArchived
-                ? t('incident.list.archivedTitle', 'Archived incidents')
-                : t('incident.list.sectionTitle', 'Open incidents')}
-            </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showArchived}
-                  onChange={(e) => setShowArchived(e.target.checked)}
-                />
-              }
-              label={t('incident.list.showArchived', 'Show archived')}
-            />
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" justifyContent="space-between">
+            <Typography variant="h4">{t('incident.list.sectionTitle', 'Open incidents')}</Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
+              {(['all', ...activeStatuses, ...archivedStatuses] as const).map((status) => {
+                const isActive = statusFilter === status;
+                return (
+                  <Button
+                    key={status}
+                    variant={isActive ? 'contained' : 'outlined'}
+                    size="small"
+                    onClick={() => {
+                      setVisibleCount(8);
+                      setStatusFilter(status);
+                    }}
+                  >
+                    {status === 'all'
+                      ? t('incident.list.filterAll', 'All')
+                      : t(`incident.status.${status}`, status.replace(/_/g, ' '))}
+                  </Button>
+                );
+              })}
+            </Stack>
           </Stack>
-          <Typography
-            color="text.secondary"
-            variant="body1"
-          >
-            {showArchived
+          <Typography color="text.secondary" variant="body1">
+            {archivedStatuses.includes(statusFilter as IncidentReport['status'])
               ? t('incident.list.sectionSubtitleArchived', 'Closed and cancelled reports.')
               : t('incident.list.sectionSubtitle', 'Review, triage, and prioritize resident-reported issues.')}
           </Typography>
@@ -177,7 +169,7 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
           container
           spacing={4}
         >
-          {(showArchived ? visibleArchived : visibleActive).map((incident) => (
+          {visible.map((incident) => (
             <Grid
               key={incident.id}
               size={{
@@ -187,25 +179,19 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
                 lg: 3,
               }}
             >
-              <Stack spacing={1.5}>
-                <ServiceRequestCard
-                  incident={incident}
-                  href={paths.dashboard.serviceRequests.details.replace(':requestId', incident.id)}
-                />
-                {showArchived && (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleDelete(incident.id)}
-                    disabled={isPending}
-                  >
-                    {t('common.actionDelete', 'Delete')}
-                  </Button>
-                )}
-              </Stack>
+              <ServiceRequestCard
+                incident={incident}
+                href={paths.dashboard.serviceRequests.details.replace(':requestId', incident.id)}
+                onDelete={
+                  archivedStatuses.includes(incident.status)
+                    ? () => handleDelete(incident.id)
+                    : undefined
+                }
+                deleting={isPending && confirmId === incident.id}
+              />
             </Grid>
           ))}
-          {!showArchived && !activeIncidents.length && (
+          {!filtered.length && (
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ p: 3 }}>
                 <Typography variant="subtitle1">{t('incident.list.emptyTitle', 'No incidents yet.')}</Typography>
@@ -215,22 +201,8 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
               </Card>
             </Grid>
           )}
-          {showArchived && !archivedIncidents.length && (
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="subtitle1">{t('incident.list.noArchived', 'No archived incidents.')}</Typography>
-              </Card>
-            </Grid>
-          )}
         </Grid>
-        {!showArchived && visibleActiveCount < activeIncidents.length && (
-          <Stack alignItems="center" sx={{ mt: 3 }}>
-            <Button variant="outlined" onClick={handleShowMore}>
-              {t('common.actionShowMore', 'Show more')}
-            </Button>
-          </Stack>
-        )}
-        {showArchived && visibleArchivedCount < archivedIncidents.length && (
+        {visibleCount < filtered.length && (
           <Stack alignItems="center" sx={{ mt: 3 }}>
             <Button variant="outlined" onClick={handleShowMore}>
               {t('common.actionShowMore', 'Show more')}

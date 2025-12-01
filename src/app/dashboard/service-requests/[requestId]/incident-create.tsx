@@ -144,8 +144,11 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
           return;
         }
 
-        toast.success(incident ? 'Incident updated' : 'Incident created');
-        setStatus({ success: incident ? 'Incident updated' : 'Incident created' });
+        const successMsg = incident
+          ? t('incident.form.updated', 'Incident updated')
+          : t('incident.form.created', 'Incident created');
+        toast.success(successMsg);
+        setStatus({ success: successMsg });
         const idToView = incident?.id || res.data.id;
         setIncidentId(idToView || null);
       } catch (err: any) {
@@ -478,7 +481,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                   disabled={formik.isSubmitting || !formik.dirty}
                 >
                   {formik.isSubmitting
-                    ? t('common.saving', 'Saving...')
+                    ? t('common.btnSaving', 'Saving...')
                     : incident
                       ? t('incident.form.submitUpdate', 'Update incident')
                       : t('incident.form.submit', 'Create incident')}
