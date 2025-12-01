@@ -148,10 +148,6 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
         setStatus({ success: incident ? 'Incident updated' : 'Incident created' });
         const idToView = incident?.id || res.data.id;
         setIncidentId(idToView || null);
-        if (idToView) {
-          const path = paths.dashboard.serviceRequests.details.replace(':requestId', idToView);
-          router.push(path);
-        }
       } catch (err: any) {
         setStatus({ error: err?.message || 'Failed to save incident' });
         toast.error(err?.message || 'Failed to save incident');
@@ -476,7 +472,11 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                 >
                   {t('common.btnBack', 'Back to list')}
                 </Button>
-                <Button type="submit" variant="contained" disabled={formik.isSubmitting}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={formik.isSubmitting || !formik.dirty}
+                >
                   {formik.isSubmitting
                     ? t('common.saving', 'Saving...')
                     : incident

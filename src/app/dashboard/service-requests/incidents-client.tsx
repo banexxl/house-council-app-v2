@@ -19,6 +19,7 @@ import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useTranslation } from 'react-i18next';
 import { deleteIncidentReport } from 'src/app/actions/incident/incident-report-actions';
+import { PopupModal } from 'src/components/modal-dialog';
 
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
@@ -38,6 +39,7 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
   const [visibleActiveCount, setVisibleActiveCount] = useState(8);
   const [visibleArchivedCount, setVisibleArchivedCount] = useState(8);
   const [isPending, startTransition] = useTransition();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const activeStatuses: IncidentReport['status'][] = ['open', 'in_progress', 'on_hold', 'resolved'];
   const archivedStatuses: IncidentReport['status'][] = ['closed', 'cancelled'];
@@ -63,8 +65,13 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
   };
 
   const handleDelete = (id: string) => {
-    const confirmed = window.confirm(t('common.actionDeleteConfirm', 'Delete this incident permanently?'));
-    if (!confirmed) return;
+    setConfirmId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmId) return;
+    const id = confirmId;
+    setConfirmId(null);
     startTransition(async () => {
       const res = await deleteIncidentReport(id);
       if (!res.success) {
@@ -162,7 +169,7 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
             variant="body1"
           >
             {showArchived
-              ? t('incident.listSectionSubtitleArchived', 'Closed and cancelled reports.')
+              ? t('incident.list.sectionSubtitleArchived', 'Closed and cancelled reports.')
               : t('incident.list.sectionSubtitle', 'Review, triage, and prioritize resident-reported issues.')}
           </Typography>
         </Stack>
@@ -231,6 +238,18 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
           </Stack>
         )}
       </Container>
+      <PopupModal
+        isOpen={!!confirmId}
+        onClose={() => setConfirmId(null)}
+        onConfirm={confirmDelete}
+        title={t('common.actionDeleteConfirm', 'Delete this incident permanently?')}
+        confirmText={t('common.actionDelete', 'Delete')}
+        cancelText={t('common.actionCancel', 'Cancel')}
+        type="confirmation"
+        loading={isPending}
+      >
+        <Typography>{t('incident.list.confirmDelete', 'This will remove the incident permanently.')}</Typography>
+      </PopupModal>
     </Box>
   );
 };

@@ -1507,6 +1507,7 @@ export const tokens = {
     formPriority: 'incident.form.priority',
     formStatus: 'incident.form.status',
     formSubmit: 'incident.form.submit',
+    formSubmitUpdate: 'incident.form.submitUpdate',
     formSaving: 'incident.form.saving',
     formReset: 'incident.form.reset',
     formAddApartmentFirst: 'incident.form.addApartmentFirst',
@@ -1529,5 +1530,6 @@ export const tokens = {
     listArchivedTitle: 'incident.list.archivedTitle',
     listShowArchived: 'incident.list.showArchived',
     listNoArchived: 'incident.list.noArchived',
+    listConfirmDelete: 'incident.list.confirmDelete',
   },
 };

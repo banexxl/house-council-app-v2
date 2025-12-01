@@ -1432,6 +1432,7 @@ export const en = {
   [tokens.incident.formStatus]: 'Status',
   [tokens.incident.formSaving]: 'Saving...',
   [tokens.incident.formSubmit]: 'Submit incident',
+  [tokens.incident.formSubmitUpdate]: 'Update incident',
   [tokens.incident.formReset]: 'Reset',
   [tokens.incident.formAddApartmentFirst]: 'Please add an apartment to the building first.',
   [tokens.incident.incidentReports]: 'Incident Reports',
@@ -1453,4 +1454,5 @@ export const en = {
   [tokens.incident.listArchivedTitle]: 'Archived incidents',
   [tokens.incident.listShowArchived]: 'Show archived',
   [tokens.incident.listNoArchived]: 'No archived incidents.',
+  [tokens.incident.listConfirmDelete]: 'This will remove the incident permanently.',
 };

@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import SvgIcon from '@mui/material/SvgIcon';
 import AlertTriangleIcon from '@untitled-ui/icons-react/build/esm/AlertTriangle';
+import Tooltip from '@mui/material/Tooltip';
 import { useTranslation } from 'react-i18next';
 
 import { RouterLink } from 'src/components/router-link';
@@ -46,12 +47,28 @@ export const ServiceRequestCard: FC<ServiceRequestCardProps> = ({ incident, href
     <Card
       component={RouterLink}
       href={href}
-      sx={{ textDecoration: 'none', height: '100%' }}
+      sx={{
+        textDecoration: 'none',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: 3,
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        '&:hover': {
+          transform: 'scale(1.01)',
+          boxShadow: 6,
+        },
+      }}
       variant="outlined"
     >
-      <CardContent>
-        <Stack spacing={1.5}>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+      <CardContent sx={{ flexGrow: 1, display: 'flex' }}>
+        <Stack spacing={1.5} sx={{ width: '100%', height: '100%' }}>
+          <Stack
+            direction="column"
+            spacing={0.5}
+            alignItems="flex-start"
+            sx={{ width: '100%' }}
+          >
             <Chip label={`${t('incident.form.status', 'Status')}: ${statusLabel}`} color={statusColor[incident.status]} size="small" />
             <Chip label={`${t('incident.form.priority', 'Priority')}: ${priorityLabel}`} color={priorityColor[incident.priority]} size="small" />
             {incident.is_emergency && (
@@ -78,6 +95,7 @@ export const ServiceRequestCard: FC<ServiceRequestCardProps> = ({ incident, href
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
+              flexGrow: 1,
             }}
           >
             {incident.description}
@@ -85,7 +103,9 @@ export const ServiceRequestCard: FC<ServiceRequestCardProps> = ({ incident, href
           <Stack direction="row" spacing={1} flexWrap="wrap">
             <Chip label={categoryLabel} size="small" variant="outlined" />
             {buildingLabel && (
-              <Chip label={`${t('incident.form.building', 'Building')}: ${buildingLabel}`} size="small" variant="outlined" />
+              <Tooltip title={buildingLabel}>
+                <Chip label={`${t('incident.form.building', 'Building')}: ${buildingLabel}`} size="small" variant="outlined" />
+              </Tooltip>
             )}
             {apartmentLabel && (
               <Chip label={`${t('incident.form.apartment', 'Apartment')}: ${apartmentLabel}`} size="small" variant="outlined" />

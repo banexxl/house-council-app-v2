@@ -1419,6 +1419,7 @@ export const de = {
   [tokens.incident.formStatus]: 'Status',
   [tokens.incident.formSaving]: 'Speichern...',
   [tokens.incident.formSubmit]: 'Vorgang melden',
+  [tokens.incident.formSubmitUpdate]: 'Vorgang aktualisieren',
   [tokens.incident.formReset]: 'Zurücksetzen',
   [tokens.incident.formAddApartmentFirst]: 'Bitte fügen Sie zuerst eine Wohnung hinzu',
   [tokens.incident.incidentReports]: 'Vorgangsmeldungen',
@@ -1440,4 +1441,5 @@ export const de = {
   [tokens.incident.listArchivedTitle]: 'Archivierte Vorgänge',
   [tokens.incident.listShowArchived]: 'Archivierte anzeigen',
   [tokens.incident.listNoArchived]: 'Keine archivierten Vorgänge.',
+  [tokens.incident.listConfirmDelete]: 'Dadurch wird der Vorgang dauerhaft gelöscht.',
 };
