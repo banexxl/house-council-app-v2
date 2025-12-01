@@ -2,15 +2,84 @@
 
 import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import type { IncidentReport, IncidentStatus } from 'src/types/incident-report';
+import { getViewer } from 'src/libs/supabase/server-auth';
+import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
 import log from 'src/utils/logger';
 
 const REVALIDATE_PATHS = ['/dashboard/service-requests', '/dashboard/service-requests/create'];
 
 const revalidateIncidents = () => {
   REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
+};
+
+export const createIncidentFromForm = async (payload: {
+  title: string;
+  description: string;
+  category: IncidentCategory;
+  priority: IncidentPriority;
+  buildingId: string;
+  apartmentId?: string | null;
+  isEmergency?: boolean;
+}): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
+  if (!payload.title?.trim() || !payload.description?.trim()) {
+    return { success: false, error: 'Title and description are required' };
+  }
+  if (!payload.buildingId?.trim()) {
+    return { success: false, error: 'Building is required' };
+  }
+
+  const viewer = await getViewer();
+  if (!viewer.userData) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+
+  const { data: buildingRow, error: buildingError } = await adminSupabase
+    .from(TABLES.BUILDINGS!)
+    .select('id, client_id')
+    .eq('id', payload.buildingId)
+    .single();
+
+  if (buildingError || !buildingRow?.client_id) {
+    return { success: false, error: buildingError?.message || 'Building not found' };
+  }
+
+  let reporterProfileId: string | null = null;
+  if (viewer.tenant?.id) {
+    const { data: profileRow } = await adminSupabase
+      .from(TABLES.TENANT_PROFILES)
+      .select('id')
+      .eq('tenant_id', viewer.tenant.id)
+      .maybeSingle();
+    reporterProfileId = (profileRow as any)?.id || null;
+  }
+
+  const incidentPayload: Omit<IncidentReport, 'id' | 'created_at' | 'updated_at'> = {
+    client_id: (buildingRow as any).client_id,
+    building_id: payload.buildingId,
+    apartment_id: payload.apartmentId || null,
+    created_by_profile_id:
+      reporterProfileId ||
+      viewer.clientMember?.id ||
+      viewer.client?.id ||
+      viewer.admin?.id ||
+      viewer.userData.id,
+    created_by_tenant_id: viewer.tenant?.id ?? null,
+    assigned_to_profile_id: null,
+    title: payload.title.trim(),
+    description: payload.description.trim(),
+    category: payload.category,
+    priority: payload.priority,
+    status: 'open',
+    is_emergency: !!payload.isEmergency,
+    resolved_at: null,
+    closed_at: null,
+  };
+
+  return createIncidentReport(incidentPayload);
 };
 
 export const createIncidentReport = async (

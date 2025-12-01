@@ -46,8 +46,25 @@ const formatDate = (value?: string | null) => {
   return format(new Date(value), 'MMM dd, yyyy HH:mm');
 };
 
-interface IncidentDetailsClientProps {
-  incident: IncidentReport;
+interface IncidentCreateProps {
+  incident?: IncidentReport;
+  defaultClientId?: string | null;
+  defaultBuildingId?: string | null;
+  defaultApartmentId?: string | null;
+  defaultTenantId?: string | null;
+  defaultReporterProfileId?: string | null;
+  defaultReporterName?: string | null;
+  defaultAssigneeProfileId?: string | null;
+  buildingOptions?: Array<{
+    id: string;
+    label: string;
+    apartments: { id: string; apartment_number: string }[];
+  }> | null;
+  assigneeOptions?: Array<{
+    id: string;
+    label: string;
+    buildingId?: string | null;
+  }> | null;
 }
 
 const InfoRow = ({ label, value }: { label: string; value?: string | null }) => (
@@ -59,9 +76,36 @@ const InfoRow = ({ label, value }: { label: string; value?: string | null }) => 
   </Stack>
 );
 
-export const IncidentDetailsClient: FC<IncidentDetailsClientProps> = ({ incident }) => {
-  const statusLabel = incident.status.replace(/_/g, ' ');
-  const priorityLabel = incident.priority.charAt(0).toUpperCase() + incident.priority.slice(1);
+export const IncidentCreate: FC<IncidentCreateProps> = ({
+  incident,
+  defaultClientId,
+  defaultBuildingId,
+  defaultApartmentId,
+  defaultTenantId,
+  defaultReporterProfileId,
+  defaultReporterName,
+  defaultAssigneeProfileId,
+  buildingOptions,
+  assigneeOptions,
+}) => {
+  const statusLabel = incident?.status.replace(/_/g, ' ') ?? '';
+  const priorityLabel = incident && incident.priority
+    ? incident.priority.charAt(0).toUpperCase() + incident.priority.slice(1)
+    : '';
+
+  // Currently these defaults/options are not used in the details view,
+  // but they are accepted to match Page props and allow future form wiring.
+  const _unused = {
+    defaultClientId,
+    defaultBuildingId,
+    defaultApartmentId,
+    defaultTenantId,
+    defaultReporterProfileId,
+    defaultReporterName,
+    defaultAssigneeProfileId,
+    buildingOptions,
+    assigneeOptions,
+  };
 
   return (
     <Box
@@ -115,9 +159,9 @@ export const IncidentDetailsClient: FC<IncidentDetailsClientProps> = ({ incident
           }}
         >
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Chip label={`Status: ${statusLabel}`} color={statusColor[incident.status]} />
-            <Chip label={`Priority: ${priorityLabel}`} color={priorityColor[incident.priority]} />
-            {incident.is_emergency && (
+            <Chip label={`Status: ${statusLabel}`} color={statusColor[incident?.status ?? 'open']} />
+            <Chip label={`Priority: ${priorityLabel}`} color={priorityColor[incident?.priority ?? 'low']} />
+            {incident?.is_emergency && (
               <Chip
                 color="error"
                 icon={
@@ -160,16 +204,16 @@ export const IncidentDetailsClient: FC<IncidentDetailsClientProps> = ({ incident
                   <Typography variant="overline" color="text.secondary">
                     Summary
                   </Typography>
-                  <Typography variant="h4">{incident.title}</Typography>
+                  <Typography variant="h4">{incident?.title ?? ''}</Typography>
                   <Typography color="text.secondary" variant="body1">
-                    {incident.description || 'No description provided.'}
+                    {incident?.description || 'No description provided.'}
                   </Typography>
                   <Divider />
                   <Stack direction="row" spacing={3} flexWrap="wrap">
-                    <InfoRow label="Created" value={formatDate(incident.created_at)} />
-                    <InfoRow label="Last updated" value={formatDate(incident.updated_at)} />
-                    <InfoRow label="Resolved" value={formatDate(incident.resolved_at)} />
-                    <InfoRow label="Closed" value={formatDate(incident.closed_at)} />
+                    <InfoRow label="Created" value={formatDate(incident?.created_at)} />
+                    <InfoRow label="Last updated" value={formatDate(incident?.updated_at)} />
+                    <InfoRow label="Resolved" value={formatDate(incident?.resolved_at)} />
+                    <InfoRow label="Closed" value={formatDate(incident?.closed_at)} />
                   </Stack>
                 </Stack>
               </CardContent>
@@ -183,9 +227,9 @@ export const IncidentDetailsClient: FC<IncidentDetailsClientProps> = ({ incident
                     <Typography variant="overline" color="text.secondary">
                       Assignment
                     </Typography>
-                    <InfoRow label="Reporter profile" value={incident.created_by_profile_id} />
-                    <InfoRow label="Reporter tenant" value={incident.created_by_tenant_id} />
-                    <InfoRow label="Assigned to profile" value={incident.assigned_to_profile_id} />
+                    <InfoRow label="Reporter profile" value={incident?.created_by_profile_id} />
+                    <InfoRow label="Reporter tenant" value={incident?.created_by_tenant_id} />
+                    <InfoRow label="Assigned to profile" value={incident?.assigned_to_profile_id} />
                   </Stack>
                 </CardContent>
               </Card>
@@ -195,10 +239,10 @@ export const IncidentDetailsClient: FC<IncidentDetailsClientProps> = ({ incident
                     <Typography variant="overline" color="text.secondary">
                       Location
                     </Typography>
-                    <InfoRow label="Client" value={incident.client_id} />
-                    <InfoRow label="Building" value={incident.building_id} />
-                    <InfoRow label="Apartment" value={incident.apartment_id} />
-                    <InfoRow label="Category" value={incident.category.replace(/_/g, ' ')} />
+                    <InfoRow label="Client" value={incident?.client_id} />
+                    <InfoRow label="Building" value={incident?.building_id} />
+                    <InfoRow label="Apartment" value={incident?.apartment_id} />
+                    <InfoRow label="Category" value={incident?.category.replace(/_/g, ' ') ?? undefined} />
                   </Stack>
                 </CardContent>
               </Card>
