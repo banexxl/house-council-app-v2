@@ -398,7 +398,6 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
                     return {
                          building_id: ctx.meta?.buildingId ?? ctx.meta?.building_id,
                          apartment_id: ctx.meta?.apartmentId ?? ctx.meta?.apartment_id ?? null,
-                         uploaded_by_profile_id: ctx.meta?.uploaded_by_profile_id ?? null,
                          created_at: now,
                          updated_at: now,
                     };

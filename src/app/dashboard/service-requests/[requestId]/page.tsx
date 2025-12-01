@@ -8,12 +8,56 @@ import {
 import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import { getCurrentUserProfile, getTenantProfileByTenantId } from 'src/app/actions/social/profile-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
+import { useServerSideSupabaseServiceRoleClient, useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
 import { IncidentCreate } from './incident-create';
 
 interface PageProps {
   params: Promise<{ requestId: string }>;
 }
+
+const resolveReporterName = async (id: string | null | undefined): Promise<string> => {
+  if (!id) return '';
+  try {
+    const supabase = await useServerSideSupabaseAnonClient();
+
+    const { data: clientRow } = await supabase
+      .from(TABLES.CLIENTS)
+      .select('contact_person, email, id, user_id')
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .maybeSingle();
+    if (clientRow) {
+      return (clientRow as any).contact_person || (clientRow as any).email || (clientRow as any).id || '';
+    }
+
+    const { data: memberRow } = await supabase
+      .from(TABLES.CLIENT_MEMBERS)
+      .select('name, email, id, user_id')
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .maybeSingle();
+    if (memberRow) {
+      return (memberRow as any).name || (memberRow as any).email || (memberRow as any).id || '';
+    }
+
+    const { data: tenantRow } = await supabase
+      .from(TABLES.TENANTS)
+      .select('first_name, last_name, email, id, user_id')
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .maybeSingle();
+    if (tenantRow) {
+      const first = (tenantRow as any).first_name || '';
+      const last = (tenantRow as any).last_name || '';
+      const full = `${first} ${last}`.trim();
+      return full || (tenantRow as any).email || (tenantRow as any).id || '';
+    }
+
+    return id;
+  } catch (e: any) {
+    log(`resolveReporterName failed for ${id}: ${e?.message || e}`);
+    return id;
+  }
+};
 
 const Page = async ({ params }: PageProps) => {
   const resolvedParams = await params;
@@ -25,11 +69,11 @@ const Page = async ({ params }: PageProps) => {
   let defaultBuildingId: string | undefined = incident?.building_id ?? undefined;
   let defaultClientId: string | undefined = incident?.client_id ?? undefined;
   const defaultApartmentId = incident?.apartment_id ?? tenant?.apartment_id ?? null;
-  const defaultTenantId = incident?.created_by_tenant_id ?? tenant?.id ?? null;
+  const defaultTenantId = tenant?.id ?? null;
   let buildingOptions: Array<{ id: string; label: string; apartments: { id: string; apartment_number: string }[] }> = [];
-  let defaultAssigneeProfile = incident?.assigned_to_profile_id ?? '';
-  let defaultReporterProfile = incident?.created_by_profile_id ?? '';
-  let defaultReporterName = '';
+  let defaultAssigneeProfile = incident?.assigned_to ?? '';
+  let defaultReporterName = incident?.reported_by ?? '';
+  let defaultReporterId = incident?.reported_by ?? userData?.id ?? '';
   let assigneeOptions: Array<{ id: string; label: string; buildingId?: string | null }> = [];
 
   const profileRes = tenant?.id ? await getTenantProfileByTenantId(tenant.id) : await getCurrentUserProfile();
@@ -94,38 +138,37 @@ const Page = async ({ params }: PageProps) => {
     const displayName = `${currentProfile.first_name ?? ''} ${currentProfile.last_name ?? ''}`.trim() ||
       currentProfile.id;
     defaultAssigneeProfile = defaultAssigneeProfile || currentProfile.id;
-    defaultReporterProfile = defaultReporterProfile || currentProfile.id;
-    defaultReporterName = displayName;
+    defaultReporterName = defaultReporterName || displayName;
     assigneeOptions.push({ id: currentProfile.id, label: displayName, buildingId: defaultBuildingId });
   } else if (client) {
     const idValue = client.user_id || client.id;
     defaultAssigneeProfile = defaultAssigneeProfile || idValue;
-    defaultReporterProfile = defaultReporterProfile || idValue;
-    defaultReporterName = client.contact_person || client.id;
+    defaultReporterName = defaultReporterName || client.contact_person || client.id;
+    defaultReporterId = defaultReporterId || idValue;
     assigneeOptions.push({ id: idValue, label: client.contact_person || client.id });
   } else if (clientMember) {
     defaultAssigneeProfile = defaultAssigneeProfile || clientMember.id;
-    defaultReporterProfile = defaultReporterProfile || clientMember.id;
-    defaultReporterName = clientMember.name || clientMember.email || clientMember.id;
+    defaultReporterName = defaultReporterName || clientMember.name || clientMember.email || clientMember.id;
+    defaultReporterId = defaultReporterId || clientMember.id;
     assigneeOptions.push({ id: clientMember.id, label: clientMember.name || clientMember.email || clientMember.id });
   } else if (tenant) {
     const label = `${tenant.first_name ?? ''} ${tenant.last_name ?? ''}`.trim() || tenant.id;
     defaultAssigneeProfile = defaultAssigneeProfile || tenant.id;
-    defaultReporterProfile = defaultReporterProfile || tenant.id;
-    defaultReporterName = label;
+    defaultReporterName = defaultReporterName || label;
+    defaultReporterId = defaultReporterId || tenant.id;
     assigneeOptions.push({ id: tenant.id, label, buildingId: defaultBuildingId });
   } else if (userData?.id) {
-    defaultReporterProfile = defaultReporterProfile || userData.id;
     defaultAssigneeProfile = defaultAssigneeProfile || userData.id;
-    defaultReporterName = userData.email ?? userData.id;
+    defaultReporterName = defaultReporterName || (userData.email ?? userData.id);
+    defaultReporterId = defaultReporterId || userData.id;
   }
 
-  if (!defaultReporterName && incident?.created_by_profile_id) {
-    defaultReporterName = incident.created_by_profile_id;
+  if (incident?.assigned_to && !assigneeOptions.find((a) => a.id === incident.assigned_to)) {
+    assigneeOptions.push({ id: incident.assigned_to, label: incident.assigned_to });
   }
 
-  if (incident?.assigned_to_profile_id && !assigneeOptions.find((a) => a.id === incident.assigned_to_profile_id)) {
-    assigneeOptions.push({ id: incident.assigned_to_profile_id, label: incident.assigned_to_profile_id });
+  if (incident?.reported_by) {
+    defaultReporterName = await resolveReporterName(incident.reported_by);
   }
 
   const title = incident ? 'Incidents: Edit incident' : 'Incidents: Report new incident';
@@ -136,8 +179,8 @@ const Page = async ({ params }: PageProps) => {
       defaultBuildingId={defaultBuildingId}
       defaultClientId={defaultClientId}
       defaultTenantId={defaultTenantId}
-      defaultReporterProfileId={defaultReporterProfile}
       defaultReporterName={defaultReporterName}
+      defaultReporterId={defaultReporterId}
       defaultAssigneeProfileId={defaultAssigneeProfile}
       buildingOptions={buildingOptions}
       assigneeOptions={assigneeOptions}

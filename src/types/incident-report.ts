@@ -31,10 +31,11 @@ export interface IncidentReport {
      client_id: string;
      building_id: string;
      apartment_id?: string | null;
+     building_label?: string | null;
+     apartment_number?: string | null;
 
-     created_by_profile_id: string;
-     created_by_tenant_id?: string | null;
-     assigned_to_profile_id?: string | null;
+     reported_by: string;
+     assigned_to?: string | null;
 
      title: string;
      description: string;
@@ -59,7 +60,6 @@ export interface IncidentReportImage {
      building_id: string;
      incident_id: string;
      storage_path: string;
-     uploaded_by_profile_id: string;
 }
 
 export interface IncidentReportComment {
@@ -103,5 +103,26 @@ export const INCIDENT_CATEGORY_TOKENS: Record<IncidentCategory, string> = {
      parking: 'incident.category.parking',
      it: 'incident.category.it',
      waste: 'incident.category.waste',
+};
+
+// Minimal incident form model used by Formik (create + edit)
+export interface IncidentFormValues {
+     title: string;
+     description: string;
+     category: IncidentCategory;
+     priority: IncidentPriority;
+     is_emergency: boolean;
+     buildingId: string;
+     apartmentId?: string | null;
+}
+
+export const INCIDENT_FORM_INITIAL_VALUES: IncidentFormValues = {
+     title: '',
+     description: '',
+     category: 'maintenance' as unknown as IncidentCategory, // will be overridden by UI defaults
+     priority: 'medium',
+     is_emergency: false,
+     buildingId: '',
+     apartmentId: null,
 };
 

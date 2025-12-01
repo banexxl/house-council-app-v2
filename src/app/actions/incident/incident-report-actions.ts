@@ -6,12 +6,39 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
+import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
 
 const REVALIDATE_PATHS = ['/dashboard/service-requests', '/dashboard/service-requests/create'];
 
 const revalidateIncidents = () => {
   REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
+};
+
+export const listIncidentReportsForViewer = async (): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
+  const viewer = await getViewer();
+
+  // Admins (super admins) see everything
+  if (viewer.admin) {
+    return listIncidentReports();
+  }
+
+  // Clients and client members see incidents for their client_id
+  const clientId = viewer.client?.id || viewer.clientMember?.client_id || null;
+  if (clientId) {
+    return listIncidentReports({ clientId });
+  }
+
+  // Tenants see incidents for their buildings
+  const userId = viewer.userData?.id || null;
+  if (userId) {
+    const buildingListRes = await getBuildingIDsFromUserId(userId);
+    if (buildingListRes.success && buildingListRes.data?.length) {
+      return listIncidentReports({ buildingIds: buildingListRes.data });
+    }
+  }
+
+  return { success: true, data: [] };
 };
 
 export const createIncidentFromForm = async (payload: {
@@ -21,6 +48,7 @@ export const createIncidentFromForm = async (payload: {
   priority: IncidentPriority;
   buildingId: string;
   apartmentId?: string | null;
+  reporterId?: string | null;
   isEmergency?: boolean;
 }): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
   if (!payload.title?.trim() || !payload.description?.trim()) {
@@ -47,28 +75,18 @@ export const createIncidentFromForm = async (payload: {
     return { success: false, error: buildingError?.message || 'Building not found' };
   }
 
-  let reporterProfileId: string | null = null;
-  if (viewer.tenant?.id) {
-    const { data: profileRow } = await adminSupabase
-      .from(TABLES.TENANT_PROFILES)
-      .select('id')
-      .eq('tenant_id', viewer.tenant.id)
-      .maybeSingle();
-    reporterProfileId = (profileRow as any)?.id || null;
-  }
-
   const incidentPayload: Omit<IncidentReport, 'id' | 'created_at' | 'updated_at'> = {
     client_id: (buildingRow as any).client_id,
     building_id: payload.buildingId,
     apartment_id: payload.apartmentId || null,
-    created_by_profile_id:
-      reporterProfileId ||
-      viewer.clientMember?.id ||
-      viewer.client?.id ||
-      viewer.admin?.id ||
+    reported_by:
+      payload.reporterId ||
+      viewer.userData.email ||
+      viewer.clientMember?.email ||
+      viewer.client?.contact_person ||
+      viewer.tenant?.email ||
       viewer.userData.id,
-    created_by_tenant_id: viewer.tenant?.id ?? null,
-    assigned_to_profile_id: null,
+    assigned_to: null,
     title: payload.title.trim(),
     description: payload.description.trim(),
     category: payload.category,
@@ -126,7 +144,15 @@ export const getIncidentReportById = async (
   id: string
 ): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
   const supabase = await useServerSideSupabaseAnonClient();
-  const { data, error } = await supabase.from(TABLES.INCIDENT_REPORTS!).select('*').eq('id', id).single();
+  const { data, error } = await supabase
+    .from(TABLES.INCIDENT_REPORTS!)
+    .select(`
+      *,
+      building:building_id ( id ),
+      apartment:apartment_id ( id, apartment_number )
+    `)
+    .eq('id', id)
+    .single();
   if (error) {
     log(`Error getting incident report by id with payload: ${JSON.stringify({ id })}: ${error.message}`);
     await logServerAction({
@@ -140,12 +166,37 @@ export const getIncidentReportById = async (
     });
     return { success: false, error: error.message };
   }
-  return { success: true, data };
+  const mapped: IncidentReport = {
+    ...(data as any),
+    building_label: (data as any)?.building?.name ?? null,
+    apartment_number: (data as any)?.apartment?.apartment_number ?? null,
+  };
+  if (!mapped.building_label && mapped.building_id) {
+    try {
+      const admin = await useServerSideSupabaseServiceRoleClient();
+      const { data: loc } = await admin
+        .from(TABLES.BUILDING_LOCATIONS!)
+        .select('street_address, street_number, city')
+        .eq('building_id', mapped.building_id)
+        .maybeSingle();
+      if (loc) {
+        const label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ').trim();
+        mapped.building_label = label || mapped.building_id;
+      }
+    } catch {
+      // ignore lookup failures
+    }
+  }
+  if (!mapped.building_label) {
+    mapped.building_label = mapped.building_id;
+  }
+  return { success: true, data: mapped };
 };
 
 export const listIncidentReports = async (filters?: {
   clientId?: string;
   buildingId?: string;
+  buildingIds?: string[];
   status?: IncidentStatus;
 }): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
   if (!TABLES.INCIDENT_REPORTS) {
@@ -164,13 +215,23 @@ export const listIncidentReports = async (filters?: {
   }
 
   const supabase = await useServerSideSupabaseAnonClient();
-  let query = supabase.from(TABLES.INCIDENT_REPORTS).select('*').order('created_at', { ascending: false });
+  let query = supabase
+    .from(TABLES.INCIDENT_REPORTS)
+    .select(`
+      *,
+      building:building_id ( id ),
+      apartment:apartment_id ( id, apartment_number )
+    `)
+    .order('created_at', { ascending: false });
 
   if (filters?.clientId) {
     query = query.eq('client_id', filters.clientId);
   }
   if (filters?.buildingId) {
     query = query.eq('building_id', filters.buildingId);
+  }
+  if (filters?.buildingIds?.length) {
+    query = query.in('building_id', filters.buildingIds);
   }
   if (filters?.status) {
     query = query.eq('status', filters.status);
@@ -190,7 +251,42 @@ export const listIncidentReports = async (filters?: {
     });
     return { success: false, error: error.message };
   }
-  return { success: true, data: data ?? [] };
+  const mapped = (data || []).map((row: any) => ({
+    ...row,
+    building_label: row?.building?.name ?? null,
+    apartment_number: row?.apartment?.apartment_number ?? null,
+  }));
+  const missingBuildingIds = mapped
+    .filter((m) => !m.building_label && m.building_id)
+    .map((m) => m.building_id);
+  const uniqueMissing = Array.from(new Set(missingBuildingIds));
+  if (uniqueMissing.length) {
+    try {
+      const admin = await useServerSideSupabaseServiceRoleClient();
+      const { data: locs } = await admin
+        .from(TABLES.BUILDING_LOCATIONS!)
+        .select('building_id, street_address, street_number, city')
+        .in('building_id', uniqueMissing);
+      const locMap = new Map<string, string>();
+      (locs || []).forEach((loc: any) => {
+        const label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ').trim();
+        if (loc.building_id) locMap.set(loc.building_id, label || loc.building_id);
+      });
+      mapped.forEach((m) => {
+        if (!m.building_label && m.building_id && locMap.has(m.building_id)) {
+          m.building_label = locMap.get(m.building_id) || m.building_id;
+        }
+      });
+    } catch {
+      // ignore lookup failures
+    }
+  }
+  mapped.forEach((m) => {
+    if (!m.building_label) {
+      m.building_label = m.building_id;
+    }
+  });
+  return { success: true, data: mapped };
 };
 
 export const updateIncidentReport = async (

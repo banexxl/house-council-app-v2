@@ -15,6 +15,7 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from 'react-i18next';
 
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
@@ -26,6 +27,7 @@ interface IncidentsClientProps {
 }
 
 export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
+  const { t } = useTranslation();
   const [isNavigatingToCreate, setIsNavigatingToCreate] = useState(false);
   return (
     <Box
@@ -37,7 +39,7 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
     >
       <Container maxWidth="xl">
         <Stack spacing={1}>
-          <Typography variant="h3">Incident reports</Typography>
+          <Typography variant="h3">{t('incident.incidentReports', 'Incident reports')}</Typography>
           <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
             <Link
               color="text.primary"
@@ -45,13 +47,13 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
               href={paths.dashboard.index}
               variant="subtitle2"
             >
-              Dashboard
+              {t('nav.dashboard', 'Dashboard')}
             </Link>
             <Typography
               color="text.secondary"
               variant="subtitle2"
             >
-              Incident reports
+              {t('incident.incidentReports', 'Incident reports')}
             </Typography>
           </Breadcrumbs>
         </Stack>
@@ -69,13 +71,15 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
           }}
         >
           <div>
-            <Typography variant="subtitle1">Keep track of every incident in one place.</Typography>
+            <Typography variant="subtitle1">
+              {t('incident.list.heroTitle', 'Keep track of every incident in one place.')}
+            </Typography>
             <Typography
               color="text.secondary"
               variant="body2"
               sx={{ mt: 0.5 }}
             >
-              Assign priorities, flag emergencies, and follow up with residents quickly.
+              {t('incident.list.heroSubtitle', 'Assign priorities, flag emergencies, and follow up with residents quickly.')}
             </Typography>
           </div>
           <Button
@@ -86,16 +90,16 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
             disabled={isNavigatingToCreate}
             startIcon={isNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
           >
-            New Incident
+            {t('incident.list.cta', 'New incident')}
           </Button>
         </Card>
         <Stack spacing={1} sx={{ mb: 2 }}>
-          <Typography variant="h4">Open incidents</Typography>
+          <Typography variant="h4">{t('incident.list.sectionTitle', 'Open incidents')}</Typography>
           <Typography
             color="text.secondary"
             variant="body1"
           >
-            Review, triage, and prioritize resident-reported issues.
+            {t('incident.list.sectionSubtitle', 'Review, triage, and prioritize resident-reported issues.')}
           </Typography>
         </Stack>
         <Grid
@@ -121,9 +125,9 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
           {!incidents.length && (
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="subtitle1">No incidents yet.</Typography>
+                <Typography variant="subtitle1">{t('incident.list.emptyTitle', 'No incidents yet.')}</Typography>
                 <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
-                  Create a new incident to get started.
+                  {t('incident.list.emptySubtitle', 'Create a new incident to get started.')}
                 </Typography>
               </Card>
             </Grid>
@@ -147,7 +151,7 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
               </SvgIcon>
             }
           >
-            Showing latest updates
+            {t('incident.list.showingLatest', 'Showing latest updates')}
           </Button>
         </Stack>
       </Container>
