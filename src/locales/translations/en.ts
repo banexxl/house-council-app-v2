@@ -1446,7 +1446,11 @@ export const en = {
   [tokens.incident.listCta]: 'New incident',
   [tokens.incident.listSectionTitle]: 'Open incidents',
   [tokens.incident.listSectionSubtitle]: 'Review, triage, and prioritize resident-reported issues.',
+  [tokens.incident.listSectionSubtitleArchived]: 'Closed and cancelled reports.',
   [tokens.incident.listEmptyTitle]: 'No incidents yet.',
   [tokens.incident.listEmptySubtitle]: 'Create a new incident to get started.',
   [tokens.incident.listShowingLatest]: 'Showing latest updates',
+  [tokens.incident.listArchivedTitle]: 'Archived incidents',
+  [tokens.incident.listShowArchived]: 'Show archived',
+  [tokens.incident.listNoArchived]: 'No archived incidents.',
 };

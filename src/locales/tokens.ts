@@ -1522,8 +1522,12 @@ export const tokens = {
     listCta: 'incident.list.cta',
     listSectionTitle: 'incident.list.sectionTitle',
     listSectionSubtitle: 'incident.list.sectionSubtitle',
+    listSectionSubtitleArchived: 'incident.list.sectionSubtitleArchived',
     listEmptyTitle: 'incident.list.emptyTitle',
     listEmptySubtitle: 'incident.list.emptySubtitle',
     listShowingLatest: 'incident.list.showingLatest',
+    listArchivedTitle: 'incident.list.archivedTitle',
+    listShowArchived: 'incident.list.showArchived',
+    listNoArchived: 'incident.list.noArchived',
   },
 };

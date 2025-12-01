@@ -1433,7 +1433,11 @@ export const de = {
   [tokens.incident.listCta]: 'Neuer Vorgang',
   [tokens.incident.listSectionTitle]: 'Offene Vorgänge',
   [tokens.incident.listSectionSubtitle]: 'Prüfe, sortiere und priorisiere gemeldete Vorgänge.',
+  [tokens.incident.listSectionSubtitleArchived]: 'Geschlossene und stornierte Vorgänge.',
   [tokens.incident.listEmptyTitle]: 'Noch keine Vorgänge.',
   [tokens.incident.listEmptySubtitle]: 'Lege einen neuen Vorgang an, um zu starten.',
   [tokens.incident.listShowingLatest]: 'Zeige neueste Aktualisierungen',
+  [tokens.incident.listArchivedTitle]: 'Archivierte Vorgänge',
+  [tokens.incident.listShowArchived]: 'Archivierte anzeigen',
+  [tokens.incident.listNoArchived]: 'Keine archivierten Vorgänge.',
 };

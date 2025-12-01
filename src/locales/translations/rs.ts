@@ -1400,7 +1400,11 @@ export const rs = {
      [tokens.incident.listCta]: 'Nova prijava',
      [tokens.incident.listSectionTitle]: 'Otvorene prijave',
      [tokens.incident.listSectionSubtitle]: 'Pregledajte, sortirajte i prioritizujte prijave stanara.',
+     [tokens.incident.listSectionSubtitleArchived]: 'Zatvorene i otkazane prijave.',
      [tokens.incident.listEmptyTitle]: 'Još nema prijava.',
      [tokens.incident.listEmptySubtitle]: 'Kreiraj novu prijavu kako bi započeo.',
      [tokens.incident.listShowingLatest]: 'Prikaz najnovijih ažuriranja',
+     [tokens.incident.listArchivedTitle]: 'Arhivirane prijave',
+     [tokens.incident.listShowArchived]: 'Prikaži arhivirane',
+     [tokens.incident.listNoArchived]: 'Nema arhiviranih prijava.',
 };
