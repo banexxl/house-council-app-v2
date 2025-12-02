@@ -1,5 +1,4 @@
 import type { FC } from 'react';
-import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import numeral from 'numeral';
 import Box from '@mui/material/Box';
@@ -17,29 +16,20 @@ import Typography from '@mui/material/Typography';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
+import type { Invoice, InvoiceStatus } from 'src/types/invoice';
 
-const buildingStatusMap: Record<string, SeverityPillColor> = {
-  confirmed: 'success',
-  on_hold: 'warning',
-  failed: 'error',
+const statusColorMap: Record<InvoiceStatus, SeverityPillColor> = {
+  paid: 'success',
+  pending: 'warning',
+  canceled: 'error',
 };
 
-interface Transaction {
-  id: string;
-  amount: number;
-  created_at: number;
-  currency: string;
-  sender: string;
-  status: string;
-  type: string;
-}
-
 interface OverviewTransactionsProps {
-  transactions: Transaction[];
+  invoices: Invoice[];
 }
 
-export const OverviewTransactions: FC<OverviewTransactionsProps> = (props) => {
-  const { transactions } = props;
+export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }) => {
+  const rows = Array.isArray(invoices) ? invoices : [];
 
   return (
     <Card>
@@ -69,20 +59,19 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = (props) => {
       <Scrollbar>
         <Table sx={{ minWidth: 600 }}>
           <TableBody>
-            {transactions.map((transaction) => {
-              const createdAtMonth = format(transaction.created_at, 'LLL').toUpperCase();
-              const createdAtDay = format(transaction.created_at, 'd');
-              const statusColor = buildingStatusMap[transaction.status];
-              const type = transaction.type === 'receive' ? 'Payment received' : 'Payment sent';
-              const amount =
-                (transaction.type === 'receive' ? '+' : '-') +
-                ' ' +
-                numeral(transaction.amount).format('$0,0.00');
-              const amountColor = transaction.type === 'receive' ? 'success.main' : 'error.main';
+            {rows.map((invoice) => {
+              const issuedAt = invoice.issueDate ?? invoice.dueDate ?? Date.now();
+              const createdAtMonth = format(issuedAt, 'LLL').toUpperCase();
+              const createdAtDay = format(issuedAt, 'd');
+              const statusColor = statusColorMap[invoice.status] ?? 'info';
+              const amount = numeral(invoice.totalAmount || 0).format('0,0.00');
+              const currency = invoice.currency || '';
+              const clientName = invoice.client?.name || invoice.client?.company || invoice.client?.email || '—';
+              const description = invoice.number ? `#${invoice.number}` : '';
 
               return (
                 <TableRow
-                  key={transaction.id}
+                  key={invoice.id}
                   hover
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
@@ -114,24 +103,24 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = (props) => {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <Typography variant="subtitle2">{transaction.sender}</Typography>
+                      <Typography variant="subtitle2">{clientName}</Typography>
                       <Typography
                         color="text.secondary"
                         variant="body2"
                       >
-                        {type}
+                        {description}
                       </Typography>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <SeverityPill color={statusColor}>{transaction.status}</SeverityPill>
+                    <SeverityPill color={statusColor}>{invoice.status}</SeverityPill>
                   </TableCell>
                   <TableCell width={180}>
                     <Typography
-                      color={amountColor}
+                      color="text.primary"
                       variant="subtitle2"
                     >
-                      {amount}
+                      {amount} {currency}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -142,8 +131,4 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = (props) => {
       </Scrollbar>
     </Card>
   );
-};
-
-OverviewTransactions.propTypes = {
-  transactions: PropTypes.array.isRequired,
 };
