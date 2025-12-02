@@ -20,6 +20,7 @@ import PauseIcon from '@mui/icons-material/PauseCircleOutline';
 import BuildIcon from '@mui/icons-material/BuildCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Cancel';
+import { tokens } from 'src/locales/tokens';
 
 import type { IncidentReport } from 'src/types/incident-report';
 import type { CalendarEvent } from 'src/types/calendar';
@@ -91,32 +92,34 @@ const Dashboard = ({ incidents, events, invoices }: DashboardProps) => {
               </Grid>
             ))}
             <Grid size={{ xs: 12, md: 7 }} sx={{ order: 1 }}>
-              <OverviewTransactions invoices={invoices} />
+              <Stack spacing={3}>
+                <OverviewTransactions invoices={invoices} />
+                <OverviewLinkCard
+                  icon={<InfoCircleIcon />}
+                  iconTitle={t(tokens.dashboard.overview.help.iconTitle)}
+                  title={t(tokens.dashboard.overview.help.title)}
+                  description={t(tokens.dashboard.overview.help.description)}
+                  url={paths.docs}
+                  actionIcon={<Link01Icon />}
+                  actionLabel={t(tokens.dashboard.overview.help.action)}
+                />
+              </Stack>
             </Grid>
             <Grid size={{ xs: 12, md: 5 }} sx={{ order: 3 }}>
               <OverviewEvents upcoming={events.upcoming} past={events.past} />
             </Grid>
-            <Grid size={{ xs: 6 }} sx={{ order: 5 }}>
-              <OverviewLinkCard
-                icon={<InfoCircleIcon />}
-                iconTitle="Help Center"
-                title="Need help figuring things out?"
-                description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                url={paths.docs}
-                actionIcon={<Link01Icon />}
-              />
-            </Grid>
-            <Grid size={{ xs: 6 }} sx={{ order: 5 }}>
+
+            {/* <Grid size={{ xs: 6 }} sx={{ order: 5 }}>
               <OverviewLinkCard
                 icon={<Briefcase01Icon />}
-                iconTitle="Jobs"
-                title="Find your dream job"
-                description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                iconTitle={t(tokens.dashboard.overview.jobs.iconTitle)}
+                title={t(tokens.dashboard.overview.jobs.title)}
+                description={t(tokens.dashboard.overview.jobs.description)}
                 url={paths.dashboard.jobs.index}
                 actionIcon={<ArrowRightIcon />}
-                actionLabel="Search Jobs"
+                actionLabel={t(tokens.dashboard.overview.jobs.action)}
               />
-            </Grid>
+            </Grid> */}
           </Grid>
         </Container>
       </Box>

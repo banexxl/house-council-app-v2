@@ -750,6 +750,18 @@ export const tokens = {
   dashboard: {
     overview: {
       percentOfTotal: 'dashboard.overview.percentOfTotal',
+      help: {
+        iconTitle: 'dashboard.overview.help.iconTitle',
+        title: 'dashboard.overview.help.title',
+        description: 'dashboard.overview.help.description',
+        action: 'dashboard.overview.help.action',
+      },
+      jobs: {
+        iconTitle: 'dashboard.overview.jobs.iconTitle',
+        title: 'dashboard.overview.jobs.title',
+        description: 'dashboard.overview.jobs.description',
+        action: 'dashboard.overview.jobs.action',
+      },
     },
   },
   apartments: {

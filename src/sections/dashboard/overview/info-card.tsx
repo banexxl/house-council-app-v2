@@ -72,8 +72,11 @@ export const OverviewLinkCard: FC<OverviewLinkCardProps> = ({
       <Divider />
       <CardActions sx={{ backgroundColor: theme.palette.primary.main }}>
         <Button
-          component={RouterLink}
+          component="a"
           href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="contained"
           endIcon={
             actionIcon ? (
               <SvgIcon>
@@ -82,10 +85,19 @@ export const OverviewLinkCard: FC<OverviewLinkCardProps> = ({
             ) : undefined
           }
           size="small"
-          sx={{ color: theme.palette.primary.dark, backgroundColor: theme.palette.primary.light }}
+          sx={{
+            color: theme.palette.primary.dark,
+            backgroundColor: theme.palette.primary.light,
+            transition: 'background-color 150ms ease, color 150ms ease',
+            '&:hover': {
+              backgroundColor: theme.palette.primary.dark,
+              color: theme.palette.primary.contrastText,
+            },
+          }}
         >
           {actionLabel ?? iconTitle}
         </Button>
+
       </CardActions>
     </Card>
   );
