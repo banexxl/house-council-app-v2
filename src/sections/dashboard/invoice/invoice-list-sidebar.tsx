@@ -131,7 +131,7 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
     (event: ChangeEvent<HTMLInputElement>): void => {
       onFiltersChange?.({
         ...filters,
-        status: event.target.checked ? 'paid' : undefined,
+        status: event.target.checked ? 'succeeded' : undefined,
       });
     },
     [filters, onFiltersChange]
@@ -247,7 +247,7 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
         <FormControlLabel
           control={
             <Switch
-              checked={filters.status === 'paid'}
+              checked={filters.status === 'succeeded'}
               onChange={handleStatusChange}
             />
           }

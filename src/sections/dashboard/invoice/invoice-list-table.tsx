@@ -38,17 +38,23 @@ const groupInvoices = (invoices: Invoice[]): GroupedInvoices => {
       };
     },
     {
-      canceled: [],
-      paid: [],
+      cancelled: [],
+      succeeded: [],
       pending: [],
+      processing: [],
+      failed: [],
+      refunded: []
     }
   );
 };
 
 const statusColorsMap: Record<InvoiceStatus, SeverityPillColor> = {
-  canceled: 'error',
-  paid: 'success',
+  cancelled: 'error',
+  succeeded: 'success',
   pending: 'warning',
+  processing: 'primary',
+  failed: 'primary',
+  refunded: 'primary'
 };
 
 interface InvoiceRowProps {
@@ -107,7 +113,7 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
       </TableCell>
       <TableCell>
         <Typography variant="subtitle2">
-          {invoice.currency}
+          {invoice.currency.code}
           {totalAmount}
         </Typography>
       </TableCell>

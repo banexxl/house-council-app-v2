@@ -267,16 +267,16 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "clientMember", "admin"] },
         ]
       },
-      {
-        title: t(tokens.nav.chat),
-        path: paths.dashboard.chat,
-        roles: ["client", "clientMember", "admin"],
-        icon: (
-          <SvgIcon fontSize="small">
-            <ChatIcon />
-          </SvgIcon>
-        ),
-      }
+      // {
+      //   title: t(tokens.nav.chat),
+      //   path: paths.dashboard.chat,
+      //   roles: ["client", "clientMember", "admin"],
+      //   icon: (
+      //     <SvgIcon fontSize="small">
+      //       <ChatIcon />
+      //     </SvgIcon>
+      //   ),
+      // }
       // {
       //   title: t(tokens.nav.analytics),
       //   path: paths.dashboard.analytics,
@@ -350,16 +350,16 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
       },
-      {
-        title: t(tokens.nav.chat),
-        path: paths.dashboard.chat,
-        roles: ["tenant"],
-        icon: (
-          <SvgIcon fontSize="small">
-            <ChatIcon />
-          </SvgIcon>
-        ),
-      }
+      // {
+      //   title: t(tokens.nav.chat),
+      //   path: paths.dashboard.chat,
+      //   roles: ["tenant"],
+      //   icon: (
+      //     <SvgIcon fontSize="small">
+      //       <ChatIcon />
+      //     </SvgIcon>
+      //   ),
+      // }
     ],
   },
 ];
