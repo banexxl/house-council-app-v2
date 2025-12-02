@@ -16,6 +16,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import { Alert } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { usePathname } from 'next/navigation';
 
 export type BreadcrumbItem = {
   title: string;
@@ -27,6 +28,7 @@ interface EntityFormHeaderProps {
   backLabel: string;
   title: string;
   breadcrumbs?: BreadcrumbItem[];
+  showNotificationAlert?: boolean;
   actionLabel?: string;
   actionHref?: string;
   onActionClick?: () => void;
@@ -40,6 +42,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
     backLabel,
     title,
     breadcrumbs,
+    showNotificationAlert = true,
     actionLabel,
     actionHref,
     onActionClick,
@@ -51,6 +54,23 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
   const shouldRenderAction = Boolean(actionComponent || (actionLabel && (actionHref || onActionClick)));
   const [isActionLoading, setIsActionLoading] = useState(false);
   const { t } = useTranslation();
+  const pathname = usePathname();
+
+  const notificationRoutes: string[] = useMemo(
+    () => [
+      '/dashboard/announcements',
+      '/dashboard/service-requests',
+      '/dashboard/calendar',
+      '/dashboard/polls/create',
+
+    ],
+    []
+  );
+
+  const shouldShowAlert =
+    showNotificationAlert &&
+    !!pathname &&
+    notificationRoutes.some((route) => pathname.includes(route));
 
   const renderedAction = useMemo(() => {
     if (!shouldRenderAction) {
@@ -181,9 +201,11 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
               );
             })}
           </Breadcrumbs>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            {t('common.notificationWillBeSent')}
-          </Alert>
+          {shouldShowAlert && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              {t('common.notificationWillBeSent')}
+            </Alert>
+          )}
         </Box>
       )}
     </Box>

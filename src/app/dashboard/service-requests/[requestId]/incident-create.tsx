@@ -4,17 +4,14 @@ import type { FC } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
 import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Checkbox from '@mui/material/Checkbox';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -37,6 +34,7 @@ import { useTranslation } from 'react-i18next';
 import { FileDropzone, type File as DropFile, type DBStoredImage } from 'src/components/file-dropzone';
 import { uploadEntityFiles, removeEntityFile } from 'src/libs/supabase/sb-storage';
 import { useTheme } from '@mui/material';
+import { EntityFormHeader, type BreadcrumbItem } from 'src/components/entity-form-header';
 
 interface IncidentCreateProps {
   incident?: IncidentReport;
@@ -100,6 +98,22 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   const [incidentImages, setIncidentImages] = useState<DBStoredImage[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const theme = useTheme();
+
+  const breadcrumbs: BreadcrumbItem[] = [
+    {
+      title: t('nav.dashboard', 'Dashboard'),
+      href: paths.dashboard.index,
+    },
+    {
+      title: t('incident.incidentReports', 'Incident reports'),
+      href: paths.dashboard.serviceRequests.index,
+    },
+    {
+      title: incident
+        ? t('incident.incidentReportEdit', 'Edit incident')
+        : t('incident.incidentReportCreate', 'Create incident'),
+    },
+  ];
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -244,43 +258,19 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
       }}
     >
       <Container maxWidth="xl">
-        <Stack spacing={1} mb={3}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
-            <Typography variant="h3">
-              {incident
-                ? t('incident.incidentReportEdit', 'Edit incident')
-                : t('incident.incidentReportCreate', 'Create incident')}
-            </Typography>
-            {incident && (
-              <Button variant="contained" href={paths.dashboard.serviceRequests.create}>
-                {t('incident.incidentReportCreate', 'Create incident')}
-              </Button>
-            )}
-          </Stack>
-          <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-            <Link
-              color="text.primary"
-              component={RouterLink}
-              href={paths.dashboard.index}
-              variant="subtitle2"
-            >
-              {t('nav.dashboard', 'Dashboard')}
-            </Link>
-            <Link
-              color="text.primary"
-              component={RouterLink}
-              href={paths.dashboard.serviceRequests.index}
-              variant="subtitle2"
-            >
-              {t('incident.incidentReports', 'Incident reports')}
-            </Link>
-            <Typography color="text.secondary" variant="subtitle2">
-              {incident
-                ? t('incident.incidentReportEdit', 'Edit incident')
-                : t('incident.incidentReportCreate', 'Create incident')}
-            </Typography>
-          </Breadcrumbs>
-        </Stack>
+        <EntityFormHeader
+          backHref={paths.dashboard.serviceRequests.index}
+          backLabel={t('common.btnBack', 'Back to list')}
+          title={
+            incident
+              ? t('incident.incidentReportEdit', 'Edit incident')
+              : t('incident.incidentReportCreate', 'Create incident')
+          }
+          breadcrumbs={breadcrumbs}
+          showNotificationAlert={false}
+          actionLabel={incident ? t('incident.incidentReportCreate', 'Create incident') : undefined}
+          actionHref={incident ? paths.dashboard.serviceRequests.create : undefined}
+        />
 
         <Card>
           <CardContent>

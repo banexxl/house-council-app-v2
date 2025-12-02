@@ -2,22 +2,20 @@
 
 import { Alert, Button } from '@mui/material';
 import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { RouterLink } from 'src/components/router-link';
 import { UserDataCombined } from 'src/libs/supabase/server-auth';
 import { paths } from 'src/paths';
 import LocationCreateForm from 'src/sections/dashboard/locations/location-create-form';
 import { BuildingLocation } from 'src/types/location';
 import CircularProgress from '@mui/material/CircularProgress';
+import { EntityFormHeader, type BreadcrumbItem } from 'src/components/entity-form-header';
 
 type NewLocationProps = {
      mapBoxAccessToken?: string;
@@ -62,6 +60,20 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, occupiedLocations = [
           }
      }, [clientLocations, coords, isGeolocationEnabled, t]);
 
+     const breadcrumbs: BreadcrumbItem[] = [
+          {
+               title: t('nav.dashboard', 'Dashboard'),
+               href: paths.dashboard.index,
+          },
+          {
+               title: t('nav.locations', 'Locations'),
+               href: paths.dashboard.locations.index,
+          },
+          {
+               title: t('locations.locationCreate', 'Create Location'),
+          },
+     ];
+
      return (
           <Box
                component="main"
@@ -72,15 +84,15 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, occupiedLocations = [
           >
                <Container maxWidth="xl">
                     <Stack spacing={3}>
-                         <Stack spacing={1}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                   <Typography variant="h4">{t('locations.locationCreate')}</Typography>
-                                   <Alert severity="warning">
-                                        {t('locations.unassignedCleanupWarning')}
-                                   </Alert>
+                         <EntityFormHeader
+                              backHref={paths.dashboard.locations.index}
+                              backLabel={t('common.btnBack', 'Back to list')}
+                              title={t('locations.locationCreate')}
+                              breadcrumbs={breadcrumbs}
+                              actionComponent={
                                    <Button
                                         LinkComponent={RouterLink}
-                                        href='/dashboard/locations'
+                                        href={paths.dashboard.locations.index}
                                         sx={{ backgroundColor: 'primary.main', color: 'common.white' }}
                                         onClick={() => setIsNavigatingToList(true)}
                                         disabled={isNavigatingToList}
@@ -88,29 +100,9 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, occupiedLocations = [
                                    >
                                         {t('locations.locationsTitle')}
                                    </Button>
-                              </Box>
-                              <Breadcrumbs separator={<KeyboardArrowRightIcon />}>
-                                   <Link
-                                        color="text.primary"
-                                        component={RouterLink}
-                                        href={paths.dashboard.index}
-                                        variant="subtitle2"
-                                   >
-                                        {t('nav.dashboard')}
-                                   </Link>
-                                   <Link
-                                        color="text.primary"
-                                        component={RouterLink}
-                                        href={paths.dashboard.locations.index}
-                                        variant="subtitle2"
-                                   >
-                                        {t('nav.locations')}
-                                   </Link>
-                                   <Typography color="text.secondary" variant="subtitle2">
-                                        {t('locations.locationCreate')}
-                                   </Typography>
-                              </Breadcrumbs>
-                         </Stack>
+                              }
+                         />
+
                          {clientCoords ? (
                               <LocationCreateForm
                                    mapBoxAccessToken={mapBoxAccessToken}
@@ -125,6 +117,7 @@ const NewLocation = ({ mapBoxAccessToken, clientLocations, occupiedLocations = [
                               {t('locations.unassignedCleanupWarning')}
                          </Alert>
                     </Stack>
+
                </Container>
           </Box>
      );
