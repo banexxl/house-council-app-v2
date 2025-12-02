@@ -221,7 +221,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="email_opt_in"
                   checked={values.email_opt_in}
                   onChange={handleToggle}
-                  disabled={savingField === 'email_opt_in'}
+                  disabled//={savingField === 'email_opt_in'}
                 />
               </Stack>
 
@@ -244,7 +244,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="sms_opt_in"
                   checked={values.sms_opt_in}
                   onChange={handleToggle}
-                  disabled={savingField === 'sms_opt_in'}
+                  disabled//={savingField === 'sms_opt_in'}
                 />
               </Stack>
 
@@ -267,7 +267,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="viber_opt_in"
                   checked={values.viber_opt_in}
                   onChange={handleToggle}
-                  disabled={savingField === 'viber_opt_in'}
+                  disabled//={savingField === 'viber_opt_in'}
                 />
               </Stack>
 
@@ -290,7 +290,7 @@ export const AccountNotificationsSettings: FC<AccountNotificationsSettingsProps>
                   name="whatsapp_opt_in"
                   checked={values.whatsapp_opt_in}
                   onChange={handleToggle}
-                  disabled={savingField === 'whatsapp_opt_in'}
+                  disabled//={savingField === 'whatsapp_opt_in'}
                 />
               </Stack>
             </Stack>
