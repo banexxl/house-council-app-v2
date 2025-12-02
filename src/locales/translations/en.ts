@@ -190,6 +190,7 @@ export const en = {
   [tokens.settings.orientation.rightToLeft]: 'Right-to-left',
   //#region Common
   [tokens.common.languageChanged]: 'Language changed',
+  [tokens.common.notificationWillBeSent]: 'A notification will be sent to the tenant when this item is created.',
   [tokens.common.title]: 'House Council',
   [tokens.common.all]: 'All',
   [tokens.common.selectAll]: 'Select all',

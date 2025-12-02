@@ -14,6 +14,8 @@ import { Box, Stack } from '@mui/system';
 import { RouterLink } from 'src/components/router-link';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
+import { Alert } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export type BreadcrumbItem = {
   title: string;
@@ -48,6 +50,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const shouldRenderAction = Boolean(actionComponent || (actionLabel && (actionHref || onActionClick)));
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const { t } = useTranslation();
 
   const renderedAction = useMemo(() => {
     if (!shouldRenderAction) {
@@ -178,6 +181,9 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
               );
             })}
           </Breadcrumbs>
+          <Alert severity="info" sx={{ mt: 2 }}>
+            {t('common.notificationWillBeSent')}
+          </Alert>
         </Box>
       )}
     </Box>

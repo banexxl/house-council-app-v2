@@ -359,6 +359,7 @@ export const rs = {
    [tokens.polls.validation.mustBeofTopKThreshold]: 'Mora biti jedno od: Top-N ili Prag',
    // Added automatically: missing tokens (2025-10-30T07:19:15.421Z)
    [tokens.common.languageChanged]: 'Jezik je promenjen',
+   [tokens.common.notificationWillBeSent]: 'Obaveštenje će biti poslato svim stanarima nakon kreiranja!',
    [tokens.common.title]: 'Kućni savet',
    [tokens.common.all]: 'Sve',
    [tokens.common.clearFilters]: 'Obriši filtere',

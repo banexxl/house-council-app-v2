@@ -313,6 +313,7 @@ export const de = {
   [tokens.clients.clientUnassignedLocations]: 'Nicht zugewiesene Standorte',
   //#region Common
   [tokens.common.languageChanged]: 'Sprache geändert',
+  [tokens.common.notificationWillBeSent]: 'Eine Benachrichtigung wird an den Mieter gesendet, wenn dieser Eintrag erstellt wird.',
   [tokens.common.title]: 'Hausrat',
   [tokens.common.all]: 'Alle',
   [tokens.common.selectAll]: 'Alle auswählen',

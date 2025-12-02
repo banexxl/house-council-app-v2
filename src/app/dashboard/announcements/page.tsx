@@ -27,7 +27,6 @@ export default async function AnnouncementsPage() {
 
      const announcements = annRes.success && annRes.data ? annRes.data : [];
      const buildings = (buildingsRes as any).error ? [] : (buildingsRes as any).data || [];
-     console.log('client', client, clientRes);
 
      return (
           <Announcements

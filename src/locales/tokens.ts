@@ -153,6 +153,7 @@ export const tokens = {
     formNotChanged: 'common.formNotChanged',
     formSubmitting: 'common.formSubmitting',
     userNotFound: 'common.userNotFound',
+    notificationWillBeSent: 'common.notificationWillBeSent',
   },
   // (whatsapp section removed; keys moved under clients)
   account: {
