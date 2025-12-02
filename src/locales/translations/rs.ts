@@ -127,6 +127,7 @@ export const rs = {
   [tokens.invoice.status.failed]: 'Neuspesno',
   [tokens.invoice.status.refunded]: 'Refundirano',
   [tokens.invoice.status.cancelled]: 'Otkazano',
+  [tokens.dashboard.overview.percentOfTotal]: '% od ukupnog broja',
      [tokens.account.security.loginHistoryTitle]: 'Istorija prijava',
      [tokens.account.security.loginHistorySubtitle]: 'Vaša nedavna aktivnost prijavljivanja',
      [tokens.account.security.loginHistoryTime]: 'Vreme',

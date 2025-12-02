@@ -202,6 +202,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[10, 25, 50]}
+        labelRowsPerPage={t('common.rowsPerPage', 'Rows per page:')}
       />
     </Card>
   );

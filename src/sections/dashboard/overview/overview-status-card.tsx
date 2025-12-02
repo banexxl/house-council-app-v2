@@ -9,7 +9,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { RouterLink } from 'src/components/router-link';
 
 interface OverviewStatusCardProps {
@@ -43,7 +43,7 @@ export const OverviewStatusCard: FC<OverviewStatusCardProps> = ({ label, count, 
             </Typography>
             {percentage !== null && (
               <Typography variant="caption" color="text.secondary">
-                {percentage}% of total
+                {percentage} {t('dashboard.overview.percentOfTotal', '% of total')}
               </Typography>
             )}
           </Stack>
@@ -72,9 +72,9 @@ export const OverviewStatusCard: FC<OverviewStatusCardProps> = ({ label, count, 
           }
           sx={{ textTransform: 'none', px: 1.5, minWidth: 'fit-content' }}
           disabled={isPending}
-          onClick={() => startTransition(() => {})}
+          onClick={() => startTransition(() => { })}
         >
-          {t('incident.overviewViewLink', 'View service requests')}
+          {t('incident.overview.viewLink', 'View service requests')}
         </Button>
       </Box>
     </Card>

@@ -741,6 +741,11 @@ export const tokens = {
       cancelled: 'invoice.status.cancelled',
     },
   },
+  dashboard: {
+    overview: {
+      percentOfTotal: 'dashboard.overview.percentOfTotal',
+    },
+  },
   apartments: {
     lblApartmentNumber: 'apartments.lblApartmentNumber',
     lblCoverImage: 'apartments.lblCoverImage',

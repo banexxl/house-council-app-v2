@@ -95,6 +95,7 @@ export const de = {
   [tokens.invoice.status.failed]: 'Fehlgeschlagen',
   [tokens.invoice.status.refunded]: 'Erstattet',
   [tokens.invoice.status.cancelled]: 'Storniert',
+  [tokens.dashboard.overview.percentOfTotal]: '% des Gesamtwerts',
   [tokens.account.security.loginHistoryTime]: 'Zeit',
   // Settings Drawer
   [tokens.settings.drawer.title]: 'App-Einstellungen',

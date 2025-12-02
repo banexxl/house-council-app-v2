@@ -33,24 +33,20 @@ type DashboardProps = {
 
 const Dashboard = ({ incidents, events, invoices }: DashboardProps) => {
 
-  const now = new Date();
-  const subMinutes = (date: Date, minutes: number) => new Date(date.getTime() - minutes * 60000);
-  const subHours = (date: Date, hours: number) => new Date(date.getTime() - hours * 3600000);
-  const subDays = (date: Date, days: number) => new Date(date.getTime() - days * 86400000);
   const settings = useSettings();
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const statusCounts = incidents.reduce<Record<IncidentReport['status'], number>>((acc, incident) => {
     acc[incident.status] = (acc[incident.status] || 0) + 1;
     return acc;
   }, { open: 0, in_progress: 0, on_hold: 0, resolved: 0, closed: 0, cancelled: 0 });
   const totalCount = Object.values(statusCounts).reduce((sum, val) => sum + (val || 0), 0);
   const statusMeta: Array<{ key: IncidentReport['status']; color: string; bg: string; icon: JSX.Element; subtitle?: string }> = [
-    { key: 'open', color: 'info.main', bg: 'info.light', icon: <PendingIcon />, subtitle: t('incident.overviewOpen', 'Currently opened requests') },
-    { key: 'in_progress', color: 'warning.main', bg: 'warning.light', icon: <BuildIcon />, subtitle: t('incident.overviewInProgress', 'Work in progress') },
-    { key: 'on_hold', color: 'default', bg: 'grey.100', icon: <PauseIcon />, subtitle: t('incident.overviewOnHold', 'Waiting for action') },
-    { key: 'resolved', color: 'success.main', bg: 'success.light', icon: <CheckIcon />, subtitle: t('incident.overviewResolved', 'Awaiting verification') },
-    { key: 'closed', color: 'text.secondary', bg: 'grey.100', icon: <LockIcon />, subtitle: t('incident.overviewClosed', 'Closed requests') },
-    { key: 'cancelled', color: 'error.main', bg: 'error.light', icon: <CloseIcon />, subtitle: t('incident.overviewCancelled', 'Cancelled requests') },
+    { key: 'open', color: 'info.main', bg: 'info.light', icon: <PendingIcon />, subtitle: t('incident.overview.open') },
+    { key: 'in_progress', color: 'warning.main', bg: 'warning.light', icon: <BuildIcon />, subtitle: t('incident.overview.inProgress') },
+    { key: 'on_hold', color: 'default', bg: 'grey.100', icon: <PauseIcon />, subtitle: t('incident.overview.onHold') },
+    { key: 'resolved', color: 'success.main', bg: 'success.light', icon: <CheckIcon />, subtitle: t('incident.overview.resolved') },
+    { key: 'closed', color: 'text.secondary', bg: 'grey.100', icon: <LockIcon />, subtitle: t('incident.overview.closed') },
+    { key: 'cancelled', color: 'error.main', bg: 'error.light', icon: <CloseIcon />, subtitle: t('incident.overview.cancelled') },
   ];
 
   return (

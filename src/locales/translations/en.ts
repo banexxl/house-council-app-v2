@@ -144,6 +144,7 @@ export const en = {
   [tokens.invoice.status.failed]: 'Failed',
   [tokens.invoice.status.refunded]: 'Refunded',
   [tokens.invoice.status.cancelled]: 'Cancelled',
+  [tokens.dashboard.overview.percentOfTotal]: '% of total',
   // Settings Drawer
   [tokens.settings.drawer.title]: 'App Settings',
   [tokens.settings.colorPreset.label]: 'Primary Color',

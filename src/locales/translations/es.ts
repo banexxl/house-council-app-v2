@@ -94,6 +94,7 @@ export const es = {
   [tokens.invoice.status.failed]: 'Fallido',
   [tokens.invoice.status.refunded]: 'Reembolsado',
   [tokens.invoice.status.cancelled]: 'Cancelado',
+  [tokens.dashboard.overview.percentOfTotal]: '% del total',
   [tokens.account.security.loginHistoryTime]: 'Hora',
   // Cajón de configuración
   [tokens.settings.drawer.title]: 'Configuración de la aplicación',
