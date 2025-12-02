@@ -987,6 +987,7 @@ export const de = {
   [tokens.announcements.subcategories.immediate_utility_cutoff_alerts]: 'Sofortige Versorgungsabschaltungen',
   [tokens.announcements.subcategories.missing_person_pet_alerts]: 'Vermisste Person / Haustier Meldungen',
   [tokens.announcements.subcategories.hazard_warnings]: 'Gefahrenwarnungen',
+  [tokens.announcements.validation.clientRequired]: 'Kunde ist erforderlich',
   //#region Warnings
   [tokens.warning.deleteWarningTitle]: 'Löschen bestätigen',
   [tokens.warning.deleteWarningMessage]: 'Möchten Sie diesen Eintrag wirklich löschen?',

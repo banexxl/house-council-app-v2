@@ -296,7 +296,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     user_id: a.user_id,
                     images: (a.images && a.images.length ? a.images : []),
                     documents: (a.documents && a.documents.length ? a.documents : []),
-                    client_id: a.client_id || '',
+                    client_id: a.client_id!,
                }
           });
           hydrateScheduledAt(
@@ -482,12 +482,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
                toast.success(t(tokens.announcements.toasts.deleted));
                if (editingEntity!.id === id!) {
                     formik.resetForm({
-                         values: { ...announcementInitialValues, created_at: new Date() }
+                         values: { ...announcementInitialValues, created_at: new Date(), client_id: client.id }
                     });
                     setEditingEntity(null);
                }
           }
-          formik.resetForm();
+          formik.resetForm({
+               values: { ...announcementInitialValues, client_id: client.id }
+          });
           formik.setSubmitting(false);
           setRowBusy(null);
      };
@@ -519,7 +521,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                          onActionClick={() => {
                               setEditingEntity(null);
                               formik.resetForm({
-                                   values: { ...announcementInitialValues, created_at: new Date() }
+                                   values: { ...announcementInitialValues, created_at: new Date(), client_id: client.id }
                               });
                          }}
                     />

@@ -316,6 +316,7 @@ export const rs = {
    [tokens.announcements.validation.scheduleInvalid]: 'Neispravan datum',
    [tokens.announcements.validation.scheduleFuture]: 'Vreme mora biti u budućnosti',
    [tokens.announcements.validation.statusRequired]: 'Status je obavezan',
+   [tokens.announcements.validation.clientRequired]: 'Klijent je obavezan',
    [tokens.polls.validation.invalidId]: 'Neispravan ID ankete',
    [tokens.polls.validation.description]: 'Opis',
    [tokens.polls.validation.allowChangeUntilDeadline]: 'Dozvoli izmenu do roka',

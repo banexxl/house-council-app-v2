@@ -1029,6 +1029,7 @@ export const en = {
   [tokens.announcements.validation.scheduleInvalid]: 'Invalid date',
   [tokens.announcements.validation.scheduleFuture]: 'Schedule must be in the future',
   [tokens.announcements.validation.statusRequired]: 'Status required',
+  [tokens.announcements.validation.clientRequired]: 'Client required',
   [tokens.announcements.categories.community_general]: 'Community & General',
   [tokens.announcements.categories.events_activities]: 'Events & Activities',
   [tokens.announcements.categories.maintenance_operations]: 'Maintenance & Operations',

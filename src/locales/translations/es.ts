@@ -262,6 +262,7 @@ export const es = {
   [tokens.announcements.validation.scheduleInvalid]: 'Fecha inválida',
   [tokens.announcements.validation.scheduleFuture]: 'La hora de programación debe estar en el futuro',
   [tokens.announcements.validation.statusRequired]: 'El estado es obligatorio',
+  [tokens.announcements.validation.clientRequired]: 'Se requiere el cliente',
   [tokens.account.security.loginHistoryIp]: 'Dirección IP',
   [tokens.account.security.loginHistoryLocation]: 'Ubicación',
   [tokens.account.security.deleteAccountSection]: 'Eliminar cuenta',
