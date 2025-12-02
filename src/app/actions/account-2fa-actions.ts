@@ -1,12 +1,13 @@
 'use server'
 
 import { revalidatePath } from "next/cache";
-import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
+import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
+import log from "src/utils/logger";
 
 export const startEnrollTOTP = async (sessionDataUserId: string) => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase.auth.mfa.enroll({
           factorType: 'totp',
@@ -15,6 +16,7 @@ export const startEnrollTOTP = async (sessionDataUserId: string) => {
      })
 
      if (error) {
+          log(`Error starting TOTP enrollment for user ${sessionDataUserId}: ${error.message}`, 'error');
           await logServerAction({
                user_id: sessionDataUserId,
                action: 'Start Enroll TOTP - Error during supabase TOTP enrollment.',
@@ -44,11 +46,12 @@ export const startEnrollTOTP = async (sessionDataUserId: string) => {
 }
 
 export async function challengeTOTP(factorId: string, sessionUserId: string) {
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      const { data, error } = await supabase.auth.mfa.challenge({ factorId })
 
      if (error) {
+          log(`Error during TOTP challenge for user ${sessionUserId} factorId ${factorId}: ${error.message}`, 'error');
           await logServerAction({
                user_id: sessionUserId,
                action: 'TOTP Challenge - Error',
@@ -66,7 +69,7 @@ export async function challengeTOTP(factorId: string, sessionUserId: string) {
 
 export async function verifyTOTPEnrollment(factorId: string, code: string, challengeId: string, sessionUserId: string) {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient()
+     const supabase = await useServerSideSupabaseAnonClient()
 
      const { error } = await supabase.auth.mfa.verify({
           factorId,
@@ -75,6 +78,7 @@ export async function verifyTOTPEnrollment(factorId: string, code: string, chall
      })
 
      if (error) {
+          log(`Error verifying TOTP enrollment for user ${sessionUserId} factorId ${factorId} challengeId ${challengeId}: ${error.message}`, 'error');
           await logServerAction({
                user_id: sessionUserId,
                action: 'Verify TOTP Enrollment - Error',
@@ -92,13 +96,14 @@ export async function verifyTOTPEnrollment(factorId: string, code: string, chall
 
 export async function disableTOTP(factorId: string, sessionUserId: string) {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { error } = await supabase.auth.mfa.unenroll({
           factorId,
      })
 
      if (error) {
+          log(`Error disabling TOTP for user ${sessionUserId} factorId ${factorId}: ${error.message}`, 'error');
           await logServerAction({
                user_id: sessionUserId,
                action: 'Disable TOTP - Error during supabase TOTP disable.',
