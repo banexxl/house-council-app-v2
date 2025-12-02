@@ -4,12 +4,13 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-
+import InfoCircleIcon from '@untitled-ui/icons-react/build/esm/InfoCircle';
+import Link01Icon from '@untitled-ui/icons-react/build/esm/Link01';
 import { useSettings } from 'src/hooks/use-settings';
 import { OverviewEvents } from 'src/sections/dashboard/overview/overview-events';
 import { OverviewTransactions } from 'src/sections/dashboard/overview/overview-transactions';
-import { OverviewHelp } from 'src/sections/dashboard/overview/overview-help';
-import { OverviewJobs } from 'src/sections/dashboard/overview/overview-jobs';
+import Briefcase01Icon from '@untitled-ui/icons-react/build/esm/Briefcase01';
+import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import { Grid } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { OverviewStatusCard } from 'src/sections/dashboard/overview/overview-status-card';
@@ -24,6 +25,7 @@ import type { IncidentReport } from 'src/types/incident-report';
 import type { CalendarEvent } from 'src/types/calendar';
 import type { Invoice } from 'src/types/invoice';
 import { paths } from 'src/paths';
+import { OverviewLinkCard } from 'src/sections/dashboard/overview/info-card';
 
 type DashboardProps = {
   incidents: IncidentReport[];
@@ -95,10 +97,25 @@ const Dashboard = ({ incidents, events, invoices }: DashboardProps) => {
               <OverviewEvents upcoming={events.upcoming} past={events.past} />
             </Grid>
             <Grid size={{ xs: 6 }} sx={{ order: 5 }}>
-              <OverviewJobs />
+              <OverviewLinkCard
+                icon={<InfoCircleIcon />}
+                iconTitle="Help Center"
+                title="Need help figuring things out?"
+                description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                url={paths.docs}
+                actionIcon={<Link01Icon />}
+              />
             </Grid>
             <Grid size={{ xs: 6 }} sx={{ order: 5 }}>
-              <OverviewHelp />
+              <OverviewLinkCard
+                icon={<Briefcase01Icon />}
+                iconTitle="Jobs"
+                title="Find your dream job"
+                description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                url={paths.dashboard.jobs.index}
+                actionIcon={<ArrowRightIcon />}
+                actionLabel="Search Jobs"
+              />
             </Grid>
           </Grid>
         </Container>
