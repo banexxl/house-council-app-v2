@@ -759,6 +759,7 @@ export const es = {
   [tokens.clients.clientSaved]: 'Cliente guardado',
   [tokens.clients.clientNotSaved]: 'Cliente no guardado',
   [tokens.clients.clientAlreadyExists]: '¡Cliente ya existente!',
+  [tokens.clients.avatarLabel]: 'Etiqueta de avatar',
   //#endregion
   //#region Tenants
   [tokens.tenants.tenantsList]: 'Lista de inquilinos',

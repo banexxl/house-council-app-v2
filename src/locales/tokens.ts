@@ -913,6 +913,7 @@ export const tokens = {
     clientPostalCode: 'clients.clientPostalCode',
     clientState: 'clients.clientState',
     clientCountry: 'clients.clientCountry',
+    avatarLabel: 'clients.avatarLabel',
     clientHasAcceptedMarketing: 'clients.clientHasAcceptedMarketing',
     clientHasAcceptedMarketingDescription: 'clients.clientHasAcceptedMarketingDescription',
     clientHasAcceptedTermsAndConditions: 'clients.clientHasAcceptedTermsAndConditions',

@@ -434,6 +434,7 @@ export const de = {
   [tokens.common.filterSearchByName]: 'Suche nach Name',
   [tokens.common.filterSearchByAddress]: 'Suche nach Adresse',
   [tokens.common.formNotChanged]: 'Formular nicht geändert',
+  [tokens.clients.avatarLabel]: 'Avatar',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'Keine Kundendaten verfügbar',

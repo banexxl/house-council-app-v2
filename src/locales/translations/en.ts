@@ -314,6 +314,7 @@ export const en = {
   [tokens.common.filterSearchByAddress]: 'Search by address',
   [tokens.common.formNotChanged]: 'Form not changed',
   [tokens.common.userNotFound]: 'User not found',
+  [tokens.clients.avatarLabel]: 'Avatar',
   //#endregion
   // Clients
   [tokens.clients.noClientData]: 'No client data available',

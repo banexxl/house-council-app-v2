@@ -102,7 +102,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                }
 
                if (!userId) {
-                    toast.error('Client must be saved before uploading an image');
+                    toast.error(t('common.actionSaveFirst'));
                     event.target.value = '';
                     return;
                }
@@ -137,13 +137,13 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               }
                          }
                          onUploadSuccess(signedUrl);
-                         toast.success("Image uploaded successfully");
+                         toast.success(t('common.actionUploadSuccess'));
                     } else {
-                         toast.error(uploadResult.error || "Failed to upload image");
+                         toast.error(uploadResult.error || t('common.actionUploadError'));
                          onUploadSuccess("");
                     }
                } catch (error) {
-                    toast.error("Failed to upload image")
+                    toast.error(t('common.actionUploadError'))
                     onUploadSuccess("")
                } finally {
                     setLoading(false)
@@ -197,7 +197,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                          }}
                     >
                          <Typography variant="h6" sx={{ mt: 1 }}>
-                              Avatar
+                              {t('clients.avatarLabel')}
                          </Typography>
                          <Typography variant="body2" color="text.secondary">
                               {t('common.imageUploadRequirements')}
@@ -213,7 +213,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               onClick={() => fileInputRef.current?.click()}
                               disabled={buttonDisabled || loading}
                          >
-                              {loading ? "Uploading..." : "Select"}
+                              {loading ? t('common.formSubmitting') : t('common.btnUpload')}
                          </Button>
                          <input
                               ref={fileInputRef}
