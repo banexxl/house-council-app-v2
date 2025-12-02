@@ -722,6 +722,25 @@ export const tokens = {
       other: 'calendar.types.other',
     }
   },
+  invoice: {
+    table: {
+      title: 'invoice.table.title',
+      subtitle: 'invoice.table.subtitle',
+      date: 'invoice.table.date',
+      client: 'invoice.table.client',
+      status: 'invoice.table.status',
+      amount: 'invoice.table.amount',
+      empty: 'invoice.table.empty',
+    },
+    status: {
+      succeeded: 'invoice.status.succeeded',
+      processing: 'invoice.status.processing',
+      pending: 'invoice.status.pending',
+      failed: 'invoice.status.failed',
+      refunded: 'invoice.status.refunded',
+      cancelled: 'invoice.status.cancelled',
+    },
+  },
   apartments: {
     lblApartmentNumber: 'apartments.lblApartmentNumber',
     lblCoverImage: 'apartments.lblCoverImage',

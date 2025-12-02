@@ -90,7 +90,11 @@ export const readClientPayment = async (
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data, error } = await supabase.from(TABLES.INVOICES).select('*').eq('id', id).single();
+     const { data, error } = await supabase.from(TABLES.INVOICES)
+          .select(
+               '*',
+
+          ).eq('id', id).single();
 
      if (error) {
           await logServerAction({
@@ -152,7 +156,7 @@ export const readAllClientPayments = async (
 
      const { data, error } = await supabase
           .from(TABLES.INVOICES)
-          .select(`*, billing_information:tblBillingInformation (*), client:tblClients (*)`)
+          .select(`*, currency:tblCurrencies (*), billing_information:tblBillingInformation (*), client:tblClients (*)`)
           .order('created_at', { ascending: false })
           .eq('client', clientId);
 

@@ -1,3 +1,12 @@
+export interface Currency {
+  id: string
+  created_at?: string;
+  updated_at?: string;
+  code: string;
+  number: number;
+  name: string;
+}
+
 interface InvoiceClient {
   address?: string;
   company?: string;
@@ -15,11 +24,22 @@ interface InvoiceItem {
   unitAmount: number;
 }
 
-export type InvoiceStatus = 'canceled' | 'paid' | 'pending';
+export type InvoiceStatus = 'processing' | 'failed' | 'succeeded' | 'pending' | 'refunded' | 'cancelled';
+
+export const invoiceStatusTokenMap: Record<InvoiceStatus, string> = {
+  processing: 'invoice.status.processing',
+  failed: 'invoice.status.failed',
+  succeeded: 'invoice.status.succeeded',
+  pending: 'invoice.status.pending',
+  refunded: 'invoice.status.refunded',
+  cancelled: 'invoice.status.cancelled',
+};
+
+
 
 export interface Invoice {
   id: string;
-  currency: string;
+  currency: Currency;
   client: InvoiceClient;
   dueDate?: number;
   issueDate?: number;
