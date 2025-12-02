@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 
-export const startEnrollTOTP = async (sessionDataClientId: string) => {
+export const startEnrollTOTP = async (sessionDataUserId: string) => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -16,7 +16,7 @@ export const startEnrollTOTP = async (sessionDataClientId: string) => {
 
      if (error) {
           await logServerAction({
-               user_id: sessionDataClientId,
+               user_id: sessionDataUserId,
                action: 'Start Enroll TOTP - Error during supabase TOTP enrollment.',
                payload: {},
                status: 'fail',
@@ -27,7 +27,7 @@ export const startEnrollTOTP = async (sessionDataClientId: string) => {
           return { error: error.message }
      }
      await logServerAction({
-          user_id: sessionDataClientId,
+          user_id: sessionDataUserId,
           action: 'Start Enroll TOTP - Success.',
           payload: {},
           status: 'success',
