@@ -19,17 +19,20 @@ export type ClientBuildingOption = {
 
 // --- Supabase Auth Actions for Client Management ---
 export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: process.env.NEXT_PUBLIC_SUPABASE_PASSWORD_RECOVERY_REDIRECT_URL,
      });
 
-     if (error) return { success: false, error: error.message };
+     if (error) {
+          log(`sendPasswordRecoveryEmail error: ${error.message}`, 'error');
+          return { success: false, error: error.message };
+     }
      return { success: true };
 };
 
 export const sendMagicLink = async (email: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.auth.signInWithOtp({
           email,
           // options: {
@@ -37,20 +40,29 @@ export const sendMagicLink = async (email: string): Promise<{ success: boolean; 
           // },
      });
 
-     if (error) return { success: false, error: error.message };
+     if (error) {
+          log(`sendMagicLink error: ${error.message}`, 'error');
+          return { success: false, error: error.message };
+     }
      return { success: true };
 };
 
 export const removeAllMfaFactors = async (userId: string): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      // List all factors for the user
      const { data: factors, error: listError } = await supabase.auth.admin.mfa.listFactors({ userId });
-     if (listError) return { success: false, error: listError.message };
+     if (listError) {
+          log(`removeAllMfaFactors list error for user ${userId}: ${listError.message}`, 'error');
+          return { success: false, error: listError.message };
+     }
      if (!factors || !Array.isArray(factors.factors)) return { success: true };
      let lastError = null;
      for (const factor of factors.factors) {
           const { error } = await supabase.auth.admin.mfa.deleteFactor({ id: factor.id, userId });
-          if (error) lastError = error;
+          if (error) {
+               log(`removeAllMfaFactors delete error for factor ${factor.id} user ${userId}: ${error.message}`, 'error');
+               lastError = error;
+          }
      }
      if (lastError) return { success: false, error: lastError.message };
      return { success: true };
@@ -68,7 +80,10 @@ export const banUser = async (userId: string): Promise<{ success: boolean; error
           email_confirm: true, // Optional: prevent login until email is confirmed
      });
 
-     if (error) return { success: false, error: error.message };
+     if (error) {
+          log(`banUser error for user ${userId}: ${error.message}`, 'error');
+          return { success: false, error: error.message };
+     }
      return { success: true };
 };
 
@@ -83,7 +98,10 @@ export const unbanUser = async (userId: string): Promise<{ success: boolean; err
           email_confirm: false,
      });
 
-     if (error) return { success: false, error: error.message };
+     if (error) {
+          log(`unbanUser error for user ${userId}: ${error.message}`, 'error');
+          return { success: false, error: error.message };
+     }
 
      return { success: true };
 };
@@ -109,6 +127,7 @@ export const createOrUpdateClientAction = async (
                .single();
 
           if (updateError) {
+               log(`createOrUpdateClientAction update error for client ${id}: ${updateError.message}`, 'error');
                await logServerAction({
                     action: 'Update Client - Failed',
                     duration_ms: 0,
@@ -156,6 +175,7 @@ export const createOrUpdateClientAction = async (
                     .single();
 
                if (fetchError || !buildingLocation) {
+                    log(`createOrUpdateClientAction fetch unassigned location error for client ${id}: ${fetchError?.message || 'Not found'}`, 'error');
                     await logServerAction({
                          action: 'Fetch Unassigned Location - Failed',
                          duration_ms: 0,
@@ -175,6 +195,7 @@ export const createOrUpdateClientAction = async (
                     .eq('id', unassigned_location_id);
 
                if (reassignError) {
+                    log(`createOrUpdateClientAction reassign error for client ${id}: ${reassignError.message}`, 'error');
                     await logServerAction({
                          action: 'Reassign Unassigned Locations - Failed',
                          duration_ms: 0,
@@ -201,6 +222,7 @@ export const createOrUpdateClientAction = async (
           });
 
           if (inviteError || !invitedUser?.user) {
+               log(`createOrUpdateClientAction invite error for email ${clientData.email}: ${inviteError?.message ?? 'Unknown error'}`, 'error');
                await logServerAction({
                     action: 'Invite Auth User - Failed',
                     duration_ms: 0,
@@ -224,6 +246,7 @@ export const createOrUpdateClientAction = async (
                .single();
 
           if (insertError) {
+               log(`createOrUpdateClientAction insert error for email ${clientData.email}: ${insertError.message}`, 'error');
                await logServerAction({
                     action: 'Create Client - Failed',
                     duration_ms: 0,
@@ -284,6 +307,8 @@ export const readAllClientsAction = async (): Promise<{
                getAllClientsActionData: data as Client[],
           };
      } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readAllClientsAction error: ${message}`, 'error');
           return {
                getAllClientsActionSuccess: false,
                getAllClientsActionData: [],
@@ -299,7 +324,10 @@ export const readClientByIdAction = async (
      getClientByIdActionData?: Client;
      getClientByIdActionError?: string;
 }> => {
-     if (!isUUID(clientId)) return { getClientByIdActionSuccess: false, getClientByIdActionError: 'Invalid client ID format' };
+     if (!isUUID(clientId)) {
+          log(`readClientByIdAction invalid ID: ${clientId}`, 'error');
+          return { getClientByIdActionSuccess: false, getClientByIdActionError: 'Invalid client ID format' };
+     }
 
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -313,6 +341,8 @@ export const readClientByIdAction = async (
                getClientByIdActionData: data as Client,
           };
      } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readClientByIdAction error for id ${clientId}: ${message}`, 'error');
           return {
                getClientByIdActionSuccess: false,
                getClientByIdActionError: 'Failed to fetch client',
@@ -334,7 +364,10 @@ export const deleteClientByIDsAction = async (
                .select('user_id')
                .in('id', ids);
 
-          if (fetchError) throw fetchError;
+          if (fetchError) {
+               log(`deleteClientByIDsAction fetch error for ids ${ids.join(', ')}: ${fetchError.message}`, 'error');
+               throw fetchError;
+          }
 
           const userIdsToDelete = clientsToDelete.map((c) => c.user_id).filter(Boolean);
 
@@ -373,6 +406,7 @@ export const deleteClientByIDsAction = async (
 
           return { deleteClientByIDsActionSuccess: true };
      } catch (error: any) {
+          log(`deleteClientByIDsAction error for ids ${ids.join(', ')}: ${error?.message || 'Unknown error'}`, 'error');
           return {
                deleteClientByIDsActionSuccess: false,
                deleteClientByIDsActionError: error.message,
@@ -390,6 +424,8 @@ export const readClientByEmailAction = async (
           if (error) throw error;
           return { getClientByEmailActionSuccess: true, getClientByEmailActionData: data };
      } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readClientByEmailAction error for email ${email}: ${message}`, 'error');
           return { getClientByEmailActionSuccess: false };
      }
 };
@@ -411,6 +447,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
      userId = user?.id || null;
 
      if (userError || !user) {
+          log(`resetPasswordWithOldPassword user lookup error for ${email}: ${userError?.message || 'User not found'}`, 'error');
           await logServerAction({
                user_id: null,
                action: 'Reset password - user not found',
@@ -429,6 +466,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
 
      if (!email || !email.includes("@") || !newPassword || !oldPassword) {
 
+          log(`resetPasswordWithOldPassword invalid input for ${email}`, 'error');
           await logServerAction({
                user_id: null,
                action: 'Reset password - invalid input',
@@ -450,6 +488,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
           const { data: { session }, error: sessionError, } = await supabase.auth.getSession()
 
           if (sessionError || !session) {
+               log(`resetPasswordWithOldPassword session error for ${email}: ${sessionError?.message || 'No session'}`, 'error');
                return {
                     success: false,
                     error: sessionError?.message || "No active session found",
@@ -460,6 +499,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
           const { data: signedInUser, error: signInError } = await supabase.auth.signInWithPassword({ email: email, password: oldPassword })
 
           if (signInError) {
+               log(`resetPasswordWithOldPassword sign-in error for ${email}: ${signInError.message}`, 'error');
                logServerAction({
                     user_id: null,
                     action: 'Reset password - old password incorrect',
@@ -511,6 +551,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
                          }
                          break;
                }
+               log(`resetPasswordWithOldPassword update error for ${email}: ${error.message}`, 'error');
                logServerAction({
                     user_id: null,
                     action: 'Reset password - password update failed',
@@ -540,6 +581,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
                success: true,
           }
      } catch (error: any) {
+          log(`resetPasswordWithOldPassword unexpected error for ${email}: ${error?.message || 'Unknown error'}`, 'error');
           logServerAction({
                user_id: null,
                action: 'Reset password - error',
@@ -588,6 +630,7 @@ export const getClientBuildingsForSocialProfile = async (
      const effectiveClientId = clientId ?? viewer.client?.id ?? viewer.clientMember?.client_id ?? null;
 
      if (!effectiveClientId) {
+          log('getClientBuildingsForSocialProfile error: Client not found', 'error');
           return { success: false, error: 'Client not found' };
      }
 
@@ -605,6 +648,7 @@ export const getClientBuildingsForSocialProfile = async (
           .order('created_at', { ascending: false });
 
      if (error) {
+          log(`getClientBuildingsForSocialProfile error for clientId ${effectiveClientId}: ${error.message}`, 'error');
           return { success: false, error: error.message };
      }
 
@@ -630,10 +674,12 @@ export const createClientSocialProfile = async (buildingId: string): Promise<{ s
      const clientId = client?.id ?? viewer.clientMember?.client_id ?? null;
 
      if (!clientId) {
+          log('createClientSocialProfile error: Client not found', 'error');
           return { success: false, error: 'Client not found' };
      }
 
      if (!buildingId || !isUUID(buildingId)) {
+          log('createClientSocialProfile error: Invalid building selected', 'error');
           return { success: false, error: 'Invalid building selected' };
      }
 
@@ -649,10 +695,12 @@ export const createClientSocialProfile = async (buildingId: string): Promise<{ s
           .single();
 
      if (buildingError || !buildingRow) {
+          log(`createClientSocialProfile error: ${buildingError?.message ?? 'Building not found'}`, 'error');
           return { success: false, error: buildingError?.message ?? 'Building not found' };
      }
 
      if (buildingRow.client_id !== clientId) {
+          log('createClientSocialProfile error: Building does not belong to this client', 'error');
           return { success: false, error: 'Building does not belong to this client' };
      }
 
@@ -663,6 +711,7 @@ export const createClientSocialProfile = async (buildingId: string): Promise<{ s
           .single();
 
      if (clientError || !clientRow) {
+          log(`createClientSocialProfile error: ${clientError?.message ?? 'Client not found'}`, 'error');
           return { success: false, error: clientError?.message ?? 'Client not found' };
      }
 
@@ -693,6 +742,7 @@ export const createClientSocialProfile = async (buildingId: string): Promise<{ s
           );
 
      if (upsertError) {
+          log(`createClientSocialProfile upsert error: ${upsertError.message}`, 'error');
           return { success: false, error: upsertError.message };
      }
 
@@ -705,10 +755,13 @@ export const createClientSocialProfile = async (buildingId: string): Promise<{ s
 export const isClientUserId = async (userId: string): Promise<boolean> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: client, error: clientError } = await supabase.from(TABLES.CLIENTS).select('id').eq('user_id', userId).single();
+     if (clientError) log(`isClientUserId error (client): ${clientError.message}`, 'error');
      if (client && isUUIDv4(client.id) && !clientError) return true;
      const { data: clientMember, error: clientMemberError } = await supabase.from(TABLES.CLIENT_MEMBERS).select('id').eq('user_id', userId).single();
+     if (clientMemberError) log(`isClientUserId error (clientMember): ${clientMemberError.message}`, 'error');
      if (clientMember && isUUIDv4(clientMember.id) && !clientMemberError) return true;
      const { data: tenant, error: tenantError } = await supabase.from(TABLES.TENANTS).select('id').eq('user_id', userId).single();
+     if (tenantError) log(`isClientUserId error (tenant): ${tenantError.message}`, 'error');
      if (tenant && isUUIDv4(tenant.id) && !tenantError) return false;
      return !!tenant;
 }
