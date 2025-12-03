@@ -20,67 +20,67 @@ export default function NotFound() {
   const router = useRouter()
 
   return (
-    <Layout>
-      <Box
-        component="main"
-        sx={{
-          alignItems: 'center',
-          display: 'flex',
-          flexGrow: 1,
-          py: '80px',
-        }}
-      >
-        <Container maxWidth="lg">
+    // <Layout>
+    <Box
+      component="main"
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        flexGrow: 1,
+        py: '80px',
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 6,
+          }}
+        >
           <Box
+            alt={t('errors.page.notFound')}
+            component="img"
+            src="/assets/errors/error-404.png"
             sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              mb: 6,
+              height: 'auto',
+              maxWidth: '100%',
+              width: 400,
             }}
-          >
-            <Box
-              alt={t('errors.page.notFound')}
-              component="img"
-              src="/assets/errors/error-404.png"
-              sx={{
-                height: 'auto',
-                maxWidth: '100%',
-                width: 400,
-              }}
-            />
-          </Box>
-          <Typography
-            align="center"
-            variant={mdUp ? 'h1' : 'h4'}
-          >
-            404: {t('errors.page.notFoundDescriptionShort')}
-          </Typography>
-          <Typography
-            align="center"
-            color="text.secondary"
-            sx={{ mt: 0.5 }}
-          >
-            {t('errors.page.notFoundDescription')}
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              mt: 6,
+          />
+        </Box>
+        <Typography
+          align="center"
+          variant={mdUp ? 'h1' : 'h4'}
+        >
+          404: {t('errors.page.notFoundDescriptionShort')}
+        </Typography>
+        <Typography
+          align="center"
+          color="text.secondary"
+          sx={{ mt: 0.5 }}
+        >
+          {t('errors.page.notFoundDescription')}
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            mt: 6,
+          }}
+        >
+          <Button
+            onClick={() => {
+              router.push(paths.index)
+              setLoading(true)
             }}
+            loading={loading}
           >
-            <Button
-              onClick={() => {
-                router.push(paths.index)
-                setLoading(true)
-              }}
-              loading={loading}
-            >
-              {t('common.btnBackHome')}
-            </Button>
-          </Box>
-        </Container>
-      </Box>
-    </Layout>
+            {t('common.btnBackHome')}
+          </Button>
+        </Box>
+      </Container>
+    </Box>
+    // </Layout>
   );
 }
