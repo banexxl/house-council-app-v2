@@ -16,6 +16,7 @@ const revalidateIncidents = () => {
 };
 
 export const listIncidentReportsForViewer = async (): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
+
   const viewer = await getViewer();
 
   // Admins (super admins) see everything
@@ -33,71 +34,13 @@ export const listIncidentReportsForViewer = async (): Promise<{ success: boolean
   const userId = viewer.userData?.id || null;
   if (userId) {
     const buildingListRes = await getBuildingIDsFromUserId(userId);
+    log(`Building list result for user ${userId}: ${JSON.stringify(buildingListRes)}`);
     if (buildingListRes.success && buildingListRes.data?.length) {
       return listIncidentReports({ buildingIds: buildingListRes.data });
     }
   }
 
   return { success: true, data: [] };
-};
-
-export const createIncidentFromForm = async (payload: {
-  title: string;
-  description: string;
-  category: IncidentCategory;
-  priority: IncidentPriority;
-  buildingId: string;
-  apartmentId?: string | null;
-  reporterId?: string | null;
-  isEmergency?: boolean;
-}): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
-  if (!payload.title?.trim() || !payload.description?.trim()) {
-    return { success: false, error: 'Title and description are required' };
-  }
-  if (!payload.buildingId?.trim()) {
-    return { success: false, error: 'Building is required' };
-  }
-
-  const viewer = await getViewer();
-  if (!viewer.userData) {
-    return { success: false, error: 'Not authenticated' };
-  }
-
-  const adminSupabase = await useServerSideSupabaseServiceRoleClient();
-
-  const { data: buildingRow, error: buildingError } = await adminSupabase
-    .from(TABLES.BUILDINGS!)
-    .select('id, client_id')
-    .eq('id', payload.buildingId)
-    .single();
-
-  if (buildingError || !buildingRow?.client_id) {
-    return { success: false, error: buildingError?.message || 'Building not found' };
-  }
-
-  const incidentPayload: Omit<IncidentReport, 'id' | 'created_at' | 'updated_at'> = {
-    client_id: (buildingRow as any).client_id,
-    building_id: payload.buildingId,
-    apartment_id: payload.apartmentId || null,
-    reported_by:
-      payload.reporterId ||
-      viewer.userData.email ||
-      viewer.clientMember?.email ||
-      viewer.client?.contact_person ||
-      viewer.tenant?.email ||
-      viewer.userData.id,
-    assigned_to: null,
-    title: payload.title.trim(),
-    description: payload.description.trim(),
-    category: payload.category,
-    priority: payload.priority,
-    status: 'open',
-    is_emergency: !!payload.isEmergency,
-    resolved_at: null,
-    closed_at: null,
-  };
-
-  return createIncidentReport(incidentPayload);
 };
 
 export const createIncidentReport = async (
