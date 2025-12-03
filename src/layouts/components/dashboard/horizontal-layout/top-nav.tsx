@@ -2,6 +2,8 @@ import type { FC } from 'react';
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Menu01Icon from '@untitled-ui/icons-react/build/esm/Menu01';
+import ChevronLeftIcon from '@untitled-ui/icons-react/build/esm/ChevronLeft';
+import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -268,16 +270,36 @@ export const TopNav: FC<TopNavProps> = (props) => {
           <AccountButton />
         </Stack>
       </Stack>
-      {
-        mdUp && (
-          <Box
+      {mdUp && (
+        <Box
+          sx={{
+            borderTopWidth: 1,
+            borderTopStyle: 'solid',
+            borderTopColor: 'var(--nav-divider-color)',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <IconButton
+            size="small"
             sx={{
-              borderTopWidth: 1,
-              borderTopStyle: 'solid',
-              borderTopColor: 'var(--nav-divider-color)',
+              mx: 1,
+              display: { xs: 'none', md: 'inline-flex' },
+            }}
+            onClick={() => {
+              const container = document.querySelector<HTMLElement>('[data-top-nav-scroll="true"] .simplebar-content-wrapper');
+              if (container) {
+                container.scrollBy({ left: -200, behavior: 'smooth' });
+              }
             }}
           >
+            <SvgIcon fontSize="small">
+              <ChevronLeftIcon />
+            </SvgIcon>
+          </IconButton>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Scrollbar
+              data-top-nav-scroll="true"
               sx={{
                 '& .simplebar-scrollbar:before': {
                   background: 'var(--nav-scrollbar-color)',
@@ -295,6 +317,7 @@ export const TopNav: FC<TopNavProps> = (props) => {
                 sx={{
                   px: 2,
                   py: 1.5,
+                  minWidth: 'max-content',
                 }}
               >
                 {sections.map((section, index) => (
@@ -308,8 +331,25 @@ export const TopNav: FC<TopNavProps> = (props) => {
               </Stack>
             </Scrollbar>
           </Box>
-        )
-      }
+          <IconButton
+            size="small"
+            sx={{
+              mx: 1,
+              display: { xs: 'none', md: 'inline-flex' },
+            }}
+            onClick={() => {
+              const container = document.querySelector<HTMLElement>('[data-top-nav-scroll="true"] .simplebar-content-wrapper');
+              if (container) {
+                container.scrollBy({ left: 200, behavior: 'smooth' });
+              }
+            }}
+          >
+            <SvgIcon fontSize="small">
+              <ChevronRightIcon />
+            </SvgIcon>
+          </IconButton>
+        </Box>
+      )}
     </Box >
   );
 };
