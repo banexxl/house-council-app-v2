@@ -15,6 +15,10 @@ import Stack from '@mui/material/Stack';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { deleteIncidentReport } from 'src/app/actions/incident/incident-report-actions';
 import { PopupModal } from 'src/components/modal-dialog';
@@ -37,6 +41,8 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
   const [visibleCount, setVisibleCount] = useState(8);
   const [isPending, startTransition] = useTransition();
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const activeStatuses: IncidentReport['status'][] = ['open', 'in_progress', 'on_hold', 'resolved'];
   const archivedStatuses: IncidentReport['status'][] = ['closed', 'cancelled'];
@@ -138,26 +144,68 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
         <Stack spacing={1} sx={{ mb: 2 }}>
           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" justifyContent="space-between">
             <Typography variant="h4">{t('incident.list.sectionTitle', 'Open incidents')}</Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
-              {(['all', ...activeStatuses, ...archivedStatuses] as const).map((status) => {
-                const isActive = statusFilter === status;
-                return (
-                  <Button
+            {isMobile ? (
+              <Tabs
+                value={statusFilter}
+                onChange={(_, value) => {
+                  setVisibleCount(8);
+                  setStatusFilter(value);
+                }}
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="incident status filters"
+                sx={(theme) => ({
+                  position: 'relative',
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  '& .MuiTab-root': {
+                    minHeight: 48,
+                    paddingLeft: theme.spacing(3),
+                    paddingRight: theme.spacing(3),
+                    marginRight: theme.spacing(2),
+                    fontWeight: 600,
+                  },
+                  '& .MuiTabs-indicator': {
+                    height: 3,
+                    borderRadius: 3,
+                    backgroundColor: theme.palette.primary.main,
+                  },
+                })}
+              >
+                {(['all', ...activeStatuses, ...archivedStatuses] as const).map((status) => (
+                  <Tab
                     key={status}
-                    variant={isActive ? 'contained' : 'outlined'}
-                    size="small"
-                    onClick={() => {
-                      setVisibleCount(8);
-                      setStatusFilter(status);
-                    }}
-                  >
-                    {status === 'all'
-                      ? t('incident.list.filterAll', 'All')
-                      : t(`incident.status.${status}`, status.replace(/_/g, ' '))}
-                  </Button>
-                );
-              })}
-            </Stack>
+                    value={status}
+                    label={
+                      status === 'all'
+                        ? t('incident.list.filterAll', 'All')
+                        : t(`incident.status.${status}`, status.replace(/_/g, ' '))
+                    }
+                    sx={{ textTransform: 'none', minHeight: 36 }}
+                  />
+                ))}
+              </Tabs>
+            ) : (
+              <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
+                {(['all', ...activeStatuses, ...archivedStatuses] as const).map((status) => {
+                  const isActive = statusFilter === status;
+                  return (
+                    <Button
+                      key={status}
+                      variant={isActive ? 'contained' : 'outlined'}
+                      size="small"
+                      onClick={() => {
+                        setVisibleCount(8);
+                        setStatusFilter(status);
+                      }}
+                    >
+                      {status === 'all'
+                        ? t('incident.list.filterAll', 'All')
+                        : t(`incident.status.${status}`, status.replace(/_/g, ' '))}
+                    </Button>
+                  );
+                })}
+              </Stack>
+            )}
           </Stack>
           <Typography color="text.secondary" variant="body1">
             {archivedStatuses.includes(statusFilter as IncidentReport['status'])
