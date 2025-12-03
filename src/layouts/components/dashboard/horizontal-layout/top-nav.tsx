@@ -178,7 +178,7 @@ export const TopNav: FC<TopNavProps> = (props) => {
         borderBottomWidth: 1,
         color: 'var(--nav-color)',
         left: 0,
-        // position: 'sticky',
+        position: 'sticky',
         top: 0,
         zIndex: (theme) => theme.zIndex.appBar,
       }}
@@ -281,6 +281,9 @@ export const TopNav: FC<TopNavProps> = (props) => {
               sx={{
                 '& .simplebar-scrollbar:before': {
                   background: 'var(--nav-scrollbar-color)',
+                },
+                '& .simplebar-placeholder': {
+                  height: 'auto !important',
                 },
               }}
             >
