@@ -219,12 +219,12 @@ const useItemsStore = (searchState: ItemsSearchState, prefix: string, basePrefix
         bucket: item.bucket,
         created_at: item.type === 'folder'
           ? toTimestamp(item.created_at)
-            ?? toTimestamp(item.updated_at)
-            ?? toTimestamp(item.last_accessed_at)
-            ?? resolveFolderDate(item.path ?? '')
+          ?? toTimestamp(item.updated_at)
+          ?? toTimestamp(item.last_accessed_at)
+          ?? resolveFolderDate(item.path ?? '')
           : toTimestamp(item.created_at)
-            ?? toTimestamp(item.last_accessed_at)
-            ?? toTimestamp(item.updated_at),
+          ?? toTimestamp(item.last_accessed_at)
+          ?? toTimestamp(item.updated_at),
         updated_at: toTimestamp(item.updated_at)
           ?? toTimestamp(item.last_accessed_at)
           ?? toTimestamp(item.created_at),
@@ -595,8 +595,9 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
           >
             <Grid size={12}>
               <Stack
-                direction="row"
+                direction={{ xs: 'column', sm: 'row' }}
                 justifyContent="space-between"
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
                 spacing={4}
               >
                 <div>
@@ -605,9 +606,10 @@ export const ClientFileManagerPage = ({ userId }: ClientFileManagerPageProps) =>
                   </Stack>
                 </div>
                 <Stack
-                  alignItems="center"
                   direction="row"
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
                   spacing={2}
+                  flexWrap="wrap"
                 >
                   <Button
                     onClick={() => setFolderDialogOpen(true)}
