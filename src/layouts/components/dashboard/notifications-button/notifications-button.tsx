@@ -24,9 +24,8 @@ const MAX_DISPLAY = 10;
 
 type UUID = string;
 
-async function getSignedInUserId(): Promise<UUID | null> {
+async function getSignedInUserId(t: (key: string) => string): Promise<UUID | null> {
   const { data, error } = await supabaseBrowserClient.auth.getUser();
-  const { t } = useTranslation()
   if (error) {
     supabaseBrowserClient.auth.signOut().catch(() => { });
     toast.error(t('common.userNotFound'));
@@ -37,6 +36,7 @@ async function getSignedInUserId(): Promise<UUID | null> {
 
 export function useNotifications() {
 
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userId, setUserId] = useState<UUID | null>(null);
   const router = useRouter();
@@ -46,12 +46,12 @@ export function useNotifications() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const uid = await getSignedInUserId();
+      const uid = await getSignedInUserId(t);
       if (!active) return;
       setUserId(uid);
     })();
     return () => { active = false; };
-  }, []);
+  }, [t]);
 
   // 2) Initial fetch of unread notifications scoped to this user
   useEffect(() => {
