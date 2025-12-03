@@ -59,7 +59,7 @@ export async function proxy(req: NextRequest) {
 
      if (isAuthPage) {
           if (isApiRoute) return NextResponse.next();
-          if (authed) return NextResponse.redirect(new URL('/dashboard', req.url));
+          // if (authed) return NextResponse.redirect(new URL('/dashboard', req.url));
           return NextResponse.next();
      }
 
