@@ -8,7 +8,6 @@ import { Admin } from 'src/types/admin'
 import { cache } from 'react';
 import { TABLES } from 'src/libs/supabase/tables';
 import { updateTenantActivityStatus } from 'src/app/actions/tenant/tenant-actions';
-import log from 'src/utils/logger';
 
 export type UserDataCombined = {
      client: Client | null
@@ -31,7 +30,7 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      const { data: { user }, error: userErr } = await authSb.auth.getUser();
 
      if (userErr || !user) {
-          log(`[getViewer] No authenticated user: ${userErr}`);
+          console.log(`[getViewer] No authenticated user: ${userErr}`);
           return {
                client: null,
                clientMember: null,

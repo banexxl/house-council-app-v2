@@ -49,13 +49,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   }, []);
 
   const handleLogout = () => {
-    // Proactively unsubscribe from all realtime channels to avoid stale events after logout
-    const channels = supabaseBrowserClient.getChannels?.() || [];
-    if (channels.length) {
-      Promise.all(channels.map(ch => supabaseBrowserClient.removeChannel(ch))).catch((e) => {
-        console.warn('[realtime] channel cleanup error', e);
-      });
-    }
+
 
     startTransition(async () => {
       const { success, error } = await logout();
@@ -65,6 +59,14 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
         console.error('Logout error:', error);
       }
     });
+
+    // Proactively unsubscribe from all realtime channels to avoid stale events after logout
+    const channels = supabaseBrowserClient.getChannels?.() || [];
+    if (channels.length) {
+      Promise.all(channels.map(ch => supabaseBrowserClient.removeChannel(ch))).catch((e) => {
+        console.warn('[realtime] channel cleanup error', e);
+      });
+    }
 
     onClose?.();
   };

@@ -10,6 +10,11 @@ import { TABLES } from 'src/libs/supabase/tables';
 import { checkClientSubscriptionStatus } from '../actions/subscription-plan/subscription-plan-actions';
 import { getClientIdFromTenantBuilding } from '../actions/tenant/tenant-actions';
 
+const AUTH_COOKIES = [
+     'sb-sorklznvftjmhkaejkej-auth-token',
+     'sb-sorklznvftjmhkaejkej-auth-token-code-verifier',
+];
+
 export type SignInFormValues = {
      email: string;
      password: string;
@@ -600,21 +605,39 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 }
 
 export const logout = async (): Promise<{ success: boolean; error?: string }> => {
+     const cookieStore = await cookies();
+     const startedAt = Date.now();
 
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase.auth.signOut();
 
+     // ✅ ALWAYS nuke auth cookies on our side:
+     AUTH_COOKIES.forEach((name) => {
+          try {
+               // Next 13+/14+ API
+               // @ts-ignore in case .delete is not typed in your version
+               cookieStore.delete?.(name);
+          } catch {
+               // Fallback for older versions – overwrite & expire
+               cookieStore.set(name, '', { maxAge: 0, path: '/' });
+          }
+     });
+
      if (error) {
+          console.log('Error during logout:', error.message);
+          // Log the error, but from UI perspective, user is still logged out
           await logServerAction({
                user_id: null,
-               action: 'NLA - Logout failed',
+               action: 'NLA - Logout failed (forced cookie clear)',
                payload: {},
                status: 'fail',
                error: error.message,
-               duration_ms: 0,
+               duration_ms: Date.now() - startedAt,
                type: 'auth',
           });
-          return { success: false, error: error.message };
+
+          // Important: still return success: true so UI behaves like "logged out"
+          return { success: true, error: error.message };
      }
 
      return { success: true };
