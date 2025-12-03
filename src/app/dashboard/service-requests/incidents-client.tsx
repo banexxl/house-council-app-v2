@@ -153,6 +153,7 @@ export const IncidentsClient: FC<IncidentsClientProps> = ({ incidents }) => {
                 }}
                 variant="scrollable"
                 scrollButtons="auto"
+                allowScrollButtonsMobile
                 aria-label="incident status filters"
                 sx={(theme) => ({
                   position: 'relative',
