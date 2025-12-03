@@ -78,7 +78,13 @@ export interface CalendarNotification extends BaseNotification {
      end_date_time: string;
 }
 
-export type Notification = BaseNotification & (MessageNotification | AlertNotification | SocialNotification);
+export interface PollPublishNotification extends BaseNotification {
+     poll_id: string;
+     title: string;
+     description: string;
+}
+
+export type Notification = BaseNotification & (MessageNotification | AlertNotification | SocialNotification | PollPublishNotification);
 
 // Contact shape you already retrieve:
 export type TenantContact = {

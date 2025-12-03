@@ -8,7 +8,8 @@ import {
   type NotificationTypeMap,
   type SocialNotification,
   type CalendarNotification,
-  AnnouncementNotification,
+  type AnnouncementNotification,
+  type PollPublishNotification,
 } from 'src/types/notification';
 
 // Resolve a DB enum value or an existing map into a NotificationTypeMap
@@ -45,6 +46,12 @@ export function createAnnouncementNotification(
   input: Omit<AnnouncementNotification, 'type'>
 ): AnnouncementNotification {
   return createNotification<AnnouncementNotification>({ ...(input as any), type: 'announcement' });
+}
+
+export function createPollPublishNotification(
+  input: Omit<PollPublishNotification, 'type'>
+): PollPublishNotification {
+  return createNotification<PollPublishNotification>({ ...(input as any), type: 'poll' });
 }
 
 export function createCalendarNotification(

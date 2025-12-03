@@ -1255,6 +1255,7 @@ export const tokens = {
     actions: {
       notificationActionAnnouncementPublished: 'notifications.actions.notificationActionAnnouncementPublished',
       notificationActionCalendarEventPublished: 'notifications.actions.notificationActionCalendarEventPublished',
+      notificationActionPollPublished: 'notifications.actions.notificationActionPollPublished',
     },
     tabs: {
       all: 'notifications.tabs.all',

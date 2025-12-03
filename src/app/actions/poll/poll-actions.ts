@@ -7,6 +7,10 @@ import { Poll, PollStatus } from 'src/types/poll';
 import { createOrUpdatePollOptions } from './poll-option-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 import { isUUIDv4 } from 'src/utils/uuid';
+import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
+import { createPollPublishNotification } from 'src/utils/notification';
+import { BaseNotification } from 'src/types/notification';
+import { emitNotifications } from '../notification/emit-notification';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -274,6 +278,55 @@ export async function updatePollStatus(id: string, status: PollStatus): Promise<
     }
 
     revalidatePath(`/dashboard/polls/${data?.id}`);
+    // When a poll becomes active, create tenant notifications (mirrors activateScheduledPoll)
+    if (status === 'active') {
+        try {
+            const { data: bRows, error: bErr } = await supabase
+                .from(TABLES.POLLS)
+                .select('building_id')
+                .eq('id', id);
+
+            if (!bErr && bRows && bRows.length > 0) {
+                const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
+                if (buildingIds.length > 0) {
+                    const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
+                    const { data: annRow, error: annErr } = await supabase
+                        .from(TABLES.POLLS)
+                        .select('title, description')
+                        .eq('id', id)
+                        .maybeSingle();
+
+                    const createdAtISO = new Date().toISOString();
+                    const rows = (tenants || []).map((tenant) => {
+                        const notification = createPollPublishNotification({
+                            action_token: 'notifications.actions.notificationActionPollPublished',
+                            description: annRow?.description || '',
+                            created_at: createdAtISO,
+                            user_id: tenant.user_id!,
+                            is_read: false,
+                            poll_id: id,
+                            building_id: tenant.apartment.building.id,
+                            url: `/dashboard/polls/${id}`,
+                            title: annRow?.title,
+                        });
+                        return notification as unknown as BaseNotification[];
+                    }) as any[];
+
+                    if (rows.length) {
+                        const emitted = await emitNotifications(rows);
+                        if (!emitted.success) {
+                            await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
+                        } else {
+                            await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+                        }
+                    }
+                }
+            }
+        } catch (e: any) {
+            await logServerAction({ user_id: null, action: 'publishPollNotificationsUnexpected', duration_ms: 0, error: e?.message || 'unexpected', payload: { id }, status: 'fail', type: 'db' });
+        }
+    }
+
     await logServerAction({ action: 'updatePollStatus', duration_ms: Date.now() - t0, error: '', payload: { id, status }, status: 'success', type: 'db', user_id: null });
     return { success: true, data: data as Poll };
 }
@@ -315,9 +368,59 @@ export async function activateScheduledPoll(id: string): Promise<{ success: bool
 
     // Use the generic status update function
     const result = await updatePollStatus(id, 'active');
+    console.log('result', result);
 
     // Log the specific action completion
     if (result.success) {
+
+        // Create notifications for tenants of targeted buildings on publish (realtime INSERT consumers pick this up)
+        try {
+            // 1) Resolve targeted buildings from pivot
+            const { data: bRows, error: bErr } = await supabase
+                .from(TABLES.POLLS)
+                .select('building_id')
+                .eq('id', id);
+            console.log('activateScheduledPoll - building fetch', { bErr, bRows });
+            if (!bErr && bRows && bRows.length > 0) {
+                const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
+                if (buildingIds.length > 0) {
+                    // 2) Get all tenant user ids for those buildings
+                    const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
+                    // 3) Fetch announcement for title/message
+                    const { data: annRow, error: annErr } = await supabase.from(TABLES.POLLS).select('title, description').eq('id', id).maybeSingle();
+                    console.log('activateScheduledPoll - tenants fetch', { annErr, annRow, tenantCount: tenants?.length || 0 });
+                    const createdAtISO = new Date().toISOString();
+                    const rows = (tenants || []).map((tenant) => {
+                        const notification = createPollPublishNotification({
+                            action_token: 'notifications.actions.notificationActionPollPublished',
+                            description: annRow?.description || '',
+                            created_at: createdAtISO,
+                            user_id: tenant.user_id!,
+                            is_read: false,
+                            poll_id: id,
+                            building_id: tenant.apartment.building.id,
+                            url: `/dashboard/polls/${id}`,
+                            title: annRow?.title
+                        });
+                        console.log('notification', notification);
+
+                        return notification as unknown as BaseNotification[];
+                    }) as any[];
+
+                    if (rows.length) {
+                        const emitted = await emitNotifications(rows);
+                        if (!emitted.success) {
+                            await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
+                        } else {
+                            await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+                        }
+                    }
+                }
+            }
+        } catch (e: any) {
+            await logServerAction({ user_id: null, action: 'publishPollNotificationsUnexpected', duration_ms: 0, error: e?.message || 'unexpected', payload: { id }, status: 'fail', type: 'db' });
+        }
+
         await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
     } else {
         await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: result.error || 'Update failed', payload: { id }, status: 'fail', type: 'db', user_id: null });

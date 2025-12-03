@@ -178,6 +178,7 @@ export const es = {
   // Notification Actions
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Anuncio publicado',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Evento de calendario publicado',
+  [tokens.notifications.actions.notificationActionPollPublished]: 'Encuesta publicada',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Porcentaje de votos requerido para aprobar la propuesta (supermayoría).',
   [tokens.polls.help.threshold_percent]: 'Porcentaje mínimo que una opción debe alcanzar para ser considerada (umbral).',

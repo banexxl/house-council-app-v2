@@ -950,6 +950,7 @@ export const en = {
   // Notification Actions
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Announcement published',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Calendar event published',
+  [tokens.notifications.actions.notificationActionPollPublished]: 'Poll published',
   // Announcements
   [tokens.announcements.managementTitle]: 'Announcements Management',
   [tokens.announcements.createNew]: 'Create New Announcement',
