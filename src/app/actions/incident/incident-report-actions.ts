@@ -170,7 +170,7 @@ export const listIncidentReports = async (filters?: {
 
   const { data, error } = await query;
   if (error) {
-    log(`Error listing incident reports with payload: ${JSON.stringify(filters)}: ${error.message}`);
+    console.log(`Error listing incident reports with payload: ${JSON.stringify(filters)}: ${error.message}`);
     await logServerAction({
       user_id: null,
       action: 'incident.list',
