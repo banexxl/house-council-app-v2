@@ -6,7 +6,7 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
-import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
+import { getAllBuildingsFromClient, getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
 
 const REVALIDATE_PATHS = ['/dashboard/service-requests', '/dashboard/service-requests/create'];
@@ -15,30 +15,19 @@ const revalidateIncidents = () => {
   REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
 };
 
-export const listIncidentReportsForViewer = async (): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
+export const listIncidentReportsForClient = async (client_id: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
 
-  const viewer = await getViewer();
-
-  // Admins (super admins) see everything
-  if (viewer.admin) {
-    return listIncidentReports();
+  if (!client_id) {
+    return { success: true, data: [] };
   }
 
-  // Clients and client members see incidents for their client_id
-  const clientId = viewer.client?.id || viewer.clientMember?.client_id || null;
-  if (clientId) {
-    return listIncidentReports({ clientId });
+  const buildingListRes = await getAllBuildingsFromClient(client_id);
+  const buildingIds = Array.isArray(buildingListRes.data) ? buildingListRes.data.map(b => b.id) : [];
+  log(`Building list result for client ${client_id}: ${JSON.stringify(buildingListRes)}`);
+  if (buildingListRes.success && buildingListRes.data?.length) {
+    return listIncidentReports({ buildingIds });
   }
 
-  // Tenants see incidents for their buildings
-  const userId = viewer.userData?.id || null;
-  if (userId) {
-    const buildingListRes = await getBuildingIDsFromUserId(userId);
-    log(`Building list result for user ${userId}: ${JSON.stringify(buildingListRes)}`);
-    if (buildingListRes.success && buildingListRes.data?.length) {
-      return listIncidentReports({ buildingIds: buildingListRes.data });
-    }
-  }
 
   return { success: true, data: [] };
 };

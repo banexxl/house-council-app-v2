@@ -8,7 +8,7 @@ import {
 import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import { getCurrentUserProfile, getTenantProfileByTenantId } from 'src/app/actions/social/profile-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { useServerSideSupabaseServiceRoleClient, useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
 import { IncidentCreate } from './incident-create';
