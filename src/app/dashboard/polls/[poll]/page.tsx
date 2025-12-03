@@ -4,6 +4,7 @@ import { logout } from 'src/app/auth/actions';
 import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import { getPollById } from 'src/app/actions/poll/poll-actions';
 import PollCreate from './poll-create';
+import { paths } from 'src/paths';
 
 type Props = { params: Promise<{ poll: string }> };
 

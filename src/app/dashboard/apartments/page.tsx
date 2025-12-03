@@ -7,6 +7,7 @@ import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { Apartment } from "src/types/apartment";
 import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
+import { paths } from "src/paths";
 
 export default async function Page() {
 

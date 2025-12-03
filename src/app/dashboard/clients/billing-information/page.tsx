@@ -8,6 +8,7 @@ import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
+import { paths } from 'src/paths';
 
 
 const Page = async () => {

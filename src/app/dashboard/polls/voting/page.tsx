@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { getTenantBuildingPolls, getTenantClosedPolls } from 'src/app/actions/poll/votes/voting-actions';
 import { Voting } from './voting';
+import { paths } from 'src/paths';
 
 export const metadata: Metadata = {
      title: 'Voting | House Council',
