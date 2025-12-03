@@ -14,7 +14,7 @@ export default async function VotingPage() {
      const { client, clientMember, tenant, admin } = await getViewer();
 
      if (!client && !clientMember && !tenant && !admin) {
-          logout();
+          redirect(paths.auth.login);
      }
 
      // Only tenants can access voting page

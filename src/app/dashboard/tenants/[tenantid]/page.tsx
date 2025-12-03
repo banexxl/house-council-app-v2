@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation';
 import { Seo } from 'src/components/seo';
 import { getAllBuildingsWithApartmentsForClient, readTenantByIdAction } from 'src/app/actions/tenant/tenant-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { logout } from 'src/app/auth/actions';
 import { TenantForm } from 'src/app/dashboard/tenants/[tenantid]/tenant-form';
 
 export default async function Page({ params }: {
@@ -16,7 +15,7 @@ export default async function Page({ params }: {
   const { client, clientMember, tenant, admin } = await getViewer();
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
   if (!client && !clientMember && !tenant && !admin) {
-    logout();
+    redirect('/auth/login');
   }
 
   const { tenantid } = await params;

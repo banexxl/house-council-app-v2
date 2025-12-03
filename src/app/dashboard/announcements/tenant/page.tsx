@@ -12,7 +12,7 @@ export default async function TenantAnnouncementsPage() {
      const { admin, tenant, client, clientMember } = await getViewer();
 
      if (!admin && !client && !tenant && !clientMember) {
-          logout();
+          redirect('/auth/login');
      }
 
      // Only tenants (optionally allow client/clientMember impersonation later)

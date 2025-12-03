@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { logout } from 'src/app/auth/actions';
 import { getPollsFromClient } from 'src/app/actions/poll/poll-actions';
 import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import Polls from './polls';
@@ -11,7 +10,7 @@ export default async function PollsPage() {
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
 
   if (!client && !clientMember && !tenant && !admin) {
-    await logout();
+    redirect('/auth/login');
   }
 
   // Load polls based on role

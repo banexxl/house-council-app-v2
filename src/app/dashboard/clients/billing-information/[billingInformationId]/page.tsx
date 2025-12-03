@@ -15,8 +15,11 @@ const Page = async ({ params }: any) => {
 
   const { client, clientMember, tenant, admin } = await getViewer();
   if (!client && !clientMember && !tenant && !admin) {
-    logout()
-  };
+    try {
+    } catch (err) {
+      console.warn('Logout failed, continuing anyway', err);
+    }
+  }
 
   if (tenant) {
     redirect('/dashboard/social/profile');

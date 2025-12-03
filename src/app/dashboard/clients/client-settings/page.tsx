@@ -3,7 +3,6 @@
 import { Box, Container, Stack } from "@mui/material"
 import { redirect } from "next/navigation";
 import { createEntity, deleteEntity, updateEntity, readAllEntities } from "src/app/actions/base-entity-actions"
-import { logout } from "src/app/auth/actions";
 import { TABLES } from "src/libs/supabase/tables";
 import { getViewer } from "src/libs/supabase/server-auth";
 import GenericTableEditor from "src/sections/dashboard/client/client-components/client-components"
@@ -13,8 +12,8 @@ export default async function TableEditorPage() {
 
      const { client, clientMember, tenant, admin } = await getViewer();
      if (!client && !clientMember && !tenant && !admin) {
-          logout()
-     };
+          redirect('/auth/login');
+     }
 
      if (tenant) {
           redirect('/dashboard/social/profile');

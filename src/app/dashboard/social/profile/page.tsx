@@ -4,7 +4,6 @@ import { getCurrentUserProfile, getTenantProfile, getTenantProfileByTenantId } f
 import { getActivePostsPaginatedByProfileId } from 'src/app/actions/social/post-actions';
 import { ClientProfileWrapper } from './client-wrapper';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
-import { logout } from 'src/app/auth/actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { getClientBuildingsForSocialProfile, type ClientBuildingOption } from 'src/app/actions/client/client-actions';
 import type { TenantProfile } from 'src/types/social';
@@ -19,7 +18,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
      const viewerClientId = client?.id ?? clientMember?.client_id ?? null;
 
      if (!client && !clientMember && !tenant && !admin) {
-          await logout();
+          return null;
      }
 
      let clientBuildings: ClientBuildingOption[] = [];

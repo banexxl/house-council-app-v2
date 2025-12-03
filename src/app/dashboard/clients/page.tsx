@@ -7,15 +7,14 @@ import { readAllClientsAction } from 'src/app/actions/client/client-actions';
 import { ClientListTable } from 'src/sections/dashboard/client/client-list-table';
 import { ClientTableHeader } from 'src/sections/dashboard/client/client-table-header';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 
 const Page = async () => {
 
   const { client, tenant, admin, clientMember } = await getViewer();
   if (!client && !tenant && !admin && !clientMember) {
-    logout()
-  };
+    redirect('/auth/login');
+  }
 
   if (tenant) {
     redirect('/dashboard/social/profile');

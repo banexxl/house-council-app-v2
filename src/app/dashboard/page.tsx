@@ -15,7 +15,10 @@ const Page = async () => {
 
   const { client, tenant, admin, clientMember } = await getViewer();
   if (!client && !tenant && !admin && !clientMember) {
-    await logout();
+    try {
+    } catch (err) {
+      console.warn('Logout failed, redirecting anyway', err);
+    }
     redirect('/auth/login');
   }
 

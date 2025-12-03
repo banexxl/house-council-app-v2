@@ -6,7 +6,6 @@ export default async function Page() {
 
      const { client, tenant, admin, clientMember } = await getViewer();
      if (!client && !tenant && !admin && !clientMember) {
-          await logout();
           redirect('/auth/login');
      }
 

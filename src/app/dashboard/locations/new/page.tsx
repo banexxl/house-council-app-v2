@@ -2,7 +2,6 @@
 
 import { getViewer } from "src/libs/supabase/server-auth";
 import NewLocation from "./new-location";
-import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 import { getAllAddedLocationsByClientId, getAllLocations, getAllOtherClientsLocations } from "src/app/actions/location/location-services";
 import { resolveClientFromClientOrMember } from "src/app/actions/client/client-members";
@@ -12,7 +11,6 @@ const Page = async () => {
 
      const { client, clientMember, tenant, admin, userData } = await getViewer();
      if (!client && !clientMember && !tenant && !admin) {
-          logout();
           redirect('/auth/login');
      }
 

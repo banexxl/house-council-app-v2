@@ -11,7 +11,7 @@ export default async function AnnouncementsPage() {
      const { client, tenant, admin, clientMember } = await getViewer();
 
      if (!client && !tenant && !admin && !clientMember) {
-          logout();
+          redirect('/auth/login');
      }
 
      if (!client && !clientMember) {

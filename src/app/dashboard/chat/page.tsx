@@ -17,7 +17,6 @@ export default async function Page() {
 
   // Redirect if not authenticated
   if (!client && !clientMember && !tenant && !admin) {
-    logout();
     redirect('/auth/login');
   }
 

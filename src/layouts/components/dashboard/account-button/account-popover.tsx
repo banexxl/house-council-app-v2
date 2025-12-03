@@ -49,17 +49,6 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
   }, []);
 
   const handleLogout = () => {
-
-
-    startTransition(async () => {
-      const { success, error } = await logout();
-      if (success) {
-        router.push(paths.auth.login);
-      } else {
-        console.error('Logout error:', error);
-      }
-    });
-
     // Proactively unsubscribe from all realtime channels to avoid stale events after logout
     const channels = supabaseBrowserClient.getChannels?.() || [];
     if (channels.length) {
@@ -67,6 +56,20 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
         console.warn('[realtime] channel cleanup error', e);
       });
     }
+
+    startTransition(async () => {
+      try {
+        // Fire server action, but don't block UX on its internal cookie write details
+        await supabaseBrowserClient.auth.signOut();
+        router.refresh();
+      } catch (err) {
+        // Ignore server digest / cookie errors – session might already be gone
+        console.warn('Logout server error (ignored):', err);
+      } finally {
+        // Always push to login; user is effectively logged out on this client
+        router.push(paths.auth.login);
+      }
+    });
 
     onClose?.();
   };

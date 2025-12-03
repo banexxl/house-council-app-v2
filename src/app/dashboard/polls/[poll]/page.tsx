@@ -13,7 +13,11 @@ export default async function PollCreatePage({ params }: Props) {
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
 
   if (!client && !clientMember && !tenant && !admin) {
-    logout();
+    try {
+    } catch (err) {
+      console.warn('Logout failed, continuing anyway', err);
+    }
+    redirect(paths.auth.login);
   }
 
   // Buildings for select lists

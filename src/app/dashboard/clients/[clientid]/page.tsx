@@ -6,7 +6,6 @@ import { ClientFormHeader } from 'src/sections/dashboard/client/clients-header'
 import { readClientByIdAction } from 'src/app/actions/client/client-actions'
 import { ClientForm } from 'src/sections/dashboard/client/client-form'
 import { getViewer } from 'src/libs/supabase/server-auth'
-import { logout } from 'src/app/auth/actions'
 import { ClientSubscription, SubscriptionPlan } from 'src/types/subscription-plan'
 import { readAllSubscriptionPlans, readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 
@@ -23,8 +22,8 @@ export default async function Page({ params }: {
 
   // Only admin can access this page
   if (!admin || tenant || client || clientMember) {
-    logout()
-  };
+    return null;
+  }
 
   if (admin) {
     const [clientSubscriptionResult, availableSubscriptionsResult] = await Promise.all([

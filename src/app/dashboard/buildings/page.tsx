@@ -14,7 +14,7 @@ export default async function Page() {
   let buildings: Building[] = [];
   const { client, clientMember, tenant, admin } = await getViewer();
   if (!client && !clientMember && !tenant && !admin) {
-    logout();
+    redirect('/auth/login');
   }
 
   if (admin) {

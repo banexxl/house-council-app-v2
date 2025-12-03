@@ -1,7 +1,6 @@
 import { readClientByIdAction } from 'src/app/actions/client/client-actions';
 import Account from './account';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import { ClientMember } from 'src/types/client';
 import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
@@ -25,8 +24,7 @@ const Page = async () => {
   const { client, tenant, admin, clientMember, userData } = await getViewer();
 
   if (!client && !tenant && !admin && !clientMember) {
-    logout();
-    return null;
+    redirect('/auth/login');
   }
 
   if (client) {

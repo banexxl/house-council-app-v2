@@ -8,15 +8,14 @@ import { readAllEntities } from 'src/app/actions/base-entity-actions';
 import { BillingInfoFormHeader } from 'src/sections/dashboard/client/billing-information/billing-information-form-header';
 import { BaseEntity } from 'src/types/base-entity';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 
 const Page = async () => {
 
   const { client, clientMember, tenant, admin } = await getViewer();
   if (!client && !clientMember && !tenant && !admin) {
-    logout()
-  };
+    redirect('/auth/login');
+  }
 
   if (tenant) {
     redirect('/dashboard/social/profile');

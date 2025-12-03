@@ -4,6 +4,7 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import Tenants from './tenants';
 import { redirect } from 'next/navigation';
 import { logout } from 'src/app/auth/actions';
+import { paths } from 'src/paths';
 
 
 export default async function TenantsPage() {
@@ -11,7 +12,7 @@ export default async function TenantsPage() {
   const { client, clientMember, tenant, admin, userData } = await getViewer();
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
   if (!client && !clientMember && !tenant && !admin) {
-    logout();
+    redirect(paths.auth.login);
   }
   let tenants: any[] = [];
   if (admin) {

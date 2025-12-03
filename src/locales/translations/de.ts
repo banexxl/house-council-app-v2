@@ -45,7 +45,7 @@ export const de = {
   [tokens.account.security.loginHistorySubtitle]: 'Ihre letzten Anmeldeaktivitäten',
   [tokens.common.editorStartTyping]: 'Beginnen Sie zu tippen...',
   [tokens.common.imageUploadRequirements]: 'Mind. 400×400px, PNG oder JPEG',
-  [tokens.common.userNotFound]: 'Benutzer nicht gefunden',
+  [tokens.common.userNotFound]: 'Benutzer nicht gefunden oder Authentifizierung fehlgeschlagen!',
   // WhatsApp Einladungen
   [tokens.clients.inviteToWhatsAppSandboxDescription]: 'Einladung an die Gebäudegruppe per WhatsApp senden',
   [tokens.clients.inviteToWhatsAppSandboxTitle]: 'WhatsApp-Einladung',

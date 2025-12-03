@@ -11,6 +11,8 @@ import { FeedPageHeader } from './client-header';
 import { FeedProfileMissing } from './client-profile-missing';
 import { Suspense } from 'react';
 import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
+import { logout } from 'src/app/auth/actions';
+import { redirect } from 'next/navigation';
 
 const FEED_PAGE_SIZE = 5;
 
@@ -20,6 +22,9 @@ const Page = async () => {
     getViewer(),
   ]);
   const profile = profileResult.success ? profileResult.data : null;
+  if (!viewer.client && !viewer.clientMember && !viewer.tenant && !viewer.admin) {
+    redirect('/auth/login');
+  }
   if (!profile && !viewer.admin && !viewer.client && !viewer.clientMember) {
     return (
       <>

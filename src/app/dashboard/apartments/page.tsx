@@ -14,7 +14,7 @@ export default async function Page() {
   const { client, clientMember, tenant, admin } = await getViewer();
   const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
   if (!client && !tenant && !admin && !clientMember) {
-    logout();
+    redirect(paths.auth.login);
   }
 
   if (admin) {

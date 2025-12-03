@@ -328,7 +328,7 @@ export const en = {
   [tokens.common.filterSearchByName]: 'Search by name',
   [tokens.common.filterSearchByAddress]: 'Search by address',
   [tokens.common.formNotChanged]: 'Form not changed',
-  [tokens.common.userNotFound]: 'User not found',
+  [tokens.common.userNotFound]: 'User not found or authentication failed!',
   [tokens.clients.avatarLabel]: 'Avatar',
   //#endregion
   // Clients

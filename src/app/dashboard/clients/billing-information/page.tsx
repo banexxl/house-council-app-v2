@@ -14,8 +14,8 @@ const Page = async () => {
 
   const { client, clientMember, tenant, admin } = await getViewer();
   if (!client && !clientMember && !tenant && !admin) {
-    logout()
-  };
+    redirect(paths.auth.login);
+  }
 
   if (tenant) {
     redirect('/dashboard/social/profile');
