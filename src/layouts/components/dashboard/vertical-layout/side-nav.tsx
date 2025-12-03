@@ -191,8 +191,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
             height: '100%',
           },
           '& .simplebar-placeholder': {
-            height: 0,
-            margin: 0,
+            height: 'auto !important',
           },
           '& .simplebar-scrollbar:before': {
             background: 'var(--nav-scrollbar-color)',
