@@ -21,6 +21,7 @@ import type { NavSection } from '../config';
 import { SideNavSection } from './side-nav-section';
 import { useTranslation } from 'react-i18next';
 import { RouterLink } from 'src/components/router-link';
+import { Scrollbar } from 'src/components/scrollbar';
 
 const SIDE_NAV_WIDTH = 280;
 
@@ -183,96 +184,100 @@ export const SideNav: FC<SideNavProps> = (props) => {
       }}
       variant="permanent"
     >
-      {/* <Scrollbar
+      <Scrollbar
         sx={{
           height: '100%',
           '& .simplebar-content': {
             height: '100%',
           },
+          '& .simplebar-placeholder': {
+            height: 0,
+            margin: 0,
+          },
           '& .simplebar-scrollbar:before': {
             background: 'var(--nav-scrollbar-color)',
           },
         }}
-      > */}
-      <Stack sx={{ height: '100%' }}>
-        <Box
-          component={RouterLink}
-          href={paths.index}
-          sx={{
-            alignItems: 'center',
-            display: 'flex',
-            p: 3,
-            textDecoration: 'none',
-          }}
-        >
-          <Logo
-            url='/assets/logo-icons/1-01.png'
-            alt='/assets/no-image.png'
-            width={40}
-            height={40}
-            style={{ transform: 'scale(2)' }}
-          />
+      >
+        <Stack sx={{ height: '100%' }}>
           <Box
+            component={RouterLink}
+            href={paths.index}
             sx={{
-              color: 'text.secondary',
-              fontSize: 20,
-              fontWeight: 800,
-              letterSpacing: '0.3px',
-              lineHeight: 2.5,
-              '& span': { color: 'primary.main' },
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'scale(1.05)' },
-              mb: 2,
-              ml: 0.5,
+              alignItems: 'center',
+              display: 'flex',
+              p: 3,
+              textDecoration: 'none',
             }}
           >
-            NestLink <span>APP</span>
-          </Box>
-        </Box>
-        <Stack
-          component="nav"
-
-          spacing={2}
-          sx={{
-            flexGrow: 1,
-            px: 2,
-          }}
-        >
-          {sections.map((section, index) => (
-            <SideNavSection
-              items={section.items}
-              key={index}
-              pathname={pathname}
-              subheader={section.subheader}
+            <Logo
+              url='/assets/logo-icons/1-01.png'
+              alt='/assets/no-image.png'
+              width={40}
+              height={40}
+              style={{ transform: 'scale(2)' }}
             />
-          ))}
+            <Box
+              sx={{
+                color: 'text.secondary',
+                fontSize: 20,
+                fontWeight: 800,
+                letterSpacing: '0.3px',
+                lineHeight: 2.5,
+                '& span': { color: 'primary.main' },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.05)' },
+                mb: 2,
+                ml: 0.5,
+              }}
+            >
+              NestLink <span>APP</span>
+            </Box>
+          </Box>
+          <Stack
+            component="nav"
+
+            spacing={2}
+            sx={{
+              flexGrow: 1,
+              px: 2,
+            }}
+          >
+            {sections.map((section, index) => (
+              <SideNavSection
+                items={section.items}
+                key={index}
+                pathname={pathname}
+                subheader={section.subheader}
+              />
+            ))}
+          </Stack>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="subtitle1">Need help?</Typography>
+            <Typography
+              color="neutral.400"
+              sx={{ mb: 2 }}
+              variant="body2"
+            >
+              Please check our docs.
+            </Typography>
+            <Button
+              component="a"
+              fullWidth
+              href={paths.docs}
+              startIcon={
+                <SvgIcon>
+                  <File04Icon />
+                </SvgIcon>
+              }
+              target="_blank"
+              variant="contained"
+            >
+              Documentation
+            </Button>
+          </Box>
         </Stack>
-        <Box sx={{ p: 3 }}>
-          <Typography variant="subtitle1">Need help?</Typography>
-          <Typography
-            color="neutral.400"
-            sx={{ mb: 2 }}
-            variant="body2"
-          >
-            Please check our docs.
-          </Typography>
-          <Button
-            component="a"
-            fullWidth
-            href={paths.docs}
-            startIcon={
-              <SvgIcon>
-                <File04Icon />
-              </SvgIcon>
-            }
-            target="_blank"
-            variant="contained"
-          >
-            Documentation
-          </Button>
-        </Box>
-      </Stack>
-      {/* </Scrollbar> */}
+      </Scrollbar>
     </Drawer>
   );
 };

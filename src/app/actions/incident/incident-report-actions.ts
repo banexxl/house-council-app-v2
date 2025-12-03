@@ -23,7 +23,6 @@ export const listIncidentReportsForClient = async (client_id: string | null): Pr
 
   const buildingListRes = await getAllBuildingsFromClient(client_id);
   const buildingIds = Array.isArray(buildingListRes.data) ? buildingListRes.data.map(b => b.id) : [];
-  log(`Building list result for client ${client_id}: ${JSON.stringify(buildingListRes)}`);
   if (buildingListRes.success && buildingListRes.data?.length) {
     return listIncidentReports({ buildingIds });
   }

@@ -54,6 +54,13 @@ export const MobileNav: FC<MobileNavProps> = (props) => {
       <Scrollbar
         sx={{
           flex: 1,
+          '& .simplebar-content': {
+            height: '100%',
+          },
+          '& .simplebar-placeholder': {
+            height: 0,
+            margin: 0,
+          },
           '& .simplebar-scrollbar:before': {
             background: theme.palette.neutral[400],
           },
