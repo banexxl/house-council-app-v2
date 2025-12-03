@@ -2,9 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { getViewer } from 'src/libs/supabase/server-auth';
 import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
 import { getAllBuildingsFromClient, getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
@@ -104,8 +103,8 @@ export const getIncidentReportById = async (
   };
   if (!mapped.building_label && mapped.building_id) {
     try {
-      const admin = await useServerSideSupabaseServiceRoleClient();
-      const { data: loc } = await admin
+      const supabase = await useServerSideSupabaseAnonClient();
+      const { data: loc } = await supabase
         .from(TABLES.BUILDING_LOCATIONS!)
         .select('street_address, street_number, city')
         .eq('building_id', mapped.building_id)
@@ -193,8 +192,8 @@ export const listIncidentReports = async (filters?: {
   const uniqueMissing = Array.from(new Set(missingBuildingIds));
   if (uniqueMissing.length) {
     try {
-      const admin = await useServerSideSupabaseServiceRoleClient();
-      const { data: locs } = await admin
+      const supabase = await useServerSideSupabaseAnonClient();
+      const { data: locs } = await supabase
         .from(TABLES.BUILDING_LOCATIONS!)
         .select('building_id, street_address, street_number, city')
         .in('building_id', uniqueMissing);
