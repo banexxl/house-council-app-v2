@@ -143,6 +143,7 @@ const Page = () => {
                 />
                 <Divider />
                 <Tabs
+                  allowScrollButtonsMobile
                   indicatorColor="primary"
                   onChange={handleTabsChange}
                   scrollButtons="auto"

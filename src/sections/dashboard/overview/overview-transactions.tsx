@@ -87,6 +87,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
             borderRadius: 3,
           }
         })}
+        allowScrollButtonsMobile
         onChange={handleChangeStatus}
         variant="scrollable"
       >

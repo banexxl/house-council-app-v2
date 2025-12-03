@@ -111,7 +111,7 @@ export const OverviewSubscriptionUsage: FC<OverviewSubscriptionUsageProps> = (pr
         subheader="Based on the selected period"
         title="Subscription Usage"
         action={
-          <Tabs value="year">
+          <Tabs allowScrollButtonsMobile value="year">
             <Tab
               label="Year"
               value="year"

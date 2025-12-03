@@ -692,6 +692,7 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                     {/* Tabs for Active/Closed Polls - Mobile Only */}
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', display: { xs: 'block', md: 'none' } }}>
                          <Tabs
+                              allowScrollButtonsMobile
                               value={tabValue}
                               onChange={(_, newValue) => setTabValue(newValue)}
                               slotProps={{

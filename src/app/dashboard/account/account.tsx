@@ -82,6 +82,7 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                    }}
                               >
                                    <Tabs
+                                        allowScrollButtonsMobile
                                         orientation="vertical"
                                         value={currentTab}
                                         onChange={handleTabsChange}

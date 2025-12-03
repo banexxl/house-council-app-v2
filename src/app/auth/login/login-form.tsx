@@ -83,7 +83,7 @@ const LoginForm = () => {
                          Choose your preferred login method
                     </Typography>
                </Stack>
-               <Tabs value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
+               <Tabs allowScrollButtonsMobile value={authMethod} onChange={handleAuthMethodChange} variant="fullWidth" sx={{ mb: 3 }}>
                     <Tab value="password" label="Password" />
                     <Tab value="google" label="Google" />
                     <Tab value="magic_link" label="Magic Link" />
