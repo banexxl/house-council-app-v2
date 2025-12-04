@@ -11,6 +11,9 @@ import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { createPollPublishNotification } from 'src/utils/notification';
 import { BaseNotification } from 'src/types/notification';
 import { emitNotifications } from '../notification/emit-notification';
+import { sendViaEmail } from '../notification/senders';
+import { buildNotificationGenericHtml } from 'src/libs/email/messages/notification-generic';
+import { tokens } from 'src/locales/tokens';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -185,12 +188,12 @@ export async function deletePoll(id: string): Promise<{ success: boolean; error?
     return { success: true };
 }
 
-export async function closePoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
-    return updatePollStatus(id, 'closed');
+export async function closePoll(id: string, locale: string = 'rs'): Promise<{ success: boolean; error?: string; data?: Poll }> {
+    return updatePollStatus(id, 'closed', locale);
 }
 
-export async function reopenPoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
-    return updatePollStatus(id, 'active');
+export async function reopenPoll(id: string, locale: string = 'rs'): Promise<{ success: boolean; error?: string; data?: Poll }> {
+    return updatePollStatus(id, 'active', locale);
 }
 
 /**
@@ -251,7 +254,7 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
 /**
  * Generic function to update poll status
  */
-export async function updatePollStatus(id: string, status: PollStatus): Promise<{ success: boolean; error?: string; data?: Poll }> {
+export async function updatePollStatus(id: string, status: PollStatus, locale: string = 'rs'): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
 
@@ -311,6 +314,7 @@ export async function updatePollStatus(id: string, status: PollStatus): Promise<
                         });
                         return notification as unknown as BaseNotification[];
                     }) as any[];
+                    console.log('rows', rows);
 
                     if (rows.length) {
                         const emitted = await emitNotifications(rows);
@@ -318,6 +322,67 @@ export async function updatePollStatus(id: string, status: PollStatus): Promise<
                             await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
                         } else {
                             await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+                        }
+
+                        // Additionally send email notifications to all tenants of targeted buildings
+                        console.log('tenants', tenants);
+                        if (tenants && tenants.length) {
+                            const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+                            const pollPath = `/dashboard/polls/${id}`;
+
+                            // Build heading and subheading using translations if available
+                            const i18n = (await import('i18next')).default;
+
+                            if (locale) {
+                                await i18n.changeLanguage(locale);
+                            }
+
+                            const subject = i18n.t('email.pollPublishedTitle');
+
+                            const firstTenant = tenants[0] as any;
+                            const firstBuilding = firstTenant?.apartment?.building;
+                            console.log('firstBuilding', firstBuilding);
+
+                            const buildingAddressParts = [
+                                firstBuilding?.street_address,
+                                firstBuilding?.city,
+                            ].filter(Boolean);
+                            const buildingAddress = buildingAddressParts.join(', ');
+
+                            const subheading = buildingAddress
+                                ? i18n.t('email.pollPublishedSubtitleForBuilding', { address: buildingAddress })
+                                : '';
+
+                            const description = annRow?.description || '';
+
+                            const intro = i18n.t('email.pollPublishedBodyIntro');
+                            const descriptionLabel = i18n.t('email.pollPublishedBodyDescriptionLabel');
+                            const ctaLabel = i18n.t('email.pollPublishedBodyCta');
+
+                            const injectedHtml = `
+                                                            <p>${intro}</p>
+                                                            <p><strong>${annRow?.title || ''}</strong></p>
+                                                            ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
+                                                            <p>
+                                                                <a href="${appBaseUrl}${pollPath}">
+                                                                    ${ctaLabel}
+                                                                </a>
+                                                            </p>
+                                                        `;
+
+                            const html = buildNotificationGenericHtml(injectedHtml, subject, subheading);
+
+                            for (const tenant of tenants) {
+                                const email = (tenant as any).email
+                                    || (tenant as any).user?.email
+                                    || (tenant as any).apartment?.tenant_email
+                                    || (tenant as any).apartment?.building?.client?.email;
+                                if (!email) continue;
+
+                                // Fire and forget per-tenant; failures are already logged inside sendViaEmail
+                                // eslint-disable-next-line no-void
+                                void sendViaEmail(email, subject, html);
+                            }
                         }
                     }
                 }

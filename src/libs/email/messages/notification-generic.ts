@@ -1,10 +1,14 @@
-export const buildNotificationGenericHtml = (injectedHtml: string): string => `
+export const buildNotificationGenericHtml = (
+  injectedHtml: string,
+  heading: string = 'Notification',
+  subheading: string = ''
+): string => `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thank You Email</title>
+  <title>${heading}</title>
   <style>
     body { margin: 0; padding: 0; background-color: #f68a00; }
     table { border-spacing: 0; font-family: Arial, sans-serif; }
@@ -26,10 +30,12 @@ export const buildNotificationGenericHtml = (injectedHtml: string): string => `
       <table role="presentation" class="main">
         <tr>
           <td style="padding: 40px 20px; text-align: center;">
-            <h1 style="font-size: 48px; font-weight: 300; margin: 0;">Thank You</h1>
-            <h2 style="font-size: 24px; margin: 10px 0 20px;">FOR CHOOSING US!</h2>
+            <h1 style="font-size: 32px; font-weight: 600; margin: 0;">${heading}</h1>
+            ${subheading ? `<h2 style="font-size: 18px; margin: 10px 0 20px; font-weight: 400;">${subheading}</h2>` : ''}
 
-            ${injectedHtml}
+            <div style="text-align: left; font-size: 14px; line-height: 1.6; margin-top: 10px;">
+              ${injectedHtml}
+            </div>
 
             <table role="presentation" width="100%" style="margin-top: 40px;">
               <tr>
@@ -37,8 +43,8 @@ export const buildNotificationGenericHtml = (injectedHtml: string): string => `
                   <table role="presentation" width="100%">
                     <tr>
                       <td>
-                        <h3 style="font-style: italic; font-weight: bold;">A heartfelt thank you</h3>
-                        <p style="font-size: 14px;">We truly appreciate your trust and support—it means the world to us.</p>
+                        <h3 style="font-style: italic; font-weight: bold;">Thank you for choosing us!</h3>
+                        <p style="font-size: 14px;">We appreciate your trust and support!</p>
                       </td>
                     </tr>
                   </table>

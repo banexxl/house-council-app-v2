@@ -179,6 +179,12 @@ export const de = {
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Neue Ankündigung veröffentlicht',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Kalenderereignis veröffentlicht',
   [tokens.notifications.actions.notificationActionPollPublished]: 'Neue Umfrage veröffentlicht',
+  // Email
+  [tokens.email.pollPublishedTitle]: 'Neue Umfrage wurde veröffentlicht',
+  [tokens.email.pollPublishedSubtitleForBuilding]: 'für das Gebäude {{address}}',
+  [tokens.email.pollPublishedBodyIntro]: 'Eine neue Umfrage wurde für Ihr Gebäude veröffentlicht.',
+  [tokens.email.pollPublishedBodyDescriptionLabel]: 'Beschreibung der Umfrage',
+  [tokens.email.pollPublishedBodyCta]: 'Umfrage ansehen und abstimmen',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Prozentsatz der Stimmen, der zur Annahme des Vorschlags erforderlich ist (Supermajorität).',
   [tokens.polls.help.threshold_percent]: 'Mindestprozentsatz, den eine Option erreichen muss, um berücksichtigt zu werden (Schwellenwert).',

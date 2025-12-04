@@ -2,7 +2,7 @@
 import { tokens } from 'src/locales/tokens';
 
 export type NotificationType =
-     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'calendar' | 'announcement' | 'social' | 'other';
+     'all' | 'system' | 'message' | 'reminder' | 'alert' | 'calendar' | 'announcement' | 'social' | 'poll' | 'other';
 
 export type NotificationChannel = 'whatsapp' | 'email' | 'push' | 'sms';
 
@@ -29,6 +29,7 @@ export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'alert', labelToken: tokens.notifications.tabs.alert },
      { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
      { value: 'social', labelToken: tokens.notifications.tabs.social },
+     { value: 'poll', labelToken: tokens.notifications.tabs.poll },
      { value: 'other', labelToken: tokens.notifications.tabs.other },
 ] as const;
 

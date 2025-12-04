@@ -131,8 +131,7 @@ export const sendNotificationEmail = async (
   html: string,
   textFallback?: string
 ): Promise<{ ok: boolean; error?: string }> => {
-  const injected = html ? `<p style="font-size: 16px;">${html}</p>` : '';
-  const htmlContent = buildNotificationGenericHtml(injected);
+  const htmlContent = buildNotificationGenericHtml(html, subject);
 
   try {
     const info = await transporter.sendMail({

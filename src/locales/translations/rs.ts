@@ -233,6 +233,12 @@ export const rs = {
    [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Objavljeno novo obaveštenje',
    [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Objavljen događaj u kalendaru',
    [tokens.notifications.actions.notificationActionPollPublished]: 'Objavljena je nova anketa',
+   // Email
+   [tokens.email.pollPublishedTitle]: 'Objavljena je nova anketa',
+   [tokens.email.pollPublishedSubtitleForBuilding]: 'za zgradu {{address}}',
+   [tokens.email.pollPublishedBodyIntro]: 'Objavljena je nova anketa za vašu zgradu.',
+   [tokens.email.pollPublishedBodyDescriptionLabel]: 'Opis ankete',
+   [tokens.email.pollPublishedBodyCta]: 'Pogledajte i glasajte u anketi',
    // Polls help (additional)
    [tokens.polls.help.supermajority_percent]: 'Procenat glasova potreban za odobravanje predloga...',
    [tokens.polls.help.threshold_percent]: 'Minimalan procenat glasova potreban da bi opcija bila uzeta u obzir...',

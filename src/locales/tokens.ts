@@ -1266,6 +1266,7 @@ export const tokens = {
       announcement: 'notifications.tabs.announcement',
       social: 'notifications.tabs.social',
       other: 'notifications.tabs.other',
+      poll: 'notifications.tabs.poll',
     },
     col: {
       title: 'notifications.col.title',
@@ -1283,6 +1284,13 @@ export const tokens = {
         reactionAdded: 'notifications.social.reactionAdded',
       },
     }
+  },
+  email: {
+    pollPublishedTitle: 'email.pollPublishedTitle',
+    pollPublishedSubtitleForBuilding: 'email.pollPublishedSubtitleForBuilding',
+    pollPublishedBodyIntro: 'email.pollPublishedBodyIntro',
+    pollPublishedBodyDescriptionLabel: 'email.pollPublishedBodyDescriptionLabel',
+    pollPublishedBodyCta: 'email.pollPublishedBodyCta',
   },
   announcements: {
     status: {

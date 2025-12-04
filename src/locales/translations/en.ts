@@ -951,6 +951,12 @@ export const en = {
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Announcement published',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Calendar event published',
   [tokens.notifications.actions.notificationActionPollPublished]: 'Poll published',
+  // Email
+  [tokens.email.pollPublishedTitle]: 'New poll has been published',
+  [tokens.email.pollPublishedSubtitleForBuilding]: 'for building {{address}}',
+  [tokens.email.pollPublishedBodyIntro]: 'A new poll has been published for your building.',
+  [tokens.email.pollPublishedBodyDescriptionLabel]: 'Poll description',
+  [tokens.email.pollPublishedBodyCta]: 'View and vote in the poll',
   // Announcements
   [tokens.announcements.managementTitle]: 'Announcements Management',
   [tokens.announcements.createNew]: 'Create New Announcement',
