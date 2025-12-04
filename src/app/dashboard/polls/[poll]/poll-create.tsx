@@ -97,7 +97,7 @@ export default function PollCreate({
      poll,
      votes = [],
 }: Props) {
-     const { t } = useTranslation();
+     const { t, i18n } = useTranslation();
      const router = useRouter();
      const [saving, setSaving] = useState(false);
      const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
@@ -154,7 +154,7 @@ export default function PollCreate({
                const successMessage = messages?.success ?? `${statusLabel} status applied`;
                const errorMessage = messages?.error ?? `Failed to set status ${statusLabel}`;
                try {
-                    const { success, error } = await updatePollStatusAction(poll.id, status);
+                    const { success, error } = await updatePollStatusAction(poll.id, status, i18n.language);
                     if (!success) throw new Error(error || errorMessage);
                     toast.success(successMessage);
                     router.refresh();
@@ -164,7 +164,7 @@ export default function PollCreate({
                     setSaving(false);
                }
           },
-          [poll, router, t]
+          [poll, router, t, i18n.language]
      );
 
      const handlePublishPoll = useCallback(async () => {
@@ -1811,8 +1811,14 @@ export default function PollCreate({
                                    </CardContent>
                               </Card>
                          )}
-
-                         <Stack direction="row" spacing={2} justifyContent="flex-start" sx={{ mb: 2 }}>
+                         {/* Action buttons and status changers */}
+                         <Stack
+                              direction={{ xs: 'column', sm: 'row' }}
+                              spacing={2}
+                              justifyContent="flex-start"
+                              alignItems={{ xs: 'stretch', sm: 'center' }}
+                              sx={{ mb: 2 }}
+                         >
                               <Box sx={{ mt: 0.5 }}>
                                    <Tooltip title={t('polls.help.openInfo') || 'More info'}>
                                         <IconButton size="small" onClick={() => setSubmitInfoOpen(true)}>
@@ -1820,9 +1826,17 @@ export default function PollCreate({
                                         </IconButton>
                                    </Tooltip>
                               </Box>
-                              <Button variant="outlined" onClick={() => router.push(paths.dashboard.polls.index)}>
+
+                              <Button
+                                   variant="outlined"
+                                   onClick={() => router.push(paths.dashboard.polls.index)}
+                                   sx={{
+                                        width: { xs: '100%', sm: 'auto' },
+                                   }}
+                              >
                                    {t('common.btnBack') || 'Back'}
                               </Button>
+
                               <Tooltip
                                    title={
                                         <Box>
@@ -1833,7 +1847,6 @@ export default function PollCreate({
                                                        </Typography>
                                                        <List dense>
                                                             {Object.entries(formik.errors).map(([key, err]) => {
-                                                                 // Use pollSchemaTranslationTokens for translation key lookup
                                                                  const schemaToken = pollSchemaTranslationTokens[key];
                                                                  const label = schemaToken ? t(schemaToken) : key;
                                                                  return (
@@ -1864,19 +1877,38 @@ export default function PollCreate({
                                    placement="top"
                                    disableHoverListener={formik.isValid && formik.dirty && !formik.isSubmitting && !isFormLocked}
                               >
-                                   <span>
+                                   <Box
+                                        component="span"
+                                        sx={{
+                                             width: { xs: '100%', sm: 'auto' }, // make tooltip child stretch on mobile
+                                        }}
+                                   >
                                         <Button
                                              variant="contained"
                                              type="submit"
                                              loading={saving}
                                              disabled={isFormLocked || !formik.dirty || !formik.isValid}
+                                             fullWidth
+                                             sx={{
+                                                  width: { xs: '100%', sm: 'auto' },
+                                             }}
                                         >
                                              {t('common.btnSave')}
                                         </Button>
-                                   </span>
+                                   </Box>
                               </Tooltip>
+
                               {poll?.id && availableStatuses.length > 0 && (
-                                   <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ ml: 1 }}>
+                                   <Box
+                                        sx={{
+                                             ml: { xs: 0, sm: 1 },
+                                             mt: { xs: 2, sm: 0 },
+                                             display: 'grid',
+                                             gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(2, minmax(0, 1fr))' },
+                                             gap: 1,
+                                             width: { xs: '100%', sm: 'auto' },
+                                        }}
+                                   >
                                         {availableStatuses.map((status) => {
                                              const fallbackLabel = status.charAt(0).toUpperCase() + status.slice(1);
                                              const statusLabel = t(`polls.status.actions.${status}`, { defaultValue: fallbackLabel });
@@ -1886,39 +1918,34 @@ export default function PollCreate({
                                                   ((status === 'scheduled' || status === 'active') && (hasErrors || !hasAtLeastOneOption));
                                              const disableReason = isDisabled ? getDisableReason(status) : '';
 
-                                             // Show tooltips for schedule and activate buttons when disabled
-                                             if ((status === 'scheduled' || status === 'active') && isDisabled && disableReason) {
-                                                  return (
-                                                       <Tooltip key={status} title={disableReason} placement="top">
-                                                            <span>
-                                                                 <Button
-                                                                      variant="outlined"
-                                                                      color="primary"
-                                                                      disabled={isDisabled}
-                                                                      onClick={() => handleStatusClick(status)}
-                                                                 >
-                                                                      {statusLabel}
-                                                                 </Button>
-                                                            </span>
-                                                       </Tooltip>
-                                                  );
-                                             }
-
-                                             return (
+                                             const button = (
                                                   <Button
                                                        key={status}
                                                        variant="outlined"
                                                        color="primary"
                                                        disabled={isDisabled}
                                                        onClick={() => handleStatusClick(status)}
+                                                       fullWidth
                                                   >
                                                        {statusLabel}
                                                   </Button>
                                              );
+
+                                             if ((status === 'scheduled' || status === 'active') && isDisabled && disableReason) {
+                                                  return (
+                                                       <Tooltip key={status} title={disableReason} placement="top">
+                                                            <span>{button}</span>
+                                                       </Tooltip>
+                                                  );
+                                             }
+
+                                             return button;
                                         })}
-                                   </Stack>
+                                   </Box>
                               )}
                          </Stack>
+
+
                          {/* Show error list below buttons on mobile */}
                          <Grid sx={{ display: { xs: 'block', md: 'none' }, mt: 2 }}>
                               {(!formik.isValid || !formik.dirty || formik.isSubmitting) && (
