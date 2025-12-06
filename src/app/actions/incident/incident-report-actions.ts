@@ -9,6 +9,10 @@ import { getAllBuildingsFromClient, getBuildingIDsFromUserId } from 'src/app/act
 import log from 'src/utils/logger';
 import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
 import { sendViaEmail } from 'src/app/actions/notification/senders';
+import { emitNotifications } from 'src/app/actions/notification/emit-notification';
+import { createIncidentNotification } from 'src/utils/notification';
+import type { BaseNotification } from 'src/types/notification';
+import { readAllTenantsFromBuildingIds } from 'src/app/actions/tenant/tenant-actions';
 
 export const listIncidentReportsForClient = async (client_id: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
 
@@ -32,7 +36,6 @@ export const createIncidentReport = async (
 ): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
   const started = Date.now();
   const supabase = await useServerSideSupabaseAnonClient();
-
   const { data, error } = await supabase
     .from(TABLES.INCIDENT_REPORTS!)
     .insert(payload)
@@ -66,57 +69,158 @@ export const createIncidentReport = async (
   try {
     const t = await getServerI18n(locale || 'rs');
 
-    const subject = t(serverTokens.email.incidentCreatedTitle) ?? 'New service request created';
-    const intro = t(serverTokens.email.incidentCreatedBodyIntro) ?? 'A new service request has been created for your building.';
+    const subject =
+      t(serverTokens.email.incidentCreatedTitle) ||
+      'New service request created';
+
+    const intro =
+      t(serverTokens.email.incidentCreatedBodyIntro) ||
+      'A new service request has been created for your building.';
+
     const descriptionLabel =
-      t(serverTokens.email.incidentCreatedBodyDescriptionLabel) ?? 'Request details';
-    const ctaLabel = t(serverTokens.email.incidentCreatedBodyCta) ?? 'View request';
+      t(serverTokens.email.incidentCreatedBodyDescriptionLabel) ||
+      'Request details';
+
+    const ctaLabel =
+      t(serverTokens.email.incidentCreatedBodyCta) ||
+      'View request';
 
     const title = (data as any)?.title ?? '';
     const description = (data as any)?.description ?? '';
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.nest-link.app';
-    const ctaHref = `${baseUrl}/dashboard/service-requests/${(data as any)?.id}`;
+    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
 
     const injectedHtml = `
       <p>${intro}</p>
-      <h2>${title}</h2>
-      <p><strong>${descriptionLabel}:</strong></p>
-      <p>${description}</p>
+      <p><strong>${title}</strong></p>
+      ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
       <p>
-        <a href="${ctaHref}" target="_blank" rel="noopener noreferrer">${ctaLabel}</a>
+        <a href="${appBaseUrl}${incidentPath}">
+          ${ctaLabel}
+        </a>
       </p>
     `;
 
+    const incidentBuildingId = (data as any)?.building_id as string | null;
+    const incidentClientId = (data as any)?.client_id as string | null;
     const reporterId = (data as any)?.reported_by as string | null;
 
+    // 1) Send emails to all tenants in the incident's building using shared helper
+    if (incidentBuildingId) {
+      const { data: tenants, error: tenantsError } = await readAllTenantsFromBuildingIds([incidentBuildingId]);
+      if (tenantsError) {
+        log(`Error reading tenants for incident email: ${tenantsError}`);
+      }
+      if (tenants && tenants.length) {
+        for (const tenant of tenants as any[]) {
+          const email = tenant.email
+            || tenant.user?.email
+            || tenant.apartment?.tenant_email
+            || tenant.apartment?.building?.client?.email;
+          if (!email) continue;
+          // eslint-disable-next-line no-void
+          void sendViaEmail(email, subject, injectedHtml);
+        }
+      }
+    }
+
+    // 2) Send email to the client for this incident (if any)
+    if (incidentClientId) {
+      const { data: client } = await supabase
+        .from(TABLES.CLIENTS!)
+        .select('email')
+        .eq('id', incidentClientId)
+        .maybeSingle();
+
+      const clientEmail = (client as any)?.email as string | undefined;
+      if (clientEmail) {
+        // eslint-disable-next-line no-void
+        void sendViaEmail(clientEmail, subject, injectedHtml);
+      }
+    }
+
+    // 3) Send emails to all client members attached to that client
+    if (incidentClientId) {
+      const { data: clientMembers } = await supabase
+        .from(TABLES.CLIENT_MEMBERS!)
+        .select('email, client_id')
+        .eq('client_id', incidentClientId);
+
+      if (clientMembers && clientMembers.length) {
+        for (const member of clientMembers as any[]) {
+          const email = member.email as string | undefined;
+          if (!email) continue;
+          // eslint-disable-next-line no-void
+          void sendViaEmail(email, subject, injectedHtml);
+        }
+      }
+    }
+
+    // 4) Also create an in-app notification for the reporter (if we can resolve them)
     if (reporterId) {
       const { data: reporterTenant } = await supabase
         .from(TABLES.TENANTS!)
-        .select('email')
+        .select('user_id')
         .eq('id', reporterId)
         .maybeSingle();
 
       const { data: reporterClientMember } = await supabase
         .from(TABLES.CLIENT_MEMBERS!)
-        .select('email')
+        .select('user_id')
         .eq('id', reporterId)
         .maybeSingle();
 
       const { data: reporterClient } = await supabase
         .from(TABLES.CLIENTS!)
-        .select('email')
+        .select('user_id')
         .eq('id', reporterId)
         .maybeSingle();
 
-      const reporterEmail =
-        (reporterTenant as any)?.email ||
-        (reporterClientMember as any)?.email ||
-        (reporterClient as any)?.email ||
-        null;
+      const createdAtISO = new Date().toISOString();
+      const building_id = incidentBuildingId || '';
+      const user_id =
+        (reporterTenant as any)?.user_id ||
+        (reporterClientMember as any)?.user_id ||
+        (reporterClient as any)?.user_id ||
+        reporterId;
 
-      if (reporterEmail) {
-        await sendViaEmail(reporterEmail, subject, injectedHtml);
+      if (building_id && user_id) {
+        const incidentNotification = createIncidentNotification({
+          action_token: 'notifications.actions.notificationActionIncidentCreated',
+          description,
+          created_at: createdAtISO,
+          is_read: false,
+          incident_id: (data as any)?.id,
+          building_id,
+          user_id,
+          url: incidentPath,
+          title,
+        });
+
+        const rows = [incidentNotification] as unknown as BaseNotification[];
+        const emitted = await emitNotifications(rows as any);
+        if (!emitted.success) {
+          await logServerAction({
+            user_id: null,
+            action: 'incident.create.notifications',
+            duration_ms: 0,
+            error: emitted.error || 'emitFailed',
+            payload: { incident_id: (data as any)?.id, reporterId },
+            status: 'fail',
+            type: 'db',
+          });
+        } else {
+          await logServerAction({
+            user_id: null,
+            action: 'incident.create.notifications',
+            duration_ms: 0,
+            error: '',
+            payload: { incident_id: (data as any)?.id, reporterId },
+            status: 'success',
+            type: 'db',
+          });
+        }
       }
     }
   } catch (err) {
@@ -226,7 +330,7 @@ export const listIncidentReports = async (filters?: {
 
   const { data, error } = await query;
   if (error) {
-    console.log(`Error listing incident reports with payload: ${JSON.stringify(filters)}: ${error.message}`);
+    log(`Error listing incident reports with payload: ${JSON.stringify(filters)}: ${error.message}`);
     await logServerAction({
       user_id: null,
       action: 'incident.list',
@@ -243,10 +347,12 @@ export const listIncidentReports = async (filters?: {
     building_label: row?.building?.name ?? null,
     apartment_number: row?.apartment?.apartment_number ?? null,
   }));
+
   const missingBuildingIds = mapped
     .filter((m) => !m.building_label && m.building_id)
     .map((m) => m.building_id);
   const uniqueMissing = Array.from(new Set(missingBuildingIds));
+
   if (uniqueMissing.length) {
     try {
       const supabase = await useServerSideSupabaseAnonClient();

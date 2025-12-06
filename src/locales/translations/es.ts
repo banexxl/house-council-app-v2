@@ -163,6 +163,8 @@ export const es = {
   [tokens.notifications.tabs.announcement]: 'Anuncios',
   [tokens.notifications.tabs.social]: 'Social',
   [tokens.notifications.tabs.other]: 'Otros',
+  [tokens.notifications.tabs.incident]: 'Incidente',
+  [tokens.notifications.tabs.poll]: 'Encuesta',
   [tokens.notifications.col.title]: 'Título',
   [tokens.notifications.col.message]: 'Mensaje',
   [tokens.notifications.col.created]: 'Creado',

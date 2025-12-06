@@ -12,8 +12,6 @@ import { createPollPublishNotification } from 'src/utils/notification';
 import { BaseNotification } from 'src/types/notification';
 import { emitNotifications } from '../notification/emit-notification';
 import { sendViaEmail } from '../notification/senders';
-import { buildNotificationGenericHtml } from 'src/libs/email/messages/notification-generic';
-import { tokens } from 'src/locales/tokens';
 import log from 'src/utils/logger';
 
 /**

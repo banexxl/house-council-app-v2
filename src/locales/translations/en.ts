@@ -935,6 +935,8 @@ export const en = {
   [tokens.notifications.tabs.announcement]: 'Announcement',
   [tokens.notifications.tabs.social]: 'Social',
   [tokens.notifications.tabs.other]: 'Other',
+  [tokens.notifications.tabs.poll]: 'Poll',
+  [tokens.notifications.tabs.incident]: 'Incident',
   [tokens.notifications.col.title]: 'Title',
   [tokens.notifications.col.message]: 'Message',
   [tokens.notifications.col.created]: 'Created',

@@ -313,8 +313,6 @@ export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ succe
                .from(TABLES.TENANTS!)
                .select('apartment_id')
                .eq('user_id', user_id);
-          log(`tenantRows ${JSON.stringify(tenantRows)}`);
-          log(`tenantErr ${JSON.stringify(tenantErr)}`);
           if (tenantErr) {
                log(`Error fetching tenant rows for user_id ${user_id}: ${tenantErr.message}`);
                await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: tenantErr.message, payload: { user_id }, status: 'fail', type: 'db', user_id: null, id: '' });

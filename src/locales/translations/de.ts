@@ -163,6 +163,8 @@ export const de = {
   [tokens.notifications.tabs.announcement]: 'Ankündigungen',
   [tokens.notifications.tabs.social]: 'Sozial',
   [tokens.notifications.tabs.other]: 'Andere',
+  [tokens.notifications.tabs.poll]: 'Umfragen',
+  [tokens.notifications.tabs.incident]: 'Serviceaufträge',
   [tokens.notifications.col.title]: 'Titel',
   [tokens.notifications.col.message]: 'Nachricht',
   [tokens.notifications.col.created]: 'Erstellt',

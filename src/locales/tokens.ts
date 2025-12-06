@@ -1267,6 +1267,7 @@ export const tokens = {
       social: 'notifications.tabs.social',
       other: 'notifications.tabs.other',
       poll: 'notifications.tabs.poll',
+      incident: 'notifications.tabs.incident',
     },
     col: {
       title: 'notifications.col.title',
