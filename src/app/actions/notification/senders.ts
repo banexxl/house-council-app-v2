@@ -9,6 +9,7 @@ export async function sendViaEmail(
      subject: string,
      html: string
 ): Promise<{ ok: boolean; id?: string; error?: string }> {
+     log(`sendViaEmail: to=${to} subject=${subject}`);
      try {
           // Implement with your mailer of choice (Nodemailer/Ses/Resend). Example signature:
           // const id = await mailer.send({ to, subject, html });

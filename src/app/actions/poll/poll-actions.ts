@@ -14,6 +14,7 @@ import { emitNotifications } from '../notification/emit-notification';
 import { sendViaEmail } from '../notification/senders';
 import { buildNotificationGenericHtml } from 'src/libs/email/messages/notification-generic';
 import { tokens } from 'src/locales/tokens';
+import log from 'src/utils/logger';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -257,6 +258,7 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
 export async function updatePollStatus(id: string, status: PollStatus, locale: string = 'rs'): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
+    console.log('locale', locale);
 
     // Prepare update payload based on status
     const updatePayload: Partial<Poll> = { status };
@@ -332,10 +334,20 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 
                             // Build heading and subheading using translations if available
                             const i18n = (await import('i18next')).default;
+                            console.log('i18n', i18n);
 
-                            if (locale) {
-                                await i18n.changeLanguage(locale);
+                            try {
+                                if (locale) {
+                                    console.log('changing language to', locale);
+                                    await i18n.changeLanguage(locale);
+                                    console.log('language changed');
+                                } else {
+                                    console.log('no locale provided, using default');
+                                }
+                            } catch (e) {
+                                console.error('changeLanguage failed', e);
                             }
+                            console.log('bbbbbbbbbb');
 
                             const subject = i18n.t('email.pollPublishedTitle');
 
@@ -370,9 +382,10 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                                                             </p>
                                                         `;
 
-                            const html = buildNotificationGenericHtml(injectedHtml, subject, subheading);
-
+                            // Pass only the inner body HTML here; sendViaEmail/sendNotificationEmail
+                            // will wrap it once with buildNotificationGenericHtml to avoid double headers/footers.
                             for (const tenant of tenants) {
+                                log(`sending email to tenant ${JSON.stringify(tenant)}`);
                                 const email = (tenant as any).email
                                     || (tenant as any).user?.email
                                     || (tenant as any).apartment?.tenant_email
@@ -381,7 +394,7 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 
                                 // Fire and forget per-tenant; failures are already logged inside sendViaEmail
                                 // eslint-disable-next-line no-void
-                                void sendViaEmail(email, subject, html);
+                                void sendViaEmail(email, subject, injectedHtml);
                             }
                         }
                     }
