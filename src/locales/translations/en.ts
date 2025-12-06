@@ -961,6 +961,10 @@ export const en = {
   [tokens.email.announcementPublishedBodyIntro]: 'A new announcement has been published for your building.',
   [tokens.email.announcementPublishedBodyDescriptionLabel]: 'Announcement',
   [tokens.email.announcementPublishedBodyCta]: 'View the full announcement',
+  [tokens.email.incidentCreatedTitle]: 'New service request created',
+  [tokens.email.incidentCreatedBodyIntro]: 'A new service request has been created for your building.',
+  [tokens.email.incidentCreatedBodyDescriptionLabel]: 'Request details',
+  [tokens.email.incidentCreatedBodyCta]: 'View request',
   // Announcements
   [tokens.announcements.managementTitle]: 'Announcements Management',
   [tokens.announcements.createNew]: 'Create New Announcement',

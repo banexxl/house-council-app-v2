@@ -92,7 +92,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   buildingOptions,
   assigneeOptions,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [status, setStatus] = useState<{ success?: string; error?: string }>({});
   const [incidentId, setIncidentId] = useState<string | null>(incident?.id ?? null);
@@ -153,7 +153,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
         };
         const res = incident
           ? await updateIncidentReport(incident.id, payload)
-          : await createIncidentReport(payload);
+          : await createIncidentReport(payload, i18n.language);
 
         if (!res.success || !res.data) {
           setStatus({ error: res.error || 'Failed to save incident' });
@@ -164,9 +164,13 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
         const successMsg = incident
           ? t('incident.form.updated', 'Incident updated')
           : t('incident.form.created', 'Incident created');
+
         toast.success(successMsg);
         setStatus({ success: successMsg });
         const idToView = incident?.id || res.data.id;
+        if (!incident && idToView) {
+          router.push(`${paths.dashboard.serviceRequests.index}/${idToView}`);
+        }
         setIncidentId(idToView || null);
       } catch (err: any) {
         setStatus({ error: err?.message || 'Failed to save incident' });
@@ -273,13 +277,14 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
           showNotificationAlert={false}
           actionComponent={
             incident?.id ? (
-              <Stack direction="row" spacing={1}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>
                 <Button
                   variant="contained"
                   href={paths.dashboard.serviceRequests.index}
                   onClick={() => setIsHeaderNavigating(true)}
                   disabled={isHeaderNavigating || isHeaderCreating}
                   startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   {t('incident.incidentReports', 'Incident reports')}
                 </Button>
@@ -289,6 +294,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                   onClick={() => setIsHeaderCreating(true)}
                   disabled={isHeaderNavigating || isHeaderCreating}
                   startIcon={isHeaderCreating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   {t('incident.incidentReportCreate', 'Create incident')}
                 </Button>
@@ -300,6 +306,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                 onClick={() => setIsHeaderNavigating(true)}
                 disabled={isHeaderNavigating}
                 startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {t('incident.incidentReports', 'Incident reports')}
               </Button>

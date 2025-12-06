@@ -189,6 +189,10 @@ export const de = {
   [tokens.email.announcementPublishedBodyIntro]: 'Eine neue Ankündigung wurde für Ihr Gebäude veröffentlicht.',
   [tokens.email.announcementPublishedBodyDescriptionLabel]: 'Inhalt der Ankündigung',
   [tokens.email.announcementPublishedBodyCta]: 'Vollständige Ankündigung anzeigen',
+  [tokens.email.incidentCreatedTitle]: 'Neuer Serviceauftrag erstellt',
+  [tokens.email.incidentCreatedBodyIntro]: 'Ein neuer Serviceauftrag wurde für Ihr Gebäude erstellt.',
+  [tokens.email.incidentCreatedBodyDescriptionLabel]: 'Details zum Auftrag',
+  [tokens.email.incidentCreatedBodyCta]: 'Vorgang ansehen',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Prozentsatz der Stimmen, der zur Annahme des Vorschlags erforderlich ist (Supermajorität).',
   [tokens.polls.help.threshold_percent]: 'Mindestprozentsatz, den eine Option erreichen muss, um berücksichtigt zu werden (Schwellenwert).',

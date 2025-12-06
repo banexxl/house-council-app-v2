@@ -1295,6 +1295,10 @@ export const tokens = {
     announcementPublishedBodyIntro: 'email.announcementPublishedBodyIntro',
     announcementPublishedBodyDescriptionLabel: 'email.announcementPublishedBodyDescriptionLabel',
     announcementPublishedBodyCta: 'email.announcementPublishedBodyCta',
+    incidentCreatedTitle: 'email.incidentCreatedTitle',
+    incidentCreatedBodyIntro: 'email.incidentCreatedBodyIntro',
+    incidentCreatedBodyDescriptionLabel: 'email.incidentCreatedBodyDescriptionLabel',
+    incidentCreatedBodyCta: 'email.incidentCreatedBodyCta',
   },
   announcements: {
     status: {

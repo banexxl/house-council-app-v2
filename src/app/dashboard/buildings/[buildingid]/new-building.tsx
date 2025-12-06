@@ -319,13 +319,18 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           ]}
           actionComponent={
             buildingData?.id ? (
-              <Stack direction="row" spacing={1}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
                 <Button
                   variant="contained"
                   href={paths.dashboard.buildings.index}
                   onClick={() => setIsHeaderNavigating(true)}
                   disabled={isHeaderNavigating || isCreatingNew}
                   startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   {t('buildings.buildingList')}
                 </Button>
@@ -335,6 +340,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                   onClick={() => setIsCreatingNew(true)}
                   disabled={isHeaderNavigating || isCreatingNew}
                   startIcon={isCreatingNew ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   {t('buildings.buildingCreate')}
                 </Button>
@@ -346,6 +352,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 onClick={() => setIsHeaderNavigating(true)}
                 disabled={isHeaderNavigating}
                 startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {t('buildings.buildingList')}
               </Button>

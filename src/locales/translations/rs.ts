@@ -247,6 +247,10 @@ export const rs = {
    [tokens.polls.help.supermajority_percent]: 'Procenat glasova potreban za odobravanje predloga...',
    [tokens.polls.help.threshold_percent]: 'Minimalan procenat glasova potreban da bi opcija bila uzeta u obzir...',
    [tokens.polls.help.winners_count]: 'Koliko opcija može biti proglašeno pobedničkim u pravilima tipa „Top-N“...',
+   [tokens.email.incidentCreatedTitle]: 'Kreiran je novi servisni zahtev',
+   [tokens.email.incidentCreatedBodyIntro]: 'Kreiran je novi servisni zahtev za vašu zgradu.',
+   [tokens.email.incidentCreatedBodyDescriptionLabel]: 'Detalji zahteva',
+   [tokens.email.incidentCreatedBodyCta]: 'Pogledajte zahtev',
    // Announcements
    [tokens.announcements.managementTitle]: 'Objave',
    [tokens.announcements.createNew]: 'Kreiraj novu objavu',

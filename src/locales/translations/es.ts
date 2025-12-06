@@ -189,6 +189,10 @@ export const es = {
   [tokens.email.announcementPublishedBodyIntro]: 'Se ha publicado un nuevo anuncio para tu edificio.',
   [tokens.email.announcementPublishedBodyDescriptionLabel]: 'Contenido del anuncio',
   [tokens.email.announcementPublishedBodyCta]: 'Ver el anuncio completo',
+  [tokens.email.incidentCreatedTitle]: 'Se ha creado una nueva solicitud de servicio',
+  [tokens.email.incidentCreatedBodyIntro]: 'Se ha creado una nueva solicitud de servicio para tu edificio.',
+  [tokens.email.incidentCreatedBodyDescriptionLabel]: 'Detalles de la solicitud',
+  [tokens.email.incidentCreatedBodyCta]: 'Ver solicitud',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Porcentaje de votos requerido para aprobar la propuesta (supermayoría).',
   [tokens.polls.help.threshold_percent]: 'Porcentaje mínimo que una opción debe alcanzar para ser considerada (umbral).',

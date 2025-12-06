@@ -212,13 +212,18 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                           ]}
                           actionComponent={
                               tenantData?.id ? (
-                                   <Stack direction="row" spacing={1}>
+                                   <Stack
+                                        direction={{ xs: 'column', sm: 'row' }}
+                                        spacing={1}
+                                        sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                   >
                                         <Button
                                              variant="contained"
                                              href={paths.dashboard.tenants.index}
                                              onClick={() => setIsHeaderNavigating(true)}
                                              disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
                                              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
                                         >
                                              {t('tenants.tenantsList')}
                                         </Button>
@@ -228,6 +233,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                              onClick={() => setIsHeaderNavigatingToCreate(true)}
                                              disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
                                              startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
                                         >
                                              {t('tenants.tenantCreate')}
                                         </Button>
@@ -239,6 +245,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         onClick={() => setIsHeaderNavigating(true)}
                                         disabled={isHeaderNavigating}
                                         startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                                    >
                                         {t('tenants.tenantsList')}
                                    </Button>

@@ -78,7 +78,6 @@ const Page = async ({ params }: PageProps) => {
 
   const profileRes = tenant?.id ? await getTenantProfileByTenantId(tenant.id) : await getCurrentUserProfile();
   const currentProfile = profileRes.success ? profileRes.data : null;
-  log(`Current profile: ${currentProfile ? JSON.stringify(currentProfile) : profileRes.error}`);
 
   if (tenant?.id && !defaultBuildingId) {
     const [buildingRes, clientRes] = await Promise.all([

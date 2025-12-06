@@ -968,26 +968,32 @@ export default function PollCreate({
                               ]}
                               actionComponent={
                                    poll?.id ? (
-                                        <Stack direction="row" spacing={1}>
+                                        <Stack
+                                             direction={{ xs: 'column', sm: 'row' }}
+                                             spacing={1}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                        >
                                              <Button
-                                                  variant="contained"
-                                                  href={paths.dashboard.polls.index}
-                                                  onClick={() => setIsHeaderNavigating(true)}
-                                                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
-                                                  startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                             >
-                                                  {t('polls.listTitle') || 'Polls'}
-                                             </Button>
-                                             <Button
-                                                  variant="outlined"
-                                                  href={paths.dashboard.polls.create}
-                                                  onClick={() => setIsHeaderNavigatingToCreate(true)}
-                                                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
-                                                  startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                             >
-                                                  {t('polls.createTitle') || 'Create Poll'}
-                                             </Button>
-                                        </Stack>
+                                             variant="contained"
+                                             href={paths.dashboard.polls.index}
+                                             onClick={() => setIsHeaderNavigating(true)}
+                                             disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                             startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                         >
+                                              {t('polls.listTitle') || 'Polls'}
+                                         </Button>
+                                         <Button
+                                              variant="outlined"
+                                              href={paths.dashboard.polls.create}
+                                              onClick={() => setIsHeaderNavigatingToCreate(true)}
+                                              disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                              startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                         >
+                                              {t('polls.createTitle') || 'Create Poll'}
+                                         </Button>
+                                    </Stack>
                                    ) : (
                                         <Button
                                              variant="contained"
@@ -995,10 +1001,11 @@ export default function PollCreate({
                                              onClick={() => setIsHeaderNavigating(true)}
                                              disabled={isHeaderNavigating}
                                              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                        >
-                                             {t('polls.listTitle') || 'Polls'}
-                                        </Button>
-                                   )
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                         >
+                                              {t('polls.listTitle') || 'Polls'}
+                                         </Button>
+                                    )
                               }
                          />
 

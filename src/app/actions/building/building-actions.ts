@@ -66,7 +66,7 @@ export async function getAllBuildingsFromClient(
      const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
      const resolvedClientId = resolvedClientData?.id!
      const { data: buildings, error } = await supabase
-          .from("tblBuildings")
+          .from(TABLES.BUILDINGS!)
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
           .eq("client_id", resolvedClientId);
 
@@ -129,7 +129,7 @@ export async function getBuildingById(id: string): Promise<{ success: boolean, e
 
      // Get image rows (raw storage refs)
      const { data: imageRows } = await supabase
-          .from('tblBuildingImages')
+          .from(TABLES.BUILDING_IMAGES!)
           .select('id, created_at, updated_at, storage_bucket, storage_path, is_cover_image, building_id')
           .eq('building_id', id);
 
@@ -182,7 +182,7 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
 
      // Ensure location is not already bound
      const { data: existingLocation, error: fetchError } = await supabase
-          .from('tblBuildingLocations')
+          .from(TABLES.BUILDING_LOCATIONS!)
           .select('building_id')
           .eq('id', building_location_id)
           .single();
@@ -200,7 +200,7 @@ export async function createBuilding(payload: Building): Promise<{ success: bool
      }
 
      await supabase
-          .from('tblBuildingLocations')
+          .from(TABLES.BUILDING_LOCATIONS!)
           .update({ building_id: buildingData.id })
           .match({ id: building_location_id });
 
@@ -252,11 +252,11 @@ export async function updateBuilding(id: string, updates: Partial<Building>): Pr
      // Replace images if provided
      if (building_images) {
           // remove existing rows
-          await supabase.from('tblBuildingImages').delete().eq('building_id', id);
+          await supabase.from(TABLES.BUILDING_IMAGES!).delete().eq('building_id', id);
 
           const rows = mapBuildingImagesForInsert(id, building_images);
           if (rows.length) {
-               await supabase.from('tblBuildingImages').insert(rows);
+               await supabase.from(TABLES.BUILDING_IMAGES!).insert(rows);
           }
      }
 
@@ -280,7 +280,7 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
 
      // Clear linked location
      const { data: location, error: locationError } = await supabase
-          .from('tblBuildingLocations')
+          .from(TABLES.BUILDING_LOCATIONS!)
           .select('id')
           .eq('building_id', id)
           .single();
@@ -310,15 +310,20 @@ export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ succe
      try {
           // 1) Find tenant → apartment(s)
           const { data: tenantRows, error: tenantErr } = await supabase
-               .from('tblTenants')
+               .from(TABLES.TENANTS!)
                .select('apartment_id')
                .eq('user_id', user_id);
+          log(`tenantRows ${JSON.stringify(tenantRows)}`);
+          log(`tenantErr ${JSON.stringify(tenantErr)}`);
           if (tenantErr) {
                log(`Error fetching tenant rows for user_id ${user_id}: ${tenantErr.message}`);
                await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: tenantErr.message, payload: { user_id }, status: 'fail', type: 'db', user_id: null, id: '' });
                return { success: false, error: tenantErr.message };
           }
           const apartmentIds = (tenantRows || []).map(r => r.apartment_id).filter(Boolean);
+          console.log('tenantRows', tenantRows);
+          console.log('apartmentIds', apartmentIds);
+
           if (apartmentIds.length === 0) {
                log(`No apartments found for user_id ${user_id}`);
                await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: '', payload: { user_id, apartments: 0 }, status: 'success', type: 'db', user_id: null, id: '' });
@@ -327,7 +332,7 @@ export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ succe
 
           // 2) Fetch apartments → building ids
           const { data: apartmentRows, error: aptErr } = await supabase
-               .from('tblApartments')
+               .from(TABLES.APARTMENTS!)
                .select('id, building_id')
                .in('id', apartmentIds);
           if (aptErr) {

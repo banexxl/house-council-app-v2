@@ -7,12 +7,8 @@ import { logServerAction } from 'src/libs/supabase/server-logging';
 import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
 import { getAllBuildingsFromClient, getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
-
-const REVALIDATE_PATHS = ['/dashboard/service-requests', '/dashboard/service-requests/create'];
-
-const revalidateIncidents = () => {
-  REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
-};
+import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
+import { sendViaEmail } from 'src/app/actions/notification/senders';
 
 export const listIncidentReportsForClient = async (client_id: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
 
@@ -31,7 +27,8 @@ export const listIncidentReportsForClient = async (client_id: string | null): Pr
 };
 
 export const createIncidentReport = async (
-  payload: Omit<IncidentReport, 'id' | 'created_at' | 'updated_at'>
+  payload: Omit<IncidentReport, 'id' | 'created_at' | 'updated_at'>,
+  locale: string = 'rs'
 ): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
   const started = Date.now();
   const supabase = await useServerSideSupabaseAnonClient();
@@ -66,7 +63,67 @@ export const createIncidentReport = async (
     type: 'db',
   });
 
-  revalidateIncidents();
+  try {
+    const t = await getServerI18n(locale || 'rs');
+
+    const subject = t(serverTokens.email.incidentCreatedTitle) ?? 'New service request created';
+    const intro = t(serverTokens.email.incidentCreatedBodyIntro) ?? 'A new service request has been created for your building.';
+    const descriptionLabel =
+      t(serverTokens.email.incidentCreatedBodyDescriptionLabel) ?? 'Request details';
+    const ctaLabel = t(serverTokens.email.incidentCreatedBodyCta) ?? 'View request';
+
+    const title = (data as any)?.title ?? '';
+    const description = (data as any)?.description ?? '';
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.nest-link.app';
+    const ctaHref = `${baseUrl}/dashboard/service-requests/${(data as any)?.id}`;
+
+    const injectedHtml = `
+      <p>${intro}</p>
+      <h2>${title}</h2>
+      <p><strong>${descriptionLabel}:</strong></p>
+      <p>${description}</p>
+      <p>
+        <a href="${ctaHref}" target="_blank" rel="noopener noreferrer">${ctaLabel}</a>
+      </p>
+    `;
+
+    const reporterId = (data as any)?.reported_by as string | null;
+
+    if (reporterId) {
+      const { data: reporterTenant } = await supabase
+        .from(TABLES.TENANTS!)
+        .select('email')
+        .eq('id', reporterId)
+        .maybeSingle();
+
+      const { data: reporterClientMember } = await supabase
+        .from(TABLES.CLIENT_MEMBERS!)
+        .select('email')
+        .eq('id', reporterId)
+        .maybeSingle();
+
+      const { data: reporterClient } = await supabase
+        .from(TABLES.CLIENTS!)
+        .select('email')
+        .eq('id', reporterId)
+        .maybeSingle();
+
+      const reporterEmail =
+        (reporterTenant as any)?.email ||
+        (reporterClientMember as any)?.email ||
+        (reporterClient as any)?.email ||
+        null;
+
+      if (reporterEmail) {
+        await sendViaEmail(reporterEmail, subject, injectedHtml);
+      }
+    }
+  } catch (err) {
+    log(`Error sending incident created email: ${(err as Error)?.message}`);
+  }
+
+  revalidatePath('/dashboard/service-requests');
   return { success: true, data };
 };
 
@@ -260,7 +317,7 @@ export const updateIncidentReport = async (
     type: 'db',
   });
 
-  revalidateIncidents();
+  revalidatePath(`/dashboard/service-requests/${id}`);
   return { success: true, data };
 };
 
@@ -296,7 +353,7 @@ export const deleteIncidentReport = async (
     type: 'db',
   });
 
-  revalidateIncidents();
+  revalidatePath('/dashboard/service-requests');
   return { success: true };
 };
 

@@ -523,13 +523,18 @@ export default function Announcements({ client, announcements, buildings }: Anno
                          ]}
                          actionComponent={
                               editingEntity?.id ? (
-                                   <Stack direction="row" spacing={1}>
+                                   <Stack
+                                        direction={{ xs: 'column', sm: 'row' }}
+                                        spacing={1}
+                                        sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                   >
                                         <Button
                                              variant="outlined"
                                              href={paths.dashboard.announcements.index}
                                              onClick={() => setIsHeaderNavigating(true)}
                                              disabled={isHeaderNavigating || isStartingNew}
                                              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
                                         >
                                              {t(tokens.announcements.table.heading)}
                                         </Button>
@@ -546,6 +551,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                              }}
                                              disabled={isHeaderNavigating || isStartingNew}
                                              startIcon={isStartingNew ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
                                         >
                                              {t(tokens.announcements.createNew)}
                                         </Button>
@@ -553,13 +559,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               ) : (
                                    <Button
                                         variant="outlined"
-                                        href={paths.dashboard.announcements.index}
-                                        onClick={() => setIsHeaderNavigating(true)}
-                                        disabled={isHeaderNavigating}
-                                        startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                   >
-                                        {t(tokens.announcements.table.heading)}
-                                   </Button>
+                                       href={paths.dashboard.announcements.index}
+                                       onClick={() => setIsHeaderNavigating(true)}
+                                       disabled={isHeaderNavigating}
+                                       startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                       sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                  >
+                                       {t(tokens.announcements.table.heading)}
+                                  </Button>
                               )
                          }
                     />
