@@ -1291,6 +1291,10 @@ export const tokens = {
     pollPublishedBodyIntro: 'email.pollPublishedBodyIntro',
     pollPublishedBodyDescriptionLabel: 'email.pollPublishedBodyDescriptionLabel',
     pollPublishedBodyCta: 'email.pollPublishedBodyCta',
+    announcementPublishedTitle: 'email.announcementPublishedTitle',
+    announcementPublishedBodyIntro: 'email.announcementPublishedBodyIntro',
+    announcementPublishedBodyDescriptionLabel: 'email.announcementPublishedBodyDescriptionLabel',
+    announcementPublishedBodyCta: 'email.announcementPublishedBodyCta',
   },
   announcements: {
     status: {

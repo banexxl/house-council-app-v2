@@ -316,7 +316,6 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                         });
                         return notification as unknown as BaseNotification[];
                     }) as any[];
-                    console.log('rows', rows);
 
                     if (rows.length) {
                         const emitted = await emitNotifications(rows);
@@ -327,33 +326,20 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                         }
 
                         // Additionally send email notifications to all tenants of targeted buildings
-                        console.log('tenants', tenants);
                         if (tenants && tenants.length) {
-                            const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
-                            const pollPath = `/dashboard/polls/${id}`;
+                            const appBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+                            const pollPath = `/dashboard/polls/voting/${id}`;
 
-                            // Build heading and subheading using translations if available
-                            const i18n = (await import('i18next')).default;
-                            console.log('i18n', i18n);
+                            // Build heading and subheading using server-side translations
+                            const { getServerI18n, tokens: serverTokens } = await import('src/locales/i18n-server');
+                            const t = await getServerI18n(locale || 'rs');
 
-                            try {
-                                if (locale) {
-                                    console.log('changing language to', locale);
-                                    await i18n.changeLanguage(locale);
-                                    console.log('language changed');
-                                } else {
-                                    console.log('no locale provided, using default');
-                                }
-                            } catch (e) {
-                                console.error('changeLanguage failed', e);
-                            }
-                            console.log('bbbbbbbbbb');
-
-                            const subject = i18n.t('email.pollPublishedTitle');
+                            const subject =
+                                t(serverTokens.email.pollPublishedTitle) ||
+                                'New poll has been published';
 
                             const firstTenant = tenants[0] as any;
                             const firstBuilding = firstTenant?.apartment?.building;
-                            console.log('firstBuilding', firstBuilding);
 
                             const buildingAddressParts = [
                                 firstBuilding?.street_address,
@@ -362,14 +348,21 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                             const buildingAddress = buildingAddressParts.join(', ');
 
                             const subheading = buildingAddress
-                                ? i18n.t('email.pollPublishedSubtitleForBuilding', { address: buildingAddress })
+                                ? t(serverTokens.email.pollPublishedSubtitleForBuilding, { address: buildingAddress }) ||
+                                `for building ${buildingAddress}`
                                 : '';
 
                             const description = annRow?.description || '';
 
-                            const intro = i18n.t('email.pollPublishedBodyIntro');
-                            const descriptionLabel = i18n.t('email.pollPublishedBodyDescriptionLabel');
-                            const ctaLabel = i18n.t('email.pollPublishedBodyCta');
+                            const intro =
+                                t(serverTokens.email.pollPublishedBodyIntro) ||
+                                'A new poll has been published for your building.';
+                            const descriptionLabel =
+                                t(serverTokens.email.pollPublishedBodyDescriptionLabel) ||
+                                'Poll description';
+                            const ctaLabel =
+                                t(serverTokens.email.pollPublishedBodyCta) ||
+                                'View and vote in the poll';
 
                             const injectedHtml = `
                                                             <p>${intro}</p>

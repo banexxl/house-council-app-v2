@@ -18,6 +18,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -98,6 +99,8 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   const [incidentImages, setIncidentImages] = useState<DBStoredImage[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const theme = useTheme();
+  const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+  const [isHeaderCreating, setIsHeaderCreating] = useState(false);
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -268,8 +271,40 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
           }
           breadcrumbs={breadcrumbs}
           showNotificationAlert={false}
-          actionLabel={incident ? t('incident.incidentReportCreate', 'Create incident') : undefined}
-          actionHref={incident ? paths.dashboard.serviceRequests.create : undefined}
+          actionComponent={
+            incident?.id ? (
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="contained"
+                  href={paths.dashboard.serviceRequests.index}
+                  onClick={() => setIsHeaderNavigating(true)}
+                  disabled={isHeaderNavigating || isHeaderCreating}
+                  startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                >
+                  {t('incident.incidentReports', 'Incident reports')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={paths.dashboard.serviceRequests.create}
+                  onClick={() => setIsHeaderCreating(true)}
+                  disabled={isHeaderNavigating || isHeaderCreating}
+                  startIcon={isHeaderCreating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                >
+                  {t('incident.incidentReportCreate', 'Create incident')}
+                </Button>
+              </Stack>
+            ) : (
+              <Button
+                variant="contained"
+                href={paths.dashboard.serviceRequests.index}
+                onClick={() => setIsHeaderNavigating(true)}
+                disabled={isHeaderNavigating}
+                startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+              >
+                {t('incident.incidentReports', 'Incident reports')}
+              </Button>
+            )
+          }
         />
 
         <Card>

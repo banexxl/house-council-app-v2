@@ -62,6 +62,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
      const [availableApartments, setAvailableApartments] = useState<{ id: string; apartment_number: string }[]>([]);
      const [isNavigatingBack, setIsNavigatingBack] = useState(false);
      const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+     const [isHeaderNavigatingToCreate, setIsHeaderNavigatingToCreate] = useState(false);
 
      // Set selects from tenantData on load or when tenantData/buildings change
      useEffect(() => {
@@ -202,25 +203,48 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               : t('tenants.tenantCreate')}
                          breadcrumbs={[
                               { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                              { title: t('tenants.tenantsList'), href: paths.dashboard.tenants.index },
-                              {
-                                   title: tenantData
-                                        ? `${t('tenants.tenantEdit')}: ${tenantData.first_name} ${tenantData.last_name}`
-                                        : t('tenants.tenantCreate')
-                              }
-                         ]}
-                         actionComponent={
-                              <Button
-                                   variant="contained"
-                                   href={paths.dashboard.tenants.index}
-                                   onClick={() => setIsHeaderNavigating(true)}
-                                   disabled={isHeaderNavigating}
-                                   startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                              >
-                                   {t('tenants.tenantsList')}
-                              </Button>
-                         }
-                    />
+                         { title: t('tenants.tenantsList'), href: paths.dashboard.tenants.index },
+                           {
+                                    title: tenantData
+                                         ? `${t('tenants.tenantEdit')}: ${tenantData.first_name} ${tenantData.last_name}`
+                                         : t('tenants.tenantCreate')
+                           }
+                          ]}
+                          actionComponent={
+                              tenantData?.id ? (
+                                   <Stack direction="row" spacing={1}>
+                                        <Button
+                                             variant="contained"
+                                             href={paths.dashboard.tenants.index}
+                                             onClick={() => setIsHeaderNavigating(true)}
+                                             disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                             startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        >
+                                             {t('tenants.tenantsList')}
+                                        </Button>
+                                        <Button
+                                             variant="outlined"
+                                             href={paths.dashboard.tenants.new}
+                                             onClick={() => setIsHeaderNavigatingToCreate(true)}
+                                             disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                             startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        >
+                                             {t('tenants.tenantCreate')}
+                                        </Button>
+                                   </Stack>
+                              ) : (
+                                   <Button
+                                        variant="contained"
+                                        href={paths.dashboard.tenants.index}
+                                        onClick={() => setIsHeaderNavigating(true)}
+                                        disabled={isHeaderNavigating}
+                                        startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
+                                        {t('tenants.tenantsList')}
+                                   </Button>
+                              )
+                          }
+                     />
                     <Card>
                          <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
                          <CardContent>

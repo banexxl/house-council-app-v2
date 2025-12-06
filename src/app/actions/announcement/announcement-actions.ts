@@ -12,6 +12,7 @@ import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 import { emitNotifications } from '../notification/emit-notification';
 import { getViewer } from 'src/libs/supabase/server-auth';
+import { sendViaEmail } from '../notification/senders';
 
 // Table names (adjust if different in your DB schema)
 const ANNOUNCEMENTS_TABLE = 'tblAnnouncements';
@@ -688,7 +689,7 @@ export async function togglePinAction(id: string, pinned: boolean) {
 }
 
 // ============================= PUBLISH STATUS CHANGE =============================
-export async function publishAnnouncement(id: string, typeInfo?: NotificationTypeMap) {
+export async function publishAnnouncement(id: string, typeInfo?: NotificationTypeMap, locale: string = 'rs') {
 
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
@@ -745,6 +746,53 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                               await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
                          } else {
                               await logServerAction({ user_id: null, action: 'updateCalendarEventNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+                         }
+
+                         // Additionally send localized email notifications to tenants
+                         if (tenants && tenants.length) {
+                              const appBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+                              const announcementPath = `/dashboard/announcements/tenant`;
+
+                              const { getServerI18n, tokens: serverTokens } = await import('src/locales/i18n-server');
+                              const t = await getServerI18n(locale || 'rs');
+
+                              const subject =
+                                   t(serverTokens.email.announcementPublishedTitle) ||
+                                   'New announcement has been published';
+
+                              const intro =
+                                   t(serverTokens.email.announcementPublishedBodyIntro) ||
+                                   'A new announcement has been published for your building.';
+                              const descriptionLabel =
+                                   t(serverTokens.email.announcementPublishedBodyDescriptionLabel) ||
+                                   'Announcement';
+                              const ctaLabel =
+                                   t(serverTokens.email.announcementPublishedBodyCta) ||
+                                   'View the full announcement';
+
+                              const description = annRow?.message || '';
+
+                              const injectedHtml = `
+                                   <p>${intro}</p>
+                                   <p><strong>${annRow?.title || ''}</strong></p>
+                                   ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
+                                   <p>
+                                        <a href="${appBaseUrl}${announcementPath}">
+                                             ${ctaLabel}
+                                        </a>
+                                   </p>
+                              `;
+
+                              for (const tenant of tenants) {
+                                   const email = (tenant as any).email
+                                        || (tenant as any).user?.email
+                                        || (tenant as any).apartment?.tenant_email
+                                        || (tenant as any).apartment?.building?.client?.email;
+                                   if (!email) continue;
+
+                                   // eslint-disable-next-line no-void
+                                   void sendViaEmail(email, subject, injectedHtml);
+                              }
                          }
                     }
                }

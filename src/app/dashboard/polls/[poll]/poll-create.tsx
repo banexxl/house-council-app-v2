@@ -107,6 +107,7 @@ export default function PollCreate({
      const [scheduleConfirmOpen, setScheduleConfirmOpen] = useState(false);
      const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
      const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+     const [isHeaderNavigatingToCreate, setIsHeaderNavigatingToCreate] = useState(false);
      const [attachments, setAttachments] = useState<DBStoredImage[]>(() => {
           return ((poll?.attachments ?? []) as unknown as DBStoredImage[]) || [];
      });
@@ -961,20 +962,43 @@ export default function PollCreate({
                               backLabel={t('polls.listTitle') || 'Polls'}
                               title={poll ? (t('polls.editTitle') || 'Edit Poll') + ': ' + (poll.title || '') : (t('polls.createTitle') || 'Create Poll')}
                               breadcrumbs={[
-                                   { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                                   { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
-                                   { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
+                              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                              { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
+                               { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
                               ]}
                               actionComponent={
-                                   <Button
-                                        variant="contained"
-                                        href={paths.dashboard.polls.index}
-                                        onClick={() => setIsHeaderNavigating(true)}
-                                        disabled={isHeaderNavigating}
-                                        startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                   >
-                                        {t('polls.listTitle') || 'Polls'}
-                                   </Button>
+                                   poll?.id ? (
+                                        <Stack direction="row" spacing={1}>
+                                             <Button
+                                                  variant="contained"
+                                                  href={paths.dashboard.polls.index}
+                                                  onClick={() => setIsHeaderNavigating(true)}
+                                                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                                  startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             >
+                                                  {t('polls.listTitle') || 'Polls'}
+                                             </Button>
+                                             <Button
+                                                  variant="outlined"
+                                                  href={paths.dashboard.polls.create}
+                                                  onClick={() => setIsHeaderNavigatingToCreate(true)}
+                                                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                                  startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                             >
+                                                  {t('polls.createTitle') || 'Create Poll'}
+                                             </Button>
+                                        </Stack>
+                                   ) : (
+                                        <Button
+                                             variant="contained"
+                                             href={paths.dashboard.polls.index}
+                                             onClick={() => setIsHeaderNavigating(true)}
+                                             disabled={isHeaderNavigating}
+                                             startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        >
+                                             {t('polls.listTitle') || 'Polls'}
+                                        </Button>
+                                   )
                               }
                          />
 

@@ -40,6 +40,7 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+  const [isHeaderNavigatingToCreate, setIsHeaderNavigatingToCreate] = useState(false);
   const [initialFormValues, setInitialFormValues] = useState<Apartment>(apartmentData ? { ...apartmentData } : apartmentInitialValues);
 
   useEffect(() => {
@@ -173,15 +174,38 @@ export const ApartmentCreateForm = ({ apartmentData, userData: _userData, buildi
             }
           ]}
           actionComponent={
-            <Button
-              variant="contained"
-              href={paths.dashboard.apartments.index}
-              onClick={() => setIsHeaderNavigating(true)}
-              disabled={isHeaderNavigating}
-              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-            >
-              {t('apartments.apartmentList')}
-            </Button>
+            apartmentData?.id ? (
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="contained"
+                  href={paths.dashboard.apartments.index}
+                  onClick={() => setIsHeaderNavigating(true)}
+                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                  startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                >
+                  {t('apartments.apartmentList')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={paths.dashboard.apartments.new}
+                  onClick={() => setIsHeaderNavigatingToCreate(true)}
+                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                  startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                >
+                  {t('apartments.apartmentCreate')}
+                </Button>
+              </Stack>
+            ) : (
+              <Button
+                variant="contained"
+                href={paths.dashboard.apartments.index}
+                onClick={() => setIsHeaderNavigating(true)}
+                disabled={isHeaderNavigating}
+                startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+              >
+                {t('apartments.apartmentList')}
+              </Button>
+            )
           }
         />
         <Card>

@@ -125,9 +125,13 @@ const Tenants = ({ tenants }: TenantsProps) => {
                                              key: 'email',
                                              label: t('tenants.email')
                                         },
-                                        {
+                                       {
                                              key: 'phone_number',
-                                             label: t('tenants.tenantPhoneNumber')
+                                             label: t('tenants.tenantPhoneNumber'),
+                                             render: (val) => {
+                                                  const phone = (val as string | null | undefined)?.trim();
+                                                  return phone && phone.length > 0 ? phone : 'N/A';
+                                             }
                                         },
                                         {
                                              key: 'tenant_type',

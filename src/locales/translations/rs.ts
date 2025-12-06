@@ -239,6 +239,10 @@ export const rs = {
    [tokens.email.pollPublishedBodyIntro]: 'Objavljena je nova anketa za vašu zgradu.',
    [tokens.email.pollPublishedBodyDescriptionLabel]: 'Opis ankete',
    [tokens.email.pollPublishedBodyCta]: 'Pogledajte i glasajte u anketi',
+   [tokens.email.announcementPublishedTitle]: 'Objavljeno je novo obaveštenje',
+   [tokens.email.announcementPublishedBodyIntro]: 'Objavljeno je novo obaveštenje za vašu zgradu.',
+   [tokens.email.announcementPublishedBodyDescriptionLabel]: 'Sadržaj obaveštenja',
+   [tokens.email.announcementPublishedBodyCta]: 'Pogledajte celo obaveštenje',
    // Polls help (additional)
    [tokens.polls.help.supermajority_percent]: 'Procenat glasova potreban za odobravanje predloga...',
    [tokens.polls.help.threshold_percent]: 'Minimalan procenat glasova potreban da bi opcija bila uzeta u obzir...',

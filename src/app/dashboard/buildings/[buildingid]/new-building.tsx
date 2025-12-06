@@ -52,6 +52,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const [deletingBuilding, setDeletingBuilding] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -317,15 +318,38 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
             }
           ]}
           actionComponent={
-            <Button
-              variant="contained"
-              href={paths.dashboard.buildings.index}
-              onClick={() => setIsHeaderNavigating(true)}
-              disabled={isHeaderNavigating}
-              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-            >
-              {t('buildings.buildingList')}
-            </Button>
+            buildingData?.id ? (
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="contained"
+                  href={paths.dashboard.buildings.index}
+                  onClick={() => setIsHeaderNavigating(true)}
+                  disabled={isHeaderNavigating || isCreatingNew}
+                  startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                >
+                  {t('buildings.buildingList')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={paths.dashboard.buildings.new}
+                  onClick={() => setIsCreatingNew(true)}
+                  disabled={isHeaderNavigating || isCreatingNew}
+                  startIcon={isCreatingNew ? <CircularProgress size={16} color="inherit" /> : undefined}
+                >
+                  {t('buildings.buildingCreate')}
+                </Button>
+              </Stack>
+            ) : (
+              <Button
+                variant="contained"
+                href={paths.dashboard.buildings.index}
+                onClick={() => setIsHeaderNavigating(true)}
+                disabled={isHeaderNavigating}
+                startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+              >
+                {t('buildings.buildingList')}
+              </Button>
+            )
           }
         />
 

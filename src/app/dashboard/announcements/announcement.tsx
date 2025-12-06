@@ -32,7 +32,8 @@ import {
      Container,
      Card,
      CardHeader,
-     Alert
+     Alert,
+     CircularProgress
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -74,6 +75,8 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const [imagesUploading, setImagesUploading] = useState(false);
      const [docsUploading, setDocsUploading] = useState(false);
      const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents' | 'confirm-publish'; targetId?: string }>(null);
+     const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
+     const [isStartingNew, setIsStartingNew] = useState(false);
 
      const uploadingBusy = imagesUploading || docsUploading; // only busy during media uploads
      const router = useRouter();
@@ -518,13 +521,47 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               { title: t('nav.adminDashboard'), href: paths.dashboard.index },
                               { title: t(tokens.announcements.managementTitle) },
                          ]}
-                         actionLabel={t(tokens.announcements.createNew)}
-                         onActionClick={() => {
-                              setEditingEntity(null);
-                              formik.resetForm({
-                                   values: { ...announcementInitialValues, created_at: new Date(), client_id: client.id }
-                              });
-                         }}
+                         actionComponent={
+                              editingEntity?.id ? (
+                                   <Stack direction="row" spacing={1}>
+                                        <Button
+                                             variant="outlined"
+                                             href={paths.dashboard.announcements.index}
+                                             onClick={() => setIsHeaderNavigating(true)}
+                                             disabled={isHeaderNavigating || isStartingNew}
+                                             startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        >
+                                             {t(tokens.announcements.table.heading)}
+                                        </Button>
+                                        <Button
+                                             variant="contained"
+                                             onClick={() => {
+                                                  if (isStartingNew) return;
+                                                  setIsStartingNew(true);
+                                                  setEditingEntity(null);
+                                                  formik.resetForm({
+                                                       values: { ...announcementInitialValues, created_at: new Date(), client_id: client.id }
+                                                  });
+                                                  setIsStartingNew(false);
+                                             }}
+                                             disabled={isHeaderNavigating || isStartingNew}
+                                             startIcon={isStartingNew ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        >
+                                             {t(tokens.announcements.createNew)}
+                                        </Button>
+                                   </Stack>
+                              ) : (
+                                   <Button
+                                        variant="outlined"
+                                        href={paths.dashboard.announcements.index}
+                                        onClick={() => setIsHeaderNavigating(true)}
+                                        disabled={isHeaderNavigating}
+                                        startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
+                                        {t(tokens.announcements.table.heading)}
+                                   </Button>
+                              )
+                         }
                     />
                     <Card>
                          <Grid container>

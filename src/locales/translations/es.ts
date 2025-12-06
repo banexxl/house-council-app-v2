@@ -185,6 +185,10 @@ export const es = {
   [tokens.email.pollPublishedBodyIntro]: 'Se ha publicado una nueva encuesta para tu edificio.',
   [tokens.email.pollPublishedBodyDescriptionLabel]: 'Descripción de la encuesta',
   [tokens.email.pollPublishedBodyCta]: 'Ver y votar en la encuesta',
+  [tokens.email.announcementPublishedTitle]: 'Se ha publicado un nuevo anuncio',
+  [tokens.email.announcementPublishedBodyIntro]: 'Se ha publicado un nuevo anuncio para tu edificio.',
+  [tokens.email.announcementPublishedBodyDescriptionLabel]: 'Contenido del anuncio',
+  [tokens.email.announcementPublishedBodyCta]: 'Ver el anuncio completo',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Porcentaje de votos requerido para aprobar la propuesta (supermayoría).',
   [tokens.polls.help.threshold_percent]: 'Porcentaje mínimo que una opción debe alcanzar para ser considerada (umbral).',
