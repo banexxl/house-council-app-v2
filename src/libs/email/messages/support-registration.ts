@@ -1,60 +1,43 @@
-export const buildSuccessfulRegistrationHtml = (
-     clientEmail: string,
-     contactPerson: string
-): string => `
-<html>
-<head>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    .wrapper { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #f2f2f2; padding: 20px; text-align: center; }
-    .content { padding: 20px; }
-    .footer { background-color: #f2f2f2; padding: 20px; text-align: center; }
-  </style>
-  </head>
-  <body>
-    <div class="wrapper">
-      <div class="header">
-        <h1>Client Registered Successfully</h1>
-      </div>
-      <div class="content">
-        <p>Client Name: ${contactPerson}</p>
-        <p>Client Email: ${clientEmail}</p>
-      </div>
-      <div class="footer">
-        <p>Client Registered Successfully</p>
-      </div>
-    </div>
-  </body>
-  </html>
-`;
+import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
 
-export const buildClientContactMessageHtml = (
-     clientEmail: string,
-     contactPerson: string,
-     message: string
-): string => `
-<html>
-<head>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    .wrapper { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #f2f2f2; padding: 20px; text-align: center; }
-    .content { padding: 20px; }
-    .footer { background-color: #f2f2f2; padding: 20px; text-align: center; }
-  </style>
-  </head>
-  <body>
-    <div class="wrapper">
-      <div class="header">
-        <h1>Client Contact Message</h1>
-      </div>
-      <div class="content">
-        <p>Client Name: ${contactPerson}</p>
-        <p>Client Email: ${clientEmail}</p>
-        <p>Message: ${message}</p>
-      </div>
-    </div>
-  </body>
-  </html>
-`;
+export const buildSuccessfulRegistrationEmail = async (
+  locale: string,
+  clientEmail: string,
+  contactPerson: string
+): Promise<{ subject: string; injectedHtml: string }> => {
+  const t = await getServerI18n(locale || 'rs');
+
+  const subject =
+    t(serverTokens.email.supportRegistrationSuccessTitle) ||
+    'Client registered successfully';
+
+  const injectedHtml = `
+          <p>${t(serverTokens.email.supportRegistrationSuccessIntro) || 'A new client has been registered.'}</p>
+          <p><strong>${t(serverTokens.email.supportRegistrationClientNameLabel) || 'Client Name'}:</strong> ${contactPerson}</p>
+          <p><strong>${t(serverTokens.email.supportRegistrationClientEmailLabel) || 'Client Email'}:</strong> ${clientEmail}</p>
+     `;
+
+  return { subject, injectedHtml };
+};
+
+export const buildClientContactMessageEmail = async (
+  locale: string,
+  clientEmail: string,
+  contactPerson: string,
+  message: string
+): Promise<{ subject: string; injectedHtml: string }> => {
+  const t = await getServerI18n(locale || 'rs');
+
+  const subject =
+    t(serverTokens.email.supportContactMessageTitle) ||
+    'Client contact message';
+
+  const injectedHtml = `
+          <p>${t(serverTokens.email.supportContactMessageIntro) || 'You have received a new contact message from a client.'}</p>
+          <p><strong>${t(serverTokens.email.supportRegistrationClientNameLabel) || 'Client Name'}:</strong> ${contactPerson}</p>
+          <p><strong>${t(serverTokens.email.supportRegistrationClientEmailLabel) || 'Client Email'}:</strong> ${clientEmail}</p>
+          <p><strong>${t(serverTokens.email.supportContactMessageLabel) || 'Message'}:</strong> ${message}</p>
+     `;
+
+  return { subject, injectedHtml };
+};

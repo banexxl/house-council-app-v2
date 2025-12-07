@@ -4,12 +4,12 @@ import nodemailer from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer/lib/sendmail-transport';
 import { logServerAction } from '../supabase/server-logging';
 import { htmlToPlainText } from 'src/utils/html-tags-remover';
-import { buildTrialEndingEmailHtml } from './messages/trial-ending';
-import { buildSubscriptionEndingSupportHtml } from './messages/subscription-ending-support';
-import { buildSuccessfulRegistrationHtml, buildClientContactMessageHtml } from './messages/support-registration';
+import { buildTrialEndingEmail } from './messages/trial-ending';
+import { buildSubscriptionEndingSupportEmail } from './messages/subscription-ending-support';
+import { buildSuccessfulRegistrationEmail, buildClientContactMessageEmail } from './messages/support-registration';
 import { buildNotificationGenericHtml } from './messages/notification-generic';
-import { buildAccessRequestClientHtml } from './messages/access-request-client';
-import { buildAccessRequestApprovedHtml } from './messages/access-request-approved';
+import { buildAccessRequestClientEmail } from './messages/access-request-client';
+import { buildAccessRequestApprovedEmail } from './messages/access-request-approved';
 import { readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
@@ -34,16 +34,18 @@ type SendEndingSubscriptionEmail = {
 interface SendTrialEndingEmail {
   to: string;
   daysRemaining: number;
+  locale?: string;
 }
 
-export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTrialEndingEmail): Promise<SentMessageInfo> => {
-  const htmlContent = buildTrialEndingEmailHtml(daysRemaining);
+export const sendTrialEndingEmailToClient = async ({ to, daysRemaining, locale = 'rs' }: SendTrialEndingEmail): Promise<SentMessageInfo> => {
+  const { subject, injectedHtml } = await buildTrialEndingEmail(locale, daysRemaining);
+  const htmlContent = buildNotificationGenericHtml(injectedHtml, subject);
 
   const sendEmailToClientResponse = await transporter.sendMail({
     from: 'Nest Link <no-reply@nest-link.app>',
     to,
-    subject: 'Your free tial is about to end, how do you like it so far?',
-    html: htmlContent
+    subject,
+    html: htmlContent,
   });
 
   if (sendEmailToClientResponse.response) {
@@ -81,37 +83,36 @@ export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemainin
 
   const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(clientId)
 
-  const htmlContent = buildSubscriptionEndingSupportHtml(
-    clientSubscriptionPlanData?.subscription_plan.name,
-    clientEmail,
-    daysRemaining
-  );
+  const { subject, injectedHtml } = await buildSubscriptionEndingSupportEmail('rs', clientSubscriptionPlanData?.subscription_plan.name, clientEmail, daysRemaining);
+  const htmlContent = buildNotificationGenericHtml(injectedHtml, subject);
 
   const sendEmailToSupport = await transporter.sendMail({
     from: 'Nest Link <support@nest-link.app>',
     to: 'support@nest-link.app',
-    subject: 'Client Subscription is ending soon',
+    subject,
     html: htmlContent
   });
 
   return sendEmailToSupport
 }
 
-export const sendSuccessfullClientRegistrationToSupport = async (clientEmail: string, contactPerson: string): Promise<SentMessageInfo> => {
-  const htmlContent = buildSuccessfulRegistrationHtml(clientEmail, contactPerson);
+export const sendSuccessfullClientRegistrationToSupport = async (clientEmail: string, contactPerson: string, locale: string = 'rs'): Promise<SentMessageInfo> => {
+  const { subject, injectedHtml } = await buildSuccessfulRegistrationEmail(locale, clientEmail, contactPerson);
+  const htmlContent = buildNotificationGenericHtml(injectedHtml, subject);
 
   const sendEmailToSupport = await transporter.sendMail({
     from: 'Nest Link <support@nest-link.app>',
     to: 'support@nest-link.app',
-    subject: 'Client Registered Successfully',
-    html: htmlContent
+    subject,
+    html: htmlContent,
   });
 
   return sendEmailToSupport
 }
 
-export const sendClientContactMessageToSupport = async (clientEmail: string, contactPerson: string, message: string, subject: string): Promise<SentMessageInfo> => {
-  const htmlContent = buildClientContactMessageHtml(clientEmail, contactPerson, message);
+export const sendClientContactMessageToSupport = async (clientEmail: string, contactPerson: string, message: string, subject: string, locale: string = 'rs'): Promise<SentMessageInfo> => {
+  const { injectedHtml } = await buildClientContactMessageEmail(locale, clientEmail, contactPerson, message);
+  const htmlContent = buildNotificationGenericHtml(injectedHtml, subject);
 
   const sendEmailToSupport = await transporter.sendMail({
     from: 'Nest Link <support@nest-link.app>',
@@ -153,6 +154,7 @@ export const sendNotificationEmail = async (
 export const sendAccessRequestClientEmail = async (
   to: string[],
   data: {
+    locale?: string;
     name: string;
     email: string;
     message?: string;
@@ -162,13 +164,13 @@ export const sendAccessRequestClientEmail = async (
     rejectLink: string;
   }
 ): Promise<{ ok: boolean; error?: string }> => {
-  const htmlContent = buildAccessRequestClientHtml(data);
+  const { subject, injectedHtml } = await buildAccessRequestClientEmail({ locale: data.locale || 'rs', ...data });
   try {
     const info = await transporter.sendMail({
       from: process.env.EMAIL_SMTP_USER!,
       to,
-      subject: 'New access request',
-      html: htmlContent,
+      subject,
+      html: injectedHtml,
       text: `${data.name} (${data.email}) requested access${data.building ? ` for ${data.building}` : ''}${data.apartment ? `, apartment ${data.apartment}` : ''}. Approve: ${data.approveLink} / Reject: ${data.rejectLink}`,
     });
     if ((info as any)?.response) return { ok: true };
@@ -183,13 +185,13 @@ export const sendAccessRequestApprovedEmail = async (
   to: string,
   data: { locale: string; name: string; email: string; password: string; loginUrl: string }
 ): Promise<{ ok: boolean; error?: string }> => {
-  const htmlContent = buildAccessRequestApprovedHtml(data);
+  const { subject, injectedHtml } = await buildAccessRequestApprovedEmail(data);
   try {
     const info = await transporter.sendMail({
       from: process.env.EMAIL_SMTP_USER!,
       to,
-      subject: 'Your account has been created',
-      html: htmlContent,
+      subject,
+      html: injectedHtml,
       text: `Hi ${data.name || 'there'}, your tenant account is ready. Login: ${data.loginUrl} with email ${data.email} and password ${data.password}. Please change your password after logging in.`,
     });
     if ((info as any)?.response) return { ok: true };
