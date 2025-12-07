@@ -12,6 +12,7 @@ import { getBuildingAddressFromId, getNotificationEmailsForBuildings } from "../
 import { buildCalendarEventCreatedEmail } from "src/libs/email/messages/calendar-event-created";
 import log from "src/utils/logger";
 import { sendViaEmail } from "../notification/senders";
+import { revalidatePath } from "next/cache";
 
 // Map DB row -> CalendarEvent preserving timestamptz as ISO strings
 const mapRow = (r: any): CalendarEvent => ({
@@ -242,6 +243,7 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                     log(`Unexpected error sending calendar event emails for event ID ${mapped.id}: ${e?.message || e}`);
                }
           }
+          revalidatePath('/dashboard/calendar');
           await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { clientId, id: mapped.id }, status: 'success', type: 'db' });
           return { success: true, data: mapped };
      } catch (err: any) {
@@ -293,6 +295,7 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: error?.message || 'updateFailed', payload: { eventId }, status: 'fail', type: 'db' });
                return { success: false, error: error?.message || 'Update failed' };
           }
+          revalidatePath('/dashboard/calendar');
           const mapped = mapRow(data as CalendarEvent);
           await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { eventId, id: mapped.id }, status: 'success', type: 'db' });
           return { success: true, data: mapped };
@@ -331,6 +334,7 @@ export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult
                await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: error.message, payload: { eventId }, status: 'fail', type: 'db' });
                return { success: false, error: error.message };
           }
+          revalidatePath('/dashboard/calendar');
           await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { eventId }, status: 'success', type: 'db' });
           return { success: true, data: { id: eventId } };
      } catch (err: any) {
