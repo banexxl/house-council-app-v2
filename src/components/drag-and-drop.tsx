@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button, TextField } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export type SortableItem = { id?: string; label: string };
 export type SortableOptionsListProps<T extends SortableItem = SortableItem> = {
@@ -96,6 +97,7 @@ function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, 
           alignItems: 'center',
           gap: 8,
      };
+     const { t } = useTranslation();
      return (
           <div ref={setNodeRef} style={style} {...attributes}>
                <span {...listeners} style={{ cursor: 'grab', marginRight: 8, color: '#888' }}>≡</span>
@@ -114,7 +116,7 @@ function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, 
                     variant="outlined"
                     onClick={onDelete}
                >
-                    Delete
+                    {t('common.btnDelete')}
                </Button>
                <Button
                     type="button"
@@ -123,7 +125,7 @@ function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, 
                     variant="contained"
                     onClick={onSave}
                >
-                    Save
+                    {t('common.btnSave')}
                </Button>
           </div>
      );
