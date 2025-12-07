@@ -15,6 +15,8 @@ type UpdateEventAction = PayloadAction<CalendarEvent>;
 
 type DeleteEventAction = PayloadAction<string>;
 
+type HydrateEventsAction = PayloadAction<CalendarEvent[]>;
+
 const initialState: CalendarState = {
   events: [],
 };
@@ -39,6 +41,9 @@ const reducers = {
   },
   deleteEvent(state: CalendarState, action: DeleteEventAction): void {
     state.events = state.events.filter((event) => event.id !== action.payload);
+  },
+  hydrate(state: CalendarState, action: HydrateEventsAction): void {
+    state.events = action.payload;
   },
 };
 

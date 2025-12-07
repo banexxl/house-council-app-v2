@@ -180,6 +180,7 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: error?.message || 'insertFailed', payload: { clientId }, status: 'fail', type: 'db' });
                return { success: false, error: error?.message || "Insert failed" };
           }
+          revalidatePath('/dashboard/calendar');
           const mapped = mapRow(data as CalendarEvent);
           // Emit notifications to tenants of the building (if building_id present)
           if (mapped.building_id) {
@@ -243,7 +244,7 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                     log(`Unexpected error sending calendar event emails for event ID ${mapped.id}: ${e?.message || e}`);
                }
           }
-          revalidatePath('/dashboard/calendar');
+
           await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { clientId, id: mapped.id }, status: 'success', type: 'db' });
           return { success: true, data: mapped };
      } catch (err: any) {

@@ -29,10 +29,14 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import { useDispatch, useSelector } from 'react-redux';
 import { thunks } from 'src/thunks/calendar';
-import type { CalendarEvent, EventType } from 'src/types/calendar';
+import type { CalendarEvent, EventType, CalendarEventFormValues } from 'src/types/calendar';
+import { CALENDAR_EVENT_INITIAL_VALUES } from 'src/types/calendar';
 import type { Building } from 'src/types/building';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { paths } from 'src/paths';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { slice } from 'src/slices/calendar';
 
 export interface CalendarClientProps { initialEvents: CalendarEvent[]; clientId: string | null; isTenant: boolean; isAdmin: boolean; buildings?: Building[]; }
 
@@ -60,6 +64,11 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      const dispatch = useDispatch();
      const storeEvents = useSelector((state: any) => state.calendar.events) as CalendarEvent[];
      const events = storeEvents && storeEvents.length > 0 ? storeEvents : initialEvents;
+     useEffect(() => {
+          if ((!storeEvents || storeEvents.length === 0) && initialEvents && initialEvents.length > 0) {
+               dispatch(slice.actions.hydrate(initialEvents));
+          }
+     }, [dispatch, storeEvents, initialEvents]);
      const [selectedDate, setSelectedDate] = useState<Date>(new Date());
      const [viewMonth, setViewMonth] = useState<number>(selectedDate.getMonth());
      const [viewYear, setViewYear] = useState<number>(selectedDate.getFullYear());
@@ -67,15 +76,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      const [editingEventId, setEditingEventId] = useState<string | null>(null);
      const [creating, setCreating] = useState(false);
      const [optimisticEvents, setOptimisticEvents] = useState<CalendarEvent[]>([]);
-     // Form state for new event
-     const [formTitle, setFormTitle] = useState('');
-     const [formDescription, setFormDescription] = useState('');
-     const [formType, setFormType] = useState<EventType>('meeting');
-     const [formStartTime, setFormStartTime] = useState('09:00');
-     const [formEndTime, setFormEndTime] = useState('10:00');
      const [timeError, setTimeError] = useState<string | null>(null);
-     const [formBuildingId, setFormBuildingId] = useState<string>('');
-     const [errors, setErrors] = useState<{ title?: string; start?: string; end?: string; type?: string; building?: string }>({});
 
      // Initial fetch
      useEffect(() => { if (!events || events.length === 0) (dispatch as any)(thunks.getEvents()); }, []); // eslint-disable-line
@@ -137,38 +138,35 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
 
      const readOnly = isTenant && !isAdmin;
      const effectiveClientId = clientId || 'client';
-     const handleOpenCreateModal = () => { if (readOnly) return; setEditingEventId(null); setOpenModal(true); };
+     const handleOpenCreateModal = () => {
+          if (readOnly) return;
+          setEditingEventId(null);
+          formik.resetForm({ values: CALENDAR_EVENT_INITIAL_VALUES });
+          setOpenModal(true);
+     };
      const handleOpenEditModal = (event: CalendarEvent) => {
           if (readOnly) return;
           setEditingEventId(event.id);
-          setFormTitle(event.title);
-          setFormDescription(event.description || '');
-          setFormType(event.calendar_event_type || 'other');
-          setFormBuildingId(event.building_id || '');
           const startDate = new Date(event.start_date_time);
           const endDate = new Date(event.end_date_time);
           setSelectedDate(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()));
           const pad = (n: number) => n.toString().padStart(2, '0');
-          setFormStartTime(`${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`);
-          setFormEndTime(`${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`);
+          formik.setValues({
+               title: event.title,
+               description: event.description || '',
+               calendar_event_type: event.calendar_event_type || 'other',
+               startTime: `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`,
+               endTime: `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`,
+               building_id: event.building_id || '',
+          });
           setOpenModal(true);
      };
      const handleCloseModal = () => { setOpenModal(false); setEditingEventId(null); };
 
-     const handleSubmit = async () => {
-          // Basic field presence validation
-          const newErrors: typeof errors = {};
-          if (!formTitle.trim()) newErrors.title = t(tokens.calendar.validation.titleRequired);
-          if (!formStartTime) newErrors.start = t(tokens.calendar.validation.startRequired);
-          if (!formEndTime) newErrors.end = t(tokens.calendar.validation.endRequired);
-          if (!formType) newErrors.type = t(tokens.calendar.validation.typeRequired);
-          if (!formBuildingId) newErrors.building = t(tokens.calendar.validation.buildingRequired);
-
-          setErrors(newErrors);
-          if (Object.keys(newErrors).length > 0) return;
+     const handleSubmit = async (values: CalendarEventFormValues) => {
           // Build start/end timestamps from selectedDate + times
-          const [sh, sm] = formStartTime.split(':').map(Number);
-          const [eh, em] = formEndTime.split(':').map(Number);
+          const [sh, sm] = values.startTime.split(':').map(Number);
+          const [eh, em] = values.endTime.split(':').map(Number);
           const startDateObj = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), sh, sm);
           const endDateObj = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), eh, em);
           const start = startDateObj.toISOString();
@@ -185,24 +183,24 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                const optimistic: CalendarEvent = {
                     id: tempId,
                     all_day: false,
-                    description: formDescription,
+                    description: values.description,
                     end_date_time: end,
                     start_date_time: start,
-                    title: formTitle,
+                    title: values.title,
                     client_id: effectiveClientId,
-                    calendar_event_type: formType,
-                    building_id: formBuildingId || null,
+                    calendar_event_type: values.calendar_event_type,
+                    building_id: values.building_id || null,
                     created_at: new Date().toISOString(),
                };
                setOptimisticEvents(prev => [...prev, optimistic]);
                await (dispatch as any)(thunks.createEvent({
                     all_day: false,
-                    description: formDescription,
+                    description: values.description,
                     end_date_time: end,
                     start_date_time: start,
-                    title: formTitle,
-                    calendar_event_type: formType,
-                    building_id: formBuildingId || null,
+                    title: values.title,
+                    calendar_event_type: values.calendar_event_type,
+                    building_id: values.building_id || null,
                     created_at: new Date().toISOString(),
                }));
                setOptimisticEvents(prev => prev.filter(e => e.id !== tempId));
@@ -213,18 +211,18 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     eventId: editingEventId,
                     update: {
                          all_day: false,
-                         description: formDescription,
+                         description: values.description,
                          end_date_time: end,
                          start_date_time: start,
-                         title: formTitle,
-                         calendar_event_type: formType,
-                         building_id: formBuildingId || null,
+                         title: values.title,
+                         calendar_event_type: values.calendar_event_type,
+                         building_id: values.building_id || null,
                     },
                }));
                setCreating(false);
           }
           // Reset and close
-          setFormTitle(''); setFormDescription(''); setFormType('meeting'); setFormStartTime('09:00'); setFormEndTime('10:00'); setFormBuildingId(''); setTimeError(null); setErrors({});
+          formik.resetForm(); setTimeError(null);
           handleCloseModal();
      };
 
@@ -238,6 +236,22 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
      };
 
      const showRightPanel = !mdDown; // collapse right panel below md
+
+     const validationSchema = useMemo(() => Yup.object<CalendarEventFormValues>({
+          title: Yup.string().trim().required(t(tokens.calendar.validation.titleRequired)),
+          description: Yup.string().default(''),
+          calendar_event_type: Yup.mixed<EventType>().oneOf(['appointment', 'meeting', 'reminder', 'task', 'holiday', 'other']).required(t(tokens.calendar.validation.typeRequired)),
+          startTime: Yup.string().required(t(tokens.calendar.validation.startRequired)),
+          endTime: Yup.string().required(t(tokens.calendar.validation.endRequired)),
+          building_id: Yup.string().required(t(tokens.calendar.validation.buildingRequired)),
+     }), [t]);
+
+     const formik = useFormik<CalendarEventFormValues>({
+          initialValues: CALENDAR_EVENT_INITIAL_VALUES,
+          validationSchema,
+          onSubmit: handleSubmit,
+          enableReinitialize: false,
+     });
 
      return (
           <Stack spacing={3}>
@@ -353,20 +367,80 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                          <DialogTitle>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</DialogTitle>
                          <DialogContent>
                               <Typography variant="body2" sx={{ mb: 2 }}>{editingEventId ? t(tokens.calendar.editEvent) : t(tokens.calendar.addEvent)}</Typography>
-                              <Stack spacing={2}>
-                                   <TextField label={t(tokens.calendar.titleLabel)} value={formTitle} onChange={e => { setFormTitle(e.target.value); if (errors.title) setErrors(prev => ({ ...prev, title: undefined })); }} fullWidth error={!!errors.title} helperText={errors.title} />
-                                   <TextField label={t(tokens.calendar.descriptionLabel)} value={formDescription} onChange={e => setFormDescription(e.target.value)} fullWidth multiline minRows={2} />
+                              <Stack spacing={2} component="form" onSubmit={formik.handleSubmit}>
+                                   <TextField
+                                        label={t(tokens.calendar.titleLabel)}
+                                        name="title"
+                                        value={formik.values.title}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        fullWidth
+                                        error={formik.touched.title && !!formik.errors.title}
+                                        helperText={formik.touched.title && formik.errors.title}
+                                   />
+                                   <TextField
+                                        label={t(tokens.calendar.descriptionLabel)}
+                                        name="description"
+                                        value={formik.values.description}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        fullWidth
+                                        multiline
+                                        minRows={2}
+                                   />
                                    <Stack direction="row" spacing={2}>
-                                        <TextField label={t(tokens.calendar.startTimeLabel)} type="time" value={formStartTime} onChange={e => { setFormStartTime(e.target.value); if (timeError) setTimeError(null); if (errors.start) setErrors(p => ({ ...p, start: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.start} helperText={errors.start} />
-                                        <TextField label={t(tokens.calendar.endTimeLabel)} type="time" value={formEndTime} onChange={e => { setFormEndTime(e.target.value); if (timeError) setTimeError(null); if (errors.end) setErrors(p => ({ ...p, end: undefined })); }} inputProps={{ step: 300 }} fullWidth error={!!timeError || !!errors.end} helperText={errors.end} />
+                                        <TextField
+                                             label={t(tokens.calendar.startTimeLabel)}
+                                             type="time"
+                                             name="startTime"
+                                             value={formik.values.startTime}
+                                             onChange={e => { formik.handleChange(e); if (timeError) setTimeError(null); }}
+                                             onBlur={formik.handleBlur}
+                                             inputProps={{ step: 300 }}
+                                             fullWidth
+                                             error={!!timeError || (formik.touched.startTime && !!formik.errors.startTime)}
+                                             helperText={formik.touched.startTime && formik.errors.startTime}
+                                        />
+                                        <TextField
+                                             label={t(tokens.calendar.endTimeLabel)}
+                                             type="time"
+                                             name="endTime"
+                                             value={formik.values.endTime}
+                                             onChange={e => { formik.handleChange(e); if (timeError) setTimeError(null); }}
+                                             onBlur={formik.handleBlur}
+                                             inputProps={{ step: 300 }}
+                                             fullWidth
+                                             error={!!timeError || (formik.touched.endTime && !!formik.errors.endTime)}
+                                             helperText={formik.touched.endTime && formik.errors.endTime}
+                                        />
                                    </Stack>
-                                   <TextField select label={t(tokens.calendar.eventTypeLabel)} value={formType} onChange={e => { setFormType(e.target.value as EventType); if (errors.type) setErrors(p => ({ ...p, type: undefined })); }} fullWidth error={!!errors.type} helperText={errors.type}>
+                                   <TextField
+                                        select
+                                        label={t(tokens.calendar.eventTypeLabel)}
+                                        name="calendar_event_type"
+                                        value={formik.values.calendar_event_type}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        fullWidth
+                                        error={formik.touched.calendar_event_type && !!formik.errors.calendar_event_type}
+                                        helperText={formik.touched.calendar_event_type && formik.errors.calendar_event_type}
+                                   >
                                         {Object.entries(BASE_EVENT_TYPE_META).map(([key, meta]) => (
                                              <MenuItem key={key} value={key}>{t((tokens.calendar.types as any)[key])}</MenuItem>
                                         ))}
                                    </TextField>
                                    {buildings.length > 0 && (
-                                        <TextField select label={t(tokens.calendar.buildingLabel)} value={formBuildingId} onChange={e => { setFormBuildingId(e.target.value); if (errors.building) setErrors(p => ({ ...p, building: undefined })); }} fullWidth error={!!errors.building} helperText={errors.building}>
+                                        <TextField
+                                             select
+                                             label={t(tokens.calendar.buildingLabel)}
+                                             name="building_id"
+                                             value={formik.values.building_id}
+                                             onChange={formik.handleChange}
+                                             onBlur={formik.handleBlur}
+                                             fullWidth
+                                             error={formik.touched.building_id && !!formik.errors.building_id}
+                                             helperText={formik.touched.building_id && formik.errors.building_id}
+                                        >
                                              <MenuItem value="">{t(tokens.calendar.noBuildingOption)}</MenuItem>
                                              {buildings.map(b => (
                                                   <MenuItem key={b.id} value={b.id}>
@@ -380,7 +454,17 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                          <DialogActions>
                               <Button onClick={handleCloseModal} color="inherit">{t(tokens.calendar.cancel)}</Button>
                               {editingEventId && !readOnly && <Button onClick={handleDeleteEvent} color="error" disabled={creating}>{creating ? t(tokens.calendar.deleting) : t(tokens.calendar.delete)}</Button>}
-                              {!readOnly && <Button onClick={handleSubmit} variant="contained" disabled={!formTitle || creating}>{creating ? (editingEventId ? t(tokens.calendar.saving) : t(tokens.calendar.creating)) : (editingEventId ? t(tokens.calendar.save) : t(tokens.calendar.create))}</Button>}
+                              {!readOnly && (
+                                   <Button
+                                        onClick={() => formik.handleSubmit()}
+                                        variant="contained"
+                                        disabled={creating || !formik.values.title}
+                                   >
+                                        {creating
+                                             ? (editingEventId ? t(tokens.calendar.saving) : t(tokens.calendar.creating))
+                                             : (editingEventId ? t(tokens.calendar.save) : t(tokens.calendar.create))}
+                                   </Button>
+                              )}
                          </DialogActions>
                     </Dialog>
                </Stack>

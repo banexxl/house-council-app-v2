@@ -20,3 +20,22 @@ export interface UpdateCalendarEventInput {
 export type EventType = 'appointment' | 'meeting' | 'reminder' | 'task' | 'holiday' | 'other';
 
 export type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
+
+// Formik/Yup helpers for calendar event creation/editing
+export interface CalendarEventFormValues {
+  title: string;
+  description: string;
+  calendar_event_type: EventType;
+  startTime: string; // HH:mm
+  endTime: string;   // HH:mm
+  building_id: string;
+}
+
+export const CALENDAR_EVENT_INITIAL_VALUES: CalendarEventFormValues = {
+  title: '',
+  description: '',
+  calendar_event_type: 'meeting',
+  startTime: '09:00',
+  endTime: '10:00',
+  building_id: '',
+};
