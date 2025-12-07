@@ -15,7 +15,7 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { initNotificationsRealtime } from 'src/realtime/sb-realtime';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
-import { markNotificationRead } from 'src/app/actions/notification/notification-actions';
+import { markAllNotificationsRead, markNotificationRead } from 'src/app/actions/notification/notification-actions';
 import toast from 'react-hot-toast';
 import { isClientUserId } from 'src/app/actions/client/client-actions';
 import { TABLES } from 'src/libs/supabase/tables';
@@ -153,14 +153,10 @@ export function useNotifications() {
     setNotifications([]); // optimistic
     if (!userId || ids.length === 0) return;
 
-    const e = await supabaseBrowserClient
-      .from(TABLES.NOTIFICATIONS)
-      .update({ is_read: true })
-      .in('id', ids)
-      .eq('user_id', userId)
-      .then(({ error }) => {
-        if (error) toast.error('Failed to mark all notifications as read', error.cause || error.message);
-      });
+    const { success, error } = await markAllNotificationsRead()
+    if (!success) {
+      toast.error('Failed to mark notification as read');
+    }
   }, [userId, notifications]);
 
   const handleOpenOne = useCallback(async (notificationId: string, url?: string) => {

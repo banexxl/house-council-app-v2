@@ -183,7 +183,7 @@ export const sendAccessRequestClientEmail = async (
 
 export const sendAccessRequestApprovedEmail = async (
   to: string,
-  data: { name: string; email: string; password: string; loginUrl: string }
+  data: { locale: string; name: string; email: string; password: string; loginUrl: string }
 ): Promise<{ ok: boolean; error?: string }> => {
   const { subject, injectedHtml } = await buildAccessRequestApprovedEmail(data);
   try {
