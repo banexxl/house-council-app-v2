@@ -435,6 +435,8 @@ export const es = {
   [tokens.common.lblHasGroundFloorApartments]: 'Hat Erdgeschosswohnungen',
   [tokens.common.lblFilters]: 'Filtros',
   [tokens.common.lblClientAccountActions]: 'Acciones de cuenta de cliente',
+  [tokens.common.lblWorking]: 'Trabajando...',
+  [tokens.common.lblClose]: 'Cerrar',
   [tokens.common.notes]: 'Notas',
   [tokens.common.settings]: 'Configuraciones',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Haga clic aquí para subir o arrastre y suelte para subir',

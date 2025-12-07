@@ -434,6 +434,8 @@ export const de = {
   [tokens.common.lblNo]: 'Nein',
   [tokens.common.lblFilters]: 'Filter',
   [tokens.common.lblClientAccountActions]: 'Kundenkonto Aktionen',
+  [tokens.common.lblWorking]: 'Arbeite...',
+  [tokens.common.lblClose]: 'Schließen',
   [tokens.common.notes]: 'Notizen',
   [tokens.common.settings]: 'Einstellungen',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Klicken Sie hier, um hochzuladen oder ziehen und loslassen, um hochzuladen',

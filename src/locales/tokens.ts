@@ -115,6 +115,8 @@ export const tokens = {
     lblNo: 'common.lblNo',
     lblFilters: 'common.lblFilters',
     lblClientAccountActions: 'common.lblClientAccountActions',
+    lblWorking: 'common.lblWorking',
+    lblClose: 'common.lblClose',
     notes: 'common.notes',
     settings: 'common.settings',
     actionClickToUploadOrDragAndDrop: 'common.actionClickToUploadOrDragAndDrop',

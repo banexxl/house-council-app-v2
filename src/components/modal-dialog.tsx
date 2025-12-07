@@ -11,6 +11,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { SxProps, Theme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 type ModalType = 'confirmation' | 'success' | 'error';
 
@@ -56,6 +57,7 @@ export function PopupModal({
 
      const [internalLoading, setInternalLoading] = useState(false);
      const isLoading = loadingProp ?? internalLoading;
+     const { t } = useTranslation();
 
      return (
           <Dialog
@@ -82,21 +84,21 @@ export function PopupModal({
                                    {cancelText}
                               </Button>
                          )}
-                    <Button
+                         <Button
                               onClick={async () => {
-                                       if (type === 'confirmation' && onConfirm) {
+                                   if (type === 'confirmation' && onConfirm) {
                                         setInternalLoading(true);
                                         await onConfirm();
                                         setInternalLoading(false);
-                                       } else {
+                                   } else {
                                         onClose();
-                                       }
+                                   }
                               }}
                               color="primary"
                               variant="contained"
                               disabled={isLoading}
                          >
-                              {isLoading ? 'Working...' : type === 'confirmation' ? confirmText : 'Close'}
+                              {isLoading ? t('common.lblWorking') : type === 'confirmation' ? confirmText : t('common.lblClose')}
                          </Button>
                     </DialogActions>
                </Box>

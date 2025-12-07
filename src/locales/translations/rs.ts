@@ -491,6 +491,8 @@ export const rs = {
    [tokens.common.lblNo]: 'Ne',
    [tokens.common.lblFilters]: 'Filteri',
    [tokens.common.lblClientAccountActions]: 'Akcije klijentskog naloga',
+   [tokens.common.lblWorking]: 'Radim...',
+   [tokens.common.lblClose]: 'Zatvori',
    [tokens.common.notes]: 'Beleške',
    [tokens.common.settings]: 'Podešavanja',
    [tokens.common.actionClickToUploadOrDragAndDrop]: 'Kliknite ovde ili prevucite datoteke za otpremanje',

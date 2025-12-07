@@ -295,6 +295,8 @@ export const en = {
   [tokens.common.lblNo]: 'No',
   [tokens.common.lblFilters]: 'Filters',
   [tokens.common.lblClientAccountActions]: 'Client Account Actions',
+  [tokens.common.lblWorking]: 'Working...',
+  [tokens.common.lblClose]: 'Close',
   [tokens.common.notes]: 'Notes',
   [tokens.common.settings]: 'Settings',
   [tokens.common.actionClickToUploadOrDragAndDrop]: 'Click here to upload or drag and drop to upload',
