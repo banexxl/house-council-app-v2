@@ -8,7 +8,10 @@ import { logServerAction } from "src/libs/supabase/server-logging";
 import { createCalendarNotification } from "src/utils/notification";
 import { readAllTenantsFromBuildingIds } from "../tenant/tenant-actions";
 import { emitNotifications } from "../notification/emit-notification";
+import { getBuildingAddressFromId, getNotificationEmailsForBuildings } from "../building/building-actions";
+import { buildCalendarEventCreatedEmail } from "src/libs/email/messages/calendar-event-created";
 import log from "src/utils/logger";
+import { sendViaEmail } from "../notification/senders";
 
 // Map DB row -> CalendarEvent preserving timestamptz as ISO strings
 const mapRow = (r: any): CalendarEvent => ({
@@ -148,7 +151,7 @@ export const listDashboardEvents = async ({
      }
 };
 
-export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionResult<CalendarEvent>> => {
+export const createCalendarEvent = async (input: CalendarEvent, locale: string = "rs"): Promise<ActionResult<CalendarEvent>> => {
      const time = Date.now();
      try {
           const { client, clientMember, admin } = await getViewer();
@@ -209,6 +212,34 @@ export const createCalendarEvent = async (input: CalendarEvent): Promise<ActionR
                     }
                } catch (e: any) {
                     await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: e?.message || 'unexpected', payload: { eventId: mapped.id }, status: 'fail', type: 'db' });
+               }
+
+               // Additionally send email notifications (calendar-event-created template)
+               try {
+                    const supabase = await useServerSideSupabaseAnonClient();
+                    const emails = await getNotificationEmailsForBuildings(supabase, [mapped.building_id]);
+
+                    if (emails && emails.length > 0) {
+                         const addressResult = await getBuildingAddressFromId(mapped.building_id);
+                         const fullAddress = addressResult.success && addressResult.data ? addressResult.data : '';
+
+                         const { subject, injectedHtml } = await buildCalendarEventCreatedEmail({
+                              locale,
+                              eventId: mapped.id,
+                              title: mapped.title,
+                              description: mapped.description || '',
+                              fullAddress,
+                         });
+
+                         for (const email of emails) {
+                              const { ok, error } = await sendViaEmail(email, subject, injectedHtml);
+                              if (!ok) {
+                                   log(`Error sending calendar event email to ${email} for event ID ${mapped.id}: ${error}`);
+                              }
+                         }
+                    }
+               } catch (e: any) {
+                    log(`Unexpected error sending calendar event emails for event ID ${mapped.id}: ${e?.message || e}`);
                }
           }
           await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { clientId, id: mapped.id }, status: 'success', type: 'db' });

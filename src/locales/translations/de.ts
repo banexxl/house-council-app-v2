@@ -196,6 +196,10 @@ export const de = {
   [tokens.email.incidentCreatedBodyIntro]: 'Ein neuer Serviceauftrag wurde für Ihr Gebäude erstellt.',
   [tokens.email.incidentCreatedBodyDescriptionLabel]: 'Details zum Auftrag',
   [tokens.email.incidentCreatedBodyCta]: 'Vorgang ansehen',
+  [tokens.email.calendarEventCreated.subject]: 'Neues Kalenderereignis: {{title}}',
+  [tokens.email.calendarEventCreated.intro]: 'Ein neues Kalenderereignis wurde für Ihr Gebäude erstellt.',
+  [tokens.email.calendarEventCreated.ctaLabel]: 'Ereignis im Kalender ansehen',
+  [tokens.email.common.descriptionLabel]: 'Ereignisdetails',
   // Polls help (additional)
   [tokens.polls.help.supermajority_percent]: 'Prozentsatz der Stimmen, der zur Annahme des Vorschlags erforderlich ist (Supermajorität).',
   [tokens.polls.help.threshold_percent]: 'Mindestprozentsatz, den eine Option erreichen muss, um berücksichtigt zu werden (Schwellenwert).',

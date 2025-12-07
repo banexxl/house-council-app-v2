@@ -1333,6 +1333,14 @@ export const tokens = {
     trialEndingTitle: 'email.trialEndingTitle',
     trialEndingIntro: 'email.trialEndingIntro',
     trialEndingDetails: 'email.trialEndingDetails',
+    calendarEventCreated: {
+      subject: 'email.calendarEventCreatedTitle',
+      intro: 'email.calendarEventCreatedBodyIntro',
+      ctaLabel: 'email.calendarEventCreatedBodyCta',
+    },
+    common: {
+      descriptionLabel: 'email.commonDescriptionLabel',
+    },
   },
   announcements: {
     status: {

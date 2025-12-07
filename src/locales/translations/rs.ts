@@ -254,6 +254,10 @@ export const rs = {
    [tokens.email.incidentCreatedBodyIntro]: 'Kreiran je novi servisni zahtev za vašu zgradu.',
    [tokens.email.incidentCreatedBodyDescriptionLabel]: 'Detalji zahteva',
    [tokens.email.incidentCreatedBodyCta]: 'Pogledajte zahtev',
+   [tokens.email.calendarEventCreated.subject]: 'Novi događaj u kalendaru: {{title}}',
+   [tokens.email.calendarEventCreated.intro]: 'Kreiran je novi događaj u kalendaru za vašu zgradu.',
+   [tokens.email.calendarEventCreated.ctaLabel]: 'Pogledajte događaj u kalendaru',
+   [tokens.email.common.descriptionLabel]: 'Detalji događaja',
    // Announcements
    [tokens.announcements.managementTitle]: 'Objave',
    [tokens.announcements.createNew]: 'Kreiraj novu objavu',
