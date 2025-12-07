@@ -19,7 +19,6 @@ import { signInWithEmailAndPassword } from "../actions";
 
 type PasswordFormProps = {
      ipAddress: string | null;
-     redirect: string;
 };
 
 type SupabaseMfaFactor = {
@@ -28,7 +27,7 @@ type SupabaseMfaFactor = {
      status: "unverified" | "verified" | string;
 };
 
-export const PasswordForm = ({ ipAddress, redirect }: PasswordFormProps) => {
+export const PasswordForm = ({ ipAddress }: PasswordFormProps) => {
      const router = useRouter();
 
      const [doesRequire2FA, setDoesRequire2FA] = useState(false);
@@ -41,9 +40,9 @@ export const PasswordForm = ({ ipAddress, redirect }: PasswordFormProps) => {
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
      );
 
-     const handleNavClick = () => {
+     const handleNavClick = (path: string) => {
           startTransition(() => {
-               router.push(redirect);
+               router.push(path);
           });
      };
 
@@ -86,7 +85,7 @@ export const PasswordForm = ({ ipAddress, redirect }: PasswordFormProps) => {
                          // ✅ No verified TOTP factor → no 2FA required, user is fully logged in
                          if (!totpFactor) {
                               toast.success("Sign in successful!");
-                              handleNavClick();
+                              handleNavClick("/");
                               formik.resetForm();
                               setLoading(false);
                               return;
@@ -151,7 +150,7 @@ export const PasswordForm = ({ ipAddress, redirect }: PasswordFormProps) => {
                     // verifyData.session may contain the upgraded session
                     if (verifyData?.user && verifyData.access_token) {
                          toast.success("2FA verified. You're now signed in!");
-                         handleNavClick();
+                         handleNavClick("/");
                     } else {
                          toast.error("Verification failed — no session returned.");
                     }

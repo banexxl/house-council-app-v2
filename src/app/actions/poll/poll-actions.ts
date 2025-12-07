@@ -12,7 +12,6 @@ import { createPollPublishNotification } from 'src/utils/notification';
 import { BaseNotification } from 'src/types/notification';
 import { emitNotifications } from '../notification/emit-notification';
 import { sendViaEmail } from '../notification/senders';
-import { buildPollPublishedEmail } from 'src/libs/email/messages/poll-published';
 import log from 'src/utils/logger';
 
 /**
@@ -326,6 +325,17 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 
                         // Additionally send email notifications to all tenants of targeted buildings
                         if (tenants && tenants.length) {
+                            const appBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+                            const pollPath = `/dashboard/polls/voting/${id}`;
+
+                            // Build heading and subheading using server-side translations
+                            const { getServerI18n, tokens: serverTokens } = await import('src/locales/i18n-server');
+                            const t = await getServerI18n(locale || 'rs');
+
+                            const subject =
+                                t(serverTokens.email.pollPublishedTitle) ||
+                                'New poll has been published';
+
                             // Derive building address from the first tenant's building (normalized by readAllTenantsFromBuildingIds)
                             const firstTenant = tenants[0] as any;
                             const firstBuilding = firstTenant?.apartment?.building;
@@ -338,13 +348,27 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 
                             const description = annRow?.description || '';
 
-                            const { subject, injectedHtml } = await buildPollPublishedEmail({
-                                locale,
-                                pollId: id,
-                                title: annRow?.title || '',
-                                description,
-                                fullAddress,
-                            });
+                            const intro =
+                                t(serverTokens.email.pollPublishedBodyIntro) ||
+                                'A new poll has been published for your building.';
+                            const descriptionLabel =
+                                t(serverTokens.email.pollPublishedBodyDescriptionLabel) ||
+                                'Poll description';
+                            const ctaLabel =
+                                t(serverTokens.email.pollPublishedBodyCta) ||
+                                'View and vote in the poll';
+
+                            const injectedHtml = `
+                                                            <p>${intro}</p>
+                                                            <p><strong>${annRow?.title || ''}</strong></p>
+                                                            ${fullAddress ? `<p><strong>${t(serverTokens.common.address)}:</strong> ${fullAddress}</p>` : ''}
+                                                            ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
+                                                            <p>
+                                                                <a href="${appBaseUrl}${pollPath}">
+                                                                    ${ctaLabel}
+                                                                </a>
+                                                            </p>
+                                                        `;
 
                             // Pass only the inner body HTML here; sendViaEmail/sendNotificationEmail
                             // will wrap it once with buildNotificationGenericHtml to avoid double headers/footers.

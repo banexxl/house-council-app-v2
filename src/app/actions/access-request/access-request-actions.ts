@@ -263,7 +263,6 @@ export const submitAccessRequest = async ({
 
      const recipients = Array.from(new Set([ADMIN_EMAIL, buildingClientEmail].filter(Boolean))) as string[];
      const emailResult = await sendAccessRequestClientEmail(recipients, {
-          locale: 'rs',
           name: payload.name,
           email: payload.email,
           message: payload.message,
@@ -394,7 +393,6 @@ export const approveAccessRequest = async (
      const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '').replace(/\/$/, '');
      const loginUrl = `${baseUrl || ''}/auth/login`;
      const welcomeEmail = await sendAccessRequestApprovedEmail(parsed.email, {
-          locale: 'rs',
           name: parsed.name,
           email: parsed.email,
           password: tempPassword,

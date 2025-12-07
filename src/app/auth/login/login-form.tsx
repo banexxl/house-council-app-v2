@@ -61,11 +61,7 @@ const GoogleMultiColorIcon = (props: any) => (
      </svg>
 );
 
-type LoginFormProps = {
-     redirect: string; // comes from page.tsx via LoginFormClient
-};
-
-const LoginForm = ({ redirect }: LoginFormProps) => {
+const LoginForm = () => {
      const [authMethod, setAuthMethod] = useState<"password" | "google" | "magic_link">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
@@ -93,7 +89,7 @@ const LoginForm = ({ redirect }: LoginFormProps) => {
                     <Tab value="magic_link" label="Magic Link" />
                </Tabs>
 
-               {authMethod === "password" && <PasswordForm ipAddress={ipAddress || null} redirect={redirect} />}
+               {authMethod === "password" && <PasswordForm ipAddress={ipAddress || null} />}
                {authMethod === "google" && (
                     <Box>
                          <Typography

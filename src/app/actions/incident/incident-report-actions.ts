@@ -13,7 +13,6 @@ import { emitNotifications } from 'src/app/actions/notification/emit-notificatio
 import { createIncidentNotification } from 'src/utils/notification';
 import type { BaseNotification } from 'src/types/notification';
 import { readAllTenantsFromBuildingIds } from 'src/app/actions/tenant/tenant-actions';
-import { buildIncidentCreatedEmail } from 'src/libs/email/messages/incident-created';
 
 export const listIncidentReportsForClient = async (client_id: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
 
@@ -68,6 +67,24 @@ export const createIncidentReport = async (
   });
 
   try {
+    const t = await getServerI18n(locale || 'rs');
+
+    const subject =
+      t(serverTokens.email.incidentCreatedTitle) ||
+      'New service request created';
+
+    const intro =
+      t(serverTokens.email.incidentCreatedBodyIntro) ||
+      'A new service request has been created for your building.';
+
+    const descriptionLabel =
+      t(serverTokens.email.incidentCreatedBodyDescriptionLabel) ||
+      'Request details';
+
+    const ctaLabel =
+      t(serverTokens.email.incidentCreatedBodyCta) ||
+      'View request';
+
     const title = (data as any)?.title ?? '';
     const description = (data as any)?.description ?? '';
 
@@ -112,14 +129,20 @@ export const createIncidentReport = async (
       }
     }
 
-    const { subject, injectedHtml } = await buildIncidentCreatedEmail({
-      locale,
-      incidentId: (data as any)?.id,
-      title,
-      description,
-      fullAddress,
-      apartmentNumber,
-    });
+    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
+
+    const injectedHtml = `
+      <p>${intro}</p>
+      <p><strong>${title}</strong></p>
+      ${fullAddress ? `<p><strong>${t(serverTokens.common.address)}:</strong> ${fullAddress}${apartmentNumber ? `, apt ${apartmentNumber}` : ''}</p>` : ''}
+      ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
+      <p>
+        <a href="${appBaseUrl}${incidentPath}">
+          ${ctaLabel}
+        </a>
+      </p>
+    `;
 
     // 1) Send emails to all tenants in the incident's building using shared helper
     if (incidentBuildingId) {
@@ -201,7 +224,6 @@ export const createIncidentReport = async (
         reporterId;
 
       if (building_id && user_id) {
-        const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
         const incidentNotification = createIncidentNotification({
           action_token: 'notifications.actions.notificationActionIncidentCreated',
           description,

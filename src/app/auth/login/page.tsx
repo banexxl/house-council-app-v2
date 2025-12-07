@@ -1,17 +1,17 @@
 // src/app/auth/login/page.tsx
+import type { Metadata } from 'next';
 import LoginFormClient from './login-form-client';
 import { Suspense } from 'react';
 import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
 
 type LoginPageProps = {
-  searchParams?: Promise<{
+  searchParams?: {
     redirect?: string;
-  }>;
+  };
 };
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const resolvedSearchParams = await searchParams;
-  const redirectParam = resolvedSearchParams?.redirect;
+export default function LoginPage({ searchParams }: LoginPageProps) {
+  const redirectParam = searchParams?.redirect;
 
   // Basic safety so we don't redirect to external URLs
   const safeRedirect =
@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <Suspense fallback={<DefaultPageSkeleton />}>
-      <LoginFormClient redirect={safeRedirect} />
+      <LoginFormClient />
     </Suspense>
-  );
+  )
 }
