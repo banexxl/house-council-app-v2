@@ -336,19 +336,15 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                                 t(serverTokens.email.pollPublishedTitle) ||
                                 'New poll has been published';
 
+                            // Derive building address from the first tenant's building (normalized by readAllTenantsFromBuildingIds)
                             const firstTenant = tenants[0] as any;
                             const firstBuilding = firstTenant?.apartment?.building;
+                            const streetAddress = firstBuilding?.street_address ?? '';
+                            const streetNumber = firstBuilding?.street_number ?? '';
+                            const city = firstBuilding?.city ?? '';
 
-                            const buildingAddressParts = [
-                                firstBuilding?.street_address,
-                                firstBuilding?.city,
-                            ].filter(Boolean);
-                            const buildingAddress = buildingAddressParts.join(', ');
-
-                            const subheading = buildingAddress
-                                ? t(serverTokens.email.pollPublishedSubtitleForBuilding, { address: buildingAddress }) ||
-                                `for building ${buildingAddress}`
-                                : '';
+                            const addressParts = [streetAddress, streetNumber, city].filter(Boolean);
+                            const fullAddress = addressParts.join(' ').trim();
 
                             const description = annRow?.description || '';
 
@@ -365,6 +361,7 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                             const injectedHtml = `
                                                             <p>${intro}</p>
                                                             <p><strong>${annRow?.title || ''}</strong></p>
+                                                            ${fullAddress ? `<p><strong>${t(serverTokens.common.address)}:</strong> ${fullAddress}</p>` : ''}
                                                             ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
                                                             <p>
                                                                 <a href="${appBaseUrl}${pollPath}">

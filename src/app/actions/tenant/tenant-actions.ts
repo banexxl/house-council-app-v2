@@ -661,6 +661,7 @@ export const readAllTenantsFromBuildingIds = async (
                          building_location,
                          building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
                               street_address,
+                              street_number,
                               city
                          )
                     )
@@ -679,6 +680,7 @@ export const readAllTenantsFromBuildingIds = async (
                building: {
                     id: tenant?.apartment?.building?.id ?? tenant?.apartment?.building_id ?? '',
                     street_address: tenant?.apartment?.building?.building_location?.street_address ?? '',
+                    street_number: tenant?.apartment?.building?.building_location?.street_number ?? '',
                     city: tenant?.apartment?.building?.building_location?.city ?? '',
                },
           },
