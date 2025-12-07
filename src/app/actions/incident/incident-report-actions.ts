@@ -88,13 +88,46 @@ export const createIncidentReport = async (
     const title = (data as any)?.title ?? '';
     const description = (data as any)?.description ?? '';
 
-    const city = (data as any)?.city ?? '';
-    const streetAddress = (data as any)?.street_address ?? '';
-    const streetNumber = (data as any)?.street_number ?? '';
-    const apartmentNumber = (data as any)?.apartment_number ?? '';
+    const incidentBuildingId = (data as any)?.building_id as string | null;
+    const incidentApartmentId = (data as any)?.apartment_id as string | null;
+    const incidentClientId = (data as any)?.client_id as string | null;
+    const reporterId = (data as any)?.reported_by as string | null;
 
-    const addressParts = [streetAddress, streetNumber, city].filter(Boolean);
-    const fullAddress = addressParts.join(' ').trim();
+    let fullAddress = '';
+    let apartmentNumber: string | undefined;
+
+    // Resolve address from building + optional apartment
+    if (incidentBuildingId) {
+      try {
+        const { data: loc } = await supabase
+          .from(TABLES.BUILDING_LOCATIONS!)
+          .select('street_address, street_number, city')
+          .eq('building_id', incidentBuildingId)
+          .maybeSingle();
+
+        const streetAddress = (loc as any)?.street_address ?? '';
+        const streetNumber = (loc as any)?.street_number ?? '';
+        const city = (loc as any)?.city ?? '';
+
+        const parts = [streetAddress, streetNumber, city].filter(Boolean);
+        fullAddress = parts.join(' ').trim();
+      } catch {
+        // ignore address lookup failures
+      }
+    }
+
+    if (incidentApartmentId) {
+      try {
+        const { data: apt } = await supabase
+          .from(TABLES.APARTMENTS!)
+          .select('apartment_number')
+          .eq('id', incidentApartmentId)
+          .maybeSingle();
+        apartmentNumber = (apt as any)?.apartment_number ?? undefined;
+      } catch {
+        // ignore apartment lookup failures
+      }
+    }
 
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
     const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
@@ -102,7 +135,7 @@ export const createIncidentReport = async (
     const injectedHtml = `
       <p>${intro}</p>
       <p><strong>${title}</strong></p>
-      ${fullAddress ? `<p><strong>Address:</strong> ${fullAddress}${apartmentNumber ? `, apt ${apartmentNumber}` : ''}</p>` : ''}
+      ${fullAddress ? `<p><strong>${t(serverTokens.common.address)}:</strong> ${fullAddress}${apartmentNumber ? `, apt ${apartmentNumber}` : ''}</p>` : ''}
       ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
       <p>
         <a href="${appBaseUrl}${incidentPath}">
@@ -110,10 +143,6 @@ export const createIncidentReport = async (
         </a>
       </p>
     `;
-
-    const incidentBuildingId = (data as any)?.building_id as string | null;
-    const incidentClientId = (data as any)?.client_id as string | null;
-    const reporterId = (data as any)?.reported_by as string | null;
 
     // 1) Send emails to all tenants in the incident's building using shared helper
     if (incidentBuildingId) {
