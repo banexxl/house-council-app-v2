@@ -41,7 +41,7 @@ export const buildIncidentCreatedEmail = async ({
      const injectedHtml = `
       <p>${intro}</p>
       <p><strong>${title}</strong></p>
-      ${fullAddress ? `<p><strong>${t(serverTokens.common.address)}:</strong> ${fullAddress}${apartmentNumber ? `, apt ${apartmentNumber}` : ''}</p>` : ''}
+      ${fullAddress ? `<p><strong>${t(serverTokens.common.address)}:</strong> ${fullAddress}${apartmentNumber ? `, ${t(serverTokens.apartments.lblApartmentNumber)} ${apartmentNumber}` : ''}</p>` : ''}
       ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
       <p>
         <a href="${appBaseUrl}${incidentPath}">

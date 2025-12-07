@@ -12,6 +12,60 @@ import log from "src/utils/logger";
 
 // ===== Actions =====
 
+/** Get notification emails for a building (Tenants, Client Members, Client) */
+export const getNotificationEmailsForBuilding = async (
+     supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
+     buildingId: string
+): Promise<string[]> => {
+     const emails = new Set<string>();
+
+     // 1) Client email for this building
+     const { data: clientRow } = await supabase
+          .from(TABLES.BUILDINGS!)
+          .select('client_id, client:client_id ( email )')
+          .eq('id', buildingId)
+          .maybeSingle();
+
+     const clientId = (clientRow as any)?.client_id as string | undefined;
+     const clientEmail = (clientRow as any)?.client?.email as string | undefined;
+     if (clientEmail) emails.add(clientEmail);
+
+     // 2) Client members for that client
+     if (clientId) {
+          const { data: clientMembers } = await supabase
+               .from(TABLES.CLIENT_MEMBERS!)
+               .select('email')
+               .eq('client_id', clientId);
+
+          (clientMembers || []).forEach((m: any) => {
+               if (m?.email) emails.add(m.email as string);
+          });
+     }
+
+     // 3) Tenants in this building (via apartments)
+     const { data: apartments } = await supabase
+          .from(TABLES.APARTMENTS!)
+          .select('id')
+          .eq('building_id', buildingId);
+
+     const apartmentIds = (apartments || []).map((a: any) => a.id).filter(Boolean);
+     if (apartmentIds.length) {
+          const { data: tenants } = await supabase
+               .from(TABLES.TENANTS!)
+               .select('email, user:User!inner(email)')
+               .in('apartment_id', apartmentIds);
+
+          (tenants || []).forEach((t: any) => {
+               const email =
+                    t?.email ||
+                    t?.user?.email;
+               if (email) emails.add(email as string);
+          });
+     }
+
+     return Array.from(emails);
+};
+
 /** Get all buildings */
 export const getAllBuildings = async (): Promise<{ success: boolean; error?: string; data?: Building[] }> => {
      const t0 = Date.now();
@@ -304,6 +358,7 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean, er
      return { success: true, data: null };
 }
 
+/** GET Building IDs from User ID */
 export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ success: boolean; error?: string; data?: string[] }> => {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
@@ -353,3 +408,67 @@ export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ succe
           return { success: false, error: e?.message || 'Unexpected error' };
      }
 }
+
+/** Resolve building address from building ID */
+export const getBuildingAddressFromId = async (
+     building_id: string
+): Promise<{ success: boolean; error?: string; data?: string }> => {
+     const t0 = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          const { data: loc, error } = await supabase
+               .from(TABLES.BUILDING_LOCATIONS!)
+               .select('street_address, street_number, city')
+               .eq('building_id', building_id)
+               .maybeSingle();
+
+          if (error) {
+               log(`Error resolving building address for building_id ${building_id}: ${error.message}`);
+               await logServerAction({
+                    action: 'getBuildingAddressFromId',
+                    duration_ms: Date.now() - t0,
+                    error: error.message,
+                    payload: { building_id },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: null,
+                    id: '',
+               });
+               return { success: false, error: error.message };
+          }
+
+          const streetAddress = (loc as any)?.street_address ?? '';
+          const streetNumber = (loc as any)?.street_number ?? '';
+          const city = (loc as any)?.city ?? '';
+
+          const parts = [streetAddress, streetNumber, city].filter(Boolean);
+          const fullAddress = parts.join(' ').trim();
+
+          await logServerAction({
+               action: 'getBuildingAddressFromId',
+               duration_ms: Date.now() - t0,
+               error: '',
+               payload: { building_id },
+               status: 'success',
+               type: 'db',
+               user_id: null,
+               id: '',
+          });
+
+          return { success: true, data: fullAddress || undefined };
+     } catch (e: any) {
+          log(`Unexpected error resolving building address for building_id ${building_id}: ${e?.message || e}`);
+          await logServerAction({
+               action: 'getBuildingAddressFromId',
+               duration_ms: Date.now() - t0,
+               error: e?.message || 'unexpected',
+               payload: { building_id },
+               status: 'fail',
+               type: 'db',
+               user_id: null,
+               id: '',
+          });
+          return { success: false, error: e?.message || 'Unexpected error' };
+     }
+};

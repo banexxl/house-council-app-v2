@@ -5,14 +5,13 @@ import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
-import { getAllBuildingsFromClient, getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
+import { getAllBuildingsFromClient, getBuildingIDsFromUserId, getBuildingAddressFromId, getNotificationEmailsForBuilding } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
 import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
 import { sendViaEmail } from 'src/app/actions/notification/senders';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
 import { createIncidentNotification } from 'src/utils/notification';
 import type { BaseNotification } from 'src/types/notification';
-import { readAllTenantsFromBuildingIds } from 'src/app/actions/tenant/tenant-actions';
 import { buildIncidentCreatedEmail } from 'src/libs/email/messages/incident-created';
 
 export const listIncidentReportsForClient = async (client_id: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
@@ -79,23 +78,11 @@ export const createIncidentReport = async (
     let fullAddress = '';
     let apartmentNumber: string | undefined;
 
-    // Resolve address from building + optional apartment
+    // Resolve address from building via shared helper
     if (incidentBuildingId) {
-      try {
-        const { data: loc } = await supabase
-          .from(TABLES.BUILDING_LOCATIONS!)
-          .select('street_address, street_number, city')
-          .eq('building_id', incidentBuildingId)
-          .maybeSingle();
-        log(`Building location data for building ID ${incidentBuildingId}: ${JSON.stringify(loc)}`);
-        const streetAddress = (loc as any)?.street_address ?? '';
-        const streetNumber = (loc as any)?.street_number ?? '';
-        const city = (loc as any)?.city ?? '';
-
-        const parts = [streetAddress, streetNumber, city].filter(Boolean);
-        fullAddress = parts.join(' ').trim();
-      } catch {
-        // ignore address lookup failures
+      const addressResult = await getBuildingAddressFromId(incidentBuildingId);
+      if (addressResult.success && addressResult.data) {
+        fullAddress = addressResult.data;
       }
     }
 
@@ -122,54 +109,13 @@ export const createIncidentReport = async (
       apartmentNumber,
     });
 
-    // 1) Send emails to all tenants in the incident's building using shared helper
+    // 1) Resolve all notification emails for this building (client, members, tenants)
     if (incidentBuildingId) {
-      const { data: tenants, error: tenantsError } = await readAllTenantsFromBuildingIds([incidentBuildingId]);
-      if (tenantsError) {
-        log(`Error reading tenants for incident email: ${tenantsError}`);
-      }
-      if (tenants && tenants.length) {
-        for (const tenant of tenants as any[]) {
-          log(`Sending incident email to tenant: ${JSON.stringify(tenant)}`);
-          const email = tenant.email
-            || tenant.user?.email
-            || tenant.apartment?.tenant_email
-            || tenant.apartment?.building?.client?.email;
-          if (!email) continue;
-          // eslint-disable-next-line no-void
-          void sendViaEmail(email, subject, injectedHtml);
-        }
-      }
-    }
-
-    // 2) Send email to the client for this incident (if any)
-    if (incidentClientId) {
-      const { data: client } = await supabase
-        .from(TABLES.CLIENTS!)
-        .select('email')
-        .eq('id', incidentClientId)
-        .maybeSingle();
-
-      const clientEmail = (client as any)?.email as string | undefined;
-      if (clientEmail) {
-        // eslint-disable-next-line no-void
-        void sendViaEmail(clientEmail, subject, injectedHtml);
-      }
-    }
-
-    // 3) Send emails to all client members attached to that client
-    if (incidentClientId) {
-      const { data: clientMembers } = await supabase
-        .from(TABLES.CLIENT_MEMBERS!)
-        .select('email, client_id')
-        .eq('client_id', incidentClientId);
-
-      if (clientMembers && clientMembers.length) {
-        for (const member of clientMembers as any[]) {
-          const email = member.email as string | undefined;
-          if (!email) continue;
-          // eslint-disable-next-line no-void
-          void sendViaEmail(email, subject, injectedHtml);
+      const emails = await getNotificationEmailsForBuilding(supabase, incidentBuildingId);
+      for (const email of emails) {
+        const { ok, error } = await sendViaEmail(email, subject, injectedHtml);
+        if (!ok) {
+          log(`Error sending incident created email to ${email} for incident ID ${(data as any)?.id}: ${error}`);
         }
       }
     }
