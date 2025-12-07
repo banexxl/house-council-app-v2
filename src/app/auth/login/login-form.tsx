@@ -61,7 +61,9 @@ const GoogleMultiColorIcon = (props: any) => (
      </svg>
 );
 
-const LoginForm = () => {
+
+
+const LoginForm = ({ safeRedirect }: { safeRedirect: string }) => {
      const [authMethod, setAuthMethod] = useState<"password" | "google" | "magic_link">("password")
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
@@ -89,7 +91,7 @@ const LoginForm = () => {
                     <Tab value="magic_link" label="Magic Link" />
                </Tabs>
 
-               {authMethod === "password" && <PasswordForm ipAddress={ipAddress || null} />}
+               {authMethod === "password" && <PasswordForm ipAddress={ipAddress || null} safeRedirect={safeRedirect} />}
                {authMethod === "google" && (
                     <Box>
                          <Typography

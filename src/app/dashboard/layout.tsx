@@ -1,15 +1,27 @@
-// app/dashboard/layout.tsx
-import { type ReactNode } from 'react';
-import { getViewer } from 'src/libs/supabase/server-auth';
-import { redirect } from 'next/navigation';
-import DashboardClientLayout from './client-layout';
+'use client';
 
-export default async function DashboardLayout({ children }: { children: ReactNode }) {
-     const { client, tenant, admin, clientMember } = await getViewer();
+import { Suspense, type ReactNode } from 'react';
+import { NProgress } from 'src/components/nprogress';
+import { Layout as RootLayout } from 'src/layouts/root';
+import { Layout as DashboardLayoutRoot } from 'src/layouts/components/dashboard';
+import ClientSubscriptionWatcher from 'src/realtime/client-subscription-watcher';
+import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
 
-     if (!client && !tenant && !admin && !clientMember) {
-          redirect('/auth/login');
-     }
+type Props = {
+     children: ReactNode;
+};
 
-     return <DashboardClientLayout>{children}</DashboardClientLayout>;
+export default function DashboardClientLayout({ children }: Props) {
+     return (
+          <RootLayout>
+               <DashboardLayoutRoot>
+                    <Suspense fallback={<DefaultPageSkeleton />}>
+                         {children}
+                    </Suspense>
+               </DashboardLayoutRoot>
+
+               <ClientSubscriptionWatcher />
+               <NProgress />
+          </RootLayout>
+     );
 }

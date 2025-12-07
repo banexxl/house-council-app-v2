@@ -1,13 +1,12 @@
 import { inputLabelClasses } from '@mui/material/InputLabel';
 import { tableCellClasses } from '@mui/material/TableCell';
 import type { Components } from '@mui/material/styles/components';
-import { createTheme, useTheme } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 
 // Used only to create transitions
 const muiTheme = createTheme();
 
 export const createComponents = (): Components => {
-  const theme = useTheme();
   return {
     MuiAvatar: {
       styleOverrides: {
@@ -31,29 +30,27 @@ export const createComponents = (): Components => {
           transition: muiTheme.transitions.create(['transform', 'box-shadow'], { duration: 110, easing: muiTheme.transitions.easing.easeOut }),
           // Smooth out color/elevation changes on hover with animated color sweep from entry point
           overflow: 'hidden',
-          '&:hover': {
-            boxShadow: '0 4px 0 0 rgba(0,0,0,0.18)',
-            transform: 'translateY(0)',
-            // The background will be animated via ::before
-          },
           '&::before': {
             content: '""',
             position: 'absolute',
             top: 0,
-            left: 0,
-            width: '100%',
+            left: '-60%',
+            width: '60%',
             height: '100%',
-            pointerEvents: 'none',
-            background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            background: 'linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%)',
             opacity: 0,
-            transition: 'opacity 0.35s, transform 0.35s',
-            zIndex: 0,
-            transform: 'scaleX(0)',
-            transformOrigin: 'var(--hc-btn-hover-origin, left)',
+            pointerEvents: 'none',
+            transition: 'opacity 0.3s, left 0.5s',
+            zIndex: 1,
+          },
+          '&:hover': {
+            boxShadow: '0 4px 0 0 rgba(0,0,0,0.18)',
+            transform: 'translateY(0)',
           },
           '&:hover::before': {
             opacity: 1,
-            transform: 'scaleX(1)',
+            left: '100%',
+            transition: 'opacity 0.3s, left 0.5s',
           },
           // Set the transform origin dynamically on mouse enter
           '@media (hover: hover)': {
