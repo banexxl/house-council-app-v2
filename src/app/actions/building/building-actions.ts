@@ -61,11 +61,11 @@ export const getNotificationEmailsForBuildings = async (
      if (apartmentIds.length) {
           const { data: tenants } = await supabase
                .from(TABLES.TENANTS!)
-               .select('email, user:User!inner(email)')
+               .select('email')
                .in('apartment_id', apartmentIds);
 
           (tenants || []).forEach((t: any) => {
-               const email = t?.email || t?.user?.email;
+               const email = t?.email;
                if (email) emails.add(email as string);
           });
      }

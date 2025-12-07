@@ -15,6 +15,7 @@ import { BaseNotification } from 'src/types/notification';
 import { emitNotifications } from '../notification/emit-notification';
 import { sendViaEmail } from '../notification/senders';
 import { buildPollPublishedEmail } from 'src/libs/email/messages/poll-published';
+import log from 'src/utils/logger';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -293,6 +294,7 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                 const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
                 if (buildingIds.length > 0) {
                     const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
+                    log(`updatePollStatus - fetched ${tenants?.length ?? 0} tenants for buildings: ${buildingIds.join(', ')}`);
                     const { data: annRow, error: annErr } = await supabase
                         .from(TABLES.POLLS)
                         .select('title, description')
@@ -325,6 +327,7 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 
                         // Additionally send email notifications to all relevant parties for these buildings
                         const emails = await getNotificationEmailsForBuildings(supabase, buildingIds as string[]);
+                        log(`updatePollStatus - fetched ${emails} notification emails for buildings: ${buildingIds.join(', ')}`);
                         if (emails && emails.length > 0) {
                             const description = annRow?.description || '';
 
@@ -333,7 +336,6 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 
                             const { subject, injectedHtml } = await buildPollPublishedEmail({
                                 locale,
-                                pollId: id,
                                 title: annRow?.title || '',
                                 description,
                                 fullAddress,

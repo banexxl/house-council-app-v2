@@ -2,7 +2,6 @@ import { tokens as serverTokens, getServerI18n } from 'src/locales/i18n-server';
 
 interface BuildPollPublishedEmailParams {
      locale: string;
-     pollId: string;
      title: string;
      description?: string | null;
      fullAddress?: string;
@@ -10,7 +9,6 @@ interface BuildPollPublishedEmailParams {
 
 export const buildPollPublishedEmail = async ({
      locale,
-     pollId,
      title,
      description,
      fullAddress,
