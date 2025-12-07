@@ -1,4 +1,7 @@
+import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
+
 type AccessRequestEmailData = {
+  locale: string;
   name: string;
   email: string;
   message?: string;
@@ -8,100 +11,60 @@ type AccessRequestEmailData = {
   rejectLink: string;
 };
 
-export const buildAccessRequestClientHtml = (data: AccessRequestEmailData): string => {
+export const buildAccessRequestClientEmail = async (
+  data: AccessRequestEmailData
+): Promise<{ subject: string; injectedHtml: string }> => {
+  const t = await getServerI18n(data.locale || 'rs');
   const safe = (val?: string | null) => (val || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const subject =
+    t(serverTokens.email.accessRequestTitle) ||
+    'New Access Request';
+
+  const intro =
+    t(serverTokens.email.accessRequestIntro) ||
+    'You received a new access request from a tenant prospect.';
+
   const rows = [
-    { label: 'Name: ', value: safe(data.name) },
-    { label: 'Email: ', value: safe(data.email) },
-    { label: 'Building: ', value: data.building ? safe(data.building) : '-' },
-    { label: 'Apartment: ', value: data.apartment ? safe(data.apartment) : '-' },
-    { label: 'Message: ', value: data.message ? safe(data.message) : '-' },
+    { label: t(serverTokens.email.accessRequestNameLabel) || 'Name', value: safe(data.name) },
+    { label: t(serverTokens.email.accessRequestEmailLabel) || 'Email', value: safe(data.email) },
+    { label: t(serverTokens.email.accessRequestBuildingLabel) || 'Building', value: data.building ? safe(data.building) : '-' },
+    { label: t(serverTokens.email.accessRequestApartmentLabel) || 'Apartment', value: data.apartment ? safe(data.apartment) : '-' },
+    { label: t(serverTokens.email.accessRequestMessageLabel) || 'Message', value: data.message ? safe(data.message) : '-' },
   ];
 
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>New Access Request</title>
-  <style>
-    body { margin: 0; padding: 0; background-color: #f68a00; }
-    table { border-spacing: 0; font-family: Arial, sans-serif; }
-    .wrapper { width: 100%; background-color: #f68a00; padding: 20px; }
-    .card { background: #ffffff; max-width: 800px; width: 100%; margin: 0 auto; border-radius: 10px; overflow: hidden; }
-    .header { text-align: center; padding: 32px 24px 16px; }
-    .header h1 { margin: 0; font-size: 28px; color: #4a1005; }
-    .header p { margin: 8px 0 0; color: #555; }
-    .body { padding: 0 24px 32px; }
-    .row { padding: 10px 0; border-bottom: 1px solid #f2f2f2; display: flex; justify-content: space-between; gap: 12px; }
-    .row:last-child { border-bottom: none; }
-    .label { font-weight: 700; color: #4a1005; }
-    .value { color: #333; text-align: right; }
-    .cta { text-align: center; margin-top: 24px; }
-    .btn { display: inline-block; padding: 12px 18px; border-radius: 6px; font-weight: 700; text-decoration: none; color: #fff; margin: 0 6px; }
-    .btn-approve { background-color: #f68a00; }
-    .btn-reject { background-color: #4a1005; }
-    .footer { background-color: #4a1005; color: #ffffff; font-weight: bold; font-size: 16px; padding: 14px; text-align: center; }
-    @media screen and (max-width: 600px) {
-      .row { flex-direction: column; align-items: flex-start; }
-      .value { text-align: left; }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="card">
-      <div class="header">
-        <h1>New Access Request</h1>
-        <p>You received a new access request from a tenant prospect.</p>
-      </div>
-      <div class="body">
-        ${rows
+  const approveLabel =
+    t(serverTokens.email.accessRequestApproveCta) ||
+    'Approve & Provision';
+
+  const rejectLabel =
+    t(serverTokens.email.accessRequestRejectCta) ||
+    'Reject';
+
+  const injectedHtml = `
+      <p>${intro}</p>
+      <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+        <tbody>
+          ${rows
       .map(
         (r) => `
-            <div class="row">
-              <div class="label">${r.label}</div>
-              <div class="value">${r.value}</div>
-            </div>`
+              <tr>
+                <td style="padding:6px 4px; font-weight:600;">${r.label}:</td>
+                <td style="padding:6px 4px; text-align:right;">${r.value}</td>
+              </tr>`
       )
       .join('')}
-        <div class="cta">
-          <a href="${data.approveLink}"
-                target="_blank"
-                style="
-                display:inline-block;
-                padding:12px 18px;
-                background-color:#f68a00;
-                color:#ffffff;
-                text-decoration:none;
-                border-radius:6px;
-                font-weight:700;
-                cursor:pointer;
-            ">
-                Approve &amp; Provision
-          </a>
-          <a href="${data.rejectLink}"
-                target="_blank"
-                style="
-                display:inline-block;
-                padding:12px 18px;
-                background-color:#4a1005;
-                color:#ffffff;
-                text-decoration:none;
-                border-radius:6px;
-                font-weight:700;
-                cursor:pointer;
-                margin-left:12px;
-            ">
-                Reject
-            </a>
-        </div>
-      </div>
-      <div class="footer">Nest Link - Bringing Your Tenants Together</div>
-    </div>
-  </div>
-</body>
-</html>
-`;
+        </tbody>
+      </table>
+      <p style="margin-top:18px; text-align:center;">
+        <a href="${data.approveLink}" target="_blank" style="display:inline-block; padding:10px 16px; margin-right:8px; background-color:#f68a00; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:700;">
+          ${approveLabel}
+        </a>
+        <a href="${data.rejectLink}" target="_blank" style="display:inline-block; padding:10px 16px; background-color:#4a1005; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:700;">
+          ${rejectLabel}
+        </a>
+      </p>
+    `;
+
+  return { subject, injectedHtml };
 };

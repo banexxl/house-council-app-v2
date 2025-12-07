@@ -3,12 +3,16 @@
 
 import dynamic from 'next/dynamic';
 
-const LoginForm = dynamic(() => import('./login-form'), {
-     ssr: false, // prevent server-side rendering of LoginForm
-     // Optional loading UI:
+type LoginFormProps = {
+     redirect: string;
+};
+
+const LoginForm = dynamic<LoginFormProps>(() => import('./login-form'), {
+     ssr: false,
      // loading: () => <div>Loading login…</div>,
 });
 
-export default function LoginFormClient() {
-     return <LoginForm />;
+export default function LoginFormClient(props: LoginFormProps) {
+     // just forward everything to the real form
+     return <LoginForm {...props} />;
 }
