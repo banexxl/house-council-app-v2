@@ -962,9 +962,9 @@ export default function PollCreate({
                               backLabel={t('polls.listTitle') || 'Polls'}
                               title={poll ? (t('polls.editTitle') || 'Edit Poll') + ': ' + (poll.title || '') : (t('polls.createTitle') || 'Create Poll')}
                               breadcrumbs={[
-                              { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                              { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
-                               { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
+                                   { title: t('nav.adminDashboard'), href: paths.dashboard.index },
+                                   { title: t('polls.listTitle') || 'Polls', href: paths.dashboard.polls.index },
+                                   { title: poll ? (t('polls.editTitle') || 'Edit Poll') : (t('polls.createTitle') || 'Create Poll') }
                               ]}
                               actionComponent={
                                    poll?.id ? (
@@ -974,26 +974,26 @@ export default function PollCreate({
                                              sx={{ width: { xs: '100%', sm: 'auto' } }}
                                         >
                                              <Button
-                                             variant="contained"
-                                             href={paths.dashboard.polls.index}
-                                             onClick={() => setIsHeaderNavigating(true)}
-                                             disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
-                                             startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
-                                         >
-                                              {t('polls.listTitle') || 'Polls'}
-                                         </Button>
-                                         <Button
-                                              variant="outlined"
-                                              href={paths.dashboard.polls.create}
-                                              onClick={() => setIsHeaderNavigatingToCreate(true)}
-                                              disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
-                                              startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                             sx={{ width: { xs: '100%', sm: 'auto' } }}
-                                         >
-                                              {t('polls.createTitle') || 'Create Poll'}
-                                         </Button>
-                                    </Stack>
+                                                  variant="contained"
+                                                  href={paths.dashboard.polls.index}
+                                                  onClick={() => setIsHeaderNavigating(true)}
+                                                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                                  startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                                  sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                             >
+                                                  {t('polls.listTitle') || 'Polls'}
+                                             </Button>
+                                             <Button
+                                                  variant="outlined"
+                                                  href={paths.dashboard.polls.create}
+                                                  onClick={() => setIsHeaderNavigatingToCreate(true)}
+                                                  disabled={isHeaderNavigating || isHeaderNavigatingToCreate}
+                                                  startIcon={isHeaderNavigatingToCreate ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                                  sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                             >
+                                                  {t('polls.createTitle') || 'Create Poll'}
+                                             </Button>
+                                        </Stack>
                                    ) : (
                                         <Button
                                              variant="contained"
@@ -1002,10 +1002,10 @@ export default function PollCreate({
                                              disabled={isHeaderNavigating}
                                              startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
                                              sx={{ width: { xs: '100%', sm: 'auto' } }}
-                                         >
-                                              {t('polls.listTitle') || 'Polls'}
-                                         </Button>
-                                    )
+                                        >
+                                             {t('polls.listTitle') || 'Polls'}
+                                        </Button>
+                                   )
                               }
                          />
 
@@ -1635,7 +1635,7 @@ export default function PollCreate({
 
                                                             {formik.values.options.length > 0 ?
                                                                  <SortableOptionsList
-                                                                      options={formik.values.options}
+                                                                      options={formik.values.options as any}
                                                                       disabled={isFormLocked}
                                                                       onDelete={async (idx) => {
                                                                            const opt = formik.values.options[idx];
@@ -1666,13 +1666,13 @@ export default function PollCreate({
                                                                                      const res = await updatePollOption(opt.id, { label, sort_order: opt.sort_order ?? idx });
                                                                                      if (!res.success || !res.data) throw new Error(res.error || 'Update failed');
                                                                                      const updated = formik.values.options.slice();
-                                                                                     updated[idx] = { ...updated[idx], label: res.data.label, sort_order: res.data.sort_order } as PollOption;
+                                                                                     updated[idx] = { ...updated[idx], label: res.data.label, sort_order: res.data.sort_order, isDirty: false } as PollOption;
                                                                                      setOptionsAndClearDirty(updated);
                                                                                 } else {
                                                                                      const res = await createPollOption({ poll_id: pollId, label, sort_order: idx } as any);
                                                                                      if (!res.success || !res.data) throw new Error(res.error || 'Create failed');
                                                                                      const updated = formik.values.options.slice();
-                                                                                     updated[idx] = { ...updated[idx], id: res.data.id, sort_order: res.data.sort_order } as PollOption;
+                                                                                     updated[idx] = { ...updated[idx], id: res.data.id, sort_order: res.data.sort_order, isDirty: false } as PollOption;
                                                                                      setOptionsAndClearDirty(updated);
                                                                                 }
                                                                                 toast.success(t('common.actionSaveSuccess') || 'Saved');
@@ -1682,12 +1682,12 @@ export default function PollCreate({
                                                                       }}
                                                                       onLabelChange={(idx, value) => {
                                                                            const updated = formik.values.options.slice();
-                                                                           updated[idx] = { ...updated[idx], label: value } as PollOption;
+                                                                           updated[idx] = { ...updated[idx], label: value, isDirty: true } as PollOption;
                                                                            setOptionsAndClearDirty(updated);
                                                                       }}
                                                                       onReorder={async (newOptions: PollOption[]) => {
                                                                            // Optimistically update local order in the form only
-                                                                           setOptionsAndClearDirty(newOptions);
+                                                                           setOptionsAndClearDirty(newOptions.map((o) => ({ ...o, isDirty: false }) as PollOption));
 
                                                                            // If poll exists, persist order for options that already have ids
                                                                            const pollId = poll?.id;
@@ -1709,7 +1709,7 @@ export default function PollCreate({
                                                                                      toast.error(res.error || 'Failed to update order');
                                                                                 } else {
                                                                                      // Normalize local sort_order to match persisted order and clear dirty state
-                                                                                     const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i } as PollOption));
+                                                                                     const normalized: PollOption[] = newOptions.map((o, i) => ({ ...o, sort_order: i, isDirty: false } as PollOption));
                                                                                      setFieldValueAndTouch('options', normalized, false);
                                                                                      // Reset formik's dirty flag without losing current values
                                                                                      formik.resetForm({

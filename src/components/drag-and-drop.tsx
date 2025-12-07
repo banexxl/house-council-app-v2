@@ -17,7 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-export type SortableItem = { id?: string; label: string };
+export type SortableItem = { id?: string; label: string; isDirty?: boolean };
 export type SortableOptionsListProps<T extends SortableItem = SortableItem> = {
      options: T[];
      disabled?: boolean;
@@ -54,6 +54,7 @@ export function SortableOptionsList<T extends SortableItem>({ options, disabled,
                               id={ids[idx]}
                               idx={idx}
                               label={opt.label}
+                              isDirty={(opt as any).isDirty}
                               disabled={disabled}
                               canDelete={Boolean((opt as any).id)}
                               onDelete={() => onDelete(idx)}
@@ -70,6 +71,7 @@ type SortableOptionItemProps = {
      id: string;
      idx: number;
      label: string;
+     isDirty?: boolean;
      disabled?: boolean;
      canDelete?: boolean;
      onDelete: () => void;
@@ -77,7 +79,7 @@ type SortableOptionItemProps = {
      onLabelChange: (value: string) => void;
 };
 
-function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, onLabelChange }: SortableOptionItemProps) {
+function SortableOptionItem({ id, label, isDirty, disabled, canDelete, onDelete, onSave, onLabelChange }: SortableOptionItemProps) {
      const {
           attributes,
           listeners,
@@ -98,6 +100,7 @@ function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, 
           gap: 8,
      };
      const { t } = useTranslation();
+     const trimmedLabel = label.trim();
      return (
           <div ref={setNodeRef} style={style} {...attributes}>
                <span {...listeners} style={{ cursor: 'grab', marginRight: 8, color: '#888' }}>≡</span>
@@ -120,7 +123,7 @@ function SortableOptionItem({ id, label, disabled, canDelete, onDelete, onSave, 
                </Button>
                <Button
                     type="button"
-                    disabled={disabled || !label || label.trim().length === 0}
+                    disabled={disabled || !trimmedLabel || !isDirty}
                     color="primary"
                     variant="contained"
                     onClick={onSave}
