@@ -5,7 +5,7 @@ import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
-import { getAllBuildingsFromClient, getBuildingIDsFromUserId, getBuildingAddressFromId, getNotificationEmailsForBuilding } from 'src/app/actions/building/building-actions';
+import { getAllBuildingsFromClient, getBuildingIDsFromUserId, getBuildingAddressFromId, getNotificationEmailsForBuildings } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
 import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
 import { sendViaEmail } from 'src/app/actions/notification/senders';
@@ -109,9 +109,9 @@ export const createIncidentReport = async (
       apartmentNumber,
     });
 
-    // 1) Resolve all notification emails for this building (client, members, tenants)
+    // 1) Resolve all notification emails for this incident's building (client, members, tenants)
     if (incidentBuildingId) {
-      const emails = await getNotificationEmailsForBuilding(supabase, incidentBuildingId);
+      const emails = await getNotificationEmailsForBuildings(supabase, [incidentBuildingId]);
       for (const email of emails) {
         const { ok, error } = await sendViaEmail(email, subject, injectedHtml);
         if (!ok) {

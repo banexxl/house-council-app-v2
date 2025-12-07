@@ -8,12 +8,13 @@ import { createOrUpdatePollOptions } from './poll-option-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 import { isUUIDv4 } from 'src/utils/uuid';
 import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
+import { getBuildingAddressFromId } from '../building/building-actions';
+import { getNotificationEmailsForBuildings } from '../building/building-actions';
 import { createPollPublishNotification } from 'src/utils/notification';
 import { BaseNotification } from 'src/types/notification';
 import { emitNotifications } from '../notification/emit-notification';
 import { sendViaEmail } from '../notification/senders';
 import { buildPollPublishedEmail } from 'src/libs/email/messages/poll-published';
-import { getNotificationEmailsForBuilding } from '../building/building-actions';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -322,19 +323,20 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                             await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
                         }
 
-                        // Additionally send email notifications to all relevant parties for this building
-                        const emails = await getNotificationEmailsForBuilding(supabase, buildingIds[0]);
+                        // Additionally send email notifications to all relevant parties for these buildings
+                        const emails = await getNotificationEmailsForBuildings(supabase, buildingIds as string[]);
                         if (emails && emails.length > 0) {
                             const description = annRow?.description || '';
+
+                            const addressResult = await getBuildingAddressFromId(buildingIds[0] as string);
+                            const fullAddress = addressResult.success && addressResult.data ? addressResult.data : '';
 
                             const { subject, injectedHtml } = await buildPollPublishedEmail({
                                 locale,
                                 pollId: id,
                                 title: annRow?.title || '',
-                                description: annRow?.description || '',
-                                // If your helper also gives you address, you can pass it here;
-                                // otherwise leave fullAddress empty or derive from a separate helper.
-                                fullAddress: '',
+                                description,
+                                fullAddress,
                             });
 
                             for (const email of emails) {

@@ -12,41 +12,50 @@ import log from "src/utils/logger";
 
 // ===== Actions =====
 
-/** Get notification emails for a building (Tenants, Client Members, Client) */
-export const getNotificationEmailsForBuilding = async (
+/** Get notification emails for one or more buildings (Tenants, Client Members, Client) */
+export const getNotificationEmailsForBuildings = async (
      supabase: Awaited<ReturnType<typeof useServerSideSupabaseAnonClient>>,
-     buildingId: string
+     buildingIds: string[]
 ): Promise<string[]> => {
      const emails = new Set<string>();
+     const uniqueBuildingIds = Array.from(new Set((buildingIds || []).filter(Boolean)));
+     if (!uniqueBuildingIds.length) return [];
 
-     // 1) Client email for this building
-     const { data: clientRow } = await supabase
+     // 1) Client + client email(s) for these buildings
+     const { data: buildingRows } = await supabase
           .from(TABLES.BUILDINGS!)
-          .select('client_id, client:client_id ( email )')
-          .eq('id', buildingId)
-          .maybeSingle();
+          .select('id, client_id, client:client_id ( email )')
+          .in('id', uniqueBuildingIds);
 
-     const clientId = (clientRow as any)?.client_id as string | undefined;
-     const clientEmail = (clientRow as any)?.client?.email as string | undefined;
-     if (clientEmail) emails.add(clientEmail);
+     const clientIds = Array.from(
+          new Set(
+               (buildingRows || [])
+                    .map((row: any) => {
+                         const clientEmail = row?.client?.email as string | undefined;
+                         if (clientEmail) emails.add(clientEmail);
+                         return row?.client_id as string | undefined;
+                    })
+                    .filter(Boolean)
+          )
+     ) as string[];
 
-     // 2) Client members for that client
-     if (clientId) {
+     // 2) Client members for those clients
+     if (clientIds.length) {
           const { data: clientMembers } = await supabase
                .from(TABLES.CLIENT_MEMBERS!)
-               .select('email')
-               .eq('client_id', clientId);
+               .select('email, client_id')
+               .in('client_id', clientIds);
 
           (clientMembers || []).forEach((m: any) => {
                if (m?.email) emails.add(m.email as string);
           });
      }
 
-     // 3) Tenants in this building (via apartments)
+     // 3) Tenants in these buildings (via apartments)
      const { data: apartments } = await supabase
           .from(TABLES.APARTMENTS!)
-          .select('id')
-          .eq('building_id', buildingId);
+          .select('id, building_id')
+          .in('building_id', uniqueBuildingIds);
 
      const apartmentIds = (apartments || []).map((a: any) => a.id).filter(Boolean);
      if (apartmentIds.length) {
@@ -56,9 +65,7 @@ export const getNotificationEmailsForBuilding = async (
                .in('apartment_id', apartmentIds);
 
           (tenants || []).forEach((t: any) => {
-               const email =
-                    t?.email ||
-                    t?.user?.email;
+               const email = t?.email || t?.user?.email;
                if (email) emails.add(email as string);
           });
      }
