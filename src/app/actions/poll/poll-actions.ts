@@ -13,7 +13,7 @@ import { BaseNotification } from 'src/types/notification';
 import { emitNotifications } from '../notification/emit-notification';
 import { sendViaEmail } from '../notification/senders';
 import { buildPollPublishedEmail } from 'src/libs/email/messages/poll-published';
-import log from 'src/utils/logger';
+import { getNotificationEmailsForBuilding } from '../building/building-actions';
 
 /**
  * Reorder poll options for a poll by updating sort_order in the database.
@@ -257,8 +257,6 @@ export async function createOrUpdatePoll(poll: Poll): Promise<{ success: boolean
 export async function updatePollStatus(id: string, status: PollStatus, locale: string = 'rs'): Promise<{ success: boolean; error?: string; data?: Poll }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
-    console.log('locale', locale);
-
     // Prepare update payload based on status
     const updatePayload: Partial<Poll> = { status };
 
@@ -324,39 +322,22 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                             await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
                         }
 
-                        // Additionally send email notifications to all tenants of targeted buildings
-                        if (tenants && tenants.length) {
-                            // Derive building address from the first tenant's building (normalized by readAllTenantsFromBuildingIds)
-                            const firstTenant = tenants[0] as any;
-                            const firstBuilding = firstTenant?.apartment?.building;
-                            const streetAddress = firstBuilding?.street_address ?? '';
-                            const streetNumber = firstBuilding?.street_number ?? '';
-                            const city = firstBuilding?.city ?? '';
-
-                            const addressParts = [streetAddress, streetNumber, city].filter(Boolean);
-                            const fullAddress = addressParts.join(' ').trim();
-
+                        // Additionally send email notifications to all relevant parties for this building
+                        const emails = await getNotificationEmailsForBuilding(supabase, buildingIds[0]);
+                        if (emails && emails.length > 0) {
                             const description = annRow?.description || '';
 
                             const { subject, injectedHtml } = await buildPollPublishedEmail({
                                 locale,
                                 pollId: id,
                                 title: annRow?.title || '',
-                                description,
-                                fullAddress,
+                                description: annRow?.description || '',
+                                // If your helper also gives you address, you can pass it here;
+                                // otherwise leave fullAddress empty or derive from a separate helper.
+                                fullAddress: '',
                             });
 
-                            // Pass only the inner body HTML here; sendViaEmail/sendNotificationEmail
-                            // will wrap it once with buildNotificationGenericHtml to avoid double headers/footers.
-                            for (const tenant of tenants) {
-                                log(`sending email to tenant ${JSON.stringify(tenant)}`);
-                                const email = (tenant as any).email
-                                    || (tenant as any).user?.email
-                                    || (tenant as any).apartment?.tenant_email
-                                    || (tenant as any).apartment?.building?.client?.email;
-                                if (!email) continue;
-
-                                // Fire and forget per-tenant; failures are already logged inside sendViaEmail
+                            for (const email of emails) {
                                 // eslint-disable-next-line no-void
                                 void sendViaEmail(email, subject, injectedHtml);
                             }
