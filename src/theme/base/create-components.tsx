@@ -1,13 +1,13 @@
 import { inputLabelClasses } from '@mui/material/InputLabel';
 import { tableCellClasses } from '@mui/material/TableCell';
 import type { Components } from '@mui/material/styles/components';
-import { createTheme } from '@mui/material/styles';
-import { orange } from 'src/theme/colors';
+import { createTheme, useTheme } from '@mui/material/styles';
 
 // Used only to create transitions
 const muiTheme = createTheme();
 
 export const createComponents = (): Components => {
+  const theme = useTheme();
   return {
     MuiAvatar: {
       styleOverrides: {
@@ -29,10 +29,46 @@ export const createComponents = (): Components => {
           boxShadow: '0 4px 0 0 rgba(0,0,0,0.15)',
           transform: 'translateY(0)',
           transition: muiTheme.transitions.create(['transform', 'box-shadow'], { duration: 110, easing: muiTheme.transitions.easing.easeOut }),
-          // Smooth out color/elevation changes on hover
+          // Smooth out color/elevation changes on hover with animated color sweep from entry point
+          overflow: 'hidden',
           '&:hover': {
             boxShadow: '0 4px 0 0 rgba(0,0,0,0.18)',
             transform: 'translateY(0)',
+            // The background will be animated via ::before
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            opacity: 0,
+            transition: 'opacity 0.35s, transform 0.35s',
+            zIndex: 0,
+            transform: 'scaleX(0)',
+            transformOrigin: 'var(--hc-btn-hover-origin, left)',
+          },
+          '&:hover::before': {
+            opacity: 1,
+            transform: 'scaleX(1)',
+          },
+          // Set the transform origin dynamically on mouse enter
+          '@media (hover: hover)': {
+            '&': {
+              onMouseEnter: (event: React.MouseEvent<HTMLButtonElement>) => {
+                const btn = event.currentTarget;
+                const rect = btn.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                btn.style.setProperty('--hc-btn-hover-origin', x < rect.width / 2 ? 'left' : 'right');
+              },
+              onMouseLeave: (event: React.MouseEvent<HTMLButtonElement>) => {
+                const btn = event.currentTarget;
+                btn.style.removeProperty('--hc-btn-hover-origin');
+              },
+            },
           },
           // Generic loading state (apply className "hc-loading")
           '&.hc-loading': {
