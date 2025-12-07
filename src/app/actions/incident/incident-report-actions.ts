@@ -87,7 +87,7 @@ export const createIncidentReport = async (
           .select('street_address, street_number, city')
           .eq('building_id', incidentBuildingId)
           .maybeSingle();
-
+        log(`Building location data for building ID ${incidentBuildingId}: ${JSON.stringify(loc)}`);
         const streetAddress = (loc as any)?.street_address ?? '';
         const streetNumber = (loc as any)?.street_number ?? '';
         const city = (loc as any)?.city ?? '';
@@ -106,9 +106,10 @@ export const createIncidentReport = async (
           .select('apartment_number')
           .eq('id', incidentApartmentId)
           .maybeSingle();
+        log(`Apartment data for apartment ID ${incidentApartmentId}: ${JSON.stringify(apt)}`);
         apartmentNumber = (apt as any)?.apartment_number ?? undefined;
-      } catch {
-        // ignore apartment lookup failures
+      } catch (error) {
+        log(`Error fetching apartment number for apartment ID: ${incidentApartmentId}: ${(error as Error).message}`);
       }
     }
 
@@ -129,6 +130,7 @@ export const createIncidentReport = async (
       }
       if (tenants && tenants.length) {
         for (const tenant of tenants as any[]) {
+          log(`Sending incident email to tenant: ${JSON.stringify(tenant)}`);
           const email = tenant.email
             || tenant.user?.email
             || tenant.apartment?.tenant_email

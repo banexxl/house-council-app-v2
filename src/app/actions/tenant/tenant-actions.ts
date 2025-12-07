@@ -668,7 +668,9 @@ export const readAllTenantsFromBuildingIds = async (
                )
           `)
           .in('apartment_id', apartmentIds);
+     log(`Fetched ${tenants?.length ?? 0} tenants for building IDs: ${buildingIds.join(', ')}`);
      if (tenantsError) {
+          log(`Error fetching tenants for building IDs ${buildingIds.join(', ')}: ${tenantsError.message}`);
           return { success: false, error: tenantsError.message };
      }
 
