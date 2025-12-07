@@ -203,7 +203,9 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
           </Breadcrumbs>
           {shouldShowAlert && (
             <Alert severity="info" sx={{ mt: 2 }}>
-              {t('common.notificationWillBeSent')}
+              {pathname?.includes('/dashboard/polls/create')
+                ? t('common.activationNotificationWillBeSent')
+                : t('common.notificationWillBeSent')}
             </Alert>
           )}
         </Box>

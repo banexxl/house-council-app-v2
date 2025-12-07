@@ -336,6 +336,7 @@ export const de = {
   //#region Common
   [tokens.common.languageChanged]: 'Sprache geändert',
   [tokens.common.notificationWillBeSent]: 'Eine Benachrichtigung wird an den Mieter gesendet, wenn dieser Eintrag erstellt wird.',
+  [tokens.common.activationNotificationWillBeSent]: 'Eine Benachrichtigung wird an den Mieter gesendet, wenn dieser Eintrag aktiviert wird.',
   [tokens.common.title]: 'Hausrat',
   [tokens.common.all]: 'Alle',
   [tokens.common.selectAll]: 'Alle auswählen',

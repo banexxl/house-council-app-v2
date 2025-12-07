@@ -191,6 +191,7 @@ export const en = {
   //#region Common
   [tokens.common.languageChanged]: 'Language changed',
   [tokens.common.notificationWillBeSent]: 'A notification will be sent to the tenant when this item is created.',
+  [tokens.common.activationNotificationWillBeSent]: 'A notification will be sent to the tenant when this item is activated.',
   [tokens.common.title]: 'House Council',
   [tokens.common.all]: 'All',
   [tokens.common.selectAll]: 'Select all',

@@ -382,6 +382,7 @@ export const rs = {
    // Added automatically: missing tokens (2025-10-30T07:19:15.421Z)
    [tokens.common.languageChanged]: 'Jezik je promenjen',
    [tokens.common.notificationWillBeSent]: 'Obaveštenje će biti poslato svim stanarima nakon kreiranja!',
+   [tokens.common.activationNotificationWillBeSent]: 'Obaveštenje će biti poslato svim stanarima nakon aktivacije!',
    [tokens.common.title]: 'Kućni savet',
    [tokens.common.all]: 'Sve',
    [tokens.common.clearFilters]: 'Obriši filtere',

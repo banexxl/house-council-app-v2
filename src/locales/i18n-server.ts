@@ -16,8 +16,8 @@ export async function getServerI18n(locale: string = 'rs'): Promise<TFunction> {
                     es: { translation: es },
                     rs: { translation: rs },
                },
-               lng: 'rs',
-               fallbackLng: 'rs',
+               lng: 'en',
+               fallbackLng: 'en',
                interpolation: { escapeValue: false },
                initImmediate: false,
           });

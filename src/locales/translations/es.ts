@@ -337,6 +337,7 @@ export const es = {
   //#region Common
   [tokens.common.languageChanged]: 'Idioma cambiado',
   [tokens.common.notificationWillBeSent]: 'Se enviará una notificación al inquilino cuando se cree este elemento.',
+  [tokens.common.activationNotificationWillBeSent]: 'Se enviará una notificación al inquilino cuando se active este elemento.',
   [tokens.common.title]: 'Casa',
   [tokens.common.all]: 'Todos',
   [tokens.common.selectAll]: 'Seleccionar todos',
