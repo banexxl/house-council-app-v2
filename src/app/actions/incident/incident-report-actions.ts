@@ -88,12 +88,21 @@ export const createIncidentReport = async (
     const title = (data as any)?.title ?? '';
     const description = (data as any)?.description ?? '';
 
+    const city = (data as any)?.city ?? '';
+    const streetAddress = (data as any)?.street_address ?? '';
+    const streetNumber = (data as any)?.street_number ?? '';
+    const apartmentNumber = (data as any)?.apartment_number ?? '';
+
+    const addressParts = [streetAddress, streetNumber, city].filter(Boolean);
+    const fullAddress = addressParts.join(' ').trim();
+
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
     const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
 
     const injectedHtml = `
       <p>${intro}</p>
       <p><strong>${title}</strong></p>
+      ${fullAddress ? `<p><strong>Address:</strong> ${fullAddress}${apartmentNumber ? `, apt ${apartmentNumber}` : ''}</p>` : ''}
       ${description ? `<p><strong>${descriptionLabel}:</strong> ${description}</p>` : ''}
       <p>
         <a href="${appBaseUrl}${incidentPath}">
@@ -244,7 +253,14 @@ export const getIncidentReportById = async (
     `)
     .eq('id', id)
     .single();
-  if (error?.code !== '22P02') {
+
+  // If we hit the invalid UUID error (e.g. id === "create"),
+  // treat it as "not found" without logging noise.
+  if (error?.code === '22P02') {
+    return { success: false };
+  }
+
+  if (error) {
     log(`Error getting incident report by id with payload: ${JSON.stringify({ id })}: ${error?.message}`);
     await logServerAction({
       user_id: null,

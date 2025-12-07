@@ -7,6 +7,7 @@ import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { getClientBuildingsForSocialProfile, type ClientBuildingOption } from 'src/app/actions/client/client-actions';
 import type { TenantProfile } from 'src/types/social';
+import log from 'src/utils/logger';
 
 const PROFILE_FEED_PAGE_SIZE = 5;
 
@@ -42,7 +43,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
           const profileResult = await getCurrentUserProfile();
           profile = profileResult.success ? profileResult.data! : null;
      }
-
+     log('Loaded profile page for profileId: ' + profileId + ', resolved profile id: ' + (JSON.stringify(profile)));
      const viewerProfileResult = await getCurrentUserProfile();
      const viewerProfile = viewerProfileResult.success ? viewerProfileResult.data : null;
 

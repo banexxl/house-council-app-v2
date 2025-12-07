@@ -65,7 +65,7 @@ const Page = async ({ params }: PageProps) => {
 
   const { success: found, data: incident } = incidentId ? await getIncidentReportById(incidentId) : { success: false, data: null };
   const { tenant, client, clientMember, userData } = await getViewer();
-
+  log(`Loaded incident report page for incidentId: ${incidentId}, found: ${found}, incident: ${incident ? JSON.stringify(incident) : 'null'}`);
   let defaultBuildingId: string | undefined = incident?.building_id ?? undefined;
   let defaultClientId: string | undefined = incident?.client_id ?? undefined;
   const defaultApartmentId = incident?.apartment_id ?? tenant?.apartment_id ?? null;

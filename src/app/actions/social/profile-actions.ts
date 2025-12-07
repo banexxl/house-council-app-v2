@@ -299,6 +299,7 @@ export async function updateTenantProfile(
      profileId: string,
      payload: UpdateTenantProfilePayload
 ): Promise<ActionResponse<TenantProfile>> {
+     log(`Updating tenant profile ${profileId} with payload: ${JSON.stringify(payload)}`);
      try {
           const viewer = await getViewer();
           if (!viewer.tenant) {
@@ -315,10 +316,12 @@ export async function updateTenantProfile(
                .single();
 
           if (!profile) {
+               log('Profile not found for update', 'error');
                return { success: false, error: 'Profile not found' };
           }
 
           if (profile.tenant_id !== viewer.tenant.id) {
+               log('Attempt to update profile not owned by user', 'error');
                return { success: false, error: 'You can only update your own profile' };
           }
 
@@ -338,7 +341,7 @@ export async function updateTenantProfile(
                     .update(tenantUpdates)
                     .eq('id', viewer.tenant.id);
                if (tenantError) {
-                    log(`Error updating tenant shared fields: ${tenantError instanceof Error ? tenantError.message : String(tenantError)}`, 'error');
+                    log(`Error updating tenant shared fields: ${JSON.stringify(tenantError)}`, 'error');
                     return { success: false, error: tenantError.message };
                }
           }
