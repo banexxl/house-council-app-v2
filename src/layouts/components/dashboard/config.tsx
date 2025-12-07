@@ -350,6 +350,19 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
       },
+      {
+        title: t(tokens.nav.serviceRequests),
+        roles: ["tenant"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <ConstructionIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["tenant"] },
+          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["tenant"] },
+        ]
+      }
       // {
       //   title: t(tokens.nav.chat),
       //   path: paths.dashboard.chat,
