@@ -103,7 +103,7 @@ export const buildNotificationGenericHtml = (
                   <table role="presentation" style="margin: 0 auto;">
                     <tr>
                       <td style="color: #ffffff; font-weight: bold; font-size: 16px; text-align: center;">
-                        If you loved your order, we would love to have your review!
+                        If you find this app usefull, don't be shy, rate us!
                       </td>
                       <td style="padding-left: 10px;">
                         <span style="color: gold; font-size: 18px; line-height: 1;">★★★★★</span>

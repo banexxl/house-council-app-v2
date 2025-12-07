@@ -953,6 +953,7 @@ export const en = {
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Announcement published',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Calendar event published',
   [tokens.notifications.actions.notificationActionPollPublished]: 'Poll published',
+  [tokens.notifications.actions.notificationActionIncidentCreated]: 'Incident created',
   // Email
   [tokens.email.pollPublishedTitle]: 'New poll has been published',
   [tokens.email.pollPublishedSubtitleForBuilding]: 'for building {{address}}',

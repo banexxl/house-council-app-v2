@@ -235,6 +235,7 @@ export const rs = {
    [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Objavljeno novo obaveštenje',
    [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Objavljen događaj u kalendaru',
    [tokens.notifications.actions.notificationActionPollPublished]: 'Objavljena je nova anketa',
+   [tokens.notifications.actions.notificationActionIncidentCreated]: 'Kreiran je novi servisni zahtev',
    // Email
    [tokens.email.pollPublishedTitle]: 'Objavljena je nova anketa',
    [tokens.email.pollPublishedSubtitleForBuilding]: 'za zgradu {{address}}',

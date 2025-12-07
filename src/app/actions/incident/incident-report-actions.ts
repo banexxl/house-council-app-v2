@@ -244,18 +244,18 @@ export const getIncidentReportById = async (
     `)
     .eq('id', id)
     .single();
-  if (error) {
-    log(`Error getting incident report by id with payload: ${JSON.stringify({ id })}: ${error.message}`);
+  if (error?.code !== '22P02') {
+    log(`Error getting incident report by id with payload: ${JSON.stringify({ id })}: ${error?.message}`);
     await logServerAction({
       user_id: null,
       action: 'incident.getById',
       duration_ms: 0,
-      error: error.message,
+      error: error ? error.message : '',
       payload: { id },
       status: 'fail',
       type: 'db',
     });
-    return { success: false, error: error.message };
+    return { success: false, error: error ? error.message : '' };
   }
   const mapped: IncidentReport = {
     ...(data as any),

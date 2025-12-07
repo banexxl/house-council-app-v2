@@ -181,6 +181,7 @@ export const es = {
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Anuncio publicado',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Evento de calendario publicado',
   [tokens.notifications.actions.notificationActionPollPublished]: 'Encuesta publicada',
+  [tokens.notifications.actions.notificationActionIncidentCreated]: 'Incidente creado',
   // Email
   [tokens.email.pollPublishedTitle]: 'Se ha publicado una nueva encuesta',
   [tokens.email.pollPublishedSubtitleForBuilding]: 'para el edificio {{address}}',
