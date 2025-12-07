@@ -3,7 +3,6 @@
 import { getViewer } from "src/libs/supabase/server-auth";
 import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
-import { logout } from "../auth/actions";
 import { Suspense } from "react";
 import { DefaultPageSkeleton } from "src/sections/dashboard/skeletons/default-page-skeleton";
 import { listIncidentReportsForClient } from "src/app/actions/incident/incident-report-actions";
@@ -20,10 +19,6 @@ const Page = async () => {
       console.warn('Logout failed, redirecting anyway', err);
     }
     redirect('/auth/login');
-  }
-
-  if (tenant) {
-    redirect('/dashboard/social/profile');
   }
 
   const incidentsRes = await listIncidentReportsForClient(client?.id!);

@@ -4,13 +4,14 @@ import { Suspense } from 'react';
 import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
 
 type LoginPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     redirect?: string;
-  };
+  }>;
 };
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
-  const redirectParam = searchParams?.redirect;
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const redirectParam = resolvedSearchParams?.redirect;
 
   // Basic safety so we don't redirect to external URLs
   const safeRedirect =
