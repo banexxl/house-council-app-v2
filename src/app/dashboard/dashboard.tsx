@@ -32,9 +32,10 @@ type DashboardProps = {
   incidents: IncidentReport[];
   events: { upcoming: CalendarEvent[]; past: CalendarEvent[] };
   invoices: Invoice[];
+  showTransactions?: boolean;
 };
 
-const Dashboard = ({ incidents, events, invoices }: DashboardProps) => {
+const Dashboard = ({ incidents, events, invoices, showTransactions = true }: DashboardProps) => {
 
   const settings = useSettings();
   const { t } = useTranslation();
@@ -93,7 +94,7 @@ const Dashboard = ({ incidents, events, invoices }: DashboardProps) => {
             ))}
             <Grid size={{ xs: 12, md: 7 }} sx={{ order: 1 }}>
               <Stack spacing={3}>
-                <OverviewTransactions invoices={invoices} />
+                {showTransactions && <OverviewTransactions invoices={invoices} />}
                 <OverviewLinkCard
                   icon={<InfoCircleIcon />}
                   iconTitle={t(tokens.dashboard.overview.help.iconTitle)}

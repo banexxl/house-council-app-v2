@@ -77,18 +77,19 @@ export const listDashboardEvents = async ({
      upcomingLimit = 5,
      pastLimit = 5,
      upcomingDaysWindow = 10,
-}: { upcomingLimit?: number; pastLimit?: number; upcomingDaysWindow?: number } = {}): Promise<ActionResult<{
+     buildingIds,
+}: { upcomingLimit?: number; pastLimit?: number; upcomingDaysWindow?: number; buildingIds?: string[] } = {}): Promise<ActionResult<{
      upcoming: CalendarEvent[];
      past: CalendarEvent[];
 }>> => {
      const time = Date.now();
      try {
           const { client, clientMember, tenant, admin } = await getViewer();
-          let clientId: string | null = null;
+          const clientId = client?.id || clientMember?.client_id || null;
+          const scopedBuildingIds = (buildingIds || []).filter(Boolean);
+          const hasBuildingScope = scopedBuildingIds.length > 0;
 
-          if (client) clientId = client.id;
-          else if (clientMember) clientId = clientMember.client_id;
-          if (tenant && !clientId) {
+          if (tenant && !clientId && !admin && !hasBuildingScope) {
                await logServerAction({ user_id: null, action: 'listDashboardEvents', duration_ms: Date.now() - time, error: '', payload: { tenant: true, clientScoped: false, returned: 0 }, status: 'success', type: 'db' });
                return { success: true, data: { upcoming: [], past: [] } };
           }
@@ -98,16 +99,19 @@ export const listDashboardEvents = async ({
           const windowEnd = new Date(now.getTime() + upcomingDaysWindow * 24 * 60 * 60 * 1000).toISOString();
 
           const supabase = await useServerSideSupabaseAnonClient();
-          const upcomingQuery = supabase.from(TABLES.CALENDAR_EVENTS).select('*');
-          if (clientId && !admin) upcomingQuery.eq('client_id', clientId);
+          const applyScope = (query: any) => {
+               if (hasBuildingScope) return query.in('building_id', scopedBuildingIds);
+               if (clientId && !admin) return query.eq('client_id', clientId);
+               return query;
+          };
+          const upcomingQuery = applyScope(supabase.from(TABLES.CALENDAR_EVENTS).select('*'));
           const upcomingPromise = upcomingQuery
                .gte('start_date_time', nowIso)
                .lte('start_date_time', windowEnd)
                .order('start_date_time', { ascending: true })
                .limit(upcomingLimit);
 
-          const pastQuery = supabase.from(TABLES.CALENDAR_EVENTS).select('*');
-          if (clientId && !admin) pastQuery.eq('client_id', clientId);
+          const pastQuery = applyScope(supabase.from(TABLES.CALENDAR_EVENTS).select('*'));
           const pastPromise = pastQuery
                .lt('start_date_time', nowIso)
                .order('start_date_time', { ascending: false })
@@ -125,7 +129,7 @@ export const listDashboardEvents = async ({
                     action: 'listDashboardEvents',
                     duration_ms: Date.now() - time,
                     error: errMsg,
-                    payload: { clientId, admin },
+                    payload: { clientId, admin, buildingIds: scopedBuildingIds.length },
                     status: 'fail',
                     type: 'db',
                });
@@ -140,7 +144,7 @@ export const listDashboardEvents = async ({
                action: 'listDashboardEvents',
                duration_ms: Date.now() - time,
                error: '',
-               payload: { clientId, admin, upcoming: upcoming.length, past: past.length },
+               payload: { clientId, admin, buildingIds: scopedBuildingIds.length, upcoming: upcoming.length, past: past.length },
                status: 'success',
                type: 'db',
           });
