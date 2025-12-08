@@ -33,6 +33,7 @@ const PUBLIC_ROUTES = [
      '/api/location-check',
      '/api/publish-scheduled-announcements',
      '/api/ip',
+     '/api/storage/sign-file'
 ] as const
 
 async function isTokenValid(jwt: string | null): Promise<boolean> {
