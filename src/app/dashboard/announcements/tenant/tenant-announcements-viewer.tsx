@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -322,7 +321,20 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                                        </Stack>
                                                   )}
                                                   {selected.message && (
-                                                       <Typography variant="body1" sx={{ mb: 4, whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>{selected.message}</Typography>
+                                                       <Box
+                                                            sx={{
+                                                                 mb: 4,
+                                                                 lineHeight: 1.55,
+                                                                 '& p': { margin: 0, marginBottom: 1 },
+                                                                 '& ul, & ol': { paddingLeft: 3, marginTop: 0, marginBottom: 1 },
+                                                                 '& h1, & h2, & h3, & h4, & h5, & h6': { marginTop: 1.5, marginBottom: 0.75 },
+                                                                 '& a': { color: 'primary.main', textDecoration: 'underline' },
+                                                                 '& strong, & b': { fontWeight: 600 },
+                                                                 '& em, & i': { fontStyle: 'italic' },
+                                                                 whiteSpace: 'normal',
+                                                            }}
+                                                            dangerouslySetInnerHTML={{ __html: selected.message }}
+                                                       />
                                                   )}
                                                   {Array.isArray(selected.images) && selected.images.length > 0 && (
                                                        <Box sx={{ mb: 4 }}>
