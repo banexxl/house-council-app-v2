@@ -109,7 +109,7 @@ const orders: Order[] = [
   },
 ];
 
-const getStatusPill = (orderStatus: OrderStatus): JSX.Element => {
+const getStatusPill = (orderStatus: OrderStatus): React.ReactElement => {
   const map: Record<OrderStatus, { color: SeverityPillColor; text: string }> = {
     canceled: {
       color: 'error',

@@ -340,7 +340,6 @@ export const en = {
   [tokens.clients.unbanUserDescription]: 'Unban user to restore their access to the platform.',
   //#region Navigation
   [tokens.nav.adminDashboard]: 'Dashboard',
-  [tokens.nav.academy]: 'Academy',
   [tokens.nav.account]: 'Account',
   [tokens.nav.analytics]: 'Analytics',
   [tokens.nav.announcements]: 'Announcements',

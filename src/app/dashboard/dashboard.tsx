@@ -44,7 +44,7 @@ const Dashboard = ({ incidents, events, invoices, showTransactions = true }: Das
     return acc;
   }, { open: 0, in_progress: 0, on_hold: 0, resolved: 0, closed: 0, cancelled: 0 });
   const totalCount = Object.values(statusCounts).reduce((sum, val) => sum + (val || 0), 0);
-  const statusMeta: Array<{ key: IncidentReport['status']; color: string; bg: string; icon: JSX.Element; subtitle?: string }> = [
+  const statusMeta: Array<{ key: IncidentReport['status']; color: string; bg: string; icon: React.ReactElement; subtitle?: string }> = [
     { key: 'open', color: 'info.main', bg: 'info.light', icon: <PendingIcon />, subtitle: t('incident.overview.open') },
     { key: 'in_progress', color: 'warning.main', bg: 'warning.light', icon: <BuildIcon />, subtitle: t('incident.overview.inProgress') },
     { key: 'on_hold', color: 'default', bg: 'grey.100', icon: <PauseIcon />, subtitle: t('incident.overview.onHold') },

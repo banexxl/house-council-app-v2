@@ -178,7 +178,7 @@ const sortOptions: Option[] = [
   },
 ];
 
-const getInventoryPill = (inventoryType: InventoryType): JSX.Element => {
+const getInventoryPill = (inventoryType: InventoryType): React.ReactElement => {
   const map: Record<InventoryType, { color: SeverityPillColor; text: string }> = {
     in_stock: {
       color: 'success',

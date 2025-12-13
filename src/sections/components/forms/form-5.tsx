@@ -74,7 +74,7 @@ export const Form5: FC = () => (
             <LocationAutocomplete
               getOptionLabel={(option: Option) => option.text}
               options={countries}
-              renderInput={(params): JSX.Element => (
+              renderInput={(params): React.ReactElement => (
                 <TextField
                   {...params}
                   fullWidth

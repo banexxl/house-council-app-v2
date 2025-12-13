@@ -20,7 +20,7 @@ import { Notification } from 'src/types/notification';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 
-const renderContent = (notification: Notification, t: (key: string) => string): JSX.Element | null => {
+const renderContent = (notification: Notification, t: (key: string) => string): React.ReactElement | null => {
   const createdAt =
     typeof notification.created_at === 'string'
       ? new Date(notification.created_at)

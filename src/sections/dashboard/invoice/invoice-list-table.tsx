@@ -178,7 +178,7 @@ export const InvoiceListTable: FC<InvoiceListTableProps> = (props) => {
     rowsPerPage = 0,
   } = props;
 
-  let content: JSX.Element;
+  let content: React.ReactElement;
 
   if (group) {
     const groupedInvoices = groupInvoices(items);

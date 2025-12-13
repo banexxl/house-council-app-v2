@@ -567,7 +567,6 @@ export const rs = {
    [tokens.account.billing.cancel]: 'Otkaži',
 
    [tokens.nav.home]: 'Početna',
-   [tokens.nav.academy]: 'Akademija',
    [tokens.nav.account]: 'Nalog',
    [tokens.nav.adminDashboard]: 'Kontrolna tabla',
    [tokens.nav.analytics]: 'Analitika',

@@ -481,7 +481,6 @@ export const de = {
   [tokens.clients.banUserDescription]: 'Benutzer vom Zugriff auf die Plattform ausschließen. Dies deaktiviert die Anmeldung.',
   [tokens.clients.unbanUserDescription]: 'Benutzer entsperren, um den Zugriff auf die Plattform wiederherzustellen.',
   //#region Navigation
-  [tokens.nav.academy]: 'Akademie',
   [tokens.nav.account]: 'Konto',
   [tokens.nav.adminDashboard]: 'Admin-Dashboard',
   [tokens.nav.analytics]: 'Analytik',

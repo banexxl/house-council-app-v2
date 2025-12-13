@@ -340,7 +340,6 @@ export const tokens = {
   },
   nav: {
     home: 'nav.home',
-    academy: 'nav.academy',
     account: 'nav.account',
     adminDashboard: 'nav.adminDashboard',
     analytics: 'nav.analytics',

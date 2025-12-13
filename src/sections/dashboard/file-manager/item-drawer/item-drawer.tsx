@@ -106,7 +106,7 @@ export const ItemDrawer: FC<ItemDrawerProps> = (props) => {
     loadPreview();
   }, [item]);
 
-  let content: JSX.Element | null = null;
+  let content: React.ReactElement | null = null;
 
   if (item) {
     const size = bytesToSize(item.size);

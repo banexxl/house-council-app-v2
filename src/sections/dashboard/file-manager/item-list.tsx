@@ -52,7 +52,7 @@ export const ItemList: FC<ItemListProps> = (props) => {
   } = props;
   const { t } = useTranslation();
 
-  let content: JSX.Element;
+  let content: React.ReactElement;
 
   if (view === 'grid') {
     content = loading ? (

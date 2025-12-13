@@ -9,10 +9,6 @@ export const paths = {
   },
   dashboard: {
     index: '/dashboard',
-    academy: {
-      index: '/dashboard/academy',
-      courseDetails: '/dashboard/academy/courses/:courseId',
-    },
     account: '/dashboard/account',
     analytics: '/dashboard/analytics',
     announcements: {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import {
   Button, Card, CardContent, Grid, Stack, Switch,
@@ -246,7 +246,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
     }
   }, [router, t]);
 
-  const featureIcons: Record<string, JSX.Element> = {
+  const featureIcons: Record<string, React.ReactElement> = {
     has_parking_lot: (
       <Tooltip title={t('common.lblHasParkingLot')}>
         <DirectionsCarIcon sx={{ mr: 1 }} />

@@ -124,7 +124,7 @@ const sortOptions: Option[] = [
   },
 ];
 
-const getStatusPill = (invoiceStatus: InvoiceStatus): JSX.Element => {
+const getStatusPill = (invoiceStatus: InvoiceStatus): React.ReactElement => {
   const map: Record<InvoiceStatus, { color: SeverityPillColor; text: string }> = {
     canceled: {
       color: 'error',

@@ -24,9 +24,9 @@ const renderItems = ({
   depth?: number;
   items: Item[];
   pathname?: string | null;
-}): JSX.Element[] =>
+}): React.ReactElement[] =>
   items.reduce(
-    (acc: JSX.Element[], item) =>
+    (acc: React.ReactElement[], item) =>
       reduceChildRoutes({
         acc,
         depth,
@@ -42,11 +42,11 @@ const reduceChildRoutes = ({
   item,
   pathname,
 }: {
-  acc: JSX.Element[];
+  acc: React.ReactElement[];
   depth: number;
   item: Item;
   pathname?: string | null;
-}): Array<JSX.Element> => {
+}): Array<React.ReactElement> => {
   const checkPath = !!(item.path && pathname);
   const partialMatch = checkPath ? pathname.includes(item.path!) : false;
   const exactMatch = checkPath ? pathname === item.path : false;

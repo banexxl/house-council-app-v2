@@ -2,12 +2,7 @@ import type { FC } from 'react';
 import PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { styled } from '@mui/material/styles';
-
-import { Code } from 'src/components/code';
-
-const components = {
-  code: Code,
-};
+import { Typography } from '@mui/material';
 
 const IncidentContentRoot = styled('div')(({ theme }) => ({
   color: theme.palette.text.primary,
@@ -52,7 +47,7 @@ export const IncidentContent: FC<IncidentContentProps> = (props) => {
 
   return (
     <IncidentContentRoot>
-      <Markdown components={components}>{content}</Markdown>
+      <Typography>{content}</Typography>
     </IncidentContentRoot>
   );
 };

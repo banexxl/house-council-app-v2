@@ -58,7 +58,7 @@ const notifications: Notification[] = [
   },
 ];
 
-const iconsMap: Record<NotificationType, JSX.Element> = {
+const iconsMap: Record<NotificationType, React.ReactElement> = {
   item_shipped: <ShoppingCart03Icon />,
   new_message: <MessageChatSquareIcon />,
   order_placed: <CreditCard02Icon />,

@@ -482,7 +482,6 @@ export const es = {
   [tokens.clients.banUserDescription]: 'Excluir al usuario del acceso a la plataforma. Esto desactiva el inicio de sesión.',
   [tokens.clients.unbanUserDescription]: 'Desbloquear al usuario para restaurar el acceso a la plataforma.',
   //#region Navigation
-  [tokens.nav.academy]: 'Academia',
   [tokens.nav.account]: 'Cuenta',
   [tokens.nav.adminDashboard]: 'Panel de administración',
   [tokens.nav.analytics]: 'Analítica',

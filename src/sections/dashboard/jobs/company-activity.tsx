@@ -17,7 +17,7 @@ import Typography from '@mui/material/Typography';
 import type { Activity } from 'src/types/job';
 import { getInitials } from 'src/utils/get-initials';
 
-const renderContent = (activity: Activity): JSX.Element | null => {
+const renderContent = (activity: Activity): React.ReactElement | null => {
   switch (activity.type) {
     case 'new_job':
       return (

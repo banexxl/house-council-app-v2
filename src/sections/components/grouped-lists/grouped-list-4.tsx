@@ -45,7 +45,7 @@ const notifications: Notification[] = [
   },
 ];
 
-const iconsMap: Record<NotificationType, JSX.Element> = {
+const iconsMap: Record<NotificationType, React.ReactElement> = {
   invite: <Send01Icon />,
   message: <Mail01Icon />,
   payout: <CreditCard02Icon />,

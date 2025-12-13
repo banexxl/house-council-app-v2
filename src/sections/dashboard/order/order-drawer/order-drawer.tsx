@@ -36,7 +36,7 @@ export const OrderDrawer: FC<OrderDrawerProps> = (props) => {
     setIsEditing(false);
   }, []);
 
-  let content: JSX.Element | null = null;
+  let content: React.ReactElement | null = null;
 
   if (order) {
     content = (
