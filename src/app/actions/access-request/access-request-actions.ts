@@ -3,7 +3,7 @@
 import crypto from 'crypto';
 import { sendAccessRequestApprovedEmail, sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
-import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseServiceRoleClient, useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import log from 'src/utils/logger';
 
 const SIGNING_SECRET = (process.env.ACCESS_REQUEST_SIGNING_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_SIGNING_SECRET || '').trim();
@@ -20,7 +20,6 @@ let serviceAccountCredentials: Record<string, any> | null = null;
 
 const loadServiceAccountCredentials = () => {
      if (serviceAccountCredentials) return serviceAccountCredentials;
-
      // 1. Load from Base64 (recommended)
      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
           try {
@@ -69,7 +68,6 @@ const generateTempPassword = () => {
           return DEFAULT_TENANT_PASSWORD;
      }
 };
-
 
 const getRecaptchaClient = async () => {
      if (recaptchaClient) return recaptchaClient;
