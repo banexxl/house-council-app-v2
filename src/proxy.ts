@@ -56,7 +56,7 @@ export async function proxy(req: NextRequest) {
      const raw = getCookieRaw(req);             // cookie string (may be base64 blob)
      const jwt = extractAccessToken(raw);       // actual JWT
      const authed = await isTokenValid(jwt);    // verify signature + exp
-
+     console.log(`Middleware: ${pathname} (authed: ${authed})`);
      const isAuthPage = PUBLIC_ROUTES.some(r => pathname.startsWith(r));
 
      if (isAuthPage) {
