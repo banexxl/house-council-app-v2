@@ -28,7 +28,7 @@ const PUBLIC_ROUTES = [
      '/auth/reset-password',
      '/auth/access-request',
      '/dashboard/access-request',
-     '/dashboard/access-request/request',
+     '/api/access-request/request',
      '/api/access-request/approve',
      '/api/check-subscription',
      '/api/location-check',
