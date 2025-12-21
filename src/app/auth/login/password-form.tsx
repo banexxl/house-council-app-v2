@@ -87,7 +87,9 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
 
                          // ✅ No verified TOTP factor → no 2FA required, user is fully logged in
                          if (!totpFactor) {
-                              toast.success("Sign in successful!");
+                              toast.success("Sign in successful!", {
+                                   duration: 2000,
+                              });
                               handleNavClick();
                               formik.resetForm();
                               setLoading(false);
