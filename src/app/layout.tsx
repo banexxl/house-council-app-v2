@@ -1,19 +1,11 @@
-"use client";
-
-import { CssBaseline, ThemeProvider, useTheme } from '@mui/material';
 import type { ReactNode } from 'react';
+import Providers from './providers';
 
-export default function RootAppLayout({ children }: { children: ReactNode }) {
-
-  const theme = useTheme();
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          {children}
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

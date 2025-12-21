@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Logo } from 'src/components/logo';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
+import AuthPageGuard from 'src/components/auth-page-guard';
 
 interface LayoutProps {
   children: ReactNode;
@@ -190,7 +191,9 @@ export const Layout: FC<LayoutProps> = (props) => {
               </Box>
             </Stack>
           </Box>
-          {children}
+          <AuthPageGuard>
+            {children}
+          </AuthPageGuard>
         </div>
       </Box>
     </Box>

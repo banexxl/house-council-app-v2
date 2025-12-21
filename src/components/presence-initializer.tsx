@@ -46,7 +46,7 @@ export const PresenceInitializer = () => {
                     if (active) {
                          setViewer(null);
                     }
-                    log('[PresenceInitializer] Failed to fetch viewer from server', error);
+                    log('[PresenceInitializer] Failed to fetch viewer from server', 'error');
                }
           };
 
@@ -103,10 +103,10 @@ export const PresenceInitializer = () => {
                          apartment_number: apartment ? String((apartment as any)?.apartment_number || '') : undefined,
                     };
                } else if (viewer.client) {
-                    log('[PresenceInitializer] Client user detected, skipping automatic presence setup');
+                    log('[PresenceInitializer] Client user detected, skipping automatic presence setup', 'info');
                     return;
                } else if (viewer.clientMember) {
-                    log('[PresenceInitializer] Client member detected, skipping automatic presence setup');
+                    log('[PresenceInitializer] Client member detected, skipping automatic presence setup', 'info');
                     return;
                }
 
@@ -131,7 +131,7 @@ export const PresenceInitializer = () => {
                          log(`[PresenceInitializer] Successfully set up presence for building ${buildingId}`);
                     }
                } catch (error) {
-                    log('[PresenceInitializer] Error setting up presence:', error);
+                    log('[PresenceInitializer] Error setting up presence:', 'error');
                }
           };
 

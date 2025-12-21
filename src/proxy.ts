@@ -3,16 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 import { extractAccessToken, getCookieRaw } from './utils/auth-cookie'
 
-// ✅ Middleware always runs on Edge
 export const config = {
-     // Exclude common static assets and public files from the middleware
-     /*
-          * Match all request paths except for the ones starting with:
-          * - _next/static (static files)
-          * - _next/image (image optimization files)
-          * - favicon.ico (favicon file)
-          * Feel free to modify this pattern to include more paths.
-     */
      matcher: [
           '/((?!_next/|favicon.ico|robots.txt|sitemap.xml|assets/).*)',
           '/auth/(.*)',
@@ -20,13 +11,16 @@ export const config = {
      ],
 }
 
-// Public routes that do NOT require authentication
-const PUBLIC_ROUTES = [
+const AUTH_PAGES = [
      '/auth/login',
      '/auth/error',
      '/auth/callback',
      '/auth/reset-password',
      '/auth/access-request',
+] as const
+
+const PUBLIC_ENDPOINTS = [
+     '/api/viewer',
      '/dashboard/access-request',
      '/api/access-request/request',
      '/api/access-request/approve',
@@ -34,51 +28,78 @@ const PUBLIC_ROUTES = [
      '/api/location-check',
      '/api/publish-scheduled-announcements',
      '/api/ip',
-     '/api/storage/sign-file'
+     '/api/storage/sign-file',
 ] as const
 
 async function isTokenValid(jwt: string | null): Promise<boolean> {
      try {
-          if (!jwt) return false;
-          const secret = process.env.SUPABASE_JWT_SECRET; // must be set in Edge env
-          if (!secret) return false;
-          await jwtVerify(jwt, new TextEncoder().encode(secret), { algorithms: ['HS256'] });
-          return true;
+          if (!jwt) return false
+          const secret = process.env.SUPABASE_JWT_SECRET
+          if (!secret) return false
+          await jwtVerify(jwt, new TextEncoder().encode(secret), { algorithms: ['HS256'] })
+          return true
      } catch {
-          return false;
+          return false
      }
 }
 
 export async function proxy(req: NextRequest) {
-     const { pathname, search } = req.nextUrl;
-     const isApiRoute = pathname.startsWith('/api/');
+     const { pathname, search } = req.nextUrl
+     const isApiRoute = pathname.startsWith('/api/')
 
-     const raw = getCookieRaw(req);             // cookie string (may be base64 blob)
-     const jwt = extractAccessToken(raw);       // actual JWT
-     const authed = await isTokenValid(jwt);    // verify signature + exp
-     console.log(`Middleware: ${pathname} (authed: ${authed})`);
-     const isAuthPage = PUBLIC_ROUTES.some(r => pathname.startsWith(r));
+     const raw = getCookieRaw(req)
+     const jwt = extractAccessToken(raw)
+     const authed = await isTokenValid(jwt)
 
+     const isAuthPage = AUTH_PAGES.some(r => pathname.startsWith(r))
+     const isPublicEndpoint = PUBLIC_ENDPOINTS.some(r => pathname.startsWith(r))
+
+     // Auth pages: redirect logged-in users away from login
      if (isAuthPage) {
-          if (isApiRoute) return NextResponse.next();
-          if (authed) return NextResponse.redirect(new URL('/dashboard', req.url));
-          return NextResponse.next();
+          if (authed) return NextResponse.redirect(new URL('/dashboard', req.url))
+          return NextResponse.next()
      }
 
-     // Allow cron route with secret header even if not authed
+     // Public endpoints: always allow
+     if (isPublicEndpoint) {
+          return NextResponse.next()
+     }
+
+     // Cron exception (keep yours)
      if (pathname.startsWith('/api/cron/publish-scheduled')) {
-          const provided = req.headers.get('x-cron-secret');
+          const provided = req.headers.get('x-cron-secret')
           if (provided && provided === process.env.CRON_PUBLISH_SECRET) {
-               return NextResponse.next();
+               return NextResponse.next()
           }
-          // Fall through to normal auth handling if header missing/invalid
      }
 
+     // Protected: if not authed
      if (!authed) {
-          const login = new URL('/auth/login', req.url);
-          login.searchParams.set('redirect', `${pathname}${search}`);
-          return NextResponse.redirect(login);
+          // APIs must return 401, NOT redirect
+          if (isApiRoute) {
+               return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+                    status: 401,
+                    headers: {
+                         'Content-Type': 'application/json',
+                         'Cache-Control': 'no-store',
+                    },
+               })
+          }
+
+          const login = new URL('/auth/login', req.url)
+          login.searchParams.set('redirect', `${pathname}${search}`)
+          return NextResponse.redirect(login)
      }
 
-     return NextResponse.next();
+     // Optional: prevent caching of protected pages
+     const res = NextResponse.next()
+     if (!isApiRoute) {
+          res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+          res.headers.set('Pragma', 'no-cache')
+          res.headers.set('Expires', '0')
+     }
+     return res
 }
+
+// ✅ IMPORTANT: make Next use this function
+export { proxy as middleware }

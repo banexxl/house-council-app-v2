@@ -6,7 +6,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-
+import { AuthProvider } from 'src/contexts/auth';
 import 'src/locales/i18n';
 
 import { RTL } from 'src/components/rtl';
@@ -89,25 +89,27 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
                   </Head>
                   <RTL direction={settings.direction}>
                     <CssBaseline />
-                    {children}
-                    <SettingsButton onClick={settings.handleDrawerOpen} />
-                    <SettingsDrawer
-                      canReset={settings.isCustom}
-                      onClose={settings.handleDrawerClose}
-                      onReset={settings.handleReset}
-                      onUpdate={settings.handleUpdate}
-                      open={settings.openDrawer}
-                      values={{
-                        colorPreset: settings.colorPreset,
-                        contrast: settings.contrast,
-                        direction: settings.direction,
-                        paletteMode: settings.paletteMode,
-                        responsiveFontSizes: settings.responsiveFontSizes,
-                        stretch: settings.stretch,
-                        layout: settings.layout,
-                        navColor: settings.navColor,
-                      }}
-                    />
+                    <AuthProvider>
+                      {children}
+                      <SettingsButton onClick={settings.handleDrawerOpen} />
+                      <SettingsDrawer
+                        canReset={settings.isCustom}
+                        onClose={settings.handleDrawerClose}
+                        onReset={settings.handleReset}
+                        onUpdate={settings.handleUpdate}
+                        open={settings.openDrawer}
+                        values={{
+                          colorPreset: settings.colorPreset,
+                          contrast: settings.contrast,
+                          direction: settings.direction,
+                          paletteMode: settings.paletteMode,
+                          responsiveFontSizes: settings.responsiveFontSizes,
+                          stretch: settings.stretch,
+                          layout: settings.layout,
+                          navColor: settings.navColor,
+                        }}
+                      />
+                    </AuthProvider>
                     <Toaster />
                   </RTL>
                 </ThemeProvider>
