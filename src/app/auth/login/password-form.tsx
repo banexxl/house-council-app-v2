@@ -28,6 +28,8 @@ type SupabaseMfaFactor = {
      status: "unverified" | "verified" | string;
 };
 
+const TOAST_MS = 2000;
+
 export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => {
      const router = useRouter();
 
@@ -41,9 +43,22 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
      );
 
-     const handleNavClick = () => {
-          startTransition(() => {
-               router.push(safeRedirect);
+
+
+     const toastAndNavigate = (message: string, opts?: { resetForm?: boolean }) => {
+          toast.success(message, { duration: TOAST_MS, id: 'sign-in-success' });
+
+          // Let the toast render at least one frame before nav (prevents “stuck”)
+          requestAnimationFrame(() => {
+               setTimeout(() => {
+                    startTransition(() => {
+                         router.push(safeRedirect);
+                    });
+
+                    if (opts?.resetForm !== false) {
+                         formik.resetForm();
+                    }
+               }, TOAST_MS);
           });
      };
 
@@ -68,13 +83,19 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
                               });
 
                          if (signInError) {
-                              toast.error(signInError.details || "Sign in failed");
+                              toast.error(signInError.details || "Sign in failed", {
+                                   duration: 2000,
+                                   id: "sign-in-error",
+                              });
                               setLoading(false);
                               return;
                          }
 
                          if (!userData) {
-                              toast.error("Sign in failed — no user returned.");
+                              toast.error("Sign in failed — no user returned.", {
+                                   duration: 2000,
+                                   id: "sign-in-no-user",
+                              });
                               setLoading(false);
                               return;
                          }
@@ -87,14 +108,11 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
 
                          // ✅ No verified TOTP factor → no 2FA required, user is fully logged in
                          if (!totpFactor) {
-                              toast.success("Sign in successful!", {
-                                   duration: 2000,
-                              });
-                              handleNavClick();
-                              formik.resetForm();
+                              toastAndNavigate("Sign in successful!");
                               setLoading(false);
                               return;
                          }
+
 
                          // ===========================
                          // VERIFIED FACTOR → START 2FA
@@ -106,7 +124,10 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
 
                          if (challengeError || !challengeData?.id) {
                               console.error("MFA challenge error:", challengeError);
-                              toast.error("Failed to start 2FA challenge. Please try again.");
+                              toast.error("Failed to start 2FA challenge. Please try again.", {
+                                   duration: 2000,
+                                   id: "mfa-challenge-error",
+                              });
                               setLoading(false);
                               return;
                          }
@@ -125,13 +146,19 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
                     // PHASE 2: OTP VERIFICATION
                     // ===========================
                     if (!values.otp) {
-                         toast.error("Please enter your 2FA code.");
+                         toast.error("Please enter your 2FA code.", {
+                              duration: 2000,
+                              id: "mfa-otp-missing",
+                         });
                          setLoading(false);
                          return;
                     }
 
                     if (!factorId || !challengeId) {
-                         toast.error("Missing 2FA challenge context. Please log in again.");
+                         toast.error("Missing 2FA challenge context. Please log in again.", {
+                              duration: 2000,
+                              id: "mfa-missing-context",
+                         });
                          setLoading(false);
                          setDoesRequire2FA(false);
                          return;
@@ -146,7 +173,10 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
 
                     if (verifyError) {
                          console.error("MFA verify error:", verifyError);
-                         toast.error("Invalid 2FA code. Please try again.");
+                         toast.error("Invalid 2FA code. Please try again.", {
+                              duration: 2000,
+                              id: "mfa-verify-error",
+                         });
                          setLoading(false);
                          return;
                     }
@@ -154,14 +184,21 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
                     // At this point, Supabase has upgraded session to AAL2 (aal = 'aal2')
                     // verifyData.session may contain the upgraded session
                     if (verifyData?.user && verifyData.access_token) {
-                         toast.success("2FA verified. You're now signed in!");
-                         handleNavClick();
+                         toastAndNavigate("2FA verified. You're now signed in!", { resetForm: true });
+                         setLoading(false);
+                         return;
                     } else {
-                         toast.error("Verification failed — no session returned.");
+                         toast.error("Verification failed — no session returned.", {
+                              duration: 2000,
+                              id: "mfa-verify-no-session",
+                         });
                     }
                } catch (err) {
                     console.error("Unexpected error during sign in:", err);
-                    toast.error("Unexpected error during sign in. Please try again.");
+                    toast.error("Unexpected error during sign in. Please try again.", {
+                         duration: 2000,
+                         id: "sign-in-unexpected-error",
+                    });
                } finally {
                     setLoading(false);
                }

@@ -110,8 +110,8 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
                         }}
                       />
                     </AuthProvider>
-                    <Toaster />
                   </RTL>
+                  <Toaster />
                 </ThemeProvider>
               );
             }}

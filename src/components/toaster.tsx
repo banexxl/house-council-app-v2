@@ -17,6 +17,7 @@ export const Toaster: FC = () => {
           color: theme.palette.common.white,
           boxShadow: theme.shadows[16],
         },
+        duration: 2000
       }}
     />
   );
