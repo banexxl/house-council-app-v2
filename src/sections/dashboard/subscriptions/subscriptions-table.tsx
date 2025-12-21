@@ -106,7 +106,7 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                               )
                          },
                          { key: 'discount_percentage', label: t('subscriptionPlans.subscriptionPlanDiscountPercentage') },
-                         { key: 'monthly_total_price', label: t('subscriptionPlans.subscriptionPlanTotalPrice') }
+                         { key: 'monthly_total_price_per_apartment', label: t('subscriptionPlans.subscriptionPlanTotalPrice') }
                     ]}
                     rowActions={[
                          (plan, openDialog) => (

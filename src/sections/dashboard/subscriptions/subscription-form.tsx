@@ -27,15 +27,15 @@ const getCalculatedPrices = (values: SubscriptionPlan, prices: Record<string, nu
           const featurePrice = prices[featureId];
           if (!isNaN(featurePrice)) baseTotal += featurePrice;
      });
-     const monthly_total_price = parseFloat(baseTotal.toFixed(2));
-     let discountedPrice = monthly_total_price;
+     const monthly_total_price_per_apartment = parseFloat(baseTotal.toFixed(2));
+     let discountedPrice = monthly_total_price_per_apartment;
      if (values.is_discounted) discountedPrice *= 1 - (values.discount_percentage || 0) / 100;
      if (values.is_billed_annually) {
           discountedPrice *= 12;
           discountedPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
      }
-     const total_price_with_discounts = parseFloat(discountedPrice.toFixed(2));
-     return { monthly_total_price, total_price_with_discounts };
+     const total_price_per_apartment_with_discounts = parseFloat(discountedPrice.toFixed(2));
+     return { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts };
 };
 
 export default function SubscriptionEditor({ features, subscriptionPlansData }: SubscriptionEditorProps) {
@@ -61,8 +61,8 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
                ...subscriptionPlanValidationSchema.fields,
           }),
           onSubmit: async (values: SubscriptionPlan) => {
-               const { monthly_total_price, total_price_with_discounts } = getCalculatedPrices(values, featurePrices);
-               const payload = { ...values, monthly_total_price, total_price_with_discounts } as SubscriptionPlan;
+               const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(values, featurePrices);
+               const payload = { ...values, monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } as SubscriptionPlan;
                try {
                     let response;
                     if (values.id && values.id !== '') {
@@ -98,13 +98,13 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
           const { success } = await updateFeature(featureId, { price_per_month: price });
           if (success) {
                toast.success("Feature price updated successfully!");
-               const { monthly_total_price, total_price_with_discounts } = getCalculatedPrices(formik.values, featurePrices);
+               const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(formik.values, featurePrices);
                if (subscriptionPlansData?.id) {
                     await updateSubscriptionPlan({
                          ...formik.values,
                          id: subscriptionPlansData.id,
-                         monthly_total_price,
-                         total_price_with_discounts,
+                         monthly_total_price_per_apartment,
+                         total_price_per_apartment_with_discounts,
                     });
                }
           } else {
@@ -126,19 +126,19 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
           featurePrices
      ]);
 
-     // Debounce updating form fields for monthly_total_price & total_price_with_discounts
+     // Debounce updating form fields for monthly_total_price_per_apartment & total_price_per_apartment_with_discounts
      useEffect(() => {
           const timer = setTimeout(() => {
-               const { monthly_total_price, total_price_with_discounts } = memoPrices;
-               if (formik.values.monthly_total_price !== monthly_total_price) {
-                    formik.setFieldValue('monthly_total_price', monthly_total_price, false);
+               const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = memoPrices;
+               if (formik.values.monthly_total_price_per_apartment !== monthly_total_price_per_apartment) {
+                    formik.setFieldValue('monthly_total_price_per_apartment', monthly_total_price_per_apartment, false);
                }
-               if (formik.values.total_price_with_discounts !== total_price_with_discounts) {
-                    formik.setFieldValue('total_price_with_discounts', total_price_with_discounts, false);
+               if (formik.values.total_price_per_apartment_with_discounts !== total_price_per_apartment_with_discounts) {
+                    formik.setFieldValue('total_price_per_apartment_with_discounts', total_price_per_apartment_with_discounts, false);
                }
           }, 250);
           return () => clearTimeout(timer);
-     }, [memoPrices, formik.values.monthly_total_price, formik.values.total_price_with_discounts, formik.setFieldValue]);
+     }, [memoPrices, formik.values.monthly_total_price_per_apartment, formik.values.total_price_per_apartment_with_discounts, formik.setFieldValue]);
 
      return (
           <form onSubmit={formik.handleSubmit}>
@@ -378,8 +378,8 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
 
                                         )}
                                         <Typography variant="h5" className="mt-4">
-                                             Monthly Price: ${memoPrices.monthly_total_price.toFixed(2)}<br />
-                                             Total with Discounts: ${memoPrices.total_price_with_discounts.toFixed(2)}{" "}
+                                             Monthly price per apartment: ${memoPrices.monthly_total_price_per_apartment.toFixed(2)}<br />
+                                             Total per apartment with discounts: ${memoPrices.total_price_per_apartment_with_discounts.toFixed(2)}{" "}
                                              {formik.values.is_billed_annually ? t("subscriptionPlans.subscriptionPlanYearly") : t("subscriptionPlans.subscriptionPlanMonthly")}
                                         </Typography>
                                    </CardContent>
