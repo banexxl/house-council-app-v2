@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { Client } from 'src/types/client';
+import { Tenant } from 'src/types/tenant';
 import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
 import { TABLES } from 'src/libs/supabase/tables';
@@ -595,6 +596,64 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
                success: false,
                error: error?.message || "Failed to reset password",
           }
+     }
+}
+
+export const readAllTenantsFromClientIdAction = async (client_id: string): Promise<{ tenants: Tenant[] }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     if (!isUUID(client_id)) {
+          log(`readAllTenantsFromClientIdAction invalid client_id: ${client_id}`, 'error');
+          return { tenants: [] };
+     }
+
+     try {
+          const { data: buildings, error: buildingsError } = await supabase
+               .from(TABLES.BUILDINGS)
+               .select('id')
+               .eq('client_id', client_id);
+
+          if (buildingsError) throw buildingsError;
+          const buildingIds = (buildings ?? []).map((b) => b.id).filter(Boolean);
+          if (buildingIds.length === 0) return { tenants: [] };
+
+          const { data: apartments, error: apartmentsError } = await supabase
+               .from(TABLES.APARTMENTS)
+               .select('id')
+               .in('building_id', buildingIds);
+
+          if (apartmentsError) throw apartmentsError;
+          const apartmentIds = (apartments ?? []).map((a) => a.id).filter(Boolean);
+          if (apartmentIds.length === 0) return { tenants: [] };
+
+          const { data: tenants, error: tenantsError } = await supabase
+               .from(TABLES.TENANTS)
+               .select(`
+                    *,
+                    apartment:tblApartments (
+                         id,
+                         apartment_number,
+                         building:tblBuildings (
+                              id,
+                              building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+                                   street_address,
+                                   city
+                              )
+                         )
+                    )
+               `)
+               .in('apartment_id', apartmentIds);
+          console.log('tenants', tenants);
+
+          if (tenantsError) {
+               log(`readAllTenantsFromClientIdAction tenants error for client_id ${client_id}: ${tenantsError.message}`, 'error');
+               throw tenantsError
+          };
+
+          return { tenants: (tenants ?? []) as Tenant[] };
+     } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readAllTenantsFromClientIdAction error for client ${client_id}: ${message}`, 'error');
+          return { tenants: [] };
      }
 }
 

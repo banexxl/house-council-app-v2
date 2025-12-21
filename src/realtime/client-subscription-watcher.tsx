@@ -4,10 +4,10 @@ import { useEffect } from "react"; // React hooks for lifecycle
 import { initClientSubscriptionRealtime } from "src/realtime/sb-realtime"; // Helper to attach a filtered realtime listener for the client's subscription row
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"; // Type for realtime payload shape
 import { supabaseBrowserClient } from "src/libs/supabase/sb-client"; // Preconfigured Supabase browser instance
-import { useAuth } from "src/contexts/auth/auth-provider"; // Access authenticated user + associated client context
 import { useRouter } from "next/navigation"; // Client router for redirects after sign-out
 import log from "src/utils/logger";
 import { TABLES } from "src/libs/supabase/tables";
+import { useState } from "react";
 
 // Domain model: minimal subset of tblClient_Subscription columns needed here
 interface ClientSubscriptionRow {
@@ -22,10 +22,49 @@ interface ClientSubscriptionRow {
 // realtime and polling-based enforcement for resilience.
 export default function ClientSubscriptionWatcher() {
 
-     const { client, userData } = useAuth(); // Pull client context (client.id drives subscription row lookup)
+     const [viewer, setViewer] = useState<{
+          client: { id: string } | null;
+          clientMember: { client_id: string | null } | null;
+          userData: { id: string } | null;
+     } | null>(null);
      const router = useRouter(); // Used to redirect to login after sign-out
 
-     const clientId = client?.id ?? null; // Guard: no client => skip watcher logic
+     const clientId = viewer?.client?.id ?? viewer?.clientMember?.client_id ?? null; // Guard: no client => skip watcher logic
+
+     useEffect(() => { // Core effect: sets up initial validation, realtime listener, and polling fallback
+          let active = true;
+          let authSub: ReturnType<typeof supabaseBrowserClient.auth.onAuthStateChange>['data']['subscription'] | null = null;
+
+          const loadViewer = async () => {
+               try {
+                    const res = await fetch('/api/viewer', { cache: 'no-store' });
+                    const data = await res.json();
+                    if (active) {
+                         setViewer({
+                              client: data?.client ?? null,
+                              clientMember: data?.clientMember ?? null,
+                              userData: data?.userData ?? null,
+                         });
+                    }
+               } catch (error) {
+                    if (active) setViewer(null);
+                    log('[ClientSubscriptionWatcher] Failed to load viewer', error);
+               }
+          };
+
+          loadViewer();
+
+          const authChange = supabaseBrowserClient.auth.onAuthStateChange(() => {
+               loadViewer();
+          });
+
+          authSub = authChange?.data?.subscription ?? null;
+
+          return () => {
+               active = false;
+               authSub?.unsubscribe();
+          };
+     }, []);
 
      useEffect(() => { // Core effect: sets up initial validation, realtime listener, and polling fallback
           let cleanup: (() => Promise<void>) | null = null; // Function to unsubscribe realtime channel

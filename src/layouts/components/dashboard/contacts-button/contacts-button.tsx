@@ -6,17 +6,17 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 
 import { usePopover } from 'src/hooks/use-popover';
-import { useAuth } from 'src/contexts/auth/auth-provider';
-import { getAllTenantsFromClientsBuildingsWithAuthData, getTenantsFromSameBuildingWithAuthData } from 'src/app/actions/tenant/tenant-actions';
 import { Tenant } from 'src/types/tenant';
 import { useTranslation } from 'react-i18next';
 import { useBuildingPresence, PresenceUser } from 'src/realtime/user-presence';
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
+import { TABLES } from 'src/libs/supabase/tables';
 import { ContactsPopover } from './contacts-popover';
 
 // Helper function to calculate last activity from last_sign_in_at
-const calculateLastActivity = (lastSignInAt: string | null | undefined): number | undefined => {
-  if (!lastSignInAt) return undefined;
-  return new Date(lastSignInAt).getTime();
+const calculateLastActivity = (timestamp: string | null | undefined): number | undefined => {
+  if (!timestamp) return undefined;
+  return new Date(timestamp).getTime();
 };
 
 interface Contact {
@@ -28,23 +28,31 @@ interface Contact {
   userId?: string; // Add user ID for presence tracking
 }
 
+type ViewerData = {
+  client: { id: string; email?: string | null; name?: string | null } | null;
+  clientMember: { id: string; client_id: string | null; email?: string | null } | null;
+  tenant: (Tenant & { apartment?: any }) | null;
+  admin: { id: string; email?: string | null; first_name?: string | null; last_name?: string | null } | null;
+  userData: { id: string; email?: string | null } | null;
+  error?: string;
+};
+
 const useContacts = () => {
   const [baseContacts, setBaseContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
   const [buildingId, setBuildingId] = useState<string | null>(null);
-  const auth = useAuth();
+  const [viewer, setViewer] = useState<ViewerData | null>(null);
 
   // Extract building ID and user info for presence
-  const currentUserId = auth.userData?.id || null;
+  const currentUserId = viewer?.userData?.id || null;
   const currentUserInfo: Partial<PresenceUser> = {
-    username: auth.tenant?.email || auth.client?.email,
-    first_name: auth.tenant?.first_name || auth.client?.name?.split(' ')[0],
-    last_name: auth.tenant?.last_name || '',
-    apartment_number: auth.tenant?.apartment ? String((auth.tenant.apartment as any)?.apartment_number || '') : undefined,
+    username: viewer?.tenant?.email || viewer?.client?.email!,
+    first_name: viewer?.tenant?.first_name || viewer?.client?.name?.split(' ')[0],
+    last_name: viewer?.tenant?.last_name || '',
+    apartment_number: viewer?.tenant?.apartment ? String((viewer.tenant.apartment as any)?.apartment_number || '') : undefined,
   };
 
   // Use building presence hook
-  const { presenceUsers, isConnected, onlineUserIds } = useBuildingPresence(
+  const { isConnected, onlineUserIds } = useBuildingPresence(
     buildingId,
     currentUserId,
     currentUserInfo
@@ -69,52 +77,207 @@ const useContacts = () => {
     return null;
   }, []);
 
+  const fetchTenantsForClient = useCallback(async (clientId: string): Promise<Tenant[]> => {
+    if (!clientId) return [];
+
+    const { data: buildings, error: buildingsError } = await supabaseBrowserClient
+      .from(TABLES.BUILDINGS)
+      .select('id')
+      .eq('client_id', clientId);
+
+    if (buildingsError) {
+      console.error('Failed to fetch buildings for client', buildingsError);
+      return [];
+    }
+
+    const buildingIds = (buildings ?? []).map((b: any) => b.id).filter(Boolean);
+    if (buildingIds.length === 0) return [];
+
+    const { data: apartments, error: apartmentsError } = await supabaseBrowserClient
+      .from(TABLES.APARTMENTS)
+      .select('id')
+      .in('building_id', buildingIds);
+
+    if (apartmentsError) {
+      console.error('Failed to fetch apartments for client buildings', apartmentsError);
+      return [];
+    }
+
+    const apartmentIds = (apartments ?? []).map((a: any) => a.id).filter(Boolean);
+    if (apartmentIds.length === 0) return [];
+
+    const { data: tenants, error: tenantsError } = await supabaseBrowserClient
+      .from(TABLES.TENANTS)
+      .select(`
+        *,
+        apartment:tblApartments (
+          id,
+          apartment_number,
+          building_id,
+          building:tblBuildings (
+            id,
+            building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+              street_address,
+              city
+            )
+          )
+        )
+      `)
+      .in('apartment_id', apartmentIds);
+
+    if (tenantsError) {
+      console.error('Failed to fetch tenants for client', tenantsError);
+      return [];
+    }
+
+    return (tenants ?? []) as Tenant[];
+  }, []);
+
+  const fetchTenantsFromSameBuilding = useCallback(async (buildingIdForTenant: string, excludeTenantId?: string): Promise<Tenant[]> => {
+    if (!buildingIdForTenant) return [];
+
+    const { data: apartments, error: apartmentsError } = await supabaseBrowserClient
+      .from(TABLES.APARTMENTS)
+      .select('id')
+      .eq('building_id', buildingIdForTenant);
+
+    if (apartmentsError) {
+      console.error('Failed to fetch apartments in building', apartmentsError);
+      return [];
+    }
+
+    const apartmentIds = (apartments ?? []).map((a: any) => a.id).filter(Boolean);
+    if (apartmentIds.length === 0) return [];
+
+    const { data: tenants, error: tenantsError } = await supabaseBrowserClient
+      .from(TABLES.TENANTS)
+      .select(`
+        *,
+        apartment:tblApartments (
+          id,
+          apartment_number,
+          building_id,
+          building:tblBuildings (
+            id,
+            building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
+              street_address,
+              city
+            )
+          )
+        )
+      `)
+      .in('apartment_id', apartmentIds)
+      .neq('id', excludeTenantId || '');
+
+    if (tenantsError) {
+      console.error('Failed to fetch tenants from same building', tenantsError);
+      return [];
+    }
+
+    return (tenants ?? []) as Tenant[];
+  }, []);
+
   useEffect(() => {
+    let active = true;
+    let authSub: ReturnType<typeof supabaseBrowserClient.auth.onAuthStateChange>['data']['subscription'] | null = null;
+
+    const loadViewer = async () => {
+      try {
+        const res = await fetch('/api/viewer', { cache: 'no-store' });
+        const data: ViewerData = await res.json();
+        if (active) {
+          setViewer(data);
+        }
+      } catch (error) {
+        if (active) setViewer(null);
+        console.error('[Contacts] Failed to load viewer', error);
+      }
+    };
+
+    loadViewer();
+
+    const authChange = supabaseBrowserClient.auth.onAuthStateChange(() => {
+      loadViewer();
+    });
+    authSub = authChange?.data?.subscription ?? null;
+
+    return () => {
+      active = false;
+      authSub?.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
     const fetchContacts = async () => {
-      if (!auth.tenant && !auth.client) {
+      if (!viewer) {
+        if (!isMounted) return;
         setBaseContacts([]);
         setBuildingId(null);
-        setLoading(false);
         return;
       }
 
       try {
-        let tenantsResult;
+        let tenantList: Tenant[] = [];
 
-        if (auth.tenant) {
-          // If user is a tenant, get other tenants from the same building
-          tenantsResult = await getTenantsFromSameBuildingWithAuthData(auth.tenant.id);
-        } else if (auth.client) {
-          // If user is a client, get all tenants from their buildings
-          tenantsResult = await getAllTenantsFromClientsBuildingsWithAuthData(auth.client.id);
+        const tenantBuildingId =
+          (viewer.tenant?.apartment as any)?.building_id ||
+          (viewer.tenant?.apartment as any)?.building?.id ||
+          null;
+
+        if (viewer.tenant?.id && tenantBuildingId) {
+          tenantList = await fetchTenantsFromSameBuilding(tenantBuildingId, viewer.tenant.id);
+        } else {
+          const clientId = viewer.client?.id || viewer.clientMember?.client_id || null;
+          if (clientId) {
+            tenantList = await fetchTenantsForClient(clientId);
+          }
         }
 
-        if (tenantsResult?.success && tenantsResult.data) {
-          // Extract building ID for presence subscription
-          const extractedBuildingId = extractBuildingId(tenantsResult.data);
+        if (!isMounted) return;
+
+        if (tenantList.length > 0) {
+          const extractedBuildingId = tenantBuildingId || extractBuildingId(tenantList);
           setBuildingId(extractedBuildingId);
 
-          const transformedContacts: Contact[] = tenantsResult.data.map((tenant: Tenant & { last_sign_in_at?: string }) => ({
+          const transformedContacts: Contact[] = tenantList.map((tenant: Tenant & { last_sign_in_at?: string }) => ({
             id: tenant.id,
-            userId: tenant.user_id, // Add user ID for presence tracking
-            avatar: tenant.avatar_url!,
-            isActive: false, // Will be updated by presence system
-            lastActivity: calculateLastActivity(tenant.last_sign_in_at),
-            name: `${tenant.first_name} ${tenant.last_name}`,
+            userId: tenant.user_id,
+            avatar: tenant.avatar_url || '',
+            isActive: false,
+            lastActivity: tenant.last_activity
+              ? calculateLastActivity(tenant.last_activity as any)
+              : calculateLastActivity((tenant as any).last_sign_in_at),
+            name: `${tenant.first_name ?? ''} ${tenant.last_name ?? ''}`.trim(),
           }));
           setBaseContacts(transformedContacts);
+        } else {
+          setBaseContacts([]);
+          setBuildingId(null);
         }
       } catch (error) {
         console.error('Failed to fetch contacts:', error);
+        if (!isMounted) return;
         setBaseContacts([]);
         setBuildingId(null);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchContacts();
-  }, [auth.tenant, auth.client, extractBuildingId]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    viewer?.tenant?.id,
+    viewer?.tenant?.apartment,
+    viewer?.client?.id,
+    viewer?.clientMember?.client_id,
+    extractBuildingId,
+    fetchTenantsForClient,
+    fetchTenantsFromSameBuilding,
+  ]);
 
   // Compute contacts with updated presence status using useMemo
   const contacts = useMemo(() => {
@@ -124,13 +287,13 @@ const useContacts = () => {
     }));
   }, [baseContacts, onlineUserIds]);
 
-  return { contacts, loading, buildingId, isConnected, onlineCount: onlineUserIds.length };
+  return { contacts, buildingId, isConnected, onlineCount: onlineUserIds.length };
 };
 
 export const ContactsButton: FC = () => {
   const { t } = useTranslation();
   const popover = usePopover<HTMLButtonElement>();
-  const { contacts, loading, buildingId, isConnected, onlineCount } = useContacts();
+  const { contacts, buildingId, isConnected, onlineCount } = useContacts();
 
   return (
     <>

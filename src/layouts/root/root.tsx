@@ -116,7 +116,6 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
           </SettingsConsumer>
         </SettingsProvider>
       </ReduxProvider>
-
     </NextAppDirEmotionCacheProvider>
   );
 };

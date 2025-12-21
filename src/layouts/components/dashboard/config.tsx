@@ -267,37 +267,6 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "clientMember", "admin"] },
         ]
       },
-      // {
-      //   title: t(tokens.nav.chat),
-      //   path: paths.dashboard.chat,
-      //   roles: ["client", "clientMember", "admin"],
-      //   icon: (
-      //     <SvgIcon fontSize="small">
-      //       <ChatIcon />
-      //     </SvgIcon>
-      //   ),
-      // }
-      // {
-      //   title: t(tokens.nav.analytics),
-      //   path: paths.dashboard.analytics,
-      //   roles: ["admin", "client"],
-      //   icon: (
-      //     <SvgIcon fontSize="small">
-      //       <BarChartSquare02Icon />
-      //     </SvgIcon>
-      //   ),
-      // },
-      // {
-      //   title: t(tokens.nav.crypto),
-      //   path: paths.dashboard.crypto,
-      //   roles: ["admin", "client"],
-      //   icon: (
-      //     <SvgIcon fontSize="small">
-      //       <CurrencyBitcoinCircleIcon />
-      //     </SvgIcon>
-      //   ),
-      //   label: <Chip color="primary" label="New" size="small" />,
-      // },
     ],
   },
 
@@ -373,16 +342,6 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["tenant"] },
         ]
       }
-      // {
-      //   title: t(tokens.nav.chat),
-      //   path: paths.dashboard.chat,
-      //   roles: ["tenant"],
-      //   icon: (
-      //     <SvgIcon fontSize="small">
-      //       <ChatIcon />
-      //     </SvgIcon>
-      //   ),
-      // }
     ],
   },
 ];

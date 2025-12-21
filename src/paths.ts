@@ -34,7 +34,6 @@ export const paths = {
       create: '/dashboard/service-requests/create',
     },
     calendar: '/dashboard/calendar',
-    chat: '/dashboard/chat',
     crypto: '/dashboard/crypto',
     clients: {
       index: '/dashboard/clients',

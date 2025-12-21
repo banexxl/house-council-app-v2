@@ -368,22 +368,6 @@ export const ClientProfileWrapper = ({ posts, profile, buildingId, totalCount, p
                                              {t('tenants.socialProfileModifyData', 'Modify profile data')}
                                         </Button>
                                    )}
-                                   <Button
-                                        href={paths.dashboard.chat}
-                                        size="small"
-                                        startIcon={
-                                             <SvgIcon>
-                                                  <MessageChatSquareIcon />
-                                             </SvgIcon>
-                                        }
-                                        variant="contained"
-                                        sx={{
-                                             minWidth: { xs: 'auto', sm: 120 },
-                                             px: { xs: 1.5, sm: 2 },
-                                        }}
-                                   >
-                                        {t('tenants.socialProfileMessages')}
-                                   </Button>
                               </Stack>
                          </Stack>
                     </div>

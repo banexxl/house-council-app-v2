@@ -25,6 +25,17 @@ export type UserDataCombined = {
  * - Runs role lookups in parallel, prefers first non-null in priority order
  */
 export const getViewer = cache(async (): Promise<UserDataCombined> => {
+     const tenantSelect = `
+          *,
+          apartment:${TABLES.APARTMENTS}(
+               id,
+               apartment_number,
+               building:${TABLES.BUILDINGS}(
+                    id
+               )
+          )
+     `;
+
      // Auth (cookie-aware) — do NOT use service role for reading the session
      const authSb = await useServerSideSupabaseAnonClient();
      const { data: { user }, error: userErr } = await authSb.auth.getUser();
@@ -56,7 +67,7 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      const [client, clientMember, tenant, admin] = await Promise.all([
           maybeSingle(db.from(TABLES.CLIENTS).select('*').eq('user_id', user.id)),
           maybeSingle(db.from(TABLES.CLIENT_MEMBERS).select('*').eq('user_id', user.id)),
-          maybeSingle(db.from(TABLES.TENANTS).select('*').eq('user_id', user.id)),
+          maybeSingle(db.from(TABLES.TENANTS).select(tenantSelect).eq('user_id', user.id)),
           maybeSingle(db.from(TABLES.SUPER_ADMINS).select('*').eq('user_id', user.id)),
      ]).catch((err) => {
           return [null, null, null, null] as const;

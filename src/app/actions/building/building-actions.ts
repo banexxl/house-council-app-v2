@@ -381,9 +381,6 @@ export const getBuildingIDsFromUserId = async (user_id: string): Promise<{ succe
                return { success: false, error: tenantErr.message };
           }
           const apartmentIds = (tenantRows || []).map(r => r.apartment_id).filter(Boolean);
-          console.log('tenantRows', tenantRows);
-          console.log('apartmentIds', apartmentIds);
-
           if (apartmentIds.length === 0) {
                log(`No apartments found for user_id ${user_id}`);
                await logServerAction({ action: 'getBuildingsFromUserId', duration_ms: Date.now() - t0, error: '', payload: { user_id, apartments: 0 }, status: 'success', type: 'db', user_id: null, id: '' });

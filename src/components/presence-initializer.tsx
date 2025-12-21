@@ -1,30 +1,87 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useAuth } from 'src/contexts/auth/auth-provider';
+import { useEffect, useRef, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import type { Client, ClientMember } from 'src/types/client';
+import type { Tenant } from 'src/types/tenant';
+import type { Admin } from 'src/types/admin';
+import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { subscribeToBuildingPresence, unsubscribeFromBuildingPresence, PresenceUser } from 'src/realtime/user-presence';
 import log from 'src/utils/logger';
+
+type ViewerData = {
+     client: Client | null;
+     clientMember: ClientMember | null;
+     tenant: Tenant | null;
+     admin: Admin | null;
+     userData: User | null;
+     error?: string;
+};
 
 /**
  * Component that automatically sets up building presence when a user is logged in.
  * This should be placed at the layout level to ensure presence is active throughout the session.
  */
 export const PresenceInitializer = () => {
-     const auth = useAuth();
      const currentBuildingIdRef = useRef<string | null>(null);
+     const [viewer, setViewer] = useState<ViewerData | null>(null);
+
+     useEffect(() => {
+          let active = true;
+          let authSubscription: ReturnType<typeof supabaseBrowserClient.auth.onAuthStateChange>['data']['subscription'] | null = null;
+
+          const fetchViewer = async () => {
+               try {
+                    const response = await fetch('/api/viewer', { cache: 'no-store' });
+                    const data: ViewerData = await response.json();
+
+                    if (active) {
+                         setViewer(data);
+                    }
+
+                    if (!response.ok) {
+                         throw new Error(data?.error || `Failed to fetch viewer (${response.status})`);
+                    }
+               } catch (error) {
+                    if (active) {
+                         setViewer(null);
+                    }
+                    log('[PresenceInitializer] Failed to fetch viewer from server', error);
+               }
+          };
+
+          fetchViewer();
+
+          const authChange = supabaseBrowserClient?.auth.onAuthStateChange(() => {
+               fetchViewer();
+          });
+
+          authSubscription = authChange?.data?.subscription ?? null;
+
+          return () => {
+               active = false;
+               authSubscription?.unsubscribe();
+               if (currentBuildingIdRef.current) {
+                    unsubscribeFromBuildingPresence(currentBuildingIdRef.current);
+                    currentBuildingIdRef.current = null;
+               }
+          };
+     }, []);
 
      useEffect(() => {
           let mounted = true;
 
           const setupPresence = async () => {
-               // Clean up previous subscription if building changed
                if (currentBuildingIdRef.current) {
                     await unsubscribeFromBuildingPresence(currentBuildingIdRef.current);
                     currentBuildingIdRef.current = null;
                }
 
-               // Only set up presence if user is authenticated and we can determine building
-               if (!auth.userData?.id) {
+               if (!viewer) {
+                    return;
+               }
+
+               if (!viewer.userData?.id) {
                     log('[PresenceInitializer] No authenticated user, skipping presence setup');
                     return;
                }
@@ -32,28 +89,23 @@ export const PresenceInitializer = () => {
                let buildingId: string | null = null;
                let userInfo: Partial<PresenceUser> = {};
 
-               // Extract building ID and user info based on user type
-               if (auth.tenant) {
-                    // For tenants, get building from apartment
-                    const apartment = auth.tenant.apartment;
+               if (viewer.tenant) {
+                    const apartment = viewer.tenant.apartment;
                     if (apartment && typeof apartment === 'object') {
                          const apartmentData = apartment as any;
                          buildingId = apartmentData.building_id || apartmentData.building?.id || null;
                     }
 
                     userInfo = {
-                         username: auth.tenant.email,
-                         first_name: auth.tenant.first_name,
-                         last_name: auth.tenant.last_name,
+                         username: viewer.tenant.email,
+                         first_name: viewer.tenant.first_name,
+                         last_name: viewer.tenant.last_name,
                          apartment_number: apartment ? String((apartment as any)?.apartment_number || '') : undefined,
                     };
-               } else if (auth.client) {
-                    // For clients, we might need to get building info differently
-                    // For now, let's skip automatic presence for clients as they might manage multiple buildings
+               } else if (viewer.client) {
                     log('[PresenceInitializer] Client user detected, skipping automatic presence setup');
                     return;
-               } else if (auth.clientMember) {
-                    // Similar to clients, client members might have access to multiple buildings
+               } else if (viewer.clientMember) {
                     log('[PresenceInitializer] Client member detected, skipping automatic presence setup');
                     return;
                }
@@ -66,11 +118,11 @@ export const PresenceInitializer = () => {
                if (!mounted) return;
 
                try {
-                    log(`[PresenceInitializer] Setting up presence for building ${buildingId}, user ${auth.userData.id}`);
+                    log(`[PresenceInitializer] Setting up presence for building ${buildingId}, user ${viewer.userData.id}`);
 
                     const channel = await subscribeToBuildingPresence(
                          buildingId,
-                         auth.userData.id,
+                         viewer.userData.id,
                          userInfo
                     );
 
@@ -88,12 +140,8 @@ export const PresenceInitializer = () => {
           // Cleanup function
           return () => {
                mounted = false;
-               if (currentBuildingIdRef.current) {
-                    unsubscribeFromBuildingPresence(currentBuildingIdRef.current);
-                    currentBuildingIdRef.current = null;
-               }
           };
-     }, [auth.userData?.id, auth.tenant?.id, auth.client?.id, auth.clientMember?.id]);
+     }, [viewer?.userData?.id, viewer?.tenant?.id, viewer?.client?.id, viewer?.clientMember?.id]);
 
      // This component doesn't render anything
      return null;

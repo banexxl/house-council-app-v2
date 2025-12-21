@@ -88,7 +88,6 @@ export function useNotifications() {
     let cleanup: (() => Promise<void>) | null = null;
     (async () => {
       const isUserClient = await isClientUserId(userId);
-
       cleanup = await initNotificationsRealtime((payload: any) => {
         const eventType = payload.eventType;
 
