@@ -1,5 +1,5 @@
 // utils/auth-cookie.ts (Edge-safe)
-const TOKEN_BASE = 'sb-sorklznvftjmhkaejkej-auth-token';
+const TOKEN_BASE = process.env.SUPABASE_AUTH_COOKIE_BASE!
 
 // Base64url → base64, then decode using atob (Edge-safe)
 function b64urlToString(b64url: string) {
