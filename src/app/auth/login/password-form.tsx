@@ -57,6 +57,8 @@ export const PasswordForm = ({ ipAddress, safeRedirect }: PasswordFormProps) => 
                     // ===========================
                     // PHASE 1: EMAIL + PASSWORD
                     // ===========================
+                    // Clear any existing Supabase tokens before signing in
+                    await supabase.auth.signOut();
                     if (!doesRequire2FA) {
                          const { userData, error: signInError } =
                               await signInWithEmailAndPassword({

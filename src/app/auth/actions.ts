@@ -635,7 +635,6 @@ export const logout = async (): Promise<{ success: boolean; error?: string }> =>
                duration_ms: Date.now() - startedAt,
                type: 'auth',
           });
-
           // Important: still return success: true so UI behaves like "logged out"
           return { success: true, error: error.message };
      }

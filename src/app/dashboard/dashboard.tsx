@@ -109,18 +109,6 @@ const Dashboard = ({ incidents, events, invoices, showTransactions = true }: Das
             <Grid size={{ xs: 12, md: 5 }} sx={{ order: 3 }}>
               <OverviewEvents upcoming={events.upcoming} past={events.past} />
             </Grid>
-
-            {/* <Grid size={{ xs: 6 }} sx={{ order: 5 }}>
-              <OverviewLinkCard
-                icon={<Briefcase01Icon />}
-                iconTitle={t(tokens.dashboard.overview.jobs.iconTitle)}
-                title={t(tokens.dashboard.overview.jobs.title)}
-                description={t(tokens.dashboard.overview.jobs.description)}
-                url={paths.dashboard.jobs.index}
-                actionIcon={<ArrowRightIcon />}
-                actionLabel={t(tokens.dashboard.overview.jobs.action)}
-              />
-            </Grid> */}
           </Grid>
         </Container>
       </Box>
