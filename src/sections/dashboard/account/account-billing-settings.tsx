@@ -74,7 +74,7 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
               {subscriptionPlans && subscriptionPlans.map((plan: SubscriptionPlan, index: number) => {
                 const isSelected = plan.id === selectedPlan;
                 const isCurrent = plan.id === currentPlan;
-                const price = numeral(plan.total_price_with_discounts).format('$0,0.00');
+                const price = numeral(plan.total_price_per_apartment_with_discounts).format('$0,0.00');
                 return (
                   <Box
                     key={index}
@@ -99,9 +99,9 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
                     }}
                   >
                     <Box sx={{ height: 52, width: 52, '& img': { height: 'auto', width: '100%' } }}>
-                      {plan.total_price_with_discounts >= 0 && plan.total_price_with_discounts < 300 ? (
+                      {plan.total_price_per_apartment_with_discounts >= 0 && plan.total_price_per_apartment_with_discounts < 300 ? (
                         <AccountPlanIcon name='startup' />
-                      ) : plan.total_price_with_discounts >= 300 && plan.total_price_with_discounts < 400 ? (
+                      ) : plan.total_price_per_apartment_with_discounts >= 300 && plan.total_price_per_apartment_with_discounts < 400 ? (
                         <AccountPlanIcon name='standard' />
                       ) : (
                         <AccountPlanIcon name='business' />
