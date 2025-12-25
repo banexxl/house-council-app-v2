@@ -31,6 +31,12 @@ const PUBLIC_ENDPOINTS = [
      '/api/storage/sign-file',
 ] as const
 
+function getBearerToken(req: NextRequest): string | null {
+     const auth = req.headers.get('authorization') || ''
+     if (!auth.toLowerCase().startsWith('bearer ')) return null
+     return auth.slice(7)
+}
+
 async function isTokenValid(jwt: string | null): Promise<boolean> {
      try {
           if (!jwt) return false
@@ -48,7 +54,7 @@ export async function proxy(req: NextRequest) {
      const isApiRoute = pathname.startsWith('/api/')
 
      const raw = getCookieRaw(req)
-     const jwt = extractAccessToken(raw)
+     const jwt = extractAccessToken(raw) ?? getBearerToken(req)
      const authed = await isTokenValid(jwt)
      console.log('proxy request', req);
 
