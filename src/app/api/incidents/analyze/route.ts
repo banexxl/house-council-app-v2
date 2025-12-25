@@ -118,7 +118,7 @@ export async function POST(req: Request) {
           /* -------------------- OpenAI Vision Call -------------------- */
 
           const response = await openai.responses.create({
-               model: "gpt-image-1-mini",
+               model: "gpt-5-mini-2025-08-07",
                input: [
                     {
                          role: "user",
