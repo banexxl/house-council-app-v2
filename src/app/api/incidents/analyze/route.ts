@@ -1,34 +1,86 @@
 import { NextResponse } from "next/server";
+import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+/* ------------------------------------------------------------------ */
+/* Config                                                             */
+/* ------------------------------------------------------------------ */
 
-const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE, {
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
+
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+
+const sbAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
      auth: { persistSession: false },
 });
 
+/* ------------------------------------------------------------------ */
+/* Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+const ALLOWED_CATEGORIES = new Set([
+     "plumbing",
+     "electrical",
+     "heating",
+     "cooling",
+     "structural",
+     "interior",
+     "common_area",
+     "security",
+     "pests",
+     "waste",
+     "parking",
+     "it",
+     "administrative",
+     "noise",
+     "cleaning",
+     "outdoorsafety",
+]);
+
+function safeCategory(input?: string) {
+     if (!input) return "other";
+     const v = input.toLowerCase();
+     return ALLOWED_CATEGORIES.has(v) ? v : "other";
+}
+
+/* ------------------------------------------------------------------ */
+/* Route                                                              */
+/* ------------------------------------------------------------------ */
+
 export async function POST(req: Request) {
      try {
+          /* -------------------- Auth (Bearer from mobile) -------------------- */
+
           const auth = req.headers.get("authorization") ?? "";
           const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-          if (!token) return NextResponse.json({ error: "Missing token" }, { status: 401 });
 
-          // user-scoped client for permission check
-          const sbUser = createClient(SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+          if (!token) {
+               return NextResponse.json({ error: "Missing token" }, { status: 401 });
+          }
+
+          const sbUser = createClient(SUPABASE_URL, SUPABASE_ANON, {
                global: { headers: { Authorization: `Bearer ${token}` } },
                auth: { persistSession: false },
           });
 
           const { incidentId, imageId } = await req.json();
 
-          // 1) Permission check using RLS (best): select incident as user
+          /* -------------------- Permission check via RLS -------------------- */
+
           const { data: incident, error: permErr } = await sbUser
                .from("tblIncidentReports")
-               .select(
-                    `id, building_id, reported_by,
-         images:tblIncidentReportImages(id, storage_bucket, storage_path, is_primary)`
-               )
+               .select(`
+        id,
+        images:tblIncidentReportImages(
+          id,
+          storage_bucket,
+          storage_path,
+          is_primary
+        )
+      `)
                .eq("id", incidentId)
                .single();
 
@@ -42,39 +94,88 @@ export async function POST(req: Request) {
                images.find((i: any) => i.is_primary) ||
                images[0];
 
-          if (!chosen) return NextResponse.json({ error: "No image to analyze" }, { status: 400 });
+          if (!chosen) {
+               return NextResponse.json({ error: "No image to analyze" }, { status: 400 });
+          }
 
-          // 2) set analyzing
-          await sbAdmin.from("tblIncidentReports").update({ ai_status: "analyzing", ai_error: null }).eq("id", incidentId);
+          /* -------------------- Mark analyzing -------------------- */
 
-          // 3) signed url
+          await sbAdmin
+               .from("tblIncidentReports")
+               .update({ ai_status: "analyzing", ai_error: null })
+               .eq("id", incidentId);
+
+          /* -------------------- Signed image URL -------------------- */
+
           const { data: signed, error: signErr } = await sbAdmin.storage
                .from(chosen.storage_bucket)
                .createSignedUrl(chosen.storage_path, 600);
 
-          if (signErr || !signed?.signedUrl) throw new Error(signErr?.message ?? "Sign URL failed");
+          if (signErr || !signed?.signedUrl) {
+               throw new Error(signErr?.message ?? "Failed to sign image URL");
+          }
 
-          // 4) call AI (stub for now)
-          const ai = {
-               title: "Detected issue",
-               description: "Replace with real AI vision result.",
-               category: "structural",
-               confidence: 0.2,
-          };
+          /* -------------------- OpenAI Vision Call -------------------- */
 
-          // 5) shops (stub)
-          const shops: any[] = [];
+          const response = await openai.responses.create({
+               model: "gpt-image-1-mini",
+               input: [
+                    {
+                         role: "user",
+                         content: [
+                              {
+                                   type: "input_text",
+                                   text: `
+You are analyzing a photo of a building-related problem reported by a tenant.
 
-          // 6) overwrite incident fields
+Return ONLY valid JSON with this exact shape:
+{
+  "title": string,
+  "description": string,
+  "category": string,
+  "confidence": number
+}
+
+Rules:
+- category must be one of: plumbing, electrical, heating, cooling, structural, interior, common_area, security, pests, waste, parking, it, administrative, noise, cleaning, outdoorsafety, other
+- confidence must be between 0 and 1
+- be concise and factual
+              `.trim(),
+                              },
+                              {
+                                   type: "input_image",
+                                   image_url: signed.signedUrl,
+                                   detail: "auto", // REQUIRED by TS
+                              },
+                         ],
+                    },
+               ],
+          });
+
+          const text = response.output_text;
+          if (!text) throw new Error("AI returned no output");
+
+          let ai;
+          try {
+               ai = JSON.parse(text);
+          } catch {
+               throw new Error("AI output was not valid JSON");
+          }
+
+          /* -------------------- Normalize & Save -------------------- */
+
+          const category = safeCategory(ai.category);
+
           const { data: updated, error: updErr } = await sbAdmin
                .from("tblIncidentReports")
                .update({
-                    title: ai.title,
-                    description: ai.description,
-                    category: ai.category,
+                    title: ai.title ?? "Detected issue",
+                    description: ai.description ?? "",
+                    category,
                     ai_status: "done",
-                    ai_confidence: ai.confidence,
-                    ai_shops: shops,
+                    ai_confidence: Number(ai.confidence) || null,
+                    ai_provider: "openai",
+                    ai_model: "gpt-image-1-mini",
                     ai_error: null,
                     ai_analyzed_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
@@ -87,6 +188,25 @@ export async function POST(req: Request) {
 
           return NextResponse.json({ incident: updated });
      } catch (e: any) {
-          return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
+          console.error("AI analyze failed:", e);
+
+          // best-effort failure update
+          try {
+               const { incidentId } = await req.json();
+               if (incidentId) {
+                    await sbAdmin
+                         .from("tblIncidentReports")
+                         .update({
+                              ai_status: "failed",
+                              ai_error: e?.message ?? "AI analysis failed",
+                         })
+                         .eq("id", incidentId);
+               }
+          } catch { }
+
+          return NextResponse.json(
+               { error: e?.message ?? "AI analysis failed" },
+               { status: 500 }
+          );
      }
 }
