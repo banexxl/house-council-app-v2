@@ -50,6 +50,7 @@ export async function proxy(req: NextRequest) {
      const raw = getCookieRaw(req)
      const jwt = extractAccessToken(raw)
      const authed = await isTokenValid(jwt)
+     console.log('proxy request', req);
 
      const isAuthPage = AUTH_PAGES.some(r => pathname.startsWith(r))
      const isPublicEndpoint = PUBLIC_ENDPOINTS.some(r => pathname.startsWith(r))
