@@ -137,7 +137,7 @@ Return ONLY valid JSON with this exact shape:
 }
 
 Rules:
-- category must be one of: plumbing, electrical, heating, cooling, structural, interior, common_area, security, pests, waste, parking, it, administrative, noise, cleaning, outdoorsafety, other
+- category must be one of: plumbing, electrical, noise, cleaning, common_area, heating, cooling, structural, interior, outdoorsafety, security, pests, administrative, parking, it, waste
 - confidence must be between 0 and 1
 - be concise and factual
               `.trim(),
