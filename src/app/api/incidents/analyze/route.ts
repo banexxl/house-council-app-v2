@@ -9,6 +9,8 @@ const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE, {
 });
 
 export async function POST(req: Request) {
+     console.log('request', req);
+
      try {
           const auth = req.headers.get("authorization") ?? "";
           const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
