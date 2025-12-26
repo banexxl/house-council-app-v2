@@ -306,7 +306,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           backHref={paths.dashboard.buildings.index}
           backLabel={t('buildings.buildingList')}
           title={buildingData
-            ? `${t('buildings.buildingEdit')}: ${buildingData.building_location?.street_address ?? ''}`
+            ? `${t('buildings.buildingEdit')}: ${buildingData.building_location?.street_address ?? ''}${buildingData.building_location?.street_number ? ' ' + buildingData.building_location.street_number : ''}`
             : t('buildings.buildingCreate')}
           breadcrumbs={[
             { title: t('nav.adminDashboard'), href: paths.dashboard.index },
