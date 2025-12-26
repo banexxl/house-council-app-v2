@@ -58,7 +58,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                storedRef ? storedRef.split('::')[1] ?? '' : '',
                { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
           );
-          const [avatarUrl, setAvatarUrl] = useState<string>(initialStoredRef ? "" : (initialValue || ""))
+          console.log('url', url);
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()
@@ -67,7 +67,6 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
           useEffect(() => {
                if (!initialValue) {
                     setStoredRef(null);
-                    setAvatarUrl("");
                     return;
                }
                const refKey = buildStoredRefKey(initialValue);
@@ -75,22 +74,12 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     setStoredRef(refKey);
                } else {
                     setStoredRef(null);
-                    setAvatarUrl(initialValue);
                }
           }, [initialValue]);
-
-          // Update avatar URL when signed URL is loaded
-          useEffect(() => {
-               if (url) {
-                    setAvatarUrl(url);
-               }
-          }, [url]);
-
 
           // Expose clearImage method to the parent
           useImperativeHandle(ref, () => ({
                clearImage: () => {
-                    setAvatarUrl("");
                     setStoredRef(null);
                },
           }))
@@ -111,7 +100,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                const reader = new FileReader()
                reader.onload = () => {
                     if (typeof reader.result === 'string') {
-                         setAvatarUrl(reader.result)
+                         setStoredRef(null);
                     }
                }
                reader.readAsDataURL(selectedFile)
@@ -127,7 +116,6 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     if (uploadResult.success) {
                          const signedUrl = uploadResult.signedUrls?.[0] || "";
                          if (signedUrl) {
-                              setAvatarUrl(signedUrl);
                               const refKey = buildStoredRefKey(signedUrl);
                               if (refKey) setStoredRef(refKey);
                          } else if (uploadResult.records?.length) {
@@ -163,7 +151,6 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                          ...sx,
                     }}
                >
-                    {/* <Tooltip title={t("clients.clientSaveClientFirst")}> */}
                     <Box
                          sx={{
                               position: "relative",
@@ -179,7 +166,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                                    border: "1px dashed",
                                    borderColor: "grey.300",
                               }}
-                              value={avatarUrl}
+                              value={url}
                          >
                               {loading ? (
                                    <CircularProgress size={40} />

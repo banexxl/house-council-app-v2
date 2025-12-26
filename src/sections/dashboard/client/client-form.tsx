@@ -36,7 +36,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { updateClientSubscriptionForClient } from 'src/app/actions/subscription-plan/subscription-plan-actions'
-import log from 'src/utils/logger'
 import type { Theme } from '@mui/material/styles'
 
 interface ClientNewFormProps {
@@ -79,14 +78,12 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       client_type: initialValues?.client_type || clientInitialValues.client_type || '',
       client_status: initialValues?.client_status || clientInitialValues.client_status || '',
       subscription_plan_id: clientSubscription?.subscription_plan_id || '',
-      // ✅ store as ISO string or null so it's stable
       next_payment_date: clientSubscription?.next_payment_date
         ? dayjs(clientSubscription.next_payment_date)
         : null,
       subscription_status: clientSubscription?.status || '',
     };
     return base;
-    // only recompute when these truly change
   }, [clientInitialValues, initialValues, clientSubscription]);
 
   const formik = useFormik({
@@ -96,7 +93,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     validateOnMount: true,
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      // Separate client vs subscription values before calling server actions
+
       const { subscription_plan_id, next_payment_date, subscription_status, ...clientOnly } = values as any;
 
       try {
@@ -246,9 +243,13 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
           <ImageUpload
             buttonDisabled={initialValues?.id == '' ? true : false}
             ref={ImageUploadRef}
-            onUploadSuccess={(url: string) => {
+            onUploadSuccess={async (url: string) => {
               formik.setFieldValue('avatar', url)
               formik.setFieldTouched('avatar', true, false)
+              await createOrUpdateClientAction({
+                id: formik.values.id,
+                avatar: url,
+              })
             }}
             // Use the client record id (preferred) - server action can also resolve user_id
             userId={clientData?.user_id || null}
@@ -693,11 +694,11 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
         </CardContent>
         <Divider sx={{ my: 3 }} />
         <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        flexWrap="wrap"
-        spacing={3}
-        sx={{ p: 3 }}
-      >
+          direction={{ xs: 'column', sm: 'row' }}
+          flexWrap="wrap"
+          spacing={3}
+          sx={{ p: 3 }}
+        >
           <Tooltip
             title={
               validationMessages.length > 0 && (formik.isSubmitting || !formik.isValid || !formik.dirty)

@@ -108,7 +108,7 @@ export const unbanUser = async (userId: string): Promise<{ success: boolean; err
 };
 
 export const createOrUpdateClientAction = async (
-     client: Client
+     client: Partial<Client>
 ): Promise<{
      saveClientActionSuccess: boolean;
      saveClientActionData?: Client;
@@ -140,7 +140,7 @@ export const createOrUpdateClientAction = async (
                });
                return { saveClientActionSuccess: false, saveClientActionError: updateError };
           }
-
+          revalidatePath(`/dashboard/account`);
           await logServerAction({
                action: 'Update Client - Success',
                duration_ms: 0,
@@ -210,15 +210,13 @@ export const createOrUpdateClientAction = async (
                }
           }
 
-          revalidatePath(`/dashboard/clients/${id}`);
-
           return {
                saveClientActionSuccess: true,
                saveClientActionData: data as Client,
           };
      } else {
           // === CREATE ===
-          const { data: invitedUser, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(clientData.email, {
+          const { data: invitedUser, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(clientData.email!, {
                redirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
           });
 
