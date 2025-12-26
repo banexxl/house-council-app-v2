@@ -26,6 +26,7 @@ import { ImageUpload, ImageUploadRef } from 'src/sections/dashboard/client/uplod
 import { transliterateCyrillicToLatin } from 'src/utils/transliterate'
 import { useRouter, usePathname } from 'next/navigation'
 import { PopupModal } from 'src/components/modal-dialog'
+import { removeEntityFile } from 'src/libs/supabase/sb-storage'
 import { CustomAutocomplete } from 'src/components/autocomplete-custom'
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
@@ -215,6 +216,21 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     setModalLoading(false);
   };
 
+  const removeStoredImage = async (storedRef?: string | null) => {
+    const userId = clientData?.user_id || formik.values.user_id;
+    const storagePath = storedRef && storedRef.includes('::') ? storedRef.split('::')[1] : storedRef || '';
+    if (userId && storagePath) {
+      const removeResult = await removeEntityFile({
+        entity: 'client-image',
+        entityId: userId,
+        storagePathOrUrl: storagePath,
+      });
+      if (!removeResult.success && removeResult.error) {
+        toast.error(removeResult.error);
+      }
+    }
+  };
+
   const validationMessages = useMemo(() => {
     const flat: string[] = []
     const walk = (val: any) => {
@@ -251,6 +267,17 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                 avatar: url,
               })
             }}
+            onRemoveImage={async (storedRef) => {
+              formik.setFieldValue('avatar', '');
+              formik.setFieldTouched('avatar', true, false);
+              await removeStoredImage(storedRef);
+              if (!formik.values.id) return;
+              await createOrUpdateClientAction({
+                id: formik.values.id,
+                avatar: '',
+              });
+            }}
+            onDeletePreviousImage={removeStoredImage}
             // Use the client record id (preferred) - server action can also resolve user_id
             userId={clientData?.user_id || null}
             initialValue={clientData?.user_id == '' ? '' : clientData?.avatar}

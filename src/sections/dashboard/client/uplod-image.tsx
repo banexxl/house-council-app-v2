@@ -9,12 +9,13 @@ import {
      useImperativeHandle,
 } from "react"
 import {
-     Avatar,
      Box,
      Button,
      Typography,
      CircularProgress,
+     IconButton,
 } from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
@@ -28,6 +29,8 @@ type ImageUploadProps = {
      userId: string | null | undefined
      initialValue?: string
      sx?: any
+     onRemoveImage?: (storedRef?: string | null) => void | Promise<void>
+     onDeletePreviousImage?: (storedRef: string) => void | Promise<void>
 }
 
 export type ImageUploadRef = {
@@ -50,7 +53,7 @@ const buildStoredRefKey = (value?: string | null) => {
 };
 
 export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
-     ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx }, ref) => {
+     ({ buttonDisabled, onUploadSuccess, userId, initialValue, sx, onRemoveImage, onDeletePreviousImage }, ref) => {
           const initialStoredRef = buildStoredRefKey(initialValue);
           const [storedRef, setStoredRef] = useState<string | null>(initialStoredRef)
           const { url, loading: isLoading } = useSignedUrl(
@@ -58,10 +61,10 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                storedRef ? storedRef.split('::')[1] ?? '' : '',
                { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 }
           );
-          console.log('url', url);
           const [loading, setLoading] = useState(false)
           const fileInputRef = useRef<HTMLInputElement>(null)
           const { t } = useTranslation()
+          const isBusy = loading || isLoading
 
           // Sync internal refs when parent provides a new initial value
           useEffect(() => {
@@ -96,6 +99,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     return;
                }
 
+               const previousRef = storedRef;
                setLoading(true)
                const reader = new FileReader()
                reader.onload = () => {
@@ -114,17 +118,29 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     });
 
                     if (uploadResult.success) {
+                         let nextRefKey: string | null = null;
                          const signedUrl = uploadResult.signedUrls?.[0] || "";
                          if (signedUrl) {
                               const refKey = buildStoredRefKey(signedUrl);
-                              if (refKey) setStoredRef(refKey);
+                              if (refKey) {
+                                   nextRefKey = refKey;
+                                   setStoredRef(refKey);
+                              }
                          } else if (uploadResult.records?.length) {
                               const record = uploadResult.records[0] as { storage_bucket?: string; storage_path?: string };
                               if (record?.storage_bucket && record?.storage_path) {
-                                   setStoredRef(`${record.storage_bucket}::${record.storage_path}`);
+                                   nextRefKey = `${record.storage_bucket}::${record.storage_path}`;
+                                   setStoredRef(nextRefKey);
                               }
                          }
                          onUploadSuccess(signedUrl);
+                         if (previousRef && nextRefKey && previousRef !== nextRefKey && onDeletePreviousImage) {
+                              try {
+                                   await onDeletePreviousImage(previousRef);
+                              } catch (err) {
+                                   toast.error(t('common.error'));
+                              }
+                         }
                          toast.success(t('common.actionUploadSuccess'));
                     } else {
                          toast.error(uploadResult.error || t('common.actionUploadError'));
@@ -140,6 +156,26 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                     }
                }
           }
+
+          const handleRemoveImage = async () => {
+               const currentRef = storedRef;
+               if (!currentRef) return;
+               if (loading) return;
+               setLoading(true);
+               try {
+                    if (onRemoveImage) {
+                         await onRemoveImage(currentRef);
+                    }
+                    setStoredRef(null);
+                    if (fileInputRef.current) {
+                         fileInputRef.current.value = '';
+                    }
+               } catch (error) {
+                    toast.error(t('common.error'));
+               } finally {
+                    setLoading(false);
+               }
+          };
 
           return (
                <Box
@@ -158,6 +194,27 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               height: 150,
                          }}
                     >
+                         {storedRef && (
+                              <IconButton
+                                   size="small"
+                                   aria-label={t('common.btnRemove')}
+                                   onClick={handleRemoveImage}
+                                   disabled={isBusy}
+                                   sx={{
+                                        position: "absolute",
+                                        top: 6,
+                                        right: 6,
+                                        bgcolor: "background.paper",
+                                        boxShadow: 1,
+                                        zIndex: 1,
+                                        "&:hover": {
+                                             bgcolor: "grey.100",
+                                        },
+                                   }}
+                              >
+                                   <CloseIcon fontSize="small" />
+                              </IconButton>
+                         )}
                          <SignedAvatar
                               sx={{
                                    width: "100%",
@@ -168,7 +225,7 @@ export const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(
                               }}
                               value={url}
                          >
-                              {loading ? (
+                              {isBusy ? (
                                    <CircularProgress size={40} />
                               ) : (
                                    <CameraAltOutlinedIcon sx={{ fontSize: 40, color: "grey.500" }} />

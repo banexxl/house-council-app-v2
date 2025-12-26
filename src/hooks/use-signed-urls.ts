@@ -59,11 +59,20 @@ export function useSignedUrl(bucket: string, path?: string | null, opts?: Option
           if (timerRef.current) window.clearTimeout(timerRef.current);
           timerRef.current = window.setTimeout(() => {
                fetchSigned().catch(() => { });
-          }, due);
+     }, due);
      }
 
      useEffect(() => {
-          if (!path) return;
+          if (timerRef.current) {
+               window.clearTimeout(timerRef.current);
+               timerRef.current = null;
+          }
+          if (!path || !bucket) {
+               setUrl(null);
+               setError(null);
+               setLoading(false);
+               return;
+          }
           fetchSigned();
           return () => {
                if (timerRef.current) window.clearTimeout(timerRef.current);
