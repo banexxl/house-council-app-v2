@@ -12,6 +12,8 @@ import { updateTenantActivityStatus } from 'src/app/actions/tenant/tenant-action
 export type UserDataCombined = {
      client: Client | null
      clientMember: ClientMember | null
+     /** If user is a clientMember, this holds their parent client record */
+     clientFromMember?: Client | null
      tenant: Tenant | null
      admin: Admin | null
      userData: User | null
@@ -74,9 +76,18 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      });
 
      // Choose the first matching role by your preferred priority
+     let clientFromMember: Client | null = null;
+
+     if (!client && clientMember?.client_id) {
+          clientFromMember = await maybeSingle(
+               db.from(TABLES.CLIENTS).select('*').eq('id', clientMember.client_id),
+          );
+     }
+
      const result: UserDataCombined = {
           client,
           clientMember,
+          clientFromMember,
           tenant,
           admin,
           userData: user,

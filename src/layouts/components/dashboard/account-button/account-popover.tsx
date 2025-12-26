@@ -17,9 +17,9 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/components/router-link';
+import { SignedAvatar } from 'src/components/signed-avatar';
 import { useRouter } from 'src/hooks/use-router';
 import { paths } from 'src/paths';
-import { logout } from 'src/app/auth/actions';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { Tooltip } from '@mui/material';
 import { getViewer, UserDataCombined } from 'src/libs/supabase/server-auth';
@@ -63,8 +63,8 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
         await supabaseBrowserClient.auth.signOut();
         router.refresh();
       } catch (err) {
-        // Ignore server digest / cookie errors – session might already be gone
-        console.warn('Logout server error (ignored):', err);
+        // Ig;nore server digest / cookie errors – session might already be gone
+        console.warn('Logout server error (ignored):', err)
       } finally {
         // Always push to login; user is effectively logged out on this client
         router.push(paths.auth.login);
@@ -93,81 +93,95 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
       }}
       {...other}
     >
-      <Box sx={{ p: 2 }}>
-        <Typography variant="body1">{
-          user?.admin ? <strong>{user.admin.first_name}</strong>
-            : user?.client ? <strong>{user.client.name}</strong>
-              : user?.tenant ? <strong>{user.tenant.first_name + ' ' + user.tenant.last_name}</strong>
-                : <strong>User</strong>
-        }</Typography>
-        <Tooltip title={user?.userData?.email || 'No email available'}>
-          <Typography
-            color="text.secondary"
-            variant="body2"
-            noWrap
-            sx={{ maxWidth: 180 }}
-          >
-            {user?.userData?.email?.slice(0, 20)}{user?.userData?.email && user.userData.email.length > 20 ? '...' : ''}
-          </Typography>
-        </Tooltip>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {user?.clientMember && (
+          <SignedAvatar
+            value={user.clientFromMember?.avatar}
+            sx={{ width: 40, height: 40 }}
+          />
+        )}
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="body1">{
+            user?.clientMember ? <strong>{user.clientMember.name}</strong>
+              : user?.admin ? <strong>{user.admin.first_name}</strong>
+                : user?.client ? <strong>{user.client.name}</strong>
+                  : user?.tenant ? <strong>{user.tenant.first_name + ' ' + user.tenant.last_name}</strong>
+                    : <strong>User</strong>
+          }</Typography>
+          <Tooltip title={user?.clientMember?.email || user?.userData?.email || 'No email available'}>
+            <Typography
+              color="text.secondary"
+              variant="body2"
+              noWrap
+              sx={{ maxWidth: 200 }}
+            >
+              {(user?.clientMember?.email || user?.userData?.email || '')?.slice(0, 24)}
+              {(user?.clientMember?.email || user?.userData?.email || '').length > 24 ? '...' : ''}
+            </Typography>
+          </Tooltip>
+        </Box>
       </Box>
-      <Divider />
-      <Box sx={{ p: 1 }}>
-        <ListItemButton
-          component={RouterLink}
-          href={user?.admin ? paths.dashboard.index
-            : user?.client ? paths.dashboard.account
-              : user?.tenant ? paths.dashboard.social.profile
-                : paths.dashboard.index
-          }
-          onClick={onClose}
-          sx={{
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
-          }}
-        >
-          <ListItemIcon>
-            <SvgIcon fontSize="small">
-              <User03Icon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary={<Typography variant="body1">{t('nav.profile')}</Typography>} />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => { handleDrawerOpen(); onClose?.(); }}
-          sx={{
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
-          }}
-        >
-          <ListItemIcon>
-            <SvgIcon fontSize="small">
-              <Settings04Icon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary={<Typography variant="body1">{t('common.settings')}</Typography>} />
-        </ListItemButton>
-        <ListItemButton
-          component={RouterLink}
-          href={paths.dashboard.index}
-          onClick={onClose}
-          sx={{
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
-          }}
-        >
-          <ListItemIcon>
-            <SvgIcon fontSize="small">
-              <CreditCard01Icon />
-            </SvgIcon>
-          </ListItemIcon>
-          <ListItemText primary={<Typography variant="body1">{t('nav.billingInformation')}</Typography>} />
-        </ListItemButton>
-      </Box>
-      <Divider sx={{ my: '0 !important' }} />
+      {!user?.clientMember && (
+        <>
+          <Divider />
+          <Box sx={{ p: 1 }}>
+            <ListItemButton
+              component={RouterLink}
+              href={user?.admin ? paths.dashboard.index
+                : user?.client ? paths.dashboard.account
+                  : user?.tenant ? paths.dashboard.social.profile
+                    : paths.dashboard.index
+              }
+              onClick={onClose}
+              sx={{
+                borderRadius: 1,
+                px: 1,
+                py: 0.5,
+              }}
+            >
+              <ListItemIcon>
+                <SvgIcon fontSize="small">
+                  <User03Icon />
+                </SvgIcon>
+              </ListItemIcon>
+              <ListItemText primary={<Typography variant="body1">{t('nav.profile')}</Typography>} />
+            </ListItemButton>
+            <ListItemButton
+              onClick={() => { handleDrawerOpen(); onClose?.(); }}
+              sx={{
+                borderRadius: 1,
+                px: 1,
+                py: 0.5,
+              }}
+            >
+              <ListItemIcon>
+                <SvgIcon fontSize="small">
+                  <Settings04Icon />
+                </SvgIcon>
+              </ListItemIcon>
+              <ListItemText primary={<Typography variant="body1">{t('common.settings')}</Typography>} />
+            </ListItemButton>
+            <ListItemButton
+              component={RouterLink}
+              href={paths.dashboard.index}
+              onClick={onClose}
+              sx={{
+                borderRadius: 1,
+                px: 1,
+                py: 0.5,
+              }}
+            >
+              <ListItemIcon>
+                <SvgIcon fontSize="small">
+                  <CreditCard01Icon />
+                </SvgIcon>
+              </ListItemIcon>
+              <ListItemText primary={<Typography variant="body1">{t('nav.billingInformation')}</Typography>} />
+            </ListItemButton>
+          </Box>
+          <Divider sx={{ my: '0 !important' }} />
+        </>
+      )}
       <Box
         sx={{
           display: 'flex',
